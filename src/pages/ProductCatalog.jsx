@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { db } from '../lib/firebase';
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where, orderBy } from 'firebase/firestore';
-import { Search, Package, Plus, Grid, List, AlertCircle, ShoppingCart, Upload, Warehouse } from 'lucide-react';
+import { Search, Package, Plus, Grid, List, AlertCircle, ShoppingCart, Upload, Warehouse, Trash2 } from 'lucide-react';
 import ProductFormModal from '../components/ProductFormModal';
 import ProductDetailsModal from '../components/ProductDetailsModal';
 import { useStore } from '../store/useStore';
@@ -342,6 +342,31 @@ const ProductCatalog = () => {
         return 'bg-green-500/20';
     };
 
+    const handleDeleteAllProducts = async () => {
+        if (!canManage) return;
+
+        const confirm1 = window.confirm("คุณต้องการลบรายการอุปกรณ์ทั้งหมดใช่หรือไม่? การกระทำนี้ไม่สามารถย้อนกลับได้");
+        if (!confirm1) return;
+
+        const confirm2 = window.confirm("ยืนยันอีกครั้ง: ลบอุปกรณ์ทั้งหมดออกจากระบบถาวร?");
+        if (!confirm2) return;
+
+        try {
+            setLoading(true);
+            const snapshot = await getDocs(collection(db, 'products'));
+            const deletePromises = snapshot.docs.map(docRef => deleteDoc(doc(db, 'products', docRef.id)));
+            await Promise.all(deletePromises);
+
+            alert(`ลบอุปกรณ์ทั้งหมดสำเร็จ (${snapshot.size} รายการ)`);
+            fetchProducts(0, true);
+        } catch (error) {
+            console.error('Error deleting all products:', error);
+            alert(`เกิดข้อผิดพลาดในการลบอุปกรณ์: ${error.message}`);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     // Calculate pagination info
     const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
 
@@ -373,6 +398,14 @@ const ProductCatalog = () => {
                             >
                                 <Upload size={20} />
                                 นำเข้า CSV
+                            </button>
+                            <button
+                                onClick={handleDeleteAllProducts}
+                                className="px-4 py-2 bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded-xl transition-all duration-300 flex items-center gap-2 border border-red-500/20"
+                                title="ลบอุปกรณ์ทั้งหมด"
+                            >
+                                <Trash2 size={20} />
+                                ลบทั้งหมด
                             </button>
                             <button
                                 onClick={handleAddProduct}
