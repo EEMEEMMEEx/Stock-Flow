@@ -1,0 +1,61 @@
+{
+    "name": "FORTH StockFlow",
+    "short_name": "StockFlow",
+    "description": "ระบบจัดการสินค้าคงคลัง FORTH Corporation",
+    "start_url": "/",
+    "id": "/",
+    "display": "standalone",
+    "orientation": "portrait",
+    "background_color": "#f8fafc",
+    "theme_color": "#1C6CB4",
+    "scope": "/",
+    "lang": "th",
+    "categories": [
+        "business",
+        "productivity",
+        "utilities"
+    ],
+    "icons": [
+        {
+            "src": "/logo.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/logo.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ],
+    "screenshots": [],
+    "shortcuts": [
+        {
+            "name": "สแกน QR",
+            "short_name": "สแกน",
+            "description": "เปิดหน้าสแกน QR Code",
+            "url": "/scan",
+            "icons": [
+                {
+                    "src": "/logo.png",
+                    "sizes": "96x96"
+                }
+            ]
+        },
+        {
+            "name": "ตะกร้าเบิก",
+            "short_name": "ตะกร้า",
+            "description": "ดูตะกร้าเบิกสินค้า",
+            "url": "/cart",
+            "icons": [
+                {
+                    "src": "/logo.png",
+                    "sizes": "96x96"
+                }
+            ]
+        }
+    ],
+    "related_applications": [],
+    "prefer_related_applications": false
+}

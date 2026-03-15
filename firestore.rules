@@ -1,0 +1,53 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Assets: Public read (for scanning), Auth write
+    match /assets/{assetId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // Products: Public read, Auth write
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // Transactions: Auth only
+    match /transactions/{transactionId} {
+      allow read: if true; // Allow reading for receipts/history
+      allow write: if isAuthenticated();
+    }
+
+    // Warehouse Transfers: Auth only
+    match /warehouse_transfers/{transferId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Warehouses: Public read, Auth write
+    match /warehouses/{warehouseId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // Notifications: Auth only
+    match /notifications/{notificationId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Audit Logs: Auth only (Should be Admin only in prod)
+    match /audit_logs/{logId} {
+      allow read, write: if isAuthenticated();
+    }
+    
+    // User Profiles
+    match /users/{userId} {
+      allow read, write: if isAuthenticated();
+    }
+  }
+}
