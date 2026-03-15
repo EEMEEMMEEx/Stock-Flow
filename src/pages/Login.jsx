@@ -77,12 +77,15 @@ const Login = () => {
                 }
 
                 // Create user document in Firestore with pending status
+                // Auto-approve hardcoded admin email
+                const isAdminAccount = user.email === ADMIN_EMAIL;
+                
                 await setDoc(doc(db, 'users', user.uid), {
                     uid: user.uid,
                     email: user.email,
                     full_name: fullName,
-                    role: 'viewer', // Default safe role
-                    status: 'pending', // Pending approval
+                    role: isAdminAccount ? 'admin' : 'viewer',
+                    status: isAdminAccount ? 'active' : 'pending',
                     created_at: serverTimestamp(),
                     last_sign_in: serverTimestamp()
                 });

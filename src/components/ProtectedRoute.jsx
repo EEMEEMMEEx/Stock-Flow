@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { auth, db } from '../lib/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 
 import { useStore } from '../store/useStore';
 
@@ -23,6 +23,21 @@ const ProtectedRoute = () => {
                         // But we verify this AFTER setting session to avoid duplicate redirects
                         // Or we can handle it here by NOT setting session if pending?
                         // Better: set session but handle redirect logic below
+                        // Auto-approve hardcoded admin email
+                        if (user.email === 'saweksoot@gmail.com' && (userData.status === 'pending' || userData.role !== 'admin')) {
+                            userData.status = 'active';
+                            userData.role = 'admin';
+                            // Attempt to update Firestore permanently
+                            try {
+                                await updateDoc(doc(db, 'users', user.uid), {
+                                    status: 'active',
+                                    role: 'admin'
+                                });
+                            } catch (e) {
+                                console.warn("Auto-approve update failed, but allowing access", e);
+                            }
+                        }
+
                         if (userData.status === 'pending') {
                             // We will handle redirect in rendering logic
                             user.status = 'pending';
