@@ -1,0 +1,107 @@
+
+> phantom-magnetar@0.0.0 build
+> vite build
+
+[36mvite v7.3.1 [32mbuilding client environment for production...[36m[39m
+transforming...
+[32m???[39m 12 modules transformed.
+node.exe : 
+[31m???[39m Build 
+failed in 866ms
+At line:1 char:1
++ & "C:\Program 
+Files\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo 
+...
++ ~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~
+    + CategoryInfo     
+         : NotSpecifi  
+  ed: ([31m???[39m   
+  Build failed in 8    
+66ms:String) [], R    
+emoteException
+    + FullyQualifiedEr 
+   rorId : NativeComm  
+  andError
+ 
+[31merror during 
+build:
+[31m[vite:esbuild] 
+Transform failed with 
+1 error:
+D:/APP/Stock-Flow-app/s
+rc/pages/Login.jsx:7:9:
+ ERROR: The symbol 
+"useNavigate" has 
+already been 
+declared[31m
+file: [36mD:/APP/Stock
+-Flow-app/src/pages/Log
+in.jsx:7:9[31m
+[33m
+[33mThe symbol 
+"useNavigate" has 
+already been 
+declared[33m
+5  |  import { db } 
+from '../lib/firebase';
+6  |  import { 
+useNavigate } from 
+'react-router-dom';
+7  |  import { 
+useNavigate } from 
+'react-router-dom';
+   |           ^
+8  |  import { Lock, 
+Mail, Loader2, 
+UserPlus, LogIn, 
+KeyRound, ArrowLeft, 
+Eye, EyeOff, Sparkles 
+} from 'lucide-react';
+9  |  import emailjs 
+from 
+'@emailjs/browser';
+[31m
+    at 
+failureErrorWithLog (D:
+\APP\Stock-Flow-app\nod
+e_modules\esbuild\lib\m
+ain.js:1467:15)
+    at D:\APP\Stock-Flo
+w-app\node_modules\esbu
+ild\lib\main.js:736:50
+    at responseCallback
+s.<computed> (D:\APP\St
+ock-Flow-app\node_modul
+es\esbuild\lib\main.js:
+603:9)
+    at 
+handleIncomingPacket (D
+:\APP\Stock-Flow-app\no
+de_modules\esbuild\lib\
+main.js:658:12)
+    at 
+Socket.readFromStdout (
+D:\APP\Stock-Flow-app\n
+ode_modules\esbuild\lib
+\main.js:581:7)
+    at Socket.emit 
+(node:events:508:28)
+    at addChunk (node:i
+nternal/streams/readabl
+e:559:12)
+    at readableAddChunk
+PushByteMode (node:inte
+rnal/streams/readable:5
+10:3)
+    at Readable.push (n
+ode:internal/streams/re
+adable:390:5)
+    at 
+Pipe.onStreamRead (node
+:internal/stream_base_c
+ommons:189:23)[39m
