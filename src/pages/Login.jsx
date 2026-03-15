@@ -16,7 +16,7 @@ const EMAILJS_SERVICE_ID = "service_hisc5rk";
 const EMAILJS_TEMPLATE_ID = "template_hc9gwct";
 const EMAILJS_PUBLIC_KEY = "YUZNQQ_r1LkcioKIM"; // นำ Public Key มาใส่ตรงนี้ (ดูวิธีหาด้านล่าง)
 
-const ADMIN_EMAIL = "saweksoot@gmail.com"; // อีเมลแอดมินที่ต้องการให้แจ้งเตือน
+const ADMIN_EMAIL = "watchara.m@forth.co.th"; // อีเมลแอดมินที่ต้องการให้แจ้งเตือน
 
 const Login = () => {
     const [email, setEmail] = useState('');

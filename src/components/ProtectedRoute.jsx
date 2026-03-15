@@ -24,7 +24,7 @@ const ProtectedRoute = () => {
                         // Or we can handle it here by NOT setting session if pending?
                         // Better: set session but handle redirect logic below
                         // Auto-approve hardcoded admin email
-                        if (user.email === 'saweksoot@gmail.com' && (userData.status === 'pending' || userData.role !== 'admin')) {
+                        if (user.email === 'watchara.m@forth.co.th' && (userData.status === 'pending' || userData.role !== 'admin')) {
                             userData.status = 'active';
                             userData.role = 'admin';
                             // Attempt to update Firestore permanently
