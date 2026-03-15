@@ -24,6 +24,8 @@ const ProductCatalog = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [categories, setCategories] = useState(['All']);
+    const [selectedType, setSelectedType] = useState('All');
+    const [types, setTypes] = useState(['All']);
 
     // Warehouse State
     const [warehouses, setWarehouses] = useState([]);
@@ -89,9 +91,11 @@ const ProductCatalog = () => {
                 });
                 setAllProductsCache(sourceProducts);
 
-                // Update categories based on fresh data
+                // Update categories and types based on fresh data
                 const uniqueCategories = ['All', ...new Set(sourceProducts.map(p => p.category).filter(Boolean))];
                 setCategories(uniqueCategories);
+                const uniqueTypes = ['All', ...new Set(sourceProducts.map(p => p.type).filter(Boolean))];
+                setTypes(uniqueTypes);
             }
 
             // Client-side Filtering
@@ -107,6 +111,10 @@ const ProductCatalog = () => {
 
             if (selectedCategory !== 'All') {
                 filtered = filtered.filter(p => p.category === selectedCategory);
+            }
+
+            if (selectedType !== 'All') {
+                filtered = filtered.filter(p => p.type === selectedType);
             }
 
             if (selectedWarehouse !== 'All') {
@@ -127,7 +135,7 @@ const ProductCatalog = () => {
         } finally {
             setLoading(false);
         }
-    }, [searchTerm, selectedCategory, selectedWarehouse, page, allProductsCache, warehousesMap]);
+    }, [searchTerm, selectedCategory, selectedType, selectedWarehouse, page, allProductsCache, warehousesMap]);
 
     // Derived Data for Modal
     const locations = [...new Set(allProductsCache.map(p => p.location).filter(Boolean))];
@@ -222,6 +230,7 @@ const ProductCatalog = () => {
 
                     // Optional fields (normalized keys)
                     const category = normalizedRow['category'] || normalizedRow['หมวดหมู่'] || 'Uncategorized';
+                    const type = normalizedRow['type'] || normalizedRow['group'] || normalizedRow['ประเภท'] || normalizedRow['กลุ่ม'] || category;
                     const location = normalizedRow['location'] || normalizedRow['ที่เก็บ'] || '-';
                     const quantity = parseInt(normalizedRow['quantity'] || normalizedRow['qty'] || normalizedRow['จำนวน'] || '0');
                     const minThreshold = parseInt(normalizedRow['minthreshold'] || normalizedRow['min'] || normalizedRow['ขั้นต่ำ'] || '5');
@@ -242,6 +251,7 @@ const ProductCatalog = () => {
                                 quantity,
                                 min_threshold: minThreshold,
                                 description,
+                                type: type || null,
                                 parent_sku: parentSku || null
                             });
                         } else {
@@ -250,6 +260,7 @@ const ProductCatalog = () => {
                                 name,
                                 sku,
                                 category,
+                                type: type || null,
                                 location,
                                 quantity,
                                 min_threshold: minThreshold,
@@ -432,20 +443,38 @@ const ProductCatalog = () => {
 
             {/* Filters */}
             <div className="glass-card p-4 flex flex-col md:flex-row gap-4 items-center justify-between backdrop-blur-2xl border border-white/10 shadow-xl shadow-[#1C6CB4]/5">
-                <div className="flex flex-wrap gap-2">
-                    {categories.map(cat => (
-                        <button
-                            key={cat}
-                            onClick={() => setSelectedCategory(cat)}
-                            className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${selectedCategory === cat
-                                ? 'bg-gradient-to-r from-[#1C6CB4] to-[#2a7dc4] text-white shadow-lg shadow-[#1C6CB4]/30'
-                                : 'bg-white/5 hover:bg-white/10'
-                                }`}
-                            style={{ color: selectedCategory !== cat ? 'var(--text-primary)' : undefined }}
-                        >
-                            {cat}
-                        </button>
-                    ))}
+                <div className="flex flex-col gap-4 w-full md:w-auto">
+                    <div className="flex flex-wrap gap-2">
+                        {categories.map(cat => (
+                            <button
+                                key={cat}
+                                onClick={() => setSelectedCategory(cat)}
+                                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${selectedCategory === cat
+                                    ? 'bg-gradient-to-r from-[#1C6CB4] to-[#2a7dc4] text-white shadow-lg shadow-[#1C6CB4]/30'
+                                    : 'bg-white/5 hover:bg-white/10'
+                                    }`}
+                                style={{ color: selectedCategory !== cat ? 'var(--text-primary)' : undefined }}
+                            >
+                                {cat}
+                            </button>
+                        ))}
+                    </div>
+                    <div className="flex flex-wrap gap-2 pt-3 border-t border-white/5">
+                        <span className="text-[10px] text-gray-500 uppercase w-full">กลุ่มอุปกรณ์</span>
+                        {types.map(t => (
+                            <button
+                                key={t}
+                                onClick={() => setSelectedType(t)}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${selectedType === t
+                                    ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
+                                    : 'bg-white/5 hover:bg-white/10'
+                                    }`}
+                                style={{ color: selectedType !== t ? 'var(--text-primary)' : undefined }}
+                            >
+                                {t}
+                            </button>
+                        ))}
+                    </div>
                 </div>
 
                 <div className="flex items-center gap-3">
@@ -558,11 +587,18 @@ const ProductCatalog = () => {
                                             {product.name}
                                         </h4>
 
-                                        {product.category && (
-                                            <span className="inline-block px-2 py-0.5 bg-[#1C6CB4]/20 text-[#5ca0dc] text-xs rounded-full mb-3">
-                                                {product.category}
-                                            </span>
-                                        )}
+                                        <div className="flex flex-wrap gap-2 mb-3">
+                                            {product.category && (
+                                                <span className="inline-block px-2 py-0.5 bg-[#1C6CB4]/20 text-[#5ca0dc] text-[10px] rounded-full">
+                                                    {product.category}
+                                                </span>
+                                            )}
+                                            {product.type && product.type !== product.category && (
+                                                <span className="inline-block px-2 py-0.5 bg-purple-500/20 text-purple-400 text-[10px] rounded-full">
+                                                    {product.type}
+                                                </span>
+                                            )}
+                                        </div>
 
                                         {canOperate && (
                                             <button
@@ -590,6 +626,7 @@ const ProductCatalog = () => {
                                         <th className="px-4 py-3 text-left">รหัส</th>
                                         <th className="px-4 py-3 text-left">ชื่ออุปกรณ์</th>
                                         <th className="px-4 py-3 text-left">หมวดหมู่</th>
+                                        <th className="px-4 py-3 text-left">ประเภท</th>
                                         <th className="px-4 py-3 text-center">คงเหลือ</th>
                                         <th className="px-4 py-3 text-center">จัดการ</th>
                                     </tr>
@@ -625,6 +662,13 @@ const ProductCatalog = () => {
                                                 </div>
                                             </td>
                                             <td className="px-4 py-3 text-gray-400">{product.category || '-'}</td>
+                                            <td className="px-4 py-3 text-gray-400">
+                                                {product.type && (
+                                                    <span className="px-2 py-0.5 bg-purple-500/10 text-purple-400 text-[10px] rounded border border-purple-500/20">
+                                                        {product.type}
+                                                    </span>
+                                                )}
+                                            </td>
                                             <td className="px-4 py-3 text-center">
                                                 <span className={`px-2 py-1 rounded-lg text-sm font-medium ${getStockBgColor(product)} ${getStockColor(product)}`}>
                                                     {product.quantity}

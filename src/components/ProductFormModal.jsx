@@ -13,7 +13,8 @@ const ProductFormModal = ({ isOpen, onClose, onSave, product = null, categories 
         min_threshold: 5,
         image_url: '',
         note: '',
-        warehouse_id: null
+        warehouse_id: null,
+        type: ''
     });
     const [warehouses, setWarehouses] = useState([]);
     const [imageFile, setImageFile] = useState(null);
@@ -62,7 +63,8 @@ const ProductFormModal = ({ isOpen, onClose, onSave, product = null, categories 
                 min_threshold: product.min_threshold || 5,
                 image_url: product.image_url || '',
                 note: product.note || '',
-                warehouse_id: product.warehouse_id || null
+                warehouse_id: product.warehouse_id || null,
+                type: product.type || ''
             });
             setPreviewUrl(product.image_url || '');
         } else {
@@ -76,7 +78,8 @@ const ProductFormModal = ({ isOpen, onClose, onSave, product = null, categories 
                 min_threshold: 5,
                 image_url: '',
                 note: '',
-                warehouse_id: warehouses[0]?.id || null
+                warehouse_id: warehouses[0]?.id || null,
+                type: ''
             });
             setPreviewUrl('');
         }
@@ -248,7 +251,7 @@ const ProductFormModal = ({ isOpen, onClose, onSave, product = null, categories 
                         {/* Category - Select Dropdown */}
                         <div className="group">
                             <label className="form-label group-focus-within:text-[#5ca0dc] transition-colors">
-                                หมวดหมู่
+                                หมวดหมู่ (Brand)
                             </label>
                             <div className="relative">
                                 <select
@@ -266,15 +269,30 @@ const ProductFormModal = ({ isOpen, onClose, onSave, product = null, categories 
                                     <ChevronDown size={16} />
                                 </div>
                             </div>
-                            <p className="text-gray-500 text-xs mt-1">หรือพิมพ์หมวดหมู่ใหม่ด้านล่าง</p>
                             <input
                                 type="text"
                                 name="category"
                                 value={formData.category}
                                 onChange={handleChange}
-                                placeholder="พิมพ์หมวดหมู่ใหม่..."
+                                placeholder="หรือพิมพ์หมวดหมู่ใหม่..."
                                 className="glass-input mt-2"
                             />
+                        </div>
+
+                        {/* Type - Direct Input for flexibility */}
+                        <div className="group">
+                            <label className="form-label group-focus-within:text-purple-400 transition-colors">
+                                ประเภทอุปกรณ์ (เช่น ลูกข่าย, แม่ข่าย)
+                            </label>
+                            <input
+                                type="text"
+                                name="type"
+                                value={formData.type}
+                                onChange={handleChange}
+                                placeholder="เช่น ลูกข่าย, แม่ข่าย, AGW"
+                                className="glass-input border-purple-500/10 focus:border-purple-500/50"
+                            />
+                            <p className="text-gray-500 text-[10px] mt-1">กลุ่มประเภทเพื่อการจัดกลุ่มอุปกรณ์</p>
                         </div>
 
                         {/* Location - Select Dropdown */}

@@ -50,12 +50,18 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart }) => {
                         <X size={20} />
                     </button>
 
-                    {/* Category Badge */}
-                    <div className="absolute bottom-4 left-4">
+                    {/* Category & Type Badges */}
+                    <div className="absolute bottom-4 left-4 flex flex-wrap gap-2">
                         <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-[#5ca0dc] bg-[#1C6CB4]/30 backdrop-blur-sm rounded-full border border-[#1C6CB4]/30">
                             <Tag size={14} />
                             {product.category}
                         </span>
+                        {product.type && product.type !== product.category && (
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-purple-400 bg-purple-600/30 backdrop-blur-sm rounded-full border border-purple-600/30">
+                                <Package size={14} />
+                                {product.type}
+                            </span>
+                        )}
                     </div>
                 </div>
 
