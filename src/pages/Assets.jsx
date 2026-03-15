@@ -145,6 +145,7 @@ const Assets = () => {
         Papa.parse(file, {
             header: true,
             skipEmptyLines: true,
+            encoding: "UTF-8",
             complete: async (results) => {
                 const rows = results.data;
                 let successCount = 0;
@@ -171,16 +172,26 @@ const Assets = () => {
                 for (const row of rows) {
                     const normalizedRow = {};
                     Object.keys(row).forEach(key => {
-                        normalizedRow[key.toLowerCase().trim()] = row[key];
+                        // Normalize key: lowercase, trim, remove spaces and underscores
+                        const normalizedKey = key.toLowerCase().trim().replace(/[\s_]/g, '');
+                        normalizedRow[normalizedKey] = row[key];
                     });
 
-                    const serialNumber = normalizedRow['serial number'] || normalizedRow['serial_number'] || normalizedRow['sn'];
-                    const productName = normalizedRow['product name'] || normalizedRow['product_name'] || normalizedRow['product'] || normalizedRow['name'];
+                    let serialNumber = normalizedRow['serialnumber'] || normalizedRow['sn'];
+                    const productName = normalizedRow['productname'] || normalizedRow['product'] || normalizedRow['name'];
 
-                    if (!serialNumber || !productName) {
+                    if (!productName) {
                         errorCount++;
-                        errors.push(`Row missing data: ${JSON.stringify(row)}`);
+                        errors.push(`Row missing Product Name: ${JSON.stringify(row)}`);
                         continue;
+                    }
+
+                    if (!serialNumber) {
+                        // Generate a pseudo-SN based on timestamp and name if missing
+                        const prefix = productName.substring(0, 3).toUpperCase();
+                        const randomSuffix = Math.random().toString(36).substring(7).toUpperCase();
+                        serialNumber = `ASN-${prefix}-${randomSuffix}`;
+                        console.log(`Auto-generated SN ${serialNumber} for "${productName}"`);
                     }
 
                     if (existingSNs.has(serialNumber.toLowerCase())) {

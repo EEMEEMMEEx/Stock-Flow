@@ -466,7 +466,7 @@ const DashboardContent = () => {
                         <Calendar size={20} className="text-[#1C6CB4]" />
                         เปรียบเทียบรายเดือน (12 เดือนล่าสุด)
                     </h2>
-                    <div style={{ width: '100%', height: '300px' }}>
+                    <div className="min-h-[300px] h-[300px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={monthlyData}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.1)" />
@@ -502,7 +502,7 @@ const DashboardContent = () => {
                         <ArrowUpRight size={20} className="text-[#1C6CB4]" />
                         แนวโน้มการเบิกจ่าย (7 วันล่าสุด)
                     </h2>
-                    <div style={{ width: '100%', height: '300px' }}>
+                    <div className="min-h-[300px] h-[300px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={trendData}>
                                 <defs>
@@ -532,7 +532,7 @@ const DashboardContent = () => {
                 <div className="glass-card p-6">
                     <h2 className="text-xl font-bold mb-6" style={{ color: 'var(--text-primary)' }}>สัดส่วนหมวดหมู่</h2>
                     <div className="flex flex-col items-center">
-                        <div style={{ width: '100%', height: '220px' }}>
+                        <div className="min-h-[220px] h-[220px] w-full">
                             <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
                                     <defs>

@@ -18,7 +18,7 @@ const UserActivityLog = ({ user, onClose }) => {
             // Try to fetch from activity_logs table
             // Note: If 'activity_logs' collection doesn't exist, this returns empty not error usually.
             const logsQ = query(
-                collection(db, 'activity_logs'),
+                collection(db, 'audit_logs'),
                 where('user_id', '==', user.id),
                 orderBy('created_at', 'desc'),
                 limit(50)

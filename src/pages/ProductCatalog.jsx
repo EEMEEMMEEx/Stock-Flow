@@ -169,6 +169,7 @@ const ProductCatalog = () => {
         Papa.parse(file, {
             header: true,
             skipEmptyLines: true,
+            encoding: "UTF-8",
             complete: async (results) => {
                 const rows = results.data;
                 let successCount = 0;
@@ -179,28 +180,38 @@ const ProductCatalog = () => {
                 setLoading(true);
 
                 for (const row of rows) {
-                    // ... (Normalization logic remains same) ...
                     const normalizedRow = {};
                     Object.keys(row).forEach(key => {
-                        normalizedRow[key.toLowerCase().trim()] = row[key];
+                        // Normalize key: lowercase, trim, remove spaces and underscores
+                        const normalizedKey = key.toLowerCase().trim().replace(/[\s_]/g, '');
+                        normalizedRow[normalizedKey] = row[key];
                     });
 
-                    // Required fields
-                    const name = normalizedRow['name'] || normalizedRow['product name'] || normalizedRow['ชื่ออุปกรณ์'];
-                    const sku = normalizedRow['sku'] || normalizedRow['code'] || normalizedRow['รหัส'];
+                    // Required fields (with more flexible matching)
+                    let name = normalizedRow['name'] || normalizedRow['productname'] || normalizedRow['ชื่ออุปกรณ์'];
+                    let sku = normalizedRow['sku'] || normalizedRow['code'] || normalizedRow['รหัส'];
 
-                    // Optional fields
+                    // Validation & Fallback for missing SKU
+                    if (!name) {
+                        errorCount++;
+                        errors.push(`Row missing Name: ${JSON.stringify(row)}`);
+                        continue;
+                    }
+
+                    if (!sku) {
+                        // Generate a pseudo-SKU based on name hash if missing
+                        // This allows re-importing same file to map to same record
+                        const nameHash = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0).toString(16).toUpperCase();
+                        sku = `GEN-${nameHash}`;
+                        console.log(`Auto-generated SKU ${sku} for "${name}"`);
+                    }
+
+                    // Optional fields (normalized keys)
                     const category = normalizedRow['category'] || normalizedRow['หมวดหมู่'] || 'Uncategorized';
                     const location = normalizedRow['location'] || normalizedRow['ที่เก็บ'] || '-';
                     const quantity = parseInt(normalizedRow['quantity'] || normalizedRow['qty'] || normalizedRow['จำนวน'] || '0');
-                    const minThreshold = parseInt(normalizedRow['min_threshold'] || normalizedRow['min'] || normalizedRow['ขั้นต่ำ'] || '5');
+                    const minThreshold = parseInt(normalizedRow['minthreshold'] || normalizedRow['min'] || normalizedRow['ขั้นต่ำ'] || '5');
                     const description = normalizedRow['description'] || normalizedRow['รายละเอียด'] || '';
-
-                    if (!name || !sku) {
-                        errorCount++;
-                        errors.push(`Row missing Name or SKU: ${JSON.stringify(row)}`);
-                        continue;
-                    }
 
                     try {
                         // Check if product exists by SKU

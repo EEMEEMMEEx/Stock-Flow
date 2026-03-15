@@ -229,6 +229,7 @@ const Login = () => {
                                         disabled={loading}
                                         className="pl-12 pr-4 py-3 w-full rounded-xl bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-[#1C6CB4] focus:border-transparent focus:bg-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                                         placeholder="สมชาย ใจดี"
+                                        autoComplete="name"
                                     />
                                 </div>
                             </div>
@@ -249,6 +250,7 @@ const Login = () => {
                                     disabled={loading}
                                     className="pl-12 pr-4 py-3 w-full rounded-xl bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-[#1C6CB4] focus:border-transparent focus:bg-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                                     placeholder="you@example.com"
+                                    autoComplete="email"
                                 />
                             </div>
                         </div>
@@ -281,6 +283,7 @@ const Login = () => {
                                         className="pl-12 pr-12 py-3 w-full rounded-xl bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-[#1C6CB4] focus:border-transparent focus:bg-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                                         placeholder="••••••••"
                                         minLength={6}
+                                        autoComplete={isSignUp ? "new-password" : "current-password"}
                                     />
                                     <button
                                         type="button"
