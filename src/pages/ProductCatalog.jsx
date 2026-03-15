@@ -177,7 +177,7 @@ const ProductCatalog = () => {
                 const errors = [];
                 const importedProducts = [];
 
-                setLoading(true);
+                let lastMainSku = null;
 
                 for (const row of rows) {
                     const normalizedRow = {};
@@ -189,7 +189,9 @@ const ProductCatalog = () => {
 
                     // Required fields (with more flexible matching)
                     let name = normalizedRow['name'] || normalizedRow['productname'] || normalizedRow['ชื่ออุปกรณ์'];
-                    let sku = normalizedRow['sku'] || normalizedRow['code'] || normalizedRow['รหัส'];
+                    let rawSku = normalizedRow['sku'] || normalizedRow['code'] || normalizedRow['รหัส'];
+                    let sku = rawSku;
+                    let parentSku = null;
 
                     // Validation & Fallback for missing SKU
                     if (!name) {
@@ -198,12 +200,24 @@ const ProductCatalog = () => {
                         continue;
                     }
 
-                    if (!sku) {
-                        // Generate a pseudo-SKU based on name hash if missing
-                        // This allows re-importing same file to map to same record
-                        const nameHash = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0).toString(16).toUpperCase();
-                        sku = `GEN-${nameHash}`;
-                        console.log(`Auto-generated SKU ${sku} for "${name}"`);
+                    if (!rawSku) {
+                        // Check if it's a sub-item (indented or starts with hyphen)
+                        const trimmedName = name.trim();
+                        if (trimmedName.startsWith('-') && lastMainSku) {
+                            parentSku = lastMainSku;
+                            // Generate hierarchical SKU: [PARENT]-SUB-[HASH]
+                            const nameHash = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0).toString(16).toUpperCase();
+                            sku = `${parentSku}-SUB-${nameHash}`;
+                            console.log(`Linked sub-item "${name}" to parent ${parentSku}`);
+                        } else {
+                            // Standard auto-generated SKU if it's not a sub-item or no parent found
+                            const nameHash = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0).toString(16).toUpperCase();
+                            sku = `GEN-${nameHash}`;
+                            console.log(`Auto-generated SKU ${sku} for "${name}"`);
+                        }
+                    } else {
+                        // It's a main item with its own SKU
+                        lastMainSku = sku;
                     }
 
                     // Optional fields (normalized keys)
@@ -227,7 +241,8 @@ const ProductCatalog = () => {
                                 location,
                                 quantity,
                                 min_threshold: minThreshold,
-                                description
+                                description,
+                                parent_sku: parentSku || null
                             });
                         } else {
                             // Insert
@@ -239,6 +254,7 @@ const ProductCatalog = () => {
                                 quantity,
                                 min_threshold: minThreshold,
                                 description,
+                                parent_sku: parentSku || null,
                                 created_at: new Date().toISOString()
                             });
                         }
@@ -497,10 +513,17 @@ const ProductCatalog = () => {
                                     </div>
 
                                     <div className="p-4">
-                                        <p className="text-xs text-gray-500 mb-1">{product.sku}</p>
-                                        <h3 className="font-semibold mb-2 line-clamp-2 group-hover:text-[#1C6CB4] transition-colors" style={{ color: 'var(--text-primary)' }}>
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <p className="text-xs text-gray-500">{product.sku}</p>
+                                            {product.parent_sku && (
+                                                <span className="px-1.5 py-0.5 bg-blue-500/10 text-blue-400 text-[10px] rounded border border-blue-500/20">
+                                                    Sub-item
+                                                </span>
+                                            )}
+                                        </div>
+                                        <h4 className={`font-bold truncate ${product.parent_sku ? 'pl-2 border-l-2 border-blue-500/30' : ''}`} style={{ color: 'var(--text-primary)' }}>
                                             {product.name}
-                                        </h3>
+                                        </h4>
 
                                         {product.category && (
                                             <span className="inline-block px-2 py-0.5 bg-[#1C6CB4]/20 text-[#5ca0dc] text-xs rounded-full mb-3">
@@ -545,9 +568,16 @@ const ProductCatalog = () => {
                                             className="hover:bg-white/5 cursor-pointer transition-all duration-300 border-l-4 border-transparent hover:border-l-[#1C6CB4]"
                                             onClick={() => setSelectedProduct(product)}
                                         >
-                                            <td className="px-4 py-3 font-mono text-sm text-gray-400">{product.sku}</td>
+                                            <td className="px-4 py-3 font-mono text-sm text-gray-400">
+                                                <div className="flex items-center gap-1">
+                                                    {product.sku}
+                                                    {product.parent_sku && (
+                                                        <span className="px-1 py-0.5 bg-blue-500/10 text-blue-400 text-[8px] rounded uppercase font-sans">Sub</span>
+                                                    )}
+                                                </div>
+                                            </td>
                                             <td className="px-4 py-3">
-                                                <div className="flex items-center gap-3">
+                                                <div className={`flex items-center gap-3 ${product.parent_sku ? 'pl-4' : ''}`}>
                                                     {product.image_url ? (
                                                         <img src={product.image_url} alt="" className="w-10 h-10 rounded-lg object-cover" />
                                                     ) : (
@@ -555,7 +585,10 @@ const ProductCatalog = () => {
                                                             <Package className="text-gray-500" size={20} />
                                                         </div>
                                                     )}
-                                                    <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{product.name}</span>
+                                                    <span className="font-medium" style={{ color: 'var(--text-primary)' }}>
+                                                        {product.parent_sku && <span className="text-blue-500/50 mr-1">↳</span>}
+                                                        {product.name}
+                                                    </span>
                                                 </div>
                                             </td>
                                             <td className="px-4 py-3 text-gray-400">{product.category || '-'}</td>
