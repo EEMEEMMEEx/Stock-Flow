@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { auth, db } from '../lib/firebase';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 import { useStore } from '../store/useStore';
 
@@ -45,10 +45,28 @@ const ProtectedRoute = () => {
                         setUser({ ...user, ...userData });
                     } else {
                         // User in Auth but not in DB? 
-                        // This usually happens during signup race-condition (Auth created, Doc creating)
-                        // Treat as 'pending' to be safe and redirect to pending page
-                        user.status = 'pending';
-                        setUser({ ...user, status: 'pending' });
+                        // Auto-create document to make them visible to Admin
+                        const isAdminAccount = user.email === 'watchara.m@forth.co.th';
+                        const newUserData = {
+                            uid: user.uid,
+                            email: user.email,
+                            full_name: user.displayName || '',
+                            role: isAdminAccount ? 'admin' : 'viewer',
+                            status: isAdminAccount ? 'active' : 'pending',
+                            created_at: serverTimestamp(),
+                            last_sign_in: serverTimestamp()
+                        };
+                        
+                        try {
+                            await setDoc(doc(db, 'users', user.uid), newUserData);
+                            // Set status on user object for immediate redirect handling
+                            user.status = newUserData.status;
+                            setUser({ ...user, ...newUserData });
+                        } catch (e) {
+                            console.error("Auto-create user doc failed:", e);
+                            user.status = 'pending';
+                            setUser({ ...user, status: 'pending' });
+                        }
                     }
                 } catch (error) {
                     console.error("Error fetching user data:", error);
