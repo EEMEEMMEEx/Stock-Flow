@@ -4,7 +4,6 @@ import { signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswor
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useNavigate } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
 import { Lock, Mail, Loader2, UserPlus, LogIn, KeyRound, ArrowLeft, Eye, EyeOff, Sparkles } from 'lucide-react';
 import emailjs from '@emailjs/browser';
 
