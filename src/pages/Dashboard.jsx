@@ -225,7 +225,7 @@ const DashboardContent = () => {
                 getCountFromServer(query(collection(db, 'assets'), where('status', '==', 'in_use')))
             ]);
 
-            setTotalProducts(productsCount.data().count);
+            // setAssetStatus is defined correctly at line 203
             setAssetStatus([
                 { name: 'พร้อมใช้งาน', value: inStockCount.data().count, fill: 'var(--accent-success)' },
                 { name: 'ถูกยืม', value: inUseCount.data().count, fill: 'var(--accent-warning)' }
@@ -239,11 +239,17 @@ const DashboardContent = () => {
 
             // Process Product Stats
             const lowStockList = products.filter(p => (parseInt(p.quantity) || 0) <= (parseInt(p.min_threshold) || 5));
-            setLowStockCount(lowStockList.length);
-            setLowStockItems(lowStockList.sort((a, b) => (parseInt(a.quantity) || 0) - (parseInt(b.quantity) || 0)).slice(0, 10));
-
             const totalItemsSum = products.reduce((acc, curr) => acc + (parseInt(curr.quantity) || 0), 0);
-            setTotalItems(totalItemsSum);
+            const totalValueSum = products.reduce((acc, curr) => acc + ((parseInt(curr.quantity) || 0) * (parseFloat(curr.price) || 0)), 0);
+
+            setStats({
+                totalProducts: productsCount.data().count,
+                lowStock: lowStockList.length,
+                totalValue: totalValueSum,
+                totalItems: totalItemsSum
+            });
+
+            setLowStockItems(lowStockList.sort((a, b) => (parseInt(a.quantity) || 0) - (parseInt(b.quantity) || 0)).slice(0, 10));
 
             // Calculate Category Distribution
             const categoryMap = {};
