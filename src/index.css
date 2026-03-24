@@ -21,6 +21,13 @@
   --scrollbar-track: rgba(255, 255, 255, 0.05);
   --scrollbar-thumb: rgba(255, 255, 255, 0.2);
   --scrollbar-thumb-hover: rgba(255, 255, 255, 0.3);
+
+  /* Brand Accents */
+  --accent-primary: #1C6CB4;
+  --accent-danger: #ED2229;
+  --accent-info: #5ca0dc;
+  --accent-success: #10b981;
+  --accent-warning: #f59e0b;
 }
 
 [data-theme="light"] {
@@ -66,9 +73,13 @@
   --scrollbar-thumb-hover: rgba(100, 116, 139, 0.8);
 
   /* Premium accent colors */
-  --accent-primary: #1e40af;
+  --accent-primary: #1C6CB4;
   --accent-secondary: #3b82f6;
-  --accent-gradient: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
+  --accent-danger: #d32f2f;
+  --accent-info: #0288d1;
+  --accent-success: #059669;
+  --accent-warning: #d97706;
+  --accent-gradient: linear-gradient(135deg, #1C6CB4 0%, #3b82f6 50%, #5ca0dc 100%);
 }
 
 

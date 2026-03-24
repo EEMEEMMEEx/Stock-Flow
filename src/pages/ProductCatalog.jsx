@@ -386,8 +386,8 @@ const ProductCatalog = () => {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                    <div className="p-3 bg-[#1C6CB4]/20 rounded-xl">
-                        <Package className="text-[#1C6CB4]" size={28} />
+                    <div className="p-3 bg-[var(--accent-primary)]/20 rounded-xl">
+                        <Package className="text-[var(--accent-primary)]" size={28} />
                     </div>
                     <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>รายการอุปกรณ์</h1>
                 </div>

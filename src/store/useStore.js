@@ -4,13 +4,13 @@ export const useStore = create((set) => ({
     // UI State
     isSidebarOpen: true,
     toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
-    isDarkMode: false, // Default to light, can check system pref later
+    isDarkMode: true, // Default to dark as per :root in index.css
     toggleDarkMode: () => set((state) => {
         const newMode = !state.isDarkMode;
         if (newMode) {
-            document.documentElement.classList.add('dark');
+            document.documentElement.removeAttribute('data-theme');
         } else {
-            document.documentElement.classList.remove('dark');
+            document.documentElement.setAttribute('data-theme', 'light');
         }
         return { isDarkMode: newMode };
     }),

@@ -173,14 +173,15 @@ const ProductFormModal = ({ isOpen, onClose, onSave, product = null, categories 
                 {/* Header */}
                 <div className="p-6 border-b flex justify-between items-center sticky top-0 backdrop-blur-xl z-10" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
                     <h2 className="text-xl font-bold flex items-center gap-3" style={{ color: 'var(--text-primary)' }}>
-                        <div className="p-2 bg-[#1C6CB4]/20 rounded-lg">
-                            <Package className="text-[#5ca0dc]" size={20} />
+                        <div className="p-2 bg-[var(--accent-primary)]/20 rounded-lg">
+                            <Package className="text-[var(--accent-info)]" size={20} />
                         </div>
                         {product ? 'แก้ไขอุปกรณ์' : 'เพิ่มอุปกรณ์ใหม่'}
                     </h2>
                     <button
                         onClick={onClose}
                         className="text-gray-400 hover:text-white transition-colors p-2 hover:bg-white/10 rounded-full"
+                        aria-label="Close Modal"
                     >
                         <X size={24} />
                     </button>
@@ -190,22 +191,21 @@ const ProductFormModal = ({ isOpen, onClose, onSave, product = null, categories 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Image Upload */}
                         <div className="col-span-1 md:col-span-2 flex flex-col items-center justify-center">
-                            <div className="w-36 h-36 mb-4 relative rounded-2xl overflow-hidden border-2 border-dashed border-white/20 flex items-center justify-center bg-white/5 group hover:border-[#1C6CB4]/50 transition-colors">
+                            <div className="w-36 h-36 mb-4 relative rounded-2xl overflow-hidden border-2 border-dashed border-white/20 flex items-center justify-center bg-white/5 group hover:border-[var(--accent-primary)]/50 transition-colors">
                                 {previewUrl ? (
                                     <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
                                 ) : (
                                     <div className="text-center">
                                         <Upload className="text-gray-500 mx-auto mb-2" size={32} />
-                                        <span className="text-xs text-gray-500">อัปโหลดรูป</span>
                                     </div>
                                 )}
                                 {uploading && (
                                     <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
-                                        <Loader className="animate-spin text-[#5ca0dc]" size={32} />
+                                        <Loader className="animate-spin text-[var(--accent-info)]" size={32} />
                                     </div>
                                 )}
                             </div>
-                            <label className="cursor-pointer bg-[#1C6CB4]/20 text-[#5ca0dc] px-5 py-2 rounded-xl hover:bg-[#1C6CB4]/30 transition-colors text-sm font-medium flex items-center gap-2">
+                            <label className="cursor-pointer bg-[var(--accent-primary)]/20 text-[var(--accent-info)] px-5 py-2 rounded-xl hover:bg-[var(--accent-primary)]/30 transition-colors text-sm font-medium flex items-center gap-2">
                                 <Upload size={16} />
                                 เลือกรูปภาพ
                                 <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
@@ -218,8 +218,8 @@ const ProductFormModal = ({ isOpen, onClose, onSave, product = null, categories 
 
                         {/* SKU */}
                         <div className="group">
-                            <label className="form-label group-focus-within:text-[#5ca0dc] transition-colors">
-                                รหัสอุปกรณ์ (SKU) <span className="text-[#ED2229]">*</span>
+                            <label className="form-label group-focus-within:text-[var(--accent-info)] transition-colors">
+                                รหัสอุปกรณ์ (SKU) <span className="text-[var(--accent-danger)]">*</span>
                             </label>
                             <input
                                 type="text"
@@ -234,8 +234,8 @@ const ProductFormModal = ({ isOpen, onClose, onSave, product = null, categories 
 
                         {/* Name */}
                         <div className="group">
-                            <label className="form-label group-focus-within:text-[#5ca0dc] transition-colors">
-                                ชื่ออุปกรณ์ <span className="text-[#ED2229]">*</span>
+                            <label className="form-label group-focus-within:text-[var(--accent-info)] transition-colors">
+                                ชื่ออุปกรณ์ <span className="text-[var(--accent-danger)]">*</span>
                             </label>
                             <input
                                 type="text"
@@ -250,7 +250,7 @@ const ProductFormModal = ({ isOpen, onClose, onSave, product = null, categories 
 
                         {/* Category - Select Dropdown */}
                         <div className="group">
-                            <label className="form-label group-focus-within:text-[#5ca0dc] transition-colors">
+                            <label className="form-label group-focus-within:text-[var(--accent-info)] transition-colors">
                                 หมวดหมู่ (Brand)
                             </label>
                             <div className="relative">
@@ -297,7 +297,7 @@ const ProductFormModal = ({ isOpen, onClose, onSave, product = null, categories 
 
                         {/* Location - Select Dropdown */}
                         <div className="group">
-                            <label className="form-label group-focus-within:text-[#5ca0dc] transition-colors">
+                            <label className="form-label group-focus-within:text-[var(--accent-info)] transition-colors">
                                 สถานที่เก็บ
                             </label>
                             <div className="relative">
@@ -330,7 +330,7 @@ const ProductFormModal = ({ isOpen, onClose, onSave, product = null, categories 
                         {/* Warehouse - Select Dropdown */}
                         {warehouses.length > 0 && (
                             <div className="group col-span-1 md:col-span-2">
-                                <label className="form-label group-focus-within:text-[#5ca0dc] transition-colors flex items-center gap-2">
+                                <label className="form-label group-focus-within:text-[var(--accent-info)] transition-colors flex items-center gap-2">
                                     <Warehouse size={16} className="text-indigo-500" />
                                     คลังสินค้า
                                 </label>
@@ -357,7 +357,7 @@ const ProductFormModal = ({ isOpen, onClose, onSave, product = null, categories 
 
                         {/* Quantity */}
                         <div className="group">
-                            <label className="form-label group-focus-within:text-[#5ca0dc] transition-colors">
+                            <label className="form-label group-focus-within:text-[var(--accent-info)] transition-colors">
                                 จำนวนคงเหลือ
                             </label>
                             <input
@@ -372,7 +372,7 @@ const ProductFormModal = ({ isOpen, onClose, onSave, product = null, categories 
 
                         {/* Min Threshold */}
                         <div className="group">
-                            <label className="form-label group-focus-within:text-[#5ca0dc] transition-colors">
+                            <label className="form-label group-focus-within:text-[var(--accent-info)] transition-colors">
                                 แจ้งเตือนเมื่อต่ำกว่า
                             </label>
                             <input
@@ -387,7 +387,7 @@ const ProductFormModal = ({ isOpen, onClose, onSave, product = null, categories 
 
                         {/* Note */}
                         <div className="col-span-1 md:col-span-2 group">
-                            <label className="form-label group-focus-within:text-[#5ca0dc] transition-colors">
+                            <label className="form-label group-focus-within:text-[var(--accent-info)] transition-colors">
                                 หมายเหตุ
                             </label>
                             <textarea

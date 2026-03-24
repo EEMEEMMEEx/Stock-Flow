@@ -126,8 +126,8 @@ const Layout = () => {
             {/* Animated Background Blobs - only show in dark mode */}
             {isDark && (
                 <div className="fixed inset-0 overflow-hidden pointer-events-none">
-                    <div className="absolute -top-40 -right-40 w-80 h-80 bg-[#1C6CB4] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
-                    <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-[#ED2229] rounded-full mix-blend-multiply filter blur-3xl opacity-15 animate-pulse" style={{ animationDelay: '1s' }}></div>
+                    <div className="absolute -top-40 -right-40 w-80 h-80 bg-[var(--accent-primary)] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
+                    <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-[var(--accent-danger)] rounded-full mix-blend-multiply filter blur-3xl opacity-15 animate-pulse" style={{ animationDelay: '1s' }}></div>
                 </div>
             )}
 
@@ -152,7 +152,7 @@ const Layout = () => {
                 <div className="flex items-center justify-between h-16 px-4" style={{ borderBottom: '1px solid var(--border-color)' }}>
                     <div className={clsx("flex items-center gap-3", !isSidebarOpen && "lg:hidden")}>
                         <div className="relative">
-                            <div className="w-10 h-10 bg-gradient-to-br from-[#1C6CB4] to-[#ED2229] rounded-xl flex items-center justify-center shadow-lg shadow-[#1C6CB4]/30">
+                            <div className="w-10 h-10 bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-danger)] rounded-xl flex items-center justify-center shadow-lg shadow-[var(--accent-primary)]/30">
                                 <img
                                     src="/logo.png"
                                     alt="FS"
@@ -164,13 +164,13 @@ const Layout = () => {
                                 />
                                 <span className="font-bold text-sm text-white hidden">FS</span>
                             </div>
-                            <Sparkles className="absolute -top-1 -right-1 w-3 h-3 text-[#ED2229] animate-pulse" />
+                            <Sparkles className="absolute -top-1 -right-1 w-3 h-3 text-[var(--accent-danger)] animate-pulse" />
                         </div>
                         <span className="font-bold text-lg" style={{ color: 'var(--text-primary)' }}>StockFlow</span>
                     </div>
                     {/* Collapsed Logo */}
                     <div className={clsx("hidden lg:flex items-center justify-center w-full", isSidebarOpen && "!hidden")}>
-                        <div className="w-10 h-10 bg-gradient-to-br from-[#1C6CB4] to-[#ED2229] rounded-xl flex items-center justify-center shadow-lg shadow-[#1C6CB4]/30">
+                        <div className="w-10 h-10 bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-danger)] rounded-xl flex items-center justify-center shadow-lg shadow-[var(--accent-primary)]/30">
                             <span className="font-bold text-sm text-white">FS</span>
                         </div>
                     </div>
@@ -178,8 +178,9 @@ const Layout = () => {
                         onClick={toggleSidebar}
                         className="lg:hidden p-2 rounded-lg transition-colors"
                         style={{ color: 'var(--text-muted)' }}
+                        aria-label={isSidebarOpen ? "Close Sidebar" : "Open Sidebar"}
                     >
-                        <X size={20} />
+                        {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
                     </button>
                 </div>
 
@@ -195,7 +196,7 @@ const Layout = () => {
                                 className={clsx(
                                     "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 group",
                                     isActive
-                                        ? "bg-gradient-to-r from-[#1C6CB4] to-[#1C6CB4]/80 text-white shadow-lg shadow-[#1C6CB4]/30"
+                                        ? "bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-primary)]/80 text-white shadow-lg shadow-[var(--accent-primary)]/30"
                                         : "",
                                     !isSidebarOpen && "lg:justify-center lg:px-2"
                                 )}
@@ -351,6 +352,7 @@ const Layout = () => {
                                     setShowNotifications(false);
                                 }}
                                 className="flex items-center gap-3 p-1 rounded-xl hover:bg-white/10 transition-all duration-200"
+                                aria-label="User Menu"
                             >
                                 <div className="w-9 h-9 rounded-xl overflow-hidden shadow-lg shadow-[#1C6CB4]/30 transition-transform hover:scale-105">
                                     {user?.photoURL ? (

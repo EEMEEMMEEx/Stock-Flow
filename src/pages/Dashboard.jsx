@@ -218,47 +218,45 @@ const DashboardContent = () => {
             setLoading(true);
             setError(null);
 
-            // 1. Fetch Products for Stats, Category Dist, and Low Stock
+            // 1. Fetch Key Counts and Statuses (Server-side)
+            const [productsCount, inStockCount, inUseCount] = await Promise.all([
+                getCountFromServer(collection(db, 'products')),
+                getCountFromServer(query(collection(db, 'assets'), where('status', '==', 'in_stock'))),
+                getCountFromServer(query(collection(db, 'assets'), where('status', '==', 'in_use')))
+            ]);
+
+            setTotalProducts(productsCount.data().count);
+            setAssetStatus([
+                { name: 'พร้อมใช้งาน', value: inStockCount.data().count, fill: 'var(--accent-success)' },
+                { name: 'ถูกยืม', value: inUseCount.data().count, fill: 'var(--accent-warning)' }
+            ]);
+
+            // 2. Fetch Products for detailed stats (Low Stock, Categories)
+            // We still need all products for categories and totalItems sum (client-side aggregation)
+            // Ideally totalItems should be a counters doc in Firestore, but for now we aggregate.
             const productsSnapshot = await getDocs(collection(db, 'products'));
             const products = productsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-            // Calculate Stats
-            const totalProducts = products.length;
-            const lowStockList = products.filter(p => {
-                const qty = parseInt(p.quantity) || 0;
-                const min = parseInt(p.min_threshold) || 0;
-                return qty <= min;
-            });
-            const lowStock = lowStockList.length;
-            const totalItems = products.reduce((acc, curr) => acc + (parseInt(curr.quantity) || 0), 0);
+            // Process Product Stats
+            const lowStockList = products.filter(p => (parseInt(p.quantity) || 0) <= (parseInt(p.min_threshold) || 5));
+            setLowStockCount(lowStockList.length);
+            setLowStockItems(lowStockList.sort((a, b) => (parseInt(a.quantity) || 0) - (parseInt(b.quantity) || 0)).slice(0, 10));
 
-            setLowStockItems(lowStockList);
+            const totalItemsSum = products.reduce((acc, curr) => acc + (parseInt(curr.quantity) || 0), 0);
+            setTotalItems(totalItemsSum);
 
             // Calculate Category Distribution
             const categoryMap = {};
             products.forEach(p => {
-                categoryMap[p.category] = (categoryMap[p.category] || 0) + 1;
+                const cat = p.category || 'Uncategorized';
+                categoryMap[cat] = (categoryMap[cat] || 0) + 1;
             });
             const categoryChartData = Object.keys(categoryMap).map(key => ({
                 name: key,
                 value: categoryMap[key]
             }));
 
-            setStats({ totalProducts, lowStock, totalItems });
             setCategoryData(categoryChartData);
-
-            // Fetch Asset Status for Overview Chart
-            const assetsSnapshot = await getDocs(collection(db, 'assets'));
-            const assets = assetsSnapshot.docs.map(doc => doc.data());
-
-            if (assets) {
-                const inStock = assets.filter(a => a.status === 'in_stock').length;
-                const inUse = assets.filter(a => a.status === 'in_use').length;
-                setAssetStatus([
-                    { name: 'พร้อมใช้งาน', value: inStock, fill: '#10B981' },
-                    { name: 'ถูกยืม', value: inUse, fill: '#F59E0B' }
-                ]);
-            }
 
             // 2. Fetch Transactions for Top Movers, Trend, Monthly, Heatmap
             // Fetch ALL transactions (assuming dataset size is reasonable for dashboard, e.g. < 2000)
@@ -417,8 +415,8 @@ const DashboardContent = () => {
     return (
         <div className="space-y-6">
             <div className="flex items-center gap-3">
-                <div className="p-3 bg-[#1C6CB4]/20 rounded-xl">
-                    <LayoutDashboard className="text-[#1C6CB4]" size={28} />
+                <div className="p-3 bg-[var(--accent-primary)]/20 rounded-xl">
+                    <Package className="text-[var(--accent-info)]" size={24} />
                 </div>
                 <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>แดชบอร์ด</h1>
             </div>
@@ -427,7 +425,7 @@ const DashboardContent = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Total Products */}
                 <div className="glass-card p-6 flex items-center gap-4 group transition-all duration-300 hover:shadow-lg">
-                    <div className="p-4 bg-[#1C6CB4]/15 rounded-2xl text-[#1C6CB4] group-hover:scale-110 transition-transform duration-300">
+                    <div className="p-4 bg-[var(--accent-primary)]/15 rounded-2xl text-[var(--accent-primary)] group-hover:scale-110 transition-transform duration-300">
                         <Package size={28} />
                     </div>
                     <div>
@@ -438,7 +436,7 @@ const DashboardContent = () => {
 
                 {/* Low Stock Alert */}
                 <div className="glass-card p-6 flex items-center gap-4 group transition-all duration-300 hover:shadow-lg">
-                    <div className="p-4 bg-[#ED2229]/15 rounded-2xl text-[#ED2229] group-hover:scale-110 transition-transform duration-300">
+                    <div className="p-4 bg-[var(--accent-danger)]/15 rounded-2xl text-[var(--accent-danger)] group-hover:scale-110 transition-transform duration-300">
                         <AlertTriangle size={28} />
                     </div>
                     <div>
@@ -449,7 +447,7 @@ const DashboardContent = () => {
 
                 {/* Total Items */}
                 <div className="glass-card p-6 flex items-center gap-4 group transition-all duration-300 hover:shadow-lg">
-                    <div className="p-4 bg-green-500/15 rounded-2xl text-green-600 group-hover:scale-110 transition-transform duration-300">
+                    <div className="p-4 bg-[var(--accent-success)]/15 rounded-2xl text-[var(--accent-success)] group-hover:scale-110 transition-transform duration-300">
                         <Activity size={28} />
                     </div>
                     <div>
@@ -463,7 +461,7 @@ const DashboardContent = () => {
             {monthlyData.length > 0 && (
                 <div className="glass-card p-6">
                     <h2 className="text-xl font-bold mb-6 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-                        <Calendar size={20} className="text-[#1C6CB4]" />
+                        <Calendar size={20} className="text-[var(--accent-primary)]" />
                         เปรียบเทียบรายเดือน (12 เดือนล่าสุด)
                     </h2>
                     <div className="min-h-[300px] h-[300px] w-full">
@@ -487,8 +485,8 @@ const DashboardContent = () => {
                                 <Legend
                                     formatter={(value) => value === 'transactions' ? 'จำนวนครั้ง' : 'จำนวนชิ้น'}
                                 />
-                                <Bar dataKey="transactions" fill="#1C6CB4" radius={[4, 4, 0, 0]} name="transactions" />
-                                <Bar dataKey="items" fill="#10B981" radius={[4, 4, 0, 0]} name="items" />
+                                <Bar dataKey="transactions" fill="var(--accent-primary)" radius={[4, 4, 0, 0]} name="transactions" />
+                                <Bar dataKey="items" fill="var(--accent-success)" radius={[4, 4, 0, 0]} name="items" />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
@@ -499,7 +497,7 @@ const DashboardContent = () => {
                 {/* Trend Chart (Takes up 2 columns) */}
                 <div className="lg:col-span-2 glass-card p-6">
                     <h2 className="text-xl font-bold mb-6 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-                        <ArrowUpRight size={20} className="text-[#1C6CB4]" />
+                        <ArrowUpRight size={20} className="text-[var(--accent-primary)]" />
                         แนวโน้มการเบิกจ่าย (7 วันล่าสุด)
                     </h2>
                     <div className="min-h-[300px] h-[300px] w-full">
@@ -507,8 +505,8 @@ const DashboardContent = () => {
                             <AreaChart data={trendData}>
                                 <defs>
                                     <linearGradient id="colorItems" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#1C6CB4" stopOpacity={0.8} />
-                                        <stop offset="95%" stopColor="#1C6CB4" stopOpacity={0} />
+                                        <stop offset="5%" stopColor="var(--accent-primary)" stopOpacity={0.8} />
+                                        <stop offset="95%" stopColor="var(--accent-primary)" stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.1)" />
@@ -522,7 +520,7 @@ const DashboardContent = () => {
                                         backgroundColor: '#fff'
                                     }}
                                 />
-                                <Area type="monotone" dataKey="items" stroke="#1C6CB4" strokeWidth={2} fillOpacity={1} fill="url(#colorItems)" name="จำนวนที่เบิก" />
+                                <Area type="monotone" dataKey="items" stroke="var(--accent-primary)" strokeWidth={2} fillOpacity={1} fill="url(#colorItems)" name="จำนวนที่เบิก" />
                             </AreaChart>
                         </ResponsiveContainer>
                     </div>
@@ -594,7 +592,7 @@ const DashboardContent = () => {
                 {/* Top 10 Products */}
                 <div className="glass-card p-6">
                     <h2 className="text-xl font-bold mb-6 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-                        <BarChart3 size={20} className="text-purple-500" />
+                        <BarChart3 size={20} className="text-[var(--accent-info)]" />
                         Top 10 สินค้าเบิกบ่อย
                     </h2>
                     {top10Products.length > 0 ? (
@@ -620,11 +618,11 @@ const DashboardContent = () => {
                                         }}
                                         formatter={(value) => [`${value} ครั้ง`, 'จำนวนเบิก']}
                                     />
-                                    <Bar dataKey="count" fill="#8B5CF6" radius={[0, 4, 4, 0]}>
+                                    <Bar dataKey="count" fill="var(--accent-info)" radius={[0, 4, 4, 0]}>
                                         {top10Products.map((entry, index) => (
                                             <Cell
                                                 key={`cell-${index}`}
-                                                fill={index < 3 ? '#8B5CF6' : '#8B5CF6AA'}
+                                                fill={index < 3 ? 'var(--accent-info)' : 'var(--accent-info-light)'}
                                             />
                                         ))}
                                     </Bar>
@@ -639,7 +637,7 @@ const DashboardContent = () => {
                 {/* Checkout Heatmap */}
                 <div className="glass-card p-6">
                     <h2 className="text-xl font-bold mb-6 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-                        <Clock size={20} className="text-orange-500" />
+                        <Clock size={20} className="text-[var(--accent-warning)]" />
                         ช่วงเวลาเบิกจ่าย (Heatmap)
                     </h2>
                     <div className="flex flex-col items-center">
@@ -653,7 +651,7 @@ const DashboardContent = () => {
             {assetStatus.length > 0 && (
                 <div className="glass-card p-6">
                     <h2 className="text-xl font-bold mb-6 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-                        <Package size={20} className="text-[#1C6CB4]" />
+                        <Package size={20} className="text-[var(--accent-primary)]" />
                         สถานะครุภัณฑ์
                     </h2>
                     <div style={{ width: '100%', height: '200px' }}>
@@ -685,7 +683,7 @@ const DashboardContent = () => {
                 {/* Low Stock Alerts */}
                 <div className="glass-card p-6">
                     <h2 className="text-xl font-bold mb-6 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-                        <AlertTriangle size={20} className="text-[#ED2229]" />
+                        <AlertTriangle size={20} className="text-[var(--accent-danger)]" />
                         แจ้งเตือนสินค้าใกล้หมด
                     </h2>
                     <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
@@ -697,14 +695,14 @@ const DashboardContent = () => {
                                         <p className="text-sm text-gray-500">SKU: {item.sku}</p>
                                     </div>
                                     <div className="text-right">
-                                        <div className="text-lg font-bold text-red-600">{item.quantity}</div>
+                                        <div className="text-lg font-bold text-[var(--accent-danger)]">{item.quantity}</div>
                                         <div className="text-xs text-gray-500">ขั้นต่ำ: {item.min_threshold}</div>
                                     </div>
                                 </div>
                             ))
                         ) : (
                             <div className="text-center py-8 text-gray-400 flex flex-col items-center">
-                                <CheckCircle size={48} className="text-green-500 mb-2 opacity-50" />
+                                <CheckCircle size={48} className="text-[var(--accent-success)] mb-2 opacity-50" />
                                 <p>ไม่มีสินค้าใกล้หมด</p>
                             </div>
                         )}
@@ -714,7 +712,7 @@ const DashboardContent = () => {
                 {/* Top Movers */}
                 <div className="glass-card p-6">
                     <h2 className="text-xl font-bold mb-6 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-                        <TrendingUp size={20} className="text-green-500" />
+                        <TrendingUp size={20} className="text-[var(--accent-success)]" />
                         5 อันดับเคลื่อนไหวสูงสุด
                     </h2>
                     <div className="space-y-3">
@@ -734,7 +732,7 @@ const DashboardContent = () => {
                                             <p className="text-sm text-gray-500">{item.sku}</p>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2 text-green-600">
+                                    <div className="flex items-center gap-2 text-[var(--accent-success)]">
                                         <Activity size={16} />
                                         <span className="font-bold">{item.movement}</span>
                                     </div>

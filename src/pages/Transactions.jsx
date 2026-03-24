@@ -216,6 +216,7 @@ const Transactions = () => {
                                     onClick={() => handleReprint(tx)}
                                     className="flex items-center gap-2 text-[#5ca0dc] hover:text-white bg-[#1C6CB4]/20 hover:bg-[#1C6CB4]/40 px-4 py-2 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-[#1C6CB4]/30 hover:scale-105"
                                     title="พิมพ์ใบเบิกย้อนหลัง"
+                                    aria-label={`พิมพ์ใบเบิกของ ${tx.requester_name}`}
                                 >
                                     <Printer size={16} />
                                     <span className="text-sm font-medium">พิมพ์ใบเบิก</span>

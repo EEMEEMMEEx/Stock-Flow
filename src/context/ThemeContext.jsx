@@ -1,15 +1,21 @@
 import React, { useEffect } from 'react';
 import { ThemeContext } from './ThemeContextValue';
+import { useStore } from '../store/useStore';
 
 export const ThemeProvider = ({ children }) => {
-    // Always use light theme
+    const isDarkMode = useStore((state) => state.isDarkMode);
+
     useEffect(() => {
-        document.documentElement.setAttribute('data-theme', 'light');
-    }, []);
+        if (isDarkMode) {
+            document.documentElement.removeAttribute('data-theme');
+        } else {
+            document.documentElement.setAttribute('data-theme', 'light');
+        }
+    }, [isDarkMode]);
 
     const value = {
-        theme: 'light',
-        isDark: false,
+        theme: isDarkMode ? 'dark' : 'light',
+        isDark: isDarkMode,
     };
 
     return (

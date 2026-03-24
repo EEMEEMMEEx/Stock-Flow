@@ -380,6 +380,7 @@ const Assets = () => {
                                     onClick={() => handleEditAsset(asset)}
                                     className="p-2 text-[#5ca0dc] bg-[#1C6CB4]/20 hover:bg-[#1C6CB4]/30 rounded-lg transition-colors"
                                     title="แก้ไข"
+                                    aria-label={`แก้ไขครุภัณฑ์ ${asset.serial_number}`}
                                 >
                                     <Pencil size={16} />
                                 </button>
@@ -387,6 +388,7 @@ const Assets = () => {
                                     onClick={() => handleDeleteAsset(asset)}
                                     className="p-2 text-[#ff6666] bg-[#ED2229]/20 hover:bg-[#ED2229]/30 rounded-lg transition-colors"
                                     title="ลบ"
+                                    aria-label={`ลบครุภัณฑ์ ${asset.serial_number}`}
                                 >
                                     <Trash2 size={16} />
                                 </button>

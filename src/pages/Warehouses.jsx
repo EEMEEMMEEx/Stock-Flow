@@ -253,6 +253,7 @@ const Warehouses = () => {
                                     <button
                                         onClick={() => handleDeleteWarehouse(warehouse)}
                                         className="py-2 px-3 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"
+                                        aria-label={`ลบคลัง ${warehouse.name}`}
                                     >
                                         <Trash2 size={14} />
                                     </button>
