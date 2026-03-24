@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { db } from '../lib/firebase';
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where, orderBy } from 'firebase/firestore';
-import { Search, Package, Plus, Grid, List, AlertCircle, ShoppingCart, Upload, Warehouse, Trash2 } from 'lucide-react';
+import { Search, Package, Plus, Grid, List, AlertCircle, ShoppingCart, Upload, Warehouse, Trash2, Download } from 'lucide-react';
 import ProductFormModal from '../components/ProductFormModal';
 import ProductDetailsModal from '../components/ProductDetailsModal';
 import { useStore } from '../store/useStore';
@@ -347,6 +347,50 @@ const ProductCatalog = () => {
         return 'text-green-400';
     };
 
+    const handleExportCSV = () => {
+        let sourceProducts = allProductsCache;
+        let filtered = [...sourceProducts];
+
+        if (searchTerm) {
+            const lowerTerm = searchTerm.toLowerCase();
+            filtered = filtered.filter(p =>
+                (p.name && p.name.toLowerCase().includes(lowerTerm)) ||
+                (p.sku && p.sku.toLowerCase().includes(lowerTerm))
+            );
+        }
+        if (selectedCategory !== 'All') {
+            filtered = filtered.filter(p => p.category === selectedCategory);
+        }
+        if (selectedType !== 'All') {
+            filtered = filtered.filter(p => p.type === selectedType);
+        }
+        if (selectedWarehouse !== 'All') {
+            filtered = filtered.filter(p => p.warehouse_id === selectedWarehouse);
+        }
+
+        const exportData = filtered.map(p => ({
+            'รหัส (SKU)': p.sku || '',
+            'ชื่ออุปกรณ์': p.name || '',
+            'หมวดหมู่': p.category || '',
+            'ประเภท': p.type || '',
+            'จำนวน': p.quantity || 0,
+            'จำนวนขั้นต่ำ': p.min_threshold || 0,
+            'ที่เก็บ/ตำแหน่ง': p.location || '',
+            'รายละเอียด': p.description || '',
+            'คลังสินค้า': p.warehouses ? `[${p.warehouses.code}] ${p.warehouses.name}` : '-'
+        }));
+
+        const csv = Papa.unparse(exportData);
+        const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `products_export_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     const getStockBgColor = (product) => {
         if (product.quantity === 0) return 'bg-red-500/20';
         if (product.quantity <= product.min_threshold) return 'bg-yellow-500/20';
@@ -409,6 +453,14 @@ const ProductCatalog = () => {
                             >
                                 <Upload size={20} />
                                 นำเข้า CSV
+                            </button>
+                            <button
+                                onClick={handleExportCSV}
+                                className="px-4 py-2 bg-green-500/20 text-green-400 hover:bg-green-500/30 rounded-xl transition-all duration-300 flex items-center gap-2 border border-green-500/20 w-full sm:w-auto justify-center"
+                                title="Export all filtered products to CSV"
+                            >
+                                <Download size={20} />
+                                ส่งออก CSV
                             </button>
                             <button
                                 onClick={handleDeleteAllProducts}
