@@ -1,6 +1,6 @@
 import React, { useEffect, useState, Component } from 'react';
 import { db } from '../lib/firebase';
-import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
+import { collection, getDocs, query, where, orderBy, limit, getCountFromServer } from 'firebase/firestore';
 import {
     BarChart,
     Bar,
