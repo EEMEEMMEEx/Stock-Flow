@@ -1,0 +1,13 @@
+sku,name,category,type,location,quantity,minthreshold,description
+LKH-HACO-001,ตู้ไฟ HACO,Electrical,LKH Work,Office,1,1,ชุดตู้ไฟสำหรับงาน ลข.
+,- Breaker HACO H7-32A/2C,Electrical,LKH Work,Office,1,1,
+,- Surge Protector Stabil (MODEL:T2P65T1),Electrical,LKH Work,Office,1,1,
+,- Breaker HACO H6-16A/1C,Electrical,LKH Work,Office,1,1,
+LKH-ANT-001,สายอากาศ Yagi 406-SF1SNF (ABK),Antenna,LKH Work,Warehouse,1,0,
+LKH-CBL-001,"Jumper N male-N male, L=3m*",Cable,LKH Work,Warehouse,1,0,
+LKH-CON-001,Connector N male for LCF12 54,Connector,LKH Work,Warehouse,1,0,
+LKH-GRD-001,Grounding kit for 1/2" cable,Grounding,LKH Work,Warehouse,1,0,
+LKH-CBL-002,"Jumper N male-N female, L=3m*",Cable,LKH Work,Warehouse,1,0,
+LKH-LTP-001,Lightning Arrestors Ground Bar 1 ช่อง,Lightning Protection,LKH Work,Warehouse,1,0,
+LKH-LTP-002,Lightning arrestor NF-NF,Lightning Protection,LKH Work,Warehouse,1,0,
+LKH-ACC-001,ลูกถ้วยแดงและขายึด,Accessory,LKH Work,Warehouse,1,0,
