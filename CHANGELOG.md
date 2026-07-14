@@ -1,0 +1,53 @@
+# Changelog
+
+## [2026-07-14 15:10]
+- **Files Modified:**
+  - `src/pages/Dashboard.jsx`, `src/pages/Projects.jsx`, `src/pages/Items.jsx`
+  - `src/pages/Reports.jsx`, `src/components/ui/skeleton.jsx`
+- **Changes:**
+  - เพิ่มกราฟ (BarChart) แสดงสัดส่วนรับเข้าและเบิกจ่ายในหน้า Dashboard ด้วยไลบรารี Recharts
+  - เพิ่มฟังก์ชันแก้ไขและลบข้อมูล (Edit & Delete) สำหรับ Projects และ Items
+  - เพิ่มระบบป้องกันการลบข้อมูลหาก Projects/Items นั้นถูกนำไปใช้งานเบิกจ่ายแล้ว (ดัก Error Code 23503)
+  - เพิ่มปุ่ม Export PDF ในหน้ารายงาน ด้วยไลบรารี jsPDF และ jspdf-autotable
+  - สร้างและนำ Skeleton Loading ไปใช้งานในหน้า Dashboard เพื่อความลื่นไหลระหว่างดึงข้อมูล
+- **Reason:** ดำเนินการอัปเดตฟีเจอร์ระดับสูงตามแผนงาน Phase 6
+## [2026-07-14 15:00]
+- **Files Modified:**
+  - `src/App.jsx`, `src/App.css`
+  - `src/pages/Dashboard.jsx`, `src/pages/auth/Login.jsx`
+  - `src/components/layout/Sidebar.jsx`, `Topbar.jsx`
+  - `public/favicon.svg`, `index.html`, `.gitignore`
+  - `supabase/migrations/01_initial_schema.sql`
+- **Changes:**
+  - แก้ไข `App.jsx` ให้ import หน้าจอจริงทุกหน้า (เดิมใช้ placeholder)
+  - เปลี่ยน Theme จาก Dark Mode เป็น **Light Mode (โทนสีขาว)** ตลอดทั้ง App
+  - ปรับ CSS variables, Sidebar, Topbar, Login, Glass effect ให้เข้ากับโทนสว่าง
+  - เขียน Dashboard ใหม่ให้ดึงข้อมูลจริงจาก Supabase (projects, items, withdrawals, stock_balance)
+  - แก้ไข Trigger `handle_new_user` ให้รองรับการสร้าง User จาก Supabase Dashboard (แก้ bug NOT NULL)
+  - เพิ่ม `favicon.svg` แก้ปัญหา 404
+  - ปรับ `.gitignore` เพิ่ม `.env`, `dist`
+- **Reason:** ผู้ใช้ต้องการโทนสีขาว และเชื่อมต่อระบบกับ Supabase จริง
+## [2026-07-14 14:40]
+- **Files Modified:** 
+  - `package.json`, `vite.config.js`, `index.html`, `.env`
+  - `src/main.jsx`, `src/App.css`, `src/App.jsx`
+  - `components.json`, `src/lib/utils.js`, `src/lib/supabase.js`
+  - `src/contexts/AuthContext.jsx`, `src/components/theme-provider.jsx`
+  - `src/components/ui/button.jsx`, `input.jsx`, `card.jsx`, `table.jsx`, `dialog.jsx`, `label.jsx`
+  - `src/components/layout/Sidebar.jsx`, `Topbar.jsx`, `PageWrapper.jsx`
+  - `src/pages/auth/Login.jsx`, `src/pages/Dashboard.jsx`
+  - `supabase/migrations/01_initial_schema.sql`
+  - `src/pages/Projects.jsx`, `src/pages/Items.jsx`
+  - `src/pages/StockIn.jsx`, `src/pages/Withdrawals.jsx`
+  - `src/pages/History.jsx`, `src/pages/Reports.jsx`
+- **Changes:**
+  - สร้างโปรเจกต์ React + Vite
+  - ติดตั้งและคอนฟิก Tailwind CSS v4, shadcn/ui
+  - ตั้งค่า Supabase Client, Auth Context
+  - สร้างไฟล์ SQL สำหรับจัดการ Database Schema (7 tables/views)
+  - สร้าง Layout Component (Sidebar, Topbar) และตั้งค่า Routing
+  - สร้างหน้า Login และ Dashboard พื้นฐาน
+  - สร้างหน้า Projects (จัดการโครงการ), Items (รายการวัสดุ)
+  - สร้างหน้า StockIn (รับเข้า), Withdrawals (เบิกจ่าย) พร้อมระบบ Role-based access
+  - สร้างหน้า History (ประวัติ) และ Reports (รายงาน Export Excel)
+- **Reason:** ดำเนินการสร้างระบบ Stock Flow ต่อจนครบทุกหน้าจอตามแผนงาน

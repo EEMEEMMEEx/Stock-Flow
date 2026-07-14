@@ -1,95 +1,13 @@
-<!doctype html>
-<html lang="th">
-
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport"
-    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-
-  <!-- PWA Meta Tags -->
-  <meta name="theme-color" content="#1C6CB4" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="StockFlow" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="application-name" content="FORTH StockFlow" />
-  <meta name="description" content="ระบบจัดการสินค้าคงคลัง FORTH Corporation" />
-
-  <!-- Icons -->
-  <link rel="icon" type="image/svg+xml" href="/logoicon.svg" />
-  <link rel="apple-touch-icon" href="/logo.png" />
-
-  <!-- PWA Manifest -->
-  <link rel="manifest" href="/manifest.json" />
-
-  <title>FORTH StockFlow</title>
-
-  <!-- Splash Screen for iOS -->
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-
-  <style>
-    /* Splash screen styles */
-    #splash-screen {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f8fafc 100%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-      transition: opacity 0.3s ease;
-    }
-
-    #splash-screen .spinner {
-      width: 60px;
-      height: 60px;
-      border: 4px solid #e2e8f0;
-      border-top-color: #1C6CB4;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-
-    #splash-screen p {
-      color: #475569;
-      margin-top: 20px;
-      font-family: system-ui, -apple-system, sans-serif;
-      font-size: 14px;
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
-    }
-  </style>
-</head>
-
-<body>
-  <!-- Splash Screen -->
-  <div id="splash-screen">
-    <div class="spinner"></div>
-    <p>กำลังโหลด...</p>
-  </div>
-
-  <div id="root"></div>
-  <script type="module" src="/src/main.jsx"></script>
-
-  <script>
-    // Hide splash screen when app is loaded
-    window.addEventListener('load', () => {
-      const splash = document.getElementById('splash-screen');
-      if (splash) {
-        setTimeout(() => {
-          splash.style.opacity = '0';
-          setTimeout(() => splash.remove(), 300);
-        }, 500);
-      }
-    });
-  </script>
-</body>
-
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stock Flow App</title>
+  </head>
+  <body class="bg-background text-foreground antialiased selection:bg-primary/30">
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>
