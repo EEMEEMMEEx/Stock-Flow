@@ -1,0 +1,96 @@
+﻿บัญชีรายการอุปกรณ์โครงการ DOPA (USO SHF),,,,,,,14 ก.ค. 26
+ลำดับ,รายการ,FORTH,,,,,หมายเหตุ
+,,รุ่น,คลัง EMS,คลัง Forth ชั้น 3,เบิกใช้งาน,คงเหลือ,
+1,สายอากาศ SC-488-SF1LDF(D00),Sinclar,1,,,1,USO
+2,สายอากาศ SC-45A-SF1LDF(D00),Sinclar,1,,,1,USO
+3,สายอากาศ SC-489-SF1LNF(D00),Sinclar,4,,,4,
+4,สายอากาศ Yagi 406-SF1SNF (ABK),Sinclar,,12,,12,
+5,ขารองตู้ประเภทติดตั้งภายใน , -,12,,,12,
+6,ขาวางสายอากาศ, -,22,,,22,ใช้สำหรับเก็บสายอากาศในคลัง
+7,ตู้ชุดDMO-GW+ขาตั้ง (ตั้งนอกอาคาร), -,7,,,7,
+,    - Support ขายึด SC-489 (2ชุด/1ตู้), -,3,,,3,ประกอบอยู่ในตู้แล้ว
+8,"DC Power (1,000m.)", -,2,,,2,"เหลือ 1,545 เมตร (เก็บไว้ที่คลังโรงสี)"
+9,"CellFlex cable 1/2""* (500m.)", -,7,,,7,"เหลือ 3,330 เมตร  (เก็บไว้ที่คลังโรงสี)  USO"
+10,Auxiliary materials BS (อุปกรณ์เสริม BS ), -,22,,,22,
+11,mounting Myset 50cm.+pipe 60cm., -,2,,,2,
+12,"Pipeกลม 2 1/2"" 60 CM. ลูกข่าย", -,5,,,5,
+13,X-Clamp, -,4,,,4,
+14,HE-3KS S/N 2207320369A0001, -,1,,,1,
+15,Batterry Bank HE-3KS S/N 2207320369A001, -,1,,,1,
+16,3K UPS Support, -,1,,,1,
+17,PT580 Plus F5,Hytera,,11,11,0,
+,    - Battery (BL1806) สำรอง,Hytera,,12,,12,
+,    - Charger(CH10A07),Hytera,,11,11,0,
+18,MT680 Plus (S) F5 ,Hytera,,6,,6,(การ์ดเสียซ่อมไม่ได้)
+,    - SM09D2 External Speaker (5m Cabl),Hytera,,6,,6,
+,    - SM10A1 Desktop Microphone,Hytera,,6,,6,
+19,PC90 สายโปรแกรมเครื่องลูกข่ายมือถือ,Hytera,,34,,34,
+20,PC64 สายโปรแกรมเครื่องลูกข่ายมือถือ,Hytera,,2,,2,
+21,PC35 สายโปรแกรมหน้าเครื่องลูกข่าย Fixed,Hytera,,33,,33,
+22,PC47 สายโปรแกรมหลังเครื่องลูกข่าย Fixed,Hytera,,6,,6,
+23,PUS Cable for VPUC,Hytera,,2,,2,
+24,Lightning Arrestors Ground Bar 1 ช่อง,-,,28,,28,
+25,Lightning Arrestors Ground Bar 4 ช่อง,-,,1,,1,
+26,Ligthning Arrester NM-NF,-,,10,,10,
+27,"Lightning_arrestor,NF-NF", -,5,,,5,เก็บอยู่ในตู้ DMO 5 เส้น USO
+28,"Grounding_kit_for_1/2""_cable",Comsolution,,6,,6,
+29,"Grounding_kit_for_7/8""_cable",Comsolution,6,16,,22,เก็บอยู่ในตู้ DMO 6 เส้น USO
+30,Connector_N_male_for_LCF12,Comsolution,5,,,5,เก็บอยู่ในตู้ DMO 5 เส้น USO
+31,Arrester ZGTT8-18N-20M,Comsolution,,13,,13,
+32,"Jumper_N_male-N_male,L=3m*",Comsolution,5,13,,18,เก็บอยู่ในตู้ DMO 5 เส้น USO
+33,"Jumper_N_male-N_female,L=3m*",Comsolution,5,48,,53,เก็บอยู่ในตู้ DMO 5 เส้น USO
+34,"Jumper_N_male-N_male,L=5m*",Comsolution,,13,,13,
+35,"Jumper_N_male-N_male,L=7m* ",Comsolution,,4,1,3,Sub con 1
+36,"Jumper_N_male-N_male,L=10m* ",Comsolution,,11,,11,
+37,"Jumper_N_male-N_male,L=15m*",Comsolution,,1,,1,
+38,"Jumper_7/16 _male-N_male, L=5m*",Comsolution,,10,,10,
+39,"Jumper_7/16 _male-N_male, L=10m* ",Comsolution,,4,1,3,Sub con 2
+40,ขายึดลูกถ้วยแดง,-,,196,196,0,ไฟฟ้า 196
+41,จุกแบตเตอรี่ (ดำแดง),-,,26,,26,
+42,Surge Protector Stabil AC 1P (MODEL:TC1D25FH),Stabil,,263,240,23,(SP USO 23 รง.) ไฟฟ้า 240
+43,Surge Protector Stabil (MODEL:A2P1L8M1) (3 รูปคลื่น),Stabil,,29,16,13,
+44,Breaker 16A1P H7-16A1P,HACO,,20,,20,
+45,Breaker NDM1-63 C10,NADER,,29,,29,
+46,Breaker H7-32A/2C2P,HACO,,1,,1,
+47,Breaker ABB SH201 C201P,ABB,,144,,144,
+48,Breaker 20A2P ,HACO,,4,,4,
+49,Breaker C20A 1p,Schneider ,,2,,2,
+50,Breaker C60a 1p ,Schneider ,,4,,4,
+51,Breaker C60N 2p,Schneider ,,2,,2,
+52,Router H3C (Router AC ไม่ตรงสเปค),H3C,,5,,5,
+53,Router H3C,H3C,,1,,1,
+54,Netsure,Vertiv,,1,,1,
+55,Controller,Vertiv,,1,,1,
+56,Module Rectifier 1,Vertiv,,1,,1,
+57,SFP1.25G DDMI 1310nm 10km(sm),Interlink,,11,,11,
+58,Patch Cord - LC - LC  2m. ,-,,6,,6,
+59,Patch Cord - FC - LC 5m.,-,,56,,56,
+60,Patch Cord - LC - LC Connector ,-,,3,,3,
+61,MMBC-5M-NC (Jumper+ขาตั้ง Ant ติดรถยนต์), -,,1,,1,
+62,Car Smart Invertor 200W,-,,13,,13,
+63,เสาอากาศติดรถยรต์ย่าน 800 model TQC-900BII,Hytera,,8,,8,
+64,Antenna UHF + Magnetic สำหรับติดหลังคารถ ,Hytera,,3,,3,
+65,Car Kits CK02,Hytera,,18,,18,
+66,Body Camera,Hytera,,12,,12,
+67,FORTH Meter,FORTH,,12,,12,
+68,H3C PSR65OALSQM1AC650, -,,2,,2,
+69,Switch H3CS7503e-m 24 portGE 4*10 GE, -,,2,,2,
+70,Chassis L3Switch (H3C 57503E-M), -,,1,,1,
+71,IPPBX-X6(2.1), -,,1,,1,
+72,Tetra Sw PV, -,,1,,1,
+73,RoseReplicator for Hytera (window), -,,1,,1,
+74,TETRA DVRS BASIC package+disc DVD, -,,2,,2,
+75,Hytera Solution Series CD, -,,2,,2,
+76,EOL Multi-media Speaker DELL AX210 20 1.2W Black, -,,1,,1,
+77,Headset USB Adapter , -,,15,,15,
+78,เครื่องมือวัด BIRD, -,,1,,1,
+79,Dummy Load Bird 100 Watts, -,,1,,1,
+80,Dummy Load Bird 75 Watts,-,,2,,2,
+81,Dummy Load Bird 5 Watts,-,,1,,1,
+82,Adapter + Optical Mouse,-,,1,,1,
+83,PT580 + Charger (เสีย),-,,1,,1,
+84,Switching Adapter 19 V. 3.42 A.,-,,1,,1,
+85,Antenna RFI CD 29-14817400,-,,2,,2,
+86,Magnetic Mounting M110 BNC,-,,17,,17,
+87,Magnetic Mounting MMBC-5M-NC,-,,1,,1,
+88,Link Clampling BNC,-,,2,,2,

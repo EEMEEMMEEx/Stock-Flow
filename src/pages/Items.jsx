@@ -18,8 +18,9 @@ const Items = () => {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [formData, setFormData] = useState({ name: '', sku: '', unit: 'ชิ้น', description: '' });
+  const [formData, setFormData] = useState({ name: '', sku: '', unit: 'ชิ้น', description: '', image_url: '' });
   const [selectedItem, setSelectedItem] = useState(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   useEffect(() => {
     fetchItems();
@@ -28,13 +29,47 @@ const Items = () => {
   const fetchItems = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase.from('items').order('name');
+      const { data, error } = await supabase.from('items').select('*').order('name');
       if (error) throw error;
       setItems(data || []);
     } catch (error) {
-      toast.error('ไม่สามารถโหลดข้อมูลรายการวัสดุได้');
+      console.error("Fetch Items Error:", error);
+      toast.error('ไม่สามารถโหลดข้อมูลรายการวัสดุได้: ' + (error.message || ''));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploadingImage(true);
+      const toastId = toast.loading('กำลังอัปโหลดรูปภาพ...');
+      
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const apiUrl = import.meta.env.VITE_PDF_API_URL 
+        ? `${import.meta.env.VITE_PDF_API_URL}/api/upload`
+        : 'http://localhost:3001/api/upload';
+
+      const res = await fetch(apiUrl, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!res.ok) throw new Error('Upload failed');
+      const data = await res.json();
+      
+      setFormData(prev => ({ ...prev, image_url: data.url }));
+      toast.success('อัปโหลดรูปภาพสำเร็จ', { id: toastId });
+    } catch (error) {
+      console.error(error);
+      toast.error('อัปโหลดรูปภาพล้มเหลว');
+    } finally {
+      setUploadingImage(false);
     }
   };
 
@@ -45,13 +80,18 @@ const Items = () => {
     try {
       const { data, error } = await supabase
         .from('items')
-        .insert([formData])
-        .select();
+        .insert([{ 
+          name: formData.name, 
+          sku: formData.sku, 
+          unit: formData.unit, 
+          description: formData.description,
+          image_url: formData.image_url 
+        }]);
 
       if (error) throw error;
       toast.success('เพิ่มรายการวัสดุสำเร็จ');
       setIsCreateOpen(false);
-      setFormData({ name: '', sku: '', unit: 'ชิ้น', description: '' });
+      setFormData({ name: '', sku: '', unit: 'ชิ้น', description: '', image_url: '' });
       fetchItems();
     } catch (error) {
       toast.error('รหัส SKU อาจซ้ำ หรือเกิดข้อผิดพลาดอื่น');
@@ -68,6 +108,7 @@ const Items = () => {
           sku: formData.sku,
           unit: formData.unit,
           description: formData.description,
+          image_url: formData.image_url,
           updated_at: new Date().toISOString()
         })
         .eq('id', selectedItem.id);
@@ -103,7 +144,13 @@ const Items = () => {
 
   const openEditDialog = (item) => {
     setSelectedItem(item);
-    setFormData({ name: item.name, sku: item.sku || '', unit: item.unit || 'ชิ้น', description: item.description || '' });
+    setFormData({ 
+      name: item.name, 
+      sku: item.sku || '', 
+      unit: item.unit || 'ชิ้น', 
+      description: item.description || '',
+      image_url: item.image_url || ''
+    });
     setIsEditOpen(true);
   };
 
@@ -176,6 +223,10 @@ const Items = () => {
                     </div>
                   </div>
                   <div className="space-y-2">
+                    <Label htmlFor="image">รูปภาพ</Label>
+                    <Input type="file" id="image" accept="image/*" onChange={handleImageUpload} disabled={uploadingImage} />
+                  </div>
+                  <div className="space-y-2">
                     <Label htmlFor="description">รายละเอียดเพิ่มเติม</Label>
                     <Input id="description" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} />
                   </div>
@@ -194,8 +245,9 @@ const Items = () => {
         <Table>
           <TableHeader className="bg-muted/50">
             <TableRow>
-              <TableHead className="w-[100px]">รหัส SKU</TableHead>
-              <TableHead>ชื่อวัสดุ/อุปกรณ์</TableHead>
+              <TableHead className="w-16">รูปภาพ</TableHead>
+              <TableHead>ชื่อวัสดุ</TableHead>
+              <TableHead>รหัส SKU</TableHead>
               <TableHead className="w-[100px]">หน่วย</TableHead>
               <TableHead className="hidden md:table-cell">รายละเอียด</TableHead>
               <TableHead className="text-right w-[100px]">จัดการ</TableHead>
@@ -204,21 +256,30 @@ const Items = () => {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-8">
+                <TableCell colSpan={6} className="text-center py-8">
                   กำลังโหลดข้อมูล...
                 </TableCell>
               </TableRow>
             ) : filteredItems.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                   ไม่พบข้อมูลรายการวัสดุ
                 </TableCell>
               </TableRow>
             ) : (
               filteredItems.map((item) => (
                 <TableRow key={item.id}>
-                  <TableCell className="font-medium text-muted-foreground">{item.sku || '-'}</TableCell>
+                  <TableCell>
+                    {item.image_url ? (
+                      <img src={item.image_url} alt={item.name} className="w-10 h-10 object-cover rounded-md border shadow-sm" />
+                    ) : (
+                      <div className="w-10 h-10 bg-muted rounded-md flex items-center justify-center border text-muted-foreground text-xs">
+                        ไม่มีรูป
+                      </div>
+                    )}
+                  </TableCell>
                   <TableCell className="font-semibold">{item.name}</TableCell>
+                  <TableCell className="font-medium text-muted-foreground">{item.sku || '-'}</TableCell>
                   <TableCell>{item.unit}</TableCell>
                   <TableCell className="hidden md:table-cell text-muted-foreground">{item.description || '-'}</TableCell>
                   <TableCell className="text-right">
@@ -263,6 +324,15 @@ const Items = () => {
               <div className="space-y-2">
                 <Label htmlFor="edit-description">รายละเอียดเพิ่มเติม</Label>
                 <Input id="edit-description" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-image">อัปเดตรูปภาพ</Label>
+                <div className="flex items-center gap-4">
+                  {formData.image_url && (
+                    <img src={formData.image_url} alt="Preview" className="w-16 h-16 object-cover rounded-md border" />
+                  )}
+                  <Input id="edit-image" type="file" accept="image/*" onChange={handleImageUpload} disabled={uploadingImage} />
+                </div>
               </div>
             </div>
             <DialogFooter>

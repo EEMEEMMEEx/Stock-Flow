@@ -24,7 +24,7 @@ const History = () => {
         .from('withdrawals')
         .select('*, projects(name), items(name, unit), profiles!withdrawals_requested_by_fkey(full_name)')
         .in('status', ['completed', 'rejected', 'approved'])
-        .order('updated_at', { ascending: false })
+        .order('requested_at', { ascending: false })
         .limit(100);
         
       if (!isAdmin) {
@@ -89,7 +89,7 @@ const History = () => {
               filteredHistory.map((w) => (
                 <TableRow key={w.id}>
                   <TableCell className="text-muted-foreground">
-                    {format(new Date(w.completed_at || w.approved_at || w.updated_at || w.requested_at), 'dd/MM/yy HH:mm')}
+                    {format(new Date(w.completed_at || w.approved_at || w.requested_at), 'dd/MM/yy HH:mm')}
                   </TableCell>
                   <TableCell className="font-medium">{w.projects?.name}</TableCell>
                   <TableCell>

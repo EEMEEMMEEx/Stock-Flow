@@ -20,7 +20,7 @@ const Projects = () => {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   
-  const [formData, setFormData] = useState({ name: '', description: '', location: '' });
+  const [formData, setFormData] = useState({ name: '', project_code: '', description: '', location: '' });
   const [selectedProject, setSelectedProject] = useState(null);
 
   useEffect(() => {
@@ -60,7 +60,7 @@ const Projects = () => {
       if (error) throw error;
       toast.success('สร้างโครงการสำเร็จ');
       setIsCreateOpen(false);
-      setFormData({ name: '', description: '', location: '' });
+      setFormData({ name: '', project_code: '', description: '', location: '' });
       fetchProjects();
     } catch (error) {
       toast.error('เกิดข้อผิดพลาดในการสร้างโครงการ');
@@ -74,6 +74,7 @@ const Projects = () => {
         .from('projects')
         .update({
           name: formData.name,
+          project_code: formData.project_code,
           location: formData.location,
           description: formData.description,
           updated_at: new Date().toISOString()
@@ -111,7 +112,7 @@ const Projects = () => {
 
   const openEditDialog = (project) => {
     setSelectedProject(project);
-    setFormData({ name: project.name, description: project.description || '', location: project.location || '' });
+    setFormData({ name: project.name, project_code: project.project_code || '', description: project.description || '', location: project.location || '' });
     setIsEditOpen(true);
   };
 
@@ -122,6 +123,7 @@ const Projects = () => {
 
   const filteredProjects = projects.filter(p => 
     p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (p.project_code && p.project_code.toLowerCase().includes(searchQuery.toLowerCase())) ||
     (p.location && p.location.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
@@ -168,6 +170,10 @@ const Projects = () => {
                       <Input id="name" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
                     </div>
                     <div className="space-y-2">
+                      <Label htmlFor="project_code">รหัสโครงการ (Project ID/Code)</Label>
+                      <Input id="project_code" placeholder="เช่น 25310-9999" value={formData.project_code} onChange={e => setFormData({...formData, project_code: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
                       <Label htmlFor="location">สถานที่ตั้ง</Label>
                       <Input id="location" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} />
                     </div>
@@ -198,6 +204,11 @@ const Projects = () => {
               <CardHeader className="pb-3 flex flex-row items-start justify-between space-y-0">
                 <div className="space-y-1">
                   <CardTitle className="text-xl line-clamp-1" title={project.name}>{project.name}</CardTitle>
+                  {project.project_code && (
+                    <div className="text-sm font-medium text-primary bg-primary/10 w-fit px-2 py-0.5 rounded-md mb-1 border border-primary/20">
+                      ID: {project.project_code}
+                    </div>
+                  )}
                   <div className="flex items-center text-sm text-muted-foreground gap-1">
                     <MapPin className="h-3.5 w-3.5" />
                     <span className="line-clamp-1">{project.location || 'ไม่ระบุสถานที่'}</span>
@@ -253,6 +264,10 @@ const Projects = () => {
               <div className="space-y-2">
                 <Label htmlFor="edit-name">ชื่อโครงการ <span className="text-destructive">*</span></Label>
                 <Input id="edit-name" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-project_code">รหัสโครงการ (Project ID/Code)</Label>
+                <Input id="edit-project_code" placeholder="เช่น 25310-9999" value={formData.project_code} onChange={e => setFormData({...formData, project_code: e.target.value})} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="edit-location">สถานที่ตั้ง</Label>

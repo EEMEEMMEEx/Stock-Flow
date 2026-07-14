@@ -12,6 +12,8 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "multer": "^1.4.5-lts.1",
+    "@aws-sdk/client-s3": "^3.550.0",
     "puppeteer": "^22.12.1"
   }
 }

@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-07-14 17:35]
+- **Files Modified:** `src/pages/Items.jsx`, `src/pages/History.jsx`, `src/pages/Projects.jsx`, `supabase/migrations/01_initial_schema.sql`
+- **Changes:**
+  - `Items.jsx`: เพิ่มปุ่มอัปโหลดรูปภาพเข้า R2 และแก้ไขบั๊ก query ข้อมูล (`.select('*')` หายไป)
+  - `History.jsx`: แก้ไขบั๊ก Error 400 จากการเรียงลำดับด้วยคอลัมน์ที่ไม่มีอยู่จริง (`updated_at` -> `requested_at`)
+  - `Projects.jsx`: เพิ่มช่องและแสดงผล "รหัสโครงการ (Project Code)" เพื่อรองรับรหัสอย่างเช่น `25310-9999`
+  - `01_initial_schema.sql`: เพิ่มฟิลด์ `project_code` ในตาราง `projects`
+- **Reason:** ผู้ใช้นำเข้าข้อมูลจาก CSV (DOPA) และต้องการผูกรหัสโครงการ + แก้ไขบั๊กจากการดึงข้อมูลที่พบระหว่างการทดสอบ
+
 ## [2026-07-14 15:10]
 - **Files Modified:**
   - `src/pages/Dashboard.jsx`, `src/pages/Projects.jsx`, `src/pages/Items.jsx`
