@@ -1,13 +1,24 @@
 {
   "name": "stock-flow-app",
   "private": true,
-  "version": "0.0.0",
+  "version": "2026.7.27",
   "type": "module",
+  "workspaces": [
+    "pdf-service"
+  ],
   "scripts": {
     "dev": "vite",
+    "service:backend": "npm --prefix pdf-service start",
     "build": "vite build",
+
+
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "generate:agents": "python .agents/scripts/generate_manifest.py && python .agents/scripts/dependency_graph.py",
+    "check:agents": "python .agents/scripts/validate_kit.py",
+    "check:antigravity": "node .agents/hooks/antigravity-doctor.mjs",
+    "test:antigravity": "node --test .agents/hooks/tests/antigravity.test.mjs && python -m unittest discover -s .agents/scripts/tests -v",
+    "build:antigravity-plugin": "node .agents/hooks/build-plugin.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.1",
@@ -17,16 +28,23 @@
     "@radix-ui/react-slot": "^1.1.0",
     "@radix-ui/react-tabs": "^1.1.0",
     "@radix-ui/react-tooltip": "^1.1.2",
+    "@react-pdf/renderer": "^4.5.1",
     "@supabase/supabase-js": "^2.45.0",
     "@tanstack/react-table": "^8.20.1",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "cors": "^2.8.5",
     "date-fns": "^3.6.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
     "framer-motion": "^11.3.24",
     "jspdf": "^2.5.1",
     "jspdf-autotable": "^3.8.2",
     "lucide-react": "^0.428.0",
+    "multer": "^1.4.5-lts.1",
+    "nodemailer": "^6.9.13",
     "react": "^18.3.1",
+
     "react-dom": "^18.3.1",
     "react-hot-toast": "^2.4.1",
     "react-router-dom": "^6.26.1",

@@ -14,27 +14,39 @@ import Withdrawals from './pages/Withdrawals';
 import History from './pages/History';
 import Reports from './pages/Reports';
 
+import Manual from './pages/Manual';
+import UserManagement from './pages/UserManagement';
+import RoleManagement from './pages/RoleManagement';
+import Settings from './pages/Settings';
+import PermissionRoute from './components/auth/PermissionRoute';
+
 function App() {
   return (
     <ThemeProvider defaultTheme="light" storageKey="stock-flow-theme-v2">
       <AuthProvider>
-        <BrowserRouter>
+        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <Routes>
             <Route path="/login" element={<Login />} />
             
             {/* Protected Routes inside PageWrapper */}
             <Route element={<PageWrapper />}>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/projects" element={<Projects />} />
-              <Route path="/items" element={<Items />} />
-              <Route path="/stock-in" element={<StockIn />} />
-              <Route path="/withdrawals" element={<Withdrawals />} />
-              <Route path="/history" element={<History />} />
-              <Route path="/reports" element={<Reports />} />
+              <Route path="/" element={<PermissionRoute permission="dashboard.view"><Dashboard /></PermissionRoute>} />
+              <Route path="/projects" element={<PermissionRoute permission="projects.view"><Projects /></PermissionRoute>} />
+              <Route path="/items" element={<PermissionRoute permission="items.view"><Items /></PermissionRoute>} />
+              <Route path="/stock-in" element={<PermissionRoute permission="stock_in.view"><StockIn /></PermissionRoute>} />
+              <Route path="/withdrawals" element={<PermissionRoute permission="withdrawals.view"><Withdrawals /></PermissionRoute>} />
+              <Route path="/history" element={<PermissionRoute permission="history.view"><History /></PermissionRoute>} />
+              <Route path="/reports" element={<PermissionRoute permission="reports.view"><Reports /></PermissionRoute>} />
+              <Route path="/users" element={<PermissionRoute permission="users.view"><UserManagement /></PermissionRoute>} />
+              <Route path="/roles" element={<PermissionRoute permission="roles.view"><RoleManagement /></PermissionRoute>} />
+              <Route path="/settings" element={<PermissionRoute permission="settings.view"><Settings /></PermissionRoute>} />
+              <Route path="/manual" element={<Manual />} />
             </Route>
+
 
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
+
             <Toaster 
               position="top-right" 
               toastOptions={{

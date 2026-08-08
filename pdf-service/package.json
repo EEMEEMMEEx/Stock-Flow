@@ -1,7 +1,7 @@
 {
   "name": "pdf-service",
   "version": "1.0.0",
-  "description": "PDF/A Generation Service",
+  "description": "True PDF Generation Service",
   "main": "server.js",
   "type": "module",
   "scripts": {
@@ -14,6 +14,8 @@
     "express": "^4.19.2",
     "multer": "^1.4.5-lts.1",
     "@aws-sdk/client-s3": "^3.550.0",
+    "nodemailer": "^6.9.13",
     "puppeteer": "^22.12.1"
   }
 }
+

@@ -66,42 +66,66 @@
 }
 
 @layer utilities {
-  .glass {
-    @apply bg-white/60 backdrop-blur-md border border-slate-200/60 shadow-xl;
+  .neu-flat {
+    @apply bg-[#e0e5ec] rounded-2xl border-none;
+    box-shadow: 9px 9px 16px rgb(163, 177, 198, 0.6), -9px -9px 16px rgba(255, 255, 255, 0.8);
   }
-  .glass-card {
-    @apply bg-white/60 backdrop-blur-md border border-slate-200/60 shadow-sm hover:shadow-md transition-shadow;
+  .neu-flat-sm {
+    @apply bg-[#e0e5ec] rounded-xl border-none;
+    box-shadow: 5px 5px 10px rgb(163, 177, 198, 0.6), -5px -5px 10px rgba(255, 255, 255, 0.8);
+  }
+  .neu-pressed {
+    @apply bg-[#e0e5ec] rounded-xl border-none;
+    box-shadow: inset 5px 5px 10px rgba(163, 177, 198, 0.6), inset -5px -5px 10px rgba(255, 255, 255, 0.8);
+  }
+  .neu-pressed-sm {
+    @apply bg-[#e0e5ec] rounded-lg border-none;
+    box-shadow: inset 3px 3px 6px rgba(163, 177, 198, 0.6), inset -3px -3px 6px rgba(255, 255, 255, 0.8);
+  }
+  .neu-button {
+    @apply bg-[#e0e5ec] rounded-xl transition-all duration-200 border-none;
+    box-shadow: 5px 5px 10px rgb(163, 177, 198, 0.6), -5px -5px 10px rgba(255, 255, 255, 0.8);
+  }
+  .neu-button:active {
+    box-shadow: inset 4px 4px 8px rgba(163, 177, 198, 0.7), inset -4px -4px 8px rgba(255, 255, 255, 0.8);
+  }
+  .neu-primary {
+    @apply bg-primary text-primary-foreground rounded-xl transition-all duration-200 border-none;
+    box-shadow: 5px 5px 10px rgba(99, 102, 241, 0.4), -5px -5px 10px rgba(255, 255, 255, 0.8);
+  }
+  .neu-primary:active {
+    box-shadow: inset 4px 4px 8px rgba(0, 0, 0, 0.2);
   }
 }
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 214 26% 90%; /* #e0e5ec */
+    --foreground: 222.2 84% 15%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 214 26% 90%;
+    --card-foreground: 222.2 84% 15%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 214 26% 90%;
+    --popover-foreground: 222.2 84% 15%;
 
     --primary: 242 82% 64%; /* Indigo 500 equivalent */
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 210 40% 96.1%;
+    --secondary: 214 26% 85%;
     --secondary-foreground: 222.2 47.4% 11.2%;
 
-    --muted: 210 40% 96.1%;
+    --muted: 214 26% 85%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 210 40% 96.1%;
+    --accent: 214 26% 85%;
     --accent-foreground: 222.2 47.4% 11.2%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
+    --border: 214 26% 90%; /* hide default borders */
+    --input: 214 26% 90%;
     --ring: 242 82% 64%;
 
     --chart-1: 12 76% 61%;
@@ -110,7 +134,7 @@
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     
-    --radius: 0.5rem;
+    --radius: 0.75rem; /* 12px for soft rounded */
   }
 }
 
@@ -121,9 +145,5 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
-    background-image: 
-      radial-gradient(circle at 15% 50%, rgba(99, 102, 241, 0.06), transparent 25%),
-      radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.06), transparent 25%);
-    background-attachment: fixed;
   }
 }

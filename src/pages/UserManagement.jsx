@@ -1,0 +1,666 @@
+import React, { useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { 
+  UserCog, Plus, Search, RefreshCw, Edit, Shield, KeyRound, 
+  UserX, UserCheck, FolderKanban, Phone, Mail, Briefcase, Trash2, AlertCircle 
+} from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { format } from 'date-fns';
+import toast from 'react-hot-toast';
+
+import AddUserModal from '@/components/users/AddUserModal';
+import EditUserModal from '@/components/users/EditUserModal';
+import ResetPasswordModal from '@/components/users/ResetPasswordModal';
+import { uploadAvatarImage } from '@/lib/avatarUpload';
+
+const UserManagement = () => {
+  const { isAdmin } = useAuth();
+  const [users, setUsers] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [dbRoles, setDbRoles] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Filters
+  const [searchQuery, setSearchQuery] = useState('');
+  const [roleFilter, setRoleFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [projectFilter, setProjectFilter] = useState('all');
+
+  // Modals
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [selectedUserForEdit, setSelectedUserForEdit] = useState(null);
+  const [selectedUserForResetPw, setSelectedUserForResetPw] = useState(null);
+  const [selectedUserForDelete, setSelectedUserForDelete] = useState(null);
+
+  const [rpcMissing, setRpcMissing] = useState(false);
+
+  useEffect(() => {
+    fetchInitialData();
+  }, []);
+
+  const fetchInitialData = async () => {
+    try {
+      setLoading(true);
+      await Promise.all([fetchUsers(), fetchProjects(), fetchDbRoles()]);
+    } catch (error) {
+      console.error('Fetch Data Error:', error);
+      toast.error('เกิดข้อผิดพลาดในการโหลดข้อมูล');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchDbRoles = async () => {
+    try {
+      const { data } = await supabase.from('roles').select('id, code, name, description').eq('is_active', true);
+      setDbRoles(data || []);
+    } catch (e) {}
+  };
+
+
+  const fetchUsers = async () => {
+    try {
+      // 1. Try RPC first
+      const { data, error } = await supabase.rpc('admin_get_users');
+      if (!error && data) {
+        setUsers(data);
+        setRpcMissing(false);
+        return;
+      }
+    } catch (err) {
+      console.warn('RPC admin_get_users not found, using fallback query:', err);
+    }
+
+    // 2. Fallback: Query profiles directly if RPC is not yet deployed on Supabase DB
+    setRpcMissing(true);
+    const { data: profilesData, error: profilesErr } = await supabase
+      .from('profiles')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (profilesErr) throw profilesErr;
+
+    // Fetch user project assignments if table exists
+    let assignmentMap = {};
+    try {
+      const { data: assignments } = await supabase
+        .from('user_project_assignments')
+        .select('*');
+
+      if (assignments) {
+        assignments.forEach(a => {
+          if (!assignmentMap[a.user_id]) assignmentMap[a.user_id] = [];
+          assignmentMap[a.user_id].push(a.project_id);
+        });
+      }
+    } catch (e) {
+      // Table might not exist yet before migration
+    }
+
+    const formattedUsers = (profilesData || []).map(p => ({
+      id: p.id,
+      email: p.email || `${p.full_name ? p.full_name.toLowerCase().replace(/\s+/g, '') : 'user'}@stockflow.local`,
+      full_name: p.full_name,
+      role: p.role || 'staff',
+      status: p.status || 'active',
+      phone: p.phone || '',
+      position: p.position || '',
+      avatar_url: p.avatar_url || '',
+      created_at: p.created_at,
+      updated_at: p.updated_at,
+      assigned_project_ids: assignmentMap[p.id] || [],
+      all_projects: p.role === 'admin' || !assignmentMap[p.id] || assignmentMap[p.id].length === 0
+    }));
+
+    setUsers(formattedUsers);
+  };
+
+  const fetchProjects = async () => {
+    const { data, error } = await supabase
+      .from('projects')
+      .select('id, name, project_code')
+      .order('name');
+    if (error) throw error;
+    setProjects(data || []);
+  };
+
+  // Actions
+  const handleCreateUser = async (userPayload) => {
+    try {
+      const { data, error } = await supabase.rpc('admin_create_user', {
+        p_email: userPayload.email,
+        p_password: userPayload.password,
+        p_full_name: userPayload.full_name,
+        p_role: userPayload.role,
+        p_status: userPayload.status,
+        p_phone: userPayload.phone,
+        p_position: userPayload.position,
+        p_all_projects: userPayload.all_projects,
+        p_project_ids: userPayload.project_ids
+      });
+
+      if (error) {
+        // Fallback for fallback creation directly in profiles if RPC not installed
+        if (error.code === 'PGRST202' || error.status === 404) {
+          toast.error('กรุณารันไฟล์ Migration 08 ใน Supabase SQL Editor เพื่อเปิดใช้งานการสร้าง Auth User ผ่าน RPC');
+          return;
+        }
+        throw error;
+      }
+      if (data?.success) {
+        const newUserId = data.user_id;
+        // Upload avatar image if selected during user creation
+        if (userPayload.avatar_file && newUserId) {
+          const publicUrl = await uploadAvatarImage(newUserId, userPayload.avatar_file);
+          if (publicUrl) {
+            await supabase.from('profiles').update({ avatar_url: publicUrl }).eq('id', newUserId);
+          }
+        }
+
+        toast.success('สร้างบัญชีผู้ใช้ใหม่สำเร็จ');
+        await fetchUsers();
+      } else {
+        toast.error(data?.message || 'ไม่สามารถสร้างผู้ใช้ได้');
+      }
+    } catch (error) {
+      console.error('Admin Create User Error:', error);
+      toast.error(error.message || 'เกิดข้อผิดพลาดในการสร้างบัญชีผู้ใช้');
+      throw error;
+    }
+  };
+
+  const handleUpdateUser = async (userId, userPayload) => {
+    try {
+      let finalAvatarUrl = userPayload.avatar_url;
+
+      // Handle avatar image file upload or removal
+      if (userPayload.avatar_file && userId) {
+        const publicUrl = await uploadAvatarImage(userId, userPayload.avatar_file);
+        if (publicUrl) finalAvatarUrl = publicUrl;
+      } else if (userPayload.avatar_removed) {
+        finalAvatarUrl = null;
+      }
+
+      const { data, error } = await supabase.rpc('admin_update_user', {
+        p_target_id: userId,
+        p_full_name: userPayload.full_name,
+        p_role: userPayload.role,
+        p_status: userPayload.status,
+        p_phone: userPayload.phone,
+        p_position: userPayload.position,
+        p_all_projects: userPayload.all_projects,
+        p_project_ids: userPayload.project_ids,
+        p_avatar_url: finalAvatarUrl
+      });
+
+      if (error) {
+        // Fallback to direct update on profiles
+        const { error: profileErr } = await supabase
+          .from('profiles')
+          .update({
+            full_name: userPayload.full_name,
+            role: userPayload.role,
+            status: userPayload.status,
+            phone: userPayload.phone,
+            position: userPayload.position,
+            avatar_url: finalAvatarUrl,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', userId);
+
+        if (profileErr) throw profileErr;
+        toast.success('อัปเดตข้อมูลผู้ใช้เรียบร้อยแล้ว');
+        await fetchUsers();
+        return;
+      }
+
+      if (data?.success) {
+        toast.success('อัปเดตข้อมูลผู้ใช้สำเร็จ');
+        await fetchUsers();
+      }
+    } catch (error) {
+      console.error('Admin Update User Error:', error);
+      toast.error(error.message || 'เกิดข้อผิดพลาดในการอัปเดตผู้ใช้');
+      throw error;
+    }
+  };
+
+  const handleResetPassword = async (userId, newPassword) => {
+    try {
+      const { data, error } = await supabase.rpc('admin_reset_user_password', {
+        p_target_id: userId,
+        p_new_password: newPassword
+      });
+
+      if (error) {
+        if (error.code === 'PGRST202' || error.status === 404) {
+          toast.error('กรุณารันไฟล์ Migration 08 ใน Supabase SQL Editor เพื่อเปิดใช้งานการรีเซ็ตรหัสผ่าน');
+          return;
+        }
+        throw error;
+      }
+      if (data?.success) {
+        toast.success('รีเซ็ตรหัสผ่านสำเร็จ');
+      }
+    } catch (error) {
+      console.error('Admin Reset Password Error:', error);
+      toast.error(error.message || 'เกิดข้อผิดพลาดในการรีเซ็ตรหัสผ่าน');
+      throw error;
+    }
+  };
+
+
+  const handleToggleStatus = async (userObj) => {
+    const nextStatus = userObj.status === 'active' ? 'inactive' : 'active';
+    try {
+      const { data, error } = await supabase.rpc('admin_toggle_user_status', {
+        p_target_id: userObj.id,
+        p_status: nextStatus
+      });
+
+      if (error) throw error;
+      if (data?.success) {
+        toast.success(nextStatus === 'active' ? 'เปิดใช้งานบัญชีเรียบร้อย' : 'ระงับการใช้งานบัญชีเรียบร้อย');
+        await fetchUsers();
+      }
+    } catch (error) {
+      toast.error(error.message || 'เกิดข้อผิดพลาดในการเปลี่ยนสถานะบัญชี');
+    }
+  };
+
+  const handleDeleteUserAttempt = (userObj) => {
+    // Check if user is active admin
+    if (userObj.role === 'admin' && userObj.status === 'active') {
+      const activeAdmins = users.filter(u => u.role === 'admin' && u.status === 'active');
+      if (activeAdmins.length <= 1) {
+        toast.error('ไม่สามารถลบหรือปิดบัญชี Admin คนสุดท้ายของระบบได้');
+        return;
+      }
+    }
+    setSelectedUserForDelete(userObj);
+  };
+
+  const confirmDeactivateUser = async () => {
+    if (!selectedUserForDelete) return;
+    await handleToggleStatus(selectedUserForDelete);
+    setSelectedUserForDelete(null);
+  };
+
+  // Filtered Users
+  const filteredUsers = users.filter(u => {
+    const matchesSearch = 
+      !searchQuery ||
+      u.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      u.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      u.position?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      u.phone?.includes(searchQuery);
+
+    const matchesRole = roleFilter === 'all' || u.role === roleFilter;
+    const matchesStatus = statusFilter === 'all' || u.status === statusFilter;
+
+    let matchesProject = true;
+    if (projectFilter !== 'all') {
+      matchesProject = u.all_projects || (u.assigned_project_ids && u.assigned_project_ids.includes(projectFilter));
+    }
+
+    return matchesSearch && matchesRole && matchesStatus && matchesProject;
+  });
+
+  const getInitials = (name) => {
+    if (!name) return 'U';
+    const parts = name.trim().split(' ');
+    if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    return name.substring(0, 2).toUpperCase();
+  };
+
+  const getProjectName = (id) => {
+    const p = projects.find(proj => proj.id === id);
+    return p ? p.name : id;
+  };
+
+  return (
+    <div className="space-y-6 pb-12">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+            <UserCog className="w-7 h-7 text-primary" />
+            จัดการผู้ใช้และสิทธิ์ (User Management & RBAC)
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Manage application users, roles, status, and project access.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            onClick={fetchInitialData} 
+            disabled={loading}
+            className="neu-button flex items-center gap-2"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            รีเฟรช
+          </Button>
+
+          <Button 
+            onClick={() => setIsAddModalOpen(true)}
+            className="neu-primary flex items-center gap-2 font-semibold"
+          >
+            <Plus className="w-4 h-4" />
+            + เพิ่มผู้ใช้ (Add User)
+          </Button>
+        </div>
+      </div>
+
+      {/* Migration Notice Banner */}
+      {rpcMissing && (
+        <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 flex items-start gap-3 text-xs sm:text-sm">
+          <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <div className="font-semibold text-amber-800 dark:text-amber-300">
+              แจ้งเตือน: ยังไม่ได้เปิดใช้งาน Supabase RPC Functions บนฐานข้อมูล Cloud
+            </div>
+            <p className="text-muted-foreground">
+              ระบบกำลังแสดงข้อมูลผู้ใช้ผ่านตาราง <code className="bg-amber-200/50 dark:bg-amber-950/60 px-1 py-0.5 rounded font-mono">profiles</code> โดยอัตโนมัติ (Fallback Mode)
+              หากต้องการเปิดใช้งานสิทธิ์ Admin เต็มรูปแบบ (สร้าง Auth User ใหม่แบบ Atomic, กำหนดสิทธิ์รายโครงการ, และรีเซ็ตรหัสผ่าน) 
+              กรุณานำโค้ดในไฟล์ <code className="bg-amber-200/50 dark:bg-amber-950/60 px-1 py-0.5 rounded font-mono">supabase/migrations/08_rbac_and_user_management.sql</code> ไปวางและกด Run ใน <strong>Supabase Dashboard → SQL Editor</strong>
+            </p>
+          </div>
+        </div>
+      )}
+
+
+      {/* Filter Toolbar Card */}
+      <Card className="neu-flat border-0">
+        <CardContent className="p-4 space-y-3 sm:space-y-0 sm:flex sm:items-center sm:gap-4">
+          {/* Search Input */}
+          <div className="relative flex-1">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="ค้นหาชื่อ, อีเมล, ตำแหน่ง..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 neu-pressed bg-transparent text-sm"
+            />
+          </div>
+
+          {/* Role Filter */}
+          <div className="w-full sm:w-44">
+            <select
+              value={roleFilter}
+              onChange={(e) => setRoleFilter(e.target.value)}
+              className="w-full p-2 rounded-xl neu-pressed bg-background text-foreground text-sm border-0 focus:ring-2 focus:ring-primary"
+            >
+              <option value="all">บทบาท: ทั้งหมด</option>
+              <option value="admin">ADMINISTRATOR</option>
+              <option value="staff">STAFF / REQUESTER</option>
+            </select>
+          </div>
+
+          {/* Status Filter */}
+          <div className="w-full sm:w-44">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full p-2 rounded-xl neu-pressed bg-background text-foreground text-sm border-0 focus:ring-2 focus:ring-primary"
+            >
+              <option value="all">สถานะ: ทั้งหมด</option>
+              <option value="active">Active (เปิดใช้งาน)</option>
+              <option value="inactive">Inactive (ระงับการใช้งาน)</option>
+            </select>
+          </div>
+
+          {/* Project Filter */}
+          <div className="w-full sm:w-48">
+            <select
+              value={projectFilter}
+              onChange={(e) => setProjectFilter(e.target.value)}
+              className="w-full p-2 rounded-xl neu-pressed bg-background text-foreground text-sm border-0 focus:ring-2 focus:ring-primary"
+            >
+              <option value="all">โครงการ: ทั้งหมด</option>
+              {projects.map(p => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Users Table Card */}
+      <Card className="neu-flat border-0 overflow-hidden">
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm text-left">
+              <thead className="text-xs text-muted-foreground uppercase bg-black/5 dark:bg-white/5 border-b border-white/20">
+                <tr>
+                  <th className="px-6 py-3.5">ผู้ใช้งาน (User)</th>
+                  <th className="px-4 py-3.5">บทบาท (Role)</th>
+                  <th className="px-4 py-3.5">โครงการที่เข้าถึงได้ (Projects)</th>
+                  <th className="px-4 py-3.5">สถานะ (Status)</th>
+                  <th className="px-4 py-3.5">วันที่สร้าง (Created)</th>
+                  <th className="px-6 py-3.5 text-right">การจัดการ (Actions)</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/20">
+                {loading ? (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
+                      <div className="inline-flex items-center gap-2">
+                        <RefreshCw className="w-4 h-4 animate-spin text-primary" />
+                        กำลังโหลดข้อมูลผู้ใช้งาน...
+                      </div>
+                    </td>
+                  </tr>
+                ) : filteredUsers.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
+                      ไม่พบข้อมูลผู้ใช้งานที่ตรงตามเงื่อนไข
+                    </td>
+                  </tr>
+                ) : (
+                  filteredUsers.map((u) => (
+                    <tr key={u.id} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                      {/* Avatar & Name & Email */}
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          {u.avatar_url ? (
+                            <img 
+                              src={u.avatar_url} 
+                              alt={u.full_name} 
+                              className="w-10 h-10 rounded-full object-cover shadow-sm border border-white/40"
+                              onError={(e) => { e.target.onerror = null; e.target.src = ''; }}
+                            />
+                          ) : (
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
+                              {getInitials(u.full_name)}
+                            </div>
+                          )}
+
+                          <div>
+                            <div className="font-semibold text-foreground flex items-center gap-1.5">
+                              {u.full_name}
+                              {u.position && (
+                                <span className="text-[11px] font-normal text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full">
+                                  {u.position}
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-xs text-muted-foreground flex items-center gap-3 mt-0.5">
+                              <span className="flex items-center gap-1"><Mail className="w-3 h-3" /> {u.email}</span>
+                              {u.phone && <span className="flex items-center gap-1"><Phone className="w-3 h-3" /> {u.phone}</span>}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Role Badge */}
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        {u.role === 'admin' ? (
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300 border border-purple-300 dark:border-purple-800">
+                            <Shield className="w-3.5 h-3.5" /> ADMINISTRATOR
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                            STAFF / REQUESTER
+                          </span>
+                        )}
+                      </td>
+
+                      {/* Assigned Projects */}
+                      <td className="px-4 py-4 max-w-xs">
+                        {u.all_projects ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
+                            <FolderKanban className="w-3 h-3" /> ทุกโครงการ (All Projects)
+                          </span>
+                        ) : u.assigned_project_ids && u.assigned_project_ids.length > 0 ? (
+                          <div className="flex flex-wrap gap-1">
+                            {u.assigned_project_ids.map(pid => (
+                              <span key={pid} className="inline-block px-2 py-0.5 rounded text-[11px] bg-muted font-medium">
+                                {getProjectName(pid)}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-xs text-muted-foreground font-italic">ไม่ได้ระบุโครงการ</span>
+                        )}
+                      </td>
+
+                      {/* Account Status Badge */}
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        {u.status === 'active' ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500"></span> ACTIVE
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300">
+                            <span className="w-2 h-2 rounded-full bg-red-500"></span> INACTIVE
+                          </span>
+                        )}
+                      </td>
+
+                      {/* Created Date */}
+                      <td className="px-4 py-4 whitespace-nowrap text-xs text-muted-foreground">
+                        {u.created_at ? format(new Date(u.created_at), 'dd/MM/yyyy') : '-'}
+                      </td>
+
+                      {/* Actions */}
+                      <td className="px-6 py-4 text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-1">
+                          {/* Edit User */}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            title="แก้ไขข้อมูลผู้ใช้ (Edit User)"
+                            onClick={() => setSelectedUserForEdit(u)}
+                            className="h-8 w-8 text-slate-600 hover:text-primary hover:bg-primary/10"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+
+                          {/* Reset Password */}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            title="รีเซ็ตรหัสผ่าน (Reset Password)"
+                            onClick={() => setSelectedUserForResetPw(u)}
+                            className="h-8 w-8 text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950"
+                          >
+                            <KeyRound className="w-4 h-4" />
+                          </Button>
+
+                          {/* Toggle Active/Inactive */}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            title={u.status === 'active' ? 'ระงับการใช้งานบัญชี (Deactivate)' : 'เปิดใช้งานบัญชี (Activate)'}
+                            onClick={() => handleToggleStatus(u)}
+                            className={`h-8 w-8 ${
+                              u.status === 'active' 
+                                ? 'text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950' 
+                                : 'text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950'
+                            }`}
+                          >
+                            {u.status === 'active' ? <UserX className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Add User Modal */}
+      <AddUserModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSave={handleCreateUser}
+        projects={projects}
+        roles={dbRoles}
+      />
+
+      {/* Edit User Modal */}
+      {selectedUserForEdit && (
+        <EditUserModal
+          isOpen={!!selectedUserForEdit}
+          onClose={() => setSelectedUserForEdit(null)}
+          onSave={handleUpdateUser}
+          user={selectedUserForEdit}
+          projects={projects}
+          roles={dbRoles}
+        />
+      )}
+
+
+      {/* Reset Password Modal */}
+      {selectedUserForResetPw && (
+        <ResetPasswordModal
+          isOpen={!!selectedUserForResetPw}
+          onClose={() => setSelectedUserForResetPw(null)}
+          onResetPassword={handleResetPassword}
+          user={selectedUserForResetPw}
+        />
+      )}
+
+      {/* Confirm Deactivate Modal */}
+      {selectedUserForDelete && (
+        <Dialog open={!!selectedUserForDelete} onOpenChange={() => setSelectedUserForDelete(null)}>
+          <DialogContent className="max-w-md neu-flat border-0">
+            <DialogHeader>
+              <DialogTitle className="text-lg font-bold flex items-center gap-2 text-red-600">
+                <AlertCircle className="w-5 h-5" />
+                ยืนยันการระงับบัญชีผู้ใช้ (Deactivate Account)
+              </DialogTitle>
+              <DialogDescription className="text-sm text-muted-foreground mt-2">
+                ต้องการระงับการใช้งานบัญชี <strong>{selectedUserForDelete.full_name}</strong> ({selectedUserForDelete.email}) หรือไม่?
+                <br />
+                <span className="text-xs text-amber-600 font-medium mt-1 block">
+                  * การระงับบัญชีจะยกเลิกสิทธิ์เข้าถึงระบบ แต่จะยังคงรักษาประวัติธุรกรรมเบิกจ่ายและรับเข้าในอดีตของผู้ใช้นี้ไว้ครบถ้วน
+                </span>
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="mt-4">
+              <Button variant="ghost" onClick={() => setSelectedUserForDelete(null)}>
+                ยกเลิก
+              </Button>
+              <Button variant="destructive" onClick={confirmDeactivateUser}>
+                ยืนยันระงับบัญชี
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+    </div>
+  );
+};
+
+export default UserManagement;

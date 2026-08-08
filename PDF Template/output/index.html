@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เอกสารเบิก และนำส่งอุปกรณ์ {{document_number}}</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="page">
+        <!-- Header -->
+        <div class="header-section">
+            <div class="logo-container">
+                <!-- Expecting user to place logo.png at assets/images/logo.png -->
+                <img src="assets/images/logo.png" class="logo" alt="FORTH Logo" onerror="this.style.display='none'">
+                <div class="company-names">
+                    <div class="company-th">บริษัท ฟอร์ท คอร์ปอเรชั่น จำกัด (มหาชน)</div>
+                    <div class="company-en">FORTH CORPORATION PUBLIC COMPANY LIMITED</div>
+                </div>
+            </div>
+            <div class="address-text">
+                1053/1 ถนน.พหลโยธิน แขวงพญาไท เขตพญาไท กรุงเทพมหานคร 10400 โทรศัพท์ : 02-265-6700 แฟกซ์ : 02-265-6799 เลขประจำตัวผู้เสียภาษี : 0107548000471<br>
+                1053/1 Phaholyothin Road, Phayathai Subdistrict, Phayathai District, Bangkok 10400 Tel: +662-265-6700 Fax: +662-265-6799 Tax ID : 0107548000471
+            </div>
+        </div>
+
+        <!-- Document Title -->
+        <div class="doc-title">ใบนำส่งอุปกรณ์</div>
+        <div class="doc-copy">ต้นฉบับ</div>
+
+        <!-- Meta section -->
+        <div class="meta-section">
+            <div class="meta-to">ส่งของที่ : {{receiver_name}}</div>
+            <div class="meta-date">Date. {{date}}</div>
+        </div>
+
+        <!-- Items Table -->
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th class="col-no">ลำดับ</th>
+                    <th class="col-desc">รายการ</th>
+                    <th class="col-qty">จำนวน</th>
+                    <th class="col-sn">Serial Number/Part Number</th>
+                    <th class="col-remark">Remark</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each items}}
+                <tr>
+                    <td class="col-no">{{@index}}</td>
+                    <td class="col-desc">{{item_name}}</td>
+                    <td class="col-qty">{{quantity}}</td>
+                    <td class="col-sn">{{serial_number}}</td>
+                    <td class="col-remark">{{remark}}</td>
+                </tr>
+                {{/each}}
+                <!-- Empty rows for the rest of the table to match layout -->
+                <tr class="empty-row"><td class="col-no"></td><td class="col-desc"></td><td class="col-qty"></td><td class="col-sn"></td><td class="col-remark"></td></tr>
+                <tr class="empty-row"><td class="col-no"></td><td class="col-desc"></td><td class="col-qty"></td><td class="col-sn"></td><td class="col-remark"></td></tr>
+                <tr class="empty-row"><td class="col-no"></td><td class="col-desc"></td><td class="col-qty"></td><td class="col-sn"></td><td class="col-remark"></td></tr>
+                <tr class="empty-row"><td class="col-no"></td><td class="col-desc"></td><td class="col-qty"></td><td class="col-sn"></td><td class="col-remark"></td></tr>
+                <tr class="empty-row"><td class="col-no"></td><td class="col-desc"></td><td class="col-qty"></td><td class="col-sn"></td><td class="col-remark"></td></tr>
+            </tbody>
+        </table>
+
+        <!-- Footer -->
+        <div class="footer-section">
+            <div class="signature-block signature-sender">
+                <div class="sign-line">
+                    <span class="sign-label">ผู้ส่งของ</span>
+                    <span class="sign-underline">{{sender_name}}</span>
+                </div>
+                <div class="sign-line">
+                    <span class="sign-label">เบอร์โทรศัพท์</span>
+                    <span class="sign-underline">{{sender_phone}}</span>
+                </div>
+                <div class="sign-line">
+                    <span class="sign-label">วันที่</span>
+                    <span class="sign-underline"></span>
+                </div>
+            </div>
+            
+            <div class="signature-block signature-receiver">
+                <div class="sign-line">
+                    <span class="sign-label">ผู้รับของ</span>
+                    <span class="sign-underline">{{receiver_name}}</span>
+                </div>
+                <div class="sign-line">
+                    <span class="sign-label">เบอร์โทรศัพท์</span>
+                    <span class="sign-underline">{{receiver_phone}}</span>
+                </div>
+                <div class="sign-line">
+                    <span class="sign-label">วันที่</span>
+                    <span class="sign-underline"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

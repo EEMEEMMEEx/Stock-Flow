@@ -10,6 +10,12 @@
   </head>
   <body class="bg-background text-foreground antialiased selection:bg-primary/30">
     <div id="root"></div>
+    <script type="module">
+      import { Buffer } from 'https://esm.sh/buffer';
+      window.Buffer = Buffer;
+      window.global = window;
+      window.process = { env: { NODE_ENV: 'development' } };
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

@@ -27,27 +27,23 @@ const Dashboard = () => {
     try {
       setLoading(true);
 
-      // Count active projects
       const { count: projectCount } = await supabase
         .from('projects')
         .select('*', { count: 'exact', head: true })
         .eq('status', 'active');
 
-      // Count items
       const { count: itemCount } = await supabase
         .from('items')
         .select('*', { count: 'exact', head: true });
 
-      // Count pending withdrawals
       const { count: pendingCount } = await supabase
-        .from('withdrawals')
+        .from('withdrawal_orders')
         .select('*', { count: 'exact', head: true })
         .eq('status', 'pending');
 
-      // Count today's withdrawals
       const today = new Date().toISOString().split('T')[0];
       const { count: todayWithdrawals } = await supabase
-        .from('withdrawals')
+        .from('withdrawal_orders')
         .select('*', { count: 'exact', head: true })
         .gte('requested_at', today);
 
@@ -58,15 +54,13 @@ const Dashboard = () => {
         todayWithdrawals: todayWithdrawals || 0,
       });
 
-      // Fetch recent activity (last 6 withdrawals)
       const { data: activityData } = await supabase
-        .from('withdrawals')
-        .select('*, projects(name), items(name, unit), profiles!withdrawals_requested_by_fkey(full_name)')
+        .from('withdrawal_orders')
+        .select('*, projects(name), profiles!withdrawal_orders_requested_by_fkey(full_name), withdrawal_items(items(name))')
         .order('requested_at', { ascending: false })
         .limit(6);
       setRecentActivity(activityData || []);
 
-      // Fetch stock balance
       const { data: balanceData } = await supabase
         .from('stock_balance')
         .select('*')
@@ -89,155 +83,167 @@ const Dashboard = () => {
 
   const getStatusLabel = (status) => {
     switch (status) {
-      case 'pending': return { text: 'รออนุมัติ', cls: 'text-amber-600 bg-amber-50' };
-      case 'approved': return { text: 'อนุมัติ', cls: 'text-blue-600 bg-blue-50' };
-      case 'completed': return { text: 'รับของแล้ว', cls: 'text-emerald-600 bg-emerald-50' };
-      case 'rejected': return { text: 'ปฏิเสธ', cls: 'text-red-600 bg-red-50' };
-      default: return { text: status, cls: 'text-gray-600 bg-gray-50' };
+      case 'pending': return { text: 'รออนุมัติ', cls: 'text-amber-600 bg-amber-50 border-amber-200' };
+      case 'approved': return { text: 'อนุมัติ', cls: 'text-blue-600 bg-blue-50 border-blue-200' };
+      case 'completed': return { text: 'รับของแล้ว', cls: 'text-emerald-600 bg-emerald-50 border-emerald-200' };
+      case 'rejected': return { text: 'ปฏิเสธ', cls: 'text-red-600 bg-red-50 border-red-200' };
+      default: return { text: status, cls: 'text-gray-600 bg-gray-50 border-gray-200' };
     }
   };
 
   if (loading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-8">
         <div>
           <Skeleton className="h-10 w-[200px]" />
           <Skeleton className="h-4 w-[350px] mt-2" />
         </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {[1,2,3,4].map(i => <Skeleton key={i} className="h-32 w-full rounded-xl" />)}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+          {[1,2,3,4].map(i => <Skeleton key={i} className="h-32 w-full rounded-2xl" />)}
         </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-          <Skeleton className="col-span-4 h-[400px] rounded-xl" />
-          <Skeleton className="col-span-3 h-[400px] rounded-xl" />
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <Skeleton className="col-span-8 h-[450px] rounded-2xl" />
+          <Skeleton className="col-span-4 h-[450px] rounded-2xl" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 pb-12">
+      
+      {/* Header */}
       <div>
         <h2 className="text-3xl font-bold tracking-tight text-foreground">Dashboard</h2>
-        <p className="text-muted-foreground mt-2">
+        <p className="text-sm text-muted-foreground mt-2">
           ยินดีต้อนรับกลับมา, <span className="font-semibold text-foreground">{profile?.full_name}</span>. นี่คือสรุปข้อมูล Stock วันนี้
         </p>
       </div>
 
-      {/* Stat Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {/* Stats Cards (Neumorphic with Gridgeist Typography) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
         {statCards.map((stat, i) => (
-          <Card key={i} className="glass-card overflow-hidden relative group">
-            <div className={`absolute right-[-16px] top-[-16px] opacity-[0.07] ${stat.color}`}>
-              <stat.icon className="w-28 h-28" strokeWidth={1.5} />
+          <Card key={i} className="overflow-hidden relative border-none">
+            {/* Background Icon Watermark */}
+            <div className={`absolute right-[-16px] top-[-16px] opacity-[0.05] ${stat.color}`}>
+              <stat.icon className="w-32 h-32" strokeWidth={1.5} />
             </div>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                {stat.title}
-              </CardTitle>
-              <div className={`p-2 rounded-lg ${stat.bg}`}>
-                <stat.icon className={`h-4 w-4 ${stat.color}`} />
+            
+            <CardContent className="p-6 flex flex-col h-full justify-between relative z-10">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  {stat.title}
+                </span>
+                <div className={`p-2 rounded-xl ${stat.bg} shadow-inner`}>
+                  <stat.icon className={`w-4 h-4 ${stat.color}`} strokeWidth={2.5} />
+                </div>
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-foreground">{stat.value}</div>
+              <div>
+                <span className={`text-5xl font-light tracking-tight ${stat.color}`}>
+                  {stat.value}
+                </span>
+              </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* Bottom Section */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        {/* Stock Balance Table */}
-        <Card className="col-span-4 glass-card">
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <ArrowDownToLine className="w-5 h-5 text-indigo-500" />
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        {/* Left Column: Stock Balance Chart (8 columns wide) */}
+        <Card className="lg:col-span-8 border-none flex flex-col">
+          <CardHeader className="border-b border-border/40 pb-4">
+            <CardTitle className="text-sm font-bold tracking-wide uppercase text-foreground flex items-center gap-2">
+              <ArrowDownToLine className="w-4 h-4 text-muted-foreground" />
               Stock คงเหลือแต่ละโครงการ
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex-1 pt-6">
             {stockBalance.length > 0 ? (
-              <div className="h-[300px] w-full mt-4">
+              <div className="h-[350px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={stockBalance}
-                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                    margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                     <XAxis 
                       dataKey="item_name" 
                       axisLine={false} 
                       tickLine={false} 
-                      tick={{ fill: '#64748b', fontSize: 12 }} 
+                      tick={{ fill: '#64748b', fontSize: 11 }} 
                       dy={10}
                     />
                     <YAxis 
                       axisLine={false} 
                       tickLine={false} 
-                      tick={{ fill: '#64748b', fontSize: 12 }}
-                      dx={-10}
+                      tick={{ fill: '#64748b', fontSize: 11 }}
                     />
                     <RechartsTooltip 
                       cursor={{ fill: '#f1f5f9' }}
-                      contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                      contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '4px 4px 10px rgba(0,0,0,0.05), -4px -4px 10px rgba(255,255,255,0.8)', fontSize: '12px' }}
                     />
-                    <Legend wrapperStyle={{ paddingTop: '20px' }} />
-                    <Bar dataKey="total_in" name="รับเข้า (In)" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={40} />
-                    <Bar dataKey="total_out" name="เบิกจ่าย (Out)" fill="#f59e0b" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                    <Legend wrapperStyle={{ paddingTop: '20px', fontSize: '12px' }} />
+                    <Bar dataKey="total_in" name="รับเข้า (In)" fill="#10b981" radius={[2, 2, 0, 0]} maxBarSize={32} />
+                    <Bar dataKey="total_out" name="เบิกจ่าย (Out)" fill="#f59e0b" radius={[2, 2, 0, 0]} maxBarSize={32} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-                <Package className="w-12 h-12 mb-3 opacity-30" />
-                <p className="text-sm">ยังไม่มีข้อมูล Stock</p>
+              <div className="flex flex-col items-center justify-center h-full min-h-[350px] text-muted-foreground">
+                <Package className="w-12 h-12 mb-3 opacity-30 stroke-1" />
+                <p className="text-sm font-medium">ยังไม่มีข้อมูล Stock</p>
                 <p className="text-xs mt-1">เริ่มจากเพิ่มวัสดุ แล้วรับเข้า Stock ก่อนครับ</p>
               </div>
             )}
           </CardContent>
         </Card>
 
-        {/* Recent Activity */}
-        <Card className="col-span-3 glass-card">
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+        {/* Right Column: Recent Activity (4 columns wide) */}
+        <Card className="lg:col-span-4 border-none flex flex-col">
+          <CardHeader className="border-b border-border/40 pb-4">
+            <CardTitle className="text-sm font-bold tracking-wide uppercase text-foreground flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-muted-foreground" />
               กิจกรรมล่าสุด
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex-1 p-0">
             {recentActivity.length > 0 ? (
-              <div className="space-y-4">
+              <div className="flex flex-col divide-y divide-border/40">
                 {recentActivity.map((item, i) => {
                   const statusInfo = getStatusLabel(item.status);
                   return (
-                    <div key={i} className="flex items-start gap-3">
-                      <div className="w-2 h-2 rounded-full bg-primary mt-2 shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground leading-tight truncate">
-                          เบิก {item.items?.name}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {item.projects?.name} • <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${statusInfo.cls}`}>{statusInfo.text}</span>
-                        </p>
+                    <div key={i} className="flex flex-col p-5 hover:bg-muted/10 transition-colors">
+                      <div className="flex justify-between items-start mb-2">
+                        <span className="text-[11px] font-mono font-medium text-muted-foreground/80">
+                          {format(new Date(item.requested_at), 'dd/MM HH:mm')}
+                        </span>
+                        <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider border rounded-md shadow-sm ${statusInfo.cls}`}>
+                          {statusInfo.text}
+                        </span>
                       </div>
-                      <div className="text-xs text-muted-foreground whitespace-nowrap shrink-0">
-                        {format(new Date(item.requested_at), 'dd/MM HH:mm')}
-                      </div>
+                      <p className="text-sm font-semibold text-foreground leading-snug mb-1.5">
+                        เบิก {item.withdrawal_items?.[0]?.items?.name} {item.withdrawal_items?.length > 1 ? `และอีก ${item.withdrawal_items.length - 1} รายการ` : ''}
+                      </p>
+                      <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30"></span>
+                        {item.projects?.name}
+                      </p>
                     </div>
                   );
                 })}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-                <ArrowUpFromLine className="w-12 h-12 mb-3 opacity-30" />
-                <p className="text-sm">ยังไม่มีกิจกรรม</p>
-                <p className="text-xs mt-1">เมื่อมีการเบิกจ่าย จะแสดงผลที่นี่</p>
+              <div className="flex flex-col items-center justify-center h-full min-h-[350px] text-muted-foreground p-6">
+                <ArrowUpFromLine className="w-10 h-10 mb-3 opacity-30 stroke-1" />
+                <p className="text-sm font-medium">ยังไม่มีกิจกรรม</p>
+                <p className="text-xs mt-1 text-center">เมื่อมีการเบิกจ่าย จะแสดงผลที่นี่</p>
               </div>
             )}
           </CardContent>
         </Card>
+        
       </div>
     </div>
   );

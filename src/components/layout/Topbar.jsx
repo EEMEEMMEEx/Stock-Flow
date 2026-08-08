@@ -3,13 +3,13 @@ import { useAuth } from '@/contexts/AuthContext';
 import { LogOut, Menu, UserCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-const Topbar = () => {
+const Topbar = ({ onMenuClick }) => {
   const { profile, signOut } = useAuth();
 
   return (
-    <header className="h-16 border-b bg-white/80 backdrop-blur-xl sticky top-0 z-30 flex items-center justify-between px-6">
+    <header className="h-16 bg-[#e0e5ec] shadow-[0_5px_10px_rgb(163,177,198,0.6)] sticky top-0 z-30 flex items-center justify-between px-6">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" className="md:hidden">
+        <Button variant="ghost" size="icon" className="md:hidden" onClick={onMenuClick}>
           <Menu className="w-5 h-5" />
         </Button>
       </div>

@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+<html lang="th" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stock-Flow RBAC Architecture & Workflow Hub</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f7ff',
+              100: '#e0effe',
+              500: '#0284c7',
+              600: '#0265d6',
+              700: '#0349b4',
+              900: '#0c2340',
+            }
+          },
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Mermaid JS for Visual Diagrams -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      mermaid.initialize({
+        startOnLoad: true,
+        theme: document.documentElement.classList.contains('dark') ? 'dark' : 'neutral',
+        securityLevel: 'loose',
+        flowchart: { useMaxWidth: true, htmlLabels: false, curve: 'basis' }
+      });
+    });
+  </script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    .dark .glass-panel {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    .workflow-line {
+      background: linear-gradient(90deg, #3b82f6 0%, #10b981 100%);
+    }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.05);
+    }
+    .dark ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #94a3b8;
+      border-radius: 4px;
+    }
+    .dark ::-webkit-scrollbar-thumb {
+      background: #334155;
+    }
+    .mermaid svg {
+      max-width: 100% !important;
+      height: auto !important;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 min-h-screen transition-colors duration-300">
+
+  <!-- Header App Bar -->
+  <header class="sticky top-0 z-50 glass-panel border-b border-slate-200 dark:border-slate-800 transition-colors">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <!-- Logo & Title -->
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-cyan-400 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-500/20">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold text-slate-900 dark:text-white leading-tight flex items-center gap-2">
+            Stock-Flow RBAC Architecture
+            <span class="text-xs bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 px-2 py-0.5 rounded-full font-semibold">v2.0 Spec</span>
+          </h1>
+          <p class="text-xs text-slate-500 dark:text-slate-400">ระบบผังกระบวนการทำงาน ตารางสิทธิ์การใช้งาน และ RLS Policy</p>
+        </div>
+      </div>
+
+      <!-- Quick Nav Tabs & Theme Switcher -->
+      <div class="flex items-center space-x-2">
+        <nav class="hidden md:flex space-x-1 bg-slate-200/60 dark:bg-slate-900/80 p-1 rounded-xl border border-slate-300/50 dark:border-slate-800">
+          <button onclick="switchTab('diagram')" id="tab-btn-diagram" class="nav-tab active px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all">
+            <span class="flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
+              Workflow Diagram
+            </span>
+          </button>
+          <button onclick="switchTab('matrix')" id="tab-btn-matrix" class="nav-tab px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all">
+            <span class="flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+              Permission Matrix
+            </span>
+          </button>
+          <button onclick="switchTab('simulator')" id="tab-btn-simulator" class="nav-tab px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all">
+            <span class="flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
+              Role Simulator
+            </span>
+          </button>
+          <button onclick="switchTab('rls')" id="tab-btn-rls" class="nav-tab px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all">
+            <span class="flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+              RLS Security Policies
+            </span>
+          </button>
+        </nav>
+
+        <!-- Dark Mode Toggle Button -->
+        <button id="theme-toggle" onclick="toggleTheme()" class="p-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors cursor-pointer" title="สลับธีม">
+          <svg id="theme-icon-dark" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          <svg id="theme-icon-light" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Mobile Nav Bar -->
+    <div class="md:hidden flex overflow-x-auto px-4 py-2 border-t border-slate-200 dark:border-slate-800 space-x-2 bg-slate-100/80 dark:bg-slate-900/80">
+      <button onclick="switchTab('diagram')" id="mobile-tab-diagram" class="px-3 py-1 text-xs font-semibold rounded-lg bg-blue-600 text-white whitespace-nowrap">Diagram</button>
+      <button onclick="switchTab('matrix')" id="mobile-tab-matrix" class="px-3 py-1 text-xs font-semibold rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 whitespace-nowrap">Matrix</button>
+      <button onclick="switchTab('simulator')" id="mobile-tab-simulator" class="px-3 py-1 text-xs font-semibold rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 whitespace-nowrap">Simulator</button>
+      <button onclick="switchTab('rls')" id="mobile-tab-rls" class="px-3 py-1 text-xs font-semibold rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 whitespace-nowrap">RLS Policies</button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <!-- TAB 1: WORKFLOW DIAGRAM -->
+    <section id="section-diagram" class="tab-content space-y-8">
+      
+      <!-- Section Intro Banner -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between bg-gradient-to-r from-blue-900/40 via-indigo-900/30 to-purple-900/20 p-6 rounded-2xl border border-blue-500/20 shadow-xl">
+        <div class="space-y-1">
+          <h2 class="text-xl font-bold text-white flex items-center gap-2">
+            <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            Interactive Requisition & Withdrawal Lifecycle
+          </h2>
+          <p class="text-sm text-slate-300">คลิกที่แต่ละขั้นตอนเพื่อดูคำอธิบายสิทธิ์ บทบาทที่รับผิดชอบ และกฎ Security Policies (RLS Rules)</p>
+        </div>
+        <div class="mt-4 md:mt-0 flex items-center gap-3 text-xs text-slate-300">
+          <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span> User Actions</span>
+          <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span> Admin Approval</span>
+          <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-blue-500 inline-block"></span> Complete State</span>
+        </div>
+      </div>
+
+      <!-- Graphic Visual Mermaid Workflow Diagram Container 1 -->
+      <div id="diagram-container-1" class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-800 pb-4">
+          <div>
+            <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              1. Visual Workflow Swimlane Diagram (Role Overview & State Lifecycle)
+            </h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">แผนผังลำดับขั้นตอนการทำงาน (Swimlane Flowchart) แสดงการส่งต่อภาระงานระหว่างบทบาทและฐานข้อมูล</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 px-2.5 py-1 rounded-md font-semibold">Mermaid.js Engine</span>
+            <button onclick="downloadSvgElementAsPng('#diagram-container-1', 'stock-flow-rbac-swimlane-diagram')" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer shadow-md">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+              บันทึกรูปภาพ (.PNG)
+            </button>
+            <button onclick="downloadSvgElementAsSvg('#diagram-container-1', 'stock-flow-rbac-swimlane-diagram')" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer shadow-md">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              บันทึกผัง (.SVG)
+            </button>
+          </div>
+        </div>
+
+        <!-- Rendered Graphic Diagram 1 -->
+        <div class="overflow-x-auto p-6 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 flex justify-center">
+          <div class="mermaid min-w-[750px] w-full text-center">
+            graph TD
+              subgraph Staff_Lane ["👤 Staff / Requester (ผู้เบิกจ่าย)"]
+                  N1["1. เลือกวัสดุใส่ตะกร้า (Cart)"] --> N2["2. กดส่งใบเบิก (Checkout)"]
+                  N5["5. เดินทางรับอุปกรณ์จริงที่คลัง"] --> N6["6. กด 'ยืนยันการรับของแล้ว'"]
+              end
+
+              subgraph Database_Lane ["🛡️ Supabase Database & RLS Engine"]
+                  N2 -->|INSERT requested_by = auth.uid| S1("Status: pending")
+                  N4A -->|UPDATE status = approved| S2("Status: approved (รอผู้รับยืนยัน)")
+                  N4B -->|UPDATE status = rejected| S3("Status: rejected")
+                  N6 -->|UPDATE WITH CHECK auth.uid = requested_by| S4("Status: completed")
+              end
+
+              subgraph Admin_Lane ["👑 Approver / Admin (ผู้ดูแลคลัง)"]
+                  S1 --> N3["3. ตรวจสอบสต็อกสินค้าในคลัง"]
+                  N3 -->|ของครบถ้วน| N4A["4A. กดอนุมัติบิล All-or-Nothing"]
+                  N3 -->|ของไม่ครบ| N4B["4B. กดปฏิเสธบิลพร้อมระบุเหตุผล"]
+                  S2 -->|แจ้งเตือนผู้เบิกมารับของ| N5
+                  N7["7. บันทึกนำเข้าสินค้า Stock In"] --> DB_UPDATE["อัปเดตยอดคงเหลือคลัง"]
+              end
+
+              classDef staffStyle fill:#064e3b,stroke:#10b981,stroke-width:2px,color:#ffffff;
+              classDef adminStyle fill:#78350f,stroke:#f59e0b,stroke-width:2px,color:#ffffff;
+              classDef statusStyle fill:#1e1b4b,stroke:#6366f1,stroke-width:2px,color:#ffffff;
+
+              class N1,N2,N5,N6 staffStyle;
+              class N3,N4A,N4B,N7 adminStyle;
+              class S1,S2,S3,S4,DB_UPDATE statusStyle;
+          </div>
+        </div>
+      </div>
+
+      <!-- Graphic Visual Mermaid Workflow Diagram Container 2 -->
+      <div id="diagram-container-2" class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-800 pb-4">
+          <div>
+            <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              2. Detailed Database Transaction & Approval Atomic Workflow
+            </h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">ผังแสดงกระบวนการทำงานระดับฐานข้อมูล (Atomic Transaction Engine), การเช็ก Stock, Locking Rows, Rollback/Commit (All-or-Nothing) และการอนุมัติบิล</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300 px-2.5 py-1 rounded-md font-semibold">RPC & Transaction Engine</span>
+            <button onclick="downloadSvgElementAsPng('#diagram-container-2', 'stock-flow-atomic-transaction-workflow')" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer shadow-md">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+              บันทึกรูปภาพ (.PNG)
+            </button>
+            <button onclick="downloadSvgElementAsSvg('#diagram-container-2', 'stock-flow-atomic-transaction-workflow')" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer shadow-md">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              บันทึกผัง (.SVG)
+            </button>
+          </div>
+        </div>
+
+        <!-- Rendered Graphic Diagram 2 -->
+        <div class="overflow-x-auto p-6 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 flex justify-center">
+          <div class="mermaid min-w-[750px] w-full text-center">
+            graph TD
+              subgraph Staff_Phase ["👤 1. Staff / Requester Flow"]
+                S1["1. เลือกสินค้าใส่ Cart (แสดง Stock ปัจจุบัน, ห้ามเกิน)"] --> S2["2. Checkout (สร้างคำขอ)"]
+                S2 --> S3["3. INSERT Request (requested_by = auth.uid(), status = pending)"]
+              end
+
+              subgraph Admin_Review ["👑 2. Admin Review & Decision"]
+                S3 --> A1["Admin ตรวจสอบคำขอ / รายละเอียด"]
+                A1 -->|4B. Reject| REJ["Reject Request"]
+                REJ --> REJ_DETAIL["บันทึก status = rejected, reject_reason, rejected_by, rejected_at"]
+              end
+
+              subgraph Atomic_Tx ["⚡ 3. Supabase RPC / PostgreSQL Transaction (Single Transaction)"]
+                A1 -->|4A. Approve| TX1["1. LOCK Request (status ต้อง = pending)"]
+                TX1 --> TX2["2. LOCK Stock Rows สินค้าทั้งหมด (FOR UPDATE)"]
+                TX2 --> TX3["3. ตรวจ Available Stock ซ้ำใน Database สำหรับสินค้าทุกรายการ"]
+                
+                TX3 -->|สินค้าไม่พอ แม้แต่ 1 Item| RB["❌ ROLLBACK"]
+                RB --> RB_INFO["ไม่ตัด Stock / ไม่สร้าง Stock Out / ไม่ Approved / Request ยังคง pending"]
+
+                TX3 -->|Stock เพียงพอทุก Item| TX4["4. UPDATE Stock (stock = stock - qty)"]
+                TX4 --> TX5["5. INSERT stock_transaction (type = stock_out)"]
+                TX5 --> TX6["6. UPDATE Request (status = approved, approved_by, approved_at)"]
+                TX6 --> TX7["7. COMMIT All-or-Nothing"]
+              end
+
+              subgraph Completion_Phase ["✅ 4. Fulfillment & Confirmation"]
+                TX7 --> NOTIF["Staff ได้รับแจ้งเตือนว่าอนุมัติแล้ว"]
+                NOTIF --> PICK["8. เดินทางรับอุปกรณ์จริงที่คลัง"]
+                PICK --> CONFIRM["9. กด 'ยืนยันการรับของแล้ว'"]
+                CONFIRM --> DB_UPD["UPDATE Request SET status = completed, completed_at = now() WHERE requested_by = auth.uid() AND status = approved"]
+                DB_UPD --> DONE["Status: completed"]
+              end
+
+              classDef staffStyle fill:#064e3b,stroke:#10b981,stroke-width:2px,color:#ffffff;
+              classDef adminStyle fill:#78350f,stroke:#f59e0b,stroke-width:2px,color:#ffffff;
+              classDef txStyle fill:#1e1b4b,stroke:#6366f1,stroke-width:2px,color:#ffffff;
+              classDef rollbackStyle fill:#7f1d1d,stroke:#ef4444,stroke-width:2px,color:#ffffff;
+              classDef commitStyle fill:#065f46,stroke:#34d399,stroke-width:2px,color:#ffffff;
+
+              class S1,S2,S3,NOTIF,PICK,CONFIRM,DB_UPD,DONE staffStyle;
+              class A1,REJ,REJ_DETAIL adminStyle;
+              class TX1,TX2,TX3 txStyle;
+              class RB,RB_INFO rollbackStyle;
+              class TX4,TX5,TX6,TX7 commitStyle;
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Diagram Grid: Left Flowchart Nodes / Right Node Details -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Left 8-cols: Interactive Flowchart Canvas -->
+        <div class="lg:col-span-8 space-y-6">
+          
+          <!-- Phase 1 Card: Requisition Order Creation -->
+          <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-md relative overflow-hidden">
+            <div class="absolute top-0 left-0 bottom-0 w-2 bg-emerald-500"></div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/80 px-2.5 py-1 rounded-md">Phase 1: Requisition Creation</span>
+              <span class="text-xs text-slate-500">Role: Staff / Requester</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <!-- Node 1 -->
+              <div onclick="selectNode(1)" id="node-1" class="node-card cursor-pointer p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 hover:border-emerald-500 dark:hover:border-emerald-400 transition-all duration-200 shadow-sm relative group">
+                <div class="flex items-start justify-between">
+                  <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-sm">1</div>
+                  <span class="text-[10px] font-semibold bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded">Cart / POS UI</span>
+                </div>
+                <h3 class="font-bold text-sm text-slate-900 dark:text-white mt-3 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">เลือกรายการวัสดุ & ตะกร้า</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">ผู้ใช้เลือกรายการวัสดุที่ต้องการเบิกผ่านหน้า POS Interface และระบุจำนวน</p>
+              </div>
+
+              <!-- Node 2 -->
+              <div onclick="selectNode(2)" id="node-2" class="node-card cursor-pointer p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 hover:border-emerald-500 dark:hover:border-emerald-400 transition-all duration-200 shadow-sm relative group">
+                <div class="flex items-start justify-between">
+                  <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-sm">2</div>
+                  <span class="text-[10px] font-semibold bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300 px-2 py-0.5 rounded">Status: pending</span>
+                </div>
+                <h3 class="font-bold text-sm text-slate-900 dark:text-white mt-3 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">ส่งใบเบิก (Submit Order)</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">บันทึกลง table withdrawal_orders โดยใส่ requested_by = auth.uid()</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Connecting Arrow -->
+          <div class="flex justify-center my-[-8px]">
+            <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-500 flex items-center justify-center">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+            </div>
+          </div>
+
+          <!-- Phase 2 Card: Admin Approval Gate (All-or-Nothing) -->
+          <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-md relative overflow-hidden">
+            <div class="absolute top-0 left-0 bottom-0 w-2 bg-amber-500"></div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-950/80 px-2.5 py-1 rounded-md">Phase 2: All-or-Nothing Approval Gate</span>
+              <span class="text-xs text-slate-500">Role: Admin Only</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <!-- Node 3 -->
+              <div onclick="selectNode(3)" id="node-3" class="node-card cursor-pointer p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 hover:border-amber-500 dark:hover:border-amber-400 transition-all duration-200 shadow-sm relative group">
+                <div class="flex items-start justify-between">
+                  <div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold text-sm">3</div>
+                  <span class="text-[10px] font-semibold bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded">Review</span>
+                </div>
+                <h3 class="font-bold text-sm text-slate-900 dark:text-white mt-3 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">ตรวจสอบของในคลัง</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">แอดมินตรวจเช็กจำนวนของคงเหลือว่าเพียงพอต่อคำขอทั้งบิลหรือไม่</p>
+              </div>
+
+              <!-- Node 4A (Approved) -->
+              <div onclick="selectNode(4)" id="node-4" class="node-card cursor-pointer p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 hover:border-blue-500 dark:hover:border-blue-400 transition-all duration-200 shadow-sm relative group">
+                <div class="flex items-start justify-between">
+                  <div class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-sm">4A</div>
+                  <span class="text-[10px] font-semibold bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 px-2 py-0.5 rounded">approved</span>
+                </div>
+                <h3 class="font-bold text-sm text-slate-900 dark:text-white mt-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">อนุมัติบิล (Approve)</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">หักลบบัญชีสต็อก และเปลี่ยนสถานะเป็น "อนุมัติแล้ว (รอผู้รับยืนยัน)"</p>
+              </div>
+
+              <!-- Node 4B (Rejected) -->
+              <div onclick="selectNode(5)" id="node-5" class="node-card cursor-pointer p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 hover:border-red-500 dark:hover:border-red-400 transition-all duration-200 shadow-sm relative group">
+                <div class="flex items-start justify-between">
+                  <div class="w-8 h-8 rounded-lg bg-red-500/10 text-red-600 dark:text-red-400 flex items-center justify-center font-bold text-sm">4B</div>
+                  <span class="text-[10px] font-semibold bg-red-100 text-red-700 dark:bg-red-900/60 dark:text-red-300 px-2 py-0.5 rounded">rejected</span>
+                </div>
+                <h3 class="font-bold text-sm text-slate-900 dark:text-white mt-3 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">ปฏิเสธบิล (Reject)</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">ปฏิเสธทั้งบิลหากของไม่ครบ และระบุเหตุผลให้ User ทราบ</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Connecting Arrow -->
+          <div class="flex justify-center my-[-8px]">
+            <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-500 flex items-center justify-center">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+            </div>
+          </div>
+
+          <!-- Phase 3 Card: User Confirmation & Pickup -->
+          <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-md relative overflow-hidden">
+            <div class="absolute top-0 left-0 bottom-0 w-2 bg-blue-600"></div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-950/80 px-2.5 py-1 rounded-md">Phase 3: Fulfillment & User Confirmation</span>
+              <span class="text-xs text-slate-500">Role: Requester (User)</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <!-- Node 6 -->
+              <div onclick="selectNode(6)" id="node-6" class="node-card cursor-pointer p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 hover:border-blue-500 dark:hover:border-blue-400 transition-all duration-200 shadow-sm relative group">
+                <div class="flex items-start justify-between">
+                  <div class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-sm">5</div>
+                  <span class="text-[10px] font-semibold bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded">Physical Pickup</span>
+                </div>
+                <h3 class="font-bold text-sm text-slate-900 dark:text-white mt-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">ตรวจรับอุปกรณ์จริง</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">ผู้เบิกเดินทางไปรับของที่คลัง และตรวจสอบความถูกต้องของสินค้า</p>
+              </div>
+
+              <!-- Node 7 -->
+              <div onclick="selectNode(7)" id="node-7" class="node-card cursor-pointer p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 hover:border-emerald-500 dark:hover:border-emerald-400 transition-all duration-200 shadow-sm relative group">
+                <div class="flex items-start justify-between">
+                  <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-sm">6</div>
+                  <span class="text-[10px] font-semibold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300 px-2 py-0.5 rounded">Status: completed</span>
+                </div>
+                <h3 class="font-bold text-sm text-slate-900 dark:text-white mt-3 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">กด "ยืนยันการรับของแล้ว"</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">ผู้เบิกกดปุ่มยืนยัน ปรับสถานะเป็น completed (ต้องตรงกับ auth.uid() = requested_by)</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Phase 4 Card: Admin Inventory Control -->
+          <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-md relative overflow-hidden">
+            <div class="absolute top-0 left-0 bottom-0 w-2 bg-purple-600"></div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-xs font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-950/80 px-2.5 py-1 rounded-md">Phase 4: Inventory & Master Control</span>
+              <span class="text-xs text-slate-500">Role: Admin Only</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <!-- Node 8 -->
+              <div onclick="selectNode(8)" id="node-8" class="node-card cursor-pointer p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 hover:border-purple-500 dark:hover:border-purple-400 transition-all duration-200 shadow-sm relative group">
+                <div class="flex items-start justify-between">
+                  <div class="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold text-sm">7</div>
+                  <span class="text-[10px] font-semibold bg-purple-100 text-purple-700 dark:bg-purple-900/60 dark:text-purple-300 px-2 py-0.5 rounded">Stock In</span>
+                </div>
+                <h3 class="font-bold text-sm text-slate-900 dark:text-white mt-3 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">การรับสินค้าเข้าคลัง (Stock In)</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">แอดมินบันทึกการนำเข้าของจาก Supplier พร้อมผูกกับโครงการ</p>
+              </div>
+
+              <!-- Node 9 -->
+              <div onclick="selectNode(9)" id="node-9" class="node-card cursor-pointer p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 hover:border-purple-500 dark:hover:border-purple-400 transition-all duration-200 shadow-sm relative group">
+                <div class="flex items-start justify-between">
+                  <div class="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold text-sm">8</div>
+                  <span class="text-[10px] font-semibold bg-purple-100 text-purple-700 dark:bg-purple-900/60 dark:text-purple-300 px-2 py-0.5 rounded">Master Data</span>
+                </div>
+                <h3 class="font-bold text-sm text-slate-900 dark:text-white mt-3 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">จัดการโครงการ และวัสดุ</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">สิทธิ์เฉพาะ Admin ในการเพิ่ม/แก้ไข/ลบ รายการของ และชื่อโครงการ</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right 4-cols: Node Inspector Panel -->
+        <div class="lg:col-span-4">
+          <div class="sticky top-24 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-6">
+            <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
+              <h3 class="font-bold text-slate-900 dark:text-white text-base flex items-center gap-2">
+                <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Node Inspector
+              </h3>
+              <span id="inspector-node-id" class="text-xs font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/80 dark:text-blue-300 px-2.5 py-0.5 rounded-full">Node #1</span>
+            </div>
+
+            <!-- Inspector Content -->
+            <div id="inspector-content" class="space-y-4">
+              <div>
+                <h4 id="inspector-title" class="text-lg font-bold text-slate-900 dark:text-white">เลือกรายการวัสดุ & ตะกร้า</h4>
+                <p id="inspector-desc" class="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                  ผู้ใช้งานเลือกสินค้าวัสดุที่ต้องการเบิกจากหน้า POS Interface และระบุจำนวนเข้าตะกร้าสินค้าชั่วคราว
+                </p>
+              </div>
+
+              <!-- Meta Badge list -->
+              <div class="space-y-2.5 pt-2">
+                <div class="flex items-center justify-between text-xs p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/80">
+                  <span class="text-slate-500 dark:text-slate-400 font-medium">บทบาทผู้มีสิทธิ์ (Role):</span>
+                  <span id="inspector-role" class="font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/80 px-2 py-0.5 rounded">Staff / Requester, Admin</span>
+                </div>
+
+                <div class="flex items-center justify-between text-xs p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/80">
+                  <span class="text-slate-500 dark:text-slate-400 font-medium">ตาราง DB ที่เกี่ยวข้อง:</span>
+                  <span id="inspector-table" class="font-mono text-slate-700 dark:text-slate-300">items, projects</span>
+                </div>
+
+                <div class="flex items-center justify-between text-xs p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/80">
+                  <span class="text-slate-500 dark:text-slate-400 font-medium">สถานะรายการ (Status):</span>
+                  <span id="inspector-status" class="font-semibold text-slate-600 dark:text-slate-300">Draft (In Cart)</span>
+                </div>
+              </div>
+
+              <!-- RLS Policy Box -->
+              <div class="space-y-1.5 pt-2">
+                <label class="text-xs font-bold text-slate-700 dark:text-slate-300">Security & RLS Rule Enforcement:</label>
+                <div id="inspector-rls" class="p-3 rounded-lg bg-slate-900 text-slate-200 text-xs font-mono overflow-x-auto leading-normal">
+                  SELECT permissions ON public.items FOR ALL authenticated users
+                </div>
+              </div>
+
+              <!-- Business Logic Note -->
+              <div class="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/50 text-xs text-amber-800 dark:text-amber-300 space-y-1">
+                <span class="font-bold flex items-center gap-1">
+                  <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                  Business Logic Rules:
+                </span>
+                <p id="inspector-logic">ระบบอนุญาตให้ผู้ใช้ทุกคนอ่านรายการวัสดุเพื่อนำใส่ตะกร้า แต่ยังไม่มีการตัดสต็อกสินค้าจริงจนกว่าจะผ่านการอนุมัติ</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TAB 2: PERMISSION MATRIX -->
+    <section id="section-matrix" class="tab-content hidden space-y-6">
+      
+      <!-- Filter Bar -->
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        
+        <!-- Search Input -->
+        <div class="relative w-full sm:w-80">
+          <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <input type="text" id="matrix-search" oninput="filterMatrixTable()" placeholder="ค้นหาสิทธิ์ หรือชื่อฟังก์ชัน..." class="w-full pl-9 pr-4 py-2 text-xs rounded-xl bg-slate-100 dark:bg-slate-800 border-none text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 outline-none" />
+        </div>
+
+        <!-- Role Filter Buttons -->
+        <div class="flex items-center space-x-1.5 overflow-x-auto w-full sm:w-auto">
+          <button onclick="filterRole('all')" id="role-filter-all" class="role-filter-btn active text-xs font-semibold px-3 py-1.5 rounded-lg transition-all">All Roles</button>
+          <button onclick="filterRole('admin')" id="role-filter-admin" class="role-filter-btn text-xs font-semibold px-3 py-1.5 rounded-lg transition-all">Admin</button>
+          <button onclick="filterRole('staff')" id="role-filter-staff" class="role-filter-btn text-xs font-semibold px-3 py-1.5 rounded-lg transition-all">Staff / Requester</button>
+          <button onclick="filterRole('viewer')" id="role-filter-viewer" class="role-filter-btn text-xs font-semibold px-3 py-1.5 rounded-lg transition-all">Viewer</button>
+        </div>
+      </div>
+
+      <!-- Matrix Table -->
+      <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-md overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse" id="matrix-table">
+            <thead>
+              <tr class="bg-slate-100/80 dark:bg-slate-800/80 text-xs text-slate-600 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-slate-700">
+                <th class="p-4 w-1/3">โมดูล & สิทธิ์การใช้งาน (Action / Permission)</th>
+                <th class="p-4 text-center">System Admin</th>
+                <th class="p-4 text-center">Approver / Admin</th>
+                <th class="p-4 text-center">Staff / Requester</th>
+                <th class="p-4 text-center">Viewer</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 dark:divide-slate-800 text-xs">
+              
+              <!-- Category Header: Requisition & Orders -->
+              <tr class="bg-slate-50 dark:bg-slate-900/60 font-bold text-slate-700 dark:text-slate-300">
+                <td colspan="5" class="p-3 px-4 text-blue-600 dark:text-blue-400">📦 ระบบการเบิกจ่ายสินค้า (Withdrawal Requisition)</td>
+              </tr>
+              
+              <tr class="matrix-row hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                <td class="p-4 font-medium text-slate-900 dark:text-white">สร้างคำขอเบิกสินค้า (Create Order)</td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+              </tr>
+
+              <tr class="matrix-row hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                <td class="p-4 font-medium text-slate-900 dark:text-white">อนุมัติ/ปฏิเสธคำขอ (Approve/Reject Order)</td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+              </tr>
+
+              <tr class="matrix-row hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                <td class="p-4 font-medium text-slate-900 dark:text-white">กด "ยืนยันการรับของแล้ว" (Confirm Receipt)</td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-self">SELF ORDER ONLY</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+              </tr>
+
+              <tr class="matrix-row hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                <td class="p-4 font-medium text-slate-900 dark:text-white">ดูประวัติรายการเบิก (View Withdrawal History)</td>
+                <td class="p-4 text-center"><span class="badge-allow">ALL ORDERS</span></td>
+                <td class="p-4 text-center"><span class="badge-allow">ALL ORDERS</span></td>
+                <td class="p-4 text-center"><span class="badge-read">VIEW ALL HISTORY</span></td>
+                <td class="p-4 text-center"><span class="badge-read">READ ONLY</span></td>
+              </tr>
+
+              <!-- Category Header: Inventory & Stock In -->
+              <tr class="bg-slate-50 dark:bg-slate-900/60 font-bold text-slate-700 dark:text-slate-300">
+                <td colspan="5" class="p-3 px-4 text-purple-600 dark:text-purple-400">🏭 ระบบการจัดการคลัง & นำเข้าสินค้า (Inventory & Stock In)</td>
+              </tr>
+
+              <tr class="matrix-row hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                <td class="p-4 font-medium text-slate-900 dark:text-white">บันทึกรับของเข้าคลัง (Stock In Entry)</td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+              </tr>
+
+              <tr class="matrix-row hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                <td class="p-4 font-medium text-slate-900 dark:text-white">เพิ่ม/แก้ไข รายการวัสดุ (Add/Edit Items)</td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+              </tr>
+
+              <tr class="matrix-row hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                <td class="p-4 font-medium text-slate-900 dark:text-white">เพิ่ม/จัดการโครงการ (Manage Projects)</td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+              </tr>
+
+              <!-- Category Header: Reports & Administration -->
+              <tr class="bg-slate-50 dark:bg-slate-900/60 font-bold text-slate-700 dark:text-slate-300">
+                <td colspan="5" class="p-3 px-4 text-indigo-600 dark:text-indigo-400">📊 รายงานและการบริหารจัดการระบบ (Reports & Admin)</td>
+              </tr>
+
+              <tr class="matrix-row hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                <td class="p-4 font-medium text-slate-900 dark:text-white">ออกรายงานยอดคงเหลือ & สรุปเบิกจ่าย (Reports & PDF)</td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-read">READ ONLY</span></td>
+                <td class="p-4 text-center"><span class="badge-read">READ ONLY</span></td>
+              </tr>
+
+              <tr class="matrix-row hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                <td class="p-4 font-medium text-slate-900 dark:text-white">จัดการบทบาทผู้ใช้งาน (User & Role Management)</td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: ROLE SIMULATOR (SANDBOX) -->
+    <section id="section-simulator" class="tab-content hidden space-y-6">
+      
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Left 5-cols: Simulator Inputs -->
+        <div class="lg:col-span-5 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-md space-y-6">
+          <div>
+            <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
+              Role Permission Simulator
+            </h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">จำลองการทดสอบสิทธิ์เมื่อผู้ใช้สวมบทบาทต่างๆ และพยายามทำรายการในระบบ</p>
+          </div>
+
+          <form onsubmit="return false;" class="space-y-4">
+            <!-- Select Role -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">1. เลือกบทบาทผู้ใช้งาน (User Role)</label>
+              <select id="sim-role" onchange="runSimulation()" class="w-full p-2.5 text-xs rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-semibold focus:ring-2 focus:ring-blue-500 outline-none">
+                <option value="staff">Staff / Requester (ผู้เบิกจ่าย)</option>
+                <option value="admin">Approver / Warehouse Admin (แอดมินอนุมัติ)</option>
+                <option value="viewer">Viewer (ผู้เข้าชมระบบ)</option>
+              </select>
+            </div>
+
+            <!-- Select Ownership Context -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">2. เจ้าของบิลรายการ (Order Ownership Context)</label>
+              <select id="sim-owner" onchange="runSimulation()" class="w-full p-2.5 text-xs rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-semibold focus:ring-2 focus:ring-blue-500 outline-none">
+                <option value="self">บิลที่ฉันเป็นผู้เบิกเอง (requested_by = auth.uid())</option>
+                <option value="other">บิลของผู้อื่น (requested_by != auth.uid())</option>
+              </select>
+            </div>
+
+            <!-- Select Action -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">3. Action ที่ต้องการทดสอบทำรายการ</label>
+              <select id="sim-action" onchange="runSimulation()" class="w-full p-2.5 text-xs rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-semibold focus:ring-2 focus:ring-blue-500 outline-none">
+                <option value="create_order">สร้างคำขอเบิกสินค้า (Create Order)</option>
+                <option value="approve_order">อนุมัติบิลเบิกสินค้า (Approve Order)</option>
+                <option value="reject_order">ปฏิเสธบิลเบิกสินค้า (Reject Order)</option>
+                <option value="confirm_receipt">กด "ยืนยันการรับของแล้ว" (Confirm Receipt)</option>
+                <option value="stock_in">บันทึกรับของเข้าคลัง (Stock In)</option>
+                <option value="edit_items">แก้ไขรายการวัสดุ/ลบสินค้า (Edit Items)</option>
+              </select>
+            </div>
+          </form>
+        </div>
+
+        <!-- Right 7-cols: Simulator Output Result -->
+        <div class="lg:col-span-7 space-y-6">
+          
+          <div id="sim-result-card" class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-6">
+            
+            <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Simulation Evaluation</span>
+              <span id="sim-result-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                ALLOWED
+              </span>
+            </div>
+
+            <!-- Explanation Text -->
+            <div class="space-y-2">
+              <h4 id="sim-title" class="text-lg font-bold text-slate-900 dark:text-white">ผู้ใช้สามารถกด "ยืนยันการรับของแล้ว" ได้สำเร็จ</h4>
+              <p id="sim-description" class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                เนื่องจากผู้ใช้งานล็อกอินเป็นบทบาท Staff และเป็นผู้สร้างบิลนี้ด้วยตนเอง ระบบตรงตามเงื่อนไข RLS Policy `auth.uid() = requested_by` จึงยอมรับการอัปเดตสถานะบิลเป็น `completed`
+              </p>
+            </div>
+
+            <!-- RLS Technical Reason -->
+            <div class="space-y-2 pt-2">
+              <label class="text-xs font-bold text-slate-700 dark:text-slate-300">Database & RLS Evaluation Rationale:</label>
+              <div id="sim-code-box" class="p-4 rounded-xl bg-slate-950 text-slate-200 font-mono text-xs overflow-x-auto leading-relaxed border border-slate-800">
+                POLICY "Users can complete their own orders"<br/>
+                ON public.withdrawal_orders FOR UPDATE<br/>
+                USING (auth.uid() = requested_by)<br/>
+                WITH CHECK (status = 'completed');
+              </div>
+            </div>
+
+            <!-- UI State Preview -->
+            <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2">
+              <span class="text-xs font-bold text-slate-700 dark:text-slate-300">UI Button Render State Preview:</span>
+              <div id="sim-ui-preview" class="flex items-center gap-3">
+                <button class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold shadow-md cursor-pointer hover:bg-emerald-700 transition-colors">
+                  ✓ ยืนยันการรับของแล้ว
+                </button>
+                <span class="text-xs text-emerald-600 dark:text-emerald-400 font-medium">ปุ่มปรากฏให้กดได้ปกติ</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TAB 4: RLS POLICIES & SQL ARCHITECTURE -->
+    <section id="section-rls" class="tab-content hidden space-y-6">
+      
+      <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-md space-y-4">
+        <div class="flex items-center justify-between">
+          <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+            Supabase Row-Level Security (RLS) SQL Script
+          </h3>
+          <button onclick="copySqlScript()" class="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-colors flex items-center gap-1.5 cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+            คัดลอก SQL
+          </button>
+        </div>
+        <p class="text-xs text-slate-500 dark:text-slate-400">คำสั่ง SQL สำหรับรันใน Supabase SQL Editor เพื่อกำหนดสิทธิ์ความปลอดภัยในระดับแถวข้อมูล (Row Level Security)</p>
+      </div>
+
+      <!-- Code Snippets Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Code 1: Confirm Receipt Policy -->
+        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-800 shadow-lg space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-emerald-400">Policy 1: Allow Users to Confirm Own Order Receipt</span>
+            <span class="text-[10px] font-mono text-slate-400">withdrawal_orders</span>
+          </div>
+          <pre class="text-xs font-mono text-slate-200 overflow-x-auto p-3 bg-slate-950 rounded-xl leading-relaxed"><code>-- อนุญาตให้ User ทั่วไปเปลี่ยนสถานะบิลของตนเองเป็น 'completed'
+CREATE POLICY "Users can complete their own orders" 
+ON public.withdrawal_orders 
+FOR UPDATE 
+USING (auth.uid() = requested_by)
+WITH CHECK (status = 'completed');</code></pre>
+          <p class="text-xs text-slate-400">ให้เฉพาะผู้เบิกของบิลนั้นๆ กดปุ่มยืนยันการรับของเพื่อเปลี่ยนเป็นสถานะ completed ได้เท่านั้น</p>
+        </div>
+
+        <!-- Code 2: Admin Full Order Control Policy -->
+        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-800 shadow-lg space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-amber-400">Policy 2: Admin Full Order Control Policy</span>
+            <span class="text-[10px] font-mono text-slate-400">withdrawal_orders</span>
+          </div>
+          <pre class="text-xs font-mono text-slate-200 overflow-x-auto p-3 bg-slate-950 rounded-xl leading-relaxed"><code>-- อนุญาตให้ Admin มีสิทธิ์อนุมัติ/ปฏิเสธ หรือแก้ไขได้ทุกบิล
+CREATE POLICY "Admins have full access to all orders" 
+ON public.withdrawal_orders 
+FOR ALL 
+USING (
+  EXISTS (
+    SELECT 1 FROM public.profiles 
+    WHERE id = auth.uid() AND role = 'admin'
+  )
+);</code></pre>
+          <p class="text-xs text-slate-400">แอดมินสามารถอนุมัติ ปฏิเสธ หรือแก้ไขบิลเบิกได้ทุกรายการในระบบ</p>
+        </div>
+
+        <!-- Code 3: Create Order Policy -->
+        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-800 shadow-lg space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-blue-400">Policy 3: Authenticated Users Create Orders</span>
+            <span class="text-[10px] font-mono text-slate-400">withdrawal_orders</span>
+          </div>
+          <pre class="text-xs font-mono text-slate-200 overflow-x-auto p-3 bg-slate-950 rounded-xl leading-relaxed"><code>-- อนุญาตให้ผู้ใช้ที่เข้าสู่ระบบสามารถสร้างใบเบิกใหม่ได้
+CREATE POLICY "Users can create withdrawal orders" 
+ON public.withdrawal_orders 
+FOR INSERT 
+WITH CHECK (auth.uid() = requested_by);</code></pre>
+          <p class="text-xs text-slate-400">ผู้ใช้ทุกคนในระบบสามารถส่งใบเบิกของตนเองเข้าสู่สถานะ pending ได้</p>
+        </div>
+
+        <!-- Code 4: Items & Inventory Read Access -->
+        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-800 shadow-lg space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-purple-400">Policy 4: Public Read Access for Inventory Items</span>
+            <span class="text-[10px] font-mono text-slate-400">items, projects</span>
+          </div>
+          <pre class="text-xs font-mono text-slate-200 overflow-x-auto p-3 bg-slate-950 rounded-xl leading-relaxed"><code>-- อนุญาตให้ผู้ใช้ทุกคนอ่านรายการสินค้าและโครงการเพื่อการเบิกจ่าย
+CREATE POLICY "All users can view items and projects" 
+ON public.items 
+FOR SELECT 
+USING (true);</code></pre>
+          <p class="text-xs text-slate-400">ให้สิทธิ์ค้นหาและดูรายการสินค้าแก่ผู้ใช้ทุกคนเพื่อนำสินค้าใส่ตะกร้า</p>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Custom Styles for Matrix Badges -->
+  <style>
+    .nav-tab.active {
+      background-color: #2563eb;
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+    }
+    .role-filter-btn.active {
+      background-color: #2563eb;
+      color: #ffffff;
+    }
+    .role-filter-btn:not(.active) {
+      background-color: rgba(148, 163, 184, 0.15);
+      color: #64748b;
+    }
+    .dark .role-filter-btn:not(.active) {
+      color: #94a3b8;
+    }
+    .badge-allow {
+      display: inline-block;
+      padding: 2px 8px;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 6px;
+      background-color: rgba(16, 185, 129, 0.15);
+      color: #10b981;
+    }
+    .badge-self {
+      display: inline-block;
+      padding: 2px 8px;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 6px;
+      background-color: rgba(245, 158, 11, 0.15);
+      color: #f59e0b;
+    }
+    .badge-read {
+      display: inline-block;
+      padding: 2px 8px;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 6px;
+      background-color: rgba(59, 130, 246, 0.15);
+      color: #3b82f6;
+    }
+    .badge-deny {
+      display: inline-block;
+      padding: 2px 8px;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 6px;
+      background-color: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+    }
+  </style>
+
+  <!-- Interactive JavaScript Logic -->
+  <script>
+    // Theme Toggle Functionality
+    function toggleTheme() {
+      const html = document.documentElement;
+      const darkIcon = document.getElementById('theme-icon-dark');
+      const lightIcon = document.getElementById('theme-icon-light');
+
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        darkIcon.classList.add('hidden');
+        lightIcon.classList.remove('hidden');
+        localStorage.setItem('theme', 'light');
+      } else {
+        html.classList.add('dark');
+        darkIcon.classList.remove('hidden');
+        lightIcon.classList.add('hidden');
+        localStorage.setItem('theme', 'dark');
+      }
+    }
+
+    // Tab Switching
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+      
+      const targetSection = document.getElementById('section-' + tabId);
+      const targetBtn = document.getElementById('tab-btn-' + tabId);
+      if (targetSection) targetSection.classList.remove('hidden');
+      if (targetBtn) targetBtn.classList.add('active');
+
+      // Mobile button state
+      document.querySelectorAll('[id^="mobile-tab-"]').forEach(btn => {
+        btn.classList.remove('bg-blue-600', 'text-white');
+        btn.classList.add('bg-slate-200', 'dark:bg-slate-800', 'text-slate-700', 'dark:text-slate-300');
+      });
+      const activeMobileBtn = document.getElementById('mobile-tab-' + tabId);
+      if (activeMobileBtn) {
+        activeMobileBtn.classList.remove('bg-slate-200', 'dark:bg-slate-800', 'text-slate-700', 'dark:text-slate-300');
+        activeMobileBtn.classList.add('bg-blue-600', 'text-white');
+      }
+    }
+
+    // Workflow Node Data Dictionary
+    const nodeDetails = {
+      1: {
+        title: "1. เลือกรายการวัสดุ & ตะกร้า (Cart Select)",
+        desc: "ผู้ใช้งานเลือกสินค้าวัสดุที่ต้องการเบิกจากหน้า POS Interface และระบุจำนวนเข้าตะกร้าสินค้าชั่วคราว",
+        role: "Staff / Requester, Admin",
+        table: "items, projects",
+        status: "Draft (In Cart)",
+        rls: "SELECT permissions ON public.items FOR ALL authenticated users",
+        logic: "ระบบอนุญาตให้ผู้ใช้ทุกคนอ่านรายการวัสดุเพื่อนำใส่ตะกร้า แต่ยังไม่มีการตัดสต็อกสินค้าจริงจนกว่าจะผ่านการอนุมัติ"
+      },
+      2: {
+        title: "2. ส่งใบเบิก (Submit Order)",
+        desc: "ผู้เบิกกดยืนยันรายการในตะกร้าเพื่อสร้างใบเบิกใหม่ บันทึกลงตาราง withdrawal_orders",
+        role: "Staff / Requester",
+        table: "withdrawal_orders, withdrawal_order_items",
+        status: "pending",
+        rls: "INSERT INTO public.withdrawal_orders WITH CHECK (auth.uid() = requested_by)",
+        logic: "เมื่อส่งสำเร็จ บิลจะมีสถานะเป็น 'pending' รอแอดมินเข้ามาตรวจเช็กรายการและอนุมัติ"
+      },
+      3: {
+        title: "3. ตรวจสอบของในคลัง (Admin Review)",
+        desc: "แอดมินคลังสินค้าตรวจสอบรายการสินค้าที่ขอเบิก เทียบกับยอดคงเหลือจริงในคลัง (Stock Balance)",
+        role: "Approver / Warehouse Admin",
+        table: "items, withdrawal_orders",
+        status: "pending (Under Review)",
+        rls: "SELECT * FROM public.withdrawal_orders WHERE role = 'admin'",
+        logic: "ระบบใช้กฎ All-or-Nothing หากสินค้าชิ้นใดชิ้นหนึ่งในบิลมีไม่พอ แอดมินต้องปฏิเสธทั้งบิล"
+      },
+      4: {
+        title: "4A. อนุมัติบิล (Approve Order)",
+        desc: "แอดมินกดอนุมัติบิล ระบบทำการหักลบจำนวนสินค้าคงเหลือในคลัง และเปลี่ยนสถานะบิล",
+        role: "Approver / Warehouse Admin",
+        table: "withdrawal_orders, items",
+        status: "approved (รอผู้รับยืนยัน)",
+        rls: "UPDATE public.withdrawal_orders SET status = 'approved' WHERE role = 'admin'",
+        logic: "สถานะจะถูกเปลี่ยนเป็น 'อนุมัติแล้ว (รอผู้รับยืนยัน)' เพื่อแจ้งเตือนให้ User เดินทางมารับสินค้า"
+      },
+      5: {
+        title: "4B. ปฏิเสธบิล (Reject Order)",
+        desc: "แอดมินกดปฏิเสธบิล พร้อมระบุเหตุผล เช่น ของหมด หรือข้อมูลไม่ถูกต้อง",
+        role: "Approver / Warehouse Admin",
+        table: "withdrawal_orders",
+        status: "rejected",
+        rls: "UPDATE public.withdrawal_orders SET status = 'rejected' WHERE role = 'admin'",
+        logic: "บิลจะถูกยกเลิก และไม่มีการหักสต็อกสินค้า ผู้เบิกต้องแก้ไขข้อมูลแล้วส่งใบเบิกเข้ามาใหม่"
+      },
+      6: {
+        title: "5. ตรวจรับอุปกรณ์จริง (Physical Pickup)",
+        desc: "ผู้เบิกเดินทางมาที่คลังสินค้า ตรวจสอบสินค้าและจำนวนว่าตรงกับใบเบิกหรือไม่",
+        role: "Staff / Requester",
+        table: "Physical Warehouse Stock",
+        status: "approved (In Physical Transition)",
+        rls: "N/A (Physical Action)",
+        logic: "ผู้เบิกตรวจสอบของครบถ้วนแล้ว จึงเปิดแอปพลิเคชันเพื่อทำขั้นตอนถัดไป"
+      },
+      7: {
+        title: "6. กด 'ยืนยันการรับของแล้ว' (Confirm Receipt)",
+        desc: "ผู้เบิกกดปุ่มยืนยันการรับสินค้าผ่านหน้า History หรือ Withdrawal Details Modal",
+        role: "Staff / Requester (Must be order creator)",
+        table: "withdrawal_orders",
+        status: "completed",
+        rls: "UPDATE public.withdrawal_orders SET status = 'completed' WHERE auth.uid() = requested_by",
+        logic: "เพื่อย้ายหน้าที่การยืนยันมาให้ผู้รับจริง และให้แอดมินเห็นสถานะได้ชัดเจนว่าผู้เบิกมารับของไปเรียบร้อยแล้ว"
+      },
+      8: {
+        title: "7. การรับสินค้าเข้าคลัง (Stock In)",
+        desc: "แอดมินบันทึกรายการนำเข้าวัสดุอุปกรณ์ใหม่จาก Supplier เพิ่มยอดคงเหลือในคลัง",
+        role: "Approver / Warehouse Admin",
+        table: "stock_in_orders, stock_in_items, items",
+        status: "completed (Stock In)",
+        rls: "INSERT INTO public.stock_in_orders WHERE role = 'admin'",
+        logic: "เพิ่มจำนวนสินค้าสะสมเข้าสู่คลังหลัก และบันทึกประวัติผู้รับของเข้า"
+      },
+      9: {
+        title: "8. จัดการโครงการ และวัสดุ (Master Data)",
+        desc: "แอดมินจัดการเพิ่มรายการสินค้าใหม่ แก้ไขราคา รายละเอียด หรือสร้างโครงการใหม่",
+        role: "System Admin, Warehouse Admin",
+        table: "items, projects, profiles",
+        status: "Master Data Management",
+        rls: "ALL PRIVILEGES ON public.items, public.projects FOR role = 'admin'",
+        logic: "จำกัดสิทธิ์เฉพาะแอดมินเท่านั้นในการจัดการข้อมูลหลัก เพื่อป้องกันข้อมูลคลาดเคลื่อน"
+      }
+    };
+
+    function selectNode(id) {
+      document.querySelectorAll('.node-card').forEach(el => el.classList.remove('border-blue-500', 'ring-2', 'ring-blue-500'));
+      const activeCard = document.getElementById('node-' + id);
+      if (activeCard) activeCard.classList.add('border-blue-500', 'ring-2', 'ring-blue-500');
+
+      const data = nodeDetails[id];
+      if (!data) return;
+
+      document.getElementById('inspector-node-id').innerText = `Node #${id}`;
+      document.getElementById('inspector-title').innerText = data.title;
+      document.getElementById('inspector-desc').innerText = data.desc;
+      document.getElementById('inspector-role').innerText = data.role;
+      document.getElementById('inspector-table').innerText = data.table;
+      document.getElementById('inspector-status').innerText = data.status;
+      document.getElementById('inspector-rls').innerText = data.rls;
+      document.getElementById('inspector-logic').innerText = data.logic;
+    }
+
+    // Role Filter in Matrix
+    function filterRole(roleKey) {
+      document.querySelectorAll('.role-filter-btn').forEach(btn => btn.classList.remove('active'));
+      const activeBtn = document.getElementById('role-filter-' + roleKey);
+      if (activeBtn) activeBtn.classList.add('active');
+    }
+
+    function filterMatrixTable() {
+      const query = document.getElementById('matrix-search').value.toLowerCase();
+      document.querySelectorAll('.matrix-row').forEach(row => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(query) ? '' : 'none';
+      });
+    }
+
+    // Role Simulator Evaluation Engine
+    function runSimulation() {
+      const role = document.getElementById('sim-role').value;
+      const owner = document.getElementById('sim-owner').value;
+      const action = document.getElementById('sim-action').value;
+
+      const badge = document.getElementById('sim-result-badge');
+      const title = document.getElementById('sim-title');
+      const desc = document.getElementById('sim-description');
+      const code = document.getElementById('sim-code-box');
+      const uiPreview = document.getElementById('sim-ui-preview');
+
+      let allowed = false;
+      let reasonTitle = "";
+      let reasonDesc = "";
+      let sqlCode = "";
+      let btnHtml = "";
+
+      if (action === 'create_order') {
+        if (role === 'staff' || role === 'admin') {
+          allowed = true;
+          reasonTitle = "สามารถสร้างคำขอเบิกสินค้าได้สำเร็จ";
+          reasonDesc = "ผู้ใช้ในบทบาท Staff หรือ Admin ที่เข้าสู่ระบบ สามารถส่งใบเบิกสินค้าเข้าสู่สถานะ pending ได้";
+          sqlCode = `POLICY "Users can create withdrawal orders"\nON public.withdrawal_orders FOR INSERT\nWITH CHECK (auth.uid() = requested_by);`;
+          btnHtml = `<button class="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold">🛒 ยืนยันส่งใบเบิก</button><span class="text-xs text-emerald-500 font-medium">ปุ่มปรากฏให้กดได้</span>`;
+        } else {
+          allowed = false;
+          reasonTitle = "ปฏิเสธการทำรายการ (Access Denied)";
+          reasonDesc = "ผู้ใช้บทบาท Viewer มีสิทธิ์อ่านอย่างเดียว ไม่สามารถสร้างคำขอเบิกสินค้าได้";
+          sqlCode = `-- DENIED: No INSERT privilege for Viewer role`;
+          btnHtml = `<span class="text-xs text-red-500 font-medium">ปุ่มถูกซ่อน หรือ Disable ไม่ให้กด</span>`;
+        }
+      } else if (action === 'approve_order' || action === 'reject_order') {
+        if (role === 'admin') {
+          allowed = true;
+          reasonTitle = `สามารถกด ${action === 'approve_order' ? 'อนุมัติ' : 'ปฏิเสธ'} บิลเบิกได้สำเร็จ`;
+          reasonDesc = "เฉพาะบทบาท Admin ที่มีสิทธิ์ตรวจสอบรายการและปรับสถานะบิลเป็น approved / rejected";
+          sqlCode = `POLICY "Admins have full access to all orders"\nON public.withdrawal_orders FOR ALL\nUSING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));`;
+          btnHtml = `<button class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold">✓ อนุมัติบิล</button><span class="text-xs text-emerald-500 font-medium">ปุ่มอนุมัติปรากฏเฉพาะ Admin</span>`;
+        } else {
+          allowed = false;
+          reasonTitle = "ปฏิเสธการทำรายการ (Access Denied)";
+          reasonDesc = `บทบาท ${role.toUpperCase()} ไม่มีสิทธิ์อนุมัติหรือปฏิเสธบิลเบิกสินค้า`;
+          sqlCode = `-- DENIED: RLS Policy check failed for role != 'admin'`;
+          btnHtml = `<span class="text-xs text-red-500 font-medium">ไม่มีปุ่มอนุมัติปรากฏบนหน้าจอ</span>`;
+        }
+      } else if (action === 'confirm_receipt') {
+        if (role === 'admin') {
+          allowed = true;
+          reasonTitle = "แอดมินสามารถกดยืนยันแทนผู้เบิกได้";
+          reasonDesc = "แอดมินมีสิทธิ์ระดับ Admin Override ในการปรับสถานะบิลเป็น completed ได้ทุกกรณี";
+          sqlCode = `POLICY "Admins have full access to all orders"\nON public.withdrawal_orders FOR ALL USING (role = 'admin');`;
+          btnHtml = `<button class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold">✓ ยืนยันการรับของแล้ว</button>`;
+        } else if (role === 'staff' && owner === 'self') {
+          allowed = true;
+          reasonTitle = "ผู้เบิกกดยืนยันการรับของสำหรับบิลของตนเองได้สำเร็จ";
+          reasonDesc = "ตรงตามเงื่อนไข RLS Policy: auth.uid() = requested_by ทำให้ผู้เบิกกดยืนยันรับของได้ด้วยตนเอง";
+          sqlCode = `POLICY "Users can complete their own orders"\nON public.withdrawal_orders FOR UPDATE\nUSING (auth.uid() = requested_by)\nWITH CHECK (status = 'completed');`;
+          btnHtml = `<button class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold">✓ ยืนยันการรับของแล้ว</button>`;
+        } else {
+          allowed = false;
+          reasonTitle = "ปฏิเสธการทำรายการ (Access Denied)";
+          reasonDesc = "ผู้ใช้ Staff ไม่สามารถกดยืนยันการรับของแทนบิลของผู้อื่นได้ (ต้องเป็นผู้เบิกของบิลนั้นเท่านั้น)";
+          sqlCode = `-- DENIED: auth.uid() != requested_by Check Failed!`;
+          btnHtml = `<span class="text-xs text-red-500 font-medium">ปุ่มถูกซ่อนเพื่อป้องกันการยืนยันข้ามบุคคล</span>`;
+        }
+      } else if (action === 'stock_in' || action === 'edit_items') {
+        if (role === 'admin') {
+          allowed = true;
+          reasonTitle = "ทำรายการรับของเข้าคลัง / แก้ไขสินค้าสำเร็จ";
+          reasonDesc = "บทบาท Admin มีสิทธิ์ในการบริหารจัดการคลังสินค้าและ Master Data ได้สมบูรณ์";
+          sqlCode = `POLICY "Admins can manage inventory items"\nON public.items FOR ALL USING (role = 'admin');`;
+          btnHtml = `<button class="px-4 py-2 bg-purple-600 text-white rounded-lg text-xs font-bold">+ บันทึกรับของเข้าคลัง</button>`;
+        } else {
+          allowed = false;
+          reasonTitle = "ปฏิเสธการทำรายการ (Access Denied)";
+          reasonDesc = `บทบาท ${role.toUpperCase()} ไม่มีสิทธิ์จัดการสินค้าเข้าคลัง หรือแก้ไขข้อมูลวัสดุ`;
+          sqlCode = `-- DENIED: Require admin role in profiles table`;
+          btnHtml = `<span class="text-xs text-red-500 font-medium">ไม่มีสิทธิ์เข้าถึงเมนูคลังสินค้า</span>`;
+        }
+      }
+
+      if (allowed) {
+        badge.className = "px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 flex items-center gap-1.5";
+        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span> ALLOWED`;
+      } else {
+        badge.className = "px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300 flex items-center gap-1.5";
+        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500"></span> ACCESS DENIED`;
+      }
+
+      title.innerText = reasonTitle;
+      desc.innerText = reasonDesc;
+      code.innerText = sqlCode;
+      uiPreview.innerHTML = btnHtml;
+    }
+
+    function prepareStyledSvgClone(containerSelector) {
+      const svgElement = document.querySelector(containerSelector + ' .mermaid svg');
+      if (!svgElement) {
+        console.warn('Mermaid svg element not found for selector:', containerSelector);
+        return null;
+      }
+
+      const svgClone = svgElement.cloneNode(true);
+      if (!svgClone.getAttribute('xmlns')) {
+        svgClone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+      }
+
+      // Determine precise SVG dimensions from viewBox or BBox
+      let width = 1000;
+      let height = 1200;
+
+      const viewBoxAttr = svgElement.getAttribute('viewBox');
+      if (viewBoxAttr) {
+        const parts = viewBoxAttr.split(/[\s,]+/).map(Number);
+        if (parts.length === 4 && parts[2] > 0 && parts[3] > 0) {
+          width = Math.round(parts[2]);
+          height = Math.round(parts[3]);
+        }
+      }
+
+      if (svgElement.getBBox) {
+        try {
+          const bbox = svgElement.getBBox();
+          if (bbox.width > 0 && bbox.height > 0) {
+            width = Math.max(width, Math.round(bbox.width + 40));
+            height = Math.max(height, Math.round(bbox.height + 40));
+          }
+        } catch(e){}
+      }
+
+      svgClone.setAttribute('width', width);
+      svgClone.setAttribute('height', height);
+      svgClone.setAttribute('viewBox', `0 0 ${width} ${height}`);
+
+      // Embed document CSS styles so Mermaid styles are preserved in clone
+      let mermaidStyles = '';
+      document.querySelectorAll('style').forEach(styleTag => {
+        if (styleTag.textContent.includes('mermaid') || styleTag.textContent.includes('staffStyle') || styleTag.textContent.includes('adminStyle') || styleTag.textContent.includes('txStyle')) {
+          mermaidStyles += styleTag.textContent + '\n';
+        }
+      });
+
+      const styleEl = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+      styleEl.textContent = `
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+        text, tspan, .label { font-family: 'Plus Jakarta Sans', sans-serif !important; }
+        .node rect, .node circle, .node polygon, .node path { stroke-width: 2px; }
+        ${mermaidStyles}
+      `;
+      svgClone.insertBefore(styleEl, svgClone.firstChild);
+
+      return { svgClone, width, height };
+    }
+
+    function downloadSvgElementAsPng(containerSelector, defaultFileName) {
+      const prepared = prepareStyledSvgClone(containerSelector);
+      if (!prepared) {
+        alert('ไม่พบผัง Diagram ที่เรนเดอร์');
+        return;
+      }
+
+      const { svgClone, width, height } = prepared;
+      const isDark = document.documentElement.classList.contains('dark');
+
+      try {
+        const svgString = new XMLSerializer().serializeToString(svgClone);
+        const base64Data = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgString)));
+
+        const image = new Image();
+        image.crossOrigin = 'anonymous';
+
+        image.onload = () => {
+          try {
+            const canvas = document.createElement('canvas');
+            const scale = 2; // High DPI output 2x
+            canvas.width = width * scale;
+            canvas.height = height * scale;
+
+            const context = canvas.getContext('2d');
+            context.scale(scale, scale);
+
+            // Render background matching active theme
+            context.fillStyle = isDark ? '#090d16' : '#ffffff';
+            context.fillRect(0, 0, width, height);
+
+            context.drawImage(image, 0, 0, width, height);
+
+            const pngUrl = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.href = pngUrl;
+            link.download = defaultFileName + '.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+          } catch (canvasErr) {
+            console.warn('Canvas export tainted/blocked, fallbacking to SVG download', canvasErr);
+            downloadSvgElementAsSvg(containerSelector, defaultFileName);
+          }
+        };
+
+        image.onerror = (e) => {
+          console.warn('Image render error, fallbacking to SVG download', e);
+          downloadSvgElementAsSvg(containerSelector, defaultFileName);
+        };
+
+        image.src = base64Data;
+      } catch (err) {
+        console.error(err);
+        downloadSvgElementAsSvg(containerSelector, defaultFileName);
+      }
+    }
+
+    function downloadSvgElementAsSvg(containerSelector, defaultFileName) {
+      const prepared = prepareStyledSvgClone(containerSelector);
+      if (!prepared) {
+        alert('ไม่พบผัง Diagram ที่เรนเดอร์');
+        return;
+      }
+
+      const { svgClone } = prepared;
+      const svgString = new XMLSerializer().serializeToString(svgClone);
+      const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = defaultFileName + '.svg';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+
+    // Alias functions for backward compatibility
+    function downloadDiagramPng() {
+      downloadSvgElementAsPng('#diagram-container-1', 'stock-flow-rbac-swimlane-diagram');
+    }
+
+    function downloadDiagramSvg() {
+      downloadSvgElementAsSvg('#diagram-container-1', 'stock-flow-rbac-swimlane-diagram');
+    }
+
+    function copySqlScript() {
+      const sql = `-- Supabase RLS Policies for Stock-Flow RBAC
+CREATE POLICY "Users can complete their own orders" ON public.withdrawal_orders FOR UPDATE USING (auth.uid() = requested_by) WITH CHECK (status = 'completed');
+CREATE POLICY "Admins have full access to all orders" ON public.withdrawal_orders FOR ALL USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+CREATE POLICY "Users can create withdrawal orders" ON public.withdrawal_orders FOR INSERT WITH CHECK (auth.uid() = requested_by);
+CREATE POLICY "All users can view items and projects" ON public.items FOR SELECT USING (true);`;
+
+      navigator.clipboard.writeText(sql);
+      alert('คัดลอกคำสั่ง SQL เรียบร้อยแล้ว!');
+    }
+
+    // Initialize Page
+    document.addEventListener('DOMContentLoaded', () => {
+      selectNode(1);
+      runSimulation();
+    });
+  </script>
+</body>
+</html>

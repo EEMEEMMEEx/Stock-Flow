@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DeliveryNote>
+    <DocumentInfo>
+        <Title>เอกสารเบิกและนำส่งอุปกรณ์</        <Reference>00000002-09-24</Reference>
+        <DocumentType>ต้นฉบับ</DocumentType>
+    </DocumentInfo>
+
+    <Company>
+        <NameTH>บริษัท ฟอร์ท คอร์ปอเรชัน จำกัด (มหาชน)</NameTH>
+        <NameEN>FORTH CORPORATION PUBLIC COMPANY LIMITED</NameEN>
+        <AddressTH>1053/1 ถนนพหลโยธิน แขวงพญาไท เขตพญาไท กรุงเทพมหานคร 10400</AddressTH>
+        <AddressEN>1053/1 Phaholyothin Road, Phayathai Subdistrict, Phayathai District, Bangkok 10400</AddressEN>
+        <Tel>02-265-6700</Tel>
+        <TelInternational>+662-265-6700</TelInternational>
+        <Fax>02-265-6799</Fax>
+        <TaxID>0107548000471</TaxID>
+    </Company>
+
+    <Sender>
+        <Name></Name>
+        <Phone></Phone>
+    </Sender>
+
+    <Recipient>
+        <Name>บริษัท ฟอร์ท คอร์ปอเรชัน จำกัด (มหาชน)</Name>
+        <Phone></Phone>
+        <Date></Date>
+    </Recipient>
+
+    <Items>
+        <Item>
+            <No>1</No>
+            <Description>สายอากาศ Yagi SY406-SF1SNF (ABK)</Description>
+            <Quantity>27</Quantity>
+            <Unit>ชิ้น</Unit>
+            <DeliveryTo>Forth (EMS)</DeliveryTo>
+            <SerialNumber></SerialNumber>
+            <PartNumber></PartNumber>
+        </Item>
+        <Item>
+            <No>2</No>
+            <Description>สาย Jumper N male-N male, L=3m</Description>
+            <Quantity>22</Quantity>
+            <Unit>เส้น</Unit>
+            <DeliveryTo>Forth (Office)</DeliveryTo>
+            <SerialNumber></SerialNumber>
+            <PartNumber></PartNumber>
+        </Item>
+        <Item>
+            <No>2.1</No>
+            <Description>สาย Jumper N male-N male, L=3m</Description>
+            <Quantity>5</Quantity>
+            <Unit>เส้น</Unit>
+            <DeliveryTo>Forth (EMS)</DeliveryTo>
+            <SerialNumber></SerialNumber>
+            <PartNumber></PartNumber>
+        </Item>
+        <Item>
+            <No>2.2</No>
+            <Description>สาย Jumper N male-N male, L=3m</Description>
+            <Quantity>22</Quantity>
+            <Unit>เส้น</Unit>
+            <DeliveryTo>Forth (EMS)</DeliveryTo>
+            <SerialNumber></SerialNumber>
+            <PartNumber></PartNumber>
+        </Item>
+        <Item>
+            <No>3</No>
+            <Description>สาย Jumper N male-N female, L=3m</Description>
+            <Quantity>27</Quantity>
+            <Unit>เส้น</Unit>
+            <DeliveryTo>Forth (Office)</DeliveryTo>
+            <SerialNumber></SerialNumber>
+            <PartNumber></PartNumber>
+        </Item>
+        <Item>
+            <No>4</No>
+            <Description>Connector N male for LCF12</Description>
+            <Quantity>54</Quantity>
+            <Unit>ชิ้น</Unit>
+            <DeliveryTo>Forth (EMS)</DeliveryTo>
+            <SerialNumber></SerialNumber>
+            <PartNumber></PartNumber>
+        </Item>
+        <Item>
+            <No>5</No>
+            <Description>Lightning Arrestor, NF-NF</Description>
+            <Quantity>27</Quantity>
+            <Unit>ชิ้น</Unit>
+            <DeliveryTo>Forth (EMS)</DeliveryTo>
+            <SerialNumber></SerialNumber>
+            <PartNumber></PartNumber>
+        </Item>
+        <Item>
+            <No>6</No>
+            <Description>Lightning Arrestor Ground Bar 1 ช่อง</Description>
+            <Quantity>27</Quantity>
+            <Unit>ชิ้น</Unit>
+            <DeliveryTo>Forth (EMS)</DeliveryTo>
+            <SerialNumber></SerialNumber>
+            <PartNumber></PartNumber>
+        </Item>
+        <Item>
+            <No>7</No>
+            <Description>Grounding kit for 1/2" cable</Description>
+            <Quantity>27</Quantity>
+            <Unit>ชิ้น</Unit>
+            <DeliveryTo>Forth (EMS)</DeliveryTo>
+            <SerialNumber></SerialNumber>
+            <PartNumber></PartNumber>
+        </Item>
+        <Item>
+            <No>8</No>
+            <Description>ACPDB Box พร้อมต่อประกอบ</Description>
+            <Quantity>27</Quantity>
+            <Unit>ชิ้น</Unit>
+            <DeliveryTo>Forth (EMS)</DeliveryTo>
+            <SerialNumber></SerialNumber>
+            <PartNumber></PartNumber>
+            <SubItems>
+                <SubItem>Breaker HACO H7-32A/2C</SubItem>
+                <SubItem>Surge Protector Stabil (MODEL:T2P65T1) (2 รูปคลื่น)</SubItem>
+                <SubItem>Breaker HACO H6-16A/1C</SubItem>
+            </SubItems>
+        </Item>
+        <Item>
+            <No>9</No>
+            <Description>ลูกถ้วยแดง+ขายึด</Description>
+            <Quantity>27</Quantity>
+            <Unit>ชิ้น</Unit>
+            <DeliveryTo>Forth (EMS)</DeliveryTo>
+            <SerialNumber></SerialNumber>
+            <PartNumber></PartNumber>
+        </Item>
+    </Items>
+
+    <Remark></Remark>
+</DeliveryNote>

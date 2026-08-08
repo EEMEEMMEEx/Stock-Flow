@@ -11,7 +11,7 @@ import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 
 const Projects = () => {
-  const { isAdmin, profile } = useAuth();
+  const { can, profile } = useAuth();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -46,14 +46,16 @@ const Projects = () => {
 
   const handleCreateProject = async (e) => {
     e.preventDefault();
-    if (!isAdmin) return toast.error('เฉพาะ Admin เท่านั้นที่สามารถสร้างโครงการได้');
+    if (!can('projects.create')) return toast.error('คุณไม่มีสิทธิ์ในการสร้างโครงการ (Requires projects.create)');
+
     
     try {
       const { data, error } = await supabase
         .from('projects')
         .insert([{ 
           ...formData,
-          created_by: profile.id
+          created_by: profile.id,
+          owner_id: profile.id
         }])
         .select();
 
@@ -63,12 +65,15 @@ const Projects = () => {
       setFormData({ name: '', project_code: '', description: '', location: '' });
       fetchProjects();
     } catch (error) {
-      toast.error('เกิดข้อผิดพลาดในการสร้างโครงการ');
+      console.error('Create Project Error:', error);
+      toast.error(error.message || 'เกิดข้อผิดพลาดในการสร้างโครงการ');
     }
   };
 
   const handleEditProject = async (e) => {
     e.preventDefault();
+    if (!can('projects.update')) return toast.error('คุณไม่มีสิทธิ์ในการแก้ไขโครงการ (Requires projects.update)');
+
     try {
       const { error } = await supabase
         .from('projects')
@@ -91,6 +96,8 @@ const Projects = () => {
   };
 
   const handleDeleteProject = async () => {
+    if (!can('projects.delete')) return toast.error('คุณไม่มีสิทธิ์ในการลบโครงการ (Requires projects.delete)');
+
     try {
       const { error } = await supabase
         .from('projects')
@@ -109,6 +116,7 @@ const Projects = () => {
       }
     }
   };
+
 
   const openEditDialog = (project) => {
     setSelectedProject(project);
@@ -149,8 +157,9 @@ const Projects = () => {
             />
           </div>
           
-          {isAdmin && (
+          {can('projects.create') && (
             <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+
               <DialogTrigger asChild>
                 <Button className="shrink-0 gap-2 shadow-lg shadow-primary/20">
                   <Plus className="h-4 w-4" /> สร้างโครงการใหม่
@@ -200,7 +209,7 @@ const Projects = () => {
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredProjects.map((project) => (
-            <Card key={project.id} className="glass-card hover:border-primary/50 transition-colors group cursor-pointer">
+            <Card key={project.id} className="hover:border-primary/50 transition-colors group cursor-pointer">
               <CardHeader className="pb-3 flex flex-row items-start justify-between space-y-0">
                 <div className="space-y-1">
                   <CardTitle className="text-xl line-clamp-1" title={project.name}>{project.name}</CardTitle>
@@ -214,16 +223,21 @@ const Projects = () => {
                     <span className="line-clamp-1">{project.location || 'ไม่ระบุสถานที่'}</span>
                   </div>
                 </div>
-                {isAdmin && (
+                {(can('projects.update') || can('projects.delete')) && (
                   <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500 hover:text-blue-600 hover:bg-blue-50" onClick={() => openEditDialog(project)}>
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50" onClick={() => openDeleteDialog(project)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    {can('projects.update') && (
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500 hover:text-blue-600 hover:bg-blue-50" onClick={() => openEditDialog(project)}>
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    )}
+                    {can('projects.delete') && (
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50" onClick={() => openDeleteDialog(project)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 )}
+
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground line-clamp-2 mb-4 h-10">

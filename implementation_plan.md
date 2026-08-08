@@ -232,25 +232,35 @@ d:\APP\Stock-Flow-app\
 - Admin only
 
 #### 8. Reports (รายงาน)
-- สรุป Stock คงเหลือแต่ละโครงการ
-- สรุปการเบิกจ่ายตามช่วงเวลา
-- Export เป็น PDF / Excel
+แบ่งออกเป็น 3 ประเภทหลัก โดยทุกรายงานสามารถ Export เป็น PDF / Excel ได้:
+1. **Stock In Report (รายงานรับเข้า):**
+   - แสดงประวัติการรับวัสดุเข้าคลัง
+   - ตัวกรอง: โครงการ (Project), ช่วงวันที่รับเข้า, ค้นหาตามชื่อ Supplier / เลข PO
+2. **Withdrawals Report (รายงานเบิกจ่าย):**
+   - แสดงประวัติการเบิกวัสดุออกจากคลัง
+   - ตัวกรอง: โครงการ (Project), ช่วงวันที่เบิกจ่าย, สถานะคำขอ (เช่น รออนุมัติ, อนุมัติแล้ว)
+3. **Stock Balance Report (รายงานยอดคงเหลือ):**
+   - แสดงสถานะยอดคงเหลือปัจจุบัน แยกตามแต่ละโครงการอย่างชัดเจน (ไม่ปะปนกัน)
+   - ตัวกรอง: โครงการ (บังคับเลือก 1 โครงการ), หมวดหมู่สินค้า
 
 ---
 
 ### Design System
 
-- **Theme**: Dark mode เป็นหลัก พร้อม gradient accents
+- **Theme**: Light Mode (Neumorphism / Soft UI)
 - **Color Palette**:
-  - Primary: `#6366f1` (Indigo)
+  - Base/Background: `#e0e5ec` (Light Grey / Off-white)
+  - Primary: `#6366f1` (Indigo - สำหรับ Action หลักที่ยังต้องการสี)
   - Secondary: `#8b5cf6` (Purple)  
   - Success: `#22c55e` (Green)
   - Warning: `#f59e0b` (Amber)
   - Danger: `#ef4444` (Red)
-  - Background: `#0f172a` → `#1e293b` (Slate dark)
-  - Surface: `rgba(30, 41, 59, 0.8)` with blur
+  - Text: `#2d3748` (Dark Grey) สำหรับตัวหนังสือหลัก
 - **Typography**: Inter (Google Fonts)
-- **Effects**: Glassmorphism cards, smooth transitions, hover animations
+- **Effects (Neumorphism)**:
+  - ใช้ Box-shadow สร้างเงามืด (มุมขวาล่าง) และเงาสว่าง (มุมซ้ายบน) เพื่อให้วัตถุพุ่งนูนขึ้นมา
+  - เมื่อ Active หรือกด (Pressed) ให้สลับ Shadow เป็น `inset` ให้ยุบลงไป
+- **Shapes**: โค้งมนแบบนุ่มนวล (Soft Rounded) `border-radius` ประมาณ 12px - 16px
 - **Layout**: Sidebar + Main content area, responsive
 
 ---
