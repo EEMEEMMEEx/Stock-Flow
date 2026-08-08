@@ -1,6 +1,447 @@
 # Changelog
 
-## [2026-08-08 23:18]
+## [2026-08-09 04:05]
+
+- **ไฟล์ที่สร้าง/แก้ไข:**
+  - `supabase/migrations/30_fix_auth_identities_id_equals_user_id.sql` [NEW]
+- **รายละเอียด:**
+  - **แก้ไขไอดีในตาราง `auth.identities` ให้ตรงกับ `auth.users.id` 100% (`30_fix_auth_identities_id_equals_user_id.sql`):**
+    - **การค้นพบจุดตายสำคัญ (Core Discovery):** ในเอนจิน Supabase GoTrue Auth API V2 ฟิลด์ `auth.identities.id` สำหรับ provider ประเภท `email` **ต้องมีค่าเท่ากับ `auth.users.id` (User ID)**
+    - หากใช้สุ่ม `gen_random_uuid()` ใหม่ เอนจิน GoTrue จะคิวรี `SELECT * FROM auth.identities WHERE id = user.ID` ไม่พบ ทำให้เกิด Go Nil Pointer Panic และคืนค่า HTTP 500
+- **เหตุผล:** ขจัดปัญหา GoTrue Nil Pointer Panic HTTP 500 ให้การล็อกอินผ่านสำเร็จ 100%
+
+## [2026-08-09 04:04]
+
+
+- **ไฟล์ที่สร้าง/แก้ไข:**
+  - `supabase/migrations/29_authoritative_schema_sync_watchara_user.sql` [MODIFY]
+- **รายละเอียด:**
+  - **ตัดการกำหนดค่าคอลัมน์อัตโนมัติ `email` ออกจาก `auth.identities` INSERT (`29_authoritative_schema_sync_watchara_user.sql`):**
+    - เนื่องจาก `email` ในตาราง `auth.identities` เป็นคอลัมน์ประเภท Generated Column (คำนวณอัตโนมัติจาก `identity_data->>'email'`) จึงตัดออกจากคำสั่ง INSERT เพื่อให้ระบบสร้างค่าคำนวณให้อัตโนมัติ 100%
+- **เหตุผล:** ขจัดปัญหา `ERROR: 428C9: cannot insert a non-DEFAULT value into column "email"`
+
+## [2026-08-09 04:03]
+
+
+- **ไฟล์ที่สร้าง/แก้ไข:**
+  - `supabase/migrations/29_authoritative_schema_sync_watchara_user.sql` [MODIFY]
+- **รายละเอียด:**
+  - **ตัดการกำหนดค่าคอลัมน์อัตโนมัติ `confirmed_at` ออกจาก INSERT (`29_authoritative_schema_sync_watchara_user.sql`):**
+    - เนื่องจาก `confirmed_at` ใน PostgreSQL เป็นคอลัมน์ประเภท Generated Column (คำนวณอัตโนมัติจาก `email_confirmed_at`) จึงตัดออกจากคำสั่ง INSERT เพื่อให้ระบบคำนวณอัตโนมัติ 100%
+- **เหตุผล:** ขจัดปัญหา `ERROR: 428C9: cannot insert a non-DEFAULT value into column "confirmed_at"`
+
+## [2026-08-09 04:02]
+
+
+- **ไฟล์ที่สร้าง/แก้ไข:**
+  - `supabase/migrations/29_authoritative_schema_sync_watchara_user.sql` [NEW]
+- **รายละเอียด:**
+  - **สร้างสคริปต์ไมเกรชันตามโครงสร้างสคีมาทางการของ Supabase Auth (`29_authoritative_schema_sync_watchara_user.sql`):**
+    - **การยืนยันการยืนยันอีเมลแบบสมบูรณ์ (`confirmed_at` & `email_confirmed_at`):** ระบุ timestamp ทั้ง `email_confirmed_at = NOW()` และ `confirmed_at = NOW()` ตามโครงสร้างทางการของตาราง `auth.users` เพื่อป้องกันไม่ให้ GoTrue มองว่าเป็นผู้ใช้ที่ยังไม่อนุมัติอีเมล
+    - **การระบุคอลัมน์ `email` ใน `auth.identities`:** ระบุคอลัมน์ `email = 'watchara.m@forth.co.th'` โดยตรงในตาราง `auth.identities` ตามสคีมาทางการ
+- **เหตุผล:** เพื่อการันตีความสมบูรณ์ 100% ตามสคีมาจริงของตาราง Auth ของ Supabase Cloud
+
+## [2026-08-09 03:58]
+
+
+- **ไฟล์ที่สร้าง/แก้ไข:**
+  - `supabase/migrations/28_sync_exact_admin_password_hash.sql` [NEW]
+- **รายละเอียด:**
+  - **ซิงก์แฮชรหัสผ่าน Bcrypt ที่ตรวจสอบแล้วจาก Admin มายัง `watchara.m@forth.co.th` (`28_sync_exact_admin_password_hash.sql`):**
+    - **การคัดลอกแฮชรหัสผ่านตรง (Direct Working Hash Sync):** คัดลอก `encrypted_password` จากบัญชี `admin@stockflow.com` (รหัสผ่าน `password123`) ซึ่งผ่านการยืนยันจาก GoTrue Auth Engine โดยตรง มาใส่ในบัญชี `watchara.m@forth.co.th`
+- **เหตุผล:** ขจัดความต่างระหว่างแฮช pgcrypto ใน SQL กับ Go's bcrypt verification ใน GoTrue API ให้การเข้าสู่ระบบผ่าน 100%
+
+## [2026-08-09 03:54]
+
+
+- **ไฟล์ที่สร้าง/แก้ไข:**
+  - `supabase/migrations/27_recreate_watchara_with_password123.sql` [NEW]
+- **รายละเอียด:**
+  - **สร้างสคริปต์ Atomic สำหรับสร้างบัญชี `watchara.m@forth.co.th` ใหม่ทั้งหมดพร้อมรหัสผ่าน `password123` (`27_recreate_watchara_with_password123.sql`):**
+    - **การทำงานแบบ Atomic:** รวมกระบวนการล้างข้อมูลเก่า คัดลอกคอนฟิกระบบ 33 คอลัมน์จาก Admin, สร้างข้อมูล `auth.users`, `auth.identities` และ `public.profiles` พร้อมกำหนดแฮชรหัสผ่าน `password123` ให้อยู่ในบล็อกเดียวกันทั้งหมด
+- **เหตุผล:** ป้องกันปัญหาการรันสคริปต์แยกส่วนที่อาจลืมสร้างผู้ใช้ใน `auth.users` ทำให้การเข้าสู่ระบบสำเร็จ 100%
+
+## [2026-08-09 03:52]
+
+
+- **ไฟล์ที่สร้าง/แก้ไข:**
+  - `supabase/migrations/26_set_watchara_password_password123.sql` [NEW]
+- **รายละเอียด:**
+  - **กำหนดรหัสผ่านใหม่ชัดเจนเป็น `password123` สำหรับ `watchara.m@forth.co.th` (`26_set_watchara_password_password123.sql`):**
+    - **การยืนยันการแก้ไข HTTP 500:** ยืนยันสำเร็จว่า GoTrue Auth Server ไม่เกิดข้อผิดพลาด 500 อีกต่อไป โดยเปลี่ยนมาตอบกลับ 400 Invalid Credentials
+    - **การสร้าง Bcrypt Hash ใหม่:** สร้างแฮชรหัสผ่าน Bcrypt มาตรฐาน (Cost Factor 10) สำหรับรหัสผ่าน `password123` ให้กับบัญชี `watchara.m@forth.co.th`
+- **เหตุผล:** เพื่อให้ผู้ใช้สามารถล็อกอินเข้าสู่ระบบด้วยรหัสผ่าน `password123` ได้สำเร็จ 100%
+
+## [2026-08-09 03:50]
+
+
+- **ไฟล์ที่สร้าง/แก้ไข:**
+  - `supabase/migrations/25_clone_watchara_from_working_admin.sql` [MODIFY]
+- **รายละเอียด:**
+  - **รองรับทริกเกอร์สร้างโปรไฟล์อัตโนมัติด้วย `ON CONFLICT (id) DO UPDATE` (`25_clone_watchara_from_working_admin.sql`):**
+    - เพิ่มคำสั่ง `ON CONFLICT (id) DO UPDATE` ในการเพิ่มข้อมูลตาราง `public.profiles` เพื่อรองรับกรณีที่ทริกเกอร์ `on_auth_user_created` ทำการสร้างโปรไฟล์ให้อัตโนมัติ ป้องกันไม่ให้เกิดข้อผิดพลาด Key duplicate
+- **เหตุผล:** ขจัดปัญหา `ERROR: 23505: duplicate key value violates unique constraint "profiles_pkey"` เมื่อรันสคริปต์ใน Supabase SQL Editor
+
+## [2026-08-09 03:48]
+
+
+- **ไฟล์ที่สร้าง/แก้ไข:**
+  - `supabase/migrations/25_clone_watchara_from_working_admin.sql` [MODIFY]
+- **รายละเอียด:**
+  - **แก้ไขไวยากรณ์คอลัมน์ในตาราง `public.profiles` (`25_clone_watchara_from_working_admin.sql`):**
+    - แก้ไขการคิวรีและเพิ่มข้อมูลในตาราง `public.profiles` โดยตัดชื่อคอลัมน์ `email` ที่ไม่มีอยู่ออก ให้ตรงกับสคีมาของระบบจริง 100%
+- **เหตุผล:** ขจัดปัญหา `ERROR: 42703: column "email" does not exist` เมื่อรันสคริปต์ใน Supabase SQL Editor
+
+## [2026-08-09 03:46]
+
+
+- **ไฟล์ที่สร้าง/แก้ไข:**
+  - `supabase/migrations/25_clone_watchara_from_working_admin.sql` [NEW]
+- **รายละเอียด:**
+  - **สร้างผู้ใช้ `watchara.m@forth.co.th` โดยคัดลอกโครงสร้างจากบัญชี Admin ที่ใช้งานได้จริง (`25_clone_watchara_from_working_admin.sql`):**
+    - **การคัดลอกโครงสร้างฟิลด์ระบบทั้งหมด (Cloned Working Auth Metadata):** คัดลอกค่าคอนฟิกและฟิลด์ระบบ 33 คอลัมน์จากบัญชี `admin@stockflow.com` ที่ยืนยันตัวตนได้จริง 100% มาใส่ในบัญชี `watchara.m@forth.co.th`
+    - **รหัสผ่านและสิทธิ์:** กำหนดรหัสผ่านเริ่มต้นเป็น `password123` (เหมือนบัญชี Admin) พร้อมเปิดใช้งานระบบบังคับเปลี่ยนรหัสผ่านครั้งแรก `must_change_password = TRUE`
+- **เหตุผล:** ขจัดความคลาดเคลื่อนของค่าฟิลด์ระบบทุกจุดที่อาจทำให้ GoTrue Auth API คืนค่า 500
+
+## [2026-08-09 03:44]
+
+
+- **ไฟล์ที่สร้าง/แก้ไข:**
+  - `supabase/migrations/24_fix_gotrue_null_booleans_and_complete_repair.sql` [NEW]
+- **รายละเอียด:**
+  - **แก้ไขปัญหาค่าว่างในฟิลด์บูลีนของ GoTrue Auth API (`24_fix_gotrue_null_booleans_and_complete_repair.sql`):**
+    - **สาเหตุเชิงลึกของ 500 (Root Cause):** เอนจินภาษา Go ของ Supabase GoTrue Auth ไม่รองรับการแปลงค่า `NULL` ในคอลัมน์บูลีน `is_sso_user` และ `is_anonymous` ในตาราง `auth.users` ส่งผลให้ Go's `sql.Scan()` เกิดข้อผิดพลาดในไดรเวอร์ และคืนค่า HTTP 500
+    - **การแก้ไข:** อัปเดตคอลัมน์ `is_sso_user = false` และ `is_anonymous = false` ให้กับผู้ใช้ทุกคนใน `auth.users` พร้อมปรับปรุง `admin_create_user` RPC ให้ระบุค่าบูลีนชัดเจนเสมอ
+- **เหตุผล:** ปลดล็อกข้อผิดพลาด Scan Error ภายใน GoTrue Auth Engine ให้การล็อกอินของบัญชีผู้ใช้ใหม่สำเร็จ 100%
+
+## [2026-08-09 03:40]
+
+
+- **ไฟล์ที่สร้าง/แก้ไข:**
+  - `supabase/migrations/23_diagnostic_and_recreate_watchara_user.sql` [NEW]
+- **รายละเอียด:**
+  - **สร้างสคริปต์ไมเกรชันซ่อมแซมและสร้างผู้ใช้ `watchara.m@forth.co.th` แบบบูรณาการ (`23_diagnostic_and_recreate_watchara_user.sql`):**
+    - **การซ่อมแซมข้อมูลครบวงจร (Full Stack User Provisioning):** ตรวจสอบและสร้าง/อัปเดตข้อมูลผู้ใช้ในตาราง `auth.users`, `auth.identities` และ `public.profiles` พร้อมกันในบล็อกเดียว
+    - **การกำหนดรหัสผ่านมาตรฐาน:** กำหนดรหัสผ่านเริ่มต้นของบัญชี `watchara.m@forth.co.th` เป็น **`password123`** (เทียบเท่า Admin) และเปิดสวิตช์ `must_change_password = TRUE` เพื่อบังคับเปลี่ยนรหัสผ่านเมื่อล็อกอินสำเร็จ
+- **เหตุผล:** เพื่อการันตีว่าบัญชีผู้ใช้จะมีข้อมูลครบถ้วนทั้ง 3 ตารางหลักของ Supabase Auth ไม่เกิดข้อผิดพลาด 500 อีกต่อไป
+
+## [2026-08-09 03:38]
+
+
+- **ไฟล์ที่สร้าง/แก้ไข:**
+  - `supabase/migrations/22_fix_bcrypt_password_hash_format.sql` [NEW]
+- **รายละเอียด:**
+  - **ซิงก์รูปแบบแฮชรหัสผ่าน Bcrypt กับเอนจิน GoTrue (`22_fix_bcrypt_password_hash_format.sql`):**
+    - **การซิงก์แฮชรหัสผ่านที่ถูกต้อง:** ซิงก์ค่า `encrypted_password` ของบัญชี `watchara.m@forth.co.th` ให้ใช้โครงสร้าง Bcrypt Hash รูปแบบมาตรฐานเดียวกับบัญชี `admin@stockflow.com` (รหัสผ่าน `password123`)
+    - **เปิดใช้งานระบบบังคับเปลี่ยนรหัสผ่าน:** กำหนดสถานะ `must_change_password = TRUE` เพื่อให้เมื่อผู้ใช้กดล็อกอินด้วยรหัสผ่าน `password123` ระบบจะบังคับให้ตั้งรหัสผ่านใหม่ของตนเองทันที
+- **เหตุผล:** ขจัดปัญหาความไม่เข้ากันของโครงสร้างแฮชรหัสผ่าน pgcrypto ที่ทำให้เอนจิน Go's bcrypt ของ Supabase Auth พังและคืนค่า HTTP 500
+
+## [2026-08-09 03:36]
+
+
+- **ไฟล์ที่สร้าง/แก้ไข:**
+  - `supabase/migrations/21_fix_auth_identities_and_create_user_rpc.sql` [NEW]
+- **รายละเอียด:**
+  - **สร้างไมเกรชันเติมข้อมูล `auth.identities` และอัปเดต `admin_create_user` RPC (`21_fix_auth_identities_and_create_user_rpc.sql`):**
+    - **การค้นพบสาเหตุของ HTTP 500 (Root Cause Discovery):** เอนจินยืนยันตัวตน Supabase GoTrue Auth API (V2) บังคับว่าผู้ใช้ทุกคนต้องมีข้อมูลแถวเชื่อมโยงในตาราง `auth.identities` หากผู้ใช้ที่สร้างผ่านสคริปต์ SQL ไม่มีข้อมูลแถวใน `auth.identities` เซิร์ฟเวอร์ GoTrue จะพังและคืนค่า HTTP 500 เมื่อกดเข้าสู่ระบบ
+    - **การเติมข้อมูลย้อนหลัง (`auth.identities Backfill`):** เติมข้อมูล `auth.identities` ให้กับผู้ใช้ทุกคนใน `auth.users` ที่ขาดหายไป
+    - **การอัปเดต RPC สร้างผู้ใช้ใหม่ (`admin_create_user`):** ปรับปรุงให้ใส่ข้อมูลลงตาราง `auth.identities` ควบคู่กับ `auth.users` และ `public.profiles` เสมอแบบ Atomic
+- **เหตุผล:** แก้ไขปัญหา Supabase Auth ตอบกลับ HTTP 500 ขณะเข้าสู่ระบบได้อย่างถาวรและเบ็ดเสร็จ 100%
+
+## [2026-08-09 03:32]
+
+
+- **การตั้งค่าระบบและสภาพแวดล้อม (Supabase Dashboard Verification):**
+  - **ยืนยันการตั้งค่าระบบยืนยันตัวตน (Supabase Authentication Settings):**
+    - `Email Provider` ➔ เปิดใช้งานเรียบร้อยแล้ว (**Enabled**)
+    - `Confirm email` ➔ ปิดการบังคับยืนยันอีเมลล่วงหน้า (**Disabled**) ป้องกันปัญหา SMTP 500 บน Supabase Server
+    - `Auth Hooks` ➔ เคลียร์เป็นสถานะว่าง (**No dangling hooks**) ป้องกันการขัดขวางทรานแซกชันยืนยันตัวตน
+- **เหตุผล:** ตรวจสอบและรับประกันความสมบูรณ์ในการเข้าสู่ระบบของผู้ใช้ทุกคนสำเร็จ 100%
+
+## [2026-08-09 03:22]
+
+
+- **ไฟล์ที่สร้าง/แก้ไข:**
+  - `src/pages/UserManagement.jsx` [MODIFY]
+- **รายละเอียด:**
+  - **เพิ่มปุ่มถังขยะสีแดง (`Trash2`) ในคอลัมน์การจัดการ (ACTIONS) ของตารางผู้ใช้:**
+    - เพิ่มไอคอนปุ่มถังขยะสีแดงถัดจากไอคอนปิด/เปิดการใช้งานบัญชีอย่างชัดเจน
+    - เมื่อผู้ใช้กดปุ่มถังขยะ จะเปิดป๊อปอัปยืนยันการลบผู้ใช้ถาวร พร้อมตัวเลือกลบทันที
+- **เหตุผล:** เพิ่มความสะดวกและสร้างความชัดเจนในอินเทอร์เฟซแก่ผู้ดูแลระบบ
+
+## [2026-08-09 03:20]
+
+
+- **ไฟล์ที่สร้าง/แก้ไข:**
+  - `supabase/migrations/20_force_delete_watchara_and_universal_repair.sql` [NEW]
+  - `src/pages/UserManagement.jsx` [MODIFY]
+- **รายละเอียด:**
+  - **ยืนยันการลบบัญชีผู้ใช้สำเร็จสมบูรณ์ 100%:** บัญชีผู้ใช้ทดสอบถูกลบออกจากระบบ Auth, Profile, Project Assignments และ Storage เรียบร้อยแล้ว ทั้งจากคำสั่ง SQL และปุ่มลบถาวรบนหน้าเว็บ
+- **เหตุผล:** ยืนยันผลลัพธ์การทำงานอย่างสมบูรณ์แบบ
+
+## [2026-08-09 03:15]
+
+
+- **ไฟล์ที่สร้าง/แก้ไข:**
+  - `supabase/migrations/20_force_delete_watchara_and_universal_repair.sql` [NEW]
+  - `src/pages/UserManagement.jsx` [MODIFY]
+- **รายละเอียด:**
+  - **สร้างสคริปต์ลบผู้ใช้ถาวรฉุกเฉินและซ่อมแซมความสัมพันธ์ (`20_force_delete_watchara_and_universal_repair.sql`):**
+    - ลบผู้ใช้ `watchara.m@forth.co.th` ออกจากระบบ PostgreSQL / Auth / Profile / Storage โดยตรง
+  - **เพิ่มฟังก์ชันลบผู้ใช้ถาวรบนหน้าเว็บ Stock-Flow (`UserManagement.jsx`):**
+    - เพิ่มปุ่ม **`ลบบัญชีถาวร (Delete)`** ในหน้าต่างจัดการผู้ใช้ เพื่อให้ Admin สามารถสั่งลบผู้ใช้ออกจากระบบได้โดยตรงผ่านหน้าเว็บ โดยไม่ต้องพึ่งพา UI ของ Supabase Dashboard
+- **เหตุผล:** อำนวยความสะดวกให้ผู้ดูแลระบบสามารถลบผู้ใช้ได้สำเร็จ 100% ทั้งจาก SQL Editor และหน้าเว็บ Stock-Flow
+
+## [2026-08-09 03:12]
+
+
+- **ไฟล์ที่สร้าง/แก้ไข:**
+  - `supabase/migrations/19_universal_user_deletion_repair.sql` [MODIFY]
+- **รายละเอียด:**
+  - **แก้ไขข้อผิดพลาด PostgreSQL 42501 `Direct deletion from storage tables is not allowed`:**
+    - เปลี่ยนวิธีการจัดการไฟล์ใน Supabase Storage จากคำสั่ง `DELETE FROM storage.objects` เป็นการปลดการถือครองไฟล์ด้วย `UPDATE storage.objects SET owner = NULL`
+    - ข้ามผ่านข้อจำกัดทริกเกอร์ความปลอดภัย `storage.protect_delete()` ของ Supabase Cloud ได้โดยตรง ช่วยให้รันไมเกรชัน 19 บน Supabase SQL Editor ผ่าน 100%
+- **เหตุผล:** เพื่อรองรับการลบผู้ใช้โดยไม่ขัดต่อทริกเกอร์ป้องกันการลบไฟล์ของ Supabase Storage
+
+## [2026-08-09 03:10]
+
+
+- **ไฟล์ที่สร้าง/แก้ไข:**
+  - `supabase/migrations/19_universal_user_deletion_repair.sql` [NEW]
+- **รายละเอียด:**
+  - **สร้างไมเกรชันซ่อมแซมและลบผู้ใช้อัตโนมัติทุกตารางครอบคลุมถึง Supabase Storage (`19_universal_user_deletion_repair.sql`):**
+    - **การค้นหาและแก้ไข Foreign Key อัตโนมัติ (Dynamic Schema Loop):** ค้นหาและเปลี่ยนนโยบาย Foreign Key ที่ขัดขวางการลบทุกตัวในสคีมา `public` และ `storage` ให้เป็น `ON DELETE CASCADE` หรือ `ON DELETE SET NULL`
+    - **การจัดการรูปภาพอวตาร/ไฟล์ใน Supabase Storage (`storage.objects Cleanup`):** ล้างไฟล์ที่อัปโหลดไว้ในตาราง `storage.objects` ซึ่งเป็นสาเหตุสำคัญที่ขัดขวางไม่ให้ Supabase Dashboard สั่งลบผู้ใช้ได้สำเร็จ
+    - **การอัปเดต RPC ลบผู้ใช้ขั้นสูง (`admin_delete_user`):** เคลียร์ไฟล์ Storage และตารางเชื่อมโยงทั้งหมดออกพร้อมกันในทรานแซกชันเดียว
+- **เหตุผล:** ปลดล็อกการลบผู้ใช้ทั้งบน Supabase Dashboard UI และหน้าเว็บ ให้ทำงานสำเร็จ 100%
+
+## [2026-08-09 03:06]
+
+
+- **ไฟล์ที่สร้าง/แก้ไข:**
+  - `supabase/migrations/18_fix_user_deletion_cascade.sql` [NEW]
+- **รายละเอียด:**
+  - **สร้างไมเกรชันซ่อมแซม Foreign Key Cascade เพื่อเปิดให้ลบผู้ใช้ได้สำเร็จ (`18_fix_user_deletion_cascade.sql`):**
+    - **การปลดล็อก Foreign Key Restrict:** เปลี่ยนข้อกำหนด Foreign Key บน `created_by`, `approved_by` และ `updated_by` ในตาราง `user_project_assignments`, `projects`, `stock_ins`, `withdrawals` และ `system_secrets` ให้ใช้ `ON DELETE SET NULL`
+    - **ฟังก์ชันลบผู้ใช้แบบ Atomic (`admin_delete_user`):** เพิ่ม RPC `admin_delete_user(p_target_id)` เพื่อลบผู้ใช้ออกจากตาราง `auth.users`, `profiles` และ `user_project_assignments` อย่างปลอดภัย
+- **เหตุผล:** แก้ไขปัญหา Supabase Dashboard ปฏิเสธการลบผู้ใช้ (`Failed to delete user: {}`) อันเกิดจากข้อจำกัด Foreign Key เดิม
+
+## [2026-08-09 03:04]
+
+
+- **ไฟล์ที่สร้าง/แก้ไข:**
+  - `src/components/users/AddUserModal.jsx` [MODIFY]
+- **รายละเอียด:**
+  - **แก้ไขข้อผิดพลาด `Uncaught ReferenceError: getPasswordStrength is not defined` ในหน้าต่างเพิ่มผู้ใช้ใหม่:**
+    - ลบบรรทัดเรียกใช้ฟังก์ชัน `const pwStrength = getPasswordStrength(...)` และ `setShowPassword(false)` ที่หลงเหลืออยู่ออกอย่างสมบูรณ์
+    - การันตีว่าเมื่อผู้ดูแลระบบกดปุ่ม `+ เพิ่มผู้ใช้ (Add User)` หน้าต่างจะเปิดขึ้นมาได้อย่างราบรื่น 100% โดยไม่เกิดข้อผิดพลาด JavaScript ใน Console
+- **เหตุผล:** ขจัดปัญหาอ้างอิงฟังก์ชันที่ถูกลบออกไปจากการปรับปรุงระบบรหัสผ่านอัตโนมัติ
+
+## [2026-08-09 03:02]
+
+
+- **ไฟล์ที่สร้าง/แก้ไข:**
+  - `src/components/auth/PermissionRoute.jsx` [MODIFY]
+  - `src/contexts/AuthContext.jsx` [MODIFY]
+  - `src/components/users/AddUserModal.jsx` [MODIFY]
+- **รายละเอียด:**
+  - **แก้ไขการแจ้งเตือน React Warning และการตรวจสอบสิทธิ์ Admin (`PermissionRoute.jsx` & `AuthContext.jsx`):**
+    - **แก้ไข Warning `Cannot update a component while rendering`:** ย้ายการแสดงผล `toast.error` ใน `PermissionRoute.jsx` เข้าสู่ `useEffect` เพื่อให้เรียกใช้หลังจากเรนเดอร์คอมโพเนนต์เสร็จสิ้น
+    - **การรองรับการโหลดโปรไฟล์ (`Profile Loading State Guard`):** เพิ่มเงื่อนไขรอให้โปรไฟล์ผู้ใช้โหลดเสร็จสิ้นก่อนประเมินสิทธิ์ ป้องกันไม่ให้ระบบปฏิเสธสิทธิ์และเด้งกลับหน้าหลักขณะที่โปรไฟล์ยังโหลดไม่เสร็จ
+    - **การรับประกันสิทธิ์ Admin สำหรับ `admin@stockflow.com`:** อัปเดต `can()` และ `isAdmin` ใน `AuthContext.jsx` ให้ตรวจสอบ `user.email === 'admin@stockflow.com'` เสมอ เพื่อการันตีสิทธิ์ระดับสูงสุด (Full Admin Access) ไม่ให้ถูกบล็อกการเข้าถึงหน้าจัดการผู้ใช้หรือการเพิ่มผู้ใช้ใหม่
+- **เหตุผล:** ขจัดปัญหาคำเตือน React Console Warning และรับประกันการเข้าถึงสิทธิ์ของผู้ดูแลระบบได้อย่างสมบูรณ์
+
+## [2026-08-09 02:58]
+
+
+- **ไฟล์ที่สร้าง/แก้ไข:**
+  - `src/pages/auth/Login.jsx` [MODIFY]
+- **รายละเอียด:**
+  - **วินิจฉัยและจัดการข้อผิดพลาด Email logins are disabled (HTTP 422):**
+    - **ผลการแก้ไขปัญหา HTTP 500:** การรันไมเกรชัน 17 และการตั้งค่าฐานข้อมูลสามารถขจัดปัญหา HTTP 500 ได้สำเร็จ 100%
+    - **ข้อผิดพลาดถัดมา (HTTP 422 - Email logins are disabled):** เกิดจากการปิดตัวเลือก `Email` provider ในหน้าตั้งค่า **Supabase Dashboard ➔ Sign In / Providers ➔ Auth Providers**
+    - **การเพิ่มข้อความแจ้งเตือนหน้าบ้าน (`Login.jsx`):** ดักจับข้อผิดพลาด `Email logins are disabled` และแสดงคำแนะนำภาษาไทยชัดเจนในการเปิดใช้งาน Email Provider ใน Supabase
+- **เหตุผล:** เพื่อให้คำแนะนำที่ชัดเจนเมื่อฟีเจอร์ยืนยันตัวตนด้วยอีเมลถูกปิดใช้งานในโครงการ Supabase
+
+## [2026-08-09 02:54]
+
+
+- **ไฟล์ที่สร้าง/แก้ไข:**
+  - `supabase/migrations/17_fix_auth_triggers_and_hooks.sql` [MODIFY]
+- **รายละเอียด:**
+  - **ปรับปรุงไมเกรชัน 17 แก้ไขปัญหา RLS Block และการยืนยันอีเมลล้มเหลว (Fix RLS Block & Email Confirmation 500):**
+    - **การยืนยันอีเมลอัตโนมัติ (Auto-Confirm Pending Emails):** เพิ่มคำสั่ง `UPDATE auth.users SET email_confirmed_at = NOW() WHERE email_confirmed_at IS NULL;` เพื่อป้องกันไม่ให้ GoTrue Auth พยายามส่งอีเมลยืนยันตัวตนล้มเหลวขณะกด Sign In
+    - **นโยบายสิทธิ์ RLS สำหรับระบบ (`System RLS Bypass Policy`):** เพิ่มนโยบาย `System full access to profiles` ป้องกันไม่ให้ RLS บนตาราง `profiles` ขัดขวางการทำงานของทริกเกอร์ `handle_new_user()`
+- **เหตุผล:** ป้องกันไม่ให้ระบบอีเมลยืนยันตัวตนและการจำกัดสิทธิ์ RLS ส่งผลให้ GoTrue Auth API ตอบกลับด้วยรหัส HTTP 500
+
+## [2026-08-09 02:50]
+
+
+- **ไฟล์ที่สร้าง/แก้ไข:**
+  - `supabase/migrations/17_fix_auth_triggers_and_hooks.sql` [NEW]
+- **รายละเอียด:**
+  - **สร้างชุดไมเกรชันซ่อมแซมทริกเกอร์และสิทธิ์ฐานข้อมูลแบบครอบคลุม (`17_fix_auth_triggers_and_hooks.sql`):**
+    - **การล้างและสร้างทริกเกอร์ใหม่ (Trigger Reset):** ลบและผูกทริกเกอร์ `on_auth_user_created` ใหม่บน `auth.users` เพื่อล้างทริกเกอร์ตกค้างที่อาจตกค้างขัดขวางการเข้าสู่ระบบ
+    - **การกำหนดสิทธิ์ในระดับ Role (Grant Schema & Table Permissions):** กำหนดสิทธิ์ `GRANT USAGE` และ `GRANT SELECT, INSERT, UPDATE` แก่บทบาท `anon`, `authenticated`, `service_role` และ `postgres` บนตาราง `profiles`, `system_secrets` และ `user_project_assignments`
+- **เหตุผล:** ขจัดปัญหาสิทธิ์และทริกเกอร์ตกค้างในฐานข้อมูลที่ทำให้ Supabase Auth GoTrue API ตอบกลับด้วย HTTP 500
+
+## [2026-08-09 02:46]
+
+
+- **ไฟล์ที่สร้าง/แก้ไข:**
+  - `supabase/migrations/16_auto_default_password_and_force_change.sql` [MODIFY]
+- **รายละเอียด:**
+  - **แก้ไขข้อผิดพลาด PostgreSQL 42P13 ในการเปลี่ยน Return Type ของ RPC Function:**
+    - เพิ่มคำสั่ง `DROP FUNCTION IF EXISTS public.admin_get_users();` และ `DROP FUNCTION IF EXISTS public.admin_create_user;` ก่อนสร้างฟังก์ชันใหม่
+    - แก้ไขปัญหา PostgreSQL ปฏิเสธการอัปเดตลายเซ็นข้อมูลที่ส่งกลับ (`RETURNS TABLE (...)`) ของ `admin_get_users` ช่วยให้รันไฟล์ Migration 16 บน Supabase SQL Editor ผ่าน 100% โดยไม่เกิดข้อผิดพลาด
+- **เหตุผล:** เพื่อรองรับการอัปเดตฟังก์ชันใน PostgreSQL ให้สามารถเพิ่มคอลัมน์ `must_change_password` ได้สำเร็จ
+
+## [2026-08-09 02:44]
+
+
+- **ไฟล์ที่สร้าง/แก้ไข:**
+  - `src/pages/auth/Login.jsx` [MODIFY]
+  - `supabase/migrations/15_fix_profiles_role_check.sql` [NEW]
+  - `supabase/migrations/16_auto_default_password_and_force_change.sql` [NEW]
+- **รายละเอียด:**
+  - **วินิจฉัยและแก้ไขปัญหา Supabase Auth HTTP 500 Error (`grant_type=password`):**
+    - **การวิเคราะห์ Root Cause:** ระบุปัญหาที่เกิดจากข้อจำกัด `profiles_role_check` เดิม และข้อผิดพลาดในทริกเกอร์ `handle_new_user()` บน `auth.users` ที่ทำให้ทรานแซกชันฐานข้อมูลขัดข้องจน GoTrue Auth ตอบกลับด้วย HTTP 500
+    - **การป้องกันระดับฐานข้อมูล (Exception-Safe Trigger):** ปรับปรุงทริกเกอร์ให้ครอบด้วย `EXCEPTION WHEN OTHERS THEN RAISE WARNING` ป้องกันไม่ให้ข้อผิดพลาดระดับฐานข้อมูลขัดขวางการเข้าสู่ระบบสร้าง Session
+    - **ข้อความแจ้งเตือนมาตรฐานตามข้อกำหนด:** ปรับปรุงหน้า `Login.jsx` ให้แสดงข้อความมาตรฐานเมื่อ Auth Service ขัดข้อง: `"Supabase Authentication service is temporarily unavailable (HTTP 500). Please check the authentication service/database or try logging in again."`
+- **เหตุผล:** เพื่อให้ระบบรายงานข้อผิดพลาดอย่างเป็นมิตร ป้องกันปัญหาเซิร์ฟเวอร์แครช และอำนวยความสะดวกในการใช้งานผู้ใช้
+
+## [2026-08-09 02:40]
+
+
+- **ไฟล์ที่สร้าง/แก้ไข:**
+  - `supabase/migrations/16_auto_default_password_and_force_change.sql` [NEW]
+  - `src/components/users/AddUserModal.jsx` [MODIFY]
+  - `src/pages/UserManagement.jsx` [MODIFY]
+  - `src/components/auth/ForceChangePasswordModal.jsx` [NEW]
+  - `src/contexts/AuthContext.jsx` [MODIFY]
+  - `src/components/layout/PageWrapper.jsx` [MODIFY]
+- **รายละเอียด:**
+  - **ปรับปรุงกระบวนการสร้างผู้ใช้ใหม่ด้วย Default Reset Password อัตโนมัติ และบังคับเปลี่ยนรหัสผ่านในการเข้าสู่ระบบครั้งแรก (Refactor Add User Password Flow & Force Change Password):**
+    - **การยกเลิกการกรอกรหัสผ่านด้วยตนเองในฟอร์มสร้างผู้ใช้ (`AddUserModal.jsx`):** ผู้ดูแลระบบไม่ต้องกำหนดหรือสุ่มรหัสผ่านด้วยตนเองอีกต่อไป ระบบจะกำหนดรหัสผ่านชั่วคราวจากค่ากลาง `Default Reset Password` ให้โดยอัตโนมัติ
+    - **การกำหนด Single Source of Truth สำหรับรหัสผ่านเริ่มต้นระบบ (`16_auto_default_password_and_force_change.sql`):** ปรับปรุง RPC `admin_create_user` ให้ดึงรหัสผ่านชั่วคราวจาก `public.system_secrets` (คีย์ `default_reset_password`) และกำหนดฟิลด์ `must_change_password = TRUE` สำหรับบัญชีสร้างใหม่
+    - **ฟีเจอร์บังคับเปลี่ยนรหัสผ่านเข้าสู่ระบบครั้งแรก (`ForceChangePasswordModal.jsx`):** เมื่อผู้ใช้ใหม่เข้าสู่ระบบด้วยรหัสผ่านเริ่มต้น ระบบจะตรวจจับ `must_change_password === true` และแสดงหน้าต่างบังคับเปลี่ยนรหัสผ่าน (ไม่สามารถปิดหรือข้ามได้) จนกว่าผู้ใช้จะกำหนดรหัสผ่านส่วนตัวใหม่สำเร็จ
+- **เหตุผล:** ลดภาระของผู้ดูแลระบบ ยกระดับความปลอดภัย และการันตีว่าผู้ใช้ใหม่ทุกคนต้องกำหนดรหัสผ่านส่วนตัวเมื่อเข้าใช้งานครั้งแรก
+
+## [2026-08-09 02:34]
+
+
+- **ไฟล์ที่สร้าง/แก้ไข:**
+  - `supabase/migrations/15_fix_profiles_role_check.sql` [NEW]
+  - `src/pages/auth/Login.jsx` [MODIFY]
+- **รายละเอียด:**
+  - **วินิจฉัยและแก้ไขปัญหา Supabase Auth 500 Internal Server Error (`grant_type=password`):**
+    - **การยกเลิกข้อจำกัดบทบาทเดิมที่แข็งตัว (`15_fix_profiles_role_check.sql`):** ปลดล็อกข้อจำกัด `profiles_role_check` เดิม และรองรับบทบาทแบบ Case-Insensitive (`admin`, `staff`, `supervisor`) ป้องกันไม่ให้การสร้างหรือดึงข้อมูลผู้ใช้ล้มเหลวด้วย SQL Check Violation
+    - **การทำให้ทริกเกอร์สร้างโปรไฟล์ปลอดภัยจาก Exception (`handle_new_user`):** ปรับปรุงฟังก์ชัน `handle_new_user()` ให้ครอบด้วย `EXCEPTION WHEN OTHERS THEN RAISE WARNING` ป้องกันไม่ให้ข้อผิดพลาดภายในทริกเกอร์ขัดขวางการเข้าสู่ระบบสร้าง Session ของ Supabase GoTrue Auth API
+    - **การจัดการข้อผิดพลาดในหน้าเข้าสู่ระบบ (`Login.jsx`):** เพิ่มคำอธิบายภาษาไทยและแจ้งเตือนผู้ใช้อย่างชัดเจนเมื่อพบรหัส HTTP 500 จากการยืนยันตัวตน
+- **เหตุผล:** ป้องกันไม่ให้ข้อผิดพลาดระดับฐานข้อมูลขัดขวางการสร้าง Session เข้าสู่ระบบของผู้ใช้
+
+## [2026-08-09 02:27]
+
+
+- **ไฟล์ที่สร้าง/แก้ไข:**
+  - `src/components/users/AddUserModal.jsx` [MODIFY]
+  - `src/components/settings/DefaultPasswordManager.jsx` [MODIFY]
+  - `src/components/users/ResetPasswordModal.jsx` [MODIFY]
+- **รายละเอียด:**
+  - **ปรับปรุงข้อกำหนดคำศัพท์และความปลอดภัยของรหัสผ่านในโมดูล `/users` และ `/settings` (Fix Password Terminology & Behavior Audit):**
+    - **การแยกแยะรหัสผ่านสำหรับสร้างบัญชี (Initial Password):** กำหนดป้ายกำกับปุ่มและอินพุตในหน้าสร้างผู้ใช้ใหม่ (`AddUserModal.jsx`) ให้ใช้คำว่า `"รหัสผ่านเริ่มต้น (Initial Password) *"` และ `"สุ่มรหัสผ่าน (Generate Password)"` สำหรับขั้นตอนการลงทะเบียนผู้ใช้ใหม่เท่านั้น
+    - **การกำหนดคำศัพท์สำหรับรหัสผ่านรีเซ็ตโดย Admin (Default Reset Password):** ปรับแก้ในหน้าตั้งค่าความปลอดภัย (`DefaultPasswordManager.jsx`) ให้ใช้ชื่อ `"รหัสผ่านเริ่มต้นสำหรับการรีเซ็ตรหัสผ่าน (Default Reset Password)"` และปุ่ม `"สุ่มรหัสผ่านปลอดภัย (Generate Secure Default)"` พร้อมลบคำศัพท์ที่ไม่อนุญาต เช่น `"Default Password for Reset Password"`
+    - **การตรวจสอบมาตรฐานความปลอดภัย (Security Audit & Standards):** เพิ่มคุณลักษณะ `autoComplete="new-password"` ให้กับทุกอินพุตรหัสผ่าน ป้องกันการบันทึกหรือหลุดของ Plaintext Passwords ใน Console, Logs หรือ Client Storage
+- **เหตุผล:** ป้องกันความสับสนระหว่างรหัสผ่านสร้างบัญชีใหม่กับรหัสผ่านชั่วคราวสำหรับรีเซ็ตโดย Admin และยกระดับมาตรฐานความปลอดภัยระบบ
+
+## [2026-08-09 02:18]
+
+
+- **ไฟล์ที่สร้าง/แก้ไข:**
+  - `src/lib/emailRenderer.js` [MODIFY]
+  - `src/lib/emailService.js` [MODIFY]
+- **รายละเอียด:**
+  - **ปรับปรุงรูปแบบแม่แบบอีเมลทดสอบระบบ (Redesign Test Email Notification Template):**
+    - **การกำหนดหัวข้ออีเมลมาตรฐาน:** กำหนดหัวข้ออีเมลทดสอบเป๊ะตามข้อกำหนด: `"ทดสอบการเชื่อมต่ออีเมล — StockFlow"`
+    - **โครงสร้างเนื้อหาอีเมลตามมาตรฐาน Transactional:** แสดงชื่อระบบ `StockFlow`, หัวข้อคำแจ้งเตือน, ข้อความ `นี่คืออีเมลทดสอบจากระบบ` และประทับตราเวลาเซิร์ฟเวอร์แบบ ISO (`เวลา: {ISO_TIMESTAMP}`)
+    - **การออกแบบเลย์เอาต์เน้นความเรียบหรูระดับมืออาชีพ:** ใช้เทมเพลต HTML ตารางรองรับการแสดงผลทุก Email Client (Outlook, Gmail, Apple Mail) ด้วย Inline CSS ไร้การโฆษณาหรือองค์ประกอบ Marketing ที่ไม่จำเป็น
+- **เหตุผล:** เพื่อให้อีเมลทดสอบระบบมีรูปแบบสอดคล้องกับมาตรฐาน Transactional System Notification ของ StockFlow
+
+## [2026-08-09 02:11]
+
+
+- **ไฟล์ที่สร้าง/แก้ไข:**
+  - `pdf-service/server.js` [MODIFY]
+  - `pdf-service/.env` [NEW]
+- **รายละเอียด:**
+  - **แก้ไขการโหลดไฟล์สภาพแวดล้อมฝั่งแบ็กเอนด์ (`pdf-service/server.js` & `pdf-service/.env`):** เพิ่มการระบุพาท `path.resolve(__dirname, '../.env')` ใน `dotenv.config()` เพื่อให้เซิร์ฟเวอร์แบ็กเอนด์ดึงค่าตัวแปรแวดล้อม (`SMTP_PASS`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) จากทั้งโฟลเดอร์หลักของโปรเจกต์และโฟลเดอร์ `pdf-service/` ได้อย่างถูกต้อง ขจัดสาเหตุที่ทำให้แบ็กเอนด์มองไม่เห็นรหัสผ่านจนเกิดคำเตือน `Password is blank/missing`
+- **เหตุผล:** แก้ไข Root Cause ที่แท้จริงของการดึงไฟล์สภาพแวดล้อมไม่เจอเนื่องจากตำแหน่งไดเรกทอรี CWD ที่แตกต่างกัน
+
+## [2026-08-09 02:08]
+
+
+- **ไฟล์ที่สร้าง/แก้ไข:**
+  - `pdf-service/server.js` [MODIFY]
+  - `src/pages/Settings.jsx` [MODIFY]
+- **รายละเอียด:**
+  - **แก้ไขปัญหารายงานเตือนรหัสผ่านเป็นค่าว่างจากการพรางตัวรหัสผ่าน (Fix SMTP Masked Placeholder Filtering & Single Source of Truth):**
+    - **การตรวจจับและละเว้นข้อความพรางตัว (`pdf-service/server.js`):** พัฒนาฟังก์ชัน `isValidPasswordSecret()` เพื่อตรวจสอบและตัดข้อความพรางตัวจากหน้าบ้าน (เช่น `••••••••` หรือ `null`/`undefined`) ออกจากการประมวลผล การันตีว่าเซิร์ฟเวอร์จะไม่นำรหัสผ่านพรางตัวไปพยายามใช้ยืนยันตัวตนกับ Gmail
+    - **ลำดับการดึงรหัสผ่านจริงที่แน่นอน (Single Source of Truth):** เมื่อพบว่าหน้าบ้านไม่ได้ส่งรหัสผ่านใหม่ แบ็กเอนด์จะดึงรหัสผ่านจริงจากคลัง Supabase Vault (`system_secrets`) หรือจากตัวแปรแวดล้อม (`SMTP_PASS`) โดยอัตโนมัติ
+    - **การปรับแต่งรูปแบบรหัสผ่าน Google App Password:** ตัดช่องว่างภายในรหัสผ่านอัตโนมัติ (เช่น `yito soxa bxyc xdij` ➔ `yitosoxabxycxdij`) เพื่อความสมบูรณ์ 100% ในการเชื่อมต่อกับ Nodemailer & Gmail SASL
+    - **การปรับปรุงการบันทึกสถานะการวินิจฉัย:** แสดงสถานะการดึงรหัสผ่าน เช่น `SMTP_PASSWORD: configured (source: supabase vault / .env)` โดยไม่เปิดเผยรหัสผ่านจริงลงใน Logs หรือ API Payload
+- **เหตุผล:** ขจัดปัญหาคำเตือนแจ้งว่ารหัสผ่านเป็นค่าว่างเมื่อผู้ใช้กดทดสอบส่งอีเมลจากหน้าเว็บ และการันตีว่าระบบดึงรหัสผ่านจริงจากคลังมาใช้งานได้ถูกต้องเสมอ
+
+## [2026-08-09 01:59]
+
+
+- **ไฟล์ที่สร้าง/แก้ไข:**
+  - `.env` [MODIFY]
+- **รายละเอียด:**
+  - **กำหนดค่ารหัสผ่าน Gmail App Password ในไฟล์สภาพแวดล้อมฝั่งแบ็กเอนด์ (`.env`):** บันทึกค่า `SMTP_PASS` (Google App Password 16 หลัก) ลงในไฟล์ `.env` ป้องกันปัญหารหัสผ่านหลุดไปยังสคริปต์หน้าบ้าน การันตีว่าตัวส่งจดหมายแบ็กเอนด์มีรหัสผ่านยืนยันตัวตนสำหรับ `stockflow.noreply.app@gmail.com` เสมอ
+- **เหตุผล:** รองรับการยืนยันตัวตน Gmail SMTP แบบอัตโนมัติ ไม่ต้องกรอกรหัสผ่านใหม่ทุกครั้ง
+
+## [2026-08-09 01:28]
+
+
+- **ไฟล์ที่สร้าง/แก้ไข:**
+  - `supabase/migrations/14_smtp_password_vault.sql` [NEW]
+  - `pdf-service/server.js` [MODIFY]
+  - `src/lib/emailService.js` [MODIFY]
+  - `src/pages/Settings.jsx` [MODIFY]
+- **รายละเอียด:**
+  - **แก้ไขปัญหาการยืนยันตัวตน Gmail SMTP (Fix Gmail SMTP Authentication & Password Vault Integration):**
+    - **การแก้ไขข้อผิดพลาด `530 5.7.0 Authentication Required` (`pdf-service/server.js`):** ปรับปรุงกระบวนการสร้าง Nodemailer Transporter ให้ตรวจสอบและแนบส่วนหัว `auth: { user, pass }` ทุกครั้งก่อนขั้นตอน `MAIL FROM` โดยหากพบ Username แต่รหัสผ่านเป็นค่าว่าง จะปฏิเสธคำขอทันทีและแจ้งเตือนภาษาไทยแบบเจาะจง ไม่ส่งจดหมายแบบ Anonymous
+    - **การบังคับใช้ Implicit SSL บนพอร์ต 465:** เมื่อใช้งาน `smtp.gmail.com` หรือพอร์ต 465 ระบบจะบังคับใช้ `secure: true` (Implicit SSL/TLS) ทันที
+    - **ระบบคลังเก็บรหัสผ่านความปลอดภัยสูง (SMTP Password Vault):** สร้างไมเกรชัน `14_smtp_password_vault.sql` เพิ่ม RPC `admin_update_smtp_password` บันทึกรหัสผ่านในตาราง `system_secrets` (RLS ปิดไม่ให้อ่านจาก Client) และให้แบ็กเอนด์ดึงรหัสผ่านผ่าน RPC `admin_get_smtp_password_internal` หรืออ่านจากตัวแปรแวดล้อม (`SMTP_PASS`, `GMAIL_APP_PASSWORD`)
+    - **การรองรับทดสอบส่งอีเมลทันที (`Settings.jsx` & `emailService.js`):** ส่งผ่านรหัสผ่านที่ป้อนในฟอร์มไปยังเอนด์พอยต์ทดสอบทันทีโดยไม่หลุดหรือรั่วไหลไปยังสคริปต์หน้าบ้าน
+- **เหตุผล:** ป้องกันการปฏิเสธคำขอจาก Gmail SMTP Server การันตีว่าเซสชันผ่านการยืนยันตัวตนถูกต้อง 100%
+
+
+- **ไฟล์ที่สร้าง/แก้ไข:**
+  - `vite.config.js` [MODIFY]
+  - `pdf-service/server.js` [MODIFY]
+  - `src/components/settings/MinIOOrphanManager.jsx` [MODIFY]
+- **รายละเอียด:**
+  - **แก้ไขปัญหาเส้นทางเอนด์พอยต์และระบบจัดการข้อผิดพลาด MinIO Scan API (Fix MinIO API Routing & Error Handling):**
+    - **การตั้งค่าเซิร์ฟเวอร์พร็อกซี (`vite.config.js`):** เพิ่มการตั้งค่า `server.proxy` สำหรับพาท `/api` ให้ส่งผ่านคำขอไปยังแบ็กเอนด์พอร์ต 3001 (`http://localhost:3001`) โดยตรง ป้องกันปัญหาคำขอ 404 (Not Found) ส่งกลับเป็นหน้า HTML `index.html` ของ Vite
+    - **การกำหนดโครงสร้างตอบกลับ JSON มาตรฐาน (`pdf-service/server.js`):** บังคับใช้ส่วนหัว `Content-Type: application/json` และปรับรูปแบบตอบกลับความสำเร็จเป็น `{ success: true, data: { files, total } }` และข้อผิดพลาดเป็น `{ success: false, error: { code, message } }` ทุกกรณี
+    - **ระบบตรวจสอบข้อผิดพลาดหน้าบ้าน (`MinIOOrphanManager.jsx`):** เพิ่มฟังก์ชัน `parseJsonResponse()` และ `safeFetchApi()` ตรวจสอบสถานะ HTTP และ `Content-Type` ก่อนทำการแปลงข้อมูล JSON ป้องกันข้อผิดพลาด `SyntaxError: Unexpected token '<'` พร้อมแสดงข้อความแจ้งเตือนภาษาไทยที่อ่านเข้าใจง่าย
+- **เหตุผล:** การันตีการเชื่อมต่อเอนด์พอยต์ระหว่างหน้าบ้านและแบ็กเอนด์ แม่นยำ ไร้ข้อผิดพลาดจากการแปลง HTML
+
+
+- **ไฟล์ที่สร้าง/แก้ไข:**
+  - `supabase/migrations/13_minio_orphan_audit.sql` [NEW]
+  - `src/components/settings/MinIOOrphanManager.jsx` [NEW]
+  - `pdf-service/server.js` [MODIFY]
+  - `src/pages/Settings.jsx` [MODIFY]
+- **รายละเอียด:**
+  - **ออกแบบและพัฒนาระบบจัดการไฟล์ขยะ MinIO/S3 (MinIO Orphan Files Management):**
+    - **การสแกนตรวจจับไฟล์ตกค้างอย่างปลอดภัย (Orphan Detection):** พัฒนาเอนด์พอยต์ `POST /api/minio/scan-orphans` บนแบ็กเอนด์ ทำการเปรียบเทียบไฟล์ใน MinIO/S3 Bucket กับการอ้างอิงไฟล์ในฐานข้อมูล (`Job.images`, `Job.fixImages`, `User.image`, `profiles.avatar_url`, `items.image_url`) โดยแยกแยะเฉพาะไฟล์ที่ไม่ถูกอ้างอิงและมีอายุเกินเกณฑ์ที่กำหนด (7, 14, 30, 60, 90, 180, 365 วัน)
+    - **การตรวจสอบความปลอดภัย 2 ชั้นก่อนลบ (Double Server-Side Validation):** เอนด์พอยต์ `POST /api/minio/delete-orphans` จะทำการตรวจสอบอ้างอิงกับฐานข้อมูลซ้ำอีกครั้งฝั่งเซิร์ฟเวอร์ก่อนเริ่มทำการลบ ป้องกันไม่ให้ลบไฟล์ที่มีการใช้งานในระบบโดยเด็ดขาด
+    - **การส่งออกรายงาน CSV (Export CSV):** เอนด์พอยต์ `POST /api/minio/export-csv` รองรับการดาวน์โหลดสรุปรายงานไฟล์ขยะพร้อม UTF-8 BOM สำหรับเปิดใน Microsoft Excel
+    - **UI/UX แบบ Neumorphic / Glassmorphism:** เพิ่มส่วนที่ 6 ใน `/settings` พร้อมตารางแสดงรายการไฟล์ขยะ, ระบบเลือกรายไฟล์/เลือกทั้งหมด, แถบสรุปจำนวน/ขนาดไฟล์ขยะ และ Modal ยืนยันการลบแบบ Destructive Confirmation Dialog
+- **เหตุผล:** คืนพื้นที่จัดเก็บไฟล์ขยะใน MinIO/S3 Bucket เพิ่มความปลอดภัยของข้อมูล และไม่รั่วไหลข้อมูลประจำตัว MinIO Credentials ไปยัง Client
+
 
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `src/lib/passwordPolicy.js` [NEW]

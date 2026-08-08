@@ -9,10 +9,8 @@ import AvatarUpload from '@/components/users/AvatarUpload';
 
 
 const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) => {
-
   const [activeTab, setActiveTab] = useState('account'); // 'account' | 'access'
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const [projectSearch, setProjectSearch] = useState('');
 
   const defaultRoles = [
@@ -23,10 +21,8 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
 
   const availableRoles = roles.length > 0 ? roles : defaultRoles;
 
-
   const [formData, setFormData] = useState({
     email: '',
-    password: '',
     full_name: '',
     phone: '',
     position: '',
@@ -37,30 +33,7 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
     selected_projects: []
   });
 
-  const handleRandomPassword = () => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
-    let randPw = '';
-    for (let i = 0; i < 12; i++) {
-      randPw += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    setFormData(prev => ({ ...prev, password: randPw }));
-    setShowPassword(true);
-    toast.success('สุ่มรหัสผ่านเรียบร้อยแล้ว');
-  };
 
-  const getPasswordStrength = (pw) => {
-    if (!pw) return { score: 0, label: 'ยังไม่ได้ระบุ', color: 'bg-slate-300' };
-    if (pw.length < 6) return { score: 1, label: 'อ่อนเกินไป (อย่างน้อย 6 อักขระ)', color: 'bg-red-500' };
-    let score = 1;
-    if (pw.length >= 8) score++;
-    if (/[A-Z]/.test(pw)) score++;
-    if (/[0-9]/.test(pw)) score++;
-    if (/[^A-Za-z0-9]/.test(pw)) score++;
-
-    if (score <= 2) return { score: 2, label: 'ปานกลาง', color: 'bg-amber-500' };
-    if (score <= 4) return { score: 3, label: 'ดี', color: 'bg-emerald-500' };
-    return { score: 4, label: 'แข็งแกร่งมาก', color: 'bg-purple-600' };
-  };
 
   const handleProjectToggle = (projectId) => {
     setFormData(prev => {
@@ -76,13 +49,8 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.email || !formData.password || !formData.full_name) {
+    if (!formData.email || !formData.full_name) {
       toast.error('กรุณากรอกข้อมูลที่จำเป็น (*)');
-      return;
-    }
-
-    if (formData.password.length < 6) {
-      toast.error('รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร');
       return;
     }
 
@@ -95,7 +63,6 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
       setLoading(true);
       await onSave({
         email: formData.email.trim(),
-        password: formData.password,
         full_name: formData.full_name.trim(),
         phone: formData.phone.trim() || null,
         position: formData.position.trim() || null,
@@ -108,6 +75,7 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
       resetForm();
       onClose();
     } catch (error) {
+
       console.error('Create User Error:', error);
     } finally {
       setLoading(false);
@@ -117,7 +85,6 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
   const resetForm = () => {
     setFormData({
       email: '',
-      password: '',
       full_name: '',
       phone: '',
       position: '',
@@ -128,7 +95,6 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
       selected_projects: []
     });
     setActiveTab('account');
-    setShowPassword(false);
   };
 
   const filteredProjects = projects.filter(p => 
@@ -136,7 +102,6 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
     p.project_code?.toLowerCase().includes(projectSearch.toLowerCase())
   );
 
-  const pwStrength = getPasswordStrength(formData.password);
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) { resetForm(); onClose(); } }}>
@@ -209,54 +174,15 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
                 </div>
               </div>
 
-              {/* Password controls */}
-              <div className="p-4 rounded-xl neu-pressed-sm space-y-3 bg-white/40 dark:bg-black/20">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password" className="text-sm font-medium">รหัสผ่าน (Password) *</Label>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleRandomPassword}
-                    className="text-xs text-primary hover:underline flex items-center gap-1 h-7 px-2"
-                  >
-                    <RefreshCw className="w-3 h-3" />
-                    สุ่มรหัสผ่าน (Generate Password)
-                  </Button>
+              {/* Automatic Default Password Info Notice */}
+              <div className="p-3.5 rounded-xl border border-purple-500/30 bg-purple-500/10 text-purple-900 dark:text-purple-200 text-xs flex items-start gap-2.5">
+                <Shield className="w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0 mt-0.5" />
+                <div>
+                  <strong className="font-semibold block text-sm mb-0.5">รหัสผ่านเริ่มต้นอัตโนมัติ (Default Reset Password)</strong>
+                  ระบบจะกำหนดรหัสผ่านชั่วคราวจากค่ากลางของระบบให้อัตโนมัติ ผู้ใช้ใหม่จะต้องเปลี่ยนรหัสผ่านด้วยตนเองเมื่อเข้าสู่ระบบครั้งแรก (First-Time Login — Password Change Required)
                 </div>
-
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    required
-                    placeholder="กำหนดรหัสผ่าน (อย่างน้อย 6 ตัวอักษร)"
-                    value={formData.password}
-                    onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                    className="pr-10 neu-pressed bg-transparent"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-
-                {/* Password strength meter */}
-                {formData.password && (
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>ความแข็งแกร่งรหัสผ่าน:</span>
-                      <span className="font-semibold">{pwStrength.label}</span>
-                    </div>
-                    <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                      <div className={`h-full transition-all duration-300 ${pwStrength.color}`} style={{ width: `${(pwStrength.score / 4) * 100}%` }}></div>
-                    </div>
-                  </div>
-                )}
               </div>
+
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>

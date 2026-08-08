@@ -134,7 +134,7 @@ const UserManagement = () => {
     try {
       const { data, error } = await supabase.rpc('admin_create_user', {
         p_email: userPayload.email,
-        p_password: userPayload.password,
+        p_password: userPayload.password || null,
         p_full_name: userPayload.full_name,
         p_role: userPayload.role,
         p_status: userPayload.status,
@@ -143,6 +143,7 @@ const UserManagement = () => {
         p_all_projects: userPayload.all_projects,
         p_project_ids: userPayload.project_ids
       });
+
 
       if (error) {
         // Fallback for fallback creation directly in profiles if RPC not installed
@@ -273,6 +274,35 @@ const UserManagement = () => {
     }
   };
 
+  const confirmDeactivateUser = async () => {
+    if (!selectedUserForDelete) return;
+    await handleToggleStatus(selectedUserForDelete);
+    setSelectedUserForDelete(null);
+  };
+
+  const confirmDeleteUserPermanent = async () => {
+    if (!selectedUserForDelete) return;
+    try {
+      setLoading(true);
+      const { data, error } = await supabase.rpc('admin_delete_user', {
+        p_target_id: selectedUserForDelete.id
+      });
+      if (error) throw error;
+      if (data?.success) {
+        toast.success(`ลบบัญชีผู้ใช้ ${selectedUserForDelete.email} ถาวรสำเร็จ`);
+        await fetchUsers();
+      } else {
+        toast.error(data?.message || 'ไม่สามารถลบผู้ใช้ได้');
+      }
+    } catch (err) {
+      console.error('Delete User Error:', err);
+      toast.error(err.message || 'เกิดข้อผิดพลาดในการลบบัญชีผู้ใช้');
+    } finally {
+      setSelectedUserForDelete(null);
+      setLoading(false);
+    }
+  };
+
   const handleDeleteUserAttempt = (userObj) => {
     // Check if user is active admin
     if (userObj.role === 'admin' && userObj.status === 'active') {
@@ -283,12 +313,6 @@ const UserManagement = () => {
       }
     }
     setSelectedUserForDelete(userObj);
-  };
-
-  const confirmDeactivateUser = async () => {
-    if (!selectedUserForDelete) return;
-    await handleToggleStatus(selectedUserForDelete);
-    setSelectedUserForDelete(null);
   };
 
   // Filtered Users
@@ -582,15 +606,27 @@ const UserManagement = () => {
                             onClick={() => handleToggleStatus(u)}
                             className={`h-8 w-8 ${
                               u.status === 'active' 
-                                ? 'text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950' 
+                                ? 'text-amber-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950' 
                                 : 'text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950'
                             }`}
                           >
                             {u.status === 'active' ? <UserX className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
                           </Button>
+
+                          {/* Delete User */}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            title="ลบบัญชีผู้ใช้ถาวร (Delete User)"
+                            onClick={() => handleDeleteUserAttempt(u)}
+                            className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
                         </div>
                       </td>
                     </tr>
+
                   ))
                 )}
               </tbody>
@@ -631,34 +667,34 @@ const UserManagement = () => {
         />
       )}
 
-      {/* Confirm Deactivate Modal */}
+      {/* Confirm Deactivate or Delete Modal */}
       {selectedUserForDelete && (
         <Dialog open={!!selectedUserForDelete} onOpenChange={() => setSelectedUserForDelete(null)}>
           <DialogContent className="max-w-md neu-flat border-0">
             <DialogHeader>
               <DialogTitle className="text-lg font-bold flex items-center gap-2 text-red-600">
                 <AlertCircle className="w-5 h-5" />
-                ยืนยันการระงับบัญชีผู้ใช้ (Deactivate Account)
+                จัดการและลบบัญชีผู้ใช้ (User Action)
               </DialogTitle>
               <DialogDescription className="text-sm text-muted-foreground mt-2">
-                ต้องการระงับการใช้งานบัญชี <strong>{selectedUserForDelete.full_name}</strong> ({selectedUserForDelete.email}) หรือไม่?
-                <br />
-                <span className="text-xs text-amber-600 font-medium mt-1 block">
-                  * การระงับบัญชีจะยกเลิกสิทธิ์เข้าถึงระบบ แต่จะยังคงรักษาประวัติธุรกรรมเบิกจ่ายและรับเข้าในอดีตของผู้ใช้นี้ไว้ครบถ้วน
-                </span>
+                ต้องการดำเนินการอย่างไรกับบัญชี <strong>{selectedUserForDelete.full_name}</strong> ({selectedUserForDelete.email})?
               </DialogDescription>
             </DialogHeader>
-            <DialogFooter className="mt-4">
-              <Button variant="ghost" onClick={() => setSelectedUserForDelete(null)}>
+            <DialogFooter className="mt-4 flex flex-col sm:flex-row gap-2">
+              <Button variant="ghost" onClick={() => setSelectedUserForDelete(null)} className="sm:mr-auto">
                 ยกเลิก
               </Button>
-              <Button variant="destructive" onClick={confirmDeactivateUser}>
-                ยืนยันระงับบัญชี
+              <Button variant="outline" onClick={confirmDeactivateUser} className="text-amber-600 border-amber-500/30 hover:bg-amber-500/10">
+                ระงับสิทธิ์ชั่วคราว
+              </Button>
+              <Button variant="destructive" onClick={confirmDeleteUserPermanent}>
+                ลบบัญชีถาวร (Delete)
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
       )}
+
     </div>
   );
 };
