@@ -1,5 +1,35 @@
 # Changelog
 
+## [2026-08-09 16:34]
+
+- **Files Modified:** `src/App.css`, `src/pages/Dashboard.jsx`, `CHANGELOG.md`
+- **Changes:**
+  - `src/App.css`: เปลี่ยน utility กลุ่ม `neu-*` ให้ใช้ semantic theme tokens แทนสีพื้นและเงาแบบ hard-code จึงแสดง card, ปุ่ม และพื้นที่กดเป็น dark surface จริงเมื่อเปิด Dark Mode พร้อมปรับ `color-scheme` สำหรับ native controls
+  - `src/pages/Dashboard.jsx`: ปรับสี accent, status badge, เส้นกราฟ, แกน และ tooltip ให้ตอบสนองต่อ light/dark theme และคืน subtle border ให้ Dashboard cards
+- **Reason:** Dark Mode เปลี่ยนเฉพาะ shell แต่ `neu-*` ยังบังคับ `#e0e5ec` และเงาสีขาว ทำให้เนื้อหา Dashboard สว่างผิดธีมและอ่านกราฟได้ไม่ชัดเจน
+
+## [2026-08-09 16:35]
+
+- **Files Modified:** `index.html`, `src/App.css`, `src/App.jsx`, `src/components/theme-provider.jsx`, `src/components/layout/Topbar.jsx`, `src/components/layout/PageWrapper.jsx`, `src/components/layout/Sidebar.jsx`, `src/hooks/useNotifications.js`, `src/pages/Profile.jsx`, `supabase/migrations/20260809163000_create_user_notifications.sql`, `CHANGELOG.md`
+- **Changes:**
+  - ปรับ top-right controls ให้เป็นกลุ่มเดียวกันด้วย surface แบบ glass/neumorphic, touch target 44px, focus ring, dark mode และ Radix dropdown ที่รองรับ Escape, click outside และ focus management
+  - เชื่อม Theme Toggle กับ `ThemeProvider` เดิม เพิ่ม `resolvedTheme`, system preference, persistence และสคริปต์ตั้ง theme ก่อน render เพื่อลดการกระพริบของธีม
+  - ปรับ mobile Sidebar ให้ใช้ navigation/RBAC source เดิม พร้อม backdrop, Escape, route-change close, scroll lock และคืน focus ไปยังปุ่มเปิดเมนู
+  - เพิ่ม notification hook แบบจำกัด 15 รายการ, unread count, mark read/mark all, loading/empty/error state และ Realtime subscription เฉพาะ `user_id` ของผู้ใช้
+  - เพิ่ม User Menu ที่ใช้ avatar/profile/auth เดิม, ลิงก์ Profile/Security/Manual/Settings ตาม permission และ sign out ผ่าน `AuthContext.signOut()`
+  - เพิ่ม migration สำหรับตาราง notification ที่เปิด RLS, policy อ่าน/อัปเดตได้เฉพาะเจ้าของ, index unread, Realtime publication และ trigger จาก withdrawal workflow โดยรออนุมัติก่อน deploy ไปยัง production
+- **Reason:** Topbar เดิมไม่มี Theme Toggle/Notification ที่ทำงานจริง, mobile drawer ยังขาด accessibility behavior และไม่มี data source ที่ปลอดภัยสำหรับ in-app notification
+
+## [2026-08-09 16:05]
+
+- **Files Modified:** `pdf-service/server.js`, `src/lib/emailRenderer.js`, `src/pages/Withdrawals.jsx`, `CHANGELOG.md`
+- **Changes:**
+  - ออกแบบ transactional withdrawal email ใหม่เป็นข้อมูลตามเหตุการณ์: สรุปคำขอ, รายการวัสดุรายบรรทัด, สถานะ/ผู้ดำเนินการ, วัตถุประสงค์หรือหมายเหตุ, CTA เฉพาะเหตุการณ์, preheader และ fallback link ที่ไม่ใช้ localhost
+  - ปรับ data contract ของ notification ให้ใช้ field ที่มีอยู่จริงใน schema ได้แก่ `available_at_approval`, `deducted_quantity` และ `shortage_quantity` แทน `approved_quantity` พร้อมแสดงจำนวนที่ขอ/อนุมัติ/จ่ายและความต่างของจำนวนอย่างชัดเจน
+  - เพิ่มข้อมูลผู้ขอเบิก, อีเมลผู้ขอ, รหัสโครงการ, ผู้อนุมัติ/ผู้ปฏิเสธ/ผู้จ่าย, เวลาภาษาไทยตาม `Asia/Bangkok`, เหตุผลการไม่อนุมัติ และ note โดยละเว้นแถวที่ไม่มีข้อมูล
+  - เพิ่มการแจ้งอีเมล `withdrawal_completed` หลังยืนยันรับวัสดุ เพื่อให้ workflow ครบทั้งส่งคำขอ, อนุมัติ, ไม่อนุมัติ และจ่ายวัสดุแล้ว
+- **Reason:** อีเมลเดิมสรุปรายการวัสดุแบบย่อจนผู้รับไม่สามารถตัดสินใจหรือเข้าใจผลการอนุมัติได้ครบถ้วน และ backend อ้างอิงคอลัมน์จำนวนอนุมัติที่ไม่มีในฐานข้อมูลจริง
+
 ## [2026-08-09 15:35]
 
 - **Files Modified:** `pdf-service/server.js`, `CHANGELOG.md`

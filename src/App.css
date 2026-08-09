@@ -67,31 +67,42 @@
 
 @layer utilities {
   .neu-flat {
-    @apply bg-[#e0e5ec] rounded-2xl border-none;
-    box-shadow: 9px 9px 16px rgb(163, 177, 198, 0.6), -9px -9px 16px rgba(255, 255, 255, 0.8);
+    @apply rounded-2xl;
+    background-color: var(--neu-surface);
+    border: 1px solid var(--neu-border);
+    box-shadow: 9px 9px 16px var(--neu-shadow-dark), -9px -9px 16px var(--neu-shadow-light);
   }
   .neu-flat-sm {
-    @apply bg-[#e0e5ec] rounded-xl border-none;
-    box-shadow: 5px 5px 10px rgb(163, 177, 198, 0.6), -5px -5px 10px rgba(255, 255, 255, 0.8);
+    @apply rounded-xl;
+    background-color: var(--neu-surface);
+    border: 1px solid var(--neu-border);
+    box-shadow: 5px 5px 10px var(--neu-shadow-dark), -5px -5px 10px var(--neu-shadow-light);
   }
   .neu-pressed {
-    @apply bg-[#e0e5ec] rounded-xl border-none;
-    box-shadow: inset 5px 5px 10px rgba(163, 177, 198, 0.6), inset -5px -5px 10px rgba(255, 255, 255, 0.8);
+    @apply rounded-xl;
+    background-color: var(--neu-surface);
+    border: 1px solid var(--neu-border);
+    box-shadow: inset 5px 5px 10px var(--neu-shadow-dark), inset -5px -5px 10px var(--neu-shadow-light);
   }
   .neu-pressed-sm {
-    @apply bg-[#e0e5ec] rounded-lg border-none;
-    box-shadow: inset 3px 3px 6px rgba(163, 177, 198, 0.6), inset -3px -3px 6px rgba(255, 255, 255, 0.8);
+    @apply rounded-lg;
+    background-color: var(--neu-surface);
+    border: 1px solid var(--neu-border);
+    box-shadow: inset 3px 3px 6px var(--neu-shadow-dark), inset -3px -3px 6px var(--neu-shadow-light);
   }
   .neu-button {
-    @apply bg-[#e0e5ec] rounded-xl transition-all duration-200 border-none;
-    box-shadow: 5px 5px 10px rgb(163, 177, 198, 0.6), -5px -5px 10px rgba(255, 255, 255, 0.8);
+    @apply rounded-xl transition-all duration-200;
+    background-color: var(--neu-surface);
+    border: 1px solid var(--neu-border);
+    box-shadow: 5px 5px 10px var(--neu-shadow-dark), -5px -5px 10px var(--neu-shadow-light);
   }
   .neu-button:active {
-    box-shadow: inset 4px 4px 8px rgba(163, 177, 198, 0.7), inset -4px -4px 8px rgba(255, 255, 255, 0.8);
+    box-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -4px -4px 8px var(--neu-shadow-light);
   }
   .neu-primary {
-    @apply bg-primary text-primary-foreground rounded-xl transition-all duration-200 border-none;
-    box-shadow: 5px 5px 10px rgba(99, 102, 241, 0.4), -5px -5px 10px rgba(255, 255, 255, 0.8);
+    @apply bg-primary text-primary-foreground rounded-xl transition-all duration-200;
+    border: 1px solid var(--neu-primary-border);
+    box-shadow: 5px 5px 10px var(--neu-primary-shadow), -5px -5px 10px var(--neu-shadow-light);
   }
   .neu-primary:active {
     box-shadow: inset 4px 4px 8px rgba(0, 0, 0, 0.2);
@@ -133,8 +144,53 @@
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
+
+    --glass-input-border: hsl(var(--foreground) / 0.08);
+    --glass-input-bg: hsl(var(--background) / 0.72);
+    --glass-hover: hsl(var(--foreground) / 0.06);
+    --glass-text: hsl(var(--foreground));
+    --glass-card-border: hsl(0 0% 100% / 0.58);
+    --glass-card-bg: hsl(var(--background) / 0.86);
+
+    --neu-surface: hsl(var(--card));
+    --neu-border: hsl(0 0% 100% / 0.45);
+    --neu-shadow-dark: rgb(163 177 198 / 0.6);
+    --neu-shadow-light: rgb(255 255 255 / 0.8);
+    --neu-primary-border: transparent;
+    --neu-primary-shadow: rgb(99 102 241 / 0.4);
     
     --radius: 0.75rem; /* 12px for soft rounded */
+  }
+
+  .dark {
+    --background: 222 27% 12%;
+    --foreground: 210 40% 96%;
+    --card: 222 24% 16%;
+    --card-foreground: 210 40% 96%;
+    --popover: 222 24% 16%;
+    --popover-foreground: 210 40% 96%;
+    --secondary: 222 18% 21%;
+    --secondary-foreground: 210 40% 96%;
+    --muted: 222 18% 21%;
+    --muted-foreground: 215 20% 69%;
+    --accent: 222 18% 21%;
+    --accent-foreground: 210 40% 96%;
+    --border: 222 16% 25%;
+    --input: 222 16% 25%;
+    --ring: 242 82% 70%;
+    --glass-input-border: hsl(210 40% 96% / 0.12);
+    --glass-input-bg: hsl(222 24% 16% / 0.74);
+    --glass-hover: hsl(210 40% 96% / 0.1);
+    --glass-text: hsl(210 40% 96%);
+    --glass-card-border: hsl(210 40% 96% / 0.1);
+    --glass-card-bg: hsl(222 24% 16% / 0.88);
+
+    --neu-surface: hsl(var(--card));
+    --neu-border: hsl(210 40% 96% / 0.08);
+    --neu-shadow-dark: rgb(0 0 0 / 0.46);
+    --neu-shadow-light: rgb(255 255 255 / 0.025);
+    --neu-primary-border: hsl(210 40% 96% / 0.1);
+    --neu-primary-shadow: rgb(79 70 229 / 0.34);
   }
 }
 
@@ -144,6 +200,15 @@
   }
   body {
     @apply bg-background text-foreground;
+    color-scheme: light;
     font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  .dark body {
+    color-scheme: dark;
+  }
+
+  body[data-mobile-menu-open="true"] {
+    overflow: hidden;
   }
 }
