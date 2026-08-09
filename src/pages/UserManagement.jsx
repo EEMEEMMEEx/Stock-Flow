@@ -16,6 +16,7 @@ import toast from 'react-hot-toast';
 import AddUserModal from '@/components/users/AddUserModal';
 import EditUserModal from '@/components/users/EditUserModal';
 import ResetPasswordModal from '@/components/users/ResetPasswordModal';
+import UserActionModal from '@/components/users/UserActionModal';
 import { uploadAvatarImage } from '@/lib/avatarUpload';
 
 const UserManagement = () => {
@@ -667,32 +668,16 @@ const UserManagement = () => {
         />
       )}
 
-      {/* Confirm Deactivate or Delete Modal */}
+      {/* User Action & Destructive Modal */}
       {selectedUserForDelete && (
-        <Dialog open={!!selectedUserForDelete} onOpenChange={() => setSelectedUserForDelete(null)}>
-          <DialogContent className="max-w-md neu-flat border-0">
-            <DialogHeader>
-              <DialogTitle className="text-lg font-bold flex items-center gap-2 text-red-600">
-                <AlertCircle className="w-5 h-5" />
-                จัดการและลบบัญชีผู้ใช้ (User Action)
-              </DialogTitle>
-              <DialogDescription className="text-sm text-muted-foreground mt-2">
-                ต้องการดำเนินการอย่างไรกับบัญชี <strong>{selectedUserForDelete.full_name}</strong> ({selectedUserForDelete.email})?
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter className="mt-4 flex flex-col sm:flex-row gap-2">
-              <Button variant="ghost" onClick={() => setSelectedUserForDelete(null)} className="sm:mr-auto">
-                ยกเลิก
-              </Button>
-              <Button variant="outline" onClick={confirmDeactivateUser} className="text-amber-600 border-amber-500/30 hover:bg-amber-500/10">
-                ระงับสิทธิ์ชั่วคราว
-              </Button>
-              <Button variant="destructive" onClick={confirmDeleteUserPermanent}>
-                ลบบัญชีถาวร (Delete)
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <UserActionModal
+          isOpen={!!selectedUserForDelete}
+          onClose={() => setSelectedUserForDelete(null)}
+          user={selectedUserForDelete}
+          allUsers={users}
+          onToggleStatus={handleToggleStatus}
+          onDeletePermanent={confirmDeleteUserPermanent}
+        />
       )}
 
     </div>
