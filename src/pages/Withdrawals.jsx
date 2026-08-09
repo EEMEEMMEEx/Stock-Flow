@@ -10,9 +10,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 import PosTerminal from '@/components/ui/PosTerminal';
+import { dispatchWithdrawalNotification } from '@/lib/notificationDispatcher';
 
 const Withdrawals = () => {
-  const { isAdmin, profile } = useAuth();
+  const { isAdmin, can, profile } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -174,6 +175,18 @@ const Withdrawals = () => {
       if (itemsError) throw itemsError;
       
       toast.success('สร้างบิลคำขอเบิกจ่ายสำเร็จ (สถานะ: รออนุมัติ)');
+
+      // Dispatch background transactional notification email to approvers (ADMIN / SUPERVISOR)
+      dispatchWithdrawalNotification({
+        eventType: 'withdrawal_submitted',
+        orderId: orderData.id,
+        orderData: {
+          ...orderData,
+          projects: projects.find(p => p.id === targetProject),
+          profiles: profile
+        }
+      }).catch(err => console.warn('[Notification Dispatch Warning]:', err));
+
       checkoutResetFn();
       setIsCheckoutDialogOpen(false);
       setIsPosMode(false);
@@ -198,6 +211,15 @@ const Withdrawals = () => {
       if (error) throw error;
 
       toast.success(data?.message || 'อนุมัติคำขอเบิกจ่ายสำเร็จ', { id: toastId });
+
+      // Dispatch background transactional notification email to STAFF requester
+      dispatchWithdrawalNotification({
+        eventType: 'withdrawal_approved',
+        orderId: orderId,
+        approverName: profile?.full_name || 'ผู้ดูแลระบบ (Admin)',
+        overrideReason: overrideReason
+      }).catch(err => console.warn('[Notification Dispatch Warning]:', err));
+
       setIsShortageModalOpen(false);
       setShortageData(null);
       setShortageOverrideReason('');
@@ -270,6 +292,14 @@ const Withdrawals = () => {
       if (error) throw error;
 
       toast.success('ปฏิเสธคำขอเรียบร้อยแล้ว', { id: toastId });
+
+      // Dispatch background transactional notification email to STAFF requester
+      dispatchWithdrawalNotification({
+        eventType: 'withdrawal_rejected',
+        orderId: orderToReject.id,
+        rejectionReason: rejectReason.trim()
+      }).catch(err => console.warn('[Notification Dispatch Warning]:', err));
+
       setIsRejectDialogOpen(false);
       setOrderToReject(null);
       setRejectReason('');

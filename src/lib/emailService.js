@@ -1,22 +1,23 @@
 import { supabase } from './supabase';
 import { APP_CONFIG } from '@/config/appConfig';
-import { renderEmailHtml, SAMPLE_EMAIL_DATA } from './emailRenderer';
+import { renderEmailHtml, renderTestEmailHtml, resolveEmailVariables, SAMPLE_EMAIL_DATA } from './emailRenderer';
 
 export const DEFAULT_SMTP_CONFIG = {
-  host: 'it.forth.co.th',
-  port: 465,
-  secure: true,
-  user: 'noreply-app@it.forth.co.th',
-  sender_email: 'noreply-app@it.forth.co.th',
+  host: '',
+  port: 587,
+  secure: false,
+  user: '',
+  sender_email: '',
   sender_name: 'StockFlow Notification',
-  reject_unauthorized: false,
-  password_set: true
+  reject_unauthorized: true,
+  password_set: false
 };
 
 const PDF_SERVICE_URL = import.meta.env.VITE_PDF_SERVICE_URL || 'http://localhost:3001';
 
 /**
- * Resolves effective SMTP settings from Supabase system_settings or returns fallback
+ * Resolves effective SMTP settings from Supabase system_settings. Empty values let
+ * the server use its own protected environment configuration instead of stale UI defaults.
  */
 export const getEffectiveSmtpConfig = async () => {
   try {
@@ -36,7 +37,7 @@ export const getEffectiveSmtpConfig = async () => {
 };
 
 /**
- * Centralized email sending function
+ * Centralized email sending function -> proxying to Express backend PDF & Email service
  */
 export const sendStockFlowEmail = async ({
   to,
@@ -56,14 +57,22 @@ export const sendStockFlowEmail = async ({
   };
 
   try {
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError || !session?.access_token) {
+      throw new Error('กรุณาเข้าสู่ระบบใหม่ก่อนส่งอีเมลทดสอบ');
+    }
+
     const response = await fetch(`${PDF_SERVICE_URL}/api/send-email`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`
+      },
       body: JSON.stringify({
         to,
-        subject: subject || '[StockFlow] Notification',
+        subject: subject || 'ทดสอบการเชื่อมต่ออีเมล — StockFlow',
         html,
-        text: text || 'This is a StockFlow email notification.',
+        text: text || 'นี่คืออีเมลทดสอบจากระบบ',
         smtpConfig: mergedSmtpConfig
       })
     });
@@ -71,30 +80,15 @@ export const sendStockFlowEmail = async ({
     const result = await response.json();
 
     if (!response.ok || !result.success) {
-      throw new Error(result.error || `SMTP Delivery Failed (Status ${response.status})`);
+      throw new Error(result.error || `เกิดข้อผิดพลาดในการส่งอีเมลผ่านเซิร์ฟเวอร์ SMTP (Status ${response.status})`);
     }
-
-    // Record Audit Event
-    try {
-      const { data: userData } = await supabase.auth.getUser();
-      if (userData?.user?.id) {
-        await supabase.from('audit_logs').insert({
-          actor_id: userData.user.id,
-          action: 'EMAIL_SENT',
-          details: {
-            recipient: to,
-            subject,
-            host: mergedSmtpConfig.host,
-            port: mergedSmtpConfig.port
-          }
-        });
-      }
-    } catch (e) {}
 
     return {
       success: true,
       messageId: result.messageId,
-      recipient: to
+      recipient: to,
+      acceptedCount: result.acceptedCount,
+      rejectedCount: result.rejectedCount
     };
 
   } catch (error) {
@@ -109,35 +103,40 @@ export const sendStockFlowEmail = async ({
   }
 };
 
-
 /**
  * Send Test Email Handler
  */
-export const sendTestEmail = async (testRecipient, customTemplate = null) => {
-  const effectiveConfig = await getEffectiveSmtpConfig();
+export const sendTestEmail = async (testRecipient, customTemplate = null, smtpConfigOverrides = {}) => {
+  const isoTimestamp = new Date().toISOString();
+  let settings = {};
+  try {
+    const { data, error } = await supabase.rpc('admin_get_system_settings');
+    if (!error && data) settings = data;
+  } catch {
+    // The real send path will still report its own authentication/configuration error.
+  }
 
-  const renderedHtml = renderEmailHtml({
-    branding: {
-      app_name: APP_CONFIG.name,
-      accent_color: '#3b82f6'
-    },
-    template: customTemplate || {
-      subject: '[StockFlow] ทดสอบการเชื่อมต่ออีเมล (SMTP Test Email)',
-      heading: 'ทดสอบการส่งอีเมลระบบ StockFlow สำเร็จ',
-      intro: `อีเมลฉบับนี้เป็นการทดสอบการเชื่อมต่อเซิร์ฟเวอร์ SMTP (${effectiveConfig.host}:${effectiveConfig.port}) จากระบบ StockFlow`,
-      cta_label: 'เข้าสู่ระบบ StockFlow',
-      cta_url: window.location.origin,
-      status_label: 'เชื่อมต่อสำเร็จ',
-      status_type: 'approved',
-      footer_note: 'หากคุณได้รับอีเมลฉบับนี้ แสดงว่าการตั้งค่า SMTP และระบบแจ้งเตือนทำงานได้สมบูรณ์แล้ว'
-    },
-    data: SAMPLE_EMAIL_DATA
-  });
+  const templateData = {
+    ...SAMPLE_EMAIL_DATA,
+    app_name: settings.branding?.app_name || APP_CONFIG.name || 'StockFlow',
+    request_date: isoTimestamp,
+    year: new Date().getFullYear().toString()
+  };
+  const subject = customTemplate?.subject
+    ? resolveEmailVariables(customTemplate.subject, templateData).replace(/[\r\n]+/g, ' ').trim()
+    : 'ทดสอบการเชื่อมต่ออีเมล — StockFlow';
+
+  const renderedHtml = customTemplate
+    ? renderEmailHtml({ branding: settings.branding || {}, template: customTemplate, data: templateData })
+    : renderTestEmailHtml({ appName: templateData.app_name, isoTimestamp });
+
+  const plainText = `StockFlow\n\n${subject}\n\nนี่คืออีเมลทดสอบจากระบบ\n\nเวลา: ${isoTimestamp}`;
 
   return await sendStockFlowEmail({
     to: testRecipient,
-    subject: `[StockFlow] ทดสอบการเชื่อมต่ออีเมล (SMTP Test) — ${new Date().toLocaleTimeString('th-TH')}`,
+    subject,
     html: renderedHtml,
-    text: 'การทดสอบการเชื่อมต่ออีเมลระบบ StockFlow สำเร็จ'
+    text: plainText,
+    smtpConfigOverrides
   });
 };

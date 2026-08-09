@@ -1,5 +1,86 @@
 # Changelog
 
+## [2026-08-09 15:35]
+
+- **Files Modified:** `pdf-service/server.js`, `CHANGELOG.md`
+- **Changes:**
+  - แก้ query ของ transactional withdrawal notification ให้ใช้คอลัมน์ `requested_at` ซึ่งมีอยู่จริงใน `withdrawal_orders` แทน `created_at` ที่ไม่มีใน schema
+  - ใช้ `requested_at` เป็นวันที่แสดงในข้อมูลแม่แบบอีเมล และ restart `pdf-service` เพื่อโหลดการแก้ไข
+- **Reason:** Supabase ตอบ HTTP 400 ในการอ่านคำขอเบิก ทำให้ backend แปลงเป็น `SUPABASE_SERVICE_REQUEST_FAILED` / HTTP 502 เมื่อ Staff ส่งคำขอเบิก
+
+## [2026-08-09 14:48]
+
+- **Files Modified:** `pdf-service/server.js`, `src/lib/emailRenderer.js`, `src/lib/emailService.js`, `src/components/settings/EmailTemplateManager.jsx`, `src/pages/Settings.jsx`, `supabase/migrations/32_harden_smtp_password_rpc_search_path.sql`, `CHANGELOG.md`
+- **Changes:**
+  - ให้ backend สำหรับ notification การเบิกอ่าน `smtp_config`, `branding` และ `notification_events` ที่บันทึกใน `system_settings` จริง พร้อมใช้แม่แบบ, role recipients, Extra To, CC, การตัดผู้รับซ้ำ และผลตอบรับ SMTP
+  - ให้หน้าจอแม่แบบอีเมลโหลด Branding ที่บันทึกไว้กลับมา และให้การส่งอีเมลทดสอบจากหน้าแม่แบบใช้แม่แบบ/Branding ที่บันทึกผ่าน backend SMTP เดียวกับระบบ
+  - ลบค่า SMTP host/username เริ่มต้นที่ฝังใน browser เพื่อไม่ให้ Test Email เปลี่ยนไปใช้ปลายทางเก่าเมื่อโหลดการตั้งค่าไม่สำเร็จ
+  - ป้องกัน placeholder ที่ไม่รู้จัก, ข้อมูล runtime ที่ไม่ escape, URL logo/CTA ที่ไม่ใช่ HTTP(S) และ header injection ในหัวเรื่อง/ชื่อผู้ส่ง
+  - ไม่สร้างลิงก์ `localhost` ในอีเมลเมื่อ backend ทำงานแบบ production และเพิ่ม log ขั้นตอนการส่งโดยไม่บันทึก secret
+  - เพิ่มจำนวนผู้รับที่ SMTP ยอมรับ/ปฏิเสธในผลลัพธ์ของ Test Email เพื่อแยกความสำเร็จของ API ออกจากการยอมรับข้อความโดย SMTP
+  - ส่งต่อ metadata การยอมรับ/ปฏิเสธจาก backend กลับสู่ client service สำหรับแสดงผลหรือใช้ตรวจสอบต่อได้
+  - กำหนด `search_path` ของ `admin_update_smtp_password()` แบบตายตัวและ deploy migration ไปยัง Supabase แล้ว
+- **Reason:** ค่า SMTP และแม่แบบที่บันทึกผ่าน Settings เคยไม่ถูกใช้โดย transactional withdrawal sender ทำให้การตั้งค่า UI ไม่ตรงกับอีเมลที่ส่งจริง
+
+## [2026-08-09 14:10]
+
+- **Files Modified:** `pdf-service/server.js`, `src/lib/notificationDispatcher.js`, `.env.example`, `supabase/migrations/31_restrict_smtp_password_rpc.sql`, `CHANGELOG.md`
+- **Changes:**
+  - ย้ายการหา recipient และการส่งอีเมลแจ้งเตือนคำขอเบิกไปยัง backend ที่ตรวจสิทธิ์ตาม event และใช้ `SUPABASE_SERVICE_ROLE_KEY` เฉพาะฝั่งเซิร์ฟเวอร์
+  - ยกเลิกการ query `profiles.email` จาก browser เพราะคอลัมน์ดังกล่าวไม่มีใน schema จริง และปิดสิทธิ์เรียก RPC ที่อ่านรหัสผ่าน SMTP จาก `PUBLIC`/`anon`/`authenticated`
+  - บังคับให้ MinIO ต้องกำหนด endpoint, bucket และ credential ชัดเจน; เมื่อไม่พร้อมให้ตอบ `503` แบบควบคุมได้โดยไม่ fallback ไป `localhost:9000`
+  - เพิ่มไฟล์ตัวอย่าง environment สำหรับ service credential, SMTP และ MinIO โดยไม่มี secret จริง
+- **Reason:** แก้ notification ที่หา recipient ไม่ได้จาก schema mismatch, ป้องกันการส่งอีเมลโดย Staff ผ่านสิทธิ์ Settings, ปิดช่องโหว่ SMTP secret และทำให้ MinIO failure อ่านเข้าใจได้
+
+## [2026-08-09 13:30]
+
+- **Files Modified:** `fix-sidebar-rbac-navigation.md`, `CHANGELOG.md`
+- **Changes:**
+  - เพิ่มแผนแก้ความสอดคล้องระหว่าง Sidebar, `PermissionRoute` และ route `/items`/`/stock-in` โดยกำหนดให้ใช้ permission จาก `AuthContext.can()` เป็นแหล่งอ้างอิงเดียว
+- **Reason:** บันทึกข้อค้นพบและเกณฑ์ตรวจสอบก่อนปรับ route ที่หน้าเพจยังตรวจ `isAdmin` ซ้ำกับ RBAC
+
+## [2026-08-09 13:15]
+
+- **Files Modified:** `src/components/layout/AppFooter.jsx`, `src/pages/Settings.jsx`, `CHANGELOG.md`
+- **Changes:**
+  - `AppFooter.jsx`: เรียก `admin_get_system_settings()` เฉพาะผู้ใช้ที่มีสิทธิ์ `settings.view`; ผู้ใช้ทั่วไปยังใช้ค่าเริ่มต้นจาก `APP_CONFIG` โดยไม่ส่งคำขอ RPC ที่ถูกป้องกัน
+  - `Settings.jsx`: ส่งต่อข้อผิดพลาดจาก RPC ไปยังการจัดการข้อผิดพลาดระดับหน้า เพื่อแสดงสถานะที่ควบคุมได้แทนการละเลยข้อผิดพลาด
+- **Reason:** ป้องกัน HTTP 400 (`P0001: Access Denied: Requires settings.view permission.`) ที่เกิดจาก AppFooter หลังผู้ใช้ Staff ลงชื่อเข้าใช้ โดยคงการบังคับใช้ RBAC ของฐานข้อมูลไว้
+
+## [2026-08-09 11:20]
+
+- **Files Modified:** `src/contexts/AuthContext.jsx`, `CHANGELOG.md`
+- **Changes:**
+  - `AuthContext.jsx`: ใช้ fallback permission ตาม role เมื่อ `get_user_permissions` คืนรายการว่าง แทนการตีความว่าเป็นการโหลดสิทธิ์สำเร็จ
+  - Supabase `public.profiles`: เชื่อมบัญชี Staff ที่มีอยู่กับ Staff role เดิม เพื่อให้ RPC คืนสิทธิ์มาตรฐาน 7 รายการ
+- **Reason:** แก้ปัญหา login สำเร็จแต่ไม่เห็นเมนูหรือข้อมูล เนื่องจาก profile legacy ไม่มี `role_id` และ permission array ว่าง
+
+## [2026-08-09 11:02]
+
+- **ไฟล์ที่สร้าง/แก้ไข:**
+  - `docs/status-pending-tasks.md`
+  - `CHANGELOG.md`
+- **รายละเอียด:**
+  - อัปเดตสถานะ migration และ secure email audit ที่ deploy แล้ว
+  - เพิ่มงาน P0 สำหรับการหมุนรหัสผ่านบัญชีทดสอบ และระบุให้เก็บข้อมูลทดสอบใน secret manager
+  - ลบข้อมูลเข้าสู่ระบบแบบ plaintext ออกจากเอกสารสถานะ
+- **เหตุผล:** ป้องกันการเผยแพร่ข้อมูลลับใน repository และทำให้รายการงานค้างสอดคล้องกับระบบปัจจุบัน
+
+## [2026-08-09 10:36]
+
+- **ไฟล์ที่สร้าง/แก้ไข:**
+  - `src/lib/emailService.js`
+  - `pdf-service/server.js`
+  - `supabase/migrations/20260809033254_secure_email_audit_rpc.sql` [NEW]
+  - `supabase/migrations/20260809035032_restrict_email_audit_rpc_execution.sql` [NEW]
+- **รายละเอียด:**
+  - ย้ายการบันทึก `EMAIL_SENT` ออกจาก browser ไปยัง backend และ Supabase RPC
+  - ส่ง JWT จาก frontend ให้ backend ตรวจสอบสิทธิ์ `settings.update` ผ่าน `admin_authorize_email_send()` ก่อนเชื่อมต่อ SMTP
+  - เพิ่ม `admin_record_email_sent_audit()` เพื่อบันทึกผู้ส่ง ผู้รับ หัวเรื่อง และ message ID หลังส่งอีเมลสำเร็จ โดยไม่เปิด `INSERT` policy ให้ browser เขียนตาราง `audit_logs` โดยตรง
+  - จำกัดการเรียก RPC ไว้ที่ role `authenticated` และถอนสิทธิ์ `PUBLIC`
+  - ถอนสิทธิ์ `anon` โดยตรงเพิ่มเติมหลัง security advisor ตรวจพบ grant ที่ตกค้าง
+- **เหตุผล:** แก้ไข HTTP 403 จาก RLS พร้อมป้องกันการปลอม audit log และการส่งอีเมลจากผู้ใช้ที่ไม่มีสิทธิ์
+
 ## [2026-08-09 04:05]
 
 - **ไฟล์ที่สร้าง/แก้ไข:**
@@ -38,7 +119,7 @@
 - **รายละเอียด:**
   - **สร้างสคริปต์ไมเกรชันตามโครงสร้างสคีมาทางการของ Supabase Auth (`29_authoritative_schema_sync_watchara_user.sql`):**
     - **การยืนยันการยืนยันอีเมลแบบสมบูรณ์ (`confirmed_at` & `email_confirmed_at`):** ระบุ timestamp ทั้ง `email_confirmed_at = NOW()` และ `confirmed_at = NOW()` ตามโครงสร้างทางการของตาราง `auth.users` เพื่อป้องกันไม่ให้ GoTrue มองว่าเป็นผู้ใช้ที่ยังไม่อนุมัติอีเมล
-    - **การระบุคอลัมน์ `email` ใน `auth.identities`:** ระบุคอลัมน์ `email = 'watchara.m@forth.co.th'` โดยตรงในตาราง `auth.identities` ตามสคีมาทางการ
+    - **การระบุคอลัมน์ `email` ใน `auth.identities`:** ระบุคอลัมน์ `email = '[REDACTED-TEST-ACCOUNT]'` โดยตรงในตาราง `auth.identities` ตามสคีมาทางการ
 - **เหตุผล:** เพื่อการันตีความสมบูรณ์ 100% ตามสคีมาจริงของตาราง Auth ของ Supabase Cloud
 
 ## [2026-08-09 03:58]
@@ -47,30 +128,30 @@
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `supabase/migrations/28_sync_exact_admin_password_hash.sql` [NEW]
 - **รายละเอียด:**
-  - **ซิงก์แฮชรหัสผ่าน Bcrypt ที่ตรวจสอบแล้วจาก Admin มายัง `watchara.m@forth.co.th` (`28_sync_exact_admin_password_hash.sql`):**
-    - **การคัดลอกแฮชรหัสผ่านตรง (Direct Working Hash Sync):** คัดลอก `encrypted_password` จากบัญชี `admin@stockflow.com` (รหัสผ่าน `password123`) ซึ่งผ่านการยืนยันจาก GoTrue Auth Engine โดยตรง มาใส่ในบัญชี `watchara.m@forth.co.th`
+  - **ซิงก์แฮชรหัสผ่าน Bcrypt ที่ตรวจสอบแล้วจาก Admin มายัง `[REDACTED-TEST-ACCOUNT]` (`28_sync_exact_admin_password_hash.sql`):**
+    - **การคัดลอกแฮชรหัสผ่านตรง (Direct Working Hash Sync):** คัดลอก `encrypted_password` จากบัญชี `admin@stockflow.com` (รหัสผ่าน `[REDACTED]`) ซึ่งผ่านการยืนยันจาก GoTrue Auth Engine โดยตรง มาใส่ในบัญชี `[REDACTED-TEST-ACCOUNT]`
 - **เหตุผล:** ขจัดความต่างระหว่างแฮช pgcrypto ใน SQL กับ Go's bcrypt verification ใน GoTrue API ให้การเข้าสู่ระบบผ่าน 100%
 
 ## [2026-08-09 03:54]
 
 
 - **ไฟล์ที่สร้าง/แก้ไข:**
-  - `supabase/migrations/27_recreate_watchara_with_password123.sql` [NEW]
+  - `supabase/migrations/27_recreate_watchara_with_[REDACTED].sql` [NEW]
 - **รายละเอียด:**
-  - **สร้างสคริปต์ Atomic สำหรับสร้างบัญชี `watchara.m@forth.co.th` ใหม่ทั้งหมดพร้อมรหัสผ่าน `password123` (`27_recreate_watchara_with_password123.sql`):**
-    - **การทำงานแบบ Atomic:** รวมกระบวนการล้างข้อมูลเก่า คัดลอกคอนฟิกระบบ 33 คอลัมน์จาก Admin, สร้างข้อมูล `auth.users`, `auth.identities` และ `public.profiles` พร้อมกำหนดแฮชรหัสผ่าน `password123` ให้อยู่ในบล็อกเดียวกันทั้งหมด
+  - **สร้างสคริปต์ Atomic สำหรับสร้างบัญชี `[REDACTED-TEST-ACCOUNT]` ใหม่ทั้งหมดพร้อมรหัสผ่าน `[REDACTED]` (`27_recreate_watchara_with_[REDACTED].sql`):**
+    - **การทำงานแบบ Atomic:** รวมกระบวนการล้างข้อมูลเก่า คัดลอกคอนฟิกระบบ 33 คอลัมน์จาก Admin, สร้างข้อมูล `auth.users`, `auth.identities` และ `public.profiles` พร้อมกำหนดแฮชรหัสผ่าน `[REDACTED]` ให้อยู่ในบล็อกเดียวกันทั้งหมด
 - **เหตุผล:** ป้องกันปัญหาการรันสคริปต์แยกส่วนที่อาจลืมสร้างผู้ใช้ใน `auth.users` ทำให้การเข้าสู่ระบบสำเร็จ 100%
 
 ## [2026-08-09 03:52]
 
 
 - **ไฟล์ที่สร้าง/แก้ไข:**
-  - `supabase/migrations/26_set_watchara_password_password123.sql` [NEW]
+  - `supabase/migrations/26_set_watchara_password_[REDACTED].sql` [NEW]
 - **รายละเอียด:**
-  - **กำหนดรหัสผ่านใหม่ชัดเจนเป็น `password123` สำหรับ `watchara.m@forth.co.th` (`26_set_watchara_password_password123.sql`):**
+  - **กำหนดรหัสผ่านใหม่ชัดเจนเป็น `[REDACTED]` สำหรับ `[REDACTED-TEST-ACCOUNT]` (`26_set_watchara_password_[REDACTED].sql`):**
     - **การยืนยันการแก้ไข HTTP 500:** ยืนยันสำเร็จว่า GoTrue Auth Server ไม่เกิดข้อผิดพลาด 500 อีกต่อไป โดยเปลี่ยนมาตอบกลับ 400 Invalid Credentials
-    - **การสร้าง Bcrypt Hash ใหม่:** สร้างแฮชรหัสผ่าน Bcrypt มาตรฐาน (Cost Factor 10) สำหรับรหัสผ่าน `password123` ให้กับบัญชี `watchara.m@forth.co.th`
-- **เหตุผล:** เพื่อให้ผู้ใช้สามารถล็อกอินเข้าสู่ระบบด้วยรหัสผ่าน `password123` ได้สำเร็จ 100%
+    - **การสร้าง Bcrypt Hash ใหม่:** สร้างแฮชรหัสผ่าน Bcrypt มาตรฐาน (Cost Factor 10) สำหรับรหัสผ่าน `[REDACTED]` ให้กับบัญชี `[REDACTED-TEST-ACCOUNT]`
+- **เหตุผล:** เพื่อให้ผู้ใช้สามารถล็อกอินเข้าสู่ระบบด้วยรหัสผ่าน `[REDACTED]` ได้สำเร็จ 100%
 
 ## [2026-08-09 03:50]
 
@@ -98,9 +179,9 @@
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `supabase/migrations/25_clone_watchara_from_working_admin.sql` [NEW]
 - **รายละเอียด:**
-  - **สร้างผู้ใช้ `watchara.m@forth.co.th` โดยคัดลอกโครงสร้างจากบัญชี Admin ที่ใช้งานได้จริง (`25_clone_watchara_from_working_admin.sql`):**
-    - **การคัดลอกโครงสร้างฟิลด์ระบบทั้งหมด (Cloned Working Auth Metadata):** คัดลอกค่าคอนฟิกและฟิลด์ระบบ 33 คอลัมน์จากบัญชี `admin@stockflow.com` ที่ยืนยันตัวตนได้จริง 100% มาใส่ในบัญชี `watchara.m@forth.co.th`
-    - **รหัสผ่านและสิทธิ์:** กำหนดรหัสผ่านเริ่มต้นเป็น `password123` (เหมือนบัญชี Admin) พร้อมเปิดใช้งานระบบบังคับเปลี่ยนรหัสผ่านครั้งแรก `must_change_password = TRUE`
+  - **สร้างผู้ใช้ `[REDACTED-TEST-ACCOUNT]` โดยคัดลอกโครงสร้างจากบัญชี Admin ที่ใช้งานได้จริง (`25_clone_watchara_from_working_admin.sql`):**
+    - **การคัดลอกโครงสร้างฟิลด์ระบบทั้งหมด (Cloned Working Auth Metadata):** คัดลอกค่าคอนฟิกและฟิลด์ระบบ 33 คอลัมน์จากบัญชี `admin@stockflow.com` ที่ยืนยันตัวตนได้จริง 100% มาใส่ในบัญชี `[REDACTED-TEST-ACCOUNT]`
+    - **รหัสผ่านและสิทธิ์:** กำหนดรหัสผ่านเริ่มต้นเป็น `[REDACTED]` (เหมือนบัญชี Admin) พร้อมเปิดใช้งานระบบบังคับเปลี่ยนรหัสผ่านครั้งแรก `must_change_password = TRUE`
 - **เหตุผล:** ขจัดความคลาดเคลื่อนของค่าฟิลด์ระบบทุกจุดที่อาจทำให้ GoTrue Auth API คืนค่า 500
 
 ## [2026-08-09 03:44]
@@ -120,9 +201,9 @@
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `supabase/migrations/23_diagnostic_and_recreate_watchara_user.sql` [NEW]
 - **รายละเอียด:**
-  - **สร้างสคริปต์ไมเกรชันซ่อมแซมและสร้างผู้ใช้ `watchara.m@forth.co.th` แบบบูรณาการ (`23_diagnostic_and_recreate_watchara_user.sql`):**
+  - **สร้างสคริปต์ไมเกรชันซ่อมแซมและสร้างผู้ใช้ `[REDACTED-TEST-ACCOUNT]` แบบบูรณาการ (`23_diagnostic_and_recreate_watchara_user.sql`):**
     - **การซ่อมแซมข้อมูลครบวงจร (Full Stack User Provisioning):** ตรวจสอบและสร้าง/อัปเดตข้อมูลผู้ใช้ในตาราง `auth.users`, `auth.identities` และ `public.profiles` พร้อมกันในบล็อกเดียว
-    - **การกำหนดรหัสผ่านมาตรฐาน:** กำหนดรหัสผ่านเริ่มต้นของบัญชี `watchara.m@forth.co.th` เป็น **`password123`** (เทียบเท่า Admin) และเปิดสวิตช์ `must_change_password = TRUE` เพื่อบังคับเปลี่ยนรหัสผ่านเมื่อล็อกอินสำเร็จ
+    - **การกำหนดรหัสผ่านมาตรฐาน:** กำหนดรหัสผ่านเริ่มต้นของบัญชี `[REDACTED-TEST-ACCOUNT]` เป็น **`[REDACTED]`** (เทียบเท่า Admin) และเปิดสวิตช์ `must_change_password = TRUE` เพื่อบังคับเปลี่ยนรหัสผ่านเมื่อล็อกอินสำเร็จ
 - **เหตุผล:** เพื่อการันตีว่าบัญชีผู้ใช้จะมีข้อมูลครบถ้วนทั้ง 3 ตารางหลักของ Supabase Auth ไม่เกิดข้อผิดพลาด 500 อีกต่อไป
 
 ## [2026-08-09 03:38]
@@ -132,8 +213,8 @@
   - `supabase/migrations/22_fix_bcrypt_password_hash_format.sql` [NEW]
 - **รายละเอียด:**
   - **ซิงก์รูปแบบแฮชรหัสผ่าน Bcrypt กับเอนจิน GoTrue (`22_fix_bcrypt_password_hash_format.sql`):**
-    - **การซิงก์แฮชรหัสผ่านที่ถูกต้อง:** ซิงก์ค่า `encrypted_password` ของบัญชี `watchara.m@forth.co.th` ให้ใช้โครงสร้าง Bcrypt Hash รูปแบบมาตรฐานเดียวกับบัญชี `admin@stockflow.com` (รหัสผ่าน `password123`)
-    - **เปิดใช้งานระบบบังคับเปลี่ยนรหัสผ่าน:** กำหนดสถานะ `must_change_password = TRUE` เพื่อให้เมื่อผู้ใช้กดล็อกอินด้วยรหัสผ่าน `password123` ระบบจะบังคับให้ตั้งรหัสผ่านใหม่ของตนเองทันที
+    - **การซิงก์แฮชรหัสผ่านที่ถูกต้อง:** ซิงก์ค่า `encrypted_password` ของบัญชี `[REDACTED-TEST-ACCOUNT]` ให้ใช้โครงสร้าง Bcrypt Hash รูปแบบมาตรฐานเดียวกับบัญชี `admin@stockflow.com` (รหัสผ่าน `[REDACTED]`)
+    - **เปิดใช้งานระบบบังคับเปลี่ยนรหัสผ่าน:** กำหนดสถานะ `must_change_password = TRUE` เพื่อให้เมื่อผู้ใช้กดล็อกอินด้วยรหัสผ่าน `[REDACTED]` ระบบจะบังคับให้ตั้งรหัสผ่านใหม่ของตนเองทันที
 - **เหตุผล:** ขจัดปัญหาความไม่เข้ากันของโครงสร้างแฮชรหัสผ่าน pgcrypto ที่ทำให้เอนจิน Go's bcrypt ของ Supabase Auth พังและคืนค่า HTTP 500
 
 ## [2026-08-09 03:36]
@@ -187,7 +268,7 @@
   - `src/pages/UserManagement.jsx` [MODIFY]
 - **รายละเอียด:**
   - **สร้างสคริปต์ลบผู้ใช้ถาวรฉุกเฉินและซ่อมแซมความสัมพันธ์ (`20_force_delete_watchara_and_universal_repair.sql`):**
-    - ลบผู้ใช้ `watchara.m@forth.co.th` ออกจากระบบ PostgreSQL / Auth / Profile / Storage โดยตรง
+    - ลบผู้ใช้ `[REDACTED-TEST-ACCOUNT]` ออกจากระบบ PostgreSQL / Auth / Profile / Storage โดยตรง
   - **เพิ่มฟังก์ชันลบผู้ใช้ถาวรบนหน้าเว็บ Stock-Flow (`UserManagement.jsx`):**
     - เพิ่มปุ่ม **`ลบบัญชีถาวร (Delete)`** ในหน้าต่างจัดการผู้ใช้ เพื่อให้ Admin สามารถสั่งลบผู้ใช้ออกจากระบบได้โดยตรงผ่านหน้าเว็บ โดยไม่ต้องพึ่งพา UI ของ Supabase Dashboard
 - **เหตุผล:** อำนวยความสะดวกให้ผู้ดูแลระบบสามารถลบผู้ใช้ได้สำเร็จ 100% ทั้งจาก SQL Editor และหน้าเว็บ Stock-Flow
