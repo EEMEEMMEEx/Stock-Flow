@@ -1,5 +1,12 @@
 # Changelog
 
+## [2026-08-09 17:10]
+
+- **Files Modified:** `src/components/layout/Sidebar.jsx`
+- **Changes:**
+  - `src/components/layout/Sidebar.jsx`: เปลี่ยนการส่งค่า `className` ของ `NavLink` จากฟังก์ชันเป็น String โดยคำนวณ `isActive` จาก `location.pathname` เพื่อให้ Radix UI `TooltipTrigger asChild` สามารถ merge class สำหรับจัดกึ่งกลาง (`justify-center w-11 mx-auto`) ได้ถูกต้องในสถานะพับ Sidebar
+- **Reason:** แก้ไขไอคอน Sidebar แสดงผลชิดซ้ายและสูญเสียสไตล์ในสถานะพับ (Collapsed)
+
 ## [2026-08-09 16:34]
 
 - **Files Modified:** `src/App.css`, `src/pages/Dashboard.jsx`, `CHANGELOG.md`
