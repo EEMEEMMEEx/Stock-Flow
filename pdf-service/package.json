@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "build": "echo 'pdf-service requires no build step'"
   },
   "dependencies": {
     "cors": "^2.8.5",
