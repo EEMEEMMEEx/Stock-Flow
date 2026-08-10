@@ -96,7 +96,12 @@ export const sendStockFlowEmail = async ({
     let errorMessage = error.message || 'เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์ส่งอีเมล SMTP';
     
     if (error.name === 'TypeError' || errorMessage.includes('Failed to fetch')) {
-      errorMessage = `ไม่สามารถเชื่อมต่อบริการส่งอีเมลแบ็กเอนด์ที่พอร์ต 3001 ได้ (${PDF_SERVICE_URL}/api/send-email). กรุณาตรวจสอบว่าเซิร์ฟเวอร์ pdf-service (node pdf-service/server.js) กำลังทำงานอยู่`;
+      const isLocalHost = PDF_SERVICE_URL.includes('localhost') || PDF_SERVICE_URL.includes('127.0.0.1');
+      if (isLocalHost) {
+        errorMessage = `ไม่สามารถเชื่อมต่อบริการส่งอีเมลแบ็กเอนด์ได้ (${PDF_SERVICE_URL}/api/send-email). กรุณาตรวจสอบว่าเซิร์ฟเวอร์ pdf-service (node pdf-service/server.js) กำลังทำงานอยู่ที่พอร์ต 3001`;
+      } else {
+        errorMessage = `ไม่สามารถเชื่อมต่อบริการส่งอีเมลแบ็กเอนด์บนโปรดักชันได้ (${PDF_SERVICE_URL}/api/send-email). กรุณาตรวจสอบการตั้งค่า VITE_PDF_SERVICE_URL และสถานะของบริการ backend`;
+      }
     }
     
     throw new Error(errorMessage);

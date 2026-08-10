@@ -609,9 +609,20 @@ const UserManagement = () => {
                             <Edit className="w-4 h-4" />
                           </Button>
 
-                          {/* Reset Password */}
-                          <Button variant="ghost" size="icon" title="Resend Invitation" onClick={() => handleResendInvitation(u)} disabled={resendingInvitationId === u.id} className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50">
-                            <Mail className={`w-4 h-4 ${resendingInvitationId === u.id ? 'animate-pulse' : ''}`} />
+                          {/* Resend Invitation */}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            title="ส่งอีเมลเชิญซ้ำ (Resend Invitation)"
+                            onClick={() => handleResendInvitation(u)}
+                            disabled={resendingInvitationId === u.id}
+                            className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950"
+                          >
+                            {resendingInvitationId === u.id ? (
+                              <RefreshCw className="w-4 h-4 animate-spin text-blue-600" />
+                            ) : (
+                              <Mail className="w-4 h-4" />
+                            )}
                           </Button>
 
                           {/* Reset Password */}

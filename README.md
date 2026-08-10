@@ -71,8 +71,8 @@ graph TD
 │   └── main.jsx             # React SPA entry point
 ├── supabase/                # Supabase configuration and database schemas
 │   └── migrations/          # Version-controlled database migrations (01 to 38)
-├── pdf-service/             # Node.js backend microservice for PDF & Email
-└── package.json             # Core dependencies and package workspaces configuration
+├── docs/                    # System documentation and PDF generation guide
+└── package.json             # Core dependencies configuration
 ```
 
 ---
@@ -85,7 +85,6 @@ Create a `.env` file in the project root folder. Refer to `.env.example` for det
 # Public browser configuration
 VITE_SUPABASE_URL=your-supabase-project-url
 VITE_SUPABASE_ANON_KEY=your-supabase-anonymous-key
-VITE_PDF_SERVICE_URL=http://localhost:3001
 
 # Server-only Supabase credential
 SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
@@ -104,29 +103,22 @@ SMTP_SENDER_NAME=StockFlow Notification
 
 ## 💻 Local Development Setup
 
-Follow these steps to run the application and its microservice locally:
+Follow these steps to run the application locally:
 
 ### 1. Install Dependencies
-Run from the root directory (handles workspace package-lock resolution):
+Run from the root directory:
 ```bash
 npm install
 ```
 
-### 2. Run the PDF & Email Service Backend
-The PDF service is located in the `pdf-service` directory. Start it using:
-```bash
-npm run service:backend
-```
-*   The backend server runs on `http://localhost:3001`.
-
-### 3. Run the Frontend Development Server
+### 2. Run the Frontend Development Server
 Start Vite development server:
 ```bash
 npm run dev
 ```
 *   The web interface will be available at `http://localhost:5173`.
 
-### 4. Build for Production
+### 3. Build for Production
 To build the static single-page application:
 ```bash
 npm run build
@@ -139,7 +131,7 @@ The compiled output is saved in the `/dist` directory.
 
 *   **Auth State:** Managed securely via Supabase Auth.
 *   **Row-Level Security (RLS):** Implemented on all PostgreSQL tables in Supabase (e.g., `profiles`, `withdrawal_orders`, `projects`, `items`). Access is restricted based on JWT roles (Admin, Supervisor, Operator).
-*   **Credentials:** Kept out of the frontend. Server-level operations (such as password hashing, profile creation triggers, SMTP mail authentication, and PDF template processing) are isolated in the `pdf-service` backend and database RPCs using `SECURITY DEFINER`.
+*   **PDF Generation:** Generated 100% client-side in browser using `@react-pdf/renderer` for maximum privacy, zero network latency, and zero server infrastructure overhead. Refer to [`docs/pdf_generation_guide.html`](file:///d:/APP/Stock-Flow-app/docs/pdf_generation_guide.html) for architecture details.
 
 ---
 

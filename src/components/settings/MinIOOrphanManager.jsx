@@ -9,8 +9,6 @@ import {
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import toast from 'react-hot-toast';
 
-const API_BASE_URL = import.meta.env.VITE_PDF_SERVICE_URL || 'http://localhost:3001';
-
 
 const formatBytes = (bytes) => {
   if (!bytes || bytes === 0) return '0 B';

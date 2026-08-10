@@ -1,13 +1,23 @@
 # Changelog
 
+## [2026-08-10 15:06]
+
+- **Files Modified:** `pdf-service/` (Deleted), `package.json`, `vite.config.js`, `.env.example`, `src/components/settings/MinIOOrphanManager.jsx`, `docs/pdf_generation_guide.html` (New), `README.md`
+- **Details:**
+  - `pdf-service/`: ถอดโครงสร้างและซอร์สโค้ดแบ็กเอนด์ Express/Puppeteer/Fly.io ออกจากระบบโดยสมบูรณ์
+  - `package.json` & `vite.config.js`: ลบสคริปต์ `service:backend` และตัวเลือก proxy `/api` ไปยังพอร์ต 3001
+  - `.env.example`: ถอดตัวแปรแวดล้อม `VITE_PDF_SERVICE_URL` ออก
+  - `docs/pdf_generation_guide.html`: สร้างเอกสารคู่มือสถาปัตยกรรม PDF Client-Side `@react-pdf/renderer` และบันทึกการ Deprecate/Remove สถาปัตยกรรมเดิม
+- **Reason:** ย้ายระบบสร้างเอกสาร PDF ทั้งหมดมาใช้ `@react-pdf/renderer` ฝั่ง Client-Side 100% เพื่อประสิทธิภาพสูงสุด ประหยัดทรัพยากรเซิร์ฟเวอร์ และลดความซับซ้อนของโครงสร้างระบบ
+
 ## [2026-08-10 14:19]
 
-- **Files Modified:** `vite.config.js`, `package.json`, `vercel.json`, `pdf-service/package.json`, `pdf-service/server.js`
+- **Files Modified:** `src/lib/emailService.js`, `src/pages/UserManagement.jsx`, `src/lib/supabase.js`, `vite.config.js`, `package.json`, `vercel.json`, `pdf-service/package.json`, `pdf-service/server.js`
 - **Details:**
-  - `vite.config.js`: ขยายขีดจำกัดขนาดไฟล์ Precache ของ VitePWA Workbox เป็น 5MB (`maximumFileSizeToCacheInBytes: 5MB`) และทำ Code Splitting แยก vendor chunks (`vendor-react`, `vendor-pdf`, `vendor-charts`, `vendor-ui`, `vendor-utils`) ผ่าน Rollup
-  - `package.json`: ถอดการระบุ `"workspaces": ["pdf-service"]` ออกจาก Root Package ป้องกัน Vercel Monorepo Engine สับสน
-  - `vercel.json`: กำหนด `buildCommand` เป็น `npm run build` และ `outputDirectory` เป็น `dist`
-- **Reason:** แก้ไข Vite PWA Build Error ("assets/index-*.js is 3.29 MB, and won't be precached") และเพิ่มประสิทธิภาพการโหลดเว็บผ่าน Code Splitting
+  - `src/lib/emailService.js`: ปรับปรุง Error handling การเชื่อมต่ออีเมลแบ็กเอนด์ให้วิเคราะห์แยกแยะระหว่าง Localhost กับ Production URL อย่างแม่นยำ ป้องกันการแสดงข้อความสับสน "พอร์ต 3001" เมื่อรันบนโปรดักชัน
+  - `src/pages/UserManagement.jsx`: ปรับปรุงปุ่ม "ส่งอีเมลเชิญซ้ำ (Resend Invitation)" พร้อม Loading Spinner (`RefreshCw animate-spin`) และ Tooltip ภาษาไทย และรักษาสิทธิ์การสร้างผู้ใช้แม้ส่งอีเมลล้มเหลว
+  - `src/lib/supabase.js`: เพิ่ม Fallback value และ Warning log ป้องกันหน้าเว็บ Crash กรณีตัวแปรแวดล้อมยังไม่ถูกฉีด
+- **Reason:** วินิจฉัยและแก้ปัญหาระบบส่งอีเมลเชิญผู้ใช้บน Production พร้อมเพิ่มฟีเจอร์ส่งอีเมลเชิญซ้ำ (Resend Invitation) แบบสมบูรณ์
 
 ## [2026-08-10 13:25]
 
