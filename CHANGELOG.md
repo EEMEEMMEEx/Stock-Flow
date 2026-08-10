@@ -5,7 +5,7 @@
 - **Files Modified:** `package.json`, `vercel.json`, `pdf-service/package.json`, `pdf-service/server.js`
 - **Details:**
   - `package.json`: ถอดการระบุ `"workspaces": ["pdf-service"]` ออกจาก Root Package เพื่อป้องกัน Vercel Monorepo Engine สับสนเส้นทาง Build Output Directory (`dist`)
-  - `vercel.json`: กำหนด `buildCommand` เป็น `vite build` และ `outputDirectory` เป็น `dist` อย่างชัดเจน
+  - `vercel.json`: กำหนด `buildCommand` เป็น `npm run build` และ `outputDirectory` เป็น `dist` อย่างชัดเจน (เพื่อให้ npm เพิ่ม `node_modules/.bin` เข้า PATH อัตโนมัติ)
   - `package.json` & `pdf-service/package.json`: อัปเกรด `multer` เป็น `2.2.0` และ `puppeteer` เป็น `24.15.0`
 - **Reason:** แก้ไข Vercel Output Directory Error ("No Output Directory named 'dist' found") และเตรียมความพร้อมในการ Deploy ขึ้น Vercel
 
