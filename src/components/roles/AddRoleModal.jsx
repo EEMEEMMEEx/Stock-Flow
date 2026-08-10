@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Shield, Sparkles } from 'lucide-react';
+import { Shield, Sparkles, Check, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const BADGE_COLOR_PRESETS = [
@@ -159,8 +159,22 @@ const AddRoleModal = ({ isOpen, onClose, onSave }) => {
             <Button type="button" variant="ghost" onClick={() => { resetForm(); onClose(); }}>
               ยกเลิก
             </Button>
-            <Button type="submit" disabled={loading} className="neu-primary">
-              {loading ? 'กำลังบันทึก...' : 'บันทึกสร้างบทบาท'}
+            <Button 
+              type="submit" 
+              disabled={loading} 
+              className="neu-primary h-10 px-5 rounded-xl font-semibold text-sm flex items-center gap-2 transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? (
+                <>
+                  <RefreshCw className="w-4 h-4 shrink-0 animate-spin" />
+                  <span>กำลังบันทึก...</span>
+                </>
+              ) : (
+                <>
+                  <Check className="w-4 h-4 shrink-0" />
+                  <span>บันทึกสร้างบทบาท</span>
+                </>
+              )}
             </Button>
           </DialogFooter>
         </form>

@@ -7,15 +7,15 @@
       "requires": {
         "skills": {
           "api-patterns": "^1.0.0",
-          "bash-linux": "^1.0.0",
+          "bash-linux": "0.0.0",
           "clean-code": "^2.0.0",
           "database-design": "^1.0.0",
           "lint-and-validate": "^1.0.0",
-          "mcp-builder": "^1.0.0",
+          "mcp-builder": "0.0.0",
           "nodejs-best-practices": "^1.0.0",
           "powershell-windows": "^1.0.0",
-          "python-patterns": "^1.0.0",
-          "rust-pro": "^1.0.0"
+          "python-patterns": "0.0.0",
+          "rust-pro": "0.0.0"
         }
       },
       "tools": [
@@ -89,7 +89,7 @@
       "path": "agent/devops-engineer.md",
       "requires": {
         "skills": {
-          "bash-linux": "^1.0.0",
+          "bash-linux": "0.0.0",
           "clean-code": "^2.0.0",
           "deployment-procedures": "^1.0.0",
           "powershell-windows": "^1.0.0",
@@ -157,7 +157,7 @@
           "frontend-architecture": "^1.0.0",
           "frontend-design": "^1.0.0",
           "lint-and-validate": "^1.0.0",
-          "nextjs-react-expert": "^1.0.0",
+          "nextjs-react-expert": "0.0.0",
           "tailwind-patterns": "^1.0.0",
           "web-design-guidelines": "^1.0.0"
         }
@@ -178,7 +178,7 @@
       "requires": {
         "skills": {
           "clean-code": "^2.0.0",
-          "game-development": "^1.0.0"
+          "game-development": "0.0.0"
         }
       },
       "tools": [
@@ -198,7 +198,7 @@
         "skills": {
           "clean-code": "^2.0.0",
           "design-spec": "^1.0.0",
-          "mobile-design": "^1.0.0"
+          "mobile-design": "0.0.0"
         }
       },
       "tools": [
@@ -217,7 +217,7 @@
       "requires": {
         "skills": {
           "architecture": "^1.0.0",
-          "bash-linux": "^1.0.0",
+          "bash-linux": "0.0.0",
           "behavioral-modes": "^1.0.0",
           "brainstorming": "^1.0.0",
           "clean-code": "^2.0.0",
@@ -249,7 +249,7 @@
         "skills": {
           "api-patterns": "^1.0.0",
           "clean-code": "^2.0.0",
-          "red-team-tactics": "^1.0.0",
+          "red-team-tactics": "0.0.0",
           "vulnerability-scanner": "^1.0.0"
         }
       },
@@ -366,7 +366,7 @@
         "skills": {
           "api-patterns": "^1.0.0",
           "clean-code": "^2.0.0",
-          "red-team-tactics": "^1.0.0",
+          "red-team-tactics": "0.0.0",
           "vulnerability-scanner": "^1.0.0"
         }
       },
@@ -386,8 +386,8 @@
       "requires": {
         "skills": {
           "clean-code": "^2.0.0",
-          "geo-fundamentals": "^1.0.0",
-          "seo-fundamentals": "^1.0.0"
+          "geo-fundamentals": "0.0.0",
+          "seo-fundamentals": "0.0.0"
         }
       },
       "tools": [
@@ -449,6 +449,12 @@
       "priority": "P0",
       "trigger": "glob",
       "version": "1.0.0"
+    },
+    "implementation-plan": {
+      "path": "rules/implementation-plan.md",
+      "priority": "",
+      "trigger": "always_on",
+      "version": ""
     },
     "quick-reference": {
       "path": "rules/quick-reference.md",
@@ -562,18 +568,11 @@
       "scripts": [],
       "version": "1.0.0"
     },
-    "bash-linux": {
-      "allowedTools": [
-        "Read",
-        "Write",
-        "Edit",
-        "Glob",
-        "Grep",
-        "Bash"
-      ],
-      "path": "skills/bash-linux/SKILL.md",
+    "banner-design": {
+      "allowedTools": [],
+      "path": "skills/banner-design/SKILL.md",
       "scripts": [],
-      "version": "1.0.0"
+      "version": ""
     },
     "batch-operations": {
       "allowedTools": [
@@ -607,6 +606,12 @@
       "path": "skills/brainstorming/SKILL.md",
       "scripts": [],
       "version": "1.0.0"
+    },
+    "brand": {
+      "allowedTools": [],
+      "path": "skills/brand/SKILL.md",
+      "scripts": [],
+      "version": ""
     },
     "clean-code": {
       "allowedTools": [
@@ -688,6 +693,12 @@
       "scripts": [],
       "version": "1.0.0"
     },
+    "design": {
+      "allowedTools": [],
+      "path": "skills/design/SKILL.md",
+      "scripts": [],
+      "version": ""
+    },
     "design-spec": {
       "allowedTools": [
         "Read",
@@ -699,6 +710,19 @@
       "path": "skills/design-spec/SKILL.md",
       "scripts": [],
       "version": "1.0.0"
+    },
+    "design-system": {
+      "allowedTools": [],
+      "path": "skills/design-system/SKILL.md",
+      "scripts": [
+        "skills/design-system/scripts/fetch-background.py",
+        "skills/design-system/scripts/generate-slide.py",
+        "skills/design-system/scripts/html-token-validator.py",
+        "skills/design-system/scripts/search-slides.py",
+        "skills/design-system/scripts/slide-token-validator.py",
+        "skills/design-system/scripts/slide_search_core.py"
+      ],
+      "version": ""
     },
     "documentation-templates": {
       "allowedTools": [
@@ -738,43 +762,6 @@
       ],
       "version": "1.0.0"
     },
-    "game-development": {
-      "allowedTools": [
-        "Read",
-        "Write",
-        "Edit",
-        "Glob",
-        "Grep",
-        "Bash"
-      ],
-      "path": "skills/game-development/SKILL.md",
-      "scripts": [],
-      "version": "1.0.0"
-    },
-    "geo-fundamentals": {
-      "allowedTools": [
-        "Read",
-        "Glob",
-        "Grep"
-      ],
-      "path": "skills/geo-fundamentals/SKILL.md",
-      "scripts": [
-        "skills/geo-fundamentals/scripts/geo_checker.py"
-      ],
-      "version": "1.0.0"
-    },
-    "i18n-localization": {
-      "allowedTools": [
-        "Read",
-        "Glob",
-        "Grep"
-      ],
-      "path": "skills/i18n-localization/SKILL.md",
-      "scripts": [
-        "skills/i18n-localization/scripts/i18n_checker.py"
-      ],
-      "version": "1.0.0"
-    },
     "intelligent-routing": {
       "allowedTools": [
         "Read",
@@ -799,18 +786,6 @@
       ],
       "version": "1.0.0"
     },
-    "mcp-builder": {
-      "allowedTools": [
-        "Read",
-        "Write",
-        "Edit",
-        "Glob",
-        "Grep"
-      ],
-      "path": "skills/mcp-builder/SKILL.md",
-      "scripts": [],
-      "version": "1.0.0"
-    },
     "memory-system": {
       "allowedTools": [
         "Read",
@@ -820,35 +795,6 @@
       ],
       "path": "skills/memory-system/SKILL.md",
       "scripts": [],
-      "version": "1.0.0"
-    },
-    "mobile-design": {
-      "allowedTools": [
-        "Read",
-        "Glob",
-        "Grep",
-        "Bash"
-      ],
-      "path": "skills/mobile-design/SKILL.md",
-      "scripts": [
-        "skills/mobile-design/scripts/mobile_audit.py"
-      ],
-      "version": "1.0.0"
-    },
-    "nextjs-react-expert": {
-      "allowedTools": [
-        "Read",
-        "Write",
-        "Edit",
-        "Glob",
-        "Grep",
-        "Bash"
-      ],
-      "path": "skills/nextjs-react-expert/SKILL.md",
-      "scripts": [
-        "skills/nextjs-react-expert/scripts/convert_rules.py",
-        "skills/nextjs-react-expert/scripts/react_performance_checker.py"
-      ],
       "version": "1.0.0"
     },
     "nodejs-best-practices": {
@@ -910,53 +856,6 @@
       "scripts": [],
       "version": "1.0.0"
     },
-    "python-patterns": {
-      "allowedTools": [
-        "Read",
-        "Write",
-        "Edit",
-        "Glob",
-        "Grep"
-      ],
-      "path": "skills/python-patterns/SKILL.md",
-      "scripts": [],
-      "version": "1.0.0"
-    },
-    "red-team-tactics": {
-      "allowedTools": [
-        "Read",
-        "Glob",
-        "Grep"
-      ],
-      "path": "skills/red-team-tactics/SKILL.md",
-      "scripts": [],
-      "version": "1.0.0"
-    },
-    "rust-pro": {
-      "allowedTools": [
-        "Read",
-        "Write",
-        "Edit",
-        "Glob",
-        "Grep",
-        "Bash"
-      ],
-      "path": "skills/rust-pro/SKILL.md",
-      "scripts": [],
-      "version": "1.0.0"
-    },
-    "seo-fundamentals": {
-      "allowedTools": [
-        "Read",
-        "Glob",
-        "Grep"
-      ],
-      "path": "skills/seo-fundamentals/SKILL.md",
-      "scripts": [
-        "skills/seo-fundamentals/scripts/seo_checker.py"
-      ],
-      "version": "1.0.0"
-    },
     "server-management": {
       "allowedTools": [
         "Read",
@@ -992,6 +891,12 @@
       "path": "skills/skillify/SKILL.md",
       "scripts": [],
       "version": "1.0.0"
+    },
+    "slides": {
+      "allowedTools": [],
+      "path": "skills/slides/SKILL.md",
+      "scripts": [],
+      "version": ""
     },
     "systematic-debugging": {
       "allowedTools": [
@@ -1042,6 +947,26 @@
         "skills/testing-patterns/scripts/test_runner.py"
       ],
       "version": "1.0.0"
+    },
+    "ui-styling": {
+      "allowedTools": [],
+      "path": "skills/ui-styling/SKILL.md",
+      "scripts": [
+        "skills/ui-styling/scripts/shadcn_add.py",
+        "skills/ui-styling/scripts/tailwind_config_gen.py"
+      ],
+      "version": ""
+    },
+    "ui-ux-pro-max": {
+      "allowedTools": [],
+      "path": "skills/ui-ux-pro-max/SKILL.md",
+      "scripts": [
+        "skills/ui-ux-pro-max/scripts/core.py",
+        "skills/ui-ux-pro-max/scripts/design_system.py",
+        "skills/ui-ux-pro-max/scripts/search.py",
+        "skills/ui-ux-pro-max/scripts/validate_data.py"
+      ],
+      "version": ""
     },
     "verify-changes": {
       "allowedTools": [

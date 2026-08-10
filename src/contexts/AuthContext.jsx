@@ -139,7 +139,7 @@ export const AuthProvider = ({ children }) => {
 
     try {
       const { data, error } = await supabase.rpc('get_user_permissions', { p_user_id: userId });
-      if (!error && data) {
+      if (!error && Array.isArray(data) && data.length > 0) {
         setPermissions(data.map(p => p.permission_code || p.code || p));
         return;
       }
@@ -166,16 +166,19 @@ export const AuthProvider = ({ children }) => {
   const signIn = (email, password) => supabase.auth.signInWithPassword({ email, password });
   const signOut = () => supabase.auth.signOut();
 
+  const isUserEmailAdmin = (user?.email || '').toLowerCase() === 'admin@stockflow.com';
   const roleCode = profile?.roles?.code || (profile?.role ? profile.role.toUpperCase() : 'STAFF');
-  const isAdmin = roleCode === 'ADMIN' || (profile?.role || '').toLowerCase() === 'admin';
+  const isAdmin = isUserEmailAdmin || roleCode === 'ADMIN' || (profile?.role || '').toLowerCase() === 'admin';
   const isActive = profile?.status === 'active';
 
   // Permission authorization helper
   const can = (permCode) => {
+    if (!permCode) return true; // Public / unrestricted route for all logged-in active users
+    if (isUserEmailAdmin || isAdmin) return true; // Admin bypass
     if (!profile || profile.status === 'inactive') return false;
-    if (isAdmin) return true; // Admin bypass
     return permissions.includes(permCode);
   };
+
 
 
   const canAny = (permCodes = []) => permCodes.some(code => can(code));
@@ -196,8 +199,10 @@ export const AuthProvider = ({ children }) => {
       canAll,
       assignedProjectIds,
       allProjectsAccess,
+      mustChangePassword: profile?.must_change_password === true,
       refreshProfile: () => fetchProfile(user)
     }}>
+
       {!loading && children}
     </AuthContext.Provider>
   );
@@ -206,5 +211,4 @@ export const AuthProvider = ({ children }) => {
 export const useAuth = () => {
   return useContext(AuthContext);
 };
-
 

@@ -20,12 +20,12 @@ const DEFAULT_EVENTS_CONFIG = {
     title: '1. ส่งคำขอเบิกจ่ายใหม่ (Withdrawal Submitted)',
     desc: 'แจ้งเตือนไปยังผู้อนุมัติและผู้ดูแลระบบเมื่อมีคำขอเบิกใหม่',
     primary_recipient: 'ผู้อนุมัติ / ผู้ดูแลระบบ',
-    subject: '[StockFlow] มีคำขอเบิกจ่ายใหม่ {{request_no}} (โครงการ {{project_name}})',
-    status_label: 'คำขอเบิกใหม่',
+    subject: '[StockFlow] คำขอเบิก {{request_no}} รอการอนุมัติ — {{project_name}}',
+    status_label: 'รออนุมัติ / คำขอเบิกใหม่',
     status_type: 'warning',
     heading: 'มีคำขอเบิกจ่ายวัสดุใหม่เข้าระบบ',
-    intro: 'สวัสดีครับ คุณ {{user_name}} ได้ทำการส่งคำขอเบิกจ่ายวัสดุเลขที่ {{request_no}} สำหรับโครงการ {{project_name}} เรียบร้อยแล้ว',
-    cta_label: 'ดูคำขอและอนุมัติในระบบ',
+    intro: 'สวัสดีครับ มีคำขอเบิกจ่ายวัสดุเลขที่ {{request_no}} สำหรับโครงการ {{project_name}} รอการพิจารณาอนุมัติ กรุณาตรวจสอบรายละเอียดรายการวัสดุ',
+    cta_label: 'ตรวจสอบและพิจารณาคำขอ',
     cta_url: '{{action_url}}',
     footer_note: 'กรุณาตรวจสอบและอนุมัติคำขอเบิกดังกล่าวตามขั้นตอนระบบ',
     roles: ['ADMIN', 'SUPERVISOR'],
@@ -38,11 +38,11 @@ const DEFAULT_EVENTS_CONFIG = {
     desc: 'แจ้งเตือนไปยังผู้ขอเบิกเมื่อคำขอได้รับการอนุมัติเรียบร้อย',
     primary_recipient: 'ผู้ขอเบิก (Requester)',
     subject: '[StockFlow] คำขอเบิก {{request_no}} ได้รับการอนุมัติแล้ว',
-    status_label: 'อนุมัติแล้ว',
+    status_label: 'อนุมัติแล้ว / รอจ่ายวัสดุ',
     status_type: 'approved',
     heading: 'คำขอเบิกจ่ายวัสดุของคุณได้รับการอนุมัติแล้ว',
     intro: 'เรียน คุณ {{user_name}} คำขอเบิกจ่ายวัสดุเลขที่ {{request_no}} สำหรับโครงการ {{project_name}} ได้รับการอนุมัติโดย {{approved_by}} เรียบร้อยแล้ว',
-    cta_label: 'ดูรายละเอียดและเตรียมนัดรับวัสดุ',
+    cta_label: 'ดูรายละเอียดและเตรียมรับวัสดุ',
     cta_url: '{{action_url}}',
     footer_note: 'คุณสามารถนำเลขที่คำขอเบิกไปติดต่อรับวัสดุ ณ คลังสินค้าโครงการได้ทันที',
     roles: ['STAFF'],
@@ -54,12 +54,12 @@ const DEFAULT_EVENTS_CONFIG = {
     title: '3. ปฏิเสธคำขอเบิกจ่าย (Withdrawal Rejected)',
     desc: 'แจ้งเตือนไปยังผู้ขอเบิกเมื่อคำขอถูกปฏิเสธพร้อมระบุเหตุผล',
     primary_recipient: 'ผู้ขอเบิก (Requester)',
-    subject: '[StockFlow] คำขอเบิก {{request_no}} ไม่ผ่านการอนุมัติ',
-    status_label: 'ถูกปฏิเสธ',
+    subject: '[StockFlow] คำขอเบิก {{request_no}} ไม่ได้รับการอนุมัติ',
+    status_label: 'ไม่ได้รับการอนุมัติ',
     status_type: 'rejected',
-    heading: 'คำขอเบิกจ่ายวัสดุของคุณถูกปฏิเสธ',
-    intro: 'เรียน คุณ {{user_name}} คำขอเบิกจ่ายวัสดุเลขที่ {{request_no}} ถูกปฏิเสธ เนื่องจาก: {{rejection_reason}}',
-    cta_label: 'ดูรายละเอียดคำขอเบิก',
+    heading: 'คำขอเบิกจ่ายวัสดุไม่ได้รับการอนุมัติ',
+    intro: 'เรียน คุณ {{user_name}} คำขอเบิกจ่ายวัสดุเลขที่ {{request_no}} ถูกปฏิเสธ กรุณาตรวจสอบเหตุผลการปฏิเสธและปรับปรุงข้อมูลก่อนส่งคำขอใหม่',
+    cta_label: 'ดูเหตุผลการปฏิเสธ',
     cta_url: '{{action_url}}',
     footer_note: 'หากต้องการแก้ไขรายการ สามารถติดต่อผู้อนุมัติโครงการหรือส่งคำขอใหม่ได้',
     roles: ['STAFF'],
@@ -71,12 +71,12 @@ const DEFAULT_EVENTS_CONFIG = {
     title: '4. ส่งมอบและรับวัสดุสำเร็จ (Withdrawal Completed)',
     desc: 'แจ้งเตือนเมื่อการเบิกจ่ายเสร็จสิ้นและตัดสต็อกสมบูรณ์',
     primary_recipient: 'ผู้เบิก / ผู้ดูแลระบบ',
-    subject: '[StockFlow] รายการเบิก {{request_no}} ส่งมอบสำเร็จแล้ว',
-    status_label: 'เบิกสำเร็จ',
+    subject: '[StockFlow] จ่ายวัสดุ {{request_no}} เรียบร้อยแล้ว',
+    status_label: 'จ่ายวัสดุแล้ว',
     status_type: 'approved',
-    heading: 'การส่งมอบและรับวัสดุเสร็จสิ้นสมบูรณ์',
-    intro: 'เรียน คุณ {{user_name}} รายการเบิกจ่ายวัสดุเลขที่ {{request_no}} ได้รับการยืนยันส่งมอบสำเร็จแล้ว สต็อกคลังถูกอัปเดตเรียบร้อย',
-    cta_label: 'ดูประวัติการเบิกจ่าย',
+    heading: 'ดำเนินการจ่ายวัสดุเรียบร้อยแล้ว',
+    intro: 'เรียน คุณ {{user_name}} รายการเบิกจ่ายวัสดุเลขที่ {{request_no}} ได้รับการยืนยันส่งมอบและเบิกจ่ายจากคลังเรียบร้อยแล้ว',
+    cta_label: 'ดูประวัติการจ่ายวัสดุ',
     cta_url: '{{action_url}}',
     footer_note: 'ขอบคุณที่ใช้งานระบบ StockFlow Inventory Management',
     roles: ['ADMIN'],
@@ -88,12 +88,12 @@ const DEFAULT_EVENTS_CONFIG = {
     title: '5. บันทึกรับวัสดุเข้า Stock (Stock In Recorded)',
     desc: 'แจ้งเตือนเมื่อมีการบันทึกรับเข้าวัสดุล็อตใหม่ในโครงการ',
     primary_recipient: 'ผู้ดูแลคลัง / ผู้ดูแลระบบ',
-    subject: '[StockFlow] บันทึกรับเข้า Stock เลขที่ {{stock_in_no}} ({{project_name}})',
+    subject: '[StockFlow] รับเข้า Stock {{stock_in_no}} — {{project_name}}',
     status_label: 'รับเข้า Stock',
     status_type: 'info',
-    heading: 'มีการบันทึกรับวัสดุใหม่เข้าคลังสินค้า',
-    intro: 'มีการบันทึกรายการรับเข้า Stock เลขที่ {{stock_in_no}} จำนวน {{item_count}} สำหรับโครงการ {{project_name}}',
-    cta_label: 'ดูประวัติการรับเข้า Stock',
+    heading: 'มีการรับวัสดุเข้าสต็อกเรียบร้อยแล้ว',
+    intro: 'มีการบันทึกรายการรับเข้า Stock เลขที่ {{stock_in_no}} สำหรับโครงการ {{project_name}} เรียบร้อยแล้ว',
+    cta_label: 'ดูรายการรับเข้า Stock',
     cta_url: '{{action_url}}',
     footer_note: 'รายการวัสดุใหม่ถูกเพิ่มเข้าสู่ยอดคงเหลือพร้อมเบิกทันที',
     roles: ['ADMIN', 'SUPERVISOR'],
@@ -105,12 +105,12 @@ const DEFAULT_EVENTS_CONFIG = {
     title: '6. แจ้งเตือนวัสดุคงเหลือน้อย (Low Stock Alert)',
     desc: 'แจ้งเตือนอัตโนมัติเมื่อจำนวนวัสดุในคลังลดลงต่ำกว่าเกณฑ์',
     primary_recipient: 'ผู้ดูแลคลัง / ผู้อนุมัติ',
-    subject: '[StockFlow Warning] วัสดุ {{item_name}} เหลือต่ำกว่าเกณฑ์ ({{current_stock}})',
-    status_label: 'สต็อกต่ำ',
+    subject: '[StockFlow] แจ้งเตือน Stock ต่ำ — {{item_name}} ({{project_name}})',
+    status_label: 'Stock ต่ำกว่าเกณฑ์',
     status_type: 'rejected',
-    heading: 'เตือนภัย: จำนวนวัสดุในคลังสินค้าลดลงต่ำกว่าเกณฑ์',
+    heading: 'แจ้งเตือนวัสดุคงเหลือต่ำกว่ากำหนด',
     intro: 'รายการวัสดุ "{{item_name}}" ในโครงการ {{project_name}} เหลือคงเหลือเพียง {{current_stock}} (เกณฑ์เตือนสต็อกต่ำ: {{threshold}})',
-    cta_label: 'เข้าดูและวางแผนสั่งซื้อวัสดุเพิ่ม',
+    cta_label: 'ตรวจสอบยอดคงเหลือ',
     cta_url: '{{action_url}}',
     footer_note: 'กรุณาวางแผนสั่งซื้อวัสดุเติมคลังเพื่อป้องกันผลกระทบต่อโครงการ',
     roles: ['ADMIN', 'SUPERVISOR'],
@@ -152,6 +152,7 @@ const mergeEventsWithDefaults = (inputConfig) => {
 
 const EmailTemplateManager = ({ 
   eventsConfig = DEFAULT_EVENTS_CONFIG, 
+  brandingConfig = {},
   roles = [], 
   canUpdate = true,
   onSave = () => {}
@@ -164,13 +165,14 @@ const EmailTemplateManager = ({
   const [isDirty, setIsDirty] = useState(false);
 
   // Global Email Branding State
-  const [branding, setBranding] = useState({
+  const defaultBranding = {
     app_name: APP_CONFIG.name,
     logo_url: '',
     public_base_url: window.location.origin,
     accent_color: '#3b82f6',
     footer_text: 'หากคุณไม่ได้ทำรายการนี้ กรุณาติดต่อผู้ดูแลระบบเพื่อความปลอดภัย'
-  });
+  };
+  const [branding, setBranding] = useState(() => ({ ...defaultBranding, ...brandingConfig }));
 
   // Test Email Modal
   const [isTestEmailOpen, setIsTestEmailOpen] = useState(false);
@@ -182,6 +184,10 @@ const EmailTemplateManager = ({
       setEvents(mergeEventsWithDefaults(eventsConfig));
     }
   }, [eventsConfig]);
+
+  useEffect(() => {
+    setBranding({ ...defaultBranding, ...brandingConfig });
+  }, [brandingConfig]);
 
   const selectedEvent = events[selectedEventKey] || DEFAULT_EVENTS_CONFIG[selectedEventKey] || {
     enabled: true,

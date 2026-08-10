@@ -7,13 +7,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { 
   Settings as SettingsIcon, AppWindow, Package, Mail, ShieldCheck, 
-  Database, Server, Save, ChevronDown, ChevronRight, RefreshCw, Send, Lock, Sparkles, AlertTriangle
+  Database, Server, Save, ChevronDown, ChevronRight, RefreshCw, Send, Lock, Sparkles, AlertTriangle, FolderKanban
 } from 'lucide-react';
 import { APP_CONFIG } from '@/config/appConfig';
 import toast from 'react-hot-toast';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import EmailTemplateManager from '@/components/settings/EmailTemplateManager';
 import DefaultPasswordManager from '@/components/settings/DefaultPasswordManager';
+import MinIOOrphanManager from '@/components/settings/MinIOOrphanManager';
 import { sendTestEmail } from '@/lib/emailService';
 
 
@@ -35,6 +36,7 @@ const Settings = () => {
     notification: false,
     security: false,
     storage: false,
+    minio: false,
     system: false
   });
 
@@ -76,6 +78,7 @@ const Settings = () => {
     withdrawal_completed: { enabled: true, roles: ['ADMIN'] },
     low_stock_alert: { enabled: true, roles: ['ADMIN', 'SUPERVISOR'] }
   });
+  const [emailBranding, setEmailBranding] = useState({});
 
   useEffect(() => {
     fetchInitialSettings();
@@ -100,7 +103,12 @@ const Settings = () => {
   const fetchSettingsFromDb = async () => {
     try {
       const { data, error } = await supabase.rpc('admin_get_system_settings');
-      if (!error && data) {
+      if (error) {
+        console.error('[Settings] Unable to load system settings:', error.code);
+        throw error;
+      }
+
+      if (data) {
         if (data.app_name !== undefined) {
           setAppForm({
             app_name: data.app_name || APP_CONFIG.name,
@@ -124,6 +132,9 @@ const Settings = () => {
         }
         if (data.notification_events) {
           setNotificationEvents(data.notification_events);
+        }
+        if (data.branding) {
+          setEmailBranding(data.branding);
         }
       }
     } catch (e) {
@@ -238,9 +249,8 @@ const Settings = () => {
         user: smtpForm.user.trim(),
         sender_email: smtpForm.sender_email.trim(),
         sender_name: smtpForm.sender_name.trim(),
-        password_set: smtpForm.password_set || Boolean(smtpForm.new_password)
+        password_set: smtpForm.password_set || Boolean(smtpForm.new_password.trim())
       };
-
 
       const payload = {
         smtp_config: smtpPayload,
@@ -253,11 +263,20 @@ const Settings = () => {
       });
 
       if (error) throw error;
+
+      // Save password to Vault RPC if provided
+      if (smtpForm.new_password.trim()) {
+        const { error: vaultErr } = await supabase.rpc('admin_update_smtp_password', {
+          p_password: smtpForm.new_password.trim()
+        });
+        if (vaultErr) console.warn('[Settings] SMTP Password Vault Error:', vaultErr.message);
+      }
+
       if (data?.success) {
         toast.success('บันทึกการตั้งค่าการแจ้งเตือนสำเร็จ');
         setSmtpForm(prev => ({
           ...prev,
-          password_set: prev.password_set || Boolean(prev.new_password),
+          password_set: prev.password_set || Boolean(prev.new_password.trim()),
           new_password: ''
         }));
       }
@@ -279,7 +298,22 @@ const Settings = () => {
 
     try {
       setSendingTestEmail(true);
-      await sendTestEmail(trimmedEmail);
+
+      const customSmtpOverrides = {
+        host: smtpForm.host.trim(),
+        port: Number(smtpForm.port) || 465,
+        secure: Boolean(smtpForm.secure),
+        reject_unauthorized: smtpForm.reject_unauthorized !== false,
+        user: smtpForm.user.trim(),
+        sender_email: smtpForm.sender_email.trim(),
+        sender_name: smtpForm.sender_name.trim()
+      };
+
+      if (smtpForm.new_password.trim()) {
+        customSmtpOverrides.pass = smtpForm.new_password.trim();
+      }
+
+      await sendTestEmail(trimmedEmail, null, customSmtpOverrides);
       toast.success(`ส่งอีเมลทดสอบไปยัง ${trimmedEmail} สำเร็จเรียบร้อยแล้ว`);
       setIsTestEmailOpen(false);
       setTestEmailRecipient('');
@@ -289,6 +323,7 @@ const Settings = () => {
       setSendingTestEmail(false);
     }
   };
+
 
 
   const toggleEventRole = (eventKey, roleCode) => {
@@ -768,6 +803,7 @@ const Settings = () => {
             <div className="pt-4 border-t border-border/40">
               <EmailTemplateManager
                 eventsConfig={notificationEvents}
+                brandingConfig={emailBranding}
                 roles={roles}
                 canUpdate={canUpdate}
                 onSave={async ({ branding, events }) => {
@@ -783,6 +819,7 @@ const Settings = () => {
                     if (error) throw error;
                     if (data?.success) {
                       setNotificationEvents(events);
+                      setEmailBranding(branding);
                     }
                   } catch (err) {
                     console.error('Save Email Templates Error:', err);
@@ -878,7 +915,30 @@ const Settings = () => {
         )}
       </Card>
 
-      {/* SECTION 6: System Information */}
+      {/* SECTION 6: MinIO Orphan Files Management */}
+      <Card className="neu-flat border-0 overflow-hidden">
+        <CardHeader 
+          onClick={() => toggleSection('minio')}
+          className="cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors flex flex-row items-center justify-between py-4"
+        >
+          <div className="flex items-center gap-2.5">
+            <FolderKanban className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+            <div>
+              <CardTitle className="text-base font-bold">6. การจัดการไฟล์ขยะ MinIO/S3 (MinIO Orphan Files Management)</CardTitle>
+              <CardDescription className="text-xs">สแกน ส่งออกรายงาน และลบไฟล์ตกค้างที่ไม่ได้ถูกอ้างอิงในระบบอย่างปลอดภัย</CardDescription>
+            </div>
+          </div>
+          {openSections.minio ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
+        </CardHeader>
+
+        {openSections.minio && (
+          <CardContent className="pt-2 pb-6 border-t border-border/40 text-xs">
+            <MinIOOrphanManager canUpdate={canUpdate} />
+          </CardContent>
+        )}
+      </Card>
+
+      {/* SECTION 7: System Information */}
       <Card className="neu-flat border-0 overflow-hidden">
         <CardHeader 
           onClick={() => toggleSection('system')}
@@ -887,12 +947,13 @@ const Settings = () => {
           <div className="flex items-center gap-2.5">
             <Server className="w-5 h-5 text-slate-600 dark:text-slate-300" />
             <div>
-              <CardTitle className="text-base font-bold">6. ข้อมูลระบบ (System Information)</CardTitle>
+              <CardTitle className="text-base font-bold">7. ข้อมูลระบบ (System Information)</CardTitle>
               <CardDescription className="text-xs">สรุปสถิติเวอร์ชัน สภาพแวดล้อม และสถานะการเชื่อมต่อฐานข้อมูล</CardDescription>
             </div>
           </div>
           {openSections.system ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
         </CardHeader>
+
 
         {openSections.system && (
           <CardContent className="pt-2 pb-6 border-t border-border/40 text-xs space-y-4">

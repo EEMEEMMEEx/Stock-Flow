@@ -50,3 +50,23 @@ Desktop.ini
 # AI Agent Local Logs & Caches
 .gemini/
 .agents/logs/
+.qoder/
+# Added by code-review-graph
+.code-review-graph/
+
+# Vite Temporary Build Artifacts
+vite.config.js.timestamp-*
+*.timestamp-*.mjs
+
+# Browser Temporary Downloads & Scratch Files
+*.crdownload
+Unconfirmed *.crdownload
+test_auth_simple.js
+
+# Generated Export Reports & Temporary PDFs
+*_Report_*.xlsx
+*_Report_*.pdf
+MaterialWithdrawal_*.pdf
+DeliveryNote_*.pdf
+stock_in_Report_*.pdf
+

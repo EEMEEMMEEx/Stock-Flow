@@ -66,46 +66,53 @@
 }
 
 @layer utilities {
+  .glass {
+    background-color: var(--glass-card-bg);
+    border: 1px solid var(--glass-card-border);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
   .neu-flat {
     @apply rounded-2xl;
     background-color: var(--neu-surface);
     border: 1px solid var(--neu-border);
-    box-shadow: 9px 9px 16px var(--neu-shadow-dark), -9px -9px 16px var(--neu-shadow-light);
+    box-shadow: 6px 6px 14px var(--neu-shadow-dark), -6px -6px 14px var(--neu-shadow-light);
   }
   .neu-flat-sm {
     @apply rounded-xl;
     background-color: var(--neu-surface);
     border: 1px solid var(--neu-border);
-    box-shadow: 5px 5px 10px var(--neu-shadow-dark), -5px -5px 10px var(--neu-shadow-light);
+    box-shadow: 4px 4px 10px var(--neu-shadow-dark), -4px -4px 10px var(--neu-shadow-light);
   }
   .neu-pressed {
     @apply rounded-xl;
     background-color: var(--neu-surface);
     border: 1px solid var(--neu-border);
-    box-shadow: inset 5px 5px 10px var(--neu-shadow-dark), inset -5px -5px 10px var(--neu-shadow-light);
+    box-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -4px -4px 8px var(--neu-shadow-light);
   }
   .neu-pressed-sm {
     @apply rounded-lg;
     background-color: var(--neu-surface);
     border: 1px solid var(--neu-border);
-    box-shadow: inset 3px 3px 6px var(--neu-shadow-dark), inset -3px -3px 6px var(--neu-shadow-light);
+    box-shadow: inset 2px 2px 5px var(--neu-shadow-dark), inset -2px -2px 5px var(--neu-shadow-light);
   }
   .neu-button {
     @apply rounded-xl transition-all duration-200;
     background-color: var(--neu-surface);
     border: 1px solid var(--neu-border);
-    box-shadow: 5px 5px 10px var(--neu-shadow-dark), -5px -5px 10px var(--neu-shadow-light);
+    box-shadow: 4px 4px 10px var(--neu-shadow-dark), -4px -4px 10px var(--neu-shadow-light);
   }
   .neu-button:active {
-    box-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -4px -4px 8px var(--neu-shadow-light);
+    box-shadow: inset 3px 3px 6px var(--neu-shadow-dark), inset -3px -3px 6px var(--neu-shadow-light);
   }
   .neu-primary {
     @apply bg-primary text-primary-foreground rounded-xl transition-all duration-200;
     border: 1px solid var(--neu-primary-border);
-    box-shadow: 5px 5px 10px var(--neu-primary-shadow), -5px -5px 10px var(--neu-shadow-light);
+    box-shadow: 4px 4px 10px var(--neu-primary-shadow), -4px -4px 10px var(--neu-shadow-light);
   }
   .neu-primary:active {
-    box-shadow: inset 4px 4px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: inset 3px 3px 6px rgba(0, 0, 0, 0.2);
   }
 }
 

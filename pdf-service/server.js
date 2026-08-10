@@ -428,7 +428,12 @@ app.post('/api/notifications/withdrawal', async (req, res) => {
   try {
     const { eventType, orderId, approverName = '', rejectionReason = '' } = req.body || {};
     const authorization = getAuthorizationHeader(req);
-    const allowedEvents = new Set(['withdrawal_submitted', 'withdrawal_approved', 'withdrawal_rejected']);
+    const allowedEvents = new Set([
+      'withdrawal_submitted',
+      'withdrawal_approved',
+      'withdrawal_rejected',
+      'withdrawal_completed'
+    ]);
 
     if (!allowedEvents.has(eventType) || !/^[0-9a-f-]{36}$/i.test(String(orderId || ''))) {
       throw new ApiError(400, 'Invalid withdrawal notification request.', 'INVALID_NOTIFICATION_REQUEST');
@@ -442,7 +447,7 @@ app.post('/api/notifications/withdrawal', async (req, res) => {
     const [caller, permissions, orders] = await Promise.all([
       getAuthenticatedUser(authorization),
       getCallerPermissions(authorization),
-      callSupabaseAsService(`/rest/v1/withdrawal_orders?select=id,requested_by,project_id,purpose,requested_at,approved_at,override_reason&id=eq.${encodeURIComponent(orderId)}`)
+      callSupabaseAsService(`/rest/v1/withdrawal_orders?select=id,requested_by,project_id,status,purpose,notes,requested_at,approved_at,approved_by,rejected_at,rejected_by,reject_reason,completed_at,completed_by,override_reason&id=eq.${encodeURIComponent(orderId)}`)
     ]);
     const order = Array.isArray(orders) ? orders[0] : null;
     if (!order) throw new ApiError(404, 'Withdrawal request was not found.', 'WITHDRAWAL_NOT_FOUND');
@@ -451,7 +456,11 @@ app.post('/api/notifications/withdrawal', async (req, res) => {
       ? 'withdrawals.create'
       : eventType === 'withdrawal_approved'
         ? 'withdrawals.approve'
-        : 'withdrawals.reject';
+        : eventType === 'withdrawal_rejected'
+          ? 'withdrawals.reject'
+          : order.requested_by === caller.id
+            ? 'withdrawals.create'
+            : 'withdrawals.approve';
 
     if (!permissions.has(requiredPermission) || (eventType === 'withdrawal_submitted' && order.requested_by !== caller.id)) {
       throw new ApiError(403, 'You are not allowed to dispatch this notification.', 'NOTIFICATION_PERMISSION_DENIED');
@@ -469,13 +478,14 @@ app.post('/api/notifications/withdrawal', async (req, res) => {
       .map((role) => String(role || '').trim().toLowerCase())
       .filter((role) => ['admin', 'supervisor', 'staff'].includes(role)))];
     const roleFilter = configuredRoles.join(',');
-    const [roleProfiles, requesterProfiles, projectRows, withdrawalItems, usersResponse] = await Promise.all([
+    const [roleProfiles, requesterProfiles, projectRows, withdrawalItems, stockBalances, usersResponse] = await Promise.all([
       roleFilter
         ? callSupabaseAsService(`/rest/v1/profiles?select=id,full_name,role,status&status=eq.active&role=in.(${encodeURIComponent(roleFilter)})`)
         : Promise.resolve([]),
       callSupabaseAsService(`/rest/v1/profiles?select=id,full_name,position&id=eq.${encodeURIComponent(order.requested_by)}`),
       callSupabaseAsService(`/rest/v1/projects?select=id,name,project_code&id=eq.${encodeURIComponent(order.project_id)}`),
-      callSupabaseAsService(`/rest/v1/withdrawal_items?select=id,quantity,approved_quantity,items(id,name,sku,unit)&order_id=eq.${encodeURIComponent(order.id)}`),
+      callSupabaseAsService(`/rest/v1/withdrawal_items?select=id,item_id,quantity,available_at_approval,deducted_quantity,shortage_quantity,items(id,name,sku,unit)&order_id=eq.${encodeURIComponent(order.id)}`),
+      callSupabaseAsService(`/rest/v1/stock_balance?select=item_id,balance&project_id=eq.${encodeURIComponent(order.project_id)}`),
       callSupabaseAsService('/auth/v1/admin/users?page=1&per_page=1000')
     ]);
     const userEmails = new Map((usersResponse?.users || []).map((user) => [user.id, normalizeEmail(user.email)]));
@@ -495,51 +505,139 @@ app.post('/api/notifications/withdrawal', async (req, res) => {
       return res.status(422).json({ success: false, error: 'No valid recipient emails are configured for this notification.', code: 'NO_NOTIFICATION_RECIPIENTS' });
     }
 
+    const participantIds = [...new Set([
+      order.requested_by,
+      order.approved_by,
+      order.rejected_by,
+      order.completed_by
+    ].filter(Boolean))];
+    const participantProfiles = participantIds.length > 0
+      ? await callSupabaseAsService(`/rest/v1/profiles?select=id,full_name&id=in.(${participantIds.map(encodeURIComponent).join(',')})`)
+      : [];
+    const participantNames = new Map((participantProfiles || []).map((profile) => [profile.id, profile.full_name || 'ผู้ใช้งานระบบ']));
+    const stockByItemId = new Map((stockBalances || []).map((stock) => [stock.item_id, Number(stock.balance || 0)]));
     const requester = requesterProfiles?.[0];
     const project = projectRows?.[0];
     const requestNo = `WO-${String(order.id).slice(0, 8).toUpperCase()}`;
-    const status = eventType === 'withdrawal_submitted' ? 'รออนุมัติ / คำขอเบิกใหม่' : eventType === 'withdrawal_approved' ? 'อนุมัติแล้ว / รอจ่ายวัสดุ' : 'ถูกปฏิเสธ';
+    const eventDetails = {
+      withdrawal_submitted: {
+        status: 'รออนุมัติ',
+        badge: 'คำขอเบิกใหม่',
+        fulfillmentStatus: 'รอการพิจารณาอนุมัติ'
+      },
+      withdrawal_approved: {
+        status: 'อนุมัติแล้ว',
+        badge: 'อนุมัติแล้ว',
+        fulfillmentStatus: 'รอจ่ายวัสดุ'
+      },
+      withdrawal_rejected: {
+        status: 'ไม่อนุมัติ',
+        badge: 'ไม่อนุมัติ',
+        fulfillmentStatus: 'ไม่อนุมัติ'
+      },
+      withdrawal_completed: {
+        status: 'จ่ายวัสดุแล้ว',
+        badge: 'จ่ายวัสดุแล้ว',
+        fulfillmentStatus: 'รับวัสดุเรียบร้อยแล้ว'
+      }
+    }[eventType];
     const requesterName = requester?.full_name || 'ผู้ขอเบิก';
     const requesterPosition = requester?.position || '';
     const publicBaseUrl = resolvePublicBaseUrl(settings.branding?.public_base_url || process.env.PUBLIC_APP_URL);
     
     // Map Item List for Table Renderer
-    const itemsList = (withdrawalItems || []).map((wi) => ({
-      name: wi.items?.name || 'วัสดุในระบบ',
-      sku: wi.items?.sku || '-',
-      unit: wi.items?.unit || 'ชิ้น',
-      requested_qty: Number(wi.quantity || 0),
-      approved_qty: wi.approved_quantity !== null && wi.approved_quantity !== undefined ? Number(wi.approved_quantity) : undefined
-    }));
+    const itemsList = (withdrawalItems || []).map((wi) => {
+      const requestedQty = Number(wi.quantity || 0);
+      const deductedQty = wi.deducted_quantity === null || wi.deducted_quantity === undefined
+        ? undefined
+        : Number(wi.deducted_quantity);
+      const shortageQty = wi.shortage_quantity === null || wi.shortage_quantity === undefined
+        ? undefined
+        : Number(wi.shortage_quantity);
+      const approvedQty = eventType === 'withdrawal_approved' || eventType === 'withdrawal_completed'
+        ? deductedQty ?? (shortageQty === undefined ? requestedQty : Math.max(requestedQty - shortageQty, 0))
+        : undefined;
+
+      return {
+        name: wi.items?.name || 'วัสดุในระบบ',
+        sku: wi.items?.sku || '',
+        unit: wi.items?.unit || 'ชิ้น',
+        requested_qty: requestedQty,
+        approved_qty: approvedQty,
+        issued_qty: eventType === 'withdrawal_completed' ? deductedQty : undefined,
+        available_stock: wi.available_at_approval ?? stockByItemId.get(wi.item_id),
+        available_stock_label: eventType === 'withdrawal_submitted'
+          ? 'คงเหลือขณะขอเบิก'
+          : 'คงเหลือขณะอนุมัติ'
+      };
+    });
 
     const totalQty = (withdrawalItems || []).reduce((total, item) => total + Number(item.quantity || 0), 0);
 
     const emailData = {
       app_name: settings.branding?.app_name || 'StockFlow',
+      event_type: eventType,
       user_name: requesterName,
+      requester_name: requesterName,
+      requester_email: userEmails.get(order.requested_by) || '',
       user_position: requesterPosition,
       request_no: requestNo,
       project_name: project?.name || '-',
       project_code: project?.project_code || '',
       request_date: formatThaiDateTime(order.requested_at),
-      approved_date: formatThaiDateTime(order.approved_at || Date.now()),
-      status,
+      approved_date: formatThaiDateTime(order.approved_at),
+      rejected_date: formatThaiDateTime(order.rejected_at),
+      completed_date: formatThaiDateTime(order.completed_at),
+      status: eventDetails.status,
+      status_badge: eventDetails.badge,
+      fulfillment_status: eventDetails.fulfillmentStatus,
       purpose: order.purpose || '',
+      note: order.notes || '',
       override_reason: order.override_reason || '',
       item_count: `${(withdrawalItems || []).length} รายการ`,
-      total_quantity: `${totalQty} ชิ้น`,
-      approved_by: approverName || '',
-      rejection_reason: rejectionReason || '',
+      total_quantity: `${totalQty} หน่วย`,
+      total_items: (withdrawalItems || []).length,
+      total_requested_quantity: totalQty,
+      approved_by: approverName || participantNames.get(order.approved_by) || '',
+      rejected_by: participantNames.get(order.rejected_by) || '',
+      completed_by: participantNames.get(order.completed_by) || '',
+      rejection_reason: rejectionReason || order.reject_reason || '',
       items: itemsList,
       action_url: publicBaseUrl ? `${publicBaseUrl}/withdrawals` : 'https://stockflow.app/withdrawals',
       year: String(new Date().getFullYear())
     };
     const subject = sanitizeEmailHeader(resolveEmailVariables(
-      eventConfig.subject || `[StockFlow] คำขอเบิก ${requestNo} ${status}`,
+      eventConfig.subject || `[StockFlow] คำขอเบิก ${requestNo} ${eventDetails.status}`,
       emailData
     ));
     const html = renderEmailHtml({ branding: settings.branding || {}, template: eventConfig, data: emailData });
-    const text = `${status}\nเลขที่คำขอ: ${requestNo}\nผู้ขอเบิก: ${requesterName}\nโครงการ: ${emailData.project_name}${approverName ? `\nผู้ดำเนินการ: ${approverName}` : ''}${rejectionReason ? `\nเหตุผล: ${rejectionReason}` : ''}${emailData.action_url ? `\n${emailData.action_url}` : ''}`;
+    const textItems = itemsList.map((item, index) => {
+      const itemLines = [
+        `${index + 1}. ${item.name}${item.sku ? ` (${item.sku})` : ''}`,
+        `   จำนวนที่ขอ: ${item.requested_qty} ${item.unit}`
+      ];
+      if (item.available_stock !== undefined && item.available_stock !== null) itemLines.push(`   คงเหลือขณะอนุมัติ: ${item.available_stock} ${item.unit}`);
+      if (item.approved_qty !== undefined) itemLines.push(`   จำนวนที่อนุมัติ: ${item.approved_qty} ${item.unit}`);
+      if (item.issued_qty !== undefined) itemLines.push(`   จำนวนที่จ่าย: ${item.issued_qty} ${item.unit}`);
+      return itemLines.join('\n');
+    }).join('\n');
+    const text = [
+      eventDetails.status,
+      `เลขที่คำขอ: ${requestNo}`,
+      `โครงการ: ${emailData.project_name}${emailData.project_code ? ` (${emailData.project_code})` : ''}`,
+      `ผู้ขอเบิก: ${requesterName}`,
+      emailData.requester_email ? `อีเมล: ${emailData.requester_email}` : '',
+      `วันที่ขอเบิก: ${emailData.request_date}`,
+      `สถานะ: ${eventDetails.status}`,
+      textItems ? `รายการวัสดุ:\n${textItems}` : '',
+      emailData.approved_by ? `ผู้อนุมัติ: ${emailData.approved_by}` : '',
+      emailData.rejected_by ? `ผู้ปฏิเสธ: ${emailData.rejected_by}` : '',
+      emailData.completed_by ? `ผู้จ่ายวัสดุ: ${emailData.completed_by}` : '',
+      emailData.rejection_reason ? `เหตุผลที่ไม่อนุมัติ: ${emailData.rejection_reason}` : '',
+      emailData.purpose ? `วัตถุประสงค์: ${emailData.purpose}` : '',
+      emailData.note ? `หมายเหตุ: ${emailData.note}` : '',
+      emailData.action_url
+    ].filter(Boolean).join('\n');
 
     const info = await sendServerNotificationEmail({
       to: recipients,

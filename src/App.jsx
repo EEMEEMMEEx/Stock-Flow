@@ -18,11 +18,12 @@ import Manual from './pages/Manual';
 import UserManagement from './pages/UserManagement';
 import RoleManagement from './pages/RoleManagement';
 import Settings from './pages/Settings';
+import Profile from './pages/Profile';
 import PermissionRoute from './components/auth/PermissionRoute';
 
 function App() {
   return (
-    <ThemeProvider defaultTheme="light" storageKey="stock-flow-theme-v2">
+    <ThemeProvider defaultTheme="system" storageKey="stock-flow-theme-v2">
       <AuthProvider>
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <Routes>
@@ -40,6 +41,7 @@ function App() {
               <Route path="/users" element={<PermissionRoute permission="users.view"><UserManagement /></PermissionRoute>} />
               <Route path="/roles" element={<PermissionRoute permission="roles.view"><RoleManagement /></PermissionRoute>} />
               <Route path="/settings" element={<PermissionRoute permission="settings.view"><Settings /></PermissionRoute>} />
+              <Route path="/profile" element={<PermissionRoute permission={null}><Profile /></PermissionRoute>} />
               <Route path="/manual" element={<Manual />} />
             </Route>
 

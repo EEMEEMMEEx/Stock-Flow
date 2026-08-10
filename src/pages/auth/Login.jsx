@@ -23,10 +23,28 @@ const Login = () => {
       navigate('/');
       toast.success('เข้าสู่ระบบสำเร็จ');
     } catch (error) {
-      toast.error(error.message || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ');
+      console.error('[Login Error]:', error);
+      let msg = error.message || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ';
+      if (
+        error?.status === 500 || 
+        String(error?.status) === '500' || 
+        error?.name === 'AuthRetryableFetchError' ||
+        msg.includes('Internal Server Error') || 
+        msg.includes('500')
+      ) {
+        msg = 'Supabase Authentication service is temporarily unavailable (HTTP 500). Please check the authentication service/database or try logging in again.';
+      } else if (msg.includes('Email logins are disabled')) {
+        msg = 'การเข้าสู่ระบบด้วยอีเมลถูกปิดใช้งานใน Supabase (Email logins are disabled) กรุณาเปิดใช้งาน Email Provider ใน Supabase Dashboard';
+      } else if (msg.includes('Invalid login credentials')) {
+        msg = 'อีเมลหรือรหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบและลองใหม่อีกครั้ง';
+      }
+
+      toast.error(msg, { duration: 6000 });
     } finally {
       setLoading(false);
     }
+
+
   };
 
   return (

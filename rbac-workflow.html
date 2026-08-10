@@ -105,9 +105,9 @@
         <div>
           <h1 class="text-lg font-bold text-slate-900 dark:text-white leading-tight flex items-center gap-2">
             Stock-Flow RBAC Architecture
-            <span class="text-xs bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 px-2 py-0.5 rounded-full font-semibold">v2.0 Spec</span>
+            <span class="text-xs bg-purple-100 text-purple-700 dark:bg-purple-900/60 dark:text-purple-300 px-2 py-0.5 rounded-full font-semibold">v2.5 Dynamic RBAC Spec</span>
           </h1>
-          <p class="text-xs text-slate-500 dark:text-slate-400">ระบบผังกระบวนการทำงาน ตารางสิทธิ์การใช้งาน และ RLS Policy</p>
+          <p class="text-xs text-slate-500 dark:text-slate-400">ผังกระบวนการทำงาน ตารางสิทธิ์ Dynamic RBAC (31 Permissions) และ Supabase RLS/RPC Policies</p>
         </div>
       </div>
 
@@ -209,7 +209,8 @@
             graph TD
               subgraph Staff_Lane ["👤 Staff / Requester (ผู้เบิกจ่าย)"]
                   N1["1. เลือกวัสดุใส่ตะกร้า (Cart)"] --> N2["2. กดส่งใบเบิก (Checkout)"]
-                  N5["5. เดินทางรับอุปกรณ์จริงที่คลัง"] --> N6["6. กด 'ยืนยันการรับของแล้ว'"]
+                  N2 -->|สร้างเอกสารใบขอเบิก| N_DRAFT_PDF["📄 2.5 สร้างร่างเอกสารใบขอเบิก (PDF Template)"]
+                  N5["6. เดินทางรับอุปกรณ์พร้อมตรวจเอกสาร"] --> N6["7. กด 'ยืนยันการรับของแล้ว'"]
               end
 
               subgraph Database_Lane ["🛡️ Supabase Database & RLS Engine"]
@@ -219,21 +220,25 @@
                   N6 -->|UPDATE WITH CHECK auth.uid = requested_by| S4("Status: completed")
               end
 
-              subgraph Admin_Lane ["👑 Approver / Admin (ผู้ดูแลคลัง)"]
-                  S1 --> N3["3. ตรวจสอบสต็อกสินค้าในคลัง"]
+              subgraph Admin_Lane ["👑 Approver / Admin / Supervisor (ผู้ดูแลคลัง & ผู้อนุมัติ)"]
+                  S1 --> N3["3. ตรวจสอบสต็อก & ตรวจเอกสารใบขอเบิก PDF"]
+                  N_DRAFT_PDF -->|ส่งแนบพร้อมคำขอ| N3
                   N3 -->|ของครบถ้วน| N4A["4A. กดอนุมัติบิล All-or-Nothing"]
                   N3 -->|ของไม่ครบ| N4B["4B. กดปฏิเสธบิลพร้อมระบุเหตุผล"]
-                  S2 -->|แจ้งเตือนผู้เบิกมารับของ| N5
-                  N7["7. บันทึกนำเข้าสินค้า Stock In"] --> DB_UPDATE["อัปเดตยอดคงเหลือคลัง"]
+                  S2 --> N_PDF["📄 5. ออกใบเบิก & นำส่งอุปกรณ์ฉบับสมบูรณ์ (PDF Delivery Note จาก PDF Template)"]
+                  N_PDF -->|แจ้งเตือนผู้เบิกพร้อมแนบเอกสาร| N5
+                  N7["8. บันทึกนำเข้าสินค้า Stock In"] --> DB_UPDATE["อัปเดตยอดคงเหลือคลัง"]
               end
 
               classDef staffStyle fill:#064e3b,stroke:#10b981,stroke-width:2px,color:#ffffff;
               classDef adminStyle fill:#78350f,stroke:#f59e0b,stroke-width:2px,color:#ffffff;
               classDef statusStyle fill:#1e1b4b,stroke:#6366f1,stroke-width:2px,color:#ffffff;
+              classDef pdfStyle fill:#4c1d95,stroke:#8b5cf6,stroke-width:2px,color:#ffffff;
 
               class N1,N2,N5,N6 staffStyle;
               class N3,N4A,N4B,N7 adminStyle;
               class S1,S2,S3,S4,DB_UPDATE statusStyle;
+              class N_DRAFT_PDF,N_PDF pdfStyle;
           </div>
         </div>
       </div>
@@ -246,7 +251,7 @@
               <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
               2. Detailed Database Transaction & Approval Atomic Workflow
             </h3>
-            <p class="text-xs text-slate-500 dark:text-slate-400">ผังแสดงกระบวนการทำงานระดับฐานข้อมูล (Atomic Transaction Engine), การเช็ก Stock, Locking Rows, Rollback/Commit (All-or-Nothing) และการอนุมัติบิล</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400">ผังแสดงกระบวนการทำงานระดับฐานข้อมูล (Atomic Transaction Engine), การออกร่างเอกสารขอเบิก, การอนุมัติบิล, การออกใบนำส่งอุปกรณ์ PDF และการรับของ</p>
           </div>
           <div class="flex items-center gap-2">
             <span class="text-xs bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300 px-2.5 py-1 rounded-md font-semibold">RPC & Transaction Engine</span>
@@ -265,19 +270,20 @@
         <div class="overflow-x-auto p-6 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 flex justify-center">
           <div class="mermaid min-w-[750px] w-full text-center">
             graph TD
-              subgraph Staff_Phase ["👤 1. Staff / Requester Flow"]
+              subgraph Staff_Phase ["👤 1. Staff / Requester Flow & Draft PDF"]
                 S1["1. เลือกสินค้าใส่ Cart (แสดง Stock ปัจจุบัน, ห้ามเกิน)"] --> S2["2. Checkout (สร้างคำขอ)"]
                 S2 --> S3["3. INSERT Request (requested_by = auth.uid(), status = pending)"]
+                S3 --> S_PDF["4. สร้างร่างเอกสารใบขอเบิก (Draft PDF จาก PDF Template)"]
               end
 
-              subgraph Admin_Review ["👑 2. Admin Review & Decision"]
-                S3 --> A1["Admin ตรวจสอบคำขอ / รายละเอียด"]
-                A1 -->|4B. Reject| REJ["Reject Request"]
+              subgraph Admin_Review ["👑 2. Admin / Supervisor Review & Decision"]
+                S_PDF --> A1["5. Admin / Supervisor ตรวจสอบคำขอ & ตรวจเอกสารใบขอเบิก PDF"]
+                A1 -->|Reject| REJ["Reject Request"]
                 REJ --> REJ_DETAIL["บันทึก status = rejected, reject_reason, rejected_by, rejected_at"]
               end
 
               subgraph Atomic_Tx ["⚡ 3. Supabase RPC / PostgreSQL Transaction (Single Transaction)"]
-                A1 -->|4A. Approve| TX1["1. LOCK Request (status ต้อง = pending)"]
+                A1 -->|Approve| TX1["1. LOCK Request (status ต้อง = pending)"]
                 TX1 --> TX2["2. LOCK Stock Rows สินค้าทั้งหมด (FOR UPDATE)"]
                 TX2 --> TX3["3. ตรวจ Available Stock ซ้ำใน Database สำหรับสินค้าทุกรายการ"]
                 
@@ -290,10 +296,16 @@
                 TX6 --> TX7["7. COMMIT All-or-Nothing"]
               end
 
-              subgraph Completion_Phase ["✅ 4. Fulfillment & Confirmation"]
-                TX7 --> NOTIF["Staff ได้รับแจ้งเตือนว่าอนุมัติแล้ว"]
-                NOTIF --> PICK["8. เดินทางรับอุปกรณ์จริงที่คลัง"]
-                PICK --> CONFIRM["9. กด 'ยืนยันการรับของแล้ว'"]
+              subgraph Document_Phase ["📄 4. Final PDF Delivery Note Generation (PDF Template Engine)"]
+                TX7 --> PDF1["8. ดึงข้อมูล Order + Items + Project Profile"]
+                PDF1 --> PDF2["9. Render 'ใบเบิก และนำส่งอุปกรณ์ ฉบับสมบูรณ์' (อ้างอิง PDF Template / pdf-templates.jsx)"]
+                PDF2 --> PDF3["10. ส่งออกไฟล์ PDF สำหรับพิมพ์แนบสิ่งของและแนบแจ้งเตือน"]
+              end
+
+              subgraph Completion_Phase ["✅ 5. Fulfillment & Confirmation"]
+                PDF3 --> NOTIF["Staff ได้รับแจ้งเตือนว่าอนุมัติแล้ว พร้อมลิงก์พิมพ์เอกสาร PDF"]
+                NOTIF --> PICK["11. เดินทางรับอุปกรณ์จริงที่คลัง พร้อมตรวจเอกสารใบนำส่ง"]
+                PICK --> CONFIRM["12. กด 'ยืนยันการรับของแล้ว'"]
                 CONFIRM --> DB_UPD["UPDATE Request SET status = completed, completed_at = now() WHERE requested_by = auth.uid() AND status = approved"]
                 DB_UPD --> DONE["Status: completed"]
               end
@@ -301,12 +313,14 @@
               classDef staffStyle fill:#064e3b,stroke:#10b981,stroke-width:2px,color:#ffffff;
               classDef adminStyle fill:#78350f,stroke:#f59e0b,stroke-width:2px,color:#ffffff;
               classDef txStyle fill:#1e1b4b,stroke:#6366f1,stroke-width:2px,color:#ffffff;
+              classDef pdfStyle fill:#4c1d95,stroke:#8b5cf6,stroke-width:2px,color:#ffffff;
               classDef rollbackStyle fill:#7f1d1d,stroke:#ef4444,stroke-width:2px,color:#ffffff;
               classDef commitStyle fill:#065f46,stroke:#34d399,stroke-width:2px,color:#ffffff;
 
               class S1,S2,S3,NOTIF,PICK,CONFIRM,DB_UPD,DONE staffStyle;
               class A1,REJ,REJ_DETAIL adminStyle;
               class TX1,TX2,TX3 txStyle;
+              class S_PDF,PDF1,PDF2,PDF3 pdfStyle;
               class RB,RB_INFO rollbackStyle;
               class TX4,TX5,TX6,TX7 commitStyle;
           </div>
@@ -546,6 +560,7 @@
         <div class="flex items-center space-x-1.5 overflow-x-auto w-full sm:w-auto">
           <button onclick="filterRole('all')" id="role-filter-all" class="role-filter-btn active text-xs font-semibold px-3 py-1.5 rounded-lg transition-all">All Roles</button>
           <button onclick="filterRole('admin')" id="role-filter-admin" class="role-filter-btn text-xs font-semibold px-3 py-1.5 rounded-lg transition-all">Admin</button>
+          <button onclick="filterRole('supervisor')" id="role-filter-supervisor" class="role-filter-btn text-xs font-semibold px-3 py-1.5 rounded-lg transition-all">Supervisor</button>
           <button onclick="filterRole('staff')" id="role-filter-staff" class="role-filter-btn text-xs font-semibold px-3 py-1.5 rounded-lg transition-all">Staff / Requester</button>
           <button onclick="filterRole('viewer')" id="role-filter-viewer" class="role-filter-btn text-xs font-semibold px-3 py-1.5 rounded-lg transition-all">Viewer</button>
         </div>
@@ -557,96 +572,303 @@
           <table class="w-full text-left border-collapse" id="matrix-table">
             <thead>
               <tr class="bg-slate-100/80 dark:bg-slate-800/80 text-xs text-slate-600 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-slate-700">
-                <th class="p-4 w-1/3">โมดูล & สิทธิ์การใช้งาน (Action / Permission)</th>
+                <th class="p-4 w-1/4">โมดูล & สิทธิ์การใช้งาน (Action / Permission)</th>
+                <th class="p-4 w-1/6 font-mono text-[11px] text-purple-600 dark:text-purple-400">Permission Code</th>
                 <th class="p-4 text-center">System Admin</th>
-                <th class="p-4 text-center">Approver / Admin</th>
+                <th class="p-4 text-center">Supervisor</th>
                 <th class="p-4 text-center">Staff / Requester</th>
                 <th class="p-4 text-center">Viewer</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-200 dark:divide-slate-800 text-xs">
               
-              <!-- Category Header: Requisition & Orders -->
+              <!-- Category 1: Dashboard -->
               <tr class="bg-slate-50 dark:bg-slate-900/60 font-bold text-slate-700 dark:text-slate-300">
-                <td colspan="5" class="p-3 px-4 text-blue-600 dark:text-blue-400">📦 ระบบการเบิกจ่ายสินค้า (Withdrawal Requisition)</td>
+                <td colspan="6" class="p-3 px-4 text-blue-600 dark:text-blue-400">📊 หน้าต่างภาพรวมระบบ (Dashboard & System Overview)</td>
               </tr>
-              
               <tr class="matrix-row hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-                <td class="p-4 font-medium text-slate-900 dark:text-white">สร้างคำขอเบิกสินค้า (Create Order)</td>
+                <td class="p-4 font-medium text-slate-900 dark:text-white">ดูหน้า Dashboard & ภาพรวมสถิติ</td>
+                <td class="p-4 font-mono text-[11px] text-slate-500">dashboard.view</td>
                 <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
                 <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
                 <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
                 <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
               </tr>
 
+              <!-- Category 2: Projects -->
+              <tr class="bg-slate-50 dark:bg-slate-900/60 font-bold text-slate-700 dark:text-slate-300">
+                <td colspan="6" class="p-3 px-4 text-cyan-600 dark:text-cyan-400">📁 การจัดการโครงการ (Projects Management)</td>
+              </tr>
               <tr class="matrix-row hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-                <td class="p-4 font-medium text-slate-900 dark:text-white">อนุมัติ/ปฏิเสธคำขอ (Approve/Reject Order)</td>
+                <td class="p-4 font-medium text-slate-900 dark:text-white">ดูรายการโครงการ (View Projects)</td>
+                <td class="p-4 font-mono text-[11px] text-slate-500">projects.view</td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-read">READ ONLY</span></td>
+              </tr>
+              <tr class="matrix-row hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                <td class="p-4 font-medium text-slate-900 dark:text-white">สร้างโครงการใหม่ (Create Project)</td>
+                <td class="p-4 font-mono text-[11px] text-slate-500">projects.create</td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+              </tr>
+              <tr class="matrix-row hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                <td class="p-4 font-medium text-slate-900 dark:text-white">แก้ไขข้อมูลโครงการ (Update Project)</td>
+                <td class="p-4 font-mono text-[11px] text-slate-500">projects.update</td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+              </tr>
+              <tr class="matrix-row hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                <td class="p-4 font-medium text-slate-900 dark:text-white">ลบโครงการ (Delete Project)</td>
+                <td class="p-4 font-mono text-[11px] text-slate-500">projects.delete</td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+              </tr>
+
+              <!-- Category 3: Items Master -->
+              <tr class="bg-slate-50 dark:bg-slate-900/60 font-bold text-slate-700 dark:text-slate-300">
+                <td colspan="6" class="p-3 px-4 text-teal-600 dark:text-teal-400">📦 ทะเบียนวัสดุหลัก (Items Master Catalog)</td>
+              </tr>
+              <tr class="matrix-row hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                <td class="p-4 font-medium text-slate-900 dark:text-white">ดูรายการวัสดุ Master (View Items Catalog)</td>
+                <td class="p-4 font-mono text-[11px] text-slate-500">items.view</td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-read">READ ONLY</span></td>
+              </tr>
+              <tr class="matrix-row hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                <td class="p-4 font-medium text-slate-900 dark:text-white">เพิ่มรายการวัสดุใหม่ (Create Item)</td>
+                <td class="p-4 font-mono text-[11px] text-slate-500">items.create</td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+              </tr>
+              <tr class="matrix-row hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                <td class="p-4 font-medium text-slate-900 dark:text-white">แก้ไขข้อมูลวัสดุ Master (Update Item)</td>
+                <td class="p-4 font-mono text-[11px] text-slate-500">items.update</td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+              </tr>
+              <tr class="matrix-row hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                <td class="p-4 font-medium text-slate-900 dark:text-white">ลบรายการวัสดุ Master (Delete Item)</td>
+                <td class="p-4 font-mono text-[11px] text-slate-500">items.delete</td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+              </tr>
+
+              <!-- Category 4: Stock In -->
+              <tr class="bg-slate-50 dark:bg-slate-900/60 font-bold text-slate-700 dark:text-slate-300">
+                <td colspan="6" class="p-3 px-4 text-purple-600 dark:text-purple-400">🏭 การรับสินค้าเข้าคลัง (Stock In Inbound)</td>
+              </tr>
+              <tr class="matrix-row hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                <td class="p-4 font-medium text-slate-900 dark:text-white">ดูประวัติการรับเข้า Stock (View Stock In)</td>
+                <td class="p-4 font-mono text-[11px] text-slate-500">stock_in.view</td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-read">READ ONLY</span></td>
+              </tr>
+              <tr class="matrix-row hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                <td class="p-4 font-medium text-slate-900 dark:text-white">บันทึกรับเข้า Stock สินค้าจริง (Create Stock In)</td>
+                <td class="p-4 font-mono text-[11px] text-slate-500">stock_in.create</td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+              </tr>
+
+              <!-- Category 5: Withdrawals -->
+              <tr class="bg-slate-50 dark:bg-slate-900/60 font-bold text-slate-700 dark:text-slate-300">
+                <td colspan="6" class="p-3 px-4 text-blue-600 dark:text-blue-400">📦 การเบิกจ่ายสินค้า (Withdrawal Requisitions)</td>
+              </tr>
+              <tr class="matrix-row hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                <td class="p-4 font-medium text-slate-900 dark:text-white">ดูรายการเบิกจ่าย (View Withdrawals)</td>
+                <td class="p-4 font-mono text-[11px] text-slate-500">withdrawals.view</td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-read">READ ONLY</span></td>
+              </tr>
+              <tr class="matrix-row hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                <td class="p-4 font-medium text-slate-900 dark:text-white">สร้างคำขอเบิกสินค้า (Create Withdrawal Order)</td>
+                <td class="p-4 font-mono text-[11px] text-slate-500">withdrawals.create</td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+              </tr>
+              <tr class="matrix-row hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                <td class="p-4 font-medium text-slate-900 dark:text-white">อนุมัติคำขอเบิกจ่าย (Approve Withdrawal)</td>
+                <td class="p-4 font-mono text-[11px] text-slate-500">withdrawals.approve</td>
                 <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
                 <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
                 <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
                 <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
               </tr>
-
               <tr class="matrix-row hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-                <td class="p-4 font-medium text-slate-900 dark:text-white">กด "ยืนยันการรับของแล้ว" (Confirm Receipt)</td>
+                <td class="p-4 font-medium text-slate-900 dark:text-white">ปฏิเสธคำขอเบิกจ่าย (Reject Withdrawal)</td>
+                <td class="p-4 font-mono text-[11px] text-slate-500">withdrawals.reject</td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+              </tr>
+              <tr class="matrix-row hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                <td class="p-4 font-medium text-slate-900 dark:text-white">กด "ยืนยันการรับของแล้ว" (Complete Receipt)</td>
+                <td class="p-4 font-mono text-[11px] text-slate-500">withdrawals.complete</td>
                 <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
                 <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
                 <td class="p-4 text-center"><span class="badge-self">SELF ORDER ONLY</span></td>
                 <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
               </tr>
 
-              <tr class="matrix-row hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-                <td class="p-4 font-medium text-slate-900 dark:text-white">ดูประวัติรายการเบิก (View Withdrawal History)</td>
-                <td class="p-4 text-center"><span class="badge-allow">ALL ORDERS</span></td>
-                <td class="p-4 text-center"><span class="badge-allow">ALL ORDERS</span></td>
-                <td class="p-4 text-center"><span class="badge-read">VIEW ALL HISTORY</span></td>
-                <td class="p-4 text-center"><span class="badge-read">READ ONLY</span></td>
-              </tr>
-
-              <!-- Category Header: Inventory & Stock In -->
+              <!-- Category 6: History & Reports -->
               <tr class="bg-slate-50 dark:bg-slate-900/60 font-bold text-slate-700 dark:text-slate-300">
-                <td colspan="5" class="p-3 px-4 text-purple-600 dark:text-purple-400">🏭 ระบบการจัดการคลัง & นำเข้าสินค้า (Inventory & Stock In)</td>
+                <td colspan="6" class="p-3 px-4 text-indigo-600 dark:text-indigo-400">📜 ประวัติธุรกรรมและรายงาน (History & Reports)</td>
               </tr>
-
               <tr class="matrix-row hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-                <td class="p-4 font-medium text-slate-900 dark:text-white">บันทึกรับของเข้าคลัง (Stock In Entry)</td>
+                <td class="p-4 font-medium text-slate-900 dark:text-white">ดูประวัติธุรกรรมสต็อกย้อนหลัง (View History)</td>
+                <td class="p-4 font-mono text-[11px] text-slate-500">history.view</td>
                 <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
                 <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
-                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
-                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-read">READ ONLY</span></td>
               </tr>
-
               <tr class="matrix-row hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-                <td class="p-4 font-medium text-slate-900 dark:text-white">เพิ่ม/แก้ไข รายการวัสดุ (Add/Edit Items)</td>
+                <td class="p-4 font-medium text-slate-900 dark:text-white">ดูรายงานและกราฟสถิติ (View Reports)</td>
+                <td class="p-4 font-mono text-[11px] text-slate-500">reports.view</td>
                 <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
                 <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
-                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
-                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+                <td class="p-4 text-center"><span class="badge-read">READ ONLY</span></td>
+                <td class="p-4 text-center"><span class="badge-read">READ ONLY</span></td>
               </tr>
-
               <tr class="matrix-row hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-                <td class="p-4 font-medium text-slate-900 dark:text-white">เพิ่ม/จัดการโครงการ (Manage Projects)</td>
+                <td class="p-4 font-medium text-slate-900 dark:text-white">ดาวน์โหลดไฟล์รายงาน Excel/PDF (Export Reports)</td>
+                <td class="p-4 font-mono text-[11px] text-slate-500">reports.export</td>
                 <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
                 <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
                 <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
                 <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
               </tr>
 
-              <!-- Category Header: Reports & Administration -->
+              <!-- Category 7: User Management -->
               <tr class="bg-slate-50 dark:bg-slate-900/60 font-bold text-slate-700 dark:text-slate-300">
-                <td colspan="5" class="p-3 px-4 text-indigo-600 dark:text-indigo-400">📊 รายงานและการบริหารจัดการระบบ (Reports & Admin)</td>
+                <td colspan="6" class="p-3 px-4 text-amber-600 dark:text-amber-400">👥 การบริหารจัดการผู้ใช้งาน (User Management)</td>
+              </tr>
+              <tr class="matrix-row hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                <td class="p-4 font-medium text-slate-900 dark:text-white">ดูรายการผู้ใช้งาน (View Users)</td>
+                <td class="p-4 font-mono text-[11px] text-slate-500">users.view</td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+              </tr>
+              <tr class="matrix-row hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                <td class="p-4 font-medium text-slate-900 dark:text-white">เพิ่มบัญชีผู้ใช้งานใหม่ (Create User)</td>
+                <td class="p-4 font-mono text-[11px] text-slate-500">users.create</td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+              </tr>
+              <tr class="matrix-row hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                <td class="p-4 font-medium text-slate-900 dark:text-white">แก้ไขบทบาท & ข้อมูลผู้ใช้ (Update User)</td>
+                <td class="p-4 font-mono text-[11px] text-slate-500">users.update</td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+              </tr>
+              <tr class="matrix-row hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                <td class="p-4 font-medium text-slate-900 dark:text-white">ระงับการใช้งานบัญชี (Deactivate User)</td>
+                <td class="p-4 font-mono text-[11px] text-slate-500">users.deactivate</td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+              </tr>
+              <tr class="matrix-row hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                <td class="p-4 font-medium text-slate-900 dark:text-white">รีเซ็ตรหัสผ่านผู้ใช้งาน (Reset Password)</td>
+                <td class="p-4 font-mono text-[11px] text-slate-500">users.reset_password</td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
               </tr>
 
+              <!-- Category 8: Role & Permissions Management -->
+              <tr class="bg-slate-50 dark:bg-slate-900/60 font-bold text-slate-700 dark:text-slate-300">
+                <td colspan="6" class="p-3 px-4 text-rose-600 dark:text-rose-400">🛡️ การจัดการบทบาทและสิทธิ์ระบบ (Dynamic RBAC Roles & Permissions)</td>
+              </tr>
               <tr class="matrix-row hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-                <td class="p-4 font-medium text-slate-900 dark:text-white">ออกรายงานยอดคงเหลือ & สรุปเบิกจ่าย (Reports & PDF)</td>
+                <td class="p-4 font-medium text-slate-900 dark:text-white">ดูรายการบทบาทและสิทธิ์ (View Roles)</td>
+                <td class="p-4 font-mono text-[11px] text-slate-500">roles.view</td>
                 <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+              </tr>
+              <tr class="matrix-row hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                <td class="p-4 font-medium text-slate-900 dark:text-white">สร้างบทบาทใหม่ Custom Role (Create Role)</td>
+                <td class="p-4 font-mono text-[11px] text-slate-500">roles.create</td>
                 <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
-                <td class="p-4 text-center"><span class="badge-read">READ ONLY</span></td>
-                <td class="p-4 text-center"><span class="badge-read">READ ONLY</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+              </tr>
+              <tr class="matrix-row hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                <td class="p-4 font-medium text-slate-900 dark:text-white">แก้ไขรายละเอียดบทบาท (Update Role)</td>
+                <td class="p-4 font-mono text-[11px] text-slate-500">roles.update</td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+              </tr>
+              <tr class="matrix-row hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                <td class="p-4 font-medium text-slate-900 dark:text-white">ลบบทบาทที่ไม่ได้ใช้ (Delete Role)</td>
+                <td class="p-4 font-mono text-[11px] text-slate-500">roles.delete</td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+              </tr>
+              <tr class="matrix-row hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                <td class="p-4 font-medium text-slate-900 dark:text-white">กำหนดสิทธิ์ให้บทบาท (Manage Role Permissions)</td>
+                <td class="p-4 font-mono text-[11px] text-slate-500">roles.manage_permissions</td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
               </tr>
 
+              <!-- Category 9: Settings -->
+              <tr class="bg-slate-50 dark:bg-slate-900/60 font-bold text-slate-700 dark:text-slate-300">
+                <td colspan="6" class="p-3 px-4 text-slate-600 dark:text-slate-400">⚙️ การตั้งค่าระบบ (System Settings)</td>
+              </tr>
               <tr class="matrix-row hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-                <td class="p-4 font-medium text-slate-900 dark:text-white">จัดการบทบาทผู้ใช้งาน (User & Role Management)</td>
+                <td class="p-4 font-medium text-slate-900 dark:text-white">ดูการตั้งค่าระบบ (View Settings)</td>
+                <td class="p-4 font-mono text-[11px] text-slate-500">settings.view</td>
+                <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+                <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
+              </tr>
+              <tr class="matrix-row hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                <td class="p-4 font-medium text-slate-900 dark:text-white">แก้ไขการตั้งค่าระบบ (Update Settings)</td>
+                <td class="p-4 font-mono text-[11px] text-slate-500">settings.update</td>
                 <td class="p-4 text-center"><span class="badge-allow">FULL ACCESS</span></td>
                 <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
                 <td class="p-4 text-center"><span class="badge-deny">DENIED</span></td>
@@ -679,6 +901,7 @@
               <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">1. เลือกบทบาทผู้ใช้งาน (User Role)</label>
               <select id="sim-role" onchange="runSimulation()" class="w-full p-2.5 text-xs rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-semibold focus:ring-2 focus:ring-blue-500 outline-none">
                 <option value="staff">Staff / Requester (ผู้เบิกจ่าย)</option>
+                <option value="supervisor">Supervisor (ผู้จัดการ / ผู้อนุมัติ)</option>
                 <option value="admin">Approver / Warehouse Admin (แอดมินอนุมัติ)</option>
                 <option value="viewer">Viewer (ผู้เข้าชมระบบ)</option>
               </select>
@@ -777,7 +1000,33 @@
       <!-- Code Snippets Grid -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
-        <!-- Code 1: Confirm Receipt Policy -->
+        <!-- Code 1: Dynamic RBAC RPC get_user_permissions & has_permission -->
+        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-800 shadow-lg space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-purple-400">PL/pgSQL: get_user_permissions & has_permission RPC</span>
+            <span class="text-[10px] font-mono text-slate-400">rpc/get_user_permissions</span>
+          </div>
+          <pre class="text-xs font-mono text-slate-200 overflow-x-auto p-3 bg-slate-950 rounded-xl leading-relaxed"><code>-- RPC คืนค่ารหัสสิทธิ์ทั้งหมดของผู้ใช้ตาม role_permissions และ Admin override
+CREATE OR REPLACE FUNCTION public.get_user_permissions(p_user_id UUID DEFAULT auth.uid())
+RETURNS TABLE (permission_code TEXT)
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE v_role_code TEXT; v_status TEXT;
+BEGIN
+  SELECT p.status, COALESCE(r.code, UPPER(p.role)) INTO v_status, v_role_code
+  FROM public.profiles p LEFT JOIN public.roles r ON r.id = p.role_id WHERE p.id = p_user_id;
+  IF v_status IS NULL OR v_status != 'active' THEN RETURN; END IF;
+  IF v_role_code = 'ADMIN' THEN
+    RETURN QUERY SELECT code FROM public.permissions; RETURN;
+  END IF;
+  RETURN QUERY SELECT DISTINCT perm.code FROM public.profiles prof
+  JOIN public.role_permissions rp ON rp.role_id = prof.role_id
+  JOIN public.permissions perm ON perm.id = rp.permission_id
+  WHERE prof.id = p_user_id;
+END; $$;</code></pre>
+          <p class="text-xs text-slate-400">ฟังก์ชันหลักของระบบในการโหลด Dynamic Permissions ทั้งหมดของผู้ใช้เข้าสู่ AuthContext.can() ใน Frontend</p>
+        </div>
+
+        <!-- Code 2: Confirm Receipt Policy -->
         <div class="bg-slate-900 rounded-2xl p-5 border border-slate-800 shadow-lg space-y-3">
           <div class="flex items-center justify-between">
             <span class="text-xs font-bold text-emerald-400">Policy 1: Allow Users to Confirm Own Order Receipt</span>
@@ -792,51 +1041,38 @@ WITH CHECK (status = 'completed');</code></pre>
           <p class="text-xs text-slate-400">ให้เฉพาะผู้เบิกของบิลนั้นๆ กดปุ่มยืนยันการรับของเพื่อเปลี่ยนเป็นสถานะ completed ได้เท่านั้น</p>
         </div>
 
-        <!-- Code 2: Admin Full Order Control Policy -->
+        <!-- Code 3: Admin & Supervisor Full Order Control Policy -->
         <div class="bg-slate-900 rounded-2xl p-5 border border-slate-800 shadow-lg space-y-3">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-amber-400">Policy 2: Admin Full Order Control Policy</span>
+            <span class="text-xs font-bold text-amber-400">Policy 2: Admin & Supervisor Order Approval Policy</span>
             <span class="text-[10px] font-mono text-slate-400">withdrawal_orders</span>
           </div>
-          <pre class="text-xs font-mono text-slate-200 overflow-x-auto p-3 bg-slate-950 rounded-xl leading-relaxed"><code>-- อนุญาตให้ Admin มีสิทธิ์อนุมัติ/ปฏิเสธ หรือแก้ไขได้ทุกบิล
-CREATE POLICY "Admins have full access to all orders" 
+          <pre class="text-xs font-mono text-slate-200 overflow-x-auto p-3 bg-slate-950 rounded-xl leading-relaxed"><code>-- อนุญาตให้ Admin และ Supervisor มีสิทธิ์อนุมัติ/ปฏิเสธ หรือแก้ไขได้ทุกบิล
+CREATE POLICY "Admins and Supervisors access all orders" 
 ON public.withdrawal_orders 
 FOR ALL 
 USING (
   EXISTS (
-    SELECT 1 FROM public.profiles 
-    WHERE id = auth.uid() AND role = 'admin'
+    SELECT 1 FROM public.profiles p
+    LEFT JOIN public.roles r ON r.id = p.role_id
+    WHERE p.id = auth.uid() AND r.code IN ('ADMIN', 'SUPERVISOR')
   )
 );</code></pre>
-          <p class="text-xs text-slate-400">แอดมินสามารถอนุมัติ ปฏิเสธ หรือแก้ไขบิลเบิกได้ทุกรายการในระบบ</p>
-        </div>
-
-        <!-- Code 3: Create Order Policy -->
-        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-800 shadow-lg space-y-3">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-blue-400">Policy 3: Authenticated Users Create Orders</span>
-            <span class="text-[10px] font-mono text-slate-400">withdrawal_orders</span>
-          </div>
-          <pre class="text-xs font-mono text-slate-200 overflow-x-auto p-3 bg-slate-950 rounded-xl leading-relaxed"><code>-- อนุญาตให้ผู้ใช้ที่เข้าสู่ระบบสามารถสร้างใบเบิกใหม่ได้
-CREATE POLICY "Users can create withdrawal orders" 
-ON public.withdrawal_orders 
-FOR INSERT 
-WITH CHECK (auth.uid() = requested_by);</code></pre>
-          <p class="text-xs text-slate-400">ผู้ใช้ทุกคนในระบบสามารถส่งใบเบิกของตนเองเข้าสู่สถานะ pending ได้</p>
+          <p class="text-xs text-slate-400">แอดมินและผู้จัดการสามารถอนุมัติ ปฏิเสธ หรือบริหารจัดการบิลเบิกได้ทุกรายการในระบบ</p>
         </div>
 
         <!-- Code 4: Items & Inventory Read Access -->
         <div class="bg-slate-900 rounded-2xl p-5 border border-slate-800 shadow-lg space-y-3">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-purple-400">Policy 4: Public Read Access for Inventory Items</span>
+            <span class="text-xs font-bold text-blue-400">Policy 3: Public Read Access for Inventory Items</span>
             <span class="text-[10px] font-mono text-slate-400">items, projects</span>
           </div>
-          <pre class="text-xs font-mono text-slate-200 overflow-x-auto p-3 bg-slate-950 rounded-xl leading-relaxed"><code>-- อนุญาตให้ผู้ใช้ทุกคนอ่านรายการสินค้าและโครงการเพื่อการเบิกจ่าย
-CREATE POLICY "All users can view items and projects" 
+          <pre class="text-xs font-mono text-slate-200 overflow-x-auto p-3 bg-slate-950 rounded-xl leading-relaxed"><code>-- อนุญาตให้ผู้ใช้ที่ยืนยันตัวตนทุกคนอ่านรายการสินค้าและโครงการเพื่อการเบิกจ่าย
+CREATE POLICY "Authenticated users can view items and projects" 
 ON public.items 
 FOR SELECT 
-USING (true);</code></pre>
-          <p class="text-xs text-slate-400">ให้สิทธิ์ค้นหาและดูรายการสินค้าแก่ผู้ใช้ทุกคนเพื่อนำสินค้าใส่ตะกร้า</p>
+USING (auth.role() = 'authenticated');</code></pre>
+          <p class="text-xs text-slate-400">ให้สิทธิ์ค้นหาและดูรายการสินค้าแก่ผู้ใช้ทุกคนเพื่อนำสินค้าใส่ตะกร้าและดูภาพรวมคลัง</p>
         </div>
 
       </div>
@@ -948,46 +1184,46 @@ USING (true);</code></pre>
       1: {
         title: "1. เลือกรายการวัสดุ & ตะกร้า (Cart Select)",
         desc: "ผู้ใช้งานเลือกสินค้าวัสดุที่ต้องการเบิกจากหน้า POS Interface และระบุจำนวนเข้าตะกร้าสินค้าชั่วคราว",
-        role: "Staff / Requester, Admin",
+        role: "Staff / Requester, Supervisor, Admin",
         table: "items, projects",
         status: "Draft (In Cart)",
-        rls: "SELECT permissions ON public.items FOR ALL authenticated users",
-        logic: "ระบบอนุญาตให้ผู้ใช้ทุกคนอ่านรายการวัสดุเพื่อนำใส่ตะกร้า แต่ยังไม่มีการตัดสต็อกสินค้าจริงจนกว่าจะผ่านการอนุมัติ"
+        rls: "SELECT permissions ON public.items (permission_code: items.view, projects.view)",
+        logic: "ระบบใช้สิทธิ์ items.view อนุญาตให้ผู้ใช้ที่มีสิทธิ์อ่านรายการวัสดุเพื่อนำใส่ตะกร้า แต่ยังไม่มีการตัดสต็อกสินค้าจริงจนกว่าจะผ่านการอนุมัติ"
       },
       2: {
         title: "2. ส่งใบเบิก (Submit Order)",
         desc: "ผู้เบิกกดยืนยันรายการในตะกร้าเพื่อสร้างใบเบิกใหม่ บันทึกลงตาราง withdrawal_orders",
-        role: "Staff / Requester",
+        role: "Staff / Requester, Supervisor, Admin",
         table: "withdrawal_orders, withdrawal_order_items",
         status: "pending",
-        rls: "INSERT INTO public.withdrawal_orders WITH CHECK (auth.uid() = requested_by)",
-        logic: "เมื่อส่งสำเร็จ บิลจะมีสถานะเป็น 'pending' รอแอดมินเข้ามาตรวจเช็กรายการและอนุมัติ"
+        rls: "INSERT INTO public.withdrawal_orders WITH CHECK (auth.uid() = requested_by) (permission_code: withdrawals.create)",
+        logic: "เมื่อส่งสำเร็จ บิลจะมีสถานะเป็น 'pending' รอแอดมินหรือผู้จัดการเข้ามาตรวจเช็กรายการและอนุมัติ"
       },
       3: {
-        title: "3. ตรวจสอบของในคลัง (Admin Review)",
-        desc: "แอดมินคลังสินค้าตรวจสอบรายการสินค้าที่ขอเบิก เทียบกับยอดคงเหลือจริงในคลัง (Stock Balance)",
-        role: "Approver / Warehouse Admin",
+        title: "3. ตรวจสอบของในคลัง (Admin/Supervisor Review)",
+        desc: "แอดมินหรือผู้จัดการคลังสินค้าตรวจสอบรายการสินค้าที่ขอเบิก เทียบกับยอดคงเหลือจริงในคลัง (Stock Balance)",
+        role: "Approver / Supervisor / Warehouse Admin",
         table: "items, withdrawal_orders",
         status: "pending (Under Review)",
-        rls: "SELECT * FROM public.withdrawal_orders WHERE role = 'admin'",
-        logic: "ระบบใช้กฎ All-or-Nothing หากสินค้าชิ้นใดชิ้นหนึ่งในบิลมีไม่พอ แอดมินต้องปฏิเสธทั้งบิล"
+        rls: "SELECT * FROM public.withdrawal_orders (permission_code: withdrawals.view)",
+        logic: "ระบบใช้กฎ All-or-Nothing หากสินค้าชิ้นใดชิ้นหนึ่งในบิลมีไม่พอ ผู้อนุมัติสามารถปฏิเสธทั้งบิลได้"
       },
       4: {
         title: "4A. อนุมัติบิล (Approve Order)",
-        desc: "แอดมินกดอนุมัติบิล ระบบทำการหักลบจำนวนสินค้าคงเหลือในคลัง และเปลี่ยนสถานะบิล",
-        role: "Approver / Warehouse Admin",
+        desc: "แอดมินหรือผู้จัดการกดอนุมัติบิล ระบบทำการหักลบจำนวนสินค้าคงเหลือในคลัง และเปลี่ยนสถานะบิล",
+        role: "Approver / Supervisor / Warehouse Admin",
         table: "withdrawal_orders, items",
         status: "approved (รอผู้รับยืนยัน)",
-        rls: "UPDATE public.withdrawal_orders SET status = 'approved' WHERE role = 'admin'",
+        rls: "UPDATE public.withdrawal_orders SET status = 'approved' (permission_code: withdrawals.approve)",
         logic: "สถานะจะถูกเปลี่ยนเป็น 'อนุมัติแล้ว (รอผู้รับยืนยัน)' เพื่อแจ้งเตือนให้ User เดินทางมารับสินค้า"
       },
       5: {
         title: "4B. ปฏิเสธบิล (Reject Order)",
-        desc: "แอดมินกดปฏิเสธบิล พร้อมระบุเหตุผล เช่น ของหมด หรือข้อมูลไม่ถูกต้อง",
-        role: "Approver / Warehouse Admin",
+        desc: "แอดมินหรือผู้จัดการกดปฏิเสธบิล พร้อมระบุเหตุผล เช่น ของหมด หรือข้อมูลไม่ถูกต้อง",
+        role: "Approver / Supervisor / Warehouse Admin",
         table: "withdrawal_orders",
         status: "rejected",
-        rls: "UPDATE public.withdrawal_orders SET status = 'rejected' WHERE role = 'admin'",
+        rls: "UPDATE public.withdrawal_orders SET status = 'rejected' (permission_code: withdrawals.reject)",
         logic: "บิลจะถูกยกเลิก และไม่มีการหักสต็อกสินค้า ผู้เบิกต้องแก้ไขข้อมูลแล้วส่งใบเบิกเข้ามาใหม่"
       },
       6: {
@@ -1002,29 +1238,29 @@ USING (true);</code></pre>
       7: {
         title: "6. กด 'ยืนยันการรับของแล้ว' (Confirm Receipt)",
         desc: "ผู้เบิกกดปุ่มยืนยันการรับสินค้าผ่านหน้า History หรือ Withdrawal Details Modal",
-        role: "Staff / Requester (Must be order creator)",
+        role: "Staff / Requester (Must be order creator) / Supervisor / Admin",
         table: "withdrawal_orders",
         status: "completed",
-        rls: "UPDATE public.withdrawal_orders SET status = 'completed' WHERE auth.uid() = requested_by",
-        logic: "เพื่อย้ายหน้าที่การยืนยันมาให้ผู้รับจริง และให้แอดมินเห็นสถานะได้ชัดเจนว่าผู้เบิกมารับของไปเรียบร้อยแล้ว"
+        rls: "UPDATE public.withdrawal_orders SET status = 'completed' (permission_code: withdrawals.complete)",
+        logic: "ย้ายหน้าที่การยืนยันมาให้ผู้รับจริง (auth.uid() = requested_by) หรือแอดมิน/ผู้จัดการ เพื่อให้บันทึกสถานะเรียบร้อย"
       },
       8: {
         title: "7. การรับสินค้าเข้าคลัง (Stock In)",
         desc: "แอดมินบันทึกรายการนำเข้าวัสดุอุปกรณ์ใหม่จาก Supplier เพิ่มยอดคงเหลือในคลัง",
-        role: "Approver / Warehouse Admin",
+        role: "Warehouse Admin",
         table: "stock_in_orders, stock_in_items, items",
         status: "completed (Stock In)",
-        rls: "INSERT INTO public.stock_in_orders WHERE role = 'admin'",
+        rls: "INSERT INTO public.stock_in_orders (permission_code: stock_in.create)",
         logic: "เพิ่มจำนวนสินค้าสะสมเข้าสู่คลังหลัก และบันทึกประวัติผู้รับของเข้า"
       },
       9: {
         title: "8. จัดการโครงการ และวัสดุ (Master Data)",
         desc: "แอดมินจัดการเพิ่มรายการสินค้าใหม่ แก้ไขราคา รายละเอียด หรือสร้างโครงการใหม่",
         role: "System Admin, Warehouse Admin",
-        table: "items, projects, profiles",
-        status: "Master Data Management",
-        rls: "ALL PRIVILEGES ON public.items, public.projects FOR role = 'admin'",
-        logic: "จำกัดสิทธิ์เฉพาะแอดมินเท่านั้นในการจัดการข้อมูลหลัก เพื่อป้องกันข้อมูลคลาดเคลื่อน"
+        table: "items, projects, profiles, roles",
+        status: "Master Data & RBAC Management",
+        rls: "ALL PRIVILEGES ON public.items, public.projects, public.roles (permission_code: items.create, roles.manage_permissions)",
+        logic: "จำกัดสิทธิ์เฉพาะแอดมินเท่านั้นในการจัดการข้อมูลหลักและโครงสร้าง RBAC"
       }
     };
 
@@ -1080,44 +1316,44 @@ USING (true);</code></pre>
       let btnHtml = "";
 
       if (action === 'create_order') {
-        if (role === 'staff' || role === 'admin') {
+        if (role === 'staff' || role === 'supervisor' || role === 'admin') {
           allowed = true;
           reasonTitle = "สามารถสร้างคำขอเบิกสินค้าได้สำเร็จ";
-          reasonDesc = "ผู้ใช้ในบทบาท Staff หรือ Admin ที่เข้าสู่ระบบ สามารถส่งใบเบิกสินค้าเข้าสู่สถานะ pending ได้";
-          sqlCode = `POLICY "Users can create withdrawal orders"\nON public.withdrawal_orders FOR INSERT\nWITH CHECK (auth.uid() = requested_by);`;
+          reasonDesc = `ผู้ใช้ในบทบาท ${role.toUpperCase()} มีสิทธิ์ 'withdrawals.create' สามารถส่งใบเบิกสินค้าเข้าสู่สถานะ pending ได้`;
+          sqlCode = `POLICY "Users can create withdrawal orders"\nON public.withdrawal_orders FOR INSERT\nWITH CHECK (auth.uid() = requested_by);\n-- Permission Check: can('withdrawals.create') = TRUE`;
           btnHtml = `<button class="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold">🛒 ยืนยันส่งใบเบิก</button><span class="text-xs text-emerald-500 font-medium">ปุ่มปรากฏให้กดได้</span>`;
         } else {
           allowed = false;
           reasonTitle = "ปฏิเสธการทำรายการ (Access Denied)";
           reasonDesc = "ผู้ใช้บทบาท Viewer มีสิทธิ์อ่านอย่างเดียว ไม่สามารถสร้างคำขอเบิกสินค้าได้";
-          sqlCode = `-- DENIED: No INSERT privilege for Viewer role`;
+          sqlCode = `-- DENIED: No INSERT privilege or 'withdrawals.create' for Viewer role`;
           btnHtml = `<span class="text-xs text-red-500 font-medium">ปุ่มถูกซ่อน หรือ Disable ไม่ให้กด</span>`;
         }
       } else if (action === 'approve_order' || action === 'reject_order') {
-        if (role === 'admin') {
+        if (role === 'admin' || role === 'supervisor') {
           allowed = true;
           reasonTitle = `สามารถกด ${action === 'approve_order' ? 'อนุมัติ' : 'ปฏิเสธ'} บิลเบิกได้สำเร็จ`;
-          reasonDesc = "เฉพาะบทบาท Admin ที่มีสิทธิ์ตรวจสอบรายการและปรับสถานะบิลเป็น approved / rejected";
-          sqlCode = `POLICY "Admins have full access to all orders"\nON public.withdrawal_orders FOR ALL\nUSING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));`;
-          btnHtml = `<button class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold">✓ อนุมัติบิล</button><span class="text-xs text-emerald-500 font-medium">ปุ่มอนุมัติปรากฏเฉพาะ Admin</span>`;
+          reasonDesc = `บทบาท ${role.toUpperCase()} มีสิทธิ์ '${action === 'approve_order' ? 'withdrawals.approve' : 'withdrawals.reject'}' ในการอนุมัติหรือปฏิเสธบิลเบิกสินค้า`;
+          sqlCode = `POLICY "Admins and Supervisors access all orders"\nON public.withdrawal_orders FOR ALL\nUSING (EXISTS (SELECT 1 FROM profiles p JOIN roles r ON r.id = p.role_id WHERE p.id = auth.uid() AND r.code IN ('ADMIN', 'SUPERVISOR')));`;
+          btnHtml = `<button class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold">✓ อนุมัติบิล</button><span class="text-xs text-emerald-500 font-medium">ปุ่มอนุมัติปรากฏ</span>`;
         } else {
           allowed = false;
           reasonTitle = "ปฏิเสธการทำรายการ (Access Denied)";
           reasonDesc = `บทบาท ${role.toUpperCase()} ไม่มีสิทธิ์อนุมัติหรือปฏิเสธบิลเบิกสินค้า`;
-          sqlCode = `-- DENIED: RLS Policy check failed for role != 'admin'`;
+          sqlCode = `-- DENIED: can('withdrawals.approve') returned FALSE for role = '${role}'`;
           btnHtml = `<span class="text-xs text-red-500 font-medium">ไม่มีปุ่มอนุมัติปรากฏบนหน้าจอ</span>`;
         }
       } else if (action === 'confirm_receipt') {
-        if (role === 'admin') {
+        if (role === 'admin' || role === 'supervisor') {
           allowed = true;
-          reasonTitle = "แอดมินสามารถกดยืนยันแทนผู้เบิกได้";
-          reasonDesc = "แอดมินมีสิทธิ์ระดับ Admin Override ในการปรับสถานะบิลเป็น completed ได้ทุกกรณี";
-          sqlCode = `POLICY "Admins have full access to all orders"\nON public.withdrawal_orders FOR ALL USING (role = 'admin');`;
+          reasonTitle = `${role === 'admin' ? 'แอดมิน' : 'ผู้จัดการ'} สามารถกดยืนยันการรับของได้`;
+          reasonDesc = `บทบาท ${role.toUpperCase()} มีสิทธิ์ 'withdrawals.complete' สามารถปรับสถานะบิลเป็น completed ได้`;
+          sqlCode = `POLICY "Admins and Supervisors access all orders"\nON public.withdrawal_orders FOR ALL USING (role IN ('admin', 'supervisor'));`;
           btnHtml = `<button class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold">✓ ยืนยันการรับของแล้ว</button>`;
         } else if (role === 'staff' && owner === 'self') {
           allowed = true;
           reasonTitle = "ผู้เบิกกดยืนยันการรับของสำหรับบิลของตนเองได้สำเร็จ";
-          reasonDesc = "ตรงตามเงื่อนไข RLS Policy: auth.uid() = requested_by ทำให้ผู้เบิกกดยืนยันรับของได้ด้วยตนเอง";
+          reasonDesc = "ตรงตามเงื่อนไข RLS Policy: auth.uid() = requested_by และสิทธิ์ 'withdrawals.complete'";
           sqlCode = `POLICY "Users can complete their own orders"\nON public.withdrawal_orders FOR UPDATE\nUSING (auth.uid() = requested_by)\nWITH CHECK (status = 'completed');`;
           btnHtml = `<button class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold">✓ ยืนยันการรับของแล้ว</button>`;
         } else {
@@ -1131,15 +1367,15 @@ USING (true);</code></pre>
         if (role === 'admin') {
           allowed = true;
           reasonTitle = "ทำรายการรับของเข้าคลัง / แก้ไขสินค้าสำเร็จ";
-          reasonDesc = "บทบาท Admin มีสิทธิ์ในการบริหารจัดการคลังสินค้าและ Master Data ได้สมบูรณ์";
+          reasonDesc = "บทบาท Admin มีสิทธิ์ 'stock_in.create' และ 'items.update' ในการบริหารคลังสินค้าและ Master Data";
           sqlCode = `POLICY "Admins can manage inventory items"\nON public.items FOR ALL USING (role = 'admin');`;
           btnHtml = `<button class="px-4 py-2 bg-purple-600 text-white rounded-lg text-xs font-bold">+ บันทึกรับของเข้าคลัง</button>`;
         } else {
           allowed = false;
           reasonTitle = "ปฏิเสธการทำรายการ (Access Denied)";
-          reasonDesc = `บทบาท ${role.toUpperCase()} ไม่มีสิทธิ์จัดการสินค้าเข้าคลัง หรือแก้ไขข้อมูลวัสดุ`;
-          sqlCode = `-- DENIED: Require admin role in profiles table`;
-          btnHtml = `<span class="text-xs text-red-500 font-medium">ไม่มีสิทธิ์เข้าถึงเมนูคลังสินค้า</span>`;
+          reasonDesc = `บทบาท ${role.toUpperCase()} ไม่มีสิทธิ์จัดการสินค้าเข้าคลัง หรือแก้ไขข้อมูลวัสดุ Master (สงวนสิทธิ์เฉพาะ Admin)`;
+          sqlCode = `-- DENIED: Require 'stock_in.create' or 'items.create' permission (Admin only by default)`;
+          btnHtml = `<span class="text-xs text-red-500 font-medium">ไม่มีสิทธิ์เข้าถึงเมนูคลังสินค้า/แก้ไขวัสดุ</span>`;
         }
       }
 
@@ -1304,14 +1540,31 @@ USING (true);</code></pre>
     }
 
     function copySqlScript() {
-      const sql = `-- Supabase RLS Policies for Stock-Flow RBAC
+      const sql = `-- Supabase Dynamic RBAC & RLS Policies for Stock-Flow System
+-- 1. Helper Function to Check User Permission
+CREATE OR REPLACE FUNCTION public.has_permission(p_user_id UUID, p_perm_code TEXT)
+RETURNS BOOLEAN LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE v_role_code TEXT; v_status TEXT;
+BEGIN
+  SELECT p.status, r.code INTO v_status, v_role_code FROM public.profiles p LEFT JOIN public.roles r ON r.id = p.role_id WHERE p.id = p_user_id;
+  IF v_status IS NULL OR v_status != 'active' THEN RETURN FALSE; END IF;
+  IF v_role_code = 'ADMIN' OR UPPER(v_role_code) = 'ADMIN' THEN RETURN TRUE; END IF;
+  RETURN EXISTS (
+    SELECT 1 FROM public.profiles prof
+    JOIN public.role_permissions rp ON rp.role_id = prof.role_id
+    JOIN public.permissions perm ON perm.id = rp.permission_id
+    WHERE prof.id = p_user_id AND perm.code = p_perm_code
+  );
+END; $$;
+
+-- 2. Core Row Level Security Policies
 CREATE POLICY "Users can complete their own orders" ON public.withdrawal_orders FOR UPDATE USING (auth.uid() = requested_by) WITH CHECK (status = 'completed');
-CREATE POLICY "Admins have full access to all orders" ON public.withdrawal_orders FOR ALL USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+CREATE POLICY "Admins and Supervisors access all orders" ON public.withdrawal_orders FOR ALL USING (EXISTS (SELECT 1 FROM public.profiles p LEFT JOIN public.roles r ON r.id = p.role_id WHERE p.id = auth.uid() AND r.code IN ('ADMIN', 'SUPERVISOR')));
 CREATE POLICY "Users can create withdrawal orders" ON public.withdrawal_orders FOR INSERT WITH CHECK (auth.uid() = requested_by);
-CREATE POLICY "All users can view items and projects" ON public.items FOR SELECT USING (true);`;
+CREATE POLICY "Authenticated users can view items and projects" ON public.items FOR SELECT USING (auth.role() = 'authenticated');`;
 
       navigator.clipboard.writeText(sql);
-      alert('คัดลอกคำสั่ง SQL เรียบร้อยแล้ว!');
+      alert('คัดลอกคำสั่ง Dynamic RBAC SQL เรียบร้อยแล้ว!');
     }
 
     // Initialize Page

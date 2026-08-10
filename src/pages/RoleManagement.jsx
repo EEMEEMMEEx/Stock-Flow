@@ -293,10 +293,10 @@ const RoleManagement = () => {
           {can('roles.create') && (
             <Button 
               onClick={() => setIsAddModalOpen(true)}
-              className="neu-primary flex items-center gap-2 font-semibold"
+              className="neu-primary h-10 px-4 rounded-xl font-semibold text-sm flex items-center gap-2 transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 shrink-0"
             >
-              <Plus className="w-4 h-4" />
-              + เพิ่มบทบาท (Add Role)
+              <Plus className="w-4 h-4 shrink-0" />
+              <span>เพิ่มบทบาท</span>
             </Button>
           )}
         </div>

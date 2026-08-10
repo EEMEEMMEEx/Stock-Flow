@@ -1,0 +1,30 @@
+# Dependencies and package caches
+node_modules/**
+.pnpm-store/**
+vendor/**
+
+# Generated production artifacts
+dist/**
+dist-ssr/**
+build/**
+coverage/**
+
+# Generated and minified files
+*.generated.*
+*.min.js
+
+# Local tool data and editor metadata
+.code-review-graph/**
+.git/**
+.claude/**
+.codebuddy/**
+.gemini/**
+.qoder/**
+.vscode/**
+.idea/**
+
+# Large static or exported assets
+public/**/*.map
+**/*.pdf
+**/*.xlsx
+**/*.csv

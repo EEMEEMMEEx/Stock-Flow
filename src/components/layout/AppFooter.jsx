@@ -3,38 +3,45 @@ import { NavLink } from 'react-router-dom';
 import { ShieldCheck, BookOpen } from 'lucide-react';
 import { APP_CONFIG } from '@/config/appConfig';
 import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/contexts/AuthContext';
 
 const AppFooter = () => {
+  const { can } = useAuth();
+  const canViewSettings = can('settings.view');
   const [footerSettings, setFooterSettings] = useState({
     name: APP_CONFIG.name,
     company: '',
     subtitle: APP_CONFIG.subtitle
   });
 
-  const loadFooterSettings = async () => {
-    try {
+  useEffect(() => {
+    if (!canViewSettings) return undefined;
+
+    const loadFooterSettings = async () => {
       const { data, error } = await supabase.rpc('admin_get_system_settings');
 
-      if (!error && data) {
+      if (error) {
+        if (import.meta.env.DEV) {
+          console.warn('[AppFooter] Unable to load configurable footer metadata:', error.code);
+        }
+        return;
+      }
+
+      if (data) {
         setFooterSettings({
           name: data.app_name || APP_CONFIG.name,
           company: data.company_name || '',
           subtitle: data.app_subtitle || APP_CONFIG.subtitle
         });
       }
-    } catch (e) {
-      // Fall back safely to APP_CONFIG defaults
-    }
-  };
+    };
 
+    void loadFooterSettings();
 
-  useEffect(() => {
-    loadFooterSettings();
-
-    const handleSettingsUpdated = () => loadFooterSettings();
+    const handleSettingsUpdated = () => void loadFooterSettings();
     window.addEventListener('stockflow:settings-updated', handleSettingsUpdated);
     return () => window.removeEventListener('stockflow:settings-updated', handleSettingsUpdated);
-  }, []);
+  }, [canViewSettings]);
 
   return (
     <footer className="relative z-10 w-full border-t border-border/40 bg-background/60 backdrop-blur-md transition-colors duration-200 mt-auto">

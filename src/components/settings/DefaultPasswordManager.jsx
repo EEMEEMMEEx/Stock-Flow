@@ -107,10 +107,10 @@ const DefaultPasswordManager = ({ canUpdate }) => {
           <KeyRound className="w-5 h-5 text-purple-600 dark:text-purple-400 shrink-0" />
           <div>
             <h4 className="text-sm font-bold text-foreground">
-              รหัสผ่านเริ่มต้นสำหรับการรีเซ็ตรหัสผ่าน (Default Password for Reset Password)
+              รหัสผ่านเริ่มต้นสำหรับการรีเซ็ตรหัสผ่าน (Default Reset Password)
             </h4>
             <p className="text-[11px] text-muted-foreground">
-              ใช้เป็นรหัสผ่านชั่วคราวเมื่อผู้ดูแลระบบกดรีเซ็ตรหัสผ่านให้ผู้ใช้ในระบบ รหัสผ่านที่ตั้งค่าจะถูกจัดเก็บอย่างปลอดภัยฝั่งเซิร์ฟเวอร์และไม่สามารถดูย้อนหลังได้
+              Temporary password assigned when an administrator resets a user's password. รหัสผ่านที่ตั้งค่าจะถูกจัดเก็บอย่างปลอดภัยฝั่งเซิร์ฟเวอร์และไม่สามารถดูย้อนหลังได้
             </p>
           </div>
         </div>
@@ -138,7 +138,7 @@ const DefaultPasswordManager = ({ canUpdate }) => {
           <div className="md:col-span-2 space-y-1.5">
             <div className="flex items-center justify-between">
               <Label htmlFor="default_reset_pw" className="text-xs font-semibold text-foreground">
-                รหัสผ่านเริ่มต้นใหม่ (New Default Password) *
+                รหัสผ่านเริ่มต้นใหม่สำหรับการรีเซ็ต (New Default Reset Password) *
               </Label>
               <Button
                 type="button"
@@ -149,9 +149,10 @@ const DefaultPasswordManager = ({ canUpdate }) => {
                 className="text-[11px] text-purple-600 hover:text-purple-700 dark:text-purple-400 hover:underline h-6 px-2 flex items-center gap-1"
               >
                 <RefreshCw className="w-3 h-3" />
-                สุ่มรหัสผ่านปลอดภัย (Set Random Default)
+                สุ่มรหัสผ่านปลอดภัย (Generate Secure Default)
               </Button>
             </div>
+
 
             <div className="relative">
               <Input

@@ -18,6 +18,7 @@ import EditUserModal from '@/components/users/EditUserModal';
 import ResetPasswordModal from '@/components/users/ResetPasswordModal';
 import UserActionModal from '@/components/users/UserActionModal';
 import { uploadAvatarImage } from '@/lib/avatarUpload';
+import { sendUserInvitationEmail } from '@/lib/emailService';
 
 const UserManagement = () => {
   const { isAdmin } = useAuth();
@@ -39,6 +40,7 @@ const UserManagement = () => {
   const [selectedUserForDelete, setSelectedUserForDelete] = useState(null);
 
   const [rpcMissing, setRpcMissing] = useState(false);
+  const [resendingInvitationId, setResendingInvitationId] = useState(null);
 
   useEffect(() => {
     fetchInitialData();
@@ -165,6 +167,15 @@ const UserManagement = () => {
         }
 
         toast.success('สร้างบัญชีผู้ใช้ใหม่สำเร็จ');
+        if (userPayload.send_invitation) {
+          try {
+            await sendUserInvitationEmail({ recipientEmail: userPayload.email, userName: userPayload.full_name, roleName: userPayload.role, projectAccessSummary: userPayload.all_projects ? 'ทุกโครงการ' : `${userPayload.project_ids?.length || 0} โครงการที่เลือก`, actionUrl: `${window.location.origin}/login` });
+            toast.success('สร้างบัญชีและส่งอีเมลเชิญสำเร็จ');
+          } catch (emailError) {
+            console.error('Invitation Email Error:', emailError);
+            toast.error('สร้างบัญชีสำเร็จ แต่อีเมลส่งไม่สำเร็จ สามารถกด Resend Invitation ได้ภายหลัง');
+          }
+        }
         await fetchUsers();
       } else {
         toast.error(data?.message || 'ไม่สามารถสร้างผู้ใช้ได้');
@@ -174,6 +185,16 @@ const UserManagement = () => {
       toast.error(error.message || 'เกิดข้อผิดพลาดในการสร้างบัญชีผู้ใช้');
       throw error;
     }
+  };
+
+  const handleResendInvitation = async (user) => {
+    try {
+      setResendingInvitationId(user.id);
+      await sendUserInvitationEmail({ recipientEmail: user.email, userName: user.full_name, roleName: user.role, projectAccessSummary: user.all_projects ? 'ทุกโครงการ' : `${user.assigned_project_ids?.length || 0} โครงการที่ได้รับมอบหมาย`, actionUrl: `${window.location.origin}/login` });
+      toast.success(`ส่งอีเมลเชิญซ้ำไปยัง ${user.email} สำเร็จ`);
+    } catch (error) {
+      toast.error(`ส่งอีเมลเชิญซ้ำไม่สำเร็จ: ${error.message}`);
+    } finally { setResendingInvitationId(null); }
   };
 
   const handleUpdateUser = async (userId, userPayload) => {
@@ -375,10 +396,10 @@ const UserManagement = () => {
 
           <Button 
             onClick={() => setIsAddModalOpen(true)}
-            className="neu-primary flex items-center gap-2 font-semibold"
+            className="neu-primary h-10 px-4 rounded-xl font-semibold text-sm flex items-center gap-2 transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 shrink-0"
           >
-            <Plus className="w-4 h-4" />
-            + เพิ่มผู้ใช้ (Add User)
+            <Plus className="w-4 h-4 shrink-0" />
+            <span>เพิ่มผู้ใช้</span>
           </Button>
         </div>
       </div>
@@ -586,6 +607,11 @@ const UserManagement = () => {
                             className="h-8 w-8 text-slate-600 hover:text-primary hover:bg-primary/10"
                           >
                             <Edit className="w-4 h-4" />
+                          </Button>
+
+                          {/* Reset Password */}
+                          <Button variant="ghost" size="icon" title="Resend Invitation" onClick={() => handleResendInvitation(u)} disabled={resendingInvitationId === u.id} className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50">
+                            <Mail className={`w-4 h-4 ${resendingInvitationId === u.id ? 'animate-pulse' : ''}`} />
                           </Button>
 
                           {/* Reset Password */}

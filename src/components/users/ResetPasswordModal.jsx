@@ -89,7 +89,7 @@ const ResetPasswordModal = ({ isOpen, onClose, onResetPassword, user }) => {
                   className="text-[11px] text-purple-600 hover:text-purple-700 hover:underline flex items-center gap-1 h-7 px-2"
                 >
                   <ShieldCheck className="w-3 h-3" />
-                  {fetchingDefault ? 'กำลังดึง...' : 'ดึงรหัสผ่านเริ่มต้นระบบ'}
+                  {fetchingDefault ? 'กำลังดึง...' : 'ดึง Default Reset Password'}
                 </Button>
                 <Button
                   type="button"
@@ -99,7 +99,7 @@ const ResetPasswordModal = ({ isOpen, onClose, onResetPassword, user }) => {
                   className="text-[11px] text-primary hover:underline flex items-center gap-1 h-7 px-2"
                 >
                   <RefreshCw className="w-3 h-3" />
-                  สุ่มรหัสผ่าน
+                  สุ่มรหัสผ่าน (Generate Password)
                 </Button>
               </div>
             </div>
@@ -110,11 +110,13 @@ const ResetPasswordModal = ({ isOpen, onClose, onResetPassword, user }) => {
                 id="new_password"
                 type={showPassword ? 'text' : 'password'}
                 required
+                autoComplete="new-password"
                 placeholder="ป้อนรหัสผ่านใหม่ (อย่างน้อย 6 ตัวอักษร)"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 className="pr-10 neu-pressed bg-transparent"
               />
+
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}

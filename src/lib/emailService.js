@@ -1,6 +1,6 @@
 import { supabase } from './supabase';
 import { APP_CONFIG } from '@/config/appConfig';
-import { renderEmailHtml, renderTestEmailHtml, resolveEmailVariables, SAMPLE_EMAIL_DATA } from './emailRenderer';
+import { renderEmailHtml, renderTestEmailHtml, renderUserInvitationEmailHtml, resolveEmailVariables, SAMPLE_EMAIL_DATA } from './emailRenderer';
 
 export const DEFAULT_SMTP_CONFIG = {
   host: '',
@@ -138,5 +138,17 @@ export const sendTestEmail = async (testRecipient, customTemplate = null, smtpCo
     html: renderedHtml,
     text: plainText,
     smtpConfigOverrides
+  });
+};
+
+export const sendUserInvitationEmail = async ({ recipientEmail, userName, roleName, projectAccessSummary, actionUrl }) => {
+  let branding = {};
+  try { const { data } = await supabase.rpc('admin_get_system_settings'); branding = data?.branding || {}; } catch (error) { console.warn('[emailService] Default invitation branding:', error); }
+  const appName = branding.app_name || APP_CONFIG.name || 'StockFlow';
+  return sendStockFlowEmail({
+    to: recipientEmail,
+    subject: `เชิญเข้าใช้งาน ${appName}`,
+    html: renderUserInvitationEmailHtml({ appName, userName, userEmail: recipientEmail, roleName, projectAccessSummary, actionUrl, branding }),
+    text: `ยินดีต้อนรับสู่ ${appName}\n\nบัญชี: ${recipientEmail}\nบทบาท: ${roleName}\n\nเข้าสู่ระบบ: ${actionUrl}`
   });
 };

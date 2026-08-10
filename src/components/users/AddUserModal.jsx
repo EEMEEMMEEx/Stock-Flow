@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Eye, EyeOff, RefreshCw, Check, Shield, User, FolderKanban, AlertCircle } from 'lucide-react';
+import { Eye, EyeOff, RefreshCw, Check, Shield, User, FolderKanban, AlertCircle, Mail } from 'lucide-react';
 import toast from 'react-hot-toast';
 import AvatarUpload from '@/components/users/AvatarUpload';
 
@@ -30,7 +30,8 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
     role: 'staff',
     status: 'active',
     access_type: 'all', // 'all' | 'selected'
-    selected_projects: []
+    selected_projects: [],
+    send_invitation: true
   });
 
 
@@ -70,7 +71,8 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
         role: formData.role,
         status: formData.status,
         all_projects: formData.access_type === 'all',
-        project_ids: formData.access_type === 'selected' ? formData.selected_projects : []
+        project_ids: formData.access_type === 'selected' ? formData.selected_projects : [],
+        send_invitation: formData.send_invitation
       });
       resetForm();
       onClose();
@@ -92,7 +94,8 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
       role: 'staff',
       status: 'active',
       access_type: 'all',
-      selected_projects: []
+      selected_projects: [],
+      send_invitation: true
     });
     setActiveTab('account');
   };
@@ -210,6 +213,7 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
 
               <div>
                 <Label className="text-sm font-medium mb-1.5 block">รูปโปรไฟล์ (Profile Avatar)</Label>
+                <div className="mb-4 p-3 rounded-xl border border-primary/30 bg-primary/5"><label className="flex items-start gap-3 cursor-pointer"><input type="checkbox" checked={formData.send_invitation} onChange={(e) => setFormData(prev => ({ ...prev, send_invitation: e.target.checked }))} className="mt-1 rounded text-primary" /><span className="text-sm">ส่งอีเมลเชิญและแจ้งเตือนเปิดใช้งานบัญชี<span className="block text-xs text-muted-foreground mt-1">ผู้ใช้ตั้งรหัสผ่านเองได้ อีเมลจะไม่แสดงรหัสผ่าน</span></span></label></div>
                 <AvatarUpload
                   value={formData.avatar_url}
                   name={formData.full_name}
@@ -387,8 +391,22 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
               <Button type="button" variant="ghost" onClick={() => { resetForm(); onClose(); }}>
                 ยกเลิก
               </Button>
-              <Button type="submit" disabled={loading} className="neu-primary">
-                {loading ? 'กำลังบันทึก...' : 'บันทึกสร้างผู้ใช้'}
+              <Button 
+                type="submit" 
+                disabled={loading} 
+                className="neu-primary h-10 px-5 rounded-xl font-semibold text-sm flex items-center gap-2 transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 shrink-0 animate-spin" />
+                    <span>กำลังบันทึก...</span>
+                  </>
+                ) : (
+                  <>
+                    <Check className="w-4 h-4 shrink-0" />
+                    <span>บันทึกสร้างผู้ใช้</span>
+                  </>
+                )}
               </Button>
             </div>
           </DialogFooter>
