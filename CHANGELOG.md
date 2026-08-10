@@ -1,5 +1,67 @@
 # Changelog
 
+## [2026-08-10 13:25]
+
+- **Files Modified:** `src/pages/History.jsx`, `src/lib/pdf-templates.jsx`, `src/lib/pdf-service.js`, `src/pages/Withdrawals.jsx`, `src/components/history/HistoryHeader.jsx` (New), `src/components/history/HistoryKpiGrid.jsx` (New), `src/components/history/HistoryFilterBar.jsx` (New), `src/components/history/HistoryDataTable.jsx` (New), `src/components/history/HistoryPagination.jsx` (New), `src/components/history/HistoryEmptyState.jsx` (New)
+- **Details:**
+  - `src/pages/History.jsx`: Redesign และปรับโครงสร้างหน้าประวัติการเบิกจ่ายให้เป็น Production-Grade Withdrawal History Dashboard ที่สอดคล้องกับ UX Architecture และ Design System เดียวกับหน้า `/reports` และ `/withdrawals`
+  - `src/components/history/*`: สร้าง 6 Subcomponents โมดูลาร์ (HistoryHeader, HistoryKpiGrid, HistoryFilterBar, HistoryDataTable, HistoryPagination, HistoryEmptyState)
+  - `src/lib/pdf-templates.jsx` & `src/lib/pdf-service.js`: Refactor เปลี่ยนชื่อเอกสารและ PDF Component จาก `DeliveryNotePDF` ("ใบนำส่งอุปกรณ์") เป็น **`MaterialWithdrawalPDF` ("ใบเบิกของ")** ทั้งระบบ
+- **Reason:** ยกระดับการแสดงผลประวัติการเบิกจ่ายและการออกเอกสาร PDF ใบเบิกของให้มีมาตรฐาน visual ภาษาไทยและระบบค้นหาที่สะดวกรวดเร็ว
+
+## [2026-08-09 19:45]
+
+- **Files Modified:** `src/pages/Reports.jsx`, `src/lib/pdf-templates.jsx`
+- **Changes:**
+  - `src/pages/Reports.jsx`: ปรับปรุงปุ่ม **Export PDF** และ **Export Excel** ให้ได้มาตรฐานดีไซน์ระบบ ความสูง `h-10 px-4 rounded-xl font-semibold text-sm`, ขนาดไอคอน `w-4 h-4 shrink-0` และสถานะตอบสนองที่สวยงาม
+  - `src/lib/pdf-templates.jsx`: อัปเกรด `StockReportPDF` ให้รองรับรายงานทั้ง 3 แท็บอย่างสมบูรณ์ (`stock_in`, `withdrawals`, `balance`) บนกระดาษขนาด A4 พร้อมหัวเอกสารบริษัท Forth Corporation, เลขหน้าอัตโนมัติ (`หน้า X จาก Y`), ป้องกันแถวตารางตัดขาดระหว่างหน้า (`wrap={false}`) และปรับความกว้างคอลัมน์และสีตัวเลขสถิติอย่างมืออาชีพ
+- **Reason:** ยกระดับคุณภาพรายงาน PDF ให้ได้มาตรฐานระดับองค์กร พร้อมปรับปรุง UX ปุ่ม Export บนหน้า `/reports` ให้สอดคล้องกับดีไซน์ระบบ
+
+## [2026-08-09 19:37]
+
+- **Files Modified:** `src/pages/StockIn.jsx`, `src/pages/UserManagement.jsx`, `src/pages/RoleManagement.jsx`, `src/components/users/AddUserModal.jsx`, `src/components/roles/AddRoleModal.jsx`
+- **Changes:**
+  - `src/pages/StockIn.jsx`: ปรับปรุงปุ่ม **"บันทึกรับเข้าสต็อก"** โดยคงสีเขียวตามความหมายการรับเข้า (Positive Stock-In Operation) ปรับขนาดเป็น `h-10 px-4 rounded-xl text-sm font-semibold`, ขนาดไอคอนมาตรฐาน `w-4 h-4 shrink-0`, ลบอักขระ `+` ส่วนเกินจากข้อความ และอัปเดตปุ่มยืนยันบันทึกใน Modal
+  - `src/pages/UserManagement.jsx` & `AddUserModal.jsx`: ปรับปรุงปุ่ม **"เพิ่มผู้ใช้"** และปุ่มสร้างผู้ใช้ ให้ใช้ดีไซน์ระบบ `neu-primary` ความสูง `h-10`, ขนาดไอคอน `w-4 h-4 shrink-0`, ลบอักขระ `+` และตัดข้อความภาษาอังกฤษซ้ำซ้อนออก
+  - `src/pages/RoleManagement.jsx` & `AddRoleModal.jsx`: ปรับปรุงปุ่ม **"เพิ่มบทบาท"** และปุ่มสร้างบทบาท ให้เป็นมาตรฐานเดียวกันกับระบบ
+- **Reason:** รวมมาตรฐานดีไซน์ระบบ (Design System Standardization) ของปุ่มดำเนินการหลัก (Primary Action Buttons) ให้มีความสูง, padding, typography, สัดส่วนไอคอน และสถานะ hover/focus/disabled ที่สม่ำเสมอกันทั่วทั้งแอปพลิเคชัน
+
+## [2026-08-09 19:29]
+
+- **Files Modified:** `src/pages/Withdrawals.jsx`, `src/pages/History.jsx`
+- **Changes:**
+  - `src/pages/Withdrawals.jsx` & `src/pages/History.jsx`: ปรับปรุงคอลัมน์ **"ตัดสต็อกจริง"** ใน Modal รายละเอียดบิล เมื่อสถานะบิลยังคงเป็น `รออนุมัติ` (pending) ให้แสดงเป็น `- (รออนุมัติ)` แทนที่จะแสดง `0 ชิ้น` เพื่อป้องกันผู้ใช้เข้าใจผิดว่ามีการตัดสต็อกไปแล้ว และจะแสดงจำนวนที่ตัดสต็อกจริง (เช่น `4 ชิ้น`) เมื่อแอดมินหรือซูเปอร์ไวเซอร์กดอนุมัติบิล (`approved` / `completed`)
+- **Reason:** ปรับปรุง UI ให้สื่อความหมายตรงตามสถานะการทำงานจริงของกระบวนการเบิกจ่าย
+
+## [2026-08-09 19:22]
+
+- **Files Modified:** `supabase/migrations/33_fix_notification_trigger_v_item_count.sql`, `supabase/migrations/20260809163000_create_user_notifications.sql`
+- **Changes:**
+  - `33_fix_notification_trigger_v_item_count.sql`: เพิ่มการประกาศตัวแปร `v_item_count INTEGER := 0;` และนับจำนวนรายการ `withdrawal_items` ก่อนสร้าง JSON Metadata ใน PL/pgSQL Function `public.create_withdrawal_notifications()`
+- **Reason:** แก้ไขข้อผิดพลาด PostgreSQL Error `42703` (`column "v_item_count" does not exist`) ที่ทำให้การเรียก Supabase RPC `approve_inventory_request` ล้มเหลวแบบ 400 Bad Request ระหว่างการอนุมัติบิลเบิกจ่าย
+
+## [2026-08-09 19:16]
+
+- **Files Modified:** `src/pages/Profile.jsx`
+- **Changes:**
+  - `src/pages/Profile.jsx`: เพิ่ม attribute `autoComplete="new-password"` ให้กับ `<Input type="password">` ทั้งในช่องรหัสผ่านใหม่ (`newPassword`) และช่องยืนยันรหัสผ่าน (`confirmPassword`)
+- **Reason:** แก้ไขการแจ้งเตือน DOM Warning ในเบราว์เซอร์ (`Input elements should have autocomplete attributes (suggested: "new-password")`) และปรับปรุง Accessibility ของฟอร์มตามมาตรฐาน HTML5
+
+## [2026-08-09 19:13]
+
+- **Files Modified:** `src/pages/Withdrawals.jsx`, `src/pages/History.jsx`
+- **Changes:**
+  - `src/pages/Withdrawals.jsx`: เพิ่มปุ่ม **"PDF"** ในคอลัมน์จัดการตารางเบิกจ่าย และปุ่ม **"พิมพ์/ดาวน์โหลด ใบนำส่งอุปกรณ์ (PDF)"** ใน Modal รายละเอียดคำขอเบิก โดยเชื่อมต่อกับ `DeliveryNotePDF` (ภาษาไทย THSarabunNew) ผ่าน `@react-pdf/renderer` สำหรับสร้างเอกสาร PDF ใบนำส่งอุปกรณ์ของ บริษัท ฟอร์ท คอร์ปอเรชั่น จำกัด (มหาชน)
+  - `src/pages/History.jsx`: เพิ่มปุ่มดาวน์โหลดเอกสาร PDF Delivery Note ทั้งในตารางประวัติธุรกรรมเบิกจ่ายย้อนหลัง และใน Modal รายละเอียดประวัติ
+- **Reason:** รองรับการพิมพ์และดาวน์โหลดเอกสาร "ใบเบิก และนำส่งอุปกรณ์" แบบ PDF ได้โดยตรงจากหน้าจอระบบตาม requirement
+
+## [2026-08-09 18:31]
+
+- **Files Modified:** `rbac-workflow.html`, `CHANGELOG.md`
+- **Changes:**
+  - `rbac-workflow.html`: อัปเดตผังกระบวนการ สเปก Dynamic RBAC v2.5 รองรับ 31 Dynamic Permission Codes, เพิ่มบทบาท `SUPERVISOR` ใน Permission Matrix และ Role Simulator พร้อมตัวอย่าง PL/pgSQL RPC (`get_user_permissions`, `has_permission`) และ Supabase RLS Policies
+- **Reason:** ปรับปรุงไฟล์ rbac-workflow.html ให้สอดคล้องกับโครงสร้าง RBAC ล่าสุดในระบบ Stock-Flow (Migration 09)
+
 ## [2026-08-09 17:10]
 
 - **Files Modified:** `src/components/layout/Sidebar.jsx`
@@ -1497,3 +1559,7 @@
   - สร้างหน้า StockIn (รับเข้า), Withdrawals (เบิกจ่าย) พร้อมระบบ Role-based access
   - สร้างหน้า History (ประวัติ) และ Reports (รายงาน Export Excel)
 - **Reason:** ดำเนินการสร้างระบบ Stock Flow ต่อจนครบทุกหน้าจอตามแผนงาน
+## [2026-08-10]
+- **Files Modified:** `src/lib/emailRenderer.js`, `src/lib/emailService.js`, `src/components/users/AddUserModal.jsx`, `src/pages/UserManagement.jsx`
+- **Changes:** เพิ่ม invitation email template, ตัวเลือกส่งอีเมลตอนสร้างผู้ใช้, การส่งอีเมลแบบไม่กระทบการสร้างบัญชี และปุ่ม `Resend Invitation`
+- **Reason:** รองรับ flow เชิญผู้ใช้ใหม่ผ่าน email infrastructure เดิมโดยไม่ส่งรหัสผ่านแบบ plain-text

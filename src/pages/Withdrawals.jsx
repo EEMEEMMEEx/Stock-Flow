@@ -5,7 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { ArrowUpFromLine, CheckCircle2, XCircle, Clock, ChevronLeft, AlertTriangle } from 'lucide-react';
+import { ArrowUpFromLine, CheckCircle2, XCircle, Clock, ChevronLeft, AlertTriangle, FileText, Printer, Building2 } from 'lucide-react';
+import { pdf } from '@react-pdf/renderer';
+import { MaterialWithdrawalPDF } from '@/lib/pdf-templates';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
@@ -56,20 +58,36 @@ const Withdrawals = () => {
   const mapItemsForProject = (allItems, allBalances, projectId) => {
     if (!allItems) return [];
     return allItems.map(item => {
-      const bRecord = (allBalances || []).find(
-        b => b.project_id === projectId && b.item_id === item.id
-      );
-      const projectBalance = bRecord ? (Number(bRecord.balance) || 0) : 0;
+      // Calculate total system balance across all storage locations
+      const totalSystemBalance = (allBalances || [])
+        .filter(b => b.item_id === item.id)
+        .reduce((sum, b) => sum + (Number(b.balance) || 0), 0);
+
+      // If a specific project location is selected (and not 'all')
+      if (projectId && projectId !== 'all') {
+        const bRecord = (allBalances || []).find(
+          b => b.project_id === projectId && b.item_id === item.id
+        );
+        const projectBalance = bRecord ? (Number(bRecord.balance) || 0) : 0;
+        return {
+          ...item,
+          balance: projectBalance,
+          totalSystemBalance
+        };
+      }
+
+      // Default 'all': Display aggregated balance across all storage locations
       return {
         ...item,
-        balance: projectBalance
+        balance: totalSystemBalance,
+        totalSystemBalance
       };
     });
   };
 
   const handleProjectChange = (projectId) => {
     setSelectedProjectId(projectId);
-    setFormData(prev => ({ ...prev, project_id: projectId }));
+    setFormData(prev => ({ ...prev, project_id: projectId === 'all' ? '' : projectId }));
     const updatedItems = mapItemsForProject(rawItems, rawBalances, projectId);
     setItems(updatedItems);
   };
@@ -95,7 +113,7 @@ const Withdrawals = () => {
       // Fetch projects, items, categories, and stock_balance
       const { data: pData } = await supabase
         .from('projects')
-        .select('id, name, project_code')
+        .select('id, name, project_code, location, description')
         .eq('status', 'active')
         .order('name');
       const { data: iData } = await supabase.from('items').select('id, name, unit, sku, image_url, category_id');
@@ -107,9 +125,9 @@ const Withdrawals = () => {
       setRawItems(iData || []);
       setRawBalances(bData || []);
 
-      const targetProjectId = selectedProjectId || (pData && pData.length > 0 ? pData[0].id : '');
-      if (targetProjectId && !selectedProjectId) {
-        setSelectedProjectId(targetProjectId);
+      const targetProjectId = selectedProjectId || 'all';
+      if (!selectedProjectId) {
+        setSelectedProjectId('all');
       }
 
       // Combine project-specific stock balance with items
@@ -330,6 +348,13 @@ const Withdrawals = () => {
       if (error) throw error;
 
       toast.success('ยืนยันการรับของสำเร็จ (สถานะ: รับของแล้ว)', { id: toastId });
+
+      // Notify the requester and configured recipients after the inventory issue is completed.
+      dispatchWithdrawalNotification({
+        eventType: 'withdrawal_completed',
+        orderId
+      }).catch(err => console.warn('[Notification Dispatch Warning]:', err));
+
       fetchData();
       if (selectedOrder?.id === orderId) {
         setSelectedOrder(prev => ({ ...prev, status: 'completed' }));
@@ -359,6 +384,73 @@ const Withdrawals = () => {
     }
   };
 
+  const handleDownloadPDF = async (order, existingItems = null) => {
+    if (!order) return;
+    const toastId = toast.loading('กำลังสร้างเอกสาร PDF ใบเบิกของ...');
+    try {
+      let itemsList = existingItems;
+      if (!itemsList || itemsList.length === 0) {
+        const { data, error } = await supabase
+          .from('withdrawal_items')
+          .select('*, items(name, unit)')
+          .eq('order_id', order.id);
+        if (error) throw error;
+        itemsList = data || [];
+      }
+
+      const docBlob = await pdf(
+        <MaterialWithdrawalPDF order={order} items={itemsList} profile={profile} />
+      ).toBlob();
+
+      const url = URL.createObjectURL(docBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `MaterialWithdrawal_${order.id?.slice(0, 8) || 'order'}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      toast.success('ดาวน์โหลดเอกสาร PDF ใบเบิกของสำเร็จ', { id: toastId });
+    } catch (err) {
+      console.error('PDF Download Error:', err);
+      toast.error('เกิดข้อผิดพลาดในการดาวน์โหลดเอกสาร PDF', { id: toastId });
+    }
+  };
+
+  // Shared DRY Project/Location Selector Component
+  const ProjectLocationSelector = ({ value, onChange, showAllOption = false, required = false, className = '' }) => (
+    <select
+      required={required}
+      className={`flex h-10 w-full rounded-xl border border-input bg-background px-3 py-1 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 shadow-2xs transition-all cursor-pointer ${className}`}
+      value={value}
+      onChange={onChange}
+    >
+      {showAllOption ? (
+        <option value="all">-- ทุกสถานที่จัดเก็บ (แสดงยอดรวมทั้งระบบ) --</option>
+      ) : (
+        <option value="" disabled>-- เลือกโครงการปลายทาง --</option>
+      )}
+      {(() => {
+        const map = new Map();
+        projects.forEach(p => {
+          const key = `${(p.name || '').trim()}|||${(p.project_code || '').trim()}`;
+          if (!map.has(key)) map.set(key, { key, name: p.name, project_code: p.project_code, locations: [p] });
+          else map.get(key).locations.push(p);
+        });
+        return Array.from(map.values()).map(group => (
+          <optgroup key={group.key} label={`${group.project_code ? `[${group.project_code}] ` : ''}${group.name}`}>
+            {group.locations.map(loc => (
+              <option key={loc.id} value={loc.id}>
+                {loc.location || 'คลังหลัก'} {loc.description ? `(${loc.description})` : ''}
+              </option>
+            ))}
+          </optgroup>
+        ));
+      })()}
+    </select>
+  );
+
   const StatusBadge = ({ status, has_shortage, is_shortage_override }) => {
     switch(status) {
       case 'pending': return <span className="flex items-center gap-1 text-amber-500 bg-amber-500/10 px-2.5 py-1 rounded-full text-xs font-medium border border-amber-500/20"><Clock className="w-3 h-3"/> รออนุมัติ</span>;
@@ -375,82 +467,102 @@ const Withdrawals = () => {
 
   if (isPosMode) {
     return (
-      <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl bg-card border shadow-sm">
-          <Button variant="ghost" onClick={() => setIsPosMode(false)} className="-ml-2">
-            <ChevronLeft className="w-4 h-4 mr-1" /> กลับไปหน้าประวัติเบิกจ่าย
+      <div className="space-y-4 animate-in fade-in-50 duration-200">
+        {/* Top POS Header & Target Location Context Control */}
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-4 rounded-2xl glass border border-border/60 shadow-2xs">
+          <Button 
+            variant="ghost" 
+            onClick={() => setIsPosMode(false)} 
+            className="rounded-xl h-10 gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-accent"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            <span>กลับไปหน้าประวัติเบิกจ่าย</span>
           </Button>
 
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full sm:w-auto">
-            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider whitespace-nowrap">
-              โครงการเบิกสินค้า (Target Project) <span className="text-destructive">*</span>
-            </label>
-            <select
-              className="flex h-9 w-full sm:w-72 rounded-md border border-input bg-background px-3 py-1 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              value={selectedProjectId}
-              onChange={(e) => handleProjectChange(e.target.value)}
-            >
-              {projects.map(p => (
-                <option key={p.id} value={p.id}>
-                  {p.project_code ? `${p.project_code} — ` : ''}{p.name}
-                </option>
-              ))}
-            </select>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2.5 w-full md:w-auto">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+              <span className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+                <Building2 className="w-4 h-4" />
+              </span>
+              <span>โครงการเบิกสินค้า (Target Project):</span>
+              <span className="text-destructive">*</span>
+            </div>
+            <div className="w-full sm:w-80">
+              <ProjectLocationSelector
+                value={selectedProjectId}
+                onChange={(e) => handleProjectChange(e.target.value)}
+                showAllOption={true}
+              />
+            </div>
           </div>
         </div>
 
         <PosTerminal 
-          title="สร้างคำขอเบิกจ่าย (POS)"
+          title="สร้างคำขอเบิกจ่าย (POS Terminal)"
           icon={ArrowUpFromLine}
           items={items}
           categories={categories}
           onSubmit={handleOpenCheckout}
+          isLoading={loading}
           allowDeliveryDetails={true}
         />
         
         {/* Checkout Dialog */}
         <Dialog open={isCheckoutDialogOpen} onOpenChange={setIsCheckoutDialogOpen}>
-          <DialogContent>
+          <DialogContent className="sm:max-w-[540px] rounded-2xl glass p-6">
             <form onSubmit={handleSubmitOrder}>
               <DialogHeader>
-                <DialogTitle>ยืนยันการขอเบิกจ่าย ({checkoutCart.reduce((acc, i) => acc + i.quantity, 0)} ชิ้น)</DialogTitle>
+                <DialogTitle className="text-lg font-bold flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-indigo-600" />
+                  <span>ยืนยันการขอเบิกจ่าย ({checkoutCart.reduce((acc, i) => acc + i.quantity, 0)} ชิ้น)</span>
+                </DialogTitle>
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">นำไปใช้โครงการ (Target Project) <span className="text-destructive">*</span></label>
-                  <select required className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-medium" value={formData.project_id} onChange={e => setFormData({...formData, project_id: e.target.value})}>
-                    <option value="" disabled>-- เลือกโครงการ --</option>
-                    {projects.map(p => (
-                      <option key={p.id} value={p.id}>
-                        {p.project_code ? `${p.project_code} — ` : ''}{p.name}
-                      </option>
-                    ))}
-                  </select>
+                  <label className="text-xs font-bold text-foreground flex items-center gap-1">
+                    <span>นำไปใช้โครงการ (Target Project)</span>
+                    <span className="text-destructive">*</span>
+                  </label>
+                  <ProjectLocationSelector
+                    required={true}
+                    value={formData.project_id}
+                    onChange={e => setFormData({...formData, project_id: e.target.value})}
+                  />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">วัตถุประสงค์การเบิก</label>
-                  <Input value={formData.purpose} onChange={e => setFormData({...formData, purpose: e.target.value})} placeholder="เช่น ใช้สำหรับซ่อมบำรุงอาคาร A" />
+                  <label className="text-xs font-bold text-foreground">วัตถุประสงค์การเบิก</label>
+                  <Input 
+                    value={formData.purpose} 
+                    onChange={e => setFormData({...formData, purpose: e.target.value})} 
+                    placeholder="เช่น ใช้สำหรับซ่อมบำรุงอาคาร A" 
+                    className="h-10 text-xs rounded-xl"
+                  />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">สถานที่จัดส่ง (Delivery Address)</label>
-                  <Input value={formData.delivery_address} onChange={e => setFormData({...formData, delivery_address: e.target.value})} placeholder="กรอกชื่อผู้รับ หรือสถานที่จัดส่งแบบละเอียด (ถ้ามี)" />
+                  <label className="text-xs font-bold text-foreground">สถานที่จัดส่ง (Delivery Address)</label>
+                  <Input 
+                    value={formData.delivery_address} 
+                    onChange={e => setFormData({...formData, delivery_address: e.target.value})} 
+                    placeholder="กรอกชื่อผู้รับ หรือสถานที่จัดส่งแบบละเอียด (ถ้ามี)" 
+                    className="h-10 text-xs rounded-xl"
+                  />
                 </div>
                 
-                <div className="mt-4 border rounded-md p-3 bg-muted/50 max-h-[200px] overflow-y-auto">
-                  <h4 className="text-sm font-semibold mb-2">รายการที่เลือก:</h4>
-                  <ul className="space-y-1">
+                <div className="mt-2 border rounded-xl p-3 bg-muted/40 max-h-[180px] overflow-y-auto space-y-2">
+                  <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">รายการที่เลือก:</h4>
+                  <ul className="space-y-1 text-xs">
                     {checkoutCart.map(item => (
-                      <li key={item.id} className="text-sm flex justify-between">
-                        <span>{item.name}</span>
-                        <span className="font-medium">{item.quantity} {item.unit}</span>
+                      <li key={item.id} className="flex justify-between py-1 border-b border-border/30 last:border-none">
+                        <span className="font-semibold">{item.name}</span>
+                        <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">{item.quantity} {item.unit}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
               </div>
-              <div className="flex justify-end gap-2 mt-4">
-                <Button type="button" variant="outline" onClick={() => setIsCheckoutDialogOpen(false)}>ยกเลิก</Button>
-                <Button type="submit">ส่งคำขอบิลเบิกจ่าย</Button>
+              <div className="flex justify-end gap-2 mt-2">
+                <Button type="button" variant="outline" className="rounded-xl h-10 text-xs" onClick={() => setIsCheckoutDialogOpen(false)}>ยกเลิก</Button>
+                <Button type="submit" className="rounded-xl h-10 text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md">ส่งคำขอบิลเบิกจ่าย</Button>
               </div>
             </form>
           </DialogContent>
@@ -459,22 +571,68 @@ const Withdrawals = () => {
     );
   }
 
+  // Calculate stats for Dashboard Header Cards
+  const totalOrdersCount = orders.length;
+  const pendingOrdersCount = orders.filter(o => o.status === 'pending').length;
+  const approvedOrdersCount = orders.filter(o => o.status === 'approved').length;
+  const completedOrdersCount = orders.filter(o => o.status === 'completed').length;
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-in fade-in-50 duration-200">
+      {/* Header Bar */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-            <ArrowUpFromLine className="w-8 h-8 text-primary" />
+          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight flex items-center gap-2 text-foreground">
+            <ArrowUpFromLine className="w-7 h-7 text-indigo-600 dark:text-indigo-400" />
             การเบิกจ่าย (Withdrawals)
           </h2>
-          <p className="text-muted-foreground mt-2">
-            จัดการรายการเบิกจ่ายวัสดุและอุปกรณ์ออกจากคลัง
+          <p className="text-xs text-muted-foreground mt-1">
+            จัดการรายการเบิกจ่ายวัสดุและอุปกรณ์ออกจากคลัง และติดตามสถานะคำขอ
           </p>
         </div>
         
-        <Button onClick={() => setIsPosMode(true)} className="shadow-lg shadow-primary/20">
-          + สร้างคำขอเบิกจ่าย (POS)
+        <Button 
+          onClick={() => setIsPosMode(true)} 
+          className="h-11 px-5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-lg shadow-indigo-500/20 gap-2 transition-all cursor-pointer"
+        >
+          <ArrowUpFromLine className="w-4 h-4" />
+          <span>+ สร้างคำขอเบิกจ่าย (POS)</span>
         </Button>
+      </div>
+
+      {/* Stats KPI Header Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+        <Card className="p-4 rounded-2xl glass border border-border/60 shadow-2xs space-y-1">
+          <div className="flex items-center justify-between text-xs text-muted-foreground font-semibold">
+            <span>คำขอทั้งหมด</span>
+            <FileText className="w-4 h-4 text-indigo-500" />
+          </div>
+          <p className="text-2xl font-extrabold font-mono text-foreground">{loading ? '-' : totalOrdersCount}</p>
+        </Card>
+
+        <Card className="p-4 rounded-2xl glass border border-amber-500/30 bg-amber-500/5 shadow-2xs space-y-1">
+          <div className="flex items-center justify-between text-xs text-amber-700 dark:text-amber-300 font-semibold">
+            <span>รออนุมัติ</span>
+            <Clock className="w-4 h-4 text-amber-500" />
+          </div>
+          <p className="text-2xl font-extrabold font-mono text-amber-600 dark:text-amber-400">{loading ? '-' : pendingOrdersCount}</p>
+        </Card>
+
+        <Card className="p-4 rounded-2xl glass border border-blue-500/30 bg-blue-500/5 shadow-2xs space-y-1">
+          <div className="flex items-center justify-between text-xs text-blue-700 dark:text-blue-300 font-semibold">
+            <span>อนุมัติแล้ว</span>
+            <CheckCircle2 className="w-4 h-4 text-blue-500" />
+          </div>
+          <p className="text-2xl font-extrabold font-mono text-blue-600 dark:text-blue-400">{loading ? '-' : approvedOrdersCount}</p>
+        </Card>
+
+        <Card className="p-4 rounded-2xl glass border border-emerald-500/30 bg-emerald-500/5 shadow-2xs space-y-1">
+          <div className="flex items-center justify-between text-xs text-emerald-700 dark:text-emerald-300 font-semibold">
+            <span>รับของแล้ว</span>
+            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+          </div>
+          <p className="text-2xl font-extrabold font-mono text-emerald-600 dark:text-emerald-400">{loading ? '-' : completedOrdersCount}</p>
+        </Card>
       </div>
 
       {/* Orders Table */}
@@ -523,6 +681,17 @@ const Withdrawals = () => {
                     <div className="flex justify-end gap-2">
                       <Button variant="outline" size="sm" onClick={() => viewOrderDetails(order)}>
                         ดูรายละเอียด
+                      </Button>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        title="พิมพ์/ดาวน์โหลด ใบเบิกและนำส่งอุปกรณ์ (PDF)"
+                        onClick={() => handleDownloadPDF(order)}
+                        className="text-purple-700 border-purple-200 hover:bg-purple-50 dark:hover:bg-purple-950/30 font-medium"
+                      >
+                        <FileText className="w-3.5 h-3.5 mr-1 text-purple-600" />
+                        PDF
                       </Button>
                       
                       {isAdmin && order.status === 'pending' && (
@@ -615,13 +784,25 @@ const Withdrawals = () => {
                     </TableHeader>
                     <TableBody className="text-xs">
                       {orderDetails.map(item => {
-                        const deducted = item.deducted_quantity !== undefined ? item.deducted_quantity : (selectedOrder.status === 'approved' || selectedOrder.status === 'completed' ? item.quantity : 0);
-                        const shortage = item.shortage_quantity !== undefined ? item.shortage_quantity : 0;
+                        const isApprovedOrCompleted = selectedOrder.status === 'approved' || selectedOrder.status === 'completed';
+                        const isPending = selectedOrder.status === 'pending';
+                        const deducted = item.deducted_quantity !== undefined && item.deducted_quantity !== null 
+                          ? item.deducted_quantity 
+                          : (isApprovedOrCompleted ? item.quantity : 0);
+                        const shortage = item.shortage_quantity !== undefined && item.shortage_quantity !== null ? item.shortage_quantity : 0;
                         return (
                           <TableRow key={item.id}>
                             <TableCell className="font-semibold">{item.items?.name}</TableCell>
                             <TableCell className="text-center font-bold">{item.quantity} {item.items?.unit}</TableCell>
-                            <TableCell className="text-center font-bold text-emerald-600">{deducted} {item.items?.unit}</TableCell>
+                            <TableCell className="text-center">
+                              {isPending ? (
+                                <span className="text-muted-foreground italic font-normal">- (รออนุมัติ)</span>
+                              ) : isApprovedOrCompleted ? (
+                                <span className="font-bold text-emerald-600">{deducted} {item.items?.unit}</span>
+                              ) : (
+                                <span className="text-muted-foreground italic font-normal">-</span>
+                              )}
+                            </TableCell>
                             <TableCell className="text-center font-bold text-amber-600">{shortage > 0 ? `${shortage} ${item.items?.unit}` : '-'}</TableCell>
                             <TableCell>{item.delivery_to || '-'}</TableCell>
                           </TableRow>
@@ -632,22 +813,35 @@ const Withdrawals = () => {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
-                {isAdmin && selectedOrder.status === 'pending' && (
-                  <>
-                    <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white" onClick={() => handleApproveOrder(selectedOrder.id)}>
-                      อนุมัติบิลนี้
+              <div className="flex flex-wrap justify-between items-center gap-2 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleDownloadPDF(selectedOrder, orderDetails)}
+                  className="text-purple-700 border-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950/30 font-semibold"
+                >
+                  <FileText className="w-4 h-4 mr-1.5 text-purple-600" />
+                  พิมพ์/ดาวน์โหลด ใบเบิกของ (PDF)
+                </Button>
+
+                <div className="flex gap-2">
+                  {isAdmin && selectedOrder.status === 'pending' && (
+                    <>
+                      <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white" onClick={() => handleApproveOrder(selectedOrder.id)}>
+                        อนุมัติบิลนี้
+                      </Button>
+                      <Button variant="destructive" size="sm" onClick={() => openRejectModal(selectedOrder)}>
+                        ปฏิเสธบิลนี้
+                      </Button>
+                    </>
+                  )}
+                  {selectedOrder.status === 'approved' && (
+                    <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white" onClick={() => handleCompleteOrder(selectedOrder.id)}>
+                      ยืนยันรับของเสร็จสิ้น
                     </Button>
-                    <Button variant="destructive" size="sm" onClick={() => openRejectModal(selectedOrder)}>
-                      ปฏิเสธบิลนี้
-                    </Button>
-                  </>
-                )}
-                {selectedOrder.status === 'approved' && (
-                  <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white" onClick={() => handleCompleteOrder(selectedOrder.id)}>
-                    ยืนยันรับของเสร็จสิ้น
-                  </Button>
-                )}
+                  )}
+                </div>
               </div>
             </div>
           )}
@@ -666,7 +860,10 @@ const Withdrawals = () => {
 
           <div className="space-y-4 py-2">
             <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 p-3 rounded-lg text-xs leading-relaxed">
-              <p className="font-bold">⚠️ พบรายการวัสดุในคลังโครงการไม่เพียงพอสำหรับคำขอนี้</p>
+              <p className="font-bold flex items-center gap-1.5">
+                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                <span>พบรายการวัสดุในคลังโครงการไม่เพียงพอสำหรับคำขอนี้</span>
+              </p>
               <p className="mt-1">
                 หากยืนยันอนุมัติ ระบบจะทำการตัดสต็อกตามจำนวนที่มีอยู่จริง (`MIN(มีอยู่, ขอเบิก)`) และบันทึกยอดขาดส่ง 
                 โดย **ยอดสต็อกคงเหลือจะอยู่ที่ 0 ชิ้น และไม่ติดลบ**

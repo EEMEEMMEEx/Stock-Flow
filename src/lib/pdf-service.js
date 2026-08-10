@@ -70,7 +70,7 @@ export const generateDeliveryNoteXML = (order, items, profile) => {
   </style>
 </head>
 <body>
-  <h1>ใบนำส่งอุปกรณ์ (Delivery Note)</h1>
+  <h1>ใบเบิกของ (Material Withdrawal)</h1>
   <div class="doc-ref">เอกสารอ้างอิง: ${escapeHtml(order.id.split('-')[0].toUpperCase())} | วันที่พิมพ์: ${new Date().toLocaleDateString('th-TH')}</div>
   
   <div style="border: 1px solid #ddd; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">

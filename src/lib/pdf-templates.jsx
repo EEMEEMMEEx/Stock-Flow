@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
     position: 'relative'
   },
   docTitle: {
-    fontSize: 16, // ขนาดฟอนต์หัวกระดาษ "ใบนำส่งอุปกรณ์" (24pt)
+    fontSize: 16, // ขนาดฟอนต์หัวกระดาษ "ใบเบิกของ" (24pt)
     fontWeight: 'bold',
   },
   docCopy: {
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
   rCol5: { width: '10%', textAlign: 'right' },
 });
 
-export const DeliveryNotePDF = ({ order, items, profile }) => {
+export const MaterialWithdrawalPDF = ({ order, items, profile }) => {
   // Pad items to at least 15 rows
   const MIN_ROWS = 15;
   const paddedItems = [...items];
@@ -205,7 +205,7 @@ export const DeliveryNotePDF = ({ order, items, profile }) => {
 
         {/* Document Title */}
         <View style={styles.docTitleContainer}>
-          <Text style={styles.docTitle}>ใบนำส่งอุปกรณ์</Text>
+          <Text style={styles.docTitle}>ใบเบิกของ</Text>
           <Text style={styles.docCopy}>ต้นฉบับ</Text>
         </View>
 
@@ -295,34 +295,186 @@ export const DeliveryNotePDF = ({ order, items, profile }) => {
   );
 };
 
-// Stock Report Component
-export const StockReportPDF = ({ data }) => (
-  <Document>
-    <Page size="A4" style={styles.page}>
-      <Text style={[styles.docTitle, { textAlign: 'center', marginBottom: 20 }]}>รายงานสรุป (Stock Report)</Text>
-      <Text style={[styles.addressText, { textAlign: 'right', marginBottom: 10 }]}>
-        ข้อมูล ณ วันที่: {new Date().toLocaleDateString('th-TH')}
-      </Text>
+// Stock Report Component (Professional A4 Multi-Tab Report Generator)
+export const StockReportPDF = ({ data = [], type = 'balance' }) => {
+  const printDateStr = new Date().toLocaleDateString('th-TH', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
 
-      <View style={styles.table}>
-        <View style={styles.tableHeader}>
-          <Text style={[styles.th, styles.rCol1]}>โครงการ</Text>
-          <Text style={[styles.th, styles.rCol2]}>รายการวัสดุ</Text>
-          <Text style={[styles.th, styles.rCol3]}>ยอดรับเข้า</Text>
-          <Text style={[styles.th, styles.rCol4]}>ยอดเบิกจ่าย</Text>
-          <Text style={[styles.th, styles.rCol5, { borderRightWidth: 0 }]}>คงเหลือ</Text>
+  let reportTitle = 'รายงานสรุปยอดสินค้าคงเหลือ (Stock Balance Report)';
+  if (type === 'stock_in') {
+    reportTitle = 'รายงานสรุปการรับเข้าวัสดุ (Stock In Report)';
+  } else if (type === 'withdrawals') {
+    reportTitle = 'รายงานสรุปการเบิกจ่ายวัสดุ (Withdrawal Orders Report)';
+  }
+
+  const renderTableHeader = () => {
+    if (type === 'stock_in') {
+      return (
+        <View style={styles.tableHeader} fixed>
+          <View style={[styles.th, { width: '6%' }]}><Text style={styles.thText}>ลำดับ</Text></View>
+          <View style={[styles.th, { width: '14%' }]}><Text style={styles.thText}>วันที่รับเข้า</Text></View>
+          <View style={[styles.th, { width: '24%' }]}><Text style={styles.thText}>โครงการ</Text></View>
+          <View style={[styles.th, { width: '26%' }]}><Text style={styles.thText}>รายการวัสดุ</Text></View>
+          <View style={[styles.th, { width: '10%' }]}><Text style={styles.thText}>จำนวน</Text></View>
+          <View style={[styles.th, { width: '6%' }]}><Text style={styles.thText}>หน่วย</Text></View>
+          <View style={[styles.th, { width: '14%', borderRightWidth: 0 }]}><Text style={styles.thText}>Supplier / PO</Text></View>
+        </View>
+      );
+    }
+    if (type === 'withdrawals') {
+      return (
+        <View style={styles.tableHeader} fixed>
+          <View style={[styles.th, { width: '6%' }]}><Text style={styles.thText}>ลำดับ</Text></View>
+          <View style={[styles.th, { width: '14%' }]}><Text style={styles.thText}>วันที่เบิก</Text></View>
+          <View style={[styles.th, { width: '22%' }]}><Text style={styles.thText}>โครงการ</Text></View>
+          <View style={[styles.th, { width: '24%' }]}><Text style={styles.thText}>รายการวัสดุ</Text></View>
+          <View style={[styles.th, { width: '8%' }]}><Text style={styles.thText}>ขอเบิก</Text></View>
+          <View style={[styles.th, { width: '8%' }]}><Text style={styles.thText}>ตัดจริง</Text></View>
+          <View style={[styles.th, { width: '6%' }]}><Text style={styles.thText}>หน่วย</Text></View>
+          <View style={[styles.th, { width: '12%', borderRightWidth: 0 }]}><Text style={styles.thText}>ผู้เบิก / สถานะ</Text></View>
+        </View>
+      );
+    }
+    // Default: Balance
+    return (
+      <View style={styles.tableHeader} fixed>
+        <View style={[styles.th, { width: '6%' }]}><Text style={styles.thText}>ลำดับ</Text></View>
+        <View style={[styles.th, { width: '28%' }]}><Text style={styles.thText}>โครงการ</Text></View>
+        <View style={[styles.th, { width: '32%' }]}><Text style={styles.thText}>รายการวัสดุ</Text></View>
+        <View style={[styles.th, { width: '11%' }]}><Text style={styles.thText}>รับเข้าทั้งหมด</Text></View>
+        <View style={[styles.th, { width: '11%' }]}><Text style={styles.thText}>เบิกออกทั้งหมด</Text></View>
+        <View style={[styles.th, { width: '12%', borderRightWidth: 0 }]}><Text style={styles.thText}>คงเหลือ</Text></View>
+      </View>
+    );
+  };
+
+  const renderTableRows = () => {
+    if (data.length === 0) {
+      return (
+        <View style={[styles.tableRow, { borderBottomWidth: 0 }]}>
+          <View style={[styles.td, { width: '100%', borderRightWidth: 0, padding: 10 }]}>
+            <Text style={{ textAlign: 'center', color: '#666' }}>ไม่พบข้อมูลรายการในรายงานนี้</Text>
+          </View>
+        </View>
+      );
+    }
+
+    return data.map((row, idx) => {
+      const isLast = idx === data.length - 1;
+
+      if (type === 'stock_in') {
+        const projName = row.projects?.project_code ? `[${row.projects.project_code}] ${row.projects?.name}` : (row.projects?.name || '-');
+        const supplierPo = [row.supplier, row.po_number].filter(Boolean).join(' / ') || '-';
+        return (
+          <View key={idx} style={[styles.tableRow, isLast && { borderBottomWidth: 0 }]} wrap={false}>
+            <View style={[styles.td, { width: '6%' }]}><Text style={styles.tdTextCenter}>{idx + 1}</Text></View>
+            <View style={[styles.td, { width: '14%' }]}><Text style={styles.tdTextCenter}>{row.received_date || '-'}</Text></View>
+            <View style={[styles.td, { width: '24%' }]}><Text style={styles.tdText}>{projName}</Text></View>
+            <View style={[styles.td, { width: '26%' }]}><Text style={styles.tdText}>{row.items?.name || '-'}</Text></View>
+            <View style={[styles.td, { width: '10%' }]}><Text style={[styles.tdTextCenter, { fontWeight: 'bold', color: '#10b981' }]}>+{row.quantity || 0}</Text></View>
+            <View style={[styles.td, { width: '6%' }]}><Text style={styles.tdTextCenter}>{row.items?.unit || '-'}</Text></View>
+            <View style={[styles.td, { width: '14%', borderRightWidth: 0 }]}><Text style={styles.tdText}>{supplierPo}</Text></View>
+          </View>
+        );
+      }
+
+      if (type === 'withdrawals') {
+        const projName = row.projects?.project_code ? `[${row.projects.project_code}] ${row.projects?.name}` : (row.projects?.name || '-');
+        const reqDate = row.requested_at ? new Date(row.requested_at).toLocaleDateString('th-TH') : '-';
+        const deducted = row.deducted_quantity !== undefined && row.deducted_quantity !== null ? row.deducted_quantity : (row.status === 'approved' || row.status === 'completed' ? row.quantity : 0);
+        const requester = row.profiles?.full_name || '-';
+
+        return (
+          <View key={idx} style={[styles.tableRow, isLast && { borderBottomWidth: 0 }]} wrap={false}>
+            <View style={[styles.td, { width: '6%' }]}><Text style={styles.tdTextCenter}>{idx + 1}</Text></View>
+            <View style={[styles.td, { width: '14%' }]}><Text style={styles.tdTextCenter}>{reqDate}</Text></View>
+            <View style={[styles.td, { width: '22%' }]}><Text style={styles.tdText}>{projName}</Text></View>
+            <View style={[styles.td, { width: '24%' }]}><Text style={styles.tdText}>{row.items?.name || '-'}</Text></View>
+            <View style={[styles.td, { width: '8%' }]}><Text style={styles.tdTextCenter}>{row.quantity || 0}</Text></View>
+            <View style={[styles.td, { width: '8%' }]}><Text style={[styles.tdTextCenter, { fontWeight: 'bold', color: '#059669' }]}>{deducted}</Text></View>
+            <View style={[styles.td, { width: '6%' }]}><Text style={styles.tdTextCenter}>{row.items?.unit || '-'}</Text></View>
+            <View style={[styles.td, { width: '12%', borderRightWidth: 0 }]}><Text style={styles.tdTextCenter}>{requester}</Text></View>
+          </View>
+        );
+      }
+
+      // Default: Balance
+      const projName = row.project_name || row.โครงการ || '-';
+      const itemName = row.item_name || row.รายการวัสดุ || '-';
+      const totalIn = row.total_in !== undefined ? row.total_in : (row.รับเข้าทั้งหมด || 0);
+      const totalOut = row.total_out !== undefined ? row.total_out : (row.เบิกออกทั้งหมด || 0);
+      const balance = row.balance !== undefined ? row.balance : (row.คงเหลือ || 0);
+      const unit = row.unit || row.หน่วย || '';
+
+      return (
+        <View key={idx} style={[styles.tableRow, isLast && { borderBottomWidth: 0 }]} wrap={false}>
+          <View style={[styles.td, { width: '6%' }]}><Text style={styles.tdTextCenter}>{idx + 1}</Text></View>
+          <View style={[styles.td, { width: '28%' }]}><Text style={styles.tdText}>{projName}</Text></View>
+          <View style={[styles.td, { width: '32%' }]}><Text style={styles.tdText}>{itemName}</Text></View>
+          <View style={[styles.td, { width: '11%' }]}><Text style={[styles.tdTextCenter, { color: '#059669' }]}>+{totalIn}</Text></View>
+          <View style={[styles.td, { width: '11%' }]}><Text style={[styles.tdTextCenter, { color: '#d97706' }]}>-{totalOut}</Text></View>
+          <View style={[styles.td, { width: '12%', borderRightWidth: 0 }]}><Text style={[styles.tdTextCenter, { fontWeight: 'bold', color: '#1e1b4b' }]}>{balance} {unit}</Text></View>
+        </View>
+      );
+    });
+  };
+
+  return (
+    <Document>
+      <Page size="A4" style={styles.page}>
+        {/* Header Section */}
+        <View style={styles.headerSection}>
+          <View style={styles.logoContainer}>
+            <Image src="/images/logo.png" style={styles.logo} />
+          </View>
+          <View style={styles.companyNames}>
+            <Text style={styles.companyTh}>บริษัท ฟอร์ท คอร์ปอเรชั่น จำกัด (มหาชน)</Text>
+            <Text style={styles.companyEn}>FORTH CORPORATION PUBLIC COMPANY LIMITED</Text>
+          </View>
+        </View>
+        <Text style={styles.addressText}>
+          1053/1 ถนนพหลโยธิน แขวงพญาไท เขตพญาไท กรุงเทพมหานคร 10400 โทรศัพท์ : 02-265-6700 แฟกซ์ : 02-265-6799 เลขประจำตัวผู้เสียภาษี : 0107548000471{"\n"}
+          1053/1 Phaholyothin Road, Phayathai Subdistrict, Phayathai District, Bangkok 10400 Tel: +662-265-6700 Fax: +662-265-6799 Tax ID : 0107548000471
+        </Text>
+
+        {/* Report Title */}
+        <View style={styles.docTitleContainer}>
+          <Text style={styles.docTitle}>{reportTitle}</Text>
         </View>
 
-        {data.map((b, index) => (
-          <View key={index} style={[styles.tableRow, index === data.length - 1 && { borderBottomWidth: 0 }]}>
-            <Text style={[styles.td, styles.rCol1]}>{b.project_name || b.โครงการ || ''}</Text>
-            <Text style={[styles.td, styles.rCol2]}>{b.item_name || b.รายการวัสดุ || ''}</Text>
-            <Text style={[styles.td, styles.rCol3, { color: '#10b981' }]}>+{b.total_in || b.รับเข้าทั้งหมด || 0}</Text>
-            <Text style={[styles.td, styles.rCol4, { color: '#f59e0b' }]}>-{b.total_out || b.เบิกออกทั้งหมด || 0}</Text>
-            <Text style={[styles.td, styles.rCol5, { fontWeight: 'bold', borderRightWidth: 0 }]}>{b.balance || b.คงเหลือ || 0} {b.unit || b.หน่วย || ''}</Text>
-          </View>
-        ))}
-      </View>
-    </Page>
-  </Document>
-);
+        {/* Meta Section */}
+        <View style={styles.metaSection}>
+          <Text>จำนวนข้อมูลทั้งหมด: {data.length} รายการ</Text>
+          <Text>วันที่พิมพ์: {printDateStr}</Text>
+        </View>
+
+        {/* Report Data Table */}
+        <View style={styles.table}>
+          {renderTableHeader()}
+          {renderTableRows()}
+        </View>
+
+        {/* Page Numbering Footer */}
+        <Text 
+          style={{
+            position: 'absolute',
+            fontSize: 10,
+            bottom: 15,
+            left: 0,
+            right: 0,
+            textAlign: 'center',
+            color: '#666666'
+          }}
+          render={({ pageNumber, totalPages }) => `หน้า ${pageNumber} จาก ${totalPages}`}
+          fixed
+        />
+      </Page>
+    </Document>
+  );
+};
+
