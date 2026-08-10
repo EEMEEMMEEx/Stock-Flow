@@ -1,5 +1,12 @@
 # Changelog
 
+## [2026-08-10 15:36]
+
+- **Files Modified:** `src/lib/emailService.js`
+- **Details:**
+  - `src/lib/emailService.js`: ปรับปรุงระบบจัดการ Error Handling และ Structured Logging สำหรับการส่งอีเมลผ่าน Supabase Auth ป้องกันการดักจับข้าม Error (Error Swallowing) และแสดงข้อความแจ้งเตือนตามจริงเมื่อ Supabase Auth คืนค่า HTTP 500 หรือเชื่อมต่อ Custom SMTP ไม่สำเร็จ
+- **Reason:** วินิจฉัยปัญหาระบบส่งอีเมลทดสอบและเทียบเชิญผู้ใช้บน Vercel Production พร้อมให้แนวทางแก้ไขคอนฟิก Supabase Dashboard
+
 ## [2026-08-10 15:16]
 
 - **Files Modified:** `src/lib/emailService.js`, `src/lib/notificationDispatcher.js`, `src/components/users/UserActionModal.jsx`, `src/pages/UserManagement.jsx`

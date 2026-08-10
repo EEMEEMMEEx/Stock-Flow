@@ -14,6 +14,18 @@ export const DEFAULT_SMTP_CONFIG = {
 };
 
 /**
+ * Mask email address for structured logging (e.g. w***a.m@forth.co.th)
+ */
+const maskEmail = (email) => {
+  if (!email || typeof email !== 'string') return '***';
+  const parts = email.split('@');
+  if (parts.length !== 2) return '***';
+  const [name, domain] = parts;
+  if (name.length <= 2) return `${name}***@${domain}`;
+  return `${name[0]}***${name[name.length - 1]}@${domain}`;
+};
+
+/**
  * Resolves effective SMTP settings from Supabase system_settings.
  */
 export const getEffectiveSmtpConfig = async () => {
@@ -34,38 +46,70 @@ export const getEffectiveSmtpConfig = async () => {
 };
 
 /**
- * Centralized email sending function
+ * Centralized email sending function using Supabase Auth password recovery trigger.
+ * Throws explicit errors when Supabase Auth returns a 500 or network failure.
  */
 export const sendStockFlowEmail = async ({
   to,
   subject,
   html,
-  text
+  text,
+  actionUrl
 }) => {
   if (!to) {
     throw new Error('กรุณาระบุอีเมลผู้รับ (Recipient address is required)');
   }
 
-  try {
-    const { error: authErr } = await supabase.auth.resetPasswordForEmail(to, {
-      redirectTo: `${window.location.origin}/login`
+  const timestamp = new Date().toISOString();
+  const maskedTo = maskEmail(to);
+  const redirectTarget = actionUrl || `${window.location.origin}/login`;
+
+  console.info(`[EmailService][${timestamp}] Attempting email delivery:`, {
+    operation: 'sendStockFlowEmail',
+    recipient: maskedTo,
+    provider: 'Supabase Auth / GoTrue SMTP',
+    redirectTarget
+  });
+
+  const { error: authErr } = await supabase.auth.resetPasswordForEmail(to, {
+    redirectTo: redirectTarget
+  });
+
+  if (authErr) {
+    console.error(`[EmailService][${timestamp}] Email delivery failed:`, {
+      operation: 'sendStockFlowEmail',
+      recipient: maskedTo,
+      provider: 'Supabase Auth / GoTrue SMTP',
+      status: authErr.status || 500,
+      code: authErr.code || 'AUTH_SMTP_ERROR',
+      name: authErr.name,
+      message: authErr.message
     });
 
-    if (!authErr) {
-      return {
-        success: true,
-        recipient: to,
-        message: `ส่งอีเมลแจ้งเตือนไปยัง ${to} เรียบร้อยแล้ว`
-      };
+    let friendlyMessage = `ไม่สามารถส่งอีเมลไปยัง ${to} ได้ (Supabase Auth HTTP ${authErr.status || 500}: ${authErr.message || 'SMTP Server Error'})`;
+    if (authErr.status === 500 || authErr.name === 'AuthRetryableFetchError') {
+      friendlyMessage = `ไม่สามารถส่งอีเมลไปยัง ${to} ได้ (รหัสข้อผิดพลาด HTTP 500: การตั้งค่า Custom SMTP หรือ Redirect URL ใน Supabase Dashboard ขัดข้อง)`;
     }
-  } catch (err) {
-    console.warn('[sendStockFlowEmail] Supabase auth email trigger note:', err);
+
+    const errObj = new Error(friendlyMessage);
+    errObj.status = authErr.status || 500;
+    errObj.code = authErr.code;
+    errObj.originalError = authErr;
+    throw errObj;
   }
+
+  console.info(`[EmailService][${timestamp}] Email request accepted by Supabase Auth:`, {
+    operation: 'sendStockFlowEmail',
+    recipient: maskedTo,
+    provider: 'Supabase Auth / GoTrue SMTP',
+    status: 200
+  });
 
   return {
     success: true,
+    status: 'Accepted',
     recipient: to,
-    message: `ทำรายการส่งอีเมลสำหรับ ${to} เรียบร้อยแล้ว`
+    message: `ส่งคำขอส่งอีเมลไปยัง ${to} ผ่าน Supabase Auth เรียบร้อยแล้ว`
   };
 };
 
@@ -106,6 +150,9 @@ export const sendTestEmail = async (testRecipient, customTemplate = null) => {
   });
 };
 
+/**
+ * Send User Invitation Email Handler
+ */
 export const sendUserInvitationEmail = async ({ recipientEmail, userName, roleName, projectAccessSummary, actionUrl }) => {
   if (!recipientEmail) {
     throw new Error('กรุณาระบุอีเมลผู้รับ');
@@ -119,21 +166,14 @@ export const sendUserInvitationEmail = async ({ recipientEmail, userName, roleNa
     console.warn('[emailService] Default invitation branding:', error);
   }
 
-  try {
-    const { error: resetErr } = await supabase.auth.resetPasswordForEmail(recipientEmail, {
-      redirectTo: actionUrl || `${window.location.origin}/login`
-    });
+  const appName = branding.app_name || APP_CONFIG.name || 'StockFlow';
+  const targetUrl = actionUrl || `${window.location.origin}/login`;
 
-    if (resetErr) {
-      console.warn('[sendUserInvitationEmail] Auth resetPasswordForEmail warning:', resetErr);
-    }
-  } catch (e) {
-    console.warn('[sendUserInvitationEmail] Failed to send auth email:', e);
-  }
-
-  return {
-    success: true,
-    recipient: recipientEmail,
-    message: `ส่งอีเมลเชิญสำหรับ ${recipientEmail} เรียบร้อยแล้ว`
-  };
+  return await sendStockFlowEmail({
+    to: recipientEmail,
+    subject: `เชิญเข้าใช้งาน ${appName}`,
+    html: renderUserInvitationEmailHtml({ appName, userName, userEmail: recipientEmail, roleName, projectAccessSummary, actionUrl: targetUrl, branding }),
+    text: `ยินดีต้อนรับสู่ ${appName}\n\nบัญชี: ${recipientEmail}\nบทบาท: ${roleName}\n\nเข้าสู่ระบบ: ${targetUrl}`,
+    actionUrl: targetUrl
+  });
 };
