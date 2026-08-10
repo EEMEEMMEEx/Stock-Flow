@@ -12,6 +12,9 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg'],
+      workbox: {
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024
+      },
       manifest: {
         name: 'Stock Flow System',
         short_name: 'StockFlow',
@@ -34,6 +37,20 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+  },
+  build: {
+    chunkSizeWarningLimit: 1500,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-pdf': ['@react-pdf/renderer', 'jspdf', 'jspdf-autotable'],
+          'vendor-charts': ['recharts'],
+          'vendor-ui': ['lucide-react', 'framer-motion'],
+          'vendor-utils': ['xlsx', 'date-fns']
+        }
+      }
+    }
   },
   server: {
     port: 5173,
