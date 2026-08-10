@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-08-10 14:19]
+
+- **Files Modified:** `package.json`, `pdf-service/package.json`, `pdf-service/server.js`
+- **Details:**
+  - `package.json` & `pdf-service/package.json`: อัปเกรด `multer` จาก `1.4.5-lts.1` เป็น `2.2.0` เพื่อแก้ไขช่องโหว่ความปลอดภัยระดับวิกฤต (DoS vulnerabilities)
+  - `pdf-service/package.json`: อัปเกรด `puppeteer` จาก `22.12.1` เป็น `24.15.0` ตามคำแนะนำ Vercel Build Warning เพื่อความเสถียรของสภาพแวดล้อม Build
+  - `pdf-service/server.js`: อัปเดตตัวเลือก `headless` ของ Puppeteer จาก `'new'` เป็น `true` ตามมาตรฐาน v24+
+- **Reason:** แก้ไข Vercel production build warnings และปรับปรุงความปลอดภัยของระบบประมวลผลไฟล์และ PDF Generation
+
 ## [2026-08-10 13:25]
 
 - **Files Modified:** `src/pages/History.jsx`, `src/lib/pdf-templates.jsx`, `src/lib/pdf-service.js`, `src/pages/Withdrawals.jsx`, `src/components/history/HistoryHeader.jsx` (New), `src/components/history/HistoryKpiGrid.jsx` (New), `src/components/history/HistoryFilterBar.jsx` (New), `src/components/history/HistoryDataTable.jsx` (New), `src/components/history/HistoryPagination.jsx` (New), `src/components/history/HistoryEmptyState.jsx` (New)

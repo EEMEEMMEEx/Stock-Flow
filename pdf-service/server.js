@@ -717,7 +717,7 @@ app.post('/api/export-pdf', async (req, res) => {
     const puppeteer = (await import('puppeteer')).default;
     // 1. Launch Puppeteer
     browser = await puppeteer.launch({
-      headless: 'new',
+      headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
 
