@@ -1,5 +1,13 @@
 # Changelog
 
+## [2026-08-10 15:56]
+
+- **Files Modified:** `supabase/migrations/39_fix_auth_users_null_tokens_for_gotrue.sql` (New)
+- **Details:**
+  - `supabase/migrations/39_fix_auth_users_null_tokens_for_gotrue.sql`: วินิจฉัยพบ Root Cause ของข้อผิดพลาด HTTP 500 จากไฟล์ `supabase_logs.json` (`Scan error on column index 3, name "confirmation_token": converting NULL to string is unsupported`) 
+  - สร้าง Migration 39 อัปเดตคอลัมน์ `confirmation_token`, `recovery_token`, `email_change_token_new`, `reauthentication_token`, `email_change` ใน `auth.users` จาก `NULL` เป็นสตริงว่าง `''` และปรับปรุง `admin_create_user` RPC เพื่อป้องกันปัญหา Go Scan Error บน Supabase GoTrue Auth
+- **Reason:** แก้ไขปัญหาส่งอีเมลเทียบเชิญและลิงก์กู้คืนรหัสผ่านล้มเหลว (HTTP 500 Error) บน Supabase Auth
+
 ## [2026-08-10 15:36]
 
 - **Files Modified:** `src/lib/emailService.js`
