@@ -61,7 +61,18 @@ vite.config.js.timestamp-*
 # Browser Temporary Downloads & Scratch Files
 *.crdownload
 Unconfirmed *.crdownload
+
+# Local scratch/test scripts (may contain credentials)
 test_auth_simple.js
+
+# Machine-specific IDE/Tool Configuration (contains local absolute paths)
+.mcp.json
+opencode.jsonc
+
+# Internal Workflow Diagrams (move to private documentation system)
+rbac-workflow.html
+stock-in-vs-items-workflow.html
+stock-flow-atomic-transaction-workflow.*
 
 # Generated Export Reports & Temporary PDFs
 *_Report_*.xlsx
@@ -80,6 +91,10 @@ stock_in_Report_*.pdf
 /.agents/
 /docs/
 /docs
+
+# Supabase local configuration (machine-specific)
+supabase/.gitignore
+supabase/config.toml
 
 
 
