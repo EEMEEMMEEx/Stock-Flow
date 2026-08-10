@@ -70,3 +70,8 @@ MaterialWithdrawal_*.pdf
 DeliveryNote_*.pdf
 stock_in_Report_*.pdf
 
+# Root-level data import files and template files (Preserves supabase/migrations/*.sql)
+/*.sql
+/*.csv
+
+
