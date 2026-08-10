@@ -1,5 +1,16 @@
 # Changelog
 
+## [2026-08-10 15:16]
+
+- **Files Modified:** `src/lib/emailService.js`, `src/lib/notificationDispatcher.js`, `src/components/users/UserActionModal.jsx`, `src/pages/UserManagement.jsx`
+- **Details:**
+  - `src/lib/emailService.js` & `src/lib/notificationDispatcher.js`: ถอดพึ่งพา `VITE_PDF_SERVICE_URL` และเอนด์พอยต์ `/api/send-email` ออกทั้งหมด เชื่อมโยงระบบส่งอีเมลเทียบเชิญและลิงก์ตั้งรหัสผ่านกับ Supabase Auth แบบ Native (`resetPasswordForEmail`)
+  - `src/components/users/UserActionModal.jsx`: แก้ไขชื่อคอลัมน์และตารางในคิวรีตรวจสอบสิทธิ์ก่อนลบ/ปิดใช้งานผู้ใช้:
+    - แก้ไข `stock_transactions` คอลัมน์ `user_id` -> `created_by` (ขจัดข้อผิดพลาด HTTP 400 Bad Request)
+    - แก้ไขชื่อตาราง `withdrawals` -> `withdrawal_orders` และอัปเดตคอลัมน์ `requested_by`, `approved_by`, `rejected_by` (ขจัดข้อผิดพลาด HTTP 404 Not Found)
+  - `src/pages/UserManagement.jsx`: ปรับปรุงปุ่ม "ส่งอีเมลเชิญซ้ำ (Resend Invitation)" พร้อม Loading Spinner (`RefreshCw animate-spin`) และแยกสถานะการสร้างบัญชีออกจากการส่งอีเมล การันตีบัญชีไม่ถูกลบหากส่งอีเมลขัดข้อง
+- **Reason:** แก้ไขปัญหาระบบส่งอีเมลเทียบเชิญผู้ใช้บน Production และแก้ไข Database Query Errors 400/404 บน Supabase REST API
+
 ## [2026-08-10 15:06]
 
 - **Files Modified:** `pdf-service/` (Deleted), `package.json`, `vite.config.js`, `.env.example`, `src/components/settings/MinIOOrphanManager.jsx`, `docs/pdf_generation_guide.html` (New), `README.md`

@@ -89,7 +89,7 @@ const UserActionModal = ({
       const { count: txCount, error: txErr } = await supabase
         .from('stock_transactions')
         .select('id', { count: 'exact', head: true })
-        .or(`user_id.eq.${user.id},created_by.eq.${user.id}`);
+        .eq('created_by', user.id);
 
       if (!txErr && txCount && txCount > 0) {
         setIntegrityBlock({
@@ -102,9 +102,9 @@ const UserActionModal = ({
 
       // 3. Check withdrawal requests & approvals
       const { count: withdrawalCount, error: wdErr } = await supabase
-        .from('withdrawals')
+        .from('withdrawal_orders')
         .select('id', { count: 'exact', head: true })
-        .or(`requested_by.eq.${user.id},approved_by.eq.${user.id}`);
+        .or(`requested_by.eq.${user.id},approved_by.eq.${user.id},rejected_by.eq.${user.id}`);
 
       if (!wdErr && withdrawalCount && withdrawalCount > 0) {
         setIntegrityBlock({
