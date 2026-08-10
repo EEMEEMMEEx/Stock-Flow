@@ -74,4 +74,12 @@ stock_in_Report_*.pdf
 /*.sql
 /*.csv
 
+# Local directories to exclude from Git tracking
+/PDF Template/
+/request-agent/
+/.agents/
+/docs/
+/docs
+
+
 
