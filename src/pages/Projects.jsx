@@ -264,7 +264,7 @@ const Projects = () => {
                   <Plus className="h-4 w-4" /> สร้างโครงการใหม่
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[450px] rounded-2xl glass">
+              <DialogContent className="sm:max-w-[450px] rounded-2xl">
                 <form onSubmit={handleCreateProject}>
                   <DialogHeader>
                     <DialogTitle className="text-xl font-bold flex items-center gap-2">
@@ -316,7 +316,7 @@ const Projects = () => {
             return (
               <Card 
                 key={group.key} 
-                className="overflow-hidden rounded-2xl glass shadow-md hover:shadow-xl transition-all duration-300 border-white/20 dark:border-slate-800 flex flex-col justify-between"
+                className="neu-interactive overflow-hidden rounded-2xl neu-flat border-0 flex flex-col justify-between"
               >
                 <CardHeader className="pb-3 bg-muted/30 border-b">
                   <div className="flex items-start justify-between gap-3">
@@ -443,7 +443,7 @@ const Projects = () => {
 
       {/* Add Location Modal */}
       <Dialog open={isAddLocationOpen} onOpenChange={setIsAddLocationOpen}>
-        <DialogContent className="sm:max-w-[450px] rounded-2xl glass">
+        <DialogContent className="sm:max-w-[450px] rounded-2xl">
           <form onSubmit={handleAddLocationToProject}>
             <DialogHeader>
               <DialogTitle className="text-xl font-bold flex items-center gap-2">
@@ -482,7 +482,7 @@ const Projects = () => {
 
       {/* Edit Record Dialog */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="sm:max-w-[450px] rounded-2xl glass">
+        <DialogContent className="sm:max-w-[450px] rounded-2xl">
           <form onSubmit={handleEditRecord}>
             <DialogHeader>
               <DialogTitle className="text-xl font-bold flex items-center gap-2">
@@ -531,7 +531,7 @@ const Projects = () => {
 
       {/* Delete Record Dialog */}
       <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-        <DialogContent className="sm:max-w-[425px] rounded-2xl glass">
+        <DialogContent className="sm:max-w-[425px] rounded-2xl">
           <DialogHeader>
             <DialogTitle className="text-red-600 font-bold text-lg flex items-center gap-2">
               <Trash2 className="w-5 h-5" />

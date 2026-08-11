@@ -96,7 +96,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
         to={item.path}
         onClick={onClose}
         className={cn(
-          "flex items-center gap-3 py-2.5 rounded-xl transition-all duration-200 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring overflow-hidden whitespace-nowrap shrink-0",
+          "flex items-center gap-3 py-3 rounded-xl transition-all duration-200 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring overflow-hidden whitespace-nowrap shrink-0",
           isDesktopCollapsed ? "justify-center px-0 w-11 h-11 mx-auto" : "px-3 w-full",
           isActive
             ? "neu-pressed text-primary font-semibold shadow-sm border-l-2 border-primary"
@@ -166,7 +166,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
                   title="Expand sidebar"
                   aria-expanded={false}
                   aria-controls="stockflow-sidebar"
-                  className="p-2.5 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring group"
+                  className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring group"
                 >
                   <Package className="w-5 h-5 group-hover:hidden" />
                   <PanelLeftOpen className="w-5 h-5 hidden group-hover:block" />
@@ -196,7 +196,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
               aria-expanded={true}
               aria-controls="stockflow-sidebar"
               onClick={onToggleCollapse}
-              className="hidden md:flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground hover:bg-[var(--glass-hover)] hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0"
+              className="hidden md:flex h-11 w-11 items-center justify-center rounded-xl text-muted-foreground hover:bg-[var(--glass-hover)] hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0"
             >
               <PanelLeftClose className="w-5 h-5" />
             </button>
@@ -208,7 +208,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
               title="Close navigation"
               aria-expanded={isOpen}
               aria-controls="stockflow-sidebar"
-              className="flex md:hidden h-9 w-9 items-center justify-center rounded-xl text-muted-foreground hover:bg-[var(--glass-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0"
+              className="flex md:hidden h-11 w-11 items-center justify-center rounded-xl text-muted-foreground hover:bg-[var(--glass-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0"
               onClick={onClose}
             >
               <X className="w-5 h-5" />
@@ -288,7 +288,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
                 to="/settings"
                 onClick={onClose}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring overflow-hidden whitespace-nowrap shrink-0",
+                  "flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring overflow-hidden whitespace-nowrap shrink-0",
                   isSettingsActive
                     ? "neu-pressed text-primary font-semibold shadow-sm border-l-2 border-primary"
                     : "text-muted-foreground hover:neu-flat-sm hover:text-foreground"

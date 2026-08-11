@@ -882,7 +882,7 @@ const StockIn = () => {
 
       {/* Order Details Dialog */}
       <Dialog open={!!selectedOrder} onOpenChange={(open) => !open && setSelectedOrder(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col p-6 rounded-2xl glass shadow-2xl border-white/20 dark:border-slate-800">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col p-6 rounded-2xl neu-flat border-0">
           <DialogHeader className="pb-3 border-b shrink-0">
             <div className="flex items-center justify-between">
               <DialogTitle className="text-xl font-bold flex items-center gap-2 text-foreground">

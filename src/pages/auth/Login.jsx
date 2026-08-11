@@ -53,7 +53,7 @@ const Login = () => {
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-200/40 blur-[120px]" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-purple-200/40 blur-[120px]" />
       
-      <Card className="w-full max-w-md relative z-10 shadow-2xl border-slate-200">
+      <Card className="w-full max-w-md relative z-10 border-0">
         <CardHeader className="space-y-3 pb-6">
           <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center mb-2 mx-auto">
             <Package className="w-6 h-6 text-white" />
@@ -72,7 +72,7 @@ const Login = () => {
                   type="email"
                   placeholder="Email"
                   autoComplete="email"
-                  className="pl-10 h-12 bg-background/50 border-white/10 focus:border-primary"
+                  className="pl-10 h-12"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -86,7 +86,7 @@ const Login = () => {
                   type="password"
                   placeholder="Password"
                   autoComplete="current-password"
-                  className="pl-10 h-12 bg-slate-50 border-slate-200 focus:border-primary"
+                  className="pl-10 h-12"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -95,7 +95,7 @@ const Login = () => {
             </div>
             <Button 
               type="submit" 
-              className="w-full h-12 text-base font-medium shadow-lg shadow-primary/20" 
+              className="w-full h-12 text-base font-medium" 
               disabled={loading}
             >
               {loading ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ'}

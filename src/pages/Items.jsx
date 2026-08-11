@@ -450,7 +450,7 @@ const Items = () => {
       </div>
 
       {/* Filter, Search & Layout Control Toolbar */}
-      <Card className="p-4 rounded-2xl glass border border-border/60 shadow-sm space-y-3">
+      <Card className="p-4 rounded-2xl neu-flat border-0 space-y-3">
         <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
           {/* Search Box */}
           <div className="relative flex-1 min-w-[240px]">
@@ -458,7 +458,7 @@ const Items = () => {
             <Input
               type="search"
               placeholder="ค้นหาชื่อรายการ, รุ่น, รหัส SKU, โครงการ หรือรายละเอียด..."
-              className="pl-9 pr-4 h-10 rounded-xl text-xs bg-background/80 focus:bg-background transition-all shadow-sm"
+              className="pl-9 pr-4 h-10 rounded-xl text-xs"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -470,7 +470,7 @@ const Items = () => {
             <div className="flex items-center gap-1.5 min-w-[150px]">
               <Tag className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
               <select
-                className="h-10 w-full rounded-xl border border-input bg-background/80 px-3 py-1 text-xs font-semibold focus:ring-2 focus:ring-indigo-500 transition-all cursor-pointer shadow-sm"
+                className="h-10 w-full rounded-xl neu-pressed bg-transparent px-3 py-1 text-xs font-semibold focus:ring-2 focus:ring-indigo-500 transition-all cursor-pointer border-0"
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
               >
@@ -485,7 +485,7 @@ const Items = () => {
             <div className="flex items-center gap-1.5 min-w-[170px]">
               <Building2 className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
               <select
-                className="h-10 w-full rounded-xl border border-input bg-background/80 px-3 py-1 text-xs font-semibold focus:ring-2 focus:ring-indigo-500 transition-all cursor-pointer shadow-sm"
+                className="h-10 w-full rounded-xl neu-pressed bg-transparent px-3 py-1 text-xs font-semibold focus:ring-2 focus:ring-indigo-500 transition-all cursor-pointer border-0"
                 value={projectFilter}
                 onChange={(e) => setProjectFilter(e.target.value)}
               >
@@ -512,7 +512,7 @@ const Items = () => {
             </div>
 
             {/* View Mode Switcher */}
-            <div className="flex items-center bg-muted/60 p-1 rounded-xl border shrink-0">
+            <div className="flex items-center neu-pressed-sm bg-muted/40 p-1 rounded-xl border-0 shrink-0">
               <Button
                 type="button"
                 variant={viewMode === 'table' ? 'default' : 'ghost'}
@@ -551,12 +551,12 @@ const Items = () => {
 
       {/* Main Content Area: Table View vs Grid View */}
       {loading ? (
-        <Card className="p-12 text-center rounded-2xl glass">
+        <Card className="p-12 text-center rounded-2xl neu-flat border-0">
           <RefreshCw className="w-8 h-8 text-indigo-500 animate-spin mx-auto mb-3" />
           <p className="text-sm text-muted-foreground font-medium">กำลังดึงข้อมูลรายการวัสดุMaster...</p>
         </Card>
       ) : filteredItems.length === 0 ? (
-        <Card className="p-12 text-center rounded-2xl glass space-y-3">
+        <Card className="p-12 text-center rounded-2xl neu-flat border-0 space-y-3">
           <AlertCircle className="w-10 h-10 text-muted-foreground/50 mx-auto" />
           <h3 className="font-bold text-lg text-foreground">ไม่พบรายการวัสดุที่ค้นหา</h3>
           <p className="text-xs text-muted-foreground max-w-md mx-auto">
@@ -565,7 +565,7 @@ const Items = () => {
         </Card>
       ) : viewMode === 'table' ? (
         /* Table View */
-        <Card className="overflow-hidden rounded-2xl border border-border/60 shadow-sm glass">
+        <Card className="overflow-hidden rounded-2xl neu-flat border-0">
           <div className="overflow-x-auto">
             <Table>
               <TableHeader className="bg-muted/40">
@@ -723,7 +723,7 @@ const Items = () => {
             return (
               <Card 
                 key={item.recordKey} 
-                className={`p-4 rounded-2xl glass border border-border/60 shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-3 relative overflow-hidden ${
+                className={`p-4 rounded-2xl neu-flat border-0 hover:shadow-md transition-all flex flex-col justify-between space-y-3 relative overflow-hidden ${
                   isChild ? "bg-blue-500/5 dark:bg-blue-950/20" : ""
                 }`}
               >
@@ -764,7 +764,7 @@ const Items = () => {
                   </div>
 
                   {/* Project Location Pill */}
-                  <div className="mt-3 p-2.5 rounded-xl bg-muted/40 border border-border/40 text-xs space-y-0.5">
+                  <div className="mt-3 p-2.5 rounded-xl neu-pressed-sm bg-muted/40 border-0 text-xs space-y-0.5">
                     <div className="font-semibold text-indigo-700 dark:text-indigo-300 flex items-center gap-1.5 truncate">
                       <Building2 className="w-3.5 h-3.5 shrink-0" />
                       <span className="truncate">{item.project_display}</span>
@@ -821,7 +821,7 @@ const Items = () => {
 
       {/* Supabase-Style Compact Pagination Footer Bar */}
       {filteredItems.length > 0 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 bg-muted/40 rounded-2xl border border-border/60 glass shadow-2xs text-xs text-muted-foreground select-none">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 bg-muted/40 rounded-2xl neu-pressed-sm border-0 text-xs text-muted-foreground select-none">
           {/* Left Controls: Navigation & Page Input */}
           <div className="flex items-center gap-2">
             {/* Previous Page Button */}
@@ -906,7 +906,7 @@ const Items = () => {
 
       {/* Edit Master Item Modal */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="sm:max-w-[480px] rounded-2xl glass">
+        <DialogContent className="sm:max-w-[480px] rounded-2xl">
           <form onSubmit={handleEditItem}>
             <DialogHeader>
               <DialogTitle className="text-xl font-bold flex items-center gap-2">
@@ -976,7 +976,7 @@ const Items = () => {
 
       {/* Delete Master Item Modal */}
       <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-        <DialogContent className="sm:max-w-[425px] rounded-2xl glass">
+        <DialogContent className="sm:max-w-[425px] rounded-2xl">
           <DialogHeader>
             <DialogTitle className="text-red-600 font-bold text-lg flex items-center gap-2">
               <AlertCircle className="w-5 h-5" />

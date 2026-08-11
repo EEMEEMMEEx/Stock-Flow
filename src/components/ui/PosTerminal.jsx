@@ -47,9 +47,9 @@ const PosItemCard = React.memo(({ item, isStockIn, cart, addToCart }) => {
           addToCart(item);
         }
       }}
-      className={`min-h-[250px] p-3.5 rounded-2xl glass border shadow-2xs transition-[box-shadow,border-color,background-color,transform] duration-200 flex flex-col justify-between relative overflow-hidden group select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
+      className={`min-h-[250px] p-3.5 rounded-2xl neu-flat border-0 transition-[box-shadow,border-color,background-color,transform] duration-200 flex flex-col justify-between relative overflow-hidden group select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
         isInCart
-          ? 'ring-2 ring-indigo-500 border-indigo-500/50 bg-indigo-500/5 dark:bg-indigo-950/20 shadow-sm cursor-pointer'
+          ? 'neu-pressed ring-2 ring-indigo-500 border-indigo-500/50 bg-indigo-500/5 dark:bg-indigo-950/20 cursor-pointer'
           : completelyEmpty 
             ? 'opacity-50 cursor-not-allowed bg-muted/20 border-border/40'
             : 'cursor-pointer hover:shadow-md hover:border-indigo-500/40 border-border/60 active:scale-[0.99]'
@@ -548,7 +548,7 @@ const PosTerminal = ({
     <div className="flex flex-col lg:flex-row items-start gap-4 lg:gap-6 pb-24 lg:pb-0">
       {/* Left: Product Catalog Grid & Filter Toolbar */}
       <div className="flex-1 min-w-0 space-y-4 w-full">
-        <section className="p-4 sm:p-5 rounded-2xl glass border border-border/60 shadow-2xs space-y-4" aria-labelledby="pos-catalog-title">
+        <section className="p-4 sm:p-5 rounded-2xl neu-flat border-0 space-y-4" aria-labelledby="pos-catalog-title">
           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
             <div className="flex items-start gap-3 min-w-0">
               {Icon && (
@@ -672,7 +672,7 @@ const PosTerminal = ({
           {isLoading ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
               {[...Array(8)].map((_, i) => (
-                <div key={i} className="p-4 rounded-2xl glass border border-border/40 space-y-3 animate-pulse">
+                <div key={i} className="p-4 rounded-2xl neu-flat-sm border-0 space-y-3 animate-pulse">
                   <div className="aspect-square bg-muted/60 rounded-xl" />
                   <div className="h-3 bg-muted/60 rounded w-2/3" />
                   <div className="h-4 bg-muted/60 rounded w-5/6" />
@@ -681,14 +681,14 @@ const PosTerminal = ({
               ))}
             </div>
           ) : filteredItems.length === 0 ? (
-            <div className="flex flex-col items-center justify-center p-12 text-muted-foreground glass rounded-2xl border border-border/60 space-y-2">
+            <div className="flex flex-col items-center justify-center p-12 text-muted-foreground neu-flat rounded-2xl border-0 space-y-2">
               <Package className="w-10 h-10 text-muted-foreground/40 stroke-1" />
               <p className="font-semibold text-sm">ไม่พบรายการวัสดุตรงกับเงื่อนไข</p>
               <p className="text-xs text-muted-foreground">ลองเปลี่ยนคำค้นหา หรือกดรีเซ็ตตัวกรองด้านบนเพื่อแสดงผลใหม่</p>
             </div>
           ) : viewMode === 'table' ? (
             /* List/Table View Density Option */
-            <Card className="overflow-hidden glass border border-border/60 rounded-2xl">
+            <Card className="overflow-hidden neu-flat border-0 rounded-2xl">
               <Table>
                 <TableHeader className="bg-muted/50 text-xs">
                   <TableRow>
@@ -786,7 +786,7 @@ const PosTerminal = ({
 
         {/* Supabase-Style Compact Pagination Footer Bar */}
         {filteredItems.length > 0 && (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 bg-muted/40 rounded-2xl border border-border/60 glass shadow-2xs text-xs text-muted-foreground select-none">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 bg-muted/40 rounded-2xl neu-pressed-sm border-0 text-xs text-muted-foreground select-none">
             {/* Left Controls: Navigation & Page Input */}
             <div className="flex items-center gap-2">
               {/* Previous Page Button */}
@@ -868,7 +868,7 @@ const PosTerminal = ({
       </div>
 
       {/* Right: Desktop Sticky Order Summary Cart Panel */}
-      <Card className="hidden lg:flex w-[340px] xl:w-[380px] max-h-[calc(100vh-2rem)] rounded-2xl glass border border-border/60 shadow-sm p-4 flex-col space-y-4 shrink-0 sticky top-4">
+      <Card className="hidden lg:flex w-[340px] xl:w-[380px] max-h-[calc(100vh-2rem)] rounded-2xl neu-flat border-0 p-4 flex-col space-y-4 shrink-0 sticky top-4">
         {renderCartContent()}
       </Card>
 
@@ -899,7 +899,7 @@ const PosTerminal = ({
 
       {/* Mobile/Tablet Cart Dialog Sheet */}
       <Dialog open={isMobileCartOpen} onOpenChange={setIsMobileCartOpen}>
-        <DialogContent className="sm:max-w-[480px] max-h-[calc(100vh-2rem)] overflow-y-auto rounded-2xl glass p-5">
+        <DialogContent className="sm:max-w-[480px] max-h-[calc(100vh-2rem)] overflow-y-auto rounded-2xl p-5">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold flex items-center gap-2">
               <ShoppingCart className="w-5 h-5 text-indigo-600" />

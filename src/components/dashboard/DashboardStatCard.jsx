@@ -1,13 +1,15 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Card, CardContent } from '@/components/ui/card';
+import { ArrowRight } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/AuthContext';
+import { cn } from '@/lib/utils';
 
 /**
- * Reusable Dashboard KPI Summary Card
- * Adheres to StockFlow Design System (Neumorphic/Glassmorphism) & UI/UX Pro Max standards.
- * Supports RBAC permissions, loading states, error states, and accessible interactive links.
+ * Reusable Dashboard KPI Summary Card.
+ * Supports RBAC permissions, loading states, error states, and accessible links.
+ * `featured` renders a larger "primary actionable" card with a call-to-action row.
+ * Secondary text stays at least 14px (text-sm) for mobile readability.
  */
 const TONE_CLASSES = {
   warning: {
@@ -46,78 +48,104 @@ const DashboardStatCard = ({
   loading = false,
   error = false,
   permission = null,
+  featured = false,
+  ctaLabel = null,
+  className = '',
 }) => {
   const { can } = useAuth();
 
-  // RBAC Permission Check: Card is clickable ONLY if user has permission for destination route
+  // RBAC Permission Check: card is clickable ONLY if user has permission for destination route
   const isAuthorized = permission ? can(permission) : true;
   const isInteractive = Boolean(href && isAuthorized && !loading && !error);
 
   const style = TONE_CLASSES[tone] || TONE_CLASSES.default;
 
   const cardInnerContent = (
-    <CardContent className="p-4 sm:p-5 flex items-center justify-between gap-4 h-full relative z-10">
+    <div className={cn('relative z-10 flex h-full flex-col', featured ? 'p-4 sm:p-6' : 'p-4 sm:p-5')}>
       <div className="flex items-center gap-3.5 min-w-0">
-        {/* Status Icon Container */}
+        {/* Status Icon Container (44px min touch-friendly visual) */}
         {Icon && (
-          <div className={`p-3 rounded-2xl border shadow-sm shrink-0 ${style.iconBg} transition-transform group-hover:scale-105`}>
-            <Icon className="w-5 h-5" strokeWidth={2.2} />
+          <div
+            className={cn(
+              'flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border shadow-sm transition-transform group-hover:scale-105',
+              featured ? 'bg-primary text-primary-foreground border-transparent' : style.iconBg
+            )}
+          >
+            <Icon className={featured ? 'h-5 w-5' : 'h-5 w-5'} strokeWidth={2.2} aria-hidden="true" />
           </div>
         )}
 
         {/* Label & Supporting Subtext */}
         <div className="min-w-0 space-y-0.5">
-          <span className="text-xs sm:text-sm font-bold tracking-tight text-foreground truncate block">
+          <span className="block truncate text-sm font-bold tracking-tight text-foreground">
             {label}
           </span>
           {subtext && (
-            <span className="text-[11px] text-muted-foreground truncate block font-medium">
+            <span className="block truncate text-sm font-medium text-muted-foreground">
               {subtext}
             </span>
           )}
         </div>
       </div>
 
-      {/* Metric Numeric Value / Loading Skeleton / Error State */}
-      <div className="shrink-0 text-right">
-        {loading ? (
-          <Skeleton className="h-8 w-14 rounded-lg" />
-        ) : error ? (
-          <span className="text-xl font-bold text-muted-foreground/60" title="ไม่สามารถโหลดข้อมูลได้">—</span>
-        ) : (
-          <span className={`text-2xl sm:text-3xl font-bold tracking-tight ${style.valueText}`}>
-            {typeof value === 'number' ? value.toLocaleString('th-TH') : (value ?? 0)}
+      <div className={cn('flex items-end justify-between gap-3', featured ? 'mt-4 sm:mt-5' : 'mt-2.5')}>
+        {/* Metric Numeric Value / Loading Skeleton / Error State */}
+        <div className="min-w-0">
+          {loading ? (
+            <Skeleton className={cn('rounded-lg', featured ? 'h-11 w-20' : 'h-9 w-16')} />
+          ) : error ? (
+            <span
+              className={cn('font-bold text-muted-foreground/60', featured ? 'text-3xl' : 'text-2xl sm:text-3xl')}
+              title="ไม่สามารถโหลดข้อมูลได้"
+            >
+              —
+            </span>
+          ) : (
+            <span
+              className={cn(
+                'font-bold tracking-tight',
+                featured ? 'text-3xl sm:text-4xl' : 'text-2xl sm:text-3xl',
+                style.valueText
+              )}
+            >
+              {typeof value === 'number' ? value.toLocaleString('th-TH') : (value ?? 0)}
+            </span>
+          )}
+        </div>
+
+        {/* Featured CTA */}
+        {featured && isInteractive && (
+          <span className="inline-flex shrink-0 items-center gap-1.5 text-sm font-semibold text-primary">
+            {ctaLabel || 'จัดการคำขอ'}
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" aria-hidden="true" />
           </span>
         )}
       </div>
-    </CardContent>
+    </div>
   );
 
-  const cardClassName = `neu-flat border border-border/40 overflow-hidden relative transition-all duration-200 ${
-    isInteractive 
-      ? 'group cursor-pointer hover:shadow-md hover:border-primary/40 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary' 
-      : 'cursor-default'
-  }`;
+  const cardClassName = cn(
+    'relative overflow-hidden neu-flat border-0 text-card-foreground',
+    featured
+      ? 'bg-gradient-to-br from-primary/[0.08] via-transparent to-transparent'
+      : '',
+    isInteractive ? 'neu-interactive group cursor-pointer' : 'cursor-default',
+    className
+  );
 
   if (isInteractive) {
     return (
-      <Link 
-        to={href} 
+      <Link
+        to={href}
         aria-label={`${label} ${value !== undefined && value !== null ? value : ''} ${subtext || ''}`}
-        className="block h-full no-underline"
+        className="block h-full no-underline rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       >
-        <Card className={cardClassName}>
-          {cardInnerContent}
-        </Card>
+        <div className={cardClassName}>{cardInnerContent}</div>
       </Link>
     );
   }
 
-  return (
-    <Card className={cardClassName}>
-      {cardInnerContent}
-    </Card>
-  );
+  return <div className={cardClassName}>{cardInnerContent}</div>;
 };
 
 export default DashboardStatCard;

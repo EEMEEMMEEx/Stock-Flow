@@ -1,194 +1,264 @@
-import React, { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Package, FolderKanban, ArrowUpFromLine, AlertCircle, ArrowDownToLine, CheckCircle2 } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { format } from 'date-fns';
+import { RefreshCw } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
-import { format } from 'date-fns';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useTheme } from '@/components/theme-provider';
+import { cn } from '@/lib/utils';
 import DashboardStatCard from '@/components/dashboard/DashboardStatCard';
+import ProjectBalanceChart from '@/components/dashboard/ProjectBalanceChart';
+import RecentActivity from '@/components/dashboard/RecentActivity';
+import QuickActions from '@/components/dashboard/QuickActions';
+import {
+  AlertCircle,
+  FolderKanban,
+  Package,
+  ArrowUpFromLine,
+  LayoutDashboard,
+} from 'lucide-react';
+
+const INITIAL_SECTIONS = {
+  kpi: { status: 'loading', data: null, error: null },
+  activity: { status: 'loading', data: [], error: null },
+  balance: { status: 'loading', data: [], error: null },
+};
 
 const Dashboard = () => {
-  const { profile } = useAuth();
-  const { resolvedTheme } = useTheme();
-  const [stats, setStats] = useState({
-    projectCount: 0,
-    itemCount: 0,
-    pendingCount: 0,
-    todayWithdrawals: 0,
-  });
-  const [recentActivity, setRecentActivity] = useState([]);
-  const [stockBalance, setStockBalance] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [hasError, setHasError] = useState(false);
+  const { profile, can } = useAuth();
+  const [sections, setSections] = useState(INITIAL_SECTIONS);
+  const [lastUpdatedAt, setLastUpdatedAt] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const mountedRef = useRef(true);
 
-  useEffect(() => {
-    fetchDashboardData();
+  // ---- Data fetchers (each section fails independently) ----
+
+  const fetchKpi = useCallback(async () => {
+    // "วันนี้" ตาม local timezone ของผู้ใช้ (ไม่ใช่ UTC midnight)
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    const todayStartISO = startOfToday.toISOString();
+
+    const buildCount = (table, apply) => {
+      let query = supabase.from(table).select('*', { count: 'exact', head: true });
+      if (apply) query = apply(query);
+      return query;
+    };
+
+    const results = await Promise.allSettled([
+      buildCount('projects', (q) => q.eq('status', 'active')),
+      buildCount('items'),
+      buildCount('withdrawal_orders', (q) => q.eq('status', 'pending')),
+      buildCount('withdrawal_orders', (q) => q.gte('requested_at', todayStartISO)),
+    ]);
+
+    const counts = results.map((result) =>
+      result.status === 'fulfilled' && !result.value.error ? result.value.count || 0 : null
+    );
+
+    if (counts.some((count) => count === null)) {
+      throw new Error('ไม่สามารถโหลดข้อมูลสรุป (KPI) ได้');
+    }
+
+    return {
+      projectCount: counts[0],
+      itemCount: counts[1],
+      pendingCount: counts[2],
+      todayWithdrawals: counts[3],
+    };
   }, []);
 
-  const fetchDashboardData = async () => {
-    try {
-      setLoading(true);
-      setHasError(false);
+  const fetchActivity = useCallback(async () => {
+    const { data, error } = await supabase
+      .from('withdrawal_orders')
+      .select(`
+        *,
+        projects(id, name),
+        profiles!withdrawal_orders_requested_by_fkey(id, full_name),
+        withdrawal_items(id, quantity, items(name, unit))
+      `)
+      .order('requested_at', { ascending: false })
+      .limit(6);
 
-      const { count: projectCount, error: projErr } = await supabase
-        .from('projects')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'active');
+    if (error) throw error;
+    return data || [];
+  }, []);
 
-      const { count: itemCount, error: itemErr } = await supabase
-        .from('items')
-        .select('*', { count: 'exact', head: true });
+  const fetchBalance = useCallback(async () => {
+    // ดึงเฉพาะคอลัมน์ที่จำเป็น — aggregation ฝั่ง client ใน ProjectBalanceChart
+    const { data, error } = await supabase
+      .from('stock_balance')
+      .select('project_id, project_name, balance');
 
-      const { count: pendingCount, error: pendingErr } = await supabase
-        .from('withdrawal_orders')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'pending');
+    if (error) throw error;
+    return data || [];
+  }, []);
 
-      const today = new Date().toISOString().split('T')[0];
-      const { count: todayWithdrawals, error: todayErr } = await supabase
-        .from('withdrawal_orders')
-        .select('*', { count: 'exact', head: true })
-        .gte('requested_at', today);
+  const sectionFetchers = { kpi: fetchKpi, activity: fetchActivity, balance: fetchBalance };
 
-      if (projErr || itemErr || pendingErr || todayErr) {
-        setHasError(true);
+  // ---- Load one section (supports silent refresh) ----
+  const loadSection = useCallback(
+    async (key, { silent = false } = {}) => {
+      const fetcher = sectionFetchers[key];
+      if (!fetcher) return;
+
+      if (!silent) {
+        setSections((prev) => ({
+          ...prev,
+          [key]: { ...prev[key], status: 'loading', error: null },
+        }));
       }
 
-      setStats({
-        projectCount: projectCount || 0,
-        itemCount: itemCount || 0,
-        pendingCount: pendingCount || 0,
-        todayWithdrawals: todayWithdrawals || 0,
-      });
+      try {
+        const data = await fetcher();
+        if (!mountedRef.current) return;
+        const isEmpty = Array.isArray(data) && data.length === 0;
+        setSections((prev) => ({
+          ...prev,
+          [key]: { status: isEmpty ? 'empty' : 'success', data, error: null },
+        }));
+      } catch (err) {
+        console.error(`Dashboard [${key}] fetch error:`, err);
+        if (!mountedRef.current) return;
+        setSections((prev) => ({
+          ...prev,
+          [key]: {
+            ...prev[key],
+            status: 'error',
+            error: err?.message || 'เกิดข้อผิดพลาดในการโหลดข้อมูล',
+          },
+        }));
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [fetchKpi, fetchActivity, fetchBalance]
+  );
 
-      const { data: activityData } = await supabase
-        .from('withdrawal_orders')
-        .select('*, projects(name), profiles!withdrawal_orders_requested_by_fkey(full_name), withdrawal_items(items(name))')
-        .order('requested_at', { ascending: false })
-        .limit(6);
-      setRecentActivity(activityData || []);
+  // ---- Refresh all sections in parallel (stale updates guarded by mountedRef) ----
+  const refreshAll = useCallback(async () => {
+    setRefreshing(true);
+    await Promise.allSettled(
+      Object.keys(sectionFetchers).map((key) => loadSection(key, { silent: true }))
+    );
+    if (!mountedRef.current) return;
+    setLastUpdatedAt(new Date());
+    setRefreshing(false);
+  }, [loadSection]);
 
-      const { data: balanceData } = await supabase
-        .from('stock_balance')
-        .select('*')
-        .limit(10);
-      setStockBalance(balanceData || []);
+  // Initial load + unmount guard
+  useEffect(() => {
+    mountedRef.current = true;
+    refreshAll();
+    return () => {
+      mountedRef.current = false;
+    };
+  }, [refreshAll]);
 
-    } catch (error) {
-      console.error('Dashboard fetch error:', error);
-      setHasError(true);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // ---- Accessibility live region: announce refresh / errors ----
+  const liveAnnouncement = useMemo(() => {
+    const hasSectionError = Object.values(sections).some((s) => s.status === 'error');
+    if (refreshing) return 'กำลังรีเฟรชข้อมูลแดชบอร์ด';
+    if (hasSectionError) return 'บางส่วนของแดชบอร์ดโหลดข้อมูลไม่สำเร็จ';
+    if (lastUpdatedAt) return `อัปเดตข้อมูลแดชบอร์ดล่าสุดเมื่อ ${format(lastUpdatedAt, 'HH:mm:ss')}`;
+    return '';
+  }, [sections, refreshing, lastUpdatedAt]);
 
-  // Prioritized KPI Stat Cards Configuration
+  const kpiStatus = sections.kpi.status;
+  const kpi = sections.kpi.data || {};
+
   const statCards = [
     {
       id: 'pending',
       label: 'รออนุมัติเบิกจ่าย',
-      value: stats.pendingCount,
+      value: kpi.pendingCount,
       subtext: 'คำขอที่รอการพิจารณา',
       icon: AlertCircle,
       tone: 'warning',
       href: '/withdrawals',
-      permission: 'withdrawals.view'
+      permission: 'withdrawals.view',
+      featured: true,
+      ctaLabel: 'จัดการคำขอ',
+      className: 'sm:col-span-2',
     },
     {
       id: 'projects',
       label: 'โครงการ Active',
-      value: stats.projectCount,
+      value: kpi.projectCount,
       subtext: 'โครงการที่กำลังใช้งาน',
       icon: FolderKanban,
       tone: 'info',
       href: '/projects',
-      permission: 'projects.view'
+      permission: 'projects.view',
     },
     {
       id: 'items',
       label: 'รายการวัสดุ',
-      value: stats.itemCount,
+      value: kpi.itemCount,
       subtext: 'วัสดุทั้งหมดในระบบ',
       icon: Package,
       tone: 'indigo',
       href: '/items',
-      permission: 'items.view'
+      permission: 'items.view',
     },
     {
       id: 'today_withdrawals',
       label: 'เบิกจ่ายวันนี้',
-      value: stats.todayWithdrawals,
+      value: kpi.todayWithdrawals,
       subtext: 'คำขอเบิกจ่ายวันนี้',
       icon: ArrowUpFromLine,
       tone: 'success',
       href: '/withdrawals',
-      permission: 'withdrawals.view'
+      permission: 'withdrawals.view',
+      className: 'sm:col-span-2 lg:col-span-1',
     },
   ];
 
-  const getStatusLabel = (status) => {
-    switch (status) {
-      case 'pending': return { text: 'รออนุมัติ', cls: 'text-amber-700 bg-amber-500/10 border-amber-500/30 dark:text-amber-300 dark:bg-amber-400/15' };
-      case 'approved': return { text: 'อนุมัติ', cls: 'text-blue-700 bg-blue-500/10 border-blue-500/30 dark:text-blue-300 dark:bg-blue-400/15' };
-      case 'completed': return { text: 'รับของแล้ว', cls: 'text-emerald-700 bg-emerald-500/10 border-emerald-500/30 dark:text-emerald-300 dark:bg-emerald-400/15' };
-      case 'rejected': return { text: 'ปฏิเสธ', cls: 'text-red-700 bg-red-500/10 border-red-500/30 dark:text-red-300 dark:bg-red-400/15' };
-      default: return { text: status, cls: 'text-muted-foreground bg-muted/70 border-border' };
-    }
-  };
-
-  const chartTheme = resolvedTheme === 'dark'
-    ? {
-        grid: 'rgba(148, 163, 184, 0.22)',
-        tick: '#a8b4c7',
-        cursor: 'rgba(99, 102, 241, 0.16)',
-        tooltipBackground: '#20293a',
-        tooltipBorder: 'rgba(203, 213, 225, 0.16)',
-        tooltipText: '#f1f5f9',
-        tooltipShadow: '0 12px 28px rgba(0, 0, 0, 0.34)',
-      }
-    : {
-        grid: '#cbd5e1',
-        tick: '#52627a',
-        cursor: '#dbe4f0',
-        tooltipBackground: '#eef2f7',
-        tooltipBorder: 'rgba(148, 163, 184, 0.3)',
-        tooltipText: '#172033',
-        tooltipShadow: '4px 4px 10px rgba(0, 0, 0, 0.05), -4px -4px 10px rgba(255, 255, 255, 0.8)',
-      };
-
-  if (loading) {
-    return (
-      <div className="space-y-8">
-        <div>
-          <Skeleton className="h-10 w-[200px]" />
-          <Skeleton className="h-4 w-[350px] mt-2" />
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          {[1,2,3,4].map(i => <Skeleton key={i} className="h-24 w-full rounded-2xl" />)}
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <Skeleton className="col-span-8 h-[450px] rounded-2xl" />
-          <Skeleton className="col-span-4 h-[450px] rounded-2xl" />
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-8 pb-12">
-      
-      {/* Header */}
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight text-foreground">Dashboard</h2>
-        <p className="text-sm text-muted-foreground mt-2">
-          ยินดีต้อนรับกลับมา, <span className="font-semibold text-foreground">{profile?.full_name}</span>. นี่คือสรุปข้อมูล Stock วันนี้
-        </p>
+    <div className="space-y-6">
+      {/* Skip link target announcement & live region */}
+      <div role="status" aria-live="polite" className="sr-only">
+        {liveAnnouncement}
       </div>
 
-      {/* Redesigned Actionable KPI Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+      {/* Header */}
+      <div className="flex flex-col justify-between gap-4 border-b pb-2 sm:flex-row sm:items-center">
+        <div>
+          <h2 className="flex items-center gap-2 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+            <div className="rounded-2xl border border-indigo-500/20 bg-indigo-500/10 p-2.5 text-indigo-600 dark:text-indigo-400">
+              <LayoutDashboard className="h-6 w-6" aria-hidden="true" />
+            </div>
+            <span>Dashboard</span>
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            ยินดีต้อนรับกลับมา,{' '}
+            <span className="font-semibold text-foreground">{profile?.full_name}</span>.
+            นี่คือสรุปข้อมูล Stock วันนี้
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <p className="text-sm text-muted-foreground">
+            {lastUpdatedAt
+              ? `อัปเดตล่าสุด ${format(lastUpdatedAt, 'dd/MM/yyyy HH:mm:ss')}`
+              : 'กำลังโหลดข้อมูล…'}
+          </p>
+          <button
+            type="button"
+            onClick={refreshAll}
+            disabled={refreshing}
+            aria-label="รีเฟรชข้อมูลแดชบอร์ด"
+            title="รีเฟรชข้อมูล"
+            aria-busy={refreshing}
+            className="neu-button flex h-11 w-11 shrink-0 items-center justify-center text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
+          >
+            <RefreshCw
+              className={cn('h-5 w-5', refreshing && 'animate-spin motion-reduce:animate-none')}
+              aria-hidden="true"
+            />
+          </button>
+        </div>
+      </div>
+
+      {/* KPI Summary Grid — pending approval is the primary actionable card */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
         {statCards.map((stat) => (
           <DashboardStatCard
             key={stat.id}
@@ -199,110 +269,38 @@ const Dashboard = () => {
             tone={stat.tone}
             href={stat.href}
             permission={stat.permission}
-            loading={loading}
-            error={hasError}
+            loading={kpiStatus === 'loading'}
+            error={kpiStatus === 'error'}
+            featured={stat.featured}
+            ctaLabel={stat.ctaLabel}
+            className={stat.className}
           />
         ))}
+
+        {/* Quick actions (permission-filtered) */}
+        <QuickActions className="sm:col-span-2 lg:col-span-3" />
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
-        {/* Left Column: Stock Balance Chart (8 columns wide) */}
-        <Card className="lg:col-span-8 flex flex-col">
-          <CardHeader className="border-b border-border/40 pb-4">
-            <CardTitle className="text-sm font-bold tracking-wide uppercase text-foreground flex items-center gap-2">
-              <ArrowDownToLine className="w-4 h-4 text-muted-foreground" />
-              Stock คงเหลือแต่ละโครงการ
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex-1 pt-6">
-            {stockBalance.length > 0 ? (
-              <div className="h-[350px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={stockBalance}
-                    margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={chartTheme.grid} />
-                    <XAxis 
-                      dataKey="item_name" 
-                      axisLine={false} 
-                      tickLine={false} 
-                      tick={{ fill: chartTheme.tick, fontSize: 11 }}
-                      dy={10}
-                    />
-                    <YAxis 
-                      axisLine={false} 
-                      tickLine={false} 
-                      tick={{ fill: chartTheme.tick, fontSize: 11 }}
-                    />
-                    <RechartsTooltip 
-                      cursor={{ fill: chartTheme.cursor }}
-                      contentStyle={{ backgroundColor: chartTheme.tooltipBackground, color: chartTheme.tooltipText, borderRadius: '8px', border: `1px solid ${chartTheme.tooltipBorder}`, boxShadow: chartTheme.tooltipShadow, fontSize: '12px' }}
-                      labelStyle={{ color: chartTheme.tooltipText }}
-                      itemStyle={{ color: chartTheme.tooltipText }}
-                    />
-                    <Legend wrapperStyle={{ paddingTop: '20px', fontSize: '12px' }} />
-                    <Bar dataKey="total_in" name="รับเข้า (In)" fill="#10b981" radius={[2, 2, 0, 0]} maxBarSize={32} />
-                    <Bar dataKey="total_out" name="เบิกจ่าย (Out)" fill="#f59e0b" radius={[2, 2, 0, 0]} maxBarSize={32} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center h-full min-h-[350px] text-muted-foreground">
-                <Package className="w-12 h-12 mb-3 opacity-30 stroke-1" />
-                <p className="text-sm font-medium">ยังไม่มีข้อมูล Stock</p>
-                <p className="text-xs mt-1">เริ่มจากเพิ่มวัสดุ แล้วรับเข้า Stock ก่อนครับ</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5">
+        {/* Left: Project Balance Chart */}
+        <ProjectBalanceChart
+          className="lg:col-span-8"
+          data={sections.balance.data}
+          status={sections.balance.status}
+          error={sections.balance.error}
+          onRetry={() => loadSection('balance')}
+        />
 
-        {/* Right Column: Recent Activity (4 columns wide) */}
-        <Card className="lg:col-span-4 flex flex-col">
-          <CardHeader className="border-b border-border/40 pb-4">
-            <CardTitle className="text-sm font-bold tracking-wide uppercase text-foreground flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-muted-foreground" />
-              กิจกรรมล่าสุด
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex-1 p-0">
-            {recentActivity.length > 0 ? (
-              <div className="flex flex-col divide-y divide-border/40">
-                {recentActivity.map((item, i) => {
-                  const statusInfo = getStatusLabel(item.status);
-                  return (
-                    <div key={i} className="flex flex-col p-5 hover:bg-muted/10 transition-colors">
-                      <div className="flex justify-between items-start mb-2">
-                        <span className="text-[11px] font-mono font-medium text-muted-foreground/80">
-                          {format(new Date(item.requested_at), 'dd/MM HH:mm')}
-                        </span>
-                        <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider border rounded-md shadow-sm ${statusInfo.cls}`}>
-                          {statusInfo.text}
-                        </span>
-                      </div>
-                      <p className="text-sm font-semibold text-foreground leading-snug mb-1.5">
-                        เบิก {item.withdrawal_items?.[0]?.items?.name} {item.withdrawal_items?.length > 1 ? `และอีก ${item.withdrawal_items.length - 1} รายการ` : ''}
-                      </p>
-                      <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30"></span>
-                        {item.projects?.name}
-                      </p>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center h-full min-h-[350px] text-muted-foreground p-6">
-                <ArrowUpFromLine className="w-10 h-10 mb-3 opacity-30 stroke-1" />
-                <p className="text-sm font-medium">ยังไม่มีกิจกรรม</p>
-                <p className="text-xs mt-1 text-center">เมื่อมีการเบิกจ่าย จะแสดงผลที่นี่</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-        
+        {/* Right: Recent Activity */}
+        <RecentActivity
+          className="lg:col-span-4"
+          data={sections.activity.data}
+          status={sections.activity.status}
+          error={sections.activity.error}
+          onRetry={() => loadSection('activity')}
+          canViewHistory={can('history.view')}
+        />
       </div>
     </div>
   );

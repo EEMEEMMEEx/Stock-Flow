@@ -66,6 +66,14 @@ const PageWrapper = () => {
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
+      {/* Skip link: keyboard users jump straight to main content */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:flex focus:items-center focus:rounded-xl focus:bg-primary focus:px-4 focus:py-2.5 focus:text-sm focus:font-semibold focus:text-primary-foreground focus:shadow-lg"
+      >
+        ข้ามไปยังเนื้อหาหลัก
+      </a>
+
       <Sidebar 
         isOpen={isMobileMenuOpen} 
         onClose={closeMobileMenu}
@@ -79,7 +87,7 @@ const PageWrapper = () => {
           menuButtonRef={menuButtonRef}
           onMenuClick={handleMenuClick}
         />
-        <main className="flex-1 overflow-y-auto flex flex-col justify-between">
+        <main id="main-content" tabIndex={-1} className="flex-1 overflow-y-auto flex flex-col justify-between focus:outline-none">
           <div className="p-4 md:p-6 lg:p-8 flex-1">
             <div className="mx-auto max-w-7xl">
               <Outlet />

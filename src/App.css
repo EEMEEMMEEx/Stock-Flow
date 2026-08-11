@@ -102,17 +102,66 @@
     background-color: var(--neu-surface);
     border: 1px solid var(--neu-border);
     box-shadow: 4px 4px 10px var(--neu-shadow-dark), -4px -4px 10px var(--neu-shadow-light);
+    will-change: transform;
+  }
+  .neu-button:hover {
+    box-shadow: 6px 6px 14px var(--neu-shadow-dark), -6px -6px 14px var(--neu-shadow-light);
   }
   .neu-button:active {
     box-shadow: inset 3px 3px 6px var(--neu-shadow-dark), inset -3px -3px 6px var(--neu-shadow-light);
+    transform: scale(0.97);
   }
   .neu-primary {
     @apply bg-primary text-primary-foreground rounded-xl transition-all duration-200;
     border: 1px solid var(--neu-primary-border);
     box-shadow: 4px 4px 10px var(--neu-primary-shadow), -4px -4px 10px var(--neu-shadow-light);
+    will-change: transform;
+  }
+  .neu-primary:hover {
+    box-shadow: 6px 6px 14px var(--neu-primary-shadow), -6px -6px 14px var(--neu-shadow-light);
   }
   .neu-primary:active {
     box-shadow: inset 3px 3px 6px rgba(0, 0, 0, 0.2);
+    transform: scale(0.97);
+  }
+  .neu-raised {
+    @apply rounded-2xl;
+    background-color: var(--neu-surface);
+    border: 1px solid var(--neu-border);
+    box-shadow: 8px 8px 20px var(--neu-shadow-dark), -8px -8px 20px var(--neu-shadow-light);
+  }
+  .neu-raised-sm {
+    @apply rounded-xl;
+    background-color: var(--neu-surface);
+    border: 1px solid var(--neu-border);
+    box-shadow: 6px 6px 14px var(--neu-shadow-dark), -6px -6px 14px var(--neu-shadow-light);
+  }
+  /*
+    Interactive elevation helper: rests flat, lifts to `raised` on hover/focus,
+    sinks to `pressed` while activated. Apply alongside `neu-flat` / `neu-flat-sm`.
+  */
+  .neu-interactive {
+    transition: box-shadow 200ms ease, transform 200ms ease;
+    will-change: transform;
+  }
+  .neu-interactive:hover,
+  .neu-interactive:focus-visible {
+    box-shadow: 8px 8px 20px var(--neu-shadow-dark), -8px -8px 20px var(--neu-shadow-light);
+    transform: translateY(-2px);
+  }
+  .neu-interactive:active {
+    box-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -4px -4px 8px var(--neu-shadow-light);
+    transform: scale(0.98);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .neu-interactive {
+      transition: none;
+    }
+    .neu-interactive:hover,
+    .neu-interactive:focus-visible,
+    .neu-interactive:active {
+      transform: none;
+    }
   }
 }
 

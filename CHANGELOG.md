@@ -1,5 +1,19 @@
 # Changelog
 
+## [2026-08-11 17:45] — Refactor Dashboard ใหม่: แยกโหลดแต่ละส่วน, KPI card + Quick Actions + Chart + กิจกรรมล่าสุด
+
+- **Files Modified:** `src/pages/Dashboard.jsx`, `src/components/dashboard/DashboardStatCard.jsx`, `src/components/layout/PageWrapper.jsx`, `src/components/layout/Sidebar.jsx`, `src/contexts/AuthContext.jsx`
+- **Files Added:** `src/components/dashboard/ProjectBalanceChart.jsx`, `src/components/dashboard/QuickActions.jsx`, `src/components/dashboard/RecentActivity.jsx`
+- **Details:**
+  - `Dashboard.jsx`: เขียนใหม่เป็นสถาปัตยกรรมโหลดแยกส่วน (KPI / กิจกรรมล่าสุด / ยอดคงเหลือ) — แต่ละส่วนมีสถานะ loading/empty/error เป็นอิสระต่อกัน ปุ่มรีเฟรชแบบ silent พร้อม live region ประกาศผลอัปเดตให้ screen reader และนับ KPI "เบิกจ่ายวันนี้" ตาม timezone ท้องถิ่น (ไม่ใช่ UTC midnight)
+  - `DashboardStatCard.jsx`: ปรับเป็น KPI card ที่รองรับ tone ต่าง ๆ, RBAC gating (คลิกได้เฉพาะผู้มีสิทธิ์ปลายทาง), skeleton/error state และโหมด `featured` สำหรับการ์ดหลัก "รออนุมัติเบิกจ่าย" พร้อม CTA "จัดการคำขอ"
+  - `QuickActions.jsx` (ใหม่): แถวดำเนินการด่วน (รับเข้า Stock / เบิกจ่ายวัสดุ / ดูประวัติ) กรองตามสิทธิ์ผู้ใช้, เป้าแตะ ≥ 44px
+  - `ProjectBalanceChart.jsx` (ใหม่): รวมยอดคงเหลือฝั่ง client ตาม `project_id` เรียงจากน้อยสุดก่อน, แนวนอนพร้อมค่าป้ายกำกับตลอด, สลับดูแผนภูมิ/ตาราง, จำกัดจำนวนแท่งตามขนาดหน้าจอ และใช้ design tokens รองรับ dark mode
+  - `RecentActivity.jsx` (ใหม่): รายการกิจกรรมล่าสุดพร้อมป้ายสถานะ (รออนุมัติ/อนุมัติ/รับของแล้ว/ปฏิเสธ), ชื่อผู้ขอ, โครงการ, จำนวนรายการ และเวลา — คลิกไปยัง `/history` เฉพาะผู้มีสิทธิ์ `history.view`
+  - `PageWrapper.jsx`: เพิ่ม skip link "ข้ามไปยังเนื้อหาหลัก" และ focus main content หลังคลิก เพื่อการใช้งานคีย์บอร์ด
+  - `Sidebar.jsx`: เพิ่มขนาดปุ่ม/รายการนำทางเป็น 44px เพื่อ touch target มาตรฐาน
+- **Reason:** ลด cognitive load ของแดชบอร์ด, แยกความล้มเหลวของแต่ละส่วนข้อมูลไม่ให้พังทั้งหน้า และยกระดับการเข้าถึง (accessibility) สำหรับผู้ใช้คีย์บอร์ดและ screen reader
+
 ## [2026-08-11 14:30] — Refactor UX/UI หน้าสร้างคำขอเบิกจ่าย POS
 
 - **Files Modified:** `src/components/ui/PosTerminal.jsx`, `src/pages/Withdrawals.jsx`, `src/App.css`

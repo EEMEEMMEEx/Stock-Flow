@@ -484,7 +484,7 @@ const Withdrawals = () => {
     return (
       <div className="space-y-4 animate-in fade-in-50 duration-200">
         {/* Top POS Header & Target Location Context Control */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-4 sm:p-5 rounded-2xl glass border border-border/60 shadow-2xs">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-4 sm:p-5 rounded-2xl neu-flat border-0">
           <Button 
             variant="ghost" 
             onClick={() => setIsPosMode(false)} 
@@ -530,7 +530,7 @@ const Withdrawals = () => {
         
         {/* Checkout Dialog */}
         <Dialog open={isCheckoutDialogOpen} onOpenChange={setIsCheckoutDialogOpen}>
-          <DialogContent className="sm:max-w-[560px] max-h-[calc(100vh-2rem)] overflow-y-auto rounded-2xl glass p-5 sm:p-6">
+          <DialogContent className="sm:max-w-[560px] max-h-[calc(100vh-2rem)] overflow-y-auto rounded-2xl p-5 sm:p-6">
             <form onSubmit={handleSubmitOrder}>
               <DialogHeader>
                 <DialogTitle className="text-lg font-bold flex items-center gap-2 pr-8">
@@ -663,7 +663,7 @@ const Withdrawals = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
         <Card
           onClick={() => setStatusFilter('all')}
-          className={`p-4 rounded-2xl glass border shadow-2xs space-y-1 cursor-pointer transition-all ${statusFilter === 'all' ? 'ring-2 ring-indigo-500 border-indigo-500/50 bg-indigo-500/5' : 'border-border/60 hover:bg-muted/30'}`}
+          className={`p-4 rounded-2xl neu-flat border-0 space-y-1 cursor-pointer transition-all ${statusFilter === 'all' ? 'neu-pressed ring-2 ring-indigo-500 border-indigo-500/50 bg-indigo-500/5' : 'border-border/60 hover:bg-muted/30'}`}
         >
           <div className="flex items-center justify-between text-xs text-muted-foreground font-semibold">
             <span>คำขอทั้งหมด</span>
@@ -674,7 +674,7 @@ const Withdrawals = () => {
 
         <Card
           onClick={() => setStatusFilter('pending')}
-          className={`p-4 rounded-2xl glass border shadow-2xs space-y-1 cursor-pointer transition-all ${statusFilter === 'pending' ? 'ring-2 ring-amber-500 border-amber-500/60 bg-amber-500/10' : 'border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10'}`}
+          className={`p-4 rounded-2xl neu-flat border-0 space-y-1 cursor-pointer transition-all ${statusFilter === 'pending' ? 'neu-pressed ring-2 ring-amber-500 border-amber-500/60 bg-amber-500/10' : 'border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10'}`}
         >
           <div className="flex items-center justify-between text-xs text-amber-700 dark:text-amber-300 font-semibold">
             <span>รออนุมัติ</span>
@@ -685,7 +685,7 @@ const Withdrawals = () => {
 
         <Card
           onClick={() => setStatusFilter('approved')}
-          className={`p-4 rounded-2xl glass border shadow-2xs space-y-1 cursor-pointer transition-all ${statusFilter === 'approved' ? 'ring-2 ring-blue-500 border-blue-500/60 bg-blue-500/10' : 'border-blue-500/30 bg-blue-500/5 hover:bg-blue-500/10'}`}
+          className={`p-4 rounded-2xl neu-flat border-0 space-y-1 cursor-pointer transition-all ${statusFilter === 'approved' ? 'neu-pressed ring-2 ring-blue-500 border-blue-500/60 bg-blue-500/10' : 'border-blue-500/30 bg-blue-500/5 hover:bg-blue-500/10'}`}
         >
           <div className="flex items-center justify-between text-xs text-blue-700 dark:text-blue-300 font-semibold">
             <span>อนุมัติแล้ว</span>
@@ -696,7 +696,7 @@ const Withdrawals = () => {
 
         <Card
           onClick={() => setStatusFilter('completed')}
-          className={`p-4 rounded-2xl glass border shadow-2xs space-y-1 cursor-pointer transition-all ${statusFilter === 'completed' ? 'ring-2 ring-emerald-500 border-emerald-500/60 bg-emerald-500/10' : 'border-emerald-500/30 bg-emerald-500/5 hover:bg-emerald-500/10'}`}
+          className={`p-4 rounded-2xl neu-flat border-0 space-y-1 cursor-pointer transition-all ${statusFilter === 'completed' ? 'neu-pressed ring-2 ring-emerald-500 border-emerald-500/60 bg-emerald-500/10' : 'border-emerald-500/30 bg-emerald-500/5 hover:bg-emerald-500/10'}`}
         >
           <div className="flex items-center justify-between text-xs text-emerald-700 dark:text-emerald-300 font-semibold">
             <span>รับของแล้ว</span>
@@ -707,7 +707,7 @@ const Withdrawals = () => {
       </div>
 
       {/* Search & Filter Control Panel */}
-      <Card className="p-4 rounded-2xl glass border border-border/60 shadow-2xs space-y-3">
+      <Card className="p-4 rounded-2xl neu-flat border-0 space-y-3">
         <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
           {/* Search Bar */}
           <div className="relative flex-1 min-w-[240px]">
@@ -717,7 +717,7 @@ const Withdrawals = () => {
               placeholder="ค้นหาตามรหัสบิล, ชื่อโครงการ, ผู้ขอเบิก, วัตถุประสงค์..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="pl-9 h-10 text-xs rounded-xl bg-background/50"
+              className="pl-9 h-10 text-xs rounded-xl"
             />
             {searchQuery && (
               <button
