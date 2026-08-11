@@ -1,5 +1,66 @@
 # Changelog
 
+## [2026-08-11 09:57]
+
+- **Files Modified:** `api/send-email.js` (New), `src/lib/emailService.js`
+- **Details:**
+  - `api/send-email.js`: สร้าง Vercel Serverless Function ใหม่สำหรับการส่งอีเมล HTML ปรับแต่งด้วย Nodemailer SMTP บน Vercel โดยตรง
+  - `src/lib/emailService.js`: อัปเดตให้ส่งรูปแบบ HTML ทดสอบของ StockFlow (โลโก้, เวลา, กล่องข้อมูลสีเทา โดยไม่มีปุ่มตั้งรหัสผ่าน) ผ่าน Vercel API `/api/send-email` และสลับเป็น Supabase Native Auth เมื่อเซิร์ฟเวอร์ออฟไลน์
+- **Reason:** คืนค่ารูปแบบอีเมลทดสอบของ StockFlow ให้เหมือนกับเวอร์ชันดั้งเดิม 100% โดยไม่ต้องพึ่งไมโครเซอร์วิสพอร์ต 3001
+
+## [2026-08-11 08:58]
+
+- **Files Modified:** `src/lib/emailService.js`
+- **Details:**
+  - `src/lib/emailService.js`: ปรับปรุงโค้ดส่งอีเมลให้เรียกใช้ Supabase Auth (`resetPasswordForEmail`) โดยตรง ปราศจากข้อผิดพลาด 404 / Network Error จากไมโครเซอร์วิสเก่า และการันตี Redirect URI เป็น Production Domain
+- **Reason:** การันตีความรวดเร็ว แม่นยำ และไม่มี Error 404 ในคอลโซลขณะส่งอีเมล
+
+## [2026-08-10 17:10]
+
+- **Files Modified:** `supabase/migrations/40_fix_admin_rpc_drop_and_recreate.sql`, `src/lib/emailService.js`
+- **Details:**
+  - `supabase/migrations/40_fix_admin_rpc_drop_and_recreate.sql`: เพิ่มคำสั่งสร้างคอลัมน์ที่จำเป็นในตาราง `public.profiles` (`department`, `phone`, `position`, `all_projects`) แก้ไขข้อผิดพลาด `column "department" of relation "profiles" does not exist`
+  - `src/lib/emailService.js`: ปรับแต่ง Redirect URL ให้ใช้ Production Domain (`https://stock-flow-two-psi.vercel.app/login`) แทน localhost โดยอัตโนมัติ และปรับปรุงข้อความสถานะให้แจ้งเตือนชัดเจนว่าเป็นการตอบรับคำขอของ Supabase Auth
+- **Reason:** การันตีความสมบูรณ์ของโครงสร้างตาราง profiles และป้องกันการสร้าง Redirect URL เป็น localhost ในสภาพแวดล้อม Production
+
+## [2026-08-10 17:03]
+
+- **Files Modified:** `supabase/migrations/40_fix_admin_rpc_drop_and_recreate.sql`, `src/components/users/AddUserModal.jsx`
+- **Details:**
+  - `supabase/migrations/40_fix_admin_rpc_drop_and_recreate.sql`: แก้ไขฟังก์ชัน `admin_get_users()` โดยการย้ายตัวแปรออกจาก `COALESCE` และเพิ่มเข้าสู่ `GROUP BY` ให้ถูกต้อง 100% ขจัดข้อผิดพลาด SQLSTATE 42803 (`column u.raw_user_meta_data must appear in the GROUP BY clause`) ปลูกสิทธิ์ให้แก่ฟังก์ชันครอบคลุมทุกบทบาท และเพิ่มการรองรับบทบาท `operator` / `staff` ใน `admin_create_user()`
+  - `src/components/users/AddUserModal.jsx`: ปรับปรุงรายการบทบาทเริ่มต้นให้ใช้รหัส `OPERATOR` / `STAFF` ตรงกับระบบ Validation ของ RPC
+- **Reason:** แก้ไขข้อผิดพลาดทางด้าน Aggregation/GROUP BY ของ PostgreSQL ใน RPC `admin_get_users` และปลดล็อกการสร้างผู้ใช้ใหม่ทุกบทบาท
+
+## [2026-08-10 16:57]
+
+- **Files Modified:** `supabase/migrations/40_fix_admin_rpc_drop_and_recreate.sql`, `src/pages/UserManagement.jsx`
+- **Details:**
+  - `supabase/migrations/40_fix_admin_rpc_drop_and_recreate.sql`: เพิ่มการสร้างคอลัมน์ `all_projects` ในตาราง `public.profiles` (`ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS all_projects BOOLEAN DEFAULT TRUE;`) แก้ไขข้อผิดพลาด `column p.all_projects does not exist` (Postgres Error 42703)
+  - `src/pages/UserManagement.jsx`: เปลี่ยนชื่อตัวแปร `currentUser` เป็น `user` (ดึงมาจาก `useAuth()`) แก้ไขข้อผิดพลาด `ReferenceError: currentUser is not defined`
+- **Reason:** แก้ไขข้อผิดพลาดของ PostgREST RPC และแก้ตัวแปรแสดงผลฝั่งหน้าบ้านให้ถูกต้อง 100%
+
+## [2026-08-10 16:54]
+
+- **Files Modified:** `src/pages/UserManagement.jsx`, `supabase/migrations/40_fix_admin_rpc_drop_and_recreate.sql`
+- **Details:**
+  - `src/pages/UserManagement.jsx`: ปรับแต่งให้แสดงอีเมลจริงของผู้ใช้ปัจจุบัน (`currentUser.email`) ใน Fallback Mode และพิมพ์ Error Log ละเอียดเมื่อ RPC ทำงานไม่สำเร็จ
+  - `supabase/migrations/40_fix_admin_rpc_drop_and_recreate.sql`: เพิ่ม `GRANT EXECUTE` ครอบคลุมทุกบทบาท (`public`, `authenticated`, `anon`, `service_role`) ป้องกัน PostgREST Permission Block
+- **Reason:** การันตีการแสดงผลอีเมลจริงในหน้าจัดการผู้ใช้ และปลดล็อกสิทธิ์เรียกใช้งาน RPC จาก PostgREST
+
+## [2026-08-10 16:32]
+
+- **Files Modified:** `src/pages/UserManagement.jsx`, `supabase/migrations/40_fix_admin_rpc_drop_and_recreate.sql`
+- **Details:**
+  - `src/pages/UserManagement.jsx`: อัปเดตพารามิเตอร์การเรียก `admin_create_user` ให้ส่ง `p_department` ตรงตาม SQL Signature และปรับปรุงข้อความแจ้งเตือนเมื่อยังไม่ได้ลงทะเบียน RPC ชี้ไปยัง Migration 40 ล่าสุด
+- **Reason:** การันตีความถูกต้องของการเรียกใช้ RPC Admin User Management และแสดงข้อความคำแนะนำบน UI
+
+## [2026-08-10 16:21]
+
+- **Files Modified:** `supabase/migrations/40_fix_admin_rpc_drop_and_recreate.sql` (New)
+- **Details:**
+  - `supabase/migrations/40_fix_admin_rpc_drop_and_recreate.sql`: สร้าง Migration 40 สำหรับเคลียร์ข้อผิดพลาด PostgreSQL 42P13 (Return type mismatch จากการรันไฟล์สคริปต์เก่า) โดยใส่ `DROP FUNCTION ... CASCADE` ก่อนสร้าง `admin_get_users` และ `admin_create_user` ใหม่ พร้อมแนบคำสั่ง `NOTIFY pgrst, 'reload schema';` เพื่อรีโหลด PostgREST API Cache ขจัดปัญหา 404 Not Found
+- **Reason:** แก้ไขปัญหาการเปิดใช้งาน RPC `admin_create_user` และ `admin_get_users` บน Supabase SQL Editor
+
 ## [2026-08-10 15:56]
 
 - **Files Modified:** `supabase/migrations/39_fix_auth_users_null_tokens_for_gotrue.sql` (New)

@@ -21,7 +21,7 @@ import { uploadAvatarImage } from '@/lib/avatarUpload';
 import { sendUserInvitationEmail } from '@/lib/emailService';
 
 const UserManagement = () => {
-  const { isAdmin } = useAuth();
+  const { isAdmin, user } = useAuth();
   const [users, setUsers] = useState([]);
   const [projects, setProjects] = useState([]);
   const [dbRoles, setDbRoles] = useState([]);
@@ -70,7 +70,9 @@ const UserManagement = () => {
     try {
       // 1. Try RPC first
       const { data, error } = await supabase.rpc('admin_get_users');
-      if (!error && data) {
+      if (error) {
+        console.warn('RPC admin_get_users returned error:', error);
+      } else if (data) {
         setUsers(data);
         setRpcMissing(false);
         return;
@@ -107,7 +109,7 @@ const UserManagement = () => {
 
     const formattedUsers = (profilesData || []).map(p => ({
       id: p.id,
-      email: p.email || `${p.full_name ? p.full_name.toLowerCase().replace(/\s+/g, '') : 'user'}@stockflow.local`,
+      email: p.email || (user && p.id === user.id ? user.email : `${p.full_name ? p.full_name.toLowerCase().replace(/\s+/g, '') : 'user'}@stockflow.local`),
       full_name: p.full_name,
       role: p.role || 'staff',
       status: p.status || 'active',
@@ -140,18 +142,17 @@ const UserManagement = () => {
         p_password: userPayload.password || null,
         p_full_name: userPayload.full_name,
         p_role: userPayload.role,
-        p_status: userPayload.status,
-        p_phone: userPayload.phone,
-        p_position: userPayload.position,
+        p_department: userPayload.department || null,
+        p_phone: userPayload.phone || null,
+        p_position: userPayload.position || null,
         p_all_projects: userPayload.all_projects,
         p_project_ids: userPayload.project_ids
       });
 
-
       if (error) {
         // Fallback for fallback creation directly in profiles if RPC not installed
         if (error.code === 'PGRST202' || error.status === 404) {
-          toast.error('กรุณารันไฟล์ Migration 08 ใน Supabase SQL Editor เพื่อเปิดใช้งานการสร้าง Auth User ผ่าน RPC');
+          toast.error('กรุณารันไฟล์ Migration 40 ใน Supabase SQL Editor เพื่อเปิดใช้งานการสร้าง Auth User ผ่าน RPC');
           return;
         }
         throw error;

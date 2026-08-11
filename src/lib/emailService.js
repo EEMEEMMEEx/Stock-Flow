@@ -1,179 +1,102 @@
+import { renderTestEmailHtml, renderUserInvitationEmailHtml } from './emailRenderer';
 import { supabase } from './supabase';
-import { APP_CONFIG } from '@/config/appConfig';
-import { renderEmailHtml, renderTestEmailHtml, renderUserInvitationEmailHtml, resolveEmailVariables, SAMPLE_EMAIL_DATA } from './emailRenderer';
-
-export const DEFAULT_SMTP_CONFIG = {
-  host: '',
-  port: 587,
-  secure: false,
-  user: '',
-  sender_email: '',
-  sender_name: 'StockFlow Notification',
-  reject_unauthorized: true,
-  password_set: false
-};
 
 /**
- * Mask email address for structured logging (e.g. w***a.m@forth.co.th)
+ * Send an email through the StockFlow Vercel API service (/api/send-email)
+ * with graceful fallback to Supabase Native Auth
  */
-const maskEmail = (email) => {
-  if (!email || typeof email !== 'string') return '***';
-  const parts = email.split('@');
-  if (parts.length !== 2) return '***';
-  const [name, domain] = parts;
-  if (name.length <= 2) return `${name}***@${domain}`;
-  return `${name[0]}***${name[name.length - 1]}@${domain}`;
-};
-
-/**
- * Resolves effective SMTP settings from Supabase system_settings.
- */
-export const getEffectiveSmtpConfig = async () => {
-  try {
-    const { data } = await supabase.rpc('admin_get_system_settings');
-    if (data && data.smtp_config) {
-      return {
-        ...DEFAULT_SMTP_CONFIG,
-        ...data.smtp_config,
-        port: Number(data.smtp_config.port || DEFAULT_SMTP_CONFIG.port),
-        secure: data.smtp_config.secure !== undefined ? Boolean(data.smtp_config.secure) : (Number(data.smtp_config.port) === 465)
-      };
-    }
-  } catch (e) {
-    console.warn('[emailService] Using default SMTP config fallback:', e);
-  }
-  return DEFAULT_SMTP_CONFIG;
-};
-
-/**
- * Centralized email sending function using Supabase Auth password recovery trigger.
- * Throws explicit errors when Supabase Auth returns a 500 or network failure.
- */
-export const sendStockFlowEmail = async ({
-  to,
-  subject,
-  html,
-  text,
-  actionUrl
-}) => {
+export async function sendStockFlowEmail({ to, subject, html, text, smtpOverrides, actionUrl }) {
   if (!to) {
-    throw new Error('กรุณาระบุอีเมลผู้รับ (Recipient address is required)');
+    throw new Error('กรุณาระบุอีเมลผู้รับ (recipient email)');
   }
 
-  const timestamp = new Date().toISOString();
-  const maskedTo = maskEmail(to);
-  const redirectTarget = actionUrl || `${window.location.origin}/login`;
+  const endpoint = import.meta.env.VITE_EMAIL_SERVICE_URL || '/api/send-email';
 
-  console.info(`[EmailService][${timestamp}] Attempting email delivery:`, {
-    operation: 'sendStockFlowEmail',
-    recipient: maskedTo,
-    provider: 'Supabase Auth / GoTrue SMTP',
-    redirectTarget
-  });
+  try {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        to,
+        subject,
+        html,
+        text,
+        smtpOverrides,
+      }),
+    });
+
+    if (response.ok) {
+      return await response.json().catch(() => ({ success: true }));
+    }
+  } catch (error) {
+    console.warn('[emailService] Vercel API send-email fetch failed, trying Supabase Native Auth fallback:', error.message);
+  }
+
+  // Fallback to Supabase Native Auth if Vercel endpoint is un-deployed or offline
+  const prodOrigin = typeof window !== 'undefined' && !window.location.origin.includes('localhost')
+    ? window.location.origin
+    : (import.meta.env.VITE_APP_URL || 'https://stock-flow-two-psi.vercel.app');
+  const redirectUri = actionUrl || `${prodOrigin}/login`;
 
   const { error: authErr } = await supabase.auth.resetPasswordForEmail(to, {
-    redirectTo: redirectTarget
+    redirectTo: redirectUri,
   });
 
   if (authErr) {
-    console.error(`[EmailService][${timestamp}] Email delivery failed:`, {
-      operation: 'sendStockFlowEmail',
-      recipient: maskedTo,
-      provider: 'Supabase Auth / GoTrue SMTP',
-      status: authErr.status || 500,
-      code: authErr.code || 'AUTH_SMTP_ERROR',
-      name: authErr.name,
-      message: authErr.message
-    });
-
-    let friendlyMessage = `ไม่สามารถส่งอีเมลไปยัง ${to} ได้ (Supabase Auth HTTP ${authErr.status || 500}: ${authErr.message || 'SMTP Server Error'})`;
-    if (authErr.status === 500 || authErr.name === 'AuthRetryableFetchError') {
-      friendlyMessage = `ไม่สามารถส่งอีเมลไปยัง ${to} ได้ (รหัสข้อผิดพลาด HTTP 500: การตั้งค่า Custom SMTP หรือ Redirect URL ใน Supabase Dashboard ขัดข้อง)`;
-    }
-
-    const errObj = new Error(friendlyMessage);
-    errObj.status = authErr.status || 500;
-    errObj.code = authErr.code;
-    errObj.originalError = authErr;
-    throw errObj;
+    throw new Error(authErr.message || 'ไม่สามารถส่งอีเมลได้');
   }
 
-  console.info(`[EmailService][${timestamp}] Email request accepted by Supabase Auth:`, {
-    operation: 'sendStockFlowEmail',
-    recipient: maskedTo,
-    provider: 'Supabase Auth / GoTrue SMTP',
-    status: 200
-  });
-
-  return {
-    success: true,
-    status: 'Accepted',
-    recipient: to,
-    message: `ส่งคำขอส่งอีเมลไปยัง ${to} ผ่าน Supabase Auth เรียบร้อยแล้ว`
-  };
-};
+  return { success: true, method: 'supabase_native', recipient: to };
+}
 
 /**
- * Send Test Email Handler
+ * Send a test email displaying the original clean test email layout
  */
-export const sendTestEmail = async (testRecipient, customTemplate = null) => {
-  const isoTimestamp = new Date().toISOString();
-  let settings = {};
-  try {
-    const { data, error } = await supabase.rpc('admin_get_system_settings');
-    if (!error && data) settings = data;
-  } catch {
-    // Fallback
-  }
-
-  const templateData = {
-    ...SAMPLE_EMAIL_DATA,
-    app_name: settings.branding?.app_name || APP_CONFIG.name || 'StockFlow',
-    request_date: isoTimestamp,
-    year: new Date().getFullYear().toString()
-  };
-  const subject = customTemplate?.subject
-    ? resolveEmailVariables(customTemplate.subject, templateData).replace(/[\r\n]+/g, ' ').trim()
-    : 'ทดสอบการเชื่อมต่ออีเมล — StockFlow';
-
-  const renderedHtml = customTemplate
-    ? renderEmailHtml({ branding: settings.branding || {}, template: customTemplate, data: templateData })
-    : renderTestEmailHtml({ appName: templateData.app_name, isoTimestamp });
-
-  const plainText = `StockFlow\n\n${subject}\n\nนี่คืออีเมลทดสอบจากระบบ\n\nเวลา: ${isoTimestamp}`;
-
-  return await sendStockFlowEmail({
-    to: testRecipient,
-    subject,
-    html: renderedHtml,
-    text: plainText
+export async function sendTestEmail(toEmail, eventType = null, smtpOverrides = null) {
+  const html = renderTestEmailHtml({
+    appName: 'StockFlow',
+    isoTimestamp: new Date().toISOString(),
   });
-};
+
+  return sendStockFlowEmail({
+    to: toEmail,
+    subject: 'ทดสอบการเชื่อมต่ออีเมล — StockFlow',
+    html,
+    smtpOverrides,
+  });
+}
 
 /**
- * Send User Invitation Email Handler
+ * Send a user invitation email displaying the custom invitation email layout
  */
-export const sendUserInvitationEmail = async ({ recipientEmail, userName, roleName, projectAccessSummary, actionUrl }) => {
+export async function sendUserInvitationEmail({
+  recipientEmail,
+  userName,
+  roleName,
+  projectAccessSummary,
+  actionUrl,
+  branding = {},
+}) {
   if (!recipientEmail) {
     throw new Error('กรุณาระบุอีเมลผู้รับ');
   }
 
-  let branding = {};
-  try {
-    const { data } = await supabase.rpc('admin_get_system_settings');
-    branding = data?.branding || {};
-  } catch (error) {
-    console.warn('[emailService] Default invitation branding:', error);
-  }
-
-  const appName = branding.app_name || APP_CONFIG.name || 'StockFlow';
-  const targetUrl = actionUrl || `${window.location.origin}/login`;
-
-  return await sendStockFlowEmail({
-    to: recipientEmail,
-    subject: `เชิญเข้าใช้งาน ${appName}`,
-    html: renderUserInvitationEmailHtml({ appName, userName, userEmail: recipientEmail, roleName, projectAccessSummary, actionUrl: targetUrl, branding }),
-    text: `ยินดีต้อนรับสู่ ${appName}\n\nบัญชี: ${recipientEmail}\nบทบาท: ${roleName}\n\nเข้าสู่ระบบ: ${targetUrl}`,
-    actionUrl: targetUrl
+  const html = renderUserInvitationEmailHtml({
+    appName: branding.app_name || 'StockFlow',
+    userName: userName || recipientEmail,
+    userEmail: recipientEmail,
+    roleName: roleName || 'ผู้ใช้งานระบบ',
+    projectAccessSummary: projectAccessSummary || 'ตามสิทธิ์ที่ได้รับมอบหมาย',
+    actionUrl: actionUrl || (typeof window !== 'undefined' ? `${window.location.origin}/login` : '/login'),
+    branding,
   });
-};
+
+  return sendStockFlowEmail({
+    to: recipientEmail,
+    subject: `คำเชิญเข้าใช้งานระบบ StockFlow — คุณ ${userName || recipientEmail}`,
+    html,
+    actionUrl
+  });
+}

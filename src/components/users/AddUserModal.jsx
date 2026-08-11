@@ -14,9 +14,9 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
   const [projectSearch, setProjectSearch] = useState('');
 
   const defaultRoles = [
-    { code: 'STAFF', name: 'STAFF / REQUESTER', description: 'เบิกจ่ายวัสดุ ดูสต็อกเฉพาะโครงการที่ได้รับมอบหมาย' },
-    { code: 'ADMIN', name: 'ADMINISTRATOR', description: 'สิทธิ์สูงสุด อนุมัติเบิกจ่าย จัดการโครงการ และจัดการผู้ใช้' },
-    { code: 'SUPERVISOR', name: 'SUPERVISOR / APPROVER', description: 'อนุมัติการเบิกจ่าย และดูรายงานระดับโครงการ' }
+    { code: 'OPERATOR', name: 'OPERATOR / STAFF', description: 'เบิกจ่ายวัสดุ ดูสต็อกเฉพาะโครงการที่ได้รับมอบหมาย' },
+    { code: 'SUPERVISOR', name: 'SUPERVISOR / APPROVER', description: 'อนุมัติการเบิกจ่าย และดูรายงานระดับโครงการ' },
+    { code: 'ADMIN', name: 'ADMINISTRATOR', description: 'สิทธิ์สูงสุด อนุมัติเบิกจ่าย จัดการโครงการ และจัดการผู้ใช้' }
   ];
 
   const availableRoles = roles.length > 0 ? roles : defaultRoles;
@@ -27,7 +27,7 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
     phone: '',
     position: '',
     avatar_url: '',
-    role: 'staff',
+    role: 'operator',
     status: 'active',
     access_type: 'all', // 'all' | 'selected'
     selected_projects: [],
