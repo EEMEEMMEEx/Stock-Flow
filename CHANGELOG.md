@@ -1,5 +1,27 @@
 # Changelog
 
+## [2026-08-11 10:48]
+
+- **Files Modified:** `src/pages/Withdrawals.jsx`, `supabase/migrations/42_add_missing_withdrawal_columns.sql`
+- **Details:**
+  - `src/pages/Withdrawals.jsx`: เพิ่มการตรวจสอบค่า `targetProject` ป้องกันไม่ให้ส่งค่าข้อความ `"all"` เข้าคอลัมน์ `project_id` ประเภท UUID บนฐานข้อมูลเมื่อเลือกตัวกรอง "ทุกโครงการ" ขจัดข้อผิดพลาด SQLSTATE 22P02 (`invalid input syntax for type uuid: "all"`)
+  - `supabase/migrations/42_add_missing_withdrawal_columns.sql`: เพิ่มคอลัมน์ `delivery_address` และคอลัมน์ที่ขาดหายในตาราง `withdrawal_orders` บน Cloud DB
+- **Reason:** แก้ไขข้อผิดพลาดชนิดข้อมูล UUID Mismatch และการกรอกข้อมูลโครงการในแบบฟอร์มเบิกจ่าย
+
+## [2026-08-11 10:46]
+
+- **Files Modified:** `supabase/migrations/42_add_missing_withdrawal_columns.sql` (New)
+- **Details:**
+  - `supabase/migrations/42_add_missing_withdrawal_columns.sql`: เพิ่มคอลัมน์ `delivery_address`, `work_order_no`, `is_shortage_override`, `override_reason`, `has_shortage`, `completed_by`, `reject_reason`, `rejected_by`, `rejected_at` ในตาราง `public.withdrawal_orders` และคอลัมน์ที่ขาดหายใน `public.withdrawal_items` บน Cloud DB
+- **Reason:** แก้ไขข้อผิดพลาด HTTP 400 (`column "delivery_address" of relation "withdrawal_orders" does not exist`) ขณะเบิกจ่ายวัสดุ
+
+## [2026-08-11 10:25]
+
+- **Files Modified:** `supabase/migrations/40_fix_admin_rpc_drop_and_recreate.sql`
+- **Details:**
+  - `supabase/migrations/40_fix_admin_rpc_drop_and_recreate.sql`: แก้ไขคอลัมน์ในการบันทึก `INSERT INTO public.audit_logs` จาก `(user_id, entity_type, entity_id)` เป็น `(actor_id, target_user_id)` แก้ไขข้อผิดพลาด `column "user_id" of relation "audit_logs" does not exist`
+- **Reason:** แมปชื่อคอลัมน์ของตาราง `public.audit_logs` ให้ตรงกับโครงสร้างจริงใน Supabase Cloud
+
 ## [2026-08-11 09:57]
 
 - **Files Modified:** `api/send-email.js` (New), `src/lib/emailService.js`

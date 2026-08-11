@@ -145,9 +145,10 @@ const Withdrawals = () => {
   const handleOpenCheckout = (cart, resetCart) => {
     setCheckoutCart(cart);
     setCheckoutResetFn(() => resetCart);
+    const validProject = (selectedProjectId && selectedProjectId !== 'all') ? selectedProjectId : '';
     setFormData(prev => ({ 
       ...prev, 
-      project_id: selectedProjectId,
+      project_id: validProject,
       purpose: prev.purpose || '',
       delivery_address: prev.delivery_address || ''
     }));
@@ -157,9 +158,12 @@ const Withdrawals = () => {
   const handleSubmitOrder = async (e) => {
     e.preventDefault();
     if (checkoutCart.length === 0) return;
-    const targetProject = formData.project_id || selectedProjectId;
-    if (!targetProject) {
-      toast.error('กรุณาเลือกโครงการปลายทางที่จะนำไปใช้');
+    const targetProject = (formData.project_id && formData.project_id !== 'all')
+      ? formData.project_id
+      : ((selectedProjectId && selectedProjectId !== 'all') ? selectedProjectId : null);
+
+    if (!targetProject || targetProject === 'all') {
+      toast.error('กรุณาเลือกโครงการปลายทางที่จะนำไปใช้ (ไม่สามารถเลือก "ทุกโครงการ" ได้)');
       return;
     }
     

@@ -249,16 +249,14 @@ BEGIN
 
   -- I. Log in audit_logs
   INSERT INTO public.audit_logs (
-    user_id,
+    actor_id,
+    target_user_id,
     action,
-    entity_type,
-    entity_id,
     details
   ) VALUES (
     v_calling_user_id,
-    'USER_CREATED',
-    'profiles',
     v_new_id,
+    'USER_CREATED',
     jsonb_build_object(
       'email', LOWER(TRIM(p_email)),
       'role', v_role_clean,
