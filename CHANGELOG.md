@@ -1,5 +1,29 @@
 # Changelog
 
+## [2026-08-11 14:30] — Refactor UX/UI หน้าสร้างคำขอเบิกจ่าย POS
+
+- **Files Modified:** `src/components/ui/PosTerminal.jsx`, `src/pages/Withdrawals.jsx`, `src/App.css`
+- **Details:**
+  - `PosTerminal.jsx`: ลดความหนาแน่นของ toolbar โดยรวม search, สถานะสต็อก และหมวดหมู่ไว้ในกลุ่มตัวกรองเดียว ปรับการ์ดวัสดุให้สแกน SKU/ชื่อ/ยอดคงเหลือได้เร็วขึ้น รองรับ keyboard selection และปรับตะกร้าให้แสดงจำนวนรวม ปุ่มปรับจำนวน และ action หลักชัดเจนขึ้น
+  - `Withdrawals.jsx`: จัดลำดับบริบทสถานที่ปลายทางใหม่ เพิ่มคำแนะนำเมื่อยังเลือกแบบรวมทุกคลัง เพิ่มป้ายกำกับฟอร์มที่เชื่อมกับ input และป้องกันการส่งคำขอซ้ำระหว่างประมวลผล
+  - `App.css`: รองรับ `prefers-reduced-motion` สำหรับ transition และ animation ของ UI
+- **Reason:** ลด cognitive load และทำให้การค้นหา เลือกวัสดุ ปรับจำนวน และยืนยันคำขอทำได้เร็วและชัดเจนขึ้นบน desktop และหน้าจอขนาดเล็ก
+
+## [2026-08-11 13:25] — UI/UX Redesign `/withdrawals`
+
+- **Files Modified:** `src/pages/Withdrawals.jsx`
+- **Details:**
+  - **Search & Filter Control Panel:** เพิ่มช่องค้นหาด่วนตามรหัสบิล, โครงสร้างโครงการ, ผู้ขอเบิก และวัตถุประสงค์ พร้อม Tab กรองสถานะบิล (`ทั้งหมด`, `⏳ รออนุมัติ`, `✅ อนุมัติแล้ว`, `📦 รับของแล้ว`, `❌ ปฏิเสธ`)
+  - **Visual Progress Stepper:** เพิ่มแถบแสดงความก้าวหน้าสถานะบิลแบบ 3 ขั้นตอน (ขอเบิก ➔ อนุมัติ ➔ รับของสำเร็จ) ในป๊อปอัปดูรายละเอียดคำขอ
+  - **Enhanced Actions Bar:** เพิ่มปุ่มการจัดการพร้อมไอคอนสะดุดตา (`<Eye>`, `<FileText>`, `<Check>`, `<XCircle>`) ป้องกันการกดผิดพลาดและเพิ่มความสะดวกในการใช้งาน
+- **Reason:** ยกระดับประสบการณ์ใช้งาน (UX) หน้าการเบิกจ่ายให้ค้นหาง่าย รวดเร็ว และติดตามสถานะได้ชัดเจน 100%
+
+## [2026-08-11 11:55] — Release v1.0.0
+
+- **Files Modified:** `src/config/appConfig.js`, `package.json`
+- **Details:**
+  - อัปเดตเลขเวอร์ชันของระบบ StockFlow จาก `v0.1.0` เป็น **`v1.0.0`** (Official Production Release) สะท้อนความพร้อมสมบูรณ์ของฟีเจอร์หลักทั้งระบบจัดการสต็อก, การเบิกจ่าย, การรับเข้า, ระบบสิทธิ์ RBAC และ Vercel Serverless Email API
+
 ## [2026-08-11 10:48]
 
 - **Files Modified:** `src/pages/Withdrawals.jsx`, `supabase/migrations/42_add_missing_withdrawal_columns.sql`

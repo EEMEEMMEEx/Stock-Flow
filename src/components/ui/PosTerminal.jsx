@@ -7,31 +7,52 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { 
   Search, ShoppingCart, Plus, Minus, Trash2, Package, 
   ChevronDown, ChevronUp, ChevronLeft, ChevronRight,
-  AlertCircle, CheckCircle2, RotateCcw, Filter, Check, ShieldAlert, Tag,
-  LayoutGrid, List, Box, FileText, ArrowUpFromLine, X
+  AlertCircle, RotateCcw, Check, LayoutGrid, List, X
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+const getStockMeta = (item) => {
+  const availableStock = item.balance !== undefined ? item.balance : Infinity;
+  const totalSystemBalance = item.totalSystemBalance !== undefined ? item.totalSystemBalance : availableStock;
+  const isOutOfStock = availableStock <= 0;
+  const hasStockInOtherWarehouse = isOutOfStock && totalSystemBalance > 0;
+  const isLowStock = availableStock > 0 && availableStock <= 5;
+  const completelyEmpty = isOutOfStock && totalSystemBalance <= 0;
+
+  return {
+    availableStock,
+    totalSystemBalance,
+    hasStockInOtherWarehouse,
+    isLowStock,
+    completelyEmpty,
+  };
+};
+
 // Modularized PosItemCard Subcomponent
 const PosItemCard = React.memo(({ item, isStockIn, cart, addToCart }) => {
-  const availableStock = item.balance !== undefined ? item.balance : Infinity;
-  const totalSys = item.totalSystemBalance !== undefined ? item.totalSystemBalance : availableStock;
-  const isOutOfStock = availableStock <= 0;
-  const hasStockInOtherWarehouse = isOutOfStock && totalSys > 0;
-  const isLowStock = availableStock > 0 && availableStock <= 5;
-  const completelyEmpty = isOutOfStock && totalSys <= 0;
+  const { availableStock, totalSystemBalance, hasStockInOtherWarehouse, isLowStock, completelyEmpty } = getStockMeta(item);
 
   const cartItem = cart.find(c => c.id === item.id);
   const isInCart = Boolean(cartItem);
 
   return (
-    <Card 
-      className={`p-3 rounded-2xl glass border shadow-2xs transition-all duration-200 flex flex-col justify-between relative overflow-hidden group select-none ${
+    <Card
+      role="button"
+      tabIndex={completelyEmpty ? -1 : 0}
+      aria-disabled={completelyEmpty}
+      aria-label={`${item.name}${item.sku ? `, SKU ${item.sku}` : ''}. ${isInCart ? `เลือกแล้ว ${cartItem.quantity} ${item.unit || 'หน่วย'}` : 'เพิ่มลงในตะกร้า'}`}
+      onKeyDown={(event) => {
+        if (!completelyEmpty && (event.key === 'Enter' || event.key === ' ')) {
+          event.preventDefault();
+          addToCart(item);
+        }
+      }}
+      className={`min-h-[250px] p-3.5 rounded-2xl glass border shadow-2xs transition-[box-shadow,border-color,background-color,transform] duration-200 flex flex-col justify-between relative overflow-hidden group select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
         isInCart
-          ? 'ring-2 ring-indigo-500 border-indigo-500/50 bg-indigo-500/5 dark:bg-indigo-950/20 shadow-sm'
+          ? 'ring-2 ring-indigo-500 border-indigo-500/50 bg-indigo-500/5 dark:bg-indigo-950/20 shadow-sm cursor-pointer'
           : completelyEmpty 
-            ? 'opacity-40 cursor-not-allowed bg-muted/20 border-border/40' 
-            : 'cursor-pointer hover:shadow-md hover:border-indigo-500/40 border-border/60 active:scale-98'
+            ? 'opacity-50 cursor-not-allowed bg-muted/20 border-border/40'
+            : 'cursor-pointer hover:shadow-md hover:border-indigo-500/40 border-border/60 active:scale-[0.99]'
       }`}
       onClick={() => addToCart(item)}
     >
@@ -45,16 +66,16 @@ const PosItemCard = React.memo(({ item, isStockIn, cart, addToCart }) => {
 
       <div className="space-y-2">
         {/* Image Preview & Stock Badge Bar */}
-        <div className="aspect-square bg-muted/40 rounded-xl flex items-center justify-center p-3 relative overflow-hidden border border-border/40 mt-1">
+        <div className="aspect-[4/3] bg-muted/40 rounded-xl flex items-center justify-center p-3 relative overflow-hidden border border-border/40">
           {item.image_url ? (
-            <img src={item.image_url} alt={item.name} className="object-contain w-full h-full group-hover:scale-105 transition-transform" />
+            <img src={item.image_url} alt={item.name} loading="lazy" className="object-contain w-full h-full group-hover:scale-105 transition-transform" />
           ) : (
             <Package className="w-10 h-10 text-muted-foreground/30 stroke-[1.5]" />
           )}
 
           {/* Stock Level Badge */}
           {item.balance !== undefined && (
-            <span className={`absolute top-2 right-2 px-2 py-0.5 rounded-lg text-[10px] font-extrabold font-mono shadow-2xs backdrop-blur-xs ${
+              <span className={`absolute top-2 right-2 max-w-[calc(100%-1rem)] truncate px-2 py-1 rounded-lg text-[10px] font-extrabold font-mono shadow-2xs backdrop-blur-xs ${
               isStockIn 
                 ? 'bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30' 
                 : isLowStock
@@ -72,7 +93,7 @@ const PosItemCard = React.memo(({ item, isStockIn, cart, addToCart }) => {
                   : availableStock > 0 
                     ? `คงเหลือ ${item.balance} ${item.unit || ''}` 
                     : hasStockInOtherWarehouse 
-                      ? `มีคลังอื่น (${totalSys})` 
+                      ? `มีคลังอื่น (${totalSystemBalance})`
                       : 'ของหมด'}
             </span>
           )}
@@ -80,13 +101,13 @@ const PosItemCard = React.memo(({ item, isStockIn, cart, addToCart }) => {
 
         {/* SKU & Name */}
         <div>
-          <div className="flex items-center justify-between text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-0.5">
-            <span>{item.sku && item.sku !== '-' ? item.sku : 'NO SKU'}</span>
+          <div className="flex items-center justify-between gap-2 text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-1">
+            <span className="truncate">{item.sku && item.sku !== '-' ? item.sku : 'NO SKU'}</span>
             {item.model && item.model !== '-' && (
               <span className="lowercase text-indigo-600 dark:text-indigo-400 font-semibold">{item.model}</span>
             )}
           </div>
-          <h3 className="font-bold text-xs line-clamp-2 leading-snug text-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+          <h3 className="font-bold text-sm line-clamp-2 leading-snug text-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
             {item.name}
           </h3>
         </div>
@@ -342,14 +363,14 @@ const PosTerminal = ({
   const totalCartItemsCount = cart.length;
 
   const renderCartContent = () => (
-    <div className="flex flex-col h-full space-y-4">
+    <div className="flex flex-col h-full min-h-0 space-y-4">
       {/* Cart Items Header */}
       <div className="flex items-center justify-between border-b border-border/40 pb-3">
         <div className="flex items-center gap-2">
           <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
             <ShoppingCart className="w-4 h-4" />
           </div>
-          <h3 className="font-extrabold text-sm text-foreground uppercase tracking-wider">
+          <h3 className="font-extrabold text-sm text-foreground">
             {isStockIn ? 'รายการรับเข้าสต็อก' : 'รายการขอเบิก'}
           </h3>
         </div>
@@ -361,9 +382,9 @@ const PosTerminal = ({
             <Button
               type="button"
               variant="ghost"
-              size="xs"
+              size="sm"
               onClick={() => setCart([])}
-              className="text-[10px] text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg px-2 h-6"
+              className="text-xs text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg px-2 h-9"
             >
               ล้างตะกร้า
             </Button>
@@ -372,7 +393,7 @@ const PosTerminal = ({
       </div>
 
       {/* Cart Items Scrollable Container */}
-      <div className="flex-1 overflow-y-auto space-y-3 pr-1 scrollbar-none max-h-[480px]">
+      <div className="flex-1 overflow-y-auto space-y-3 pr-1 scrollbar-none max-h-[min(55vh,560px)]">
         {cart.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-8 text-center text-muted-foreground/60 space-y-2 border border-dashed border-border/60 rounded-2xl bg-muted/20">
             <Package className="w-10 h-10 stroke-1 opacity-40" />
@@ -385,10 +406,10 @@ const PosTerminal = ({
           cart.map(item => {
             const availableStock = item.balance !== undefined ? item.balance : Infinity;
             return (
-              <div key={item.id} className="p-3 rounded-xl bg-muted/40 border border-border/50 space-y-2 transition-all">
+              <div key={item.id} className="p-3.5 rounded-xl bg-muted/40 border border-border/50 space-y-3 transition-colors hover:border-indigo-500/30">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0 flex-1">
-                    <h4 className="font-bold text-xs text-foreground line-clamp-1">{item.name}</h4>
+                    <h4 className="font-bold text-sm text-foreground line-clamp-2 leading-snug">{item.name}</h4>
                     <p className="text-[10px] text-muted-foreground font-mono">
                       {item.unit} {!isStockIn && item.balance !== undefined && `(คงเหลือที่คลังนี้ ${item.balance})`}
                     </p>
@@ -400,9 +421,10 @@ const PosTerminal = ({
                       type="button"
                       variant="ghost" 
                       size="icon" 
-                      className="h-7 w-7 rounded-none hover:bg-muted text-muted-foreground" 
+                      className="h-10 w-10 rounded-none hover:bg-muted text-muted-foreground"
                       onClick={() => updateQuantity(item.id, -1)}
                       disabled={item.quantity <= 1}
+                      aria-label={`ลดจำนวน ${item.name}`}
                     >
                       <Minus className="w-3 h-3" />
                     </Button>
@@ -411,7 +433,8 @@ const PosTerminal = ({
                       type="text"
                       inputMode="numeric"
                       pattern="[0-9]*"
-                      className="w-10 h-7 text-center font-mono text-xs font-bold bg-transparent border-none focus:outline-none focus:ring-0 p-0 text-foreground"
+                      className="w-12 h-10 text-center font-mono text-sm font-bold bg-transparent border-none focus:outline-none focus:ring-0 p-0 text-foreground"
+                      aria-label={`จำนวน ${item.name}`}
                       value={item.quantityInput !== undefined ? item.quantityInput : String(item.quantity)}
                       onChange={(e) => handleDirectQuantityChange(item.id, e.target.value)}
                       onBlur={() => handleQuantityBlur(item.id)}
@@ -424,9 +447,10 @@ const PosTerminal = ({
                       type="button"
                       variant="ghost" 
                       size="icon" 
-                      className="h-7 w-7 rounded-none hover:bg-muted text-muted-foreground" 
+                      className="h-10 w-10 rounded-none hover:bg-muted text-muted-foreground"
                       onClick={() => updateQuantity(item.id, 1)}
                       disabled={!isStockIn && item.quantity >= availableStock}
+                      aria-label={`เพิ่มจำนวน ${item.name}`}
                     >
                       <Plus className="w-3 h-3" />
                     </Button>
@@ -436,8 +460,9 @@ const PosTerminal = ({
                     type="button"
                     variant="ghost" 
                     size="icon" 
-                    className="h-7 w-7 text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg" 
+                    className="h-10 w-10 text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg"
                     onClick={() => removeFromCart(item.id)}
+                    aria-label={`ลบ ${item.name} ออกจากตะกร้า`}
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </Button>
@@ -449,7 +474,7 @@ const PosTerminal = ({
                       type="button"
                       variant="ghost" 
                       size="sm" 
-                      className="h-6 px-2 text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 rounded-md gap-1"
+                      className="h-10 px-2 text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 rounded-lg gap-1"
                       onClick={() => toggleExpand(item.id)}
                     >
                       <span>ระบุรายละเอียดจัดส่ง / S/N / Part No.</span>
@@ -461,7 +486,7 @@ const PosTerminal = ({
                         <div className="space-y-1">
                           <label className="text-[10px] font-bold text-muted-foreground">สถานที่ส่ง (Delivery To)</label>
                           <select 
-                            className="flex h-8 w-full rounded-lg border border-input bg-background px-2 py-1 text-xs focus:ring-2 focus:ring-indigo-500"
+                            className="flex h-10 w-full rounded-lg border border-input bg-background px-2 py-1 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             value={item.delivery_to || ''}
                             onChange={(e) => updateItemDetails(item.id, 'delivery_to', e.target.value)}
                           >
@@ -473,7 +498,7 @@ const PosTerminal = ({
                         <div className="space-y-1">
                           <label className="text-[10px] font-bold text-muted-foreground">Part Number</label>
                           <Input 
-                            className="h-8 text-xs rounded-lg bg-background" 
+                            className="h-10 text-sm rounded-lg bg-background"
                             placeholder="ระบุ Part Number..." 
                             value={item.part_number || ''}
                             onChange={(e) => updateItemDetails(item.id, 'part_number', e.target.value)}
@@ -482,7 +507,7 @@ const PosTerminal = ({
                         <div className="space-y-1">
                           <label className="text-[10px] font-bold text-muted-foreground">Serial Number (คั่นด้วย ,)</label>
                           <textarea 
-                            className="flex min-h-[50px] w-full rounded-lg border border-input bg-background px-2 py-1.5 text-xs focus:ring-2 focus:ring-indigo-500" 
+                            className="flex min-h-[72px] w-full rounded-lg border border-input bg-background px-2 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             placeholder="S/N 1, S/N 2, S/N 3..."
                             value={item.serial_number || ''}
                             onChange={(e) => updateItemDetails(item.id, 'serial_number', e.target.value)}
@@ -499,224 +524,148 @@ const PosTerminal = ({
       </div>
 
       {/* Cart Submit Action Button */}
-      <Button 
-        type="button"
-        className={`w-full h-11 text-xs font-bold rounded-xl shadow-md transition-all ${
+      <div className="border-t border-border/40 pt-3 space-y-3">
+        <div className="flex items-center justify-between text-sm">
+          <span className="text-muted-foreground">รวมจำนวนที่เลือก</span>
+          <span className="font-mono font-extrabold text-foreground">{totalCartUnits.toLocaleString()} ชิ้น</span>
+        </div>
+        <Button
+          type="button"
+          className={`w-full h-12 text-sm font-bold rounded-xl shadow-md transition-all gap-2 ${
           isStockIn ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-indigo-600 hover:bg-indigo-700 text-white'
-        }`}
-        disabled={cart.length === 0}
-        onClick={handleSubmitCart}
-      >
-        {isStockIn ? 'ดำเนินการรับเข้าสต็อก' : 'ยืนยันสร้างคำขอเบิกจ่าย'}
-      </Button>
+          }`}
+          disabled={cart.length === 0}
+          onClick={handleSubmitCart}
+        >
+          <Check className="w-4 h-4" />
+          {isStockIn ? 'ดำเนินการรับเข้าสต็อก' : 'ไปยังขั้นตอนยืนยันคำขอ'}
+        </Button>
+      </div>
     </div>
   );
 
   return (
-    <div className="flex flex-col lg:flex-row items-start gap-6 mt-2">
+    <div className="flex flex-col lg:flex-row items-start gap-4 lg:gap-6 pb-24 lg:pb-0">
       {/* Left: Product Catalog Grid & Filter Toolbar */}
       <div className="flex-1 min-w-0 space-y-4 w-full">
-        {/* Search, Filter Toolbar & Status Pills */}
-        <div className="p-4 rounded-2xl glass border border-border/60 shadow-2xs space-y-3">
-          {/* Header Row & Quick Metrics */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-border/40 pb-3">
-            <div className="flex items-center gap-2">
+        <section className="p-4 sm:p-5 rounded-2xl glass border border-border/60 shadow-2xs space-y-4" aria-labelledby="pos-catalog-title">
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+            <div className="flex items-start gap-3 min-w-0">
               {Icon && (
-                <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+                <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shrink-0" aria-hidden="true">
                   <Icon className="w-5 h-5" />
                 </div>
               )}
-              <div>
-                <h2 className="text-xl font-extrabold tracking-tight text-foreground">{title}</h2>
-                <p className="text-xs text-muted-foreground">เลือกวัสดุเพื่อเพิ่มลงในตะกร้าคำขอเบิกจ่าย</p>
+              <div className="min-w-0">
+                <h2 id="pos-catalog-title" className="text-lg sm:text-xl font-extrabold tracking-tight text-foreground">{title}</h2>
+                <p className="text-xs text-muted-foreground mt-1">เลือกวัสดุเพื่อเพิ่มลงในตะกร้าคำขอเบิกจ่าย</p>
               </div>
             </div>
 
-            {/* Metrics Pills */}
-            <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-              <span className="px-2.5 py-1 rounded-xl bg-muted/60 font-mono text-[11px]">
-                ทั้งหมด: <strong className="text-foreground">{totalItemsCount}</strong>
+            <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground shrink-0">
+              <span className="px-2.5 py-1.5 rounded-lg bg-muted/60 font-mono text-[11px]">
+                พร้อมเบิก <strong className="text-foreground">{inStockItemsCount}</strong> / {totalItemsCount}
               </span>
-              <span className="px-2.5 py-1 rounded-xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-mono text-[11px] border border-emerald-500/20">
-                พร้อมเบิก: <strong>{inStockItemsCount}</strong>
-              </span>
-            </div>
-          </div>
-          
-            {/* Search Box & Density View Switcher */}
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input 
-                placeholder="ค้นหาวัสดุ... (ชื่อรายการ, รุ่น Model, SKU)" 
-                className="pl-9 h-10 rounded-xl bg-background border-border/60 focus:ring-2 focus:ring-indigo-500 text-xs shadow-2xs"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-              {search && (
-                <button 
-                  onClick={() => setSearch('')} 
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground p-0.5 rounded-full hover:bg-accent"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              )}
-            </div>
-
-            {/* Density View Mode Selector */}
-            <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-xl border border-border/50 shrink-0">
-              <Button
-                type="button"
-                variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                size="xs"
-                onClick={() => setViewMode('grid')}
-                className={`h-8 px-2.5 rounded-lg text-xs font-semibold gap-1 transition-all ${
-                  viewMode === 'grid' ? 'bg-background text-foreground shadow-2xs' : 'text-muted-foreground hover:text-foreground'
-                }`}
-                title="มุมมองแบบการ์ด (Grid View)"
-              >
-                <LayoutGrid className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">การ์ด</span>
-              </Button>
-              <Button
-                type="button"
-                variant={viewMode === 'table' ? 'default' : 'ghost'}
-                size="xs"
-                onClick={() => setViewMode('table')}
-                className={`h-8 px-2.5 rounded-lg text-xs font-semibold gap-1 transition-all ${
-                  viewMode === 'table' ? 'bg-background text-foreground shadow-2xs' : 'text-muted-foreground hover:text-foreground'
-                }`}
-                title="มุมมองแบบตาราง (List View)"
-              >
-                <List className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">ตาราง</span>
-              </Button>
-            </div>
-
-            {/* Stock Availability Filter Tabs */}
-            <div className="flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0 scrollbar-none shrink-0">
-              <Button
-                type="button"
-                variant={stockStatusFilter === 'all' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setStockStatusFilter('all')}
-                className={`h-9 px-2.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
-                  stockStatusFilter === 'all' 
-                    ? 'bg-slate-900 text-slate-50 dark:bg-slate-50 dark:text-slate-900' 
-                    : 'border-border/60 text-muted-foreground'
-                }`}
-              >
-                ทั้งหมด
-              </Button>
-
-              <Button
-                type="button"
-                variant={stockStatusFilter === 'in_stock' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setStockStatusFilter('in_stock')}
-                className={`h-9 px-2.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
-                  stockStatusFilter === 'in_stock' 
-                    ? 'bg-emerald-600 text-white shadow-2xs' 
-                    : 'border-emerald-500/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/10'
-                }`}
-              >
-                มีสินค้าพร้อมเบิก
-              </Button>
-
-              <Button
-                type="button"
-                variant={stockStatusFilter === 'low_stock' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setStockStatusFilter('low_stock')}
-                className={`h-9 px-2.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
-                  stockStatusFilter === 'low_stock' 
-                    ? 'bg-amber-600 text-white shadow-2xs' 
-                    : 'border-amber-500/30 text-amber-700 dark:text-amber-300 hover:bg-amber-500/10'
-                }`}
-              >
-                สต็อกใกล้หมด (≤ 5)
-              </Button>
-
-              <Button
-                type="button"
-                variant={stockStatusFilter === 'cross_warehouse' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setStockStatusFilter('cross_warehouse')}
-                className={`h-9 px-2.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
-                  stockStatusFilter === 'cross_warehouse' 
-                    ? 'bg-blue-600 text-white shadow-2xs' 
-                    : 'border-blue-500/30 text-blue-700 dark:text-blue-300 hover:bg-blue-500/10'
-                }`}
-              >
-                มีในคลังอื่น
-              </Button>
-
-              <Button
-                type="button"
-                variant={stockStatusFilter === 'out_of_stock' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setStockStatusFilter('out_of_stock')}
-                className={`h-9 px-2.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
-                  stockStatusFilter === 'out_of_stock' 
-                    ? 'bg-slate-600 text-white shadow-2xs' 
-                    : 'border-slate-300 text-slate-600 dark:text-slate-400 hover:bg-slate-100'
-                }`}
-              >
-                ของหมด
-              </Button>
-            </div>
-          </div>
-
-          {/* Category Filter Horizontal Scroll */}
-          <div className="flex items-center justify-between gap-2 pt-1 border-t border-border/30">
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-              <span className="text-[11px] font-semibold text-muted-foreground shrink-0 mr-1 flex items-center gap-1">
-                <Tag className="w-3 h-3" /> หมวดหมู่:
-              </span>
-              <Button 
-                type="button"
-                variant={selectedCategory === 'all' ? 'default' : 'outline'} 
-                size="xs"
-                onClick={() => setSelectedCategory('all')}
-                className={`h-7 px-2.5 rounded-lg text-[11px] font-semibold whitespace-nowrap transition-all ${
-                  selectedCategory === 'all' 
-                    ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-2xs' 
-                    : 'border-border/60 hover:bg-accent text-muted-foreground'
-                }`}
-              >
-                ทั้งหมด
-              </Button>
-              {categories.map(cat => (
-                <Button 
-                  key={cat.id}
+              <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-lg border border-border/50" aria-label="รูปแบบการแสดงผล">
+                <Button
                   type="button"
-                  variant={selectedCategory === cat.id ? 'default' : 'outline'} 
-                  size="xs"
-                  onClick={() => setSelectedCategory(cat.id)}
-                  className={`h-7 px-2.5 rounded-lg text-[11px] font-semibold whitespace-nowrap transition-all ${
-                    selectedCategory === cat.id 
-                      ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-2xs' 
-                      : 'border-border/60 hover:bg-accent text-muted-foreground'
-                  }`}
+                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                  size="icon"
+                  onClick={() => setViewMode('grid')}
+                  className={`h-9 w-9 rounded-md ${viewMode === 'grid' ? 'bg-background text-foreground shadow-2xs' : 'text-muted-foreground'}`}
+                  aria-label="แสดงแบบการ์ด"
+                  aria-pressed={viewMode === 'grid'}
                 >
-                  {cat.name}
+                  <LayoutGrid className="w-4 h-4" />
                 </Button>
-              ))}
+                <Button
+                  type="button"
+                  variant={viewMode === 'table' ? 'default' : 'ghost'}
+                  size="icon"
+                  onClick={() => setViewMode('table')}
+                  className={`h-9 w-9 rounded-md ${viewMode === 'table' ? 'bg-background text-foreground shadow-2xs' : 'text-muted-foreground'}`}
+                  aria-label="แสดงแบบตาราง"
+                  aria-pressed={viewMode === 'table'}
+                >
+                  <List className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_190px_190px] gap-3">
+            <div className="space-y-1.5">
+              <label htmlFor="pos-item-search" className="text-[11px] font-bold text-foreground">ค้นหาวัสดุ</label>
+              <div className="relative">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
+                <Input
+                  id="pos-item-search"
+                  type="search"
+                  placeholder="ชื่อรายการ, รุ่น หรือ SKU"
+                  className="pl-10 pr-10 h-11 rounded-xl bg-background border-border/60 text-sm shadow-2xs"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+                {search && (
+                  <button
+                    type="button"
+                    onClick={() => setSearch('')}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 inline-flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    aria-label="ล้างคำค้นหา"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
             </div>
 
+            <div className="space-y-1.5">
+              <label htmlFor="pos-stock-filter" className="text-[11px] font-bold text-foreground">สถานะสต็อก</label>
+              <select
+                id="pos-stock-filter"
+                value={stockStatusFilter}
+                onChange={(e) => setStockStatusFilter(e.target.value)}
+                className="flex h-11 w-full rounded-xl border border-input bg-background px-3 py-1 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+              >
+                <option value="all">สต็อกทั้งหมด</option>
+                <option value="in_stock">มีสินค้าพร้อมเบิก</option>
+                <option value="low_stock">สต็อกใกล้หมด (≤ 5)</option>
+                <option value="cross_warehouse">มีในคลังอื่น</option>
+                <option value="out_of_stock">ของหมด</option>
+              </select>
+            </div>
+
+            <div className="space-y-1.5">
+              <label htmlFor="pos-category-filter" className="text-[11px] font-bold text-foreground">หมวดหมู่</label>
+              <select
+                id="pos-category-filter"
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="flex h-11 w-full rounded-xl border border-input bg-background px-3 py-1 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+              >
+                <option value="all">ทุกหมวดหมู่</option>
+                {categories.map((cat) => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
+              </select>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-border/30 text-xs">
+            <p className="text-muted-foreground" aria-live="polite">
+              แสดง <strong className="text-foreground">{filteredItems.length.toLocaleString()}</strong> รายการจากทั้งหมด {totalItemsCount.toLocaleString()} รายการ
+            </p>
             {(search || selectedCategory !== 'all' || stockStatusFilter !== 'all') && (
               <Button
                 type="button"
                 variant="ghost"
-                size="xs"
+                size="sm"
                 onClick={handleResetFilters}
-                className="h-7 px-2 text-[11px] font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg shrink-0 gap-1"
+                className="h-9 px-3 text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg gap-1.5"
               >
-                <RotateCcw className="w-3 h-3" /> รีเซ็ตตัวกรอง
+                <RotateCcw className="w-3.5 h-3.5" /> รีเซ็ตตัวกรอง
               </Button>
             )}
           </div>
-        </div>
+        </section>
 
         {/* Inventory Item Cards Grid or List View */}
         <div className="w-full">
@@ -752,12 +701,7 @@ const PosTerminal = ({
                 </TableHeader>
                 <TableBody className="text-xs">
                   {paginatedItems.map((item, idx) => {
-                    const availableStock = item.balance !== undefined ? item.balance : Infinity;
-                    const totalSys = item.totalSystemBalance !== undefined ? item.totalSystemBalance : availableStock;
-                    const isOutOfStock = availableStock <= 0;
-                    const hasStockInOtherWarehouse = isOutOfStock && totalSys > 0;
-                    const isLowStock = availableStock > 0 && availableStock <= 5;
-                    const completelyEmpty = isOutOfStock && totalSys <= 0;
+                    const { availableStock, totalSystemBalance, hasStockInOtherWarehouse, isLowStock, completelyEmpty } = getStockMeta(item);
 
                     const cartItem = cart.find(c => c.id === item.id);
                     const isInCart = Boolean(cartItem);
@@ -797,16 +741,16 @@ const PosTerminal = ({
                                   ? 'bg-blue-500/20 text-blue-700 dark:text-blue-300' 
                                   : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                           }`}>
-                            {availableStock > 0 ? `${availableStock} ${item.unit || ''}` : hasStockInOtherWarehouse ? `มีคลังอื่น (${totalSys})` : 'ของหมด'}
+                            {availableStock > 0 ? `${availableStock} ${item.unit || ''}` : hasStockInOtherWarehouse ? `มีคลังอื่น (${totalSystemBalance})` : 'ของหมด'}
                           </span>
                         </TableCell>
                         <TableCell className="text-right">
                           <Button
                             type="button"
-                            size="xs"
+                            size="sm"
                             disabled={completelyEmpty}
                             onClick={() => addToCart(item)}
-                            className={`h-7 px-3 rounded-lg text-xs font-bold gap-1 transition-all ${
+                            className={`h-10 px-3 rounded-lg text-xs font-bold gap-1 transition-all ${
                               isInCart 
                                 ? 'bg-indigo-600 text-white' 
                                 : completelyEmpty
@@ -826,7 +770,7 @@ const PosTerminal = ({
             </Card>
           ) : (
             /* Grid View using modular PosItemCard */
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
               {paginatedItems.map(item => (
                 <PosItemCard 
                   key={item.id} 
@@ -924,7 +868,7 @@ const PosTerminal = ({
       </div>
 
       {/* Right: Desktop Sticky Order Summary Cart Panel */}
-      <Card className="hidden lg:flex w-[360px] xl:w-[400px] rounded-2xl glass border border-border/60 shadow-sm p-4 flex-col space-y-4 shrink-0 sticky top-4">
+      <Card className="hidden lg:flex w-[340px] xl:w-[380px] max-h-[calc(100vh-2rem)] rounded-2xl glass border border-border/60 shadow-sm p-4 flex-col space-y-4 shrink-0 sticky top-4">
         {renderCartContent()}
       </Card>
 
@@ -934,7 +878,8 @@ const PosTerminal = ({
           <Button
             type="button"
             onClick={() => setIsMobileCartOpen(true)}
-            className="w-full h-13 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-xl flex items-center justify-between px-5 gap-2 border border-indigo-400/40 backdrop-blur-md"
+            className="w-full h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-xl flex items-center justify-between px-5 gap-2 border border-indigo-400/40 backdrop-blur-md"
+            aria-label={`เปิดตะกร้าคำขอเบิกจ่าย ${totalCartItemsCount} รายการ ${totalCartUnits} ชิ้น`}
           >
             <div className="flex items-center gap-2">
               <div className="p-2 rounded-xl bg-white/20">
@@ -954,7 +899,7 @@ const PosTerminal = ({
 
       {/* Mobile/Tablet Cart Dialog Sheet */}
       <Dialog open={isMobileCartOpen} onOpenChange={setIsMobileCartOpen}>
-        <DialogContent className="sm:max-w-[480px] rounded-2xl glass p-5">
+        <DialogContent className="sm:max-w-[480px] max-h-[calc(100vh-2rem)] overflow-y-auto rounded-2xl glass p-5">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold flex items-center gap-2">
               <ShoppingCart className="w-5 h-5 text-indigo-600" />

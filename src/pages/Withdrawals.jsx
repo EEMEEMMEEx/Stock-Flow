@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { ArrowUpFromLine, CheckCircle2, XCircle, Clock, ChevronLeft, AlertTriangle, FileText, Printer, Building2 } from 'lucide-react';
+import { ArrowUpFromLine, CheckCircle2, XCircle, Clock, ChevronLeft, AlertTriangle, FileText, Printer, Building2, Search, Eye, Check, RefreshCw, X } from 'lucide-react';
 import { pdf } from '@react-pdf/renderer';
 import { MaterialWithdrawalPDF } from '@/lib/pdf-templates';
 import { useAuth } from '@/contexts/AuthContext';
@@ -31,8 +31,13 @@ const Withdrawals = () => {
   const [categories, setCategories] = useState([]);
   const [selectedProjectId, setSelectedProjectId] = useState('');
   
+  // Filter & Search State
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+
   // Checkout State
   const [isCheckoutDialogOpen, setIsCheckoutDialogOpen] = useState(false);
+  const [isCheckoutSubmitting, setIsCheckoutSubmitting] = useState(false);
   const [checkoutCart, setCheckoutCart] = useState([]);
   const [checkoutResetFn, setCheckoutResetFn] = useState(() => () => {});
   const [formData, setFormData] = useState({ project_id: '', purpose: '', delivery_address: '' });
@@ -157,7 +162,7 @@ const Withdrawals = () => {
 
   const handleSubmitOrder = async (e) => {
     e.preventDefault();
-    if (checkoutCart.length === 0) return;
+    if (checkoutCart.length === 0 || isCheckoutSubmitting) return;
     const targetProject = (formData.project_id && formData.project_id !== 'all')
       ? formData.project_id
       : ((selectedProjectId && selectedProjectId !== 'all') ? selectedProjectId : null);
@@ -166,8 +171,9 @@ const Withdrawals = () => {
       toast.error('กรุณาเลือกโครงการปลายทางที่จะนำไปใช้ (ไม่สามารถเลือก "ทุกโครงการ" ได้)');
       return;
     }
-    
+
     try {
+      setIsCheckoutSubmitting(true);
       // 1. Create request with status = 'pending' (DO NOT deduct stock here)
       const { data: orderData, error: orderError } = await supabase
         .from('withdrawal_orders')
@@ -216,6 +222,8 @@ const Withdrawals = () => {
     } catch (error) {
       console.error(error);
       toast.error('เกิดข้อผิดพลาดในการสร้างคำขอ');
+    } finally {
+      setIsCheckoutSubmitting(false);
     }
   };
 
@@ -423,8 +431,9 @@ const Withdrawals = () => {
   };
 
   // Shared DRY Project/Location Selector Component
-  const ProjectLocationSelector = ({ value, onChange, showAllOption = false, required = false, className = '' }) => (
+  const ProjectLocationSelector = ({ value, onChange, showAllOption = false, required = false, className = '', ...props }) => (
     <select
+      {...props}
       required={required}
       className={`flex h-10 w-full rounded-xl border border-input bg-background px-3 py-1 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 shadow-2xs transition-all cursor-pointer ${className}`}
       value={value}
@@ -470,33 +479,41 @@ const Withdrawals = () => {
   };
 
   if (isPosMode) {
+    const hasCheckoutProject = Boolean(formData.project_id && formData.project_id !== 'all');
+
     return (
       <div className="space-y-4 animate-in fade-in-50 duration-200">
         {/* Top POS Header & Target Location Context Control */}
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-4 rounded-2xl glass border border-border/60 shadow-2xs">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-4 sm:p-5 rounded-2xl glass border border-border/60 shadow-2xs">
           <Button 
             variant="ghost" 
             onClick={() => setIsPosMode(false)} 
-            className="rounded-xl h-10 gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-accent"
+            className="self-start rounded-xl h-10 px-3 gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-accent"
           >
             <ChevronLeft className="w-4 h-4" />
             <span>กลับไปหน้าประวัติเบิกจ่าย</span>
           </Button>
 
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2.5 w-full md:w-auto">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
-              <span className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full md:w-auto md:min-w-[420px]">
+            <div className="flex items-start gap-2 text-xs font-bold text-foreground sm:min-w-[180px]">
+              <span className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shrink-0" aria-hidden="true">
                 <Building2 className="w-4 h-4" />
               </span>
-              <span>โครงการเบิกสินค้า (Target Project):</span>
-              <span className="text-destructive">*</span>
+              <span>
+                <span className="block">สถานที่ปลายทาง</span>
+                <span className="block text-[11px] font-normal text-muted-foreground mt-0.5">เลือกก่อนยืนยันคำขอ</span>
+              </span>
             </div>
-            <div className="w-full sm:w-80">
+            <div className="w-full sm:w-[280px] space-y-1">
               <ProjectLocationSelector
                 value={selectedProjectId}
                 onChange={(e) => handleProjectChange(e.target.value)}
                 showAllOption={true}
+                className={!hasCheckoutProject ? 'border-amber-400/70' : ''}
               />
+              {!hasCheckoutProject && (
+                <p className="text-[11px] text-amber-700 dark:text-amber-300" role="status">กำลังแสดงสต็อกรวม เลือกโครงการปลายทางก่อนส่งคำขอ</p>
+              )}
             </div>
           </div>
         </div>
@@ -513,29 +530,33 @@ const Withdrawals = () => {
         
         {/* Checkout Dialog */}
         <Dialog open={isCheckoutDialogOpen} onOpenChange={setIsCheckoutDialogOpen}>
-          <DialogContent className="sm:max-w-[540px] rounded-2xl glass p-6">
+          <DialogContent className="sm:max-w-[560px] max-h-[calc(100vh-2rem)] overflow-y-auto rounded-2xl glass p-5 sm:p-6">
             <form onSubmit={handleSubmitOrder}>
               <DialogHeader>
-                <DialogTitle className="text-lg font-bold flex items-center gap-2">
+                <DialogTitle className="text-lg font-bold flex items-center gap-2 pr-8">
                   <CheckCircle2 className="w-5 h-5 text-indigo-600" />
                   <span>ยืนยันการขอเบิกจ่าย ({checkoutCart.reduce((acc, i) => acc + i.quantity, 0)} ชิ้น)</span>
                 </DialogTitle>
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-foreground flex items-center gap-1">
+                  <label htmlFor="checkout-project" className="text-xs font-bold text-foreground flex items-center gap-1">
                     <span>นำไปใช้โครงการ (Target Project)</span>
                     <span className="text-destructive">*</span>
                   </label>
                   <ProjectLocationSelector
+                    id="checkout-project"
                     required={true}
                     value={formData.project_id}
                     onChange={e => setFormData({...formData, project_id: e.target.value})}
+                    aria-describedby="checkout-project-help"
                   />
+                  <p id="checkout-project-help" className="text-[11px] text-muted-foreground">คำขอจะถูกส่งไปยังคลัง/โครงการที่เลือก</p>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-foreground">วัตถุประสงค์การเบิก</label>
+                  <label htmlFor="checkout-purpose" className="text-xs font-bold text-foreground">วัตถุประสงค์การเบิก</label>
                   <Input 
+                    id="checkout-purpose"
                     value={formData.purpose} 
                     onChange={e => setFormData({...formData, purpose: e.target.value})} 
                     placeholder="เช่น ใช้สำหรับซ่อมบำรุงอาคาร A" 
@@ -543,8 +564,9 @@ const Withdrawals = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-foreground">สถานที่จัดส่ง (Delivery Address)</label>
+                  <label htmlFor="checkout-delivery-address" className="text-xs font-bold text-foreground">สถานที่จัดส่ง (Delivery Address)</label>
                   <Input 
+                    id="checkout-delivery-address"
                     value={formData.delivery_address} 
                     onChange={e => setFormData({...formData, delivery_address: e.target.value})} 
                     placeholder="กรอกชื่อผู้รับ หรือสถานที่จัดส่งแบบละเอียด (ถ้ามี)" 
@@ -552,9 +574,12 @@ const Withdrawals = () => {
                   />
                 </div>
                 
-                <div className="mt-2 border rounded-xl p-3 bg-muted/40 max-h-[180px] overflow-y-auto space-y-2">
-                  <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">รายการที่เลือก:</h4>
-                  <ul className="space-y-1 text-xs">
+                <div className="mt-2 border rounded-xl p-4 bg-muted/40 max-h-[220px] overflow-y-auto space-y-2">
+                  <div className="flex items-center justify-between gap-3">
+                    <h4 className="text-xs font-bold text-foreground">รายการที่เลือก</h4>
+                    <span className="text-xs font-mono font-bold text-indigo-600 dark:text-indigo-400">{checkoutCart.reduce((acc, i) => acc + i.quantity, 0)} ชิ้น</span>
+                  </div>
+                  <ul className="space-y-1.5 text-xs">
                     {checkoutCart.map(item => (
                       <li key={item.id} className="flex justify-between py-1 border-b border-border/30 last:border-none">
                         <span className="font-semibold">{item.name}</span>
@@ -564,9 +589,12 @@ const Withdrawals = () => {
                   </ul>
                 </div>
               </div>
-              <div className="flex justify-end gap-2 mt-2">
-                <Button type="button" variant="outline" className="rounded-xl h-10 text-xs" onClick={() => setIsCheckoutDialogOpen(false)}>ยกเลิก</Button>
-                <Button type="submit" className="rounded-xl h-10 text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md">ส่งคำขอบิลเบิกจ่าย</Button>
+              <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 mt-2">
+                <Button type="button" variant="outline" className="rounded-xl h-11 text-sm" onClick={() => setIsCheckoutDialogOpen(false)}>ยกเลิก</Button>
+                <Button type="submit" disabled={!hasCheckoutProject || isCheckoutSubmitting} className="rounded-xl h-11 text-sm font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md gap-2">
+                  {isCheckoutSubmitting && <RefreshCw className="w-4 h-4 animate-spin" />}
+                  {isCheckoutSubmitting ? 'กำลังส่งคำขอ...' : 'ส่งคำขอเบิกจ่าย'}
+                </Button>
               </div>
             </form>
           </DialogContent>
@@ -580,6 +608,33 @@ const Withdrawals = () => {
   const pendingOrdersCount = orders.filter(o => o.status === 'pending').length;
   const approvedOrdersCount = orders.filter(o => o.status === 'approved').length;
   const completedOrdersCount = orders.filter(o => o.status === 'completed').length;
+  const rejectedOrdersCount = orders.filter(o => o.status === 'rejected').length;
+
+  const filteredOrders = orders.filter(order => {
+    // 1. Status Filter
+    if (statusFilter !== 'all' && order.status !== statusFilter) {
+      return false;
+    }
+
+    // 2. Project Filter
+    if (selectedProjectId && selectedProjectId !== 'all' && order.project_id !== selectedProjectId) {
+      return false;
+    }
+
+    // 3. Search Query
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      const code = (order.projects?.project_code || '').toLowerCase();
+      const pName = (order.projects?.name || '').toLowerCase();
+      const reqName = (order.profiles?.full_name || '').toLowerCase();
+      const purpose = (order.purpose || '').toLowerCase();
+      const orderId = (order.id || '').toLowerCase();
+
+      return code.includes(q) || pName.includes(q) || reqName.includes(q) || purpose.includes(q) || orderId.includes(q);
+    }
+
+    return true;
+  });
 
   return (
     <div className="space-y-6 animate-in fade-in-50 duration-200">
@@ -591,7 +646,7 @@ const Withdrawals = () => {
             การเบิกจ่าย (Withdrawals)
           </h2>
           <p className="text-xs text-muted-foreground mt-1">
-            จัดการรายการเบิกจ่ายวัสดุและอุปกรณ์ออกจากคลัง และติดตามสถานะคำขอ
+            จัดการรายการเบิกจ่ายวัสดุและอุปกรณ์ออกจากคลัง ค้นหาอย่างรวดเร็ว และติดตามสถานะคำขอ
           </p>
         </div>
         
@@ -606,7 +661,10 @@ const Withdrawals = () => {
 
       {/* Stats KPI Header Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-        <Card className="p-4 rounded-2xl glass border border-border/60 shadow-2xs space-y-1">
+        <Card
+          onClick={() => setStatusFilter('all')}
+          className={`p-4 rounded-2xl glass border shadow-2xs space-y-1 cursor-pointer transition-all ${statusFilter === 'all' ? 'ring-2 ring-indigo-500 border-indigo-500/50 bg-indigo-500/5' : 'border-border/60 hover:bg-muted/30'}`}
+        >
           <div className="flex items-center justify-between text-xs text-muted-foreground font-semibold">
             <span>คำขอทั้งหมด</span>
             <FileText className="w-4 h-4 text-indigo-500" />
@@ -614,7 +672,10 @@ const Withdrawals = () => {
           <p className="text-2xl font-extrabold font-mono text-foreground">{loading ? '-' : totalOrdersCount}</p>
         </Card>
 
-        <Card className="p-4 rounded-2xl glass border border-amber-500/30 bg-amber-500/5 shadow-2xs space-y-1">
+        <Card
+          onClick={() => setStatusFilter('pending')}
+          className={`p-4 rounded-2xl glass border shadow-2xs space-y-1 cursor-pointer transition-all ${statusFilter === 'pending' ? 'ring-2 ring-amber-500 border-amber-500/60 bg-amber-500/10' : 'border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10'}`}
+        >
           <div className="flex items-center justify-between text-xs text-amber-700 dark:text-amber-300 font-semibold">
             <span>รออนุมัติ</span>
             <Clock className="w-4 h-4 text-amber-500" />
@@ -622,7 +683,10 @@ const Withdrawals = () => {
           <p className="text-2xl font-extrabold font-mono text-amber-600 dark:text-amber-400">{loading ? '-' : pendingOrdersCount}</p>
         </Card>
 
-        <Card className="p-4 rounded-2xl glass border border-blue-500/30 bg-blue-500/5 shadow-2xs space-y-1">
+        <Card
+          onClick={() => setStatusFilter('approved')}
+          className={`p-4 rounded-2xl glass border shadow-2xs space-y-1 cursor-pointer transition-all ${statusFilter === 'approved' ? 'ring-2 ring-blue-500 border-blue-500/60 bg-blue-500/10' : 'border-blue-500/30 bg-blue-500/5 hover:bg-blue-500/10'}`}
+        >
           <div className="flex items-center justify-between text-xs text-blue-700 dark:text-blue-300 font-semibold">
             <span>อนุมัติแล้ว</span>
             <CheckCircle2 className="w-4 h-4 text-blue-500" />
@@ -630,7 +694,10 @@ const Withdrawals = () => {
           <p className="text-2xl font-extrabold font-mono text-blue-600 dark:text-blue-400">{loading ? '-' : approvedOrdersCount}</p>
         </Card>
 
-        <Card className="p-4 rounded-2xl glass border border-emerald-500/30 bg-emerald-500/5 shadow-2xs space-y-1">
+        <Card
+          onClick={() => setStatusFilter('completed')}
+          className={`p-4 rounded-2xl glass border shadow-2xs space-y-1 cursor-pointer transition-all ${statusFilter === 'completed' ? 'ring-2 ring-emerald-500 border-emerald-500/60 bg-emerald-500/10' : 'border-emerald-500/30 bg-emerald-500/5 hover:bg-emerald-500/10'}`}
+        >
           <div className="flex items-center justify-between text-xs text-emerald-700 dark:text-emerald-300 font-semibold">
             <span>รับของแล้ว</span>
             <CheckCircle2 className="w-4 h-4 text-emerald-500" />
@@ -639,52 +706,154 @@ const Withdrawals = () => {
         </Card>
       </div>
 
+      {/* Search & Filter Control Panel */}
+      <Card className="p-4 rounded-2xl glass border border-border/60 shadow-2xs space-y-3">
+        <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+          {/* Search Bar */}
+          <div className="relative flex-1 min-w-[240px]">
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="ค้นหาตามรหัสบิล, ชื่อโครงการ, ผู้ขอเบิก, วัตถุประสงค์..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="pl-9 h-10 text-xs rounded-xl bg-background/50"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 inline-flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                aria-label="ล้างคำค้นหา"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+
+          {/* Project Filter Selector */}
+          <div className="w-full md:w-[260px]">
+            <ProjectLocationSelector
+              value={selectedProjectId}
+              onChange={e => handleProjectChange(e.target.value)}
+              showAllOption={true}
+            />
+          </div>
+        </div>
+
+        {/* Status Filter Badges/Tabs */}
+        <div className="flex flex-wrap gap-1.5 border-t border-border/40 pt-3">
+          <button
+            onClick={() => setStatusFilter('all')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+              statusFilter === 'all'
+                ? 'bg-indigo-600 text-white shadow-xs'
+                : 'bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground'
+            }`}
+          >
+            ทั้งหมด ({orders.length})
+          </button>
+          <button
+            onClick={() => setStatusFilter('pending')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
+              statusFilter === 'pending'
+                ? 'bg-amber-500 text-white shadow-xs'
+                : 'bg-amber-500/10 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20'
+            }`}
+          >
+            <Clock className="w-3.5 h-3.5" />
+            <span>รออนุมัติ ({pendingOrdersCount})</span>
+          </button>
+          <button
+            onClick={() => setStatusFilter('approved')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
+              statusFilter === 'approved'
+                ? 'bg-blue-600 text-white shadow-xs'
+                : 'bg-blue-500/10 text-blue-700 dark:text-blue-300 hover:bg-blue-500/20'
+            }`}
+          >
+            <CheckCircle2 className="w-3.5 h-3.5" />
+            <span>อนุมัติแล้ว ({approvedOrdersCount})</span>
+          </button>
+          <button
+            onClick={() => setStatusFilter('completed')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
+              statusFilter === 'completed'
+                ? 'bg-emerald-600 text-white shadow-xs'
+                : 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20'
+            }`}
+          >
+            <CheckCircle2 className="w-3.5 h-3.5" />
+            <span>รับของแล้ว ({completedOrdersCount})</span>
+          </button>
+          <button
+            onClick={() => setStatusFilter('rejected')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
+              statusFilter === 'rejected'
+                ? 'bg-rose-600 text-white shadow-xs'
+                : 'bg-rose-500/10 text-rose-700 dark:text-rose-300 hover:bg-rose-500/20'
+            }`}
+          >
+            <XCircle className="w-3.5 h-3.5" />
+            <span>ปฏิเสธ ({rejectedOrdersCount})</span>
+          </button>
+        </div>
+      </Card>
+
       {/* Orders Table */}
-      <Card className="overflow-hidden">
+      <Card className="overflow-hidden border border-border/60 shadow-2xs rounded-2xl">
         <Table>
           <TableHeader className="bg-muted/50">
             <TableRow>
-              <TableHead>วันที่ขอเบิก</TableHead>
-              <TableHead>โครงการ</TableHead>
-              <TableHead>ผู้ขอเบิก</TableHead>
+              <TableHead className="w-[140px]">วันที่ขอเบิก</TableHead>
+              <TableHead>โครงการปลายทาง</TableHead>
+              <TableHead className="w-[140px]">ผู้ขอเบิก</TableHead>
               <TableHead>วัตถุประสงค์</TableHead>
-              <TableHead className="text-center">สถานะ</TableHead>
-              <TableHead className="text-right">จัดการ</TableHead>
+              <TableHead className="text-center w-[120px]">สถานะ</TableHead>
+              <TableHead className="text-right w-[200px]">จัดการ</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8">
-                  กำลังโหลดข้อมูล...
+                <TableCell colSpan={6} className="text-center py-12">
+                  <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                    <RefreshCw className="w-6 h-6 animate-spin text-indigo-600" />
+                    <span className="text-xs">กำลังโหลดรายการเบิกจ่าย...</span>
+                  </div>
                 </TableCell>
               </TableRow>
-            ) : orders.length === 0 ? (
+            ) : filteredOrders.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                  ไม่พบรายการเบิกจ่าย
+                <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
+                  <div className="flex flex-col items-center justify-center gap-1">
+                    <FileText className="w-8 h-8 text-muted-foreground/50 mb-1" />
+                    <span className="font-semibold text-xs text-foreground">ไม่พบรายการเบิกจ่าย</span>
+                    <span className="text-[11px]">ลองเปลี่ยนคำค้นหา หรือรีเซ็ตตัวกรองสถานะ</span>
+                  </div>
                 </TableCell>
               </TableRow>
             ) : (
-              orders.map(order => (
-                <TableRow key={order.id}>
+              filteredOrders.map(order => (
+                <TableRow key={order.id} className="hover:bg-muted/40 transition-colors">
                   <TableCell className="font-medium text-xs">
                     {order.requested_at ? format(new Date(order.requested_at), 'dd/MM/yyyy HH:mm') : '-'}
                   </TableCell>
                   <TableCell>
-                    <span className="font-semibold text-xs">
+                    <span className="font-semibold text-xs text-indigo-700 dark:text-indigo-300">
                       {order.projects?.project_code ? `${order.projects.project_code} — ` : ''}{order.projects?.name || '-'}
                     </span>
                   </TableCell>
-                  <TableCell className="text-xs">{order.profiles?.full_name || 'ผู้ใช้งาน'}</TableCell>
-                  <TableCell className="text-xs text-muted-foreground">{order.purpose || '-'}</TableCell>
+                  <TableCell className="text-xs font-medium">{order.profiles?.full_name || 'ผู้ใช้งาน'}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground max-w-[200px] truncate">{order.purpose || '-'}</TableCell>
                   <TableCell className="text-center">
                     <StatusBadge status={order.status} has_shortage={order.has_shortage || order.is_shortage_override} />
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button variant="outline" size="sm" onClick={() => viewOrderDetails(order)}>
-                        ดูรายละเอียด
+                    <div className="flex justify-end gap-1.5">
+                      <Button variant="outline" size="sm" className="h-8 text-xs rounded-xl gap-1" onClick={() => viewOrderDetails(order)}>
+                        <Eye className="w-3.5 h-3.5 text-indigo-600" />
+                        <span>รายละเอียด</span>
                       </Button>
 
                       <Button
@@ -692,26 +861,29 @@ const Withdrawals = () => {
                         size="sm"
                         title="พิมพ์/ดาวน์โหลด ใบเบิกและนำส่งอุปกรณ์ (PDF)"
                         onClick={() => handleDownloadPDF(order)}
-                        className="text-purple-700 border-purple-200 hover:bg-purple-50 dark:hover:bg-purple-950/30 font-medium"
+                        className="h-8 text-xs rounded-xl text-purple-700 border-purple-200 hover:bg-purple-50 dark:hover:bg-purple-950/30 font-medium gap-1"
                       >
-                        <FileText className="w-3.5 h-3.5 mr-1 text-purple-600" />
-                        PDF
+                        <FileText className="w-3.5 h-3.5 text-purple-600" />
+                        <span>PDF</span>
                       </Button>
                       
                       {isAdmin && order.status === 'pending' && (
                         <>
-                          <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white" onClick={() => handleApproveOrder(order.id)}>
-                            อนุมัติ
+                          <Button size="sm" className="h-8 text-xs rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold gap-1" onClick={() => handleApproveOrder(order.id)}>
+                            <Check className="w-3.5 h-3.5" />
+                            <span>อนุมัติ</span>
                           </Button>
-                          <Button variant="destructive" size="sm" onClick={() => openRejectModal(order)}>
-                            ปฏิเสธ
+                          <Button variant="destructive" size="sm" className="h-8 text-xs rounded-xl font-bold gap-1" onClick={() => openRejectModal(order)}>
+                            <XCircle className="w-3.5 h-3.5" />
+                            <span>ปฏิเสธ</span>
                           </Button>
                         </>
                       )}
                       
                       {order.status === 'approved' && (
-                        <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white" onClick={() => handleCompleteOrder(order.id)}>
-                          ยืนยันรับของ
+                        <Button size="sm" className="h-8 text-xs rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold gap-1" onClick={() => handleCompleteOrder(order.id)}>
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>รับของ</span>
                         </Button>
                       )}
                     </div>
@@ -734,6 +906,55 @@ const Withdrawals = () => {
           </DialogHeader>
           {selectedOrder && (
             <div className="space-y-4 py-2">
+              {/* Visual Progress Stepper */}
+              <div className="bg-muted/30 p-3.5 rounded-xl border border-border/60 mb-2">
+                <div className="flex items-center justify-between text-xs">
+                  {/* Step 1: Requested */}
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-xs">
+                      1
+                    </div>
+                    <div>
+                      <p className="font-bold text-foreground">ขอเบิกวัสดุ</p>
+                      <p className="text-[10px] text-muted-foreground">{selectedOrder.requested_at ? format(new Date(selectedOrder.requested_at), 'dd/MM HH:mm') : ''}</p>
+                    </div>
+                  </div>
+
+                  <div className={`h-0.5 flex-1 mx-2 ${selectedOrder.status !== 'pending' && selectedOrder.status !== 'rejected' ? 'bg-indigo-600' : 'bg-border'}`} />
+
+                  {/* Step 2: Approved / Rejected */}
+                  <div className="flex items-center gap-2">
+                    <div className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shadow-xs ${
+                      selectedOrder.status === 'rejected'
+                        ? 'bg-rose-500 text-white'
+                        : (selectedOrder.status === 'approved' || selectedOrder.status === 'completed' ? 'bg-indigo-600 text-white' : 'bg-muted text-muted-foreground')
+                    }`}>
+                      {selectedOrder.status === 'rejected' ? <X className="w-3.5 h-3.5" aria-label="ถูกปฏิเสธ" /> : '2'}
+                    </div>
+                    <div>
+                      <p className="font-bold text-foreground">
+                        {selectedOrder.status === 'rejected' ? 'ถูกปฏิเสธ' : 'อนุมัติคำขอ'}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground">{selectedOrder.approved_at ? format(new Date(selectedOrder.approved_at), 'dd/MM HH:mm') : (selectedOrder.status === 'rejected' ? 'ปฏิเสธแล้ว' : 'รออนุมัติ')}</p>
+                    </div>
+                  </div>
+
+                  <div className={`h-0.5 flex-1 mx-2 ${selectedOrder.status === 'completed' ? 'bg-emerald-600' : 'bg-border'}`} />
+
+                  {/* Step 3: Completed */}
+                  <div className="flex items-center gap-2">
+                    <div className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shadow-xs ${
+                      selectedOrder.status === 'completed' ? 'bg-emerald-600 text-white' : 'bg-muted text-muted-foreground'
+                    }`}>
+                      3
+                    </div>
+                    <div>
+                      <p className="font-bold text-foreground">รับของสำเร็จ</p>
+                      <p className="text-[10px] text-muted-foreground">{selectedOrder.completed_at ? format(new Date(selectedOrder.completed_at), 'dd/MM HH:mm') : (selectedOrder.status === 'completed' ? 'เรียบร้อย' : 'รอรับของ')}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
               <div className="grid grid-cols-2 gap-4 text-xs bg-muted/30 p-3 rounded-lg">
                 <div>
                   <p className="text-muted-foreground">โครงการปลายทาง:</p>
