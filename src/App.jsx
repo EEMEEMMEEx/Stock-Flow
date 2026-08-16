@@ -20,6 +20,7 @@ import UserManagement from './pages/UserManagement';
 import RoleManagement from './pages/RoleManagement';
 import Settings from './pages/Settings';
 import Profile from './pages/Profile';
+import LandingPage from './pages/LandingPage';
 import PermissionRoute from './components/auth/PermissionRoute';
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
       <AuthProvider>
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <Routes>
+            <Route path="/landing" element={<LandingPage />} />
             <Route path="/login" element={<Login />} />
             
             {/* Protected Routes inside PageWrapper */}

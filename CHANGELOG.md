@@ -1,5 +1,36 @@
 # Changelog
 
+## [2026-08-16 16:55] ✨ Stock-Flow Official Landing Page (GitHub Pages & Reactbits UI)
+
+- **Files Modified/Created:**
+  - `src/components/reactbits/Squares.jsx` (New)
+  - `src/components/reactbits/SpotlightCard.jsx` (New)
+  - `src/components/reactbits/DecryptedText.jsx` (New)
+  - `src/components/reactbits/ShinyText.jsx` (New)
+  - `src/components/reactbits/Magnet.jsx` (New)
+  - `src/components/reactbits/TiltedCard.jsx` (New)
+  - `src/components/landing/LandingNavbar.jsx` (New)
+  - `src/components/landing/HeroSection.jsx` (New)
+  - `src/components/landing/StatsSection.jsx` (New)
+  - `src/components/landing/BentoFeatures.jsx` (New)
+  - `src/components/landing/WorkflowSection.jsx` (New)
+  - `src/components/landing/TechStackSection.jsx` (New)
+  - `src/components/landing/CtaSection.jsx` (New)
+  - `src/components/landing/LandingFooter.jsx` (New)
+  - `src/pages/LandingPage.jsx` (New)
+  - `src/App.jsx` (Modified - added `/landing` route)
+  - `src/App.css` (Modified - added `@keyframes shiny-text-shimmer`)
+  - `vite.config.js` (Modified - added dynamic `base` support for GitHub Pages)
+  - `.github/workflows/deploy-gh-pages.yml` (New)
+  - `docs/landing-page-implementation-plan.md` (New)
+- **Details:**
+  - **High-Converting Modern Dark-Tech Landing Page:** พัฒนาหน้า Landing Page สำหรับโปรเจกต์ Stock-Flow เพื่อประชาสัมพันธ์และเชื่อมต่อไปยัง Web Application หลักที่ [https://stock-flow-pi-coral.vercel.app](https://stock-flow-pi-coral.vercel.app)
+  - **Reactbits UI Integration:** นำเข้าคอมโพเนนต์แอนิเมชันระดับพรีเมียม ได้แก่ `Squares` background, `SpotlightCard` cursor light, `DecryptedText` cyber headline, `ShinyText` shimmer badges, `Magnet` CTA physics, และ `TiltedCard` 3D perspective mockup
+  - **Strict SVG Iconography:** รับประกันไม่มีการใช้ Unicode Emoji ใดๆ ในหน้าเว็บ (100% SVG Icons ผ่าน `lucide-react`)
+  - **6-Module Bento Grid:** นำเสนอจุดเด่นของระบบ ได้แก่ POS Rapid Withdrawal, 100% Atomic Transactions, Granular RBAC, Material Borrow/Return, Batch CSV Import, และ Automated PDF Vouchers
+  - **GitHub Pages CI/CD Pipeline:** สร้าง GitHub Actions Workflow `.github/workflows/deploy-gh-pages.yml` พร้อมรองรับ `base` path ใน `vite.config.js` สำหรับการโฮสต์บน GitHub Pages โดยอัตโนมัติ
+- **Reason:** ยกระดับภาพลักษณ์ของโปรเจกต์ Stock-Flow สู่มาตรฐาน Enterprise SaaS และเตรียมความพร้อมสำหรับการเผยแพร่สู่สาธารณะ
+
 ## [2026-08-16 16:40] 🔔 In-App Interactive Notification Center & Quick Approval Actions
 
 - **Files Modified/Created:**

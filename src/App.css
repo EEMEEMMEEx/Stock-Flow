@@ -114,6 +114,15 @@
   .neu-primary:active {
     box-shadow: inset 3px 3px 6px rgba(0, 0, 0, 0.2);
   }
+
+  @keyframes shiny-text-shimmer {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
 }
 
 @layer base {
