@@ -129,6 +129,26 @@ const Projects = () => {
 
   useEffect(() => {
     fetchProjects();
+
+    // Live Realtime synchronization on projects
+    const channel = supabase
+      .channel('projects-live-sync')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'projects' }, () => {
+        fetchProjects();
+      })
+      .subscribe();
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchProjects();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      supabase.removeChannel(channel);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
   const fetchProjects = async () => {
@@ -653,10 +673,11 @@ const Projects = () => {
                         <Button 
                           variant="outline" 
                           size="sm" 
-                          className="h-8 text-xs gap-1 rounded-xl border-emerald-500/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/10 font-medium cursor-pointer"
+                          className="h-8 text-xs gap-1.5 px-3 rounded-xl border-emerald-500/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/10 hover:border-emerald-500/50 font-bold cursor-pointer transition-all shadow-2xs"
                           onClick={() => openAddLocationDialog(group)}
                         >
-                          <Plus className="w-3.5 h-3.5" /> + เพิ่มสถานที่ตั้ง
+                          <Plus className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                          <span>เพิ่มสถานที่ตั้ง</span>
                         </Button>
                       )}
 

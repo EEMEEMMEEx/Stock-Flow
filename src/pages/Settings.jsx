@@ -156,7 +156,7 @@ const Settings = () => {
   const fetchStats = async () => {
     try {
       const [{ count: pCount }, { count: uCount }, { count: rCount }] = await Promise.all([
-        supabase.from('projects').select('*', { count: 'exact', head: true }),
+        supabase.from('projects').select('*', { count: 'exact', head: true }).eq('status', 'active'),
         supabase.from('profiles').select('*', { count: 'exact', head: true }),
         supabase.from('roles').select('*', { count: 'exact', head: true })
       ]);

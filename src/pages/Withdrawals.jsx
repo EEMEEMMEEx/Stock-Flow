@@ -58,6 +58,32 @@ const Withdrawals = () => {
 
   useEffect(() => {
     fetchData();
+
+    // Live Realtime synchronization on projects and orders
+    const channel = supabase
+      .channel('withdrawals-live-sync')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'projects' }, () => {
+        fetchData();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'withdrawal_orders' }, () => {
+        fetchData();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'stock_transactions' }, () => {
+        fetchData();
+      })
+      .subscribe();
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchData();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      supabase.removeChannel(channel);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [profile]);
 
   // Aggregate item balances based on selected project location
@@ -141,14 +167,18 @@ const Withdrawals = () => {
       const { data: cData } = await supabase.from('categories').select('*').order('name');
       const { data: bData } = await supabase.from('stock_balance').select('*');
 
-      setProjects(pData || []);
+      const activeProjects = pData || [];
+      const activeProjectIds = new Set(activeProjects.map(p => p.id));
+      const activeBalances = (bData || []).filter(b => activeProjectIds.has(b.project_id));
+
+      setProjects(activeProjects);
       setCategories(cData || []);
       setRawItems(iData || []);
-      setRawBalances(bData || []);
+      setRawBalances(activeBalances);
 
       const targetProjectId = selectedProjectId || 'all';
       if (iData) {
-        const mappedItems = mapItemsForProject(iData, bData, targetProjectId);
+        const mappedItems = mapItemsForProject(iData, activeBalances, targetProjectId);
         setItems(mappedItems);
       }
     } catch (error) {

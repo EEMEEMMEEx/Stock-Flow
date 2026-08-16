@@ -42,6 +42,35 @@ const Items = () => {
   useEffect(() => {
     fetchItems();
     fetchCategories();
+
+    // Live Realtime synchronization on projects, items, and transactions
+    const channel = supabase
+      .channel('items-master-live-sync')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'projects' }, () => {
+        fetchItems();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'items' }, () => {
+        fetchItems();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'stock_in_orders' }, () => {
+        fetchItems();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'stock_transactions' }, () => {
+        fetchItems();
+      })
+      .subscribe();
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchItems();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      supabase.removeChannel(channel);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
   const fetchCategories = async () => {

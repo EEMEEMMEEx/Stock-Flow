@@ -684,22 +684,24 @@ const StockIn = () => {
                       type="button" 
                       variant="outline" 
                       size="sm"
-                      className="h-8 text-xs gap-1 text-green-700 border-green-300 hover:bg-green-50"
+                      className="h-8 text-xs gap-1.5 px-3 rounded-xl text-emerald-700 dark:text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/10 font-bold shadow-2xs"
                       onClick={() => handleAddLineItem('PARENT')}
                     >
-                      <Plus className="w-3.5 h-3.5" /> + เพิ่มรายการหลัก (PARENT)
+                      <Plus className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                      <span>เพิ่มรายการหลัก (PARENT)</span>
                     </Button>
                     <Button 
                       type="button" 
                       variant="outline" 
                       size="sm"
-                      className="h-8 text-xs gap-1 text-blue-700 border-blue-300 hover:bg-blue-50"
+                      className="h-8 text-xs gap-1.5 px-3 rounded-xl text-blue-700 dark:text-blue-300 border-blue-500/30 hover:bg-blue-500/10 font-bold shadow-2xs"
                       onClick={() => {
                         const lastParent = lineItems.slice().reverse().find(i => i.item_type === 'PARENT');
                         handleAddLineItem('CHILD', lastParent?.sku || '');
                       }}
                     >
-                      <Plus className="w-3.5 h-3.5" /> + เพิ่มรายการย่อย (CHILD)
+                      <Plus className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                      <span>เพิ่มรายการย่อย (CHILD)</span>
                     </Button>
                   </div>
                 </div>

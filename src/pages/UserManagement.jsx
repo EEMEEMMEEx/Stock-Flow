@@ -129,6 +129,7 @@ const UserManagement = () => {
     const { data, error } = await supabase
       .from('projects')
       .select('id, name, project_code')
+      .eq('status', 'active')
       .order('name');
     if (error) throw error;
     setProjects(data || []);

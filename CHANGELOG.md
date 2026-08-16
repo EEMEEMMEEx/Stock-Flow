@@ -1,5 +1,33 @@
 # Changelog
 
+## [2026-08-16 15:23]
+
+- **Files Modified:** `src/components/ui/button.jsx`
+- **Details:**
+  - ตรวจสอบและปรับปรุงระบบ Button Component ทั่วทั้งแอปพลิเคชันให้เป็นมาตรฐานเดียวกัน (Standardized Design System):
+    - กำหนดค่า Base Style ทุกปุ่มให้มี `rounded-xl`, `transition-all duration-150`, `cursor-pointer`, `select-none`, และไมโครแอนิเมชัน `active:scale-[0.98]`
+    - ปรับแต่ง Color Schemes ของ Variant ทั้งหมด (`default`, `destructive`, `outline`, `secondary`, `ghost`, `link`, `emerald`, `indigo`) ให้มีความสม่ำเสมอ รองรับทั้งโหมดสว่างและโหมดมืด
+    - ปรับขนาดปุ่ม (`size: default, sm, lg, icon, icon-sm`) และช่องว่างระหว่างไอคอนกับข้อความ (`gap-2`, `gap-1.5`) ให้ถูกต้องแม่นยำตามสัดส่วน
+- **Reason:** ยกระดับความสม่ำเสมอของ UI/UX และ Color Schemes ของปุ่มกดทั้งหมดในระบบ Stock-Flow-app
+
+## [2026-08-16 15:19]
+
+- **Files Modified:** `src/pages/Projects.jsx`, `src/pages/StockIn.jsx`
+- **Details:**
+  - `src/pages/Projects.jsx`: ปรับปรุงปุ่ม **"เพิ่มสถานที่ตั้ง"** บนการ์ดโครงการ โดยตัดเครื่องหมายบวกที่เป็นตัวอักษรซ้ำซ้อน (`+ + เพิ่มสถานที่ตั้ง`) ออก และจัดสไตล์ปุ่มด้วยไอคอน SVG `<Plus />` พร้อมข้อความที่ชัดเจน สวยงาม และเป็นระเบียบตามมาตรฐานดีไซน์
+  - `src/pages/StockIn.jsx`: ปรับปรุงปุ่ม **"เพิ่มรายการหลัก (PARENT)"** และ **"เพิ่มรายการย่อย (CHILD)"** โดยตัดข้อความ `+ ` ที่ซ้ำซ้อนกับไอคอน SVG ออกเช่นกัน
+- **Reason:** แก้ไขการแสดงผลเครื่องหมายบวกซ้ำซ้อนและปรับปรุงดีไซน์ปุ่มตามคำขอของผู้ใช้
+
+## [2026-08-16 15:16]
+
+- **Files Modified:** `src/pages/Projects.jsx`, `src/pages/Items.jsx`, `src/pages/Withdrawals.jsx`, `src/pages/UserManagement.jsx`, `src/pages/Settings.jsx`
+- **Details:**
+  - **Audit & Realtime Live Sync:** ตรวจสอบและยกระดับการซิงค์ข้อมูลโครงการข้ามทุกหน้าทั้งระบบ โดยติดตั้ง **Supabase Realtime Live Synchronization** และ **Tab Visibility Auto-refresh** บนหน้า `Projects.jsx`, `Items.jsx`, และ `Withdrawals.jsx` เพื่อให้ข้อมูลโครงการและสต็อกอัปเดตตรงกันทันทีเมื่อมีการสร้าง แก้ไข หรือลบโครงการ
+  - `src/pages/Withdrawals.jsx`: กรองรายการยอดคงเหลือ (`rawBalances`) ให้คำนวณเฉพาะโครงการที่เปิดใช้งานจริง (`activeProjectIds`) ป้องกันไม่ให้โครงการที่ถูกลบไปแล้วนำยอดสต็อกเก่ามาคำนวณในระบบเบิกจ่ายและ Breakdown Modal
+  - `src/pages/UserManagement.jsx`: เพิ่มตัวกรอง `.eq('status', 'active')` ในการโหลดโครงการสำหรับกำหนดสิทธิ์ผู้ใช้งาน (User Assignment)
+  - `src/pages/Settings.jsx`: เพิ่มตัวกรอง `.eq('status', 'active')` ในการนับสถิติจำนวนโครงการในระบบ
+- **Reason:** รับประกันความแม่นยำและความสอดคล้องของการอัปเดต/ลบโครงการแบบ Real-time ทั่วทั้งระบบ
+
 ## [2026-08-16 14:56]
 
 - **Files Modified:** `src/pages/Withdrawals.jsx`, `src/pages/Settings.jsx`, `src/components/settings/MinIOOrphanManager.jsx`, `src/components/settings/EmailTemplateManager.jsx`
