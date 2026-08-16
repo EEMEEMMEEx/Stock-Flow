@@ -129,6 +129,7 @@ export const AuthProvider = ({ children }) => {
         'items.view', 'items.create', 'items.update', 'items.delete',
         'stock_in.view', 'stock_in.create',
         'withdrawals.view', 'withdrawals.create', 'withdrawals.approve', 'withdrawals.reject', 'withdrawals.complete',
+        'checkouts.view', 'checkouts.create', 'checkouts.return',
         'history.view', 'reports.view', 'reports.export',
         'users.view', 'users.create', 'users.update', 'users.deactivate', 'users.reset_password',
         'roles.view', 'roles.create', 'roles.update', 'roles.delete', 'roles.manage_permissions',

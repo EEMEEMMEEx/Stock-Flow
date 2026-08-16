@@ -1,6 +1,18 @@
 # Changelog
 
-## [2026-08-16 15:48]
+## [2026-08-16 16:07]
+
+- **Files Modified:**
+  - `src/components/roles/PermissionManagementModal.jsx`
+  - `src/contexts/AuthContext.jsx`
+  - `supabase/migrations/45_seed_rbac_permissions_catalog.sql`
+- **Details:**
+  - **Database & Catalog Seeding:** เติมข้อมูลแคตตาล็อกสิทธิ์การใช้งาน (Permissions Catalog) ทั้ง 34 รายการลงในตาราง `permissions` และผูกสิทธิ์เริ่มต้นให้กับบทบาทระบบ (`ADMIN`: 34 สิทธิ์, `SUPERVISOR`: 13 สิทธิ์, `STAFF`: 10 สิทธิ์ รวม 58 mapping records) ในตาราง `role_permissions`
+  - **Auto Role ID Linking:** แก้ไข `role_id` ที่เป็น `null` ในตาราง `profiles` ให้เชื่อมโยงกับ Role `ADMIN` อย่างถูกต้อง
+  - `src/components/roles/PermissionManagementModal.jsx`: เพิ่มเงื่อนไข Permission Dependency Engine สำหรับโมดูลยืม-คืน (`checkouts.create` และ `checkouts.return` ผูกกับ `checkouts.view`) และปรับปรุงการแปลง Permission ID ให้ยืดหยุ่นปลอดภัย
+  - `src/contexts/AuthContext.jsx`: เพิ่มสิทธิ์หมวดหมู่ยืม-คืน (`checkouts.view`, `checkouts.create`, `checkouts.return`) เข้าสู่ชุดสิทธิ์ของ Admin Baseline
+- **Reason:** แก้ไขปัญหาหน้า `/roles` แสดงผล `Selected Permissions: 0 / 0 items` เนื่องจากตารางแคตตาล็อกสิทธิ์ในฐานข้อมูล Supabase ยังไม่มีข้อมูลเริ่มต้น
+
 
 - **Files Modified:** `src/pages/Checkouts.jsx`
 - **Details:**

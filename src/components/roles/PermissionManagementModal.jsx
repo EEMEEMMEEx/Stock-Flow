@@ -16,6 +16,8 @@ const PERMISSION_DEPENDENCIES = {
   'withdrawals.approve': ['withdrawals.view'],
   'withdrawals.reject': ['withdrawals.view'],
   'withdrawals.complete': ['withdrawals.view'],
+  'checkouts.create': ['checkouts.view'],
+  'checkouts.return': ['checkouts.view'],
   'reports.export': ['reports.view'],
   'users.create': ['users.view'],
   'users.update': ['users.view'],
@@ -36,7 +38,9 @@ const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = []
 
   useEffect(() => {
     if (role && currentPermissions) {
-      const ids = currentPermissions.map(p => p.permission_id);
+      const ids = currentPermissions
+        .map(p => (typeof p === 'object' && p !== null ? (p.permission_id || p.id) : p))
+        .filter(Boolean);
       setSelectedIds(ids);
       setInitialIds(ids);
     }
