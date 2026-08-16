@@ -1,6 +1,22 @@
 # Changelog
 
-## [2026-08-16 16:16]
+## [1.0.0 - 2026-08-16] 🚀 Official Production Release
+
+- **Files Modified:**
+  - `src/config/appConfig.js`
+  - `package.json`
+- **Details:**
+  - **Major Milestone Version Bump (v1.0.0):** ยกระดับเวอร์ชันแอปพลิเคชันจาก `v0.1.0` สู่ **`v1.0.0` (Official Production Release)** อย่างเป็นทางการ
+  - **Feature-Complete Platform:**
+    - 📦 **ระบบคลังวัสดุและโครงการ (Master & Projects):** บันทึกข้อมูลโครงการ, โครงสร้าง Master Item แบบลำดับชั้น (Parent-Child Hierarchy), และ Real-time Stock Balances
+    - 📥 **ระบบรับเข้าพัสดุ (Stock In):** รองรับการรับเข้าแบบละเอียด แยกรายชุด / บาร์โค้ด / PO Batch
+    - ⚡ **ระบบเบิกจ่ายพัสดุ (Withdrawals & POS Terminal):** หน้ารับเบิกจ่ายความเร็วสูง POS Terminal, การอนุมัติหลายระดับ (Workflow Approval), และการพิมพ์ใบเบิกของ (`MaterialWithdrawalPDF`)
+    - 🔄 **ระบบยืม-คืนเครื่องมือและพัสดุอุปกรณ์ (Material Checkout & Return):** ติดตามพัสดุค้างส่ง, วันกำหนดส่งคืน, แจ้งเตือน Overdue, รับคืนบางส่วน, และพิมพ์ใบยืม/ใบรับคืน PDF
+    - 🛡️ **ระบบจัดการบทบาทและสิทธิ์ไดนามิก (Dynamic RBAC):** แคตตาล็อกสิทธิ์ 34 สิทธิ์ พร้อม Permission Dependency Engine
+    - 👥 **ระบบจัดการผู้ใช้และความปลอดภัย (User Management & Security):** ระบบส่งอีเมลเทียบเชิญผ่าน SMTP และจัดเก็บรูปโปรไฟล์บน Supabase Storage
+    - 📊 **ระบบรายงานและ PWA (Reports & Mobile Experience):** สรุปกราฟสถิติ, ส่งออกไฟล์ Excel/PDF, และรองรับการติดตั้ง Progressive Web App (PWA)
+- **Reason:** ประกาศเปิดตัวระบบ StockFlow Version 1.0.0 สำหรับใช้งานจริงในองค์กรอย่างเป็นทางการ
+
 
 - **Files Modified:**
   - `src/pages/Settings.jsx`
