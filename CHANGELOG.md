@@ -1,6 +1,15 @@
 # Changelog
 
-## [2026-08-16 16:07]
+## [2026-08-16 16:16]
+
+- **Files Modified:**
+  - `src/pages/Settings.jsx`
+  - `src/components/settings/MinIOOrphanManager.jsx` (Deleted)
+- **Details:**
+  - **Remove Obsolete MinIO Section:** ถอดคอมโพเนนต์และการ์ดส่วนที่ 6 **"การจัดการไฟล์ขยะ MinIO/S3 (MinIO Orphan Files Management)"** ออกจากหน้า `Settings.jsx` เนื่องจากระบบปัจจุบันใช้ Supabase Storage แทน และไม่มีเซิร์ฟเวอร์ Express แบ็กเอนด์คอยประมวลผล `/api/minio/*`
+  - **Clean Up & Renumber:** ลบไฟล์คอมโพเนนต์ที่ไม่ได้ใช้งาน `MinIOOrphanManager.jsx` และจัดลำดับหัวข้อการตั้งค่าในหน้า Settings ใหม่ให้เป็น 6 ส่วนหลัก (หมวดหมู่สุดท้ายเป็น "6. ข้อมูลระบบ (System Information)")
+- **Reason:** ถอดฟีเจอร์ค้างท่อ (Dead Code / Unused Legacy Section) ออกจากหน้าตั้งค่าระบบตามคำขอของผู้ใช้งาน
+
 
 - **Files Modified:**
   - `src/components/roles/PermissionManagementModal.jsx`

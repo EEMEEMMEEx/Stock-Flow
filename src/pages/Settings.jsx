@@ -7,14 +7,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { 
   Settings as SettingsIcon, AppWindow, Package, Mail, ShieldCheck, 
-  Database, Server, Save, ChevronDown, ChevronRight, RefreshCw, Send, Lock, Unlock, Sparkles, AlertTriangle, FolderKanban
+  Database, Server, Save, ChevronDown, ChevronRight, RefreshCw, Send, Lock, Unlock, Sparkles, AlertTriangle
 } from 'lucide-react';
 import { APP_CONFIG } from '@/config/appConfig';
 import toast from 'react-hot-toast';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import EmailTemplateManager from '@/components/settings/EmailTemplateManager';
 import DefaultPasswordManager from '@/components/settings/DefaultPasswordManager';
-import MinIOOrphanManager from '@/components/settings/MinIOOrphanManager';
 import { sendTestEmail } from '@/lib/emailService';
 
 
@@ -36,7 +35,6 @@ const Settings = () => {
     notification: false,
     security: false,
     storage: false,
-    minio: false,
     system: false
   });
 
@@ -922,30 +920,7 @@ const Settings = () => {
         )}
       </Card>
 
-      {/* SECTION 6: MinIO Orphan Files Management */}
-      <Card className="neu-flat border-0 overflow-hidden">
-        <CardHeader 
-          onClick={() => toggleSection('minio')}
-          className="cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors flex flex-row items-center justify-between py-4"
-        >
-          <div className="flex items-center gap-2.5">
-            <FolderKanban className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-            <div>
-              <CardTitle className="text-base font-bold">6. การจัดการไฟล์ขยะ MinIO/S3 (MinIO Orphan Files Management)</CardTitle>
-              <CardDescription className="text-xs">สแกน ส่งออกรายงาน และลบไฟล์ตกค้างที่ไม่ได้ถูกอ้างอิงในระบบอย่างปลอดภัย</CardDescription>
-            </div>
-          </div>
-          {openSections.minio ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
-        </CardHeader>
-
-        {openSections.minio && (
-          <CardContent className="pt-2 pb-6 border-t border-border/40 text-xs">
-            <MinIOOrphanManager canUpdate={canUpdate} />
-          </CardContent>
-        )}
-      </Card>
-
-      {/* SECTION 7: System Information */}
+      {/* SECTION 6: System Information */}
       <Card className="neu-flat border-0 overflow-hidden">
         <CardHeader 
           onClick={() => toggleSection('system')}
@@ -954,7 +929,7 @@ const Settings = () => {
           <div className="flex items-center gap-2.5">
             <Server className="w-5 h-5 text-slate-600 dark:text-slate-300" />
             <div>
-              <CardTitle className="text-base font-bold">7. ข้อมูลระบบ (System Information)</CardTitle>
+              <CardTitle className="text-base font-bold">6. ข้อมูลระบบ (System Information)</CardTitle>
               <CardDescription className="text-xs">สรุปสถิติเวอร์ชัน สภาพแวดล้อม และสถานะการเชื่อมต่อฐานข้อมูล</CardDescription>
             </div>
           </div>
