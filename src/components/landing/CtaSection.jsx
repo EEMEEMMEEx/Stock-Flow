@@ -4,8 +4,11 @@ import { ArrowUpRight, ShieldCheck, Zap, Lock } from 'lucide-react';
 import Squares from '../reactbits/Squares';
 import Magnet from '../reactbits/Magnet';
 import ShinyText from '../reactbits/ShinyText';
+import { useLandingLanguage } from '@/contexts/LandingLanguageContext';
 
 export default function CtaSection() {
+  const { t } = useLandingLanguage();
+
   return (
     <section className="relative py-24 bg-zinc-950 text-white overflow-hidden border-t border-white/10">
       {/* Background Interactive Squares */}
@@ -25,15 +28,15 @@ export default function CtaSection() {
       <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono font-medium mb-6">
           <Zap className="w-3.5 h-3.5" />
-          <ShinyText text="INSTANT PRODUCTION ACCESS" speed={3} />
+          <ShinyText text={t.cta.badge} speed={3} />
         </div>
 
         <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white max-w-2xl leading-tight">
-          Ready to Elevate Your Material & Inventory Flow?
+          {t.cta.title}
         </h2>
 
         <p className="mt-6 text-zinc-400 text-base sm:text-lg max-w-xl leading-relaxed">
-          เริ่มต้นจัดการคลังพัสดุ เบิกจ่ายด้วย POS และควบคุมสต็อกแบบ Atomic Transaction ได้ทันทีผ่านเว็บแอปพลิเคชัน Stock-Flow
+          {t.cta.subtitle}
         </p>
 
         <div className="mt-8 flex flex-col sm:flex-row items-center gap-4">
@@ -44,7 +47,7 @@ export default function CtaSection() {
               rel="noopener noreferrer"
               className="flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-sm text-zinc-950 bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 transition-all duration-200 shadow-2xl shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-[1.03] active:scale-[0.98]"
             >
-              <span>Launch Stock-Flow App</span>
+              <span>{t.cta.button}</span>
               <ArrowUpRight className="w-4 h-4" strokeWidth={2.5} />
             </a>
           </Magnet>
@@ -53,11 +56,11 @@ export default function CtaSection() {
         <div className="mt-8 flex items-center justify-center gap-6 text-xs text-zinc-400 font-mono">
           <div className="flex items-center gap-1.5">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Multi-Tenant Ready</span>
+            <span>{t.cta.tenantBadge}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <Lock className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Secure Authentication</span>
+            <span>{t.cta.secureBadge}</span>
           </div>
         </div>
       </div>

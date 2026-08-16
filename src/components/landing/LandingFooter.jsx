@@ -1,7 +1,10 @@
 import React from 'react';
-import { ArrowUpRight, Github, ExternalLink, ShieldCheck } from 'lucide-react';
+import { Github, ExternalLink } from 'lucide-react';
+import { useLandingLanguage } from '@/contexts/LandingLanguageContext';
 
 export default function LandingFooter() {
+  const { t } = useLandingLanguage();
+
   return (
     <footer className="bg-zinc-950 border-t border-white/10 text-zinc-400 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
@@ -24,7 +27,7 @@ export default function LandingFooter() {
           </div>
           <div>
             <span className="font-bold text-sm text-white">Stock-Flow</span>
-            <span className="text-xs text-zinc-500 ml-2">Enterprise Inventory OS</span>
+            <span className="text-xs text-zinc-400 ml-2">{t.footer.tagline}</span>
           </div>
         </div>
 
@@ -34,7 +37,7 @@ export default function LandingFooter() {
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
           </span>
-          <span>All Services Operational</span>
+          <span>{t.footer.operational}</span>
         </div>
 
         {/* Links */}
@@ -45,7 +48,7 @@ export default function LandingFooter() {
             rel="noopener noreferrer"
             className="flex items-center gap-1 text-zinc-300 hover:text-emerald-400 transition-colors"
           >
-            <span>Live Web App</span>
+            <span>{t.footer.liveApp}</span>
             <ExternalLink className="w-3.5 h-3.5" />
           </a>
           <a
@@ -55,14 +58,14 @@ export default function LandingFooter() {
             className="flex items-center gap-1 text-zinc-300 hover:text-white transition-colors"
           >
             <Github className="w-3.5 h-3.5" />
-            <span>GitHub Repository</span>
+            <span>{t.footer.github}</span>
           </a>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto mt-8 pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-zinc-500 font-mono">
-        <p>&copy; {new Date().getFullYear()} Stock-Flow. Built for high-reliability inventory workflows.</p>
-        <p>Zero Emojis · Strict SVG Iconography · Reactbits Animated</p>
+      <div className="max-w-7xl mx-auto mt-8 pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-zinc-400 font-mono">
+        <p>&copy; {new Date().getFullYear()} Stock-Flow. {t.footer.copyright}</p>
+        <p>{t.footer.notice}</p>
       </div>
     </footer>
   );

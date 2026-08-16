@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowUpRight, ShieldCheck, Layers, Cpu, Compass, Menu, X } from 'lucide-react';
+import LanguageSwitcher from './LanguageSwitcher';
+import { useLandingLanguage } from '@/contexts/LandingLanguageContext';
 
 export default function LandingNavbar() {
+  const { t } = useLandingLanguage();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -14,10 +17,10 @@ export default function LandingNavbar() {
   }, []);
 
   const navLinks = [
-    { label: 'Features', href: '#features', icon: Layers },
-    { label: 'Workflows', href: '#workflows', icon: Compass },
-    { label: 'Architecture', href: '#architecture', icon: Cpu },
-    { label: 'Security & RBAC', href: '#security', icon: ShieldCheck },
+    { label: t.nav.features, href: '#features', icon: Layers },
+    { label: t.nav.workflows, href: '#workflows', icon: Compass },
+    { label: t.nav.architecture, href: '#architecture', icon: Cpu },
+    { label: t.nav.security, href: '#security', icon: ShieldCheck },
   ];
 
   return (
@@ -28,9 +31,9 @@ export default function LandingNavbar() {
           : 'bg-transparent py-5'
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
         {/* Brand Logo with Strict SVG */}
-        <a href="#" className="flex items-center gap-3 group">
+        <a href="#" className="flex items-center gap-3 group shrink-0">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center shadow-lg shadow-emerald-500/20 ring-1 ring-white/20 group-hover:scale-105 transition-transform duration-200">
             <svg
               className="w-5 h-5 text-white"
@@ -63,7 +66,7 @@ export default function LandingNavbar() {
         </a>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-1 bg-zinc-900/60 border border-white/10 rounded-full px-4 py-1.5 backdrop-blur-md">
+        <nav className="hidden lg:flex items-center gap-1 bg-zinc-900/60 border border-white/10 rounded-full px-4 py-1.5 backdrop-blur-md">
           {navLinks.map((link) => {
             const Icon = link.icon;
             return (
@@ -79,21 +82,24 @@ export default function LandingNavbar() {
           })}
         </nav>
 
-        {/* CTA Launch Web App button */}
+        {/* Actions: Multi-language Switcher & CTA Launch Web App button */}
         <div className="hidden sm:flex items-center gap-3">
+          <LanguageSwitcher />
+
           <a
             href="https://stock-flow-pi-coral.vercel.app"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-zinc-950 bg-emerald-400 hover:bg-emerald-300 transition-all duration-200 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 hover:scale-[1.02] active:scale-[0.98]"
           >
-            <span>Launch Web App</span>
+            <span>{t.nav.launchApp}</span>
             <ArrowUpRight className="w-4 h-4" strokeWidth={2.2} />
           </a>
         </div>
 
-        {/* Mobile menu toggle */}
-        <div className="md:hidden flex items-center">
+        {/* Mobile menu toggle and compact language switcher */}
+        <div className="flex sm:hidden items-center gap-2">
+          <LanguageSwitcher />
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="p-2 rounded-lg bg-zinc-900 border border-white/10 text-zinc-400 hover:text-white"
@@ -110,7 +116,7 @@ export default function LandingNavbar() {
 
       {/* Mobile Menu Dropdown */}
       {mobileMenuOpen && (
-        <div className="md:hidden px-4 pt-3 pb-6 bg-zinc-950/95 border-b border-white/10 backdrop-blur-2xl">
+        <div className="lg:hidden px-4 pt-3 pb-6 bg-zinc-950/95 border-b border-white/10 backdrop-blur-2xl">
           <div className="flex flex-col gap-2">
             {navLinks.map((link) => {
               const Icon = link.icon;
@@ -126,14 +132,14 @@ export default function LandingNavbar() {
                 </a>
               );
             })}
-            <div className="pt-2 border-t border-white/10 mt-1">
+            <div className="pt-2 border-t border-white/10 mt-1 flex flex-col gap-2">
               <a
                 href="https://stock-flow-pi-coral.vercel.app"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-zinc-950 bg-emerald-400 hover:bg-emerald-300"
               >
-                <span>Launch Web App</span>
+                <span>{t.nav.launchApp}</span>
                 <ArrowUpRight className="w-4 h-4" strokeWidth={2.2} />
               </a>
             </div>

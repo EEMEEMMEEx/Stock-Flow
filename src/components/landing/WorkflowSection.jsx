@@ -5,40 +5,42 @@ import {
   Warehouse, 
   ShoppingCart, 
   FileCheck2, 
-  ArrowRight, 
   Sparkles,
   CheckCircle2
 } from 'lucide-react';
+import { useLandingLanguage } from '@/contexts/LandingLanguageContext';
 
 export default function WorkflowSection() {
+  const { t } = useLandingLanguage();
+
   const steps = [
     {
       step: '01',
-      title: 'Inbound & Stock-In',
-      description: 'นำเข้าพัสดุผ่าน Batch CSV/Excel พร้อมระบบตรวจจับความถูกต้องและจัดเก็บ Serial Number รายชิ้น',
+      title: t.workflows.step1Title,
+      description: t.workflows.step1Desc,
       icon: PackagePlus,
-      tag: 'Import & QC',
+      tag: t.workflows.step1Tag,
     },
     {
       step: '02',
-      title: 'Storage & Allocation',
-      description: 'จัดหมวดหมู่ กำหนดเกณฑ์แจ้งเตือนสต็อกขั้นต่ำ (Low Stock Alert) และจัดสรรให้แต่ละโครงการ',
+      title: t.workflows.step2Title,
+      description: t.workflows.step2Desc,
       icon: Warehouse,
-      tag: 'Inventory Index',
+      tag: t.workflows.step2Tag,
     },
     {
       step: '03',
-      title: 'POS Rapid Dispatch',
-      description: 'เบิกจ่ายด้วยระบบ POS สแกนบาร์โค้ด ตรวจสอบสิทธิ์ และออกใบเบิกจ่ายพัสดุ (PDF) ทันที',
+      title: t.workflows.step3Title,
+      description: t.workflows.step3Desc,
       icon: ShoppingCart,
-      tag: 'Atomic Checkout',
+      tag: t.workflows.step3Tag,
     },
     {
       step: '04',
-      title: 'Audit & Lifecycle',
-      description: 'บันทึกประวัติการเบิกจ่ายทุกรายการ ติดตามการคืนครุภัณฑ์ และออกรายงานสรุปยอดคงเหลือ',
+      title: t.workflows.step4Title,
+      description: t.workflows.step4Desc,
       icon: FileCheck2,
-      tag: 'Immutable Ledger',
+      tag: t.workflows.step4Tag,
     },
   ];
 
@@ -49,13 +51,13 @@ export default function WorkflowSection() {
         <div className="text-center max-w-3xl mx-auto mb-16">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono font-medium mb-3">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>END-TO-END MATERIAL PIPELINE</span>
+            <span>{t.workflows.badge}</span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
-            Seamless Workflow From Receiving to Dispatch
+            {t.workflows.title}
           </h2>
           <p className="mt-4 text-zinc-400 text-base leading-relaxed">
-            ขั้นตอนการทำงานที่ถูกออกแบบให้กระชับ รวดเร็ว และตรวจสอบย้อนกลับได้ทุกมิติ
+            {t.workflows.subtitle}
           </p>
         </div>
 
@@ -92,7 +94,7 @@ export default function WorkflowSection() {
 
                 <div className="mt-6 pt-4 border-t border-white/5 flex items-center gap-1 text-[11px] font-mono text-emerald-400">
                   <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>Verified Safe Operation</span>
+                  <span>{t.workflows.stepVerified}</span>
                 </div>
               </motion.div>
             );

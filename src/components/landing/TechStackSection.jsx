@@ -4,14 +4,16 @@ import {
   Code2, 
   Database, 
   Cpu, 
-  ShieldCheck, 
   Mail, 
   FileText, 
   Smartphone,
   Server
 } from 'lucide-react';
+import { useLandingLanguage } from '@/contexts/LandingLanguageContext';
 
 export default function TechStackSection() {
+  const { t } = useLandingLanguage();
+
   const stackItems = [
     {
       title: 'React 18 & Vite',
@@ -57,13 +59,13 @@ export default function TechStackSection() {
         <div id="security" className="text-center max-w-3xl mx-auto mb-16">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono font-medium mb-3">
             <Server className="w-3.5 h-3.5" />
-            <span>ENTERPRISE ARCHITECTURE</span>
+            <span>{t.tech.badge}</span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
-            Engineered for Stability & Performance
+            {t.tech.title}
           </h2>
           <p className="mt-4 text-zinc-400 text-base leading-relaxed">
-            สถาปัตยกรรมระดับ Production ที่ผสานพลังของ Modern Web, Serverless และ Relational Database
+            {t.tech.subtitle}
           </p>
         </div>
 

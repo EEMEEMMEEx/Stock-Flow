@@ -14,8 +14,11 @@ import {
   ArrowRight
 } from 'lucide-react';
 import SpotlightCard from '../reactbits/SpotlightCard';
+import { useLandingLanguage } from '@/contexts/LandingLanguageContext';
 
 export default function BentoFeatures() {
+  const { t } = useLandingLanguage();
+
   return (
     <section id="features" className="py-24 bg-zinc-950 text-white relative overflow-hidden">
       {/* Background Subtle Glows */}
@@ -27,13 +30,13 @@ export default function BentoFeatures() {
         <div className="text-center max-w-3xl mx-auto mb-16">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono font-medium mb-3">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>CORE ARCHITECTURE & MODULES</span>
+            <span>{t.features.badge}</span>
           </div>
           <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white">
-            Built for High-Precision Operations.
+            {t.features.title}
           </h2>
           <p className="mt-4 text-zinc-400 text-base leading-relaxed">
-            ครอบคลุมทุกวงจรการเคลื่อนย้ายพัสดุและครุภัณฑ์ ตั้งแต่รับเข้าคลัง ตรวจสอบ สิทธิ์ผู้ใช้ ไปจนถึงการเบิกจ่ายด้วยระบบ POS
+            {t.features.subtitle}
           </p>
         </div>
 
@@ -56,26 +59,26 @@ export default function BentoFeatures() {
                   <ShoppingCart className="w-6 h-6" strokeWidth={1.75} />
                 </div>
                 <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">
-                  POS-Style Rapid Withdrawal
+                  {t.features.posTitle}
                 </h3>
                 <p className="text-zinc-400 text-sm leading-relaxed max-w-xl">
-                  ระบบตะกร้าเบิกจ่ายสินค้าด่วนแบบ Point-of-Sale รองรับการค้นหาด่วน สแกน Barcode/SKU ระบุโครงการผู้ขอเบิก และตัดยอดสต็อกทันทีในคลิกเดียว
+                  {t.features.posDesc}
                 </p>
               </div>
 
               {/* Visual Mini POS Card */}
               <div className="mt-6 pt-6 border-t border-white/10 grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="p-3 rounded-xl bg-zinc-950/60 border border-white/5">
-                  <div className="text-[11px] font-mono text-zinc-400">Scan & Search</div>
-                  <div className="text-xs font-semibold text-white mt-1">Instant SKU Finder</div>
+                  <div className="text-[11px] font-mono text-zinc-400">{t.features.posFeature1Title}</div>
+                  <div className="text-xs font-semibold text-white mt-1">{t.features.posFeature1Desc}</div>
                 </div>
                 <div className="p-3 rounded-xl bg-zinc-950/60 border border-white/5">
-                  <div className="text-[11px] font-mono text-zinc-400">Cart Allocation</div>
-                  <div className="text-xs font-semibold text-white mt-1">Multi-Project Target</div>
+                  <div className="text-[11px] font-mono text-zinc-400">{t.features.posFeature2Title}</div>
+                  <div className="text-xs font-semibold text-white mt-1">{t.features.posFeature2Desc}</div>
                 </div>
                 <div className="p-3 rounded-xl bg-zinc-950/60 border border-white/5">
-                  <div className="text-[11px] font-mono text-zinc-400">Dispatch Speed</div>
-                  <div className="text-xs font-semibold text-emerald-400 mt-1">&lt; 1-Second Tx</div>
+                  <div className="text-[11px] font-mono text-zinc-400">{t.features.posFeature3Title}</div>
+                  <div className="text-xs font-semibold text-emerald-400 mt-1">{t.features.posFeature3Desc}</div>
                 </div>
               </div>
             </SpotlightCard>
@@ -97,17 +100,17 @@ export default function BentoFeatures() {
                   <Database className="w-6 h-6" strokeWidth={1.75} />
                 </div>
                 <h3 className="text-xl font-bold text-white mb-2">
-                  100% Atomic Transactions
+                  {t.features.atomicTitle}
                 </h3>
                 <p className="text-zinc-400 text-sm leading-relaxed">
-                  ตัดปัญหาเรื่องสต็อกติดลบหรือ Race Conditions ด้วย PostgreSQL Database Functions (`SELECT FOR UPDATE`) จัดการความปลอดภัยระดับ Data Layer
+                  {t.features.atomicDesc}
                 </p>
               </div>
 
               <div className="mt-6 pt-6 border-t border-white/10">
                 <div className="flex items-center gap-2 text-xs font-mono text-cyan-400">
                   <CheckCircle2 className="w-4 h-4" />
-                  <span>ACID Compliant Engine</span>
+                  <span>{t.features.atomicBadge}</span>
                 </div>
               </div>
             </SpotlightCard>
@@ -121,7 +124,7 @@ export default function BentoFeatures() {
             transition={{ duration: 0.5, delay: 0.2 }}
           >
             <SpotlightCard
-              spotlightColor="rgba(168, 85, 247, 0.18)"
+              spotlightColor="rgba(16, 185, 129, 0.18)"
               className="h-full p-6 sm:p-8 flex flex-col justify-between"
             >
               <div>
@@ -129,17 +132,17 @@ export default function BentoFeatures() {
                   <UserCheck className="w-6 h-6" strokeWidth={1.75} />
                 </div>
                 <h3 className="text-xl font-bold text-white mb-2">
-                  Granular RBAC Matrix
+                  {t.features.rbacTitle}
                 </h3>
                 <p className="text-zinc-400 text-sm leading-relaxed">
-                  กำหนดสิทธิ์ละเอียดแยกตามรายหน้าและฟังก์ชัน (View, Manage, Approve) พร้อมระบบเชิญสมาชิกทาง Email และ Self-service Profile
+                  {t.features.rbacDesc}
                 </p>
               </div>
 
               <div className="mt-6 pt-6 border-t border-white/10">
                 <div className="flex items-center gap-2 text-xs font-mono text-teal-400">
                   <Lock className="w-4 h-4" />
-                  <span>Module-Level Security</span>
+                  <span>{t.features.rbacBadge}</span>
                 </div>
               </div>
             </SpotlightCard>
@@ -161,17 +164,17 @@ export default function BentoFeatures() {
                   <RotateCcw className="w-6 h-6" strokeWidth={1.75} />
                 </div>
                 <h3 className="text-xl font-bold text-white mb-2">
-                  Material Checkout & Return
+                  {t.features.borrowTitle}
                 </h3>
                 <p className="text-zinc-400 text-sm leading-relaxed">
-                  ติดตามสถานะการยืม-คืนอุปกรณ์ ครุภัณฑ์ พร้อมตรวจสอบสภาพพัสดุ และระบบแจ้งเตือนรายการที่ครบกำหนดหรือค้างคืน
+                  {t.features.borrowDesc}
                 </p>
               </div>
 
               <div className="mt-6 pt-6 border-t border-white/10">
                 <div className="flex items-center gap-2 text-xs font-mono text-amber-400">
                   <Layers className="w-4 h-4" />
-                  <span>Full Asset Lifecycle</span>
+                  <span>{t.features.borrowBadge}</span>
                 </div>
               </div>
             </SpotlightCard>
@@ -193,23 +196,23 @@ export default function BentoFeatures() {
                   <FileSpreadsheet className="w-6 h-6" strokeWidth={1.75} />
                 </div>
                 <h3 className="text-xl font-bold text-white mb-2">
-                  Batch Stock-In Engine
+                  {t.features.batchTitle}
                 </h3>
                 <p className="text-zinc-400 text-sm leading-relaxed">
-                  นำเข้าข้อมูลสินค้าล็อตใหญ่ด้วยแม่แบบ CSV/Excel ที่มีระบบตรวจสอบข้อผิดพลาด คัดกรองข้อมูล และบันทึก Serial Number อัตโนมัติ
+                  {t.features.batchDesc}
                 </p>
               </div>
 
               <div className="mt-6 pt-6 border-t border-white/10">
                 <div className="flex items-center gap-2 text-xs font-mono text-emerald-400">
                   <CheckCircle2 className="w-4 h-4" />
-                  <span>Canonical Data Mapping</span>
+                  <span>{t.features.batchBadge}</span>
                 </div>
               </div>
             </SpotlightCard>
           </motion.div>
 
-          {/* Card 6: Automated PDF Issue Vouchers (Span 3 / Full Width on bottom or standard) */}
+          {/* Card 6: Automated PDF Issue Vouchers */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -227,10 +230,10 @@ export default function BentoFeatures() {
                 </div>
                 <div>
                   <h3 className="text-xl font-bold text-white mb-1">
-                    Automated Issue Vouchers & PDF Engine
+                    {t.features.pdfTitle}
                   </h3>
                   <p className="text-zinc-400 text-sm leading-relaxed max-w-2xl">
-                    สร้างใบเบิกพัสดุและใบสำคัญรับ-ส่งของในรูปแบบ PDF ตามแบบฟอร์มมาตรฐานของหน่วยงาน พร้อมระบบรันเลขที่เอกสาร วันที่ และช่องลงนามโดยอัตโนมัติ
+                    {t.features.pdfDesc}
                   </p>
                 </div>
               </div>
@@ -242,7 +245,7 @@ export default function BentoFeatures() {
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-white/10 text-white text-xs font-semibold transition-all hover:scale-105"
                 >
-                  <span>Test in Live App</span>
+                  <span>{t.features.pdfCta}</span>
                   <ArrowRight className="w-3.5 h-3.5 text-emerald-400" />
                 </a>
               </div>

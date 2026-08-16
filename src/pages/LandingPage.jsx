@@ -7,6 +7,7 @@ import WorkflowSection from '../components/landing/WorkflowSection';
 import TechStackSection from '../components/landing/TechStackSection';
 import CtaSection from '../components/landing/CtaSection';
 import LandingFooter from '../components/landing/LandingFooter';
+import { LandingLanguageProvider } from '@/contexts/LandingLanguageContext';
 
 export default function LandingPage() {
   useEffect(() => {
@@ -14,17 +15,19 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white font-sans selection:bg-emerald-500 selection:text-black">
-      <LandingNavbar />
-      <main>
-        <HeroSection />
-        <StatsSection />
-        <BentoFeatures />
-        <WorkflowSection />
-        <TechStackSection />
-        <CtaSection />
-      </main>
-      <LandingFooter />
-    </div>
+    <LandingLanguageProvider>
+      <div className="min-h-screen bg-zinc-950 text-white font-sans selection:bg-emerald-500 selection:text-black">
+        <LandingNavbar />
+        <main>
+          <HeroSection />
+          <StatsSection />
+          <BentoFeatures />
+          <WorkflowSection />
+          <TechStackSection />
+          <CtaSection />
+        </main>
+        <LandingFooter />
+      </div>
+    </LandingLanguageProvider>
   );
 }

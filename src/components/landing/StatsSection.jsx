@@ -2,36 +2,35 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Zap, ShieldCheck, Database, Lock } from 'lucide-react';
 import ShinyText from '../reactbits/ShinyText';
+import { useLandingLanguage } from '@/contexts/LandingLanguageContext';
 
 export default function StatsSection() {
+  const { t } = useLandingLanguage();
+
   const stats = [
     {
-      value: '< 100ms',
-      label: 'POS Transaction Speed',
-      description: 'เบิกจ่ายและหักสต็อกได้รวดเร็วทันทีผ่านระบบ Web POS Terminal',
+      value: t.stats.stat1Value,
+      label: t.stats.stat1Label,
+      description: t.stats.stat1Desc,
       icon: Zap,
-      accent: 'emerald',
     },
     {
-      value: '100%',
-      label: 'Atomic Consistency',
-      description: 'ตัดสต็อกแบบ Row-locking ในระดับ Database ไร้ข้อผิดพลาด',
+      value: t.stats.stat2Value,
+      label: t.stats.stat2Label,
+      description: t.stats.stat2Desc,
       icon: Database,
-      accent: 'cyan',
     },
     {
-      value: 'Zero-Risk',
-      label: 'Race-Condition Prevention',
-      description: 'สต็อกไม่มีวันติดลบแม้มีคำขอเบิกพร้อมกันหลายจุด',
+      value: t.stats.stat3Value,
+      label: t.stats.stat3Label,
+      description: t.stats.stat3Desc,
       icon: ShieldCheck,
-      accent: 'emerald',
     },
     {
-      value: '12+ Types',
-      label: 'Granular RBAC Matrix',
-      description: 'ควบคุมสิทธิ์รายโมดูล พร้อมระบบ Self-service Profile และ Email Invite',
+      value: t.stats.stat4Value,
+      label: t.stats.stat4Label,
+      description: t.stats.stat4Desc,
       icon: Lock,
-      accent: 'teal',
     },
   ];
 

@@ -18,8 +18,11 @@ import DecryptedText from '../reactbits/DecryptedText';
 import ShinyText from '../reactbits/ShinyText';
 import Magnet from '../reactbits/Magnet';
 import TiltedCard from '../reactbits/TiltedCard';
+import { useLandingLanguage } from '@/contexts/LandingLanguageContext';
 
 export default function HeroSection() {
+  const { t, lang } = useLandingLanguage();
+
   return (
     <section className="relative min-h-[92dvh] flex flex-col justify-center items-center pt-28 pb-16 px-4 sm:px-6 lg:px-8 overflow-hidden bg-zinc-950 text-white">
       {/* Background Interactive Squares Grid */}
@@ -50,7 +53,7 @@ export default function HeroSection() {
             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
           </span>
           <ShinyText
-            text="NEXT-GEN INVENTORY & POS SYSTEM"
+            text={t.hero.pill}
             speed={3.5}
             className="text-[11px] font-mono uppercase tracking-widest font-semibold text-emerald-300"
           />
@@ -63,10 +66,11 @@ export default function HeroSection() {
           transition={{ duration: 0.7, delay: 0.1 }}
           className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white max-w-4xl leading-[1.08]"
         >
-          <span>Precision Inventory Control. </span>
+          <span>{t.hero.headlinePrefix}</span>
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400">
             <DecryptedText
-              text="Real-time Flow."
+              key={lang}
+              text={t.hero.headlineDynamic}
               speed={45}
               maxIterations={14}
               animateOn="view"
@@ -82,7 +86,7 @@ export default function HeroSection() {
           transition={{ duration: 0.7, delay: 0.2 }}
           className="mt-6 text-base sm:text-lg text-zinc-400 max-w-2xl font-normal leading-relaxed"
         >
-          ระบบบริหารและเบิกจ่ายพัสดุ-ครุภัณฑ์สำหรับองค์กรยุคใหม่ แม่นยำทุกการเคลื่อนย้าย จัดการคำขอรวดเร็วด้วยระบบ POS และปกป้องข้อมูลด้วย 100% Atomic Transactions
+          {t.hero.subtitle}
         </motion.p>
 
         {/* Dual High-Conversion Call To Actions */}
@@ -99,7 +103,7 @@ export default function HeroSection() {
               rel="noopener noreferrer"
               className="flex items-center gap-2.5 px-6 py-3.5 rounded-xl font-semibold text-sm text-zinc-950 bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 transition-all duration-200 shadow-xl shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:scale-[1.02] active:scale-[0.98]"
             >
-              <span>Launch Stock-Flow App</span>
+              <span>{t.hero.launchCta}</span>
               <ArrowUpRight className="w-4 h-4" strokeWidth={2.5} />
             </a>
           </Magnet>
@@ -108,7 +112,7 @@ export default function HeroSection() {
             href="#features"
             className="flex items-center gap-2 px-5 py-3.5 rounded-xl font-medium text-sm text-zinc-300 bg-zinc-900/80 hover:bg-zinc-800 border border-white/10 hover:border-white/20 transition-all duration-200 backdrop-blur-sm"
           >
-            <span>Explore System Features</span>
+            <span>{t.hero.exploreCta}</span>
             <ChevronDown className="w-4 h-4 text-emerald-400" strokeWidth={2} />
           </a>
         </motion.div>
@@ -122,15 +126,15 @@ export default function HeroSection() {
         >
           <div className="flex items-center gap-1.5">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" strokeWidth={2} />
-            <span>Zero Stock Race-Condition</span>
+            <span>{t.hero.badgeZeroRace}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <Zap className="w-3.5 h-3.5 text-cyan-400" strokeWidth={2} />
-            <span>PostgreSQL Atomic RPC</span>
+            <span>{t.hero.badgeAtomic}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <FileText className="w-3.5 h-3.5 text-emerald-400" strokeWidth={2} />
-            <span>Automated PDF Issue Vouchers</span>
+            <span>{t.hero.badgePdf}</span>
           </div>
         </motion.div>
       </div>
@@ -151,12 +155,12 @@ export default function HeroSection() {
                 <div className="w-3 h-3 rounded-full bg-amber-500/80" />
                 <div className="w-3 h-3 rounded-full bg-emerald-500/80" />
                 <span className="ml-2 text-xs font-mono text-zinc-400">
-                  stock-flow-pos-terminal // live-dispatches
+                  {t.hero.mockupTitle}
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">
-                  SUPABASE ATOMIC TX: ACTIVE
+                  {t.hero.mockupAtomicStatus}
                 </span>
               </div>
             </div>
@@ -168,7 +172,7 @@ export default function HeroSection() {
                 {/* Search Bar */}
                 <div className="flex items-center gap-2 bg-zinc-900/80 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-zinc-400">
                   <ScanBarcode className="w-4 h-4 text-emerald-400" strokeWidth={2} />
-                  <span className="text-zinc-500 font-mono">Scan barcode or SKU (e.g., DOPA-ROUTER-9801)...</span>
+                  <span className="text-zinc-500 font-mono">{t.hero.mockupSearchPlaceholder}</span>
                 </div>
 
                 {/* Material Catalog Items */}
@@ -177,14 +181,14 @@ export default function HeroSection() {
                     <div className="flex items-start justify-between">
                       <span className="text-xs font-medium text-white">Cisco Catalyst 9200L</span>
                       <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300">
-                        In Stock: 14
+                        {t.hero.mockupInStock}: 14
                       </span>
                     </div>
                     <span className="text-[11px] text-zinc-400 mt-1 block">SKU: NET-CS-9200</span>
                     <div className="mt-2.5 flex items-center justify-between text-[11px]">
                       <span className="text-zinc-400">Lot: DOPA-2026-Q1</span>
                       <button className="px-2 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-medium transition-colors">
-                        + Add POS
+                        {t.hero.mockupAddPos}
                       </button>
                     </div>
                   </div>
@@ -193,14 +197,14 @@ export default function HeroSection() {
                     <div className="flex items-start justify-between">
                       <span className="text-xs font-medium text-white">Hikvision IP PTZ Camera</span>
                       <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300">
-                        In Stock: 28
+                        {t.hero.mockupInStock}: 28
                       </span>
                     </div>
                     <span className="text-[11px] text-zinc-400 mt-1 block">SKU: CAM-HK-4K</span>
                     <div className="mt-2.5 flex items-center justify-between text-[11px]">
                       <span className="text-zinc-400">Lot: USO-2026-MAIN</span>
                       <button className="px-2 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-medium transition-colors">
-                        + Add POS
+                        {t.hero.mockupAddPos}
                       </button>
                     </div>
                   </div>
@@ -210,9 +214,9 @@ export default function HeroSection() {
                 <div className="p-3 rounded-xl bg-zinc-900/30 border border-white/5 flex items-center justify-between text-xs text-zinc-400 font-mono">
                   <div className="flex items-center gap-2">
                     <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Real-time Ledger Synchronized</span>
+                    <span>{t.hero.mockupLedgerSynced}</span>
                   </div>
-                  <span className="text-emerald-400">Latency: 28ms</span>
+                  <span className="text-emerald-400">{t.hero.mockupLatency}: 28ms</span>
                 </div>
               </div>
 
@@ -222,7 +226,7 @@ export default function HeroSection() {
                   <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10">
                     <span className="text-xs font-semibold text-white uppercase tracking-wider flex items-center gap-1.5">
                       <Boxes className="w-3.5 h-3.5 text-emerald-400" />
-                      Active Dispatch Cart (2 Items)
+                      {t.hero.mockupCartTitle} (2 Items)
                     </span>
                     <span className="text-[11px] font-mono text-zinc-400">TX #9842</span>
                   </div>
@@ -230,21 +234,21 @@ export default function HeroSection() {
                   <div className="space-y-2 text-xs">
                     <div className="flex justify-between items-center py-1 border-b border-white/5">
                       <span className="text-zinc-300">Cisco Catalyst 9200L</span>
-                      <span className="font-mono text-emerald-400 font-semibold">x 2 Units</span>
+                      <span className="font-mono text-emerald-400 font-semibold">x 2 {t.hero.mockupUnits}</span>
                     </div>
                     <div className="flex justify-between items-center py-1 border-b border-white/5">
                       <span className="text-zinc-300">Hikvision IP Camera</span>
-                      <span className="font-mono text-emerald-400 font-semibold">x 4 Units</span>
+                      <span className="font-mono text-emerald-400 font-semibold">x 4 {t.hero.mockupUnits}</span>
                     </div>
                   </div>
 
                   <div className="mt-3 p-2 rounded-lg bg-zinc-950/60 border border-white/5 text-[11px] text-zinc-400 space-y-1">
                     <div className="flex justify-between">
-                      <span>Project Assignment:</span>
+                      <span>{t.hero.mockupProject}:</span>
                       <span className="text-zinc-200 font-medium">USO Phase 3 / DOPA</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Requester:</span>
+                      <span>{t.hero.mockupRequester}:</span>
                       <span className="text-zinc-200 font-medium">Engineer S. Watchara</span>
                     </div>
                   </div>
@@ -252,16 +256,16 @@ export default function HeroSection() {
 
                 <div className="mt-4 pt-3 border-t border-white/10 flex flex-col gap-2">
                   <div className="flex items-center justify-between text-xs font-semibold text-white">
-                    <span>Validation Status:</span>
+                    <span>{t.hero.mockupValidation}:</span>
                     <span className="text-emerald-400 flex items-center gap-1">
                       <CheckCircle2 className="w-3.5 h-3.5" />
-                      Atomic Locks Acquired
+                      {t.hero.mockupLocksAcquired}
                     </span>
                   </div>
 
                   <button className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-emerald-500 text-zinc-950 font-semibold text-xs shadow-lg shadow-emerald-500/20">
                     <FileText className="w-3.5 h-3.5" />
-                    <span>Confirm Dispatch & Print Issue Voucher</span>
+                    <span>{t.hero.mockupConfirmPrint}</span>
                   </button>
                 </div>
               </div>
