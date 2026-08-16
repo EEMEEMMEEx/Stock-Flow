@@ -1,5 +1,97 @@
 # Changelog
 
+## [2026-08-16 14:56]
+
+- **Files Modified:** `src/pages/Withdrawals.jsx`, `src/pages/Settings.jsx`, `src/components/settings/MinIOOrphanManager.jsx`, `src/components/settings/EmailTemplateManager.jsx`
+- **Details:**
+  - ตรวจสอบและแทนที่ Native Emojis ทั้งหมดในโปรเจกต์ด้วย Clean SVG Icons (Lucide React) และ Styled Badge Indicators เพื่อความสม่ำเสมอและความเป็นมืออาชีพตาม Design System:
+    - `src/pages/Withdrawals.jsx`: แทนที่อิโมจิ `⚡` และ `📋` ด้วยไอคอน `<Zap />` และ `<ClipboardList />` ในแท็บ POS Terminal และ Requisitions
+    - `src/pages/Settings.jsx`: แทนที่อิโมจิ `🔒` และ `🔓` ในคำอธิบายโหมด TLS ด้วยไอคอน `<Lock />` และ `<Unlock />`
+    - `src/components/settings/MinIOOrphanManager.jsx`: แทนที่อิโมจิ `🟢` ในตารางแสดงไฟล์ขยะด้วย SVG Pulsing Badge Dot
+    - `src/components/settings/EmailTemplateManager.jsx`: ลบอิโมจิ `📝`, `👥`, `👁️`, `🧪` ออกจากแท็บหัวข้อ โดยใช้ไอคอน Lucide SVG แท้ที่จัดรูปแบบไว้แล้ว
+- **Reason:** ปรับปรุง UI ให้มีความเป็นมืออาชีพ สม่ำเสมอ และไม่มี Native Emojis ตกค้างตามคำขอของผู้ใช้
+
+## [2026-08-16 14:48]
+
+- **Files Modified:** `src/pages/Dashboard.jsx`
+- **Details:**
+  - `src/pages/Dashboard.jsx`: เพิ่มคอมโพเนนต์ `CustomXAxisTick` พร้อมหมุนข้อความ -30 องศา (`transform="rotate(-30)"`), ตัดข้อความยาว (`text truncation` เกิน 15 ตัวอักษรใส่ `…`), และปรับ `margin.bottom` บน BarChart เพื่อแก้ปัญหาข้อความชื่อวัสดุยาวซ้อนทับกันจนอ่านไม่ออก
+  - `src/pages/Dashboard.jsx`: ปรับแต่ง Tooltip ให้แสดงชื่อวัสดุฉบับเต็ม (`fullName`) เสมอเมื่อผู้ใช้นำเมาส์ไปชี้ที่แต่ละแท่งกราฟ
+- **Reason:** แก้ไขปัญหาป้ายชื่อแกน X บนกราฟ Top วัสดุซ้อนทับกันตามคำขอของผู้ใช้
+
+## [2026-08-16 14:41]
+
+- **Files Modified:** `src/pages/Dashboard.jsx`
+- **Details:**
+  - `src/pages/Dashboard.jsx`: ตรวจสอบและยกเครื่องระบบคำนวณสถิติและกราฟบนหน้า Dashboard โดยกรองเฉพาะโครงการที่เปิดใช้งานอยู่จริง (`status = 'active'`) อย่างแม่นยำ
+  - `src/pages/Dashboard.jsx`: ปรับปรุงกราฟสต็อกให้แสดงผล 2 โหมดแบบสลับได้: **"ตามโครงการ (By Project)"** (แสดงยอดรับเข้า, เบิกจ่าย, คงเหลือแยกรายคลัง/โครงการจริง) และ **"Top วัสดุ (Top Items)"** พร้อม Tooltip แจกแจงจำนวนชิ้นอย่างละเอียด
+  - `src/pages/Dashboard.jsx`: เพิ่มระบบ **Supabase Realtime Live Synchronization** (ตรวจจับการเปลี่ยนแปลงของตาราง `projects`, `withdrawal_orders`, `stock_in_orders`, `stock_transactions`), ตัวตรวจจับ Window Focus/Visibility Change, และปุ่ม **"รีเฟรชข้อมูล"** บน Header ทำให้ข้อมูลอัปเดตแบบเรียลไทม์ทันทีเมื่อมีการแก้ไขหรือลบโครงการ
+- **Reason:** ตรวจสอบและยกระดับความแม่นยำของ Dashboard ให้สะท้อนข้อมูลสต็อกและโครงการที่เป็นปัจจุบันแบบเรียลไทม์
+
+## [2026-08-16 14:35]
+
+- **Files Modified:** `src/pages/Items.jsx`, `src/pages/Reports.jsx`
+- **Details:**
+  - `src/pages/Items.jsx`: กรองโครงการที่ถูกลบหรือปิดการใช้งาน (`status = 'inactive'`) ออกจากรายการแสดงผลคอลัมน์ "โครงการปลายทาง (Destination Project)" และตัวเลือกใน Dropdown Filter เพื่อไม่ให้โครงการที่ลบไปแล้วแสดงในหน้า Items Master
+  - `src/pages/Reports.jsx`: เพิ่มตัวกรอง `.eq('status', 'active')` ในการโหลดตัวเลือกโครงการเพื่อความสอดคล้องกันทั่วทั้งระบบ
+- **Reason:** ป้องกันไม่ให้โครงการที่ลบแล้วยังคงปรากฏในคอลัมน์โครงการปลายทางและตัวกรองของหน้า /items
+
+## [2026-08-16 14:30]
+
+- **Files Modified:** `supabase/migrations/43_transfer_and_delete_project_rpc.sql`, `src/pages/Projects.jsx`
+- **Details:**
+  - `supabase/migrations/43_transfer_and_delete_project_rpc.sql`: ปรับปรุง RPC ให้ทำการ Reassign หรือล้างประวัติ Foreign Key (`stock_in_orders`, `withdrawal_orders`, `stock_transactions`, `user_notifications`, `user_project_assignments`) ก่อนสั่งลบ เพื่อให้คำสั่ง `DELETE FROM public.projects` สามารถลบแถวออกจากฐานข้อมูลได้อย่างสมบูรณ์แบบโดยไม่ติดข้อจำกัด `ON DELETE RESTRICT`
+  - `src/pages/Projects.jsx`: ปรับปรุงคำสั่ง Client Fallback ให้ล้างประวัติ FK และลบแถวจากตาราง `projects` อย่างสมบูรณ์ พร้อมเพิ่มตัวกรองไม่แสดงโครงการที่อยู่ในสถานะ `inactive` บนหน้าจอ เพื่อให้การลบโครงการสะท้อนผลทันทีทั้งใน UI และฐานข้อมูล
+- **Reason:** แก้ไขปัญหาการกดลบโครงการแล้วโครงการยังคงแสดงผลเป็นสถานะ INACTIVE บนหน้าจอและไม่ถูกลบออกจากฐานข้อมูล
+
+## [2026-08-16 14:22]
+
+- **Files Modified:** `supabase/migrations/43_transfer_and_delete_project_rpc.sql`, `src/pages/Projects.jsx`
+- **Details:**
+  - `supabase/migrations/43_transfer_and_delete_project_rpc.sql` & `src/pages/Projects.jsx`: แก้ไขปัญหา Schema Mismatch โดยลบคอลัมน์ `status` ออกจากการ Insert ตาราง `stock_in_orders` (เนื่องจาก `stock_in_orders` ไม่มีคอลัมน์ status) และลบ `notes` ออกจากการ Insert `stock_transactions` เพื่อให้สอดคล้องกับโครงสร้างตารางจริงใน Supabase
+- **Reason:** แก้ไขข้อผิดพลาด `PGRST204: Could not find the 'status' column of 'stock_in_orders' in the schema cache` ในระหว่างการโอนย้ายสต็อกและลบโครงการ
+
+## [2026-08-16 14:16]
+
+- **Files Modified:** `src/pages/Projects.jsx`, `supabase/migrations/43_transfer_and_delete_project_rpc.sql` (New)
+- **Details:**
+  - `src/pages/Projects.jsx`: เพิ่มปุ่ม **"ลบโครงการ (Delete Project)"** ทั้งในระดับการ์ดโครงการหลัก (ลบทั้งโครงการพร้อมทุกสถานที่ตั้ง) และระดับแถวสถานที่ตั้งย่อย
+  - `src/pages/Projects.jsx`: เพิ่มระบบตรวจสอบสต็อกคงเหลืออัตโนมัติก่อนลบ (`stock_balance > 0`) หากมีสต็อกคงเหลือ ระบบจะเปิด Modal แจ้งเตือนรายการวัสดุและจำนวนคงเหลือ พร้อมบังคับให้เลือกโครงการปลายทาง (Destination Project) เพื่อโอนย้ายสต็อกทั้งหมดก่อนทำการลบ
+  - `supabase/migrations/43_transfer_and_delete_project_rpc.sql`: สร้าง PostgreSQL RPC `transfer_and_delete_project` เพื่อจัดการสร้าง Order รับเข้าปลายทาง บันทึก Stock-out โครงการต้นทาง และลบ/ปิดการใช้งานโครงการเดิมแบบ Atomic Transaction ปลอดภัย 100%
+- **Reason:** เพิ่มปุ่มลบโครงการพร้อมระบบโอนย้ายสต็อกคงเหลือไปยังโครงการอื่นเพื่อป้องกันข้อมูลสต็อกสูญหายตามคำขอของผู้ใช้
+
+## [2026-08-16 14:05]
+
+- **Files Modified:** `src/pages/Projects.jsx`
+- **Details:**
+  - `src/pages/Projects.jsx`: เพิ่มคอมโพเนนต์ `ProjectCodeTagInput` ในโมดอลสร้างโครงการใหม่ ("Create New Project") และแก้ไขโครงการ ("Edit Project") รองรับการระบุหลายรหัสโครงการ (Multiple Project IDs/Codes) โดยการกด Enter, เครื่องหมายจุลภาค `,` หรือวางข้อความที่มีหลายรหัส
+  - `src/pages/Projects.jsx`: ปรับแต่งการแสดงผลบนการ์ดโครงการ ให้แสดงรหัสโครงการเป็น Tag Badge แยกเป็นแต่ละรหัสอย่างสวยงาม พร้อมรองรับการค้นหาที่ตรงกับรหัสใดก็ได้
+- **Reason:** รองรับการกำหนดและจัดการหลายรหัสโครงการ (Multiple Project IDs/Codes) ภายใต้โครงการเดียวกันตามคำขอของผู้ใช้
+
+## [2026-08-16 13:48]
+
+- **Files Modified:** `src/components/withdrawals/WithdrawalCartPanel.jsx`, `src/pages/Withdrawals.jsx`, `src/components/withdrawals/WithdrawalDetailModal.jsx`
+- **Details:**
+  - `src/components/withdrawals/WithdrawalCartPanel.jsx`: รวมช่องกรอกสถานที่จัดส่งที่ซ้ำซ้อน (ระหว่าง Select Dropdown รายชิ้น และ Text Input ด้านล่าง) เข้าด้วยกันเป็น **Single Dynamic Delivery Destination Field** ฟิลด์เดียว พร้อม Quick Preset Chips (`Forth (EMS)`, `Forth (Office)`, `Site งาน / โครงการ`, `ขนส่งเอกชน`) และช่องกรอกข้อมูลอิสระ
+  - `src/components/withdrawals/WithdrawalCartPanel.jsx`: ปรับให้ลิ้นชักย่อยของแต่ละรายการเหลือเพียงช่อง Part Number และ Serial Number (`+ ระบุ S/N / Part Number`) ทำให้ UI คลีนและลดความสับสน
+  - `src/pages/Withdrawals.jsx`: ส่งค่าจุดส่งมอบที่ระบุครอบคลุมทั้งระดับ Order (`delivery_address`) และ Item (`delivery_to`)
+- **Reason:** รวมช่องระบุสถานที่จัดส่งที่ซ้ำซ้อนให้เป็นฟิลด์ไดนามิกเดียวตาม Feedback ของผู้ใช้
+
+## [2026-08-16 13:35]
+
+- **Files Modified:** `src/pages/Withdrawals.jsx`, `src/components/ui/PosTerminal.jsx`, `src/components/withdrawals/WithdrawalPosTerminal.jsx` (New), `src/components/withdrawals/WithdrawalItemCard.jsx` (New), `src/components/withdrawals/WithdrawalCartPanel.jsx` (New), `src/components/withdrawals/WithdrawalOrdersList.jsx` (New), `src/components/withdrawals/WithdrawalDetailModal.jsx` (New), `src/components/withdrawals/WithdrawalShortageModal.jsx` (New), `src/components/withdrawals/WithdrawalRejectModal.jsx` (New), `src/components/withdrawals/StockLocationBreakdownModal.jsx` (New)
+- **Details:**
+  - `src/pages/Withdrawals.jsx`: ยกเครื่องระบบเบิกจ่ายสู่ Unified Next-Gen Hub รวมหน้า POS Terminal และ Tracking ไว้ในหน้าจอเดียวแบบ 2 Tabs ลื่นไหล ไม่ตัดการทำงาน ไม่รีเซ็ตตัวกรอง
+  - `src/components/withdrawals/WithdrawalPosTerminal.jsx`: ออกแบบ POS Terminal ใหม่ระดับพรีเมียม เพิ่ม Shortcut ค้นหา (`/`), ตัวกรองสถานะสต็อก, สลับมุมมองตารางและกริด
+  - `src/components/withdrawals/WithdrawalItemCard.jsx`: เพิ่ม In-card Quick Stepper (`[ - ] QTY [ + ]`) ให้ปรับจำนวนบนการ์ดได้ทันที และปุ่มเปิดดูสต็อกแยกรายคลัง
+  - `src/components/withdrawals/StockLocationBreakdownModal.jsx`: แสดงตารางแจกแจงสต็อกแยกรายโครงการ/คลัง พร้อมปุ่มสลับโครงการปลายทางในคลิกเดียว
+  - `src/components/withdrawals/WithdrawalCartPanel.jsx`: ออกแบบแถบตะกร้าสินค้าและการ Checkout ในตัว (Inline Requisition) พร้อม Quick Purpose Tags สำเร็จรูป
+  - `src/components/withdrawals/WithdrawalOrdersList.jsx`: ปรับปรุงหน้าประวัติและติดตามคำขอพร้อม KPI Gradient Cards, ตัวกรองสถานะ, Progress Badge และปุ่ม Actions ครบวงจร
+  - `src/components/withdrawals/WithdrawalDetailModal.jsx`: ปรับปรุง Modal รายละเอียดคำขอพร้อม Visual Workflow Stepper 3 ขั้นตอน และตารางแยกยอดขอเบิก vs ตัดสต็อกจริง vs ขาดส่ง
+  - `src/components/withdrawals/WithdrawalShortageModal.jsx` & `WithdrawalRejectModal.jsx`: โมดอลอนุมัติกรณีของไม่ครบ (Shortage Override) และโมดอลปฏิเสธคำขอพร้อมเหตุผลสำเร็จรูป
+- **Reason:** ออกแบบและยกเครื่องระบบ POS Terminal และการเบิกจ่ายสินค้า (/withdrawals) ใหม่ทั้งหมดตามคำขอของผู้ใช้เพื่อยกระดับ UI/UX, ความเร็วในการทำงาน, และความสวยงามระดับพรีเมียม
+
+
 ## [2026-08-11 10:48]
 
 - **Files Modified:** `src/pages/Withdrawals.jsx`, `supabase/migrations/42_add_missing_withdrawal_columns.sql`

@@ -462,7 +462,7 @@ const EmailTemplateManager = ({
                 }`}
               >
                 <Code className="w-3.5 h-3.5" />
-                📝 ตั้งค่าเนื้อหา (Content)
+                <span>ตั้งค่าเนื้อหา (Content)</span>
               </button>
 
               <button
@@ -474,7 +474,7 @@ const EmailTemplateManager = ({
                 }`}
               >
                 <Users className="w-3.5 h-3.5" />
-                👥 ผู้รับ & บทบาท (Recipients)
+                <span>ผู้รับ & บทบาท (Recipients)</span>
               </button>
 
               <button
@@ -486,7 +486,7 @@ const EmailTemplateManager = ({
                 }`}
               >
                 <Monitor className="w-3.5 h-3.5" />
-                👁️ ตัวอย่างพรีวิว (Live Preview)
+                <span>ตัวอย่างพรีวิว (Live Preview)</span>
               </button>
 
               <button
@@ -498,7 +498,7 @@ const EmailTemplateManager = ({
                 }`}
               >
                 <Send className="w-3.5 h-3.5 text-blue-500" />
-                🧪 ทดสอบส่งอีเมล (Test)
+                <span>ทดสอบส่งอีเมล (Test)</span>
               </button>
             </div>
 

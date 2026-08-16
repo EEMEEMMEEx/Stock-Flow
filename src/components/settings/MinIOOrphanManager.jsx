@@ -373,8 +373,9 @@ const MinIOOrphanManager = ({ canUpdate }) => {
                         {item.ageDays} วัน
                       </td>
                       <td className="p-2.5 text-center whitespace-nowrap">
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-500/10 text-amber-600 border border-amber-500/20">
-                          🟢 ORPHAN (ขยะ)
+                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0 animate-pulse" />
+                          <span>ORPHAN (ขยะ)</span>
                         </span>
                       </td>
                     </tr>

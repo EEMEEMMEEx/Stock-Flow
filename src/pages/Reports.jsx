@@ -44,7 +44,7 @@ const Reports = () => {
   const fetchFilterOptions = async () => {
     try {
       const [projRes, catRes] = await Promise.all([
-        supabase.from('projects').select('id, name, project_code').order('name'),
+        supabase.from('projects').select('id, name, project_code').eq('status', 'active').order('name'),
         supabase.from('categories').select('id, name').order('name')
       ]);
       if (projRes.data) setProjects(projRes.data);

@@ -82,10 +82,11 @@ const Items = () => {
         .from('stock_balance')
         .select('*');
 
-      // Fetch Projects for code & name resolution
+      // Fetch Projects for code & name resolution - only active projects
       const { data: pData } = await supabase
         .from('projects')
-        .select('id, name, project_code, location');
+        .select('id, name, project_code, location, status')
+        .eq('status', 'active');
 
       setProjectsList(pData || []);
 
@@ -98,10 +99,15 @@ const Items = () => {
       const itemsWithBalanceSet = new Set();
       const records = [];
 
-      // Construct project-specific stock balance records
+      // Construct project-specific stock balance records (only for active projects)
       (bData || []).forEach(b => {
+        const project = projectMap[b.project_id];
+        // Exclude stock balance records belonging to deleted or inactive projects
+        if (!project || project.status === 'inactive') {
+          return;
+        }
+
         const item = itemMap[b.item_id] || { id: b.item_id, name: b.item_name, unit: b.unit };
-        const project = projectMap[b.project_id] || {};
 
         itemsWithBalanceSet.add(b.item_id);
 

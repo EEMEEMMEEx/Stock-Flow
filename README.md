@@ -1,5 +1,10 @@
 # StockFlow — Enterprise Inventory & Material Management System
 
+![React](https://img.shields.io/badge/React-18.3-blue.svg?style=for-the-badge&logo=react)
+![Vite](https://img.shields.io/badge/Vite-5.4-purple.svg?style=for-the-badge&logo=vite)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_4.0-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-2.45-3ECF8E.svg?style=for-the-badge&logo=supabase&logoColor=white)
+
 StockFlow is a production-grade, modern inventory management web application designed for tracking stock, items, and inventory flow across corporate projects. It is built for **Forth Corporation Public Company Limited** to support complex project-based warehousing, material requests, approval workflows, and live analytical reporting.
 
 ---
@@ -10,10 +15,10 @@ StockFlow is a production-grade, modern inventory management web application des
 *   **Logical Partitioning:** Stock balance is segmented by Project. Items have specific quantities assigned to active locations/projects.
 *   **Terminology:** Aligned with corporate hierarchy. Visual tags identify destination projects (`Project Name` + `Project Code`) rather than ambiguous UUIDs.
 
-### 2. POS Material Withdrawal Terminal
+### 2. POS-Style Material Withdrawal Terminal
 *   **Cart System:** Modern POS interface for scanning and selecting materials for withdrawal requests.
 *   **Parent-Child Relationships:** Group materials dynamically. Handles child components associated with parent assets.
-*   **Double deduction prevention:** Transaction-safe inventory calculations preventing concurrent race conditions.
+*   **Double Deduction Prevention:** Transaction-safe inventory calculations preventing concurrent race conditions.
 
 ### 3. Smart Approval & Shortage Dispatch
 *   **Audit Flow:** Requested Items ➔ Admin Review ➔ Stock Allocation ➔ Receipt/Dispatch.
@@ -26,23 +31,23 @@ StockFlow is a production-grade, modern inventory management web application des
 
 ### 5. Role-Based Access Control (RBAC)
 *   **Roles:** Admin, Supervisor, Operator.
-*   **Triggers:** Supabase Database custom security model with automated `handle_new_user` triggers, atomic profile mapping, and row-level security (RLS).
+*   **Security:** Supabase Database custom security model with automated `handle_new_user` triggers, atomic profile mapping, and Row-Level Security (RLS).
 
 ---
 
 ## 🛠️ Technology Stack
 
-| Layer | Technology | Version | Purpose |
-|---|---|---|---|
-| **Frontend** | React | `^18.3.1` | Application UI library |
-| | Vite | `^5.4.1` | Build tool & Development server |
-| | Tailwind CSS | `^4.0.0` | Styling and visual layout |
-| | Recharts | `^2.12.7` | Interactive charts and analytics |
-| | Lucide React | `^0.428.0` | Modern, clean iconography |
-| **Backend** | Supabase | JS `^2.45.0` | PostgreSQL Database, Auth, & RLS Policies |
-| **Microservice** | Node.js / Express | `^4.19.2` | PDF Service & SMTP Mailer Backend (Port 3001) |
-| | `@react-pdf/renderer` | `^4.5.1` | Dynamic PDF Template Generator |
-| | Nodemailer | `^6.9.13` | Transactional email delivery service |
+| Category | Technology | Purpose |
+| :--- | :--- | :--- |
+| **Core Frontend** | React `18.3` + Vite `5.4` | Fast, optimized UI rendering and build tooling |
+| **Styling & UI** | Tailwind CSS `4.0` | Utility-first styling for responsive layouts |
+| | Radix UI + Framer Motion | Accessible headless components and fluid animations |
+| | Lucide React | Modern, clean scalable iconography |
+| **Data & Analytics**| TanStack Table + Recharts | Powerful data grids and interactive charting |
+| **Backend & Auth** | Supabase `2.45` | PostgreSQL DB, Authentication, Realtime & RLS Policies |
+| **Microservice** | Node.js + Express `4.19` | PDF Service & SMTP Mailer Backend (Port 3001) |
+| | `@react-pdf/renderer` | Dynamic PDF Template Generator (Zero-latency client-side) |
+| | Nodemailer | Transactional email delivery service |
 
 ---
 
@@ -71,7 +76,6 @@ graph TD
 │   └── main.jsx             # React SPA entry point
 ├── supabase/                # Supabase configuration and database schemas
 │   └── migrations/          # Version-controlled database migrations (01 to 38)
-├── docs/                    # System documentation and PDF generation guide
 └── package.json             # Core dependencies configuration
 ```
 
@@ -131,7 +135,7 @@ The compiled output is saved in the `/dist` directory.
 
 *   **Auth State:** Managed securely via Supabase Auth.
 *   **Row-Level Security (RLS):** Implemented on all PostgreSQL tables in Supabase (e.g., `profiles`, `withdrawal_orders`, `projects`, `items`). Access is restricted based on JWT roles (Admin, Supervisor, Operator).
-*   **PDF Generation:** Generated 100% client-side in browser using `@react-pdf/renderer` for maximum privacy, zero network latency, and zero server infrastructure overhead. Refer to [`docs/pdf_generation_guide.html`](file:///d:/APP/Stock-Flow-app/docs/pdf_generation_guide.html) for architecture details.
+*   **PDF Generation:** Generated 100% client-side in browser using `@react-pdf/renderer` for maximum privacy, zero network latency, and zero server infrastructure overhead. Refer to [`docs/pdf_generation_guide.html`](docs/pdf_generation_guide.html) for architecture details.
 
 ---
 
@@ -139,4 +143,4 @@ The compiled output is saved in the `/dist` directory.
 
 Proprietary and Confidential.  
 Copyright (c) 2026 **Forth Corporation Public Company Limited**. All rights reserved.  
-Refer to the [LICENSE](file:///d:/APP/Stock-Flow-app/LICENSE) file in this repository for full terms.
+Refer to the [LICENSE](LICENSE) file in this repository for full terms.

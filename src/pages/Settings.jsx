@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { 
   Settings as SettingsIcon, AppWindow, Package, Mail, ShieldCheck, 
-  Database, Server, Save, ChevronDown, ChevronRight, RefreshCw, Send, Lock, Sparkles, AlertTriangle, FolderKanban
+  Database, Server, Save, ChevronDown, ChevronRight, RefreshCw, Send, Lock, Unlock, Sparkles, AlertTriangle, FolderKanban
 } from 'lucide-react';
 import { APP_CONFIG } from '@/config/appConfig';
 import toast from 'react-hot-toast';
@@ -719,11 +719,18 @@ const Settings = () => {
                         <option value="true">SSL/TLS แบบเข้ารหัสทันที (Port 465 — Implicit TLS)</option>
                         <option value="false">STARTTLS (Port 587 / 25 — อัปเกรดความปลอดภัยก่อนส่ง)</option>
                       </select>
-                      <p className="mt-1 text-[10px] text-muted-foreground">
-                        {smtpForm.secure 
-                          ? '🔒 Implicit TLS: เข้ารหัสซ็อกเก็ตตั้งแต่เริ่มเปิดการเชื่อมต่อไปยัง SMTP Server (แนะนำสำหรับพอร์ต 465)'
-                          : '🔓 STARTTLS: เริ่มเชื่อมต่อแบบปกติแล้วอัปเกรดเป็น TLS ก่อนส่งข้อมูล (แนะนำสำหรับพอร์ต 587/25)'
-                        }
+                      <p className="mt-1 text-[10px] text-muted-foreground flex items-center gap-1.5">
+                        {smtpForm.secure ? (
+                          <>
+                            <Lock className="w-3 h-3 text-emerald-600 inline shrink-0" />
+                            <span>Implicit TLS: เข้ารหัสซ็อกเก็ตตั้งแต่เริ่มเปิดการเชื่อมต่อไปยัง SMTP Server (แนะนำสำหรับพอร์ต 465)</span>
+                          </>
+                        ) : (
+                          <>
+                            <Unlock className="w-3 h-3 text-amber-600 inline shrink-0" />
+                            <span>STARTTLS: เริ่มเชื่อมต่อแบบปกติแล้วอัปเกรดเป็น TLS ก่อนส่งข้อมูล (แนะนำสำหรับพอร์ต 587/25)</span>
+                          </>
+                        )}
                       </p>
                     </div>
 
