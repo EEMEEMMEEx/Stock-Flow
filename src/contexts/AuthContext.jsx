@@ -153,12 +153,15 @@ export const AuthProvider = ({ children }) => {
       setPermissions([
         'dashboard.view', 'projects.view', 'items.view', 'stock_in.view',
         'withdrawals.view', 'withdrawals.create', 'withdrawals.approve', 'withdrawals.reject',
+        'checkouts.view', 'checkouts.create', 'checkouts.return',
         'history.view', 'reports.view', 'reports.export'
       ]);
     } else {
       setPermissions([
         'dashboard.view', 'projects.view', 'items.view', 'stock_in.view',
-        'withdrawals.view', 'withdrawals.create', 'history.view'
+        'withdrawals.view', 'withdrawals.create',
+        'checkouts.view', 'checkouts.create', 'checkouts.return',
+        'history.view'
       ]);
     }
   };

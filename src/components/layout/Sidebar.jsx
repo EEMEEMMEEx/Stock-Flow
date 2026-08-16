@@ -6,6 +6,7 @@ import {
   Package, 
   ArrowDownToLine, 
   ArrowUpFromLine, 
+  RotateCcw,
   History, 
   FileText, 
   Settings, 
@@ -35,6 +36,7 @@ const NAVIGATION_GROUPS = [
       { id: 'items', name: 'รายการวัสดุ (Items)', path: '/items', icon: Package, permission: 'items.view' },
       { id: 'stock_in', name: 'รับเข้า Stock', path: '/stock-in', icon: ArrowDownToLine, permission: 'stock_in.view' },
       { id: 'withdrawals', name: 'เบิกจ่าย (Withdrawals)', path: '/withdrawals', icon: ArrowUpFromLine, permission: 'withdrawals.view' },
+      { id: 'checkouts', name: 'ยืม-คืน (Checkouts)', path: '/checkouts', icon: RotateCcw, permission: 'checkouts.view' },
       { id: 'history', name: 'ประวัติ (History)', path: '/history', icon: History, permission: 'history.view' },
       { id: 'reports', name: 'รายงาน (Reports)', path: '/reports', icon: FileText, permission: 'reports.view' },
     ]

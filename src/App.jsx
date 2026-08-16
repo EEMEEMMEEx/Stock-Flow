@@ -11,6 +11,7 @@ import Projects from './pages/Projects';
 import Items from './pages/Items';
 import StockIn from './pages/StockIn';
 import Withdrawals from './pages/Withdrawals';
+import Checkouts from './pages/Checkouts';
 import History from './pages/History';
 import Reports from './pages/Reports';
 
@@ -36,6 +37,7 @@ function App() {
               <Route path="/items" element={<PermissionRoute permission="items.view"><Items /></PermissionRoute>} />
               <Route path="/stock-in" element={<PermissionRoute permission="stock_in.view"><StockIn /></PermissionRoute>} />
               <Route path="/withdrawals" element={<PermissionRoute permission="withdrawals.view"><Withdrawals /></PermissionRoute>} />
+              <Route path="/checkouts" element={<PermissionRoute permission="checkouts.view"><Checkouts /></PermissionRoute>} />
               <Route path="/history" element={<PermissionRoute permission="history.view"><History /></PermissionRoute>} />
               <Route path="/reports" element={<PermissionRoute permission="reports.view"><Reports /></PermissionRoute>} />
               <Route path="/users" element={<PermissionRoute permission="users.view"><UserManagement /></PermissionRoute>} />

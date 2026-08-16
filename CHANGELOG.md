@@ -1,5 +1,39 @@
 # Changelog
 
+## [2026-08-16 15:48]
+
+- **Files Modified:** `src/pages/Checkouts.jsx`
+- **Details:**
+  - แก้ไขการเรียกชื่อ View ในฐานข้อมูลจาก `stock_balances` (พหูพจน์) เป็น `stock_balance` (เอกพจน์) ให้ตรงกับ Database Schema ของระบบ เพื่อแก้ปัญหา `404 Not Found`
+  - ปรับการดักฟัง Supabase Realtime Listener สำหรับสต็อกไปที่ตาราง `stock_transactions`
+- **Reason:** แก้ไข Error 404 stock_balances บนคอนโซลเบราว์เซอร์
+
+## [2026-08-16 15:44]
+
+- **Files Modified:** 
+  - `supabase/migrations/44_material_checkout_and_return_system.sql`
+  - `src/pages/Checkouts.jsx`
+  - `src/components/checkouts/CheckoutPosTerminal.jsx`
+  - `src/components/checkouts/CheckoutActiveList.jsx`
+  - `src/components/checkouts/CheckoutReturnModal.jsx`
+  - `src/components/checkouts/CheckoutDetailModal.jsx`
+  - `src/components/checkouts/CheckoutHistoryList.jsx`
+  - `src/lib/checkout-pdf-templates.jsx`
+  - `src/App.jsx`
+  - `src/components/layout/Sidebar.jsx`
+  - `src/contexts/AuthContext.jsx`
+- **Details:**
+  - พัฒนาและเปิดใช้งาน **"ระบบยืม-คืนเครื่องมือและพัสดุอุปกรณ์ (Material Checkout & Return System)"** ครบวงจร:
+    - **Database Migration:** สร้างตาราง `checkout_orders`, `checkout_items`, `checkout_return_logs` พร้อม Atomic PostgreSQL RPC Functions `process_checkout_order` และ `process_return_order` เพื่อปรับปรุงยอดสต็อกชั่วคราวอย่างปลอดภัย
+    - **UI Workflow & Components:**
+      - ⚡ **ขอยืมพัสดุ (Checkout POS Terminal):** ฟอร์มบันทึกข้อมูลผู้ยืม, แผนก, เบอร์โทร, กำหนดวันส่งคืน, และเลือกวัสดุพร้อมระบุ Serial Number
+      - 📋 **รายการยืมคงค้าง (Active Loans):** ตัวนับ KPI สรุปสถานะปกติ / ใกล้ถึงกำหนด (≤ 2 วัน) / เกินกำหนดส่งคืน (Overdue) พร้อมปุ่มรับคืนพัสดุ
+      - 🔄 **รับคืนพัสดุ (Return Modal):** รองรับการคืนบางส่วน (Partial Returns), ตรวจสอบสภาพอุปกรณ์ (ปกติ / ชำรุด / เสียหาย / สูญหาย), และเลือกคลังรับคืน (Cross-Location Returns)
+      - 📜 **ประวัติยืม-คืน & รายละเอียด (Detail Modal & History):** แสดงประวัติการรับคืนและ Audit Logs ครบถ้วน
+    - **PDF Vouchers:** สร้างเทมเพลตใบยืมพัสดุ (*Material Checkout Voucher*) และใบรับคืนพัสดุ (*Material Return Receipt*) สวยงามตามมาตรฐานแบบฟอร์มบริษัท
+    - **Realtime Sync & Navigation:** เพิ่ม Route `/checkouts` และเมนูใน Sidebar พร้อมเชื่อมต่อ Supabase Realtime Live Synchronization
+- **Reason:** เพิ่มฟังก์ชันการยืม-คืนเครื่องมือและพัสดุอุปกรณ์ตามแผนงานและข้อตกลง Blueprint
+
 ## [2026-08-16 15:23]
 
 - **Files Modified:** `src/components/ui/button.jsx`
