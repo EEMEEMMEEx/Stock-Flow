@@ -4,7 +4,6 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider } from './components/theme-provider';
 import PageWrapper from './components/layout/PageWrapper';
-import InstallPrompt from './components/InstallPrompt';
 import Login from './pages/auth/Login';
 import Dashboard from './pages/Dashboard';
 import Projects from './pages/Projects';
@@ -78,7 +77,6 @@ function App() {
                 className: '!bg-card !text-card-foreground !border !border-border !shadow-lg',
               }}
             />
-            <InstallPrompt />
           </BrowserRouter>
       </AuthProvider>
     </ThemeProvider>

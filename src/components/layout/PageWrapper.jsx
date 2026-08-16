@@ -3,6 +3,7 @@ import { Navigate, Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
 import AppFooter from './AppFooter';
+import InstallPrompt from '@/components/InstallPrompt';
 import { useAuth } from '@/contexts/AuthContext';
 import ForceChangePasswordModal from '@/components/auth/ForceChangePasswordModal';
 
@@ -93,6 +94,7 @@ const PageWrapper = () => {
         isOpen={Boolean(user && mustChangePassword)} 
         onPasswordChanged={refreshProfile}
       />
+      <InstallPrompt />
     </div>
   );
 };
