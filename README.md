@@ -7,7 +7,7 @@
 ![PWA](https://img.shields.io/badge/PWA-Ready-orange.svg?style=for-the-badge&logo=pwa)
 ![Production Version](https://img.shields.io/badge/Version-1.0.0-emerald.svg?style=for-the-badge)
 
-**Stock-Flow** is a production-grade, enterprise inventory and material tracking system designed for managing equipment, assets, project allocations, rapid POS material withdrawals, multi-stage approvals, and real-time audit trails.
+**Stock-Flow** is a production-grade, enterprise inventory and material tracking system developed for **Forth Corporation Public Company Limited** for managing equipment, assets, project allocations, rapid POS material withdrawals, multi-stage approvals, and real-time audit trails.
 
 🌐 **Live Web Application:** [https://stock-flow-pi-coral.vercel.app](https://stock-flow-pi-coral.vercel.app)  
 ✨ **Official Landing Page:** [https://bearnannan.github.io/Stock-Flow/](https://bearnannan.github.io/Stock-Flow/)
@@ -177,7 +177,9 @@ npm run build
 
 ---
 
-## 📄 License & Attribution
+## 📄 License & Proprietary Notice
 
-Copyright (c) 2026 **Stock-Flow Project**. All rights reserved.  
-Refer to the [LICENSE](LICENSE) file for terms of use.
+Proprietary and Confidential.  
+Copyright (c) 2026 **Forth Corporation Public Company Limited**. All rights reserved.  
+
+This software and its documentation are the confidential and proprietary information of Forth Corporation Public Company Limited ("Confidential Information"). Unauthorized copying, distribution, modification, reverse engineering, or public display of this software, via any medium, is strictly prohibited. Refer to the [LICENSE](LICENSE) file for full terms.
