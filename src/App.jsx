@@ -22,19 +22,39 @@ import Settings from './pages/Settings';
 import Profile from './pages/Profile';
 import LandingPage from './pages/LandingPage';
 import PermissionRoute from './components/auth/PermissionRoute';
+import { useAuth } from './contexts/AuthContext';
+
+function HomeRoute() {
+  const { user, loading } = useAuth();
+  if (loading) {
+    return (
+      <div className="h-screen w-screen flex items-center justify-center bg-zinc-950">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-400"></div>
+      </div>
+    );
+  }
+  if (user) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  return <LandingPage />;
+}
 
 function App() {
+  const baseUrl = import.meta.env.BASE_URL || '/';
+
   return (
     <ThemeProvider defaultTheme="system" storageKey="stock-flow-theme-v2">
       <AuthProvider>
-        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <BrowserRouter basename={baseUrl} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<HomeRoute />} />
             <Route path="/landing" element={<LandingPage />} />
             <Route path="/login" element={<Login />} />
             
             {/* Protected Routes inside PageWrapper */}
             <Route element={<PageWrapper />}>
-              <Route path="/" element={<PermissionRoute permission="dashboard.view"><Dashboard /></PermissionRoute>} />
+              <Route path="/dashboard" element={<PermissionRoute permission="dashboard.view"><Dashboard /></PermissionRoute>} />
               <Route path="/projects" element={<PermissionRoute permission="projects.view"><Projects /></PermissionRoute>} />
               <Route path="/items" element={<PermissionRoute permission="items.view"><Items /></PermissionRoute>} />
               <Route path="/stock-in" element={<PermissionRoute permission="stock_in.view"><StockIn /></PermissionRoute>} />
@@ -48,7 +68,6 @@ function App() {
               <Route path="/profile" element={<PermissionRoute permission={null}><Profile /></PermissionRoute>} />
               <Route path="/manual" element={<Manual />} />
             </Route>
-
 
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
