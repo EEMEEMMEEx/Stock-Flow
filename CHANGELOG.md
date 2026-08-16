@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-08-16 17:55] 🛠️ Fix Deployment Routing Separation (GitHub Pages vs Vercel App)
+
+- **Modified files:**
+  - `src/App.jsx`
+  - `src/components/InstallPrompt.jsx`
+  - `.github/workflows/deploy-gh-pages.yml`
+- **Details:**
+  - `src/App.jsx`: เพิ่มฟังก์ชัน `isLandingSite()` เพื่อแยกแยะการแสดงผลระหว่าง **GitHub Pages** (โฮสต์ Landing Page โดยเฉพาะ) กับ **Vercel** (โฮสต์ Web Application หลัก) โดยบน Vercel หากผู้ใช้ยังไม่ได้ล็อกอินจะถูก Redirect ไปที่ `/login` และหากล็อกอินแล้วจะไปที่ `/dashboard` อย่างถูกต้อง (แทนที่จะติดหน้า Landing Page ที่ root `/`)
+  - `src/components/InstallPrompt.jsx`: แก้ไขเงื่อนไข `isLandingPage` เพื่อไม่ให้บล็อกการแสดง Install Prompt บนหน้า root `/` ของ Web App หลัก
+  - `.github/workflows/deploy-gh-pages.yml`: เพิ่มตัวแปร `VITE_APP_MODE: 'landing'` สำหรับกระบวนการ Build บน GitHub Pages เพื่อความแม่นยำ 100%
+- **Reason:** แก้ปัญหาหน้า Vercel แสดงหน้า Landing Page ซ้ำซ้อน และกำหนดขอบเขตให้ GitHub Pages โฮสต์หน้า Landing Page ประชาสัมพันธ์ และ Vercel โฮสต์ระบบแอปพลิเคชันจัดการคลังสินค้า
+
 ## [2026-08-16 16:55] ✨ Stock-Flow Official Landing Page (GitHub Pages & Reactbits UI)
 
 - **Files Modified/Created:**

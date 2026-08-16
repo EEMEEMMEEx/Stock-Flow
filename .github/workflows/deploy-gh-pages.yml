@@ -39,6 +39,7 @@ jobs:
           cp dist/index.html dist/404.html
         env:
           VITE_BASE_PATH: '/Stock-Flow/'
+          VITE_APP_MODE: 'landing'
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

@@ -25,7 +25,6 @@ const InstallPrompt = () => {
   );
 
   const isLandingPage = typeof window !== 'undefined' && (
-    window.location.pathname === '/' ||
     window.location.pathname.endsWith('/landing') ||
     isGithubPages
   );

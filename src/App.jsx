@@ -23,6 +23,20 @@ import LandingPage from './pages/LandingPage';
 import PermissionRoute from './components/auth/PermissionRoute';
 import { useAuth } from './contexts/AuthContext';
 
+// Check if running on the dedicated Landing Page site (e.g. GitHub Pages)
+export const isLandingSite = () => {
+  if (typeof window !== 'undefined' && window.location.hostname.includes('github.io')) {
+    return true;
+  }
+  if (import.meta.env.VITE_APP_MODE === 'landing') {
+    return true;
+  }
+  if (import.meta.env.BASE_URL && import.meta.env.BASE_URL !== '/') {
+    return true;
+  }
+  return false;
+};
+
 function HomeRoute() {
   const { user, loading } = useAuth();
   if (loading) {
@@ -32,10 +46,17 @@ function HomeRoute() {
       </div>
     );
   }
+
+  // GitHub Pages is the dedicated Landing Page host
+  if (isLandingSite()) {
+    return <LandingPage />;
+  }
+
+  // Main Application (Vercel / localhost):
   if (user) {
     return <Navigate to="/dashboard" replace />;
   }
-  return <LandingPage />;
+  return <Navigate to="/login" replace />;
 }
 
 function App() {
