@@ -122,6 +122,48 @@ export const useNotifications = (userId) => {
     return { success: true };
   }, [loadNotifications, notifications, userId, tableExists]);
 
+  const approveQuickWithdrawal = useCallback(async (orderId, notificationId, approverName = 'Admin') => {
+    try {
+      const { data, error } = await supabase.rpc('approve_inventory_request', {
+        p_request_id: orderId,
+        p_allow_shortage: false,
+        p_override_reason: null
+      });
+
+      if (error) throw error;
+
+      // Mark notification as read
+      if (notificationId) {
+        await markAsRead(notificationId);
+      }
+
+      // Reload notifications list
+      await loadNotifications();
+
+      return { success: true, data, message: data?.message || 'อนุมัติคำขอเบิกจ่ายสำเร็จ' };
+    } catch (err) {
+      console.error('Quick Approve Error in Notification:', err);
+      return { success: false, error: err, message: err.message || 'เกิดข้อผิดพลาดในการอนุมัติ' };
+    }
+  }, [loadNotifications, markAsRead]);
+
+  const deleteNotification = useCallback(async (notificationId) => {
+    if (!tableExists || !notificationId) return { success: true };
+
+    setNotifications((current) => current.filter((item) => item.id !== notificationId));
+
+    const { error: delError } = await supabase
+      .from('notifications')
+      .delete()
+      .eq('id', notificationId);
+
+    if (delError) {
+      await loadNotifications();
+      return { success: false, error: delError };
+    }
+    return { success: true };
+  }, [loadNotifications, tableExists]);
+
   const unreadCount = useMemo(
     () => notifications.reduce((count, item) => count + (item.read_at ? 0 : 1), 0),
     [notifications]
@@ -134,6 +176,8 @@ export const useNotifications = (userId) => {
     error,
     reload: loadNotifications,
     markAsRead,
-    markAllAsRead
+    markAllAsRead,
+    approveQuickWithdrawal,
+    deleteNotification
   };
 };

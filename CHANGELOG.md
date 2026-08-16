@@ -1,5 +1,23 @@
 # Changelog
 
+## [2026-08-16 16:40] 🔔 In-App Interactive Notification Center & Quick Approval Actions
+
+- **Files Modified/Created:**
+  - `src/components/layout/NotificationBell.jsx` (New)
+  - `src/components/layout/Topbar.jsx` (Modified)
+  - `src/hooks/useNotifications.js` (Modified)
+  - `docs/interactive-notification-bell-implementation-plan.md` (New)
+- **Details:**
+  - **Interactive Notification Center (`NotificationBell.jsx`):** พัฒนาศูนย์แจ้งเตือนรูปแบบใหม่บน Header พร้อมแท็บตัวกรอง 3 หมวดหมู่ (**"ทั้งหมด (All)"**, **"ยังไม่อ่าน (Unread)"**, และ **"รอจัดการ (Action Required)"**)
+  - **Instant Quick Approval Action:** เพิ่มปุ่ม **"อนุมัติทันที"** บนการ์ดแจ้งเตือนขอเบิกพัสดุ สำหรับผู้ดูแลระบบและหัวหน้างาน (`ADMIN`/`SUPERVISOR`) สามารถอนุมัติตัดสต็อกแบบ Atomic Transaction ได้ทันทีโดยไม่ต้องสลับหน้าจอ
+  - **Context-Aware Quick Actions:** 
+    - สำหรับรายการขอเบิกที่อนุมัติแล้ว: แสดงปุ่ม **"ดูใบเบิกของ"** สำหรับผู้ขอเบิก
+    - สำหรับรายการยืมเกินกำหนด (`checkout.overdue`): แสดงปุ่ม **"รับคืนพัสดุ"**
+    - สำหรับสต็อกวิกฤต (`stock.low_stock`): แสดงปุ่ม **"ตรวจสต็อก"**
+  - **Hook Enhancement (`useNotifications.js`):** เพิ่มฟังก์ชัน `approveQuickWithdrawal()` และ `deleteNotification()` พร้อมการจัดการ Error และ Shortage Fallback
+  - **Clean Modular Topbar:** แยกโมดูล Notification Popover ออกจาก `Topbar.jsx` เพิ่มความสะอาดและประสิทธิภาพในการเรนเดอร์
+- **Reason:** ยกระดับประสบการณ์การแจ้งเตือนและการทำงานแบบ Interactive ตอบโจทย์การอนุมัติงานได้อย่างรวดเร็ว
+
 ## [1.0.0 - 2026-08-16] 🚀 Official Production Release
 
 - **Files Modified:**
