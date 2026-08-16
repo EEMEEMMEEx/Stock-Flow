@@ -3,12 +3,39 @@ import { Download, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 
+// PWA installation is only allowed on the primary web app production domain and local development
+const ALLOWED_APP_DOMAINS = [
+  'stock-flow-pi-coral.vercel.app',
+  'localhost',
+  '127.0.0.1'
+];
+
 const InstallPrompt = () => {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showPrompt, setShowPrompt] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
 
+  // Strict domain and landing page guard
+  const isGithubPages = typeof window !== 'undefined' && window.location.hostname.includes('github.io');
+  const isAllowedDomain = typeof window !== 'undefined' && !isGithubPages && (
+    ALLOWED_APP_DOMAINS.some(domain => 
+      window.location.hostname === domain || 
+      window.location.hostname.endsWith(domain)
+    )
+  );
+
+  const isLandingPage = typeof window !== 'undefined' && (
+    window.location.pathname === '/' ||
+    window.location.pathname.endsWith('/landing') ||
+    isGithubPages
+  );
+
   useEffect(() => {
+    // If not on allowed app domain or is on GitHub Pages / Landing Page, disable completely
+    if (!isAllowedDomain || isLandingPage) {
+      return;
+    }
+
     // Detect iOS
     const isIosDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     setIsIOS(isIosDevice);
@@ -43,28 +70,10 @@ const InstallPrompt = () => {
     return () => {
       window.removeEventListener('beforeinstallprompt', handler);
     };
-  }, []);
+  }, [isAllowedDomain, isLandingPage]);
 
-  const handleInstall = async () => {
-    if (!deferredPrompt) {
-      return;
-    }
-    // Show the install prompt
-    deferredPrompt.prompt();
-    // Wait for the user to respond to the prompt
-    const { outcome } = await deferredPrompt.userChoice;
-    console.log(`User response to the install prompt: ${outcome}`);
-    // We've used the prompt, and can't use it again, throw it away
-    setDeferredPrompt(null);
-    setShowPrompt(false);
-  };
-
-  const handleDismiss = () => {
-    setShowPrompt(false);
-    localStorage.setItem('pwa_prompt_dismissed', 'true');
-  };
-
-  if (!showPrompt) return null;
+  // Strictly block rendering if on GitHub Pages, Landing Page, or disallowed domain
+  if (!isAllowedDomain || isLandingPage || !showPrompt) return null;
 
   return (
     <div className="fixed bottom-4 left-4 right-4 z-50 md:left-auto md:right-4 md:w-96 animate-in slide-in-from-bottom-10 fade-in duration-300">
