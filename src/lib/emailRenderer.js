@@ -374,6 +374,44 @@ export const renderTestEmailHtml = ({ appName = 'StockFlow', isoTimestamp = new 
   }
 });
 
+export const renderUserInvitationEmailText = ({
+  appName = 'StockFlow',
+  userName,
+  userEmail,
+  roleName,
+  projectAccessSummary,
+  actionUrl,
+  branding = {},
+  tempPassword = 'F0rth2026@dtrs',
+}) => {
+  const effectiveAppName = branding.app_name || appName;
+  const safeUrl = sanitizeHttpUrl(actionUrl, 'https://bearnannan.github.io/Stock-Flow');
+
+  return `========================================
+ยินดีต้อนรับสู่ ${effectiveAppName}
+========================================
+
+สวัสดีคุณ ${userName || ''},
+
+ผู้ดูแลระบบได้สร้างบัญชีผู้ใช้งานสำหรับคุณในระบบ ${effectiveAppName} เรียบร้อยแล้ว
+
+[ข้อมูลบัญชีผู้ใช้งาน]
+- ชื่อผู้ใช้งาน: ${userName || '-'}
+- อีเมล: ${userEmail || '-'}
+- บทบาท: ${roleName || '-'}
+- สิทธิ์โครงการ: ${projectAccessSummary || 'ตามที่ได้รับมอบหมาย'}
+- รหัสผ่านชั่วคราว (First-time Login): ${tempPassword}
+
+[คำแนะนำความปลอดภัย]
+รหัสผ่านข้างต้นเป็นรหัสผ่านชั่วคราว กรุณาเข้าสู่ระบบและเปลี่ยนรหัสผ่านใหม่ทันทีเมื่อเข้าใช้งานครั้งแรก
+
+[ลิงก์เข้าสู่ระบบ]
+${safeUrl}
+
+----------------------------------------
+อีเมลฉบับนี้ส่งโดยอัตโนมัติจากระบบ ${effectiveAppName} (Inventory Management System)`;
+};
+
 export const renderUserInvitationEmailHtml = ({
   appName = 'StockFlow',
   userName,
@@ -387,6 +425,7 @@ export const renderUserInvitationEmailHtml = ({
   const accent = sanitizeColor(branding.accent_color);
   const safeUrl = sanitizeHttpUrl(actionUrl, 'https://bearnannan.github.io/Stock-Flow');
   const effectiveAppName = escapeHtml(branding.app_name || appName);
+  const preheader = `ข้อมูลการเข้าใช้งานระบบ ${effectiveAppName} และรหัสผ่านเริ่มต้นชั่วคราวสำหรับคุณ ${escapeHtml(userName || '')}`;
   const rows = [
     renderRow('ชื่อผู้ใช้งาน:', escapeHtml(userName)),
     renderRow('อีเมล:', escapeHtml(userEmail)),
@@ -406,14 +445,22 @@ export const renderUserInvitationEmailHtml = ({
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ยินดีต้อนรับสู่ ${effectiveAppName}</title>
 </head>
-<body style="margin: 0; padding: 24px 12px; background-color: #f1f5f9; font-family: Arial, Tahoma, 'Noto Sans Thai', sans-serif; color: #334155;">
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: Arial, Tahoma, 'Noto Sans Thai', sans-serif; color: #334155;">
+  <div style="display: none; max-height: 0; overflow: hidden; opacity: 0; color: #f1f5f9; font-size: 1px; line-height: 1px;">${preheader}&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;</div>
   <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="width: 100%; background-color: #f1f5f9;">
     <tr>
-      <td align="center">
-        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 620px; margin: auto; background-color: #ffffff; border: 1px solid #dbe4f0; border-radius: 14px; overflow: hidden;">
+      <td align="center" style="padding: 24px 12px;">
+        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="width: 100%; max-width: 620px; margin: auto; background-color: #ffffff; border: 1px solid #dbe4f0; border-radius: 14px; overflow: hidden;">
           <tr>
-            <td style="padding: 22px 28px; border-bottom: 3px solid ${accent};">
-              <strong style="font-size: 22px; color: ${accent}; font-weight: 800;">${effectiveAppName}</strong>
+            <td style="padding: 20px 28px; border-bottom: 3px solid ${accent};">
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
+                <td style="vertical-align: middle;">
+                  <strong style="font-size: 22px; line-height: 28px; color: ${accent}; font-weight: 800;">${effectiveAppName}</strong>
+                </td>
+                <td align="right" style="vertical-align: middle; font-size: 10px; line-height: 14px; font-weight: 700; letter-spacing: .3px; color: #64748b;">
+                  INVENTORY MANAGEMENT SYSTEM
+                </td>
+              </tr></table>
             </td>
           </tr>
           <tr>

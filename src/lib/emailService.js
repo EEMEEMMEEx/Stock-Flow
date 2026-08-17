@@ -1,4 +1,4 @@
-import { renderTestEmailHtml, renderUserInvitationEmailHtml } from './emailRenderer';
+import { renderTestEmailHtml, renderUserInvitationEmailHtml, renderUserInvitationEmailText } from './emailRenderer';
 import { supabase } from './supabase';
 
 /**
@@ -59,11 +59,13 @@ export async function sendTestEmail(toEmail, eventType = null, smtpOverrides = n
     appName: 'StockFlow',
     isoTimestamp: new Date().toISOString(),
   });
+  const text = `ทดสอบการเชื่อมต่ออีเมล — StockFlow\nระบบส่งอีเมลทำงานสำเร็จเมื่อ ${new Date().toISOString()}\nนี่คืออีเมลทดสอบการเชื่อมต่อ SMTP จากระบบ StockFlow`;
 
   return sendStockFlowEmail({
     to: toEmail,
     subject: 'ทดสอบการเชื่อมต่ออีเมล — StockFlow',
     html,
+    text,
     smtpOverrides,
   });
 }
@@ -98,11 +100,24 @@ export async function sendUserInvitationEmail({
     tempPassword,
   });
 
+  const text = renderUserInvitationEmailText({
+    appName: branding.app_name || 'StockFlow',
+    userName: userName || recipientEmail,
+    userEmail: recipientEmail,
+    roleName: roleName || 'ผู้ใช้งานระบบ',
+    projectAccessSummary: projectAccessSummary || 'ตามสิทธิ์ที่ได้รับมอบหมาย',
+    actionUrl: targetActionUrl,
+    branding,
+    tempPassword,
+  });
+
   return sendStockFlowEmail({
     to: recipientEmail,
     subject: `คำเชิญเข้าใช้งานระบบ StockFlow — คุณ ${userName || recipientEmail}`,
     html,
+    text,
     actionUrl: targetActionUrl,
   });
 }
+
 

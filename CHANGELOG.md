@@ -1,5 +1,24 @@
 # Changelog
 
+## [2026-08-17 17:10] 🛡️ Enhance Gmail SMTP Deliverability & Anti-Spam Compliance
+
+- **Modified files:**
+  - `api/send-email.js`
+  - `src/lib/emailRenderer.js`
+  - `src/lib/emailService.js`
+- **Details:**
+  - `api/send-email.js`: 
+    - ปรับปรุงการเชื่อมต่อ Gmail SMTP ไปใช้ **Port 465 (Implicit TLS, `secure: true`)** เป็นค่าเริ่มต้นตามมาตรฐานสูงสุดของ Gmail SMTP
+    - กำหนดค่า `envelope: { from: user, to }` เพื่อให้ Envelope From และ Header From ตรงกัน 100% ทำให้ผ่านการตรวจสอบ SPF (`_spf.google.com`) และ Google DKIM Signature โดยสมบูรณ์
+    - บังคับสร้างโครงสร้าง MIME แบบ `multipart/alternative` (RFC 2046) ที่มีทั้ง `text/plain` และ `text/html` เสมอ เพื่อลดคะแนน Spam Score จากระบบกรองสแปม
+    - เพิ่ม RFC Message-ID, Date และ Header `X-Priority: 3` (Normal) เพื่อป้องกันการถูกจัดเป็น Bulk/Spam
+  - `src/lib/emailRenderer.js`:
+    - เพิ่มฟังก์ชัน `renderUserInvitationEmailText` สำหรับสร้าง Plain Text Alternative ที่สมบูรณ์
+    - เพิ่ม Preheader Text (`div` ซ่อน) เพื่อป้องกันไม่ให้ Preview ใน Gmail/Outlook แสดงแท็ก HTML ดิบหรือโค้ดสไตล์
+    - ปรับปรุงโครงสร้างตาราง HTML ให้ได้มาตรฐาน Responsive และปลอดภัยต่อ Content Filter
+  - `src/lib/emailService.js`: ส่งข้อมูล `text` ควบคู่กับ `html` ใน `sendUserInvitationEmail` และ `sendTestEmail` ทุกครั้ง
+- **Reason:** แก้ปัญหาอีเมลเทียบเชิญและอีเมลแจ้งเตือนถูกบล็อก (Blocked) หรือถูกจัดเข้าโฟลเดอร์ Spam/Junk โดย Mail Providers (Google Workspace, Gmail, Microsoft 365) ตามคำแนะนำในคู่มือ `/gmail-smtp`
+
 ## [2026-08-17 16:30] ✉️ Update User Creation Email Template (Default Password & GitHub Pages CTA)
 
 - **Modified files:**
