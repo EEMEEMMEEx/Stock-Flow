@@ -382,7 +382,6 @@ export const renderUserInvitationEmailText = ({
   projectAccessSummary,
   actionUrl,
   branding = {},
-  tempPassword = 'F0rth2026@dtrs',
 }) => {
   const effectiveAppName = branding.app_name || appName;
   const safeUrl = sanitizeHttpUrl(actionUrl, 'https://bearnannan.github.io/Stock-Flow');
@@ -391,24 +390,21 @@ export const renderUserInvitationEmailText = ({
 ยินดีต้อนรับสู่ ${effectiveAppName}
 ========================================
 
-สวัสดีคุณ ${userName || ''},
+เรียน คุณ ${userName || ''},
 
-ผู้ดูแลระบบได้สร้างบัญชีผู้ใช้งานสำหรับคุณในระบบ ${effectiveAppName} เรียบร้อยแล้ว ท่านสามารถเข้าสู่ระบบเพื่อเริ่มต้นการใช้งานได้ทันที
+ผู้ดูแลระบบได้สร้างและเปิดสิทธิ์การใช้งานสำหรับคุณในระบบ ${effectiveAppName} เรียบร้อยแล้ว ท่านสามารถเข้าสู่ระบบเพื่อเริ่มต้นการปฏิบัติงานได้ทันที
 
 [ข้อมูลการเข้าใช้งานระบบ]
-- ชื่อผู้ใช้งาน: ${userName || '-'}
-- อีเมลสำหรับเข้าสู่ระบบ: ${userEmail || '-'}
+- ชื่อ-สกุล: ${userName || '-'}
+- อีเมลสำหรับเข้าใช้งาน: ${userEmail || '-'}
 - บทบาท / สิทธิ์การใช้งาน: ${roleName || '-'}
 - โครงการที่ได้รับมอบหมาย: ${projectAccessSummary || 'ตามที่ได้รับมอบหมาย'}
-${tempPassword ? `- รหัสผ่านตั้งต้นสำหรับการเข้าสู่ระบบครั้งแรก: ${tempPassword}\n` : ''}
-[คำแนะนำการเข้าสู่ระบบครั้งแรก]
-เพื่อความปลอดภัยของบัญชี กรุณาเข้าสู่ระบบและกำหนดรหัสผ่านประจำตัวใหม่ในการเข้าใช้งานครั้งแรก
 
 [ลิงก์เข้าสู่ระบบ]
 ${safeUrl}
 
 ----------------------------------------
-อีเมลฉบับนี้ส่งโดยอัตโนมัติจากระบบ ${effectiveAppName} · Inventory Management System`;
+ระบบบริหารจัดการพัสดุและคลังสินค้า — ${effectiveAppName} (Inventory Management System)`;
 };
 
 export const renderUserInvitationEmailHtml = ({
@@ -419,23 +415,17 @@ export const renderUserInvitationEmailHtml = ({
   projectAccessSummary,
   actionUrl,
   branding = {},
-  tempPassword = 'F0rth2026@dtrs',
 }) => {
   const accent = sanitizeColor(branding.accent_color);
   const safeUrl = sanitizeHttpUrl(actionUrl, 'https://bearnannan.github.io/Stock-Flow');
   const effectiveAppName = escapeHtml(branding.app_name || appName);
-  const preheader = `ยินดีต้อนรับสู่ระบบ ${effectiveAppName} ข้อมูลการเข้าใช้งานสำหรับคุณ ${escapeHtml(userName || '')}`;
+  const preheader = `แจ้งข้อมูลการเข้าใช้งานระบบ ${effectiveAppName} สำหรับคุณ ${escapeHtml(userName || '')}`;
   const year = new Date().getFullYear().toString();
   const rows = [
-    renderRow('ชื่อผู้ใช้งาน:', escapeHtml(userName)),
-    renderRow('อีเมลสำหรับเข้าสู่ระบบ:', escapeHtml(userEmail)),
+    renderRow('ชื่อ-สกุล:', escapeHtml(userName)),
+    renderRow('อีเมลสำหรับเข้าใช้งาน:', escapeHtml(userEmail)),
     renderRow('บทบาท / สิทธิ์การใช้งาน:', escapeHtml(roleName)),
     renderRow('โครงการที่ได้รับมอบหมาย:', escapeHtml(projectAccessSummary)),
-    tempPassword ? renderRow(
-      'รหัสผ่านตั้งต้น (Initial Access):',
-      `<code style="font-family: Consolas, 'Courier New', monospace; font-size: 14px; font-weight: 700; color: #0f172a; background-color: #f1f5f9; padding: 2px 8px; border-radius: 4px; border: 1px solid #cbd5e1;">${escapeHtml(tempPassword)}</code>`,
-      { emphasis: true }
-    ) : ''
   ].filter(Boolean).join('');
 
   return `<!DOCTYPE html>
@@ -443,19 +433,19 @@ export const renderUserInvitationEmailHtml = ({
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ยินดีต้อนรับสู่ ${effectiveAppName}</title>
+  <title>แจ้งข้อมูลการเข้าใช้งานระบบ ${effectiveAppName}</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: Arial, Tahoma, 'Noto Sans Thai', sans-serif; color: #334155;">
+<body style="margin: 0; padding: 0; font-family: 'Sarabun', 'Noto Sans Thai', 'Helvetica Neue', Arial, sans-serif; font-size: 15px; line-height: 1.6; color: #1e293b; background-color: #f1f5f9;">
   <div style="display: none; max-height: 0; overflow: hidden; opacity: 0; color: #f1f5f9; font-size: 1px; line-height: 1px;">${preheader}&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;</div>
   <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="width: 100%; background-color: #f1f5f9;">
     <tr>
-      <td align="center" style="padding: 24px 12px;">
-        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="width: 100%; max-width: 620px; margin: auto; background-color: #ffffff; border: 1px solid #dbe4f0; border-radius: 14px; overflow: hidden;">
+      <td align="center" style="padding: 24px 16px;">
+        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="width: 100%; max-width: 600px; margin: auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden;">
           <tr>
             <td style="padding: 20px 28px; border-bottom: 3px solid ${accent};">
               <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
                 <td style="vertical-align: middle;">
-                  <strong style="font-size: 22px; line-height: 28px; color: ${accent}; font-weight: 800;">${effectiveAppName}</strong>
+                  <strong style="font-size: 20px; line-height: 26px; color: ${accent}; font-weight: 800;">${effectiveAppName}</strong>
                 </td>
                 <td align="right" style="vertical-align: middle; font-size: 10px; line-height: 14px; font-weight: 700; letter-spacing: .3px; color: #64748b;">
                   INVENTORY MANAGEMENT SYSTEM
@@ -467,28 +457,28 @@ export const renderUserInvitationEmailHtml = ({
             <td style="padding: 28px 28px 24px;">
               <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                 <tr>
-                  <td style="padding-bottom: 12px;">
-                    <span style="display: inline-block; padding: 4px 12px; border: 1px solid #93c5fd; border-radius: 999px; background-color: #eff6ff; color: #1d4ed8; font-size: 12px; line-height: 16px; font-weight: 700;">
-                      เปิดใช้งานบัญชีผู้ใช้ใหม่
+                  <td style="padding-bottom: 10px;">
+                    <span style="display: inline-block; padding: 3px 10px; border: 1px solid #93c5fd; border-radius: 999px; background-color: #eff6ff; color: #1d4ed8; font-size: 12px; line-height: 16px; font-weight: 700;">
+                      ข้อมูลบัญชีผู้ใช้งาน
                     </span>
                   </td>
                 </tr>
                 <tr>
                   <td>
-                    <h1 style="margin: 0 0 10px; font-size: 22px; line-height: 30px; font-weight: 700; color: #0f172a;">ยินดีต้อนรับสู่ ${effectiveAppName}</h1>
+                    <h1 style="margin: 0 0 10px; font-size: 20px; line-height: 28px; font-weight: 700; color: #0f172a;">แจ้งข้อมูลบัญชีผู้ใช้งาน ${effectiveAppName}</h1>
                   </td>
                 </tr>
                 <tr>
-                  <td style="padding-bottom: 18px; font-size: 14px; line-height: 22px; color: #475569;">
-                    สวัสดีคุณ <strong>${escapeHtml(userName || '')}</strong> ผู้ดูแลระบบได้สร้างและตั้งค่าบัญชีผู้ใช้งานสำหรับคุณเรียบร้อยแล้ว ท่านสามารถเข้าสู่ระบบเพื่อเริ่มต้นการใช้งานได้ทันที
+                  <td style="padding-bottom: 16px; font-size: 14px; line-height: 22px; color: #475569;">
+                    เรียน คุณ <strong>${escapeHtml(userName || '')}</strong>,<br />
+                    ผู้ดูแลระบบได้สร้างและเปิดสิทธิ์การใช้งานสำหรับคุณในระบบ ${effectiveAppName} เรียบร้อยแล้ว ท่านสามารถเข้าสู่ระบบเพื่อเริ่มต้นการปฏิบัติงานได้ทันที
                   </td>
                 </tr>
               </table>
               
-              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 16px; border: 1px solid #dbe4f0; border-radius: 10px; background-color: #f8fafc;">
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 20px; border: 1px solid #e2e8f0; border-radius: 8px; background-color: #f8fafc;">
                 <tr>
                   <td style="padding: 14px 16px;">
-                    <h2 style="margin: 0 0 8px; font-size: 15px; line-height: 20px; font-weight: 700; color: #0f172a;">ข้อมูลบัญชีผู้ใช้งาน</h2>
                     <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                       ${rows}
                     </table>
@@ -496,24 +486,13 @@ export const renderUserInvitationEmailHtml = ({
                 </tr>
               </table>
 
-              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 20px; border: 1px solid #e2e8f0; border-radius: 10px; background-color: #f8fafc;">
-                <tr>
-                  <td style="padding: 12px 16px;">
-                    <div style="font-size: 13px; line-height: 19px; font-weight: 700; color: #334155;">คำแนะนำสำหรับการเข้าสู่ระบบครั้งแรก</div>
-                    <div style="padding-top: 4px; font-size: 13px; line-height: 20px; color: #64748b;">
-                      เพื่อความปลอดภัยของบัญชี กรุณาเข้าสู่ระบบและกำหนดรหัสผ่านประจำตัวใหม่ในการเข้าใช้งานครั้งแรก
-                    </div>
-                  </td>
-                </tr>
-              </table>
-
-              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin: 24px 0 16px;">
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin: 20px 0 16px;">
                 <tr>
                   <td align="center">
                     <table role="presentation" border="0" cellpadding="0" cellspacing="0">
                       <tr>
-                        <td align="center" style="border-radius: 8px; background-color: ${accent};">
-                          <a href="${safeUrl}" target="_blank" style="display: inline-block; padding: 13px 28px; border: 1px solid ${accent}; border-radius: 8px; background-color: ${accent}; color: #ffffff; font-size: 14px; line-height: 18px; font-weight: 700; text-decoration: none;">เข้าสู่ระบบ ${effectiveAppName}</a>
+                        <td align="center" style="border-radius: 6px; background-color: ${accent};">
+                          <a href="${safeUrl}" target="_blank" style="display: inline-block; padding: 12px 28px; border: 1px solid ${accent}; border-radius: 6px; background-color: ${accent}; color: #ffffff; font-size: 14px; line-height: 18px; font-weight: 700; text-decoration: none;">เข้าสู่ระบบ ${effectiveAppName}</a>
                         </td>
                       </tr>
                     </table>
@@ -528,8 +507,8 @@ export const renderUserInvitationEmailHtml = ({
             </td>
           </tr>
           <tr>
-            <td align="center" style="padding: 16px 28px; border-top: 1px solid #dbe4f0; background-color: #f8fafc; font-size: 12px; line-height: 18px; color: #64748b;">
-              อีเมลฉบับนี้ส่งโดยอัตโนมัติจากระบบ ${effectiveAppName} · Inventory Management System<br />© ${year} ${effectiveAppName}
+            <td align="center" style="padding: 16px 28px; border-top: 1px solid #e2e8f0; background-color: #f8fafc; font-size: 12px; line-height: 18px; color: #64748b;">
+              ระบบบริหารจัดการพัสดุและคลังสินค้า — ${effectiveAppName}<br />© ${year} ${effectiveAppName} · Inventory Management System
             </td>
           </tr>
         </table>

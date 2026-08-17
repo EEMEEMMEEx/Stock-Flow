@@ -1,6 +1,25 @@
 # Changelog
 
-## [2026-08-17 20:18] 🚀 Auto-route Email Dispatch Endpoint to Vercel Production on GitHub Pages
+## [2026-08-17 20:30] 🛡️ Integrate Proven Clean Delivery Pipeline from life-countdown & Supabase Dynamic SMTP Loader
+
+- **Modified files:**
+  - `api/send-email.js`
+  - `src/lib/emailRenderer.js`
+  - `src/lib/emailService.js`
+  - `src/pages/UserManagement.jsx`
+- **Details:**
+  - `api/send-email.js`:
+    - นำเข้า `@supabase/supabase-js` เพื่อดึงการตั้งค่า SMTP แบบ Dynamic จากตาราง `system_settings` (`smtp_config`) และ `system_secrets` (`smtp_password`) อัตโนมัติเมื่อไม่มีการส่ง overrides ช่วยให้การตั้งค่าผ่านหน้าเว็บ Settings มีผลทันทีกับ Vercel API Dispatcher
+    - ปรับปรุง RFC Headers ตามมาตรฐานของ `life-countdown`: เพิ่ม `Content-Language: th` และ `Reply-To: ${senderEmail}` พร้อมทั้งถอด `X-Priority` และ `X-Entity-Ref-ID` ออกทั้งหมด เพื่อป้องกันไม่ให้ระบบ Microsoft 365 EOP / Defender จัดประเภทเป็น Automated Bot / Anomaly
+  - `src/lib/emailRenderer.js`:
+    - ปรับปรุงแม่แบบอีเมลเชิญผู้ใช้งานใหม่ (`renderUserInvitationEmailHtml` และ `renderUserInvitationEmailText`) ให้ใช้ Clean Administrative Structure ตามมาตรฐานของ `life-countdown`
+    - ถอดข้อความรหัสผ่านตั้งต้น (`tempPassword`) ออกจากเนื้อหาอีเมลทั้งหมด เพื่อป้องกันระบบความปลอดภัยขององค์กร (`@forth.co.th`) ตรวจจับเป็น High-Confidence Phishing / Credential Harvesting (SCL 9)
+    - ปรับ Font Family ให้เป็น `'Sarabun', 'Noto Sans Thai', 'Helvetica Neue', Arial, sans-serif` และจัด Table ให้มีขนาดเบา สบายตา
+  - `src/lib/emailService.js` & `src/pages/UserManagement.jsx`:
+    - ปรับหัวข้ออีเมลเป็น `แจ้งข้อมูลบัญชีผู้ใช้งานระบบ ${effectiveAppName} — คุณ ${userName}`
+    - ลบการส่งตัวแปร `tempPassword` ที่ไม่จำเป็นออกจากฟังก์ชันเรียกส่งอีเมล
+- **Reason:** แก้ปัญหาอีเมลไม่เข้ากล่องจดหมาย Outlook ของโดเมนองค์กร `@forth.co.th` (เนื่องจากโดน EOP กรอง Phishing เพราะมี Plaintext Password และ Custom Bot Headers) และทำให้การแก้ไขการตั้งค่า SMTP จากหน้า UI บันทึกลง Supabase และนำมาใช้งานได้แบบ Real-time
+
 
 - **Modified files:**
   - `src/lib/emailService.js`
