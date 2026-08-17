@@ -1,6 +1,20 @@
 # Changelog
 
-## [2026-08-17 17:10] 🛡️ Enhance Gmail SMTP Deliverability & Anti-Spam Compliance
+## [2026-08-17 17:30] ⚙️ Fix SMTP Server Configuration Form State Binding & Save Handler
+
+- **Modified files:**
+  - `src/pages/Settings.jsx`
+  - `api/send-email.js`
+- **Details:**
+  - `src/pages/Settings.jsx`:
+    - แก้ไข State Binding ของฟิลด์ `sender_email`, `sender_name`, `host`, `port`, `user`, `new_password` ให้เป็น Controlled Components อย่างสมบูรณ์พร้อม Fallback ค่าว่าง ป้องกันปัญหา `null`/`undefined` ขัดขวางการพิมพ์และการส่งฟอร์ม
+    - แก้ไข `fetchSettingsFromDb` ให้รองรับการ parse `smtp_config` ทั้งในรูปแบบ JSON Object และ Stringified JSONB
+    - แก้ไข `handleSaveNotificationSettings` ให้อัปเดต State `smtpForm` ทันทีหลังบันทึก และเรียก `fetchSettingsFromDb()` เพื่อ Sync สถานะล่าสุดกับ Supabase
+    - แก้ไขการแสดงผลคอนฟิกที่มีผล (Effective Configuration Summary) ให้แสดงอีเมลผู้ส่ง (`sender_email`) แบบ Live Preview
+  - `api/send-email.js`:
+    - รองรับการใช้งาน `sender_email` (และ Environment Variable `SMTP_SENDER_EMAIL`) เพื่อนำมาใช้ใน Header `From: "${senderName}" <${senderEmail}>` ได้อย่างถูกต้อง แทนที่จะผูกติดกับบัญชี SMTP `user` เพียงอย่างเดียว
+- **Reason:** แก้ไขปัญหาการแก้ไขและบันทึกข้อมูล Sender Email (`#sender_email`) หรือการตั้งค่า SMTP อื่นๆ ไม่สะท้อนผลและไม่ถูกบันทึกลงในระบบ
+
 
 - **Modified files:**
   - `api/send-email.js`

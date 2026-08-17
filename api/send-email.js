@@ -32,6 +32,7 @@ export default async function handler(req, res) {
     const isSecure = port === 465;
     const user = smtpOverrides?.user || process.env.SMTP_USER || 'stockflow.noreply.app@gmail.com';
     const pass = smtpOverrides?.pass || process.env.SMTP_PASS || 'yitosoxabxycxdij';
+    const senderEmail = smtpOverrides?.sender_email || process.env.SMTP_SENDER_EMAIL || user;
     const senderName = smtpOverrides?.sender_name || process.env.SMTP_SENDER_NAME || 'StockFlow Notification';
 
     const transporter = nodemailer.createTransport({
@@ -52,7 +53,7 @@ export default async function handler(req, res) {
     const messageId = `<${crypto.randomUUID()}@smtp.gmail.com>`;
 
     const mailOptions = {
-      from: `"${senderName}" <${user}>`,
+      from: `"${senderName}" <${senderEmail}>`,
       to,
       subject: subject || 'StockFlow Notification',
       text: plainText,

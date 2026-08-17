@@ -60,8 +60,9 @@ const Settings = () => {
   // Notification & SMTP State
   const [smtpForm, setSmtpForm] = useState({
     host: '',
-    port: 587,
-    secure: false,
+    port: 465,
+    secure: true,
+    reject_unauthorized: true,
     user: '',
     new_password: '',
     sender_email: '',
@@ -122,9 +123,19 @@ const Settings = () => {
           });
         }
         if (data.smtp_config) {
+          const rawSmtp = typeof data.smtp_config === 'string'
+            ? JSON.parse(data.smtp_config)
+            : data.smtp_config;
           setSmtpForm(prev => ({
             ...prev,
-            ...data.smtp_config,
+            host: rawSmtp.host ?? '',
+            port: rawSmtp.port ?? 465,
+            secure: rawSmtp.secure !== undefined ? Boolean(rawSmtp.secure) : true,
+            reject_unauthorized: rawSmtp.reject_unauthorized !== false,
+            user: rawSmtp.user ?? '',
+            sender_email: rawSmtp.sender_email ?? '',
+            sender_name: rawSmtp.sender_name ?? 'StockFlow Notification',
+            password_set: Boolean(rawSmtp.password_set),
             new_password: ''
           }));
         }
@@ -233,21 +244,21 @@ const Settings = () => {
   };
 
   const handleSaveNotificationSettings = async (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     if (!canUpdate) return toast.error('คุณไม่มีสิทธิ์ในการแก้ไขการตั้งค่า (Requires settings.update)');
 
     try {
       setSavingCategory('notification');
       
       const smtpPayload = {
-        host: smtpForm.host.trim(),
+        host: String(smtpForm.host || '').trim(),
         port: Number(smtpForm.port) || 465,
         secure: Boolean(smtpForm.secure),
         reject_unauthorized: smtpForm.reject_unauthorized !== false,
-        user: smtpForm.user.trim(),
-        sender_email: smtpForm.sender_email.trim(),
-        sender_name: smtpForm.sender_name.trim(),
-        password_set: smtpForm.password_set || Boolean(smtpForm.new_password.trim())
+        user: String(smtpForm.user || '').trim(),
+        sender_email: String(smtpForm.sender_email || '').trim(),
+        sender_name: String(smtpForm.sender_name || '').trim() || 'StockFlow Notification',
+        password_set: Boolean(smtpForm.password_set || (smtpForm.new_password && smtpForm.new_password.trim()))
       };
 
       const payload = {
@@ -263,21 +274,22 @@ const Settings = () => {
       if (error) throw error;
 
       // Save password to Vault RPC if provided
-      if (smtpForm.new_password.trim()) {
+      if (smtpForm.new_password && smtpForm.new_password.trim()) {
         const { error: vaultErr } = await supabase.rpc('admin_update_smtp_password', {
           p_password: smtpForm.new_password.trim()
         });
         if (vaultErr) console.warn('[Settings] SMTP Password Vault Error:', vaultErr.message);
       }
 
-      if (data?.success) {
-        toast.success('บันทึกการตั้งค่าการแจ้งเตือนสำเร็จ');
-        setSmtpForm(prev => ({
-          ...prev,
-          password_set: prev.password_set || Boolean(prev.new_password.trim()),
-          new_password: ''
-        }));
-      }
+      toast.success('บันทึกการตั้งค่าการแจ้งเตือนสำเร็จ');
+      setSmtpForm(prev => ({
+        ...prev,
+        ...smtpPayload,
+        new_password: ''
+      }));
+
+      // Re-fetch to ensure sync with database
+      await fetchSettingsFromDb();
     } catch (error) {
       console.error('Save Notification Settings Error:', error);
       toast.error(error.message || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล');
@@ -298,16 +310,16 @@ const Settings = () => {
       setSendingTestEmail(true);
 
       const customSmtpOverrides = {
-        host: smtpForm.host.trim(),
+        host: String(smtpForm.host || '').trim(),
         port: Number(smtpForm.port) || 465,
         secure: Boolean(smtpForm.secure),
         reject_unauthorized: smtpForm.reject_unauthorized !== false,
-        user: smtpForm.user.trim(),
-        sender_email: smtpForm.sender_email.trim(),
-        sender_name: smtpForm.sender_name.trim()
+        user: String(smtpForm.user || '').trim(),
+        sender_email: String(smtpForm.sender_email || '').trim(),
+        sender_name: String(smtpForm.sender_name || '').trim() || 'StockFlow Notification'
       };
 
-      if (smtpForm.new_password.trim()) {
+      if (smtpForm.new_password && smtpForm.new_password.trim()) {
         customSmtpOverrides.pass = smtpForm.new_password.trim();
       }
 
@@ -615,7 +627,7 @@ const Settings = () => {
                       id="smtp_host"
                       disabled={!canUpdate}
                       placeholder="smtp.gmail.com"
-                      value={smtpForm.host}
+                      value={smtpForm.host ?? ''}
                       onChange={(e) => setSmtpForm(prev => ({ ...prev, host: e.target.value }))}
                       className="mt-1 neu-pressed bg-transparent text-xs"
                     />
@@ -627,8 +639,8 @@ const Settings = () => {
                       id="smtp_port"
                       type="number"
                       disabled={!canUpdate}
-                      placeholder="587"
-                      value={smtpForm.port}
+                      placeholder="465"
+                      value={smtpForm.port ?? ''}
                       onChange={(e) => {
                         const val = e.target.value;
                         const numVal = Number(val);
@@ -649,7 +661,7 @@ const Settings = () => {
                       autoComplete="username"
                       disabled={!canUpdate}
                       placeholder="user@example.com"
-                      value={smtpForm.user}
+                      value={smtpForm.user ?? ''}
                       onChange={(e) => setSmtpForm(prev => ({ ...prev, user: e.target.value }))}
                       className="mt-1 neu-pressed bg-transparent text-xs"
                     />
@@ -664,7 +676,7 @@ const Settings = () => {
                       autoComplete="email"
                       disabled={!canUpdate}
                       placeholder="noreply@stockflow.com"
-                      value={smtpForm.sender_email}
+                      value={smtpForm.sender_email ?? ''}
                       onChange={(e) => setSmtpForm(prev => ({ ...prev, sender_email: e.target.value }))}
                       className="mt-1 neu-pressed bg-transparent text-xs"
                     />
@@ -676,7 +688,7 @@ const Settings = () => {
                       id="sender_name"
                       autoComplete="off"
                       disabled={!canUpdate}
-                      value={smtpForm.sender_name}
+                      value={smtpForm.sender_name ?? ''}
                       onChange={(e) => setSmtpForm(prev => ({ ...prev, sender_name: e.target.value }))}
                       className="mt-1 neu-pressed bg-transparent text-xs"
                     />
@@ -692,7 +704,7 @@ const Settings = () => {
                       autoComplete="new-password"
                       disabled={!canUpdate}
                       placeholder={smtpForm.password_set ? '•••••••• (ระบุใหม่เมื่อต้องการเปลี่ยน)' : 'ระบุรหัสผ่าน SMTP'}
-                      value={smtpForm.new_password}
+                      value={smtpForm.new_password ?? ''}
                       onChange={(e) => setSmtpForm(prev => ({ ...prev, new_password: e.target.value }))}
                       className="mt-1 neu-pressed bg-transparent text-xs"
                     />
@@ -740,6 +752,7 @@ const Settings = () => {
                       <label className="flex items-center gap-2 pt-1 cursor-pointer select-none">
                         <input
                           type="checkbox"
+                          id="reject_unauthorized"
                           disabled={!canUpdate}
                           checked={smtpForm.reject_unauthorized !== false}
                           onChange={(e) => setSmtpForm(prev => ({ ...prev, reject_unauthorized: e.target.checked }))}
@@ -777,11 +790,16 @@ const Settings = () => {
 
                   {/* Effective Configuration Summary */}
                   <div className="pt-2 border-t border-border/20 flex flex-wrap items-center justify-between text-[11px] text-muted-foreground gap-2">
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <span className="font-semibold text-foreground">คอนฟิกที่มีผล:</span>
                       <span className="px-2 py-0.5 rounded bg-primary/10 text-primary font-mono text-[10px]">
-                        {smtpForm.host || 'it.forth.co.th'}:{smtpForm.port || 465}
+                        {smtpForm.host || 'smtp.gmail.com'}:{smtpForm.port || 465}
                       </span>
+                      {smtpForm.sender_email && (
+                        <span className="px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 font-mono text-[10px]">
+                          Sender: {smtpForm.sender_email}
+                        </span>
+                      )}
                       <span className="px-2 py-0.5 rounded bg-secondary text-secondary-foreground font-mono text-[10px]">
                         {smtpForm.secure ? 'Implicit SSL/TLS' : 'STARTTLS'}
                       </span>
