@@ -1,6 +1,21 @@
 # Changelog
 
-## [2026-08-16 17:55] 🛠️ Fix Deployment Routing Separation (GitHub Pages vs Vercel App)
+## [2026-08-17 16:30] ✉️ Update User Creation Email Template (Default Password & GitHub Pages CTA)
+
+- **Modified files:**
+  - `src/lib/emailRenderer.js`
+  - `src/lib/emailService.js`
+  - `src/pages/UserManagement.jsx`
+  - `src/components/users/AddUserModal.jsx`
+  - `supabase/migrations/40_fix_admin_rpc_drop_and_recreate.sql`
+- **Details:**
+  - `src/lib/emailRenderer.js`: ปรับแต่งฟังก์ชัน `renderUserInvitationEmailHtml` ให้แสดงรหัสผ่านเริ่มต้นชั่วคราว (`F0rth2026@dtrs`) ในตารางข้อมูลผู้ใช้ พร้อมเพิ่มกล่องแจ้งเตือนความปลอดภัย (Security Notice) แนะนำให้ผู้ใช้งานเปลี่ยนรหัสผ่านใหม่ทันทีเมื่อเข้าสู่ระบบครั้งแรก และปรับปรุงปุ่ม CTA / ลิงก์เข้าสู่ระบบให้ชี้ไปยัง `https://bearnannan.github.io/Stock-Flow` เป็นค่าเริ่มต้น
+  - `src/lib/emailService.js`: อัปเดต `sendUserInvitationEmail` ให้ส่งพารามิเตอร์ `tempPassword` ('F0rth2026@dtrs') และกำหนดค่า Default `actionUrl` เป็น `https://bearnannan.github.io/Stock-Flow`
+  - `src/pages/UserManagement.jsx`: อัปเดตการเรียกฟังก์ชัน `admin_create_user` ให้ส่ง `p_password: 'F0rth2026@dtrs'` และส่งอีเมลเทียบเชิญด้วย URL `https://bearnannan.github.io/Stock-Flow` ทั้งในขั้นตอนสร้างผู้ใช้ใหม่และกด Resend Invitation
+  - `src/components/users/AddUserModal.jsx`: ปรับปรุงข้อความชี้แจงในโมดอลสร้างผู้ใช้ใหม่ให้ระบุรหัสผ่านเริ่มต้นอัตโนมัติ `F0rth2026@dtrs` และข้อความกำกับ Checkbox การส่งอีเมลอย่างชัดเจน
+  - `supabase/migrations/40_fix_admin_rpc_drop_and_recreate.sql`: ซิงค์ค่า Default Fallback Password ในฟังก์ชัน `admin_create_user` ให้เป็น `'F0rth2026@dtrs'`
+- **Reason:** รองรับข้อกำหนดของระบบในการแจ้งรหัสผ่านเริ่มต้นชั่วคราวและคำแนะนำการเปลี่ยนรหัสผ่านแก่ผู้ใช้งานใหม่ พร้อมนำทางไปยัง URL ทางการของ Stock-Flow บน GitHub Pages
+
 
 - **Modified files:**
   - `src/App.jsx`

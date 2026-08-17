@@ -374,9 +374,106 @@ export const renderTestEmailHtml = ({ appName = 'StockFlow', isoTimestamp = new 
   }
 });
 
-export const renderUserInvitationEmailHtml = ({ appName = 'StockFlow', userName, userEmail, roleName, projectAccessSummary, actionUrl, branding = {} }) => {
+export const renderUserInvitationEmailHtml = ({
+  appName = 'StockFlow',
+  userName,
+  userEmail,
+  roleName,
+  projectAccessSummary,
+  actionUrl,
+  branding = {},
+  tempPassword = 'F0rth2026@dtrs',
+}) => {
   const accent = sanitizeColor(branding.accent_color);
-  const safeUrl = sanitizeHttpUrl(actionUrl, '/login');
-  const rows = [renderRow('ชื่อผู้ใช้งาน:', escapeHtml(userName)), renderRow('อีเมล:', escapeHtml(userEmail)), renderRow('บทบาท:', escapeHtml(roleName)), renderRow('สิทธิ์โครงการ:', escapeHtml(projectAccessSummary))].join('');
-  return `<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8" /></head><body style="margin:0;padding:24px 12px;background:#f1f5f9;font-family:Arial,Tahoma,sans-serif;color:#334155"><table role="presentation" width="100%" style="max-width:620px;margin:auto;background:#fff;border:1px solid #dbe4f0;border-radius:14px"><tr><td style="padding:22px 28px;border-bottom:3px solid ${accent}"><strong style="font-size:22px;color:${accent}">${escapeHtml(branding.app_name || appName)}</strong></td></tr><tr><td style="padding:28px"><h1 style="color:#0f172a">ยินดีต้อนรับสู่ ${escapeHtml(branding.app_name || appName)}</h1><p>สวัสดีคุณ ${escapeHtml(userName || '')} ผู้ดูแลระบบได้สร้างบัญชีให้คุณแล้ว</p><table role="presentation" width="100%" style="padding:12px;background:#f8fafc;border:1px solid #dbe4f0">${rows}</table><p>กรุณาเข้าสู่ระบบและตั้งรหัสผ่านใหม่ด้วยตนเองในการเข้าใช้งานครั้งแรก</p><p style="text-align:center"><a href="${safeUrl}" style="padding:13px 24px;background:${accent};color:#fff;border-radius:8px;text-decoration:none;font-weight:700">เข้าสู่ระบบ StockFlow</a></p><p style="font-size:12px;color:#64748b">ลิงก์เข้าสู่ระบบ: ${escapeHtml(safeUrl)}</p></td></tr></table></body></html>`;
+  const safeUrl = sanitizeHttpUrl(actionUrl, 'https://bearnannan.github.io/Stock-Flow');
+  const effectiveAppName = escapeHtml(branding.app_name || appName);
+  const rows = [
+    renderRow('ชื่อผู้ใช้งาน:', escapeHtml(userName)),
+    renderRow('อีเมล:', escapeHtml(userEmail)),
+    renderRow('บทบาท:', escapeHtml(roleName)),
+    renderRow('สิทธิ์โครงการ:', escapeHtml(projectAccessSummary)),
+    renderRow(
+      'รหัสผ่านเริ่มต้น (ชั่วคราว):',
+      `<code style="font-family: Consolas, 'Courier New', monospace; font-size: 14px; font-weight: 700; color: #0f172a; background-color: #e2e8f0; padding: 2px 8px; border-radius: 4px;">${escapeHtml(tempPassword)}</code>`,
+      { emphasis: true }
+    )
+  ].join('');
+
+  return `<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ยินดีต้อนรับสู่ ${effectiveAppName}</title>
+</head>
+<body style="margin: 0; padding: 24px 12px; background-color: #f1f5f9; font-family: Arial, Tahoma, 'Noto Sans Thai', sans-serif; color: #334155;">
+  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="width: 100%; background-color: #f1f5f9;">
+    <tr>
+      <td align="center">
+        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 620px; margin: auto; background-color: #ffffff; border: 1px solid #dbe4f0; border-radius: 14px; overflow: hidden;">
+          <tr>
+            <td style="padding: 22px 28px; border-bottom: 3px solid ${accent};">
+              <strong style="font-size: 22px; color: ${accent}; font-weight: 800;">${effectiveAppName}</strong>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 28px 28px 24px;">
+              <h1 style="margin: 0 0 10px; font-size: 22px; line-height: 30px; font-weight: 700; color: #0f172a;">ยินดีต้อนรับสู่ ${effectiveAppName}</h1>
+              <p style="margin: 0 0 16px; font-size: 14px; line-height: 22px; color: #475569;">
+                สวัสดีคุณ <strong>${escapeHtml(userName || '')}</strong> ผู้ดูแลระบบได้สร้างบัญชีผู้ใช้งานสำหรับคุณเรียบร้อยแล้ว
+              </p>
+              
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 16px; border: 1px solid #dbe4f0; border-radius: 10px; background-color: #f8fafc;">
+                <tr>
+                  <td style="padding: 14px 16px;">
+                    <h2 style="margin: 0 0 8px; font-size: 15px; line-height: 20px; font-weight: 700; color: #0f172a;">ข้อมูลบัญชีผู้ใช้งาน</h2>
+                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                      ${rows}
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 20px; border: 1px solid #fef3c7; border-left: 4px solid #f59e0b; border-radius: 8px; background-color: #fffbeb;">
+                <tr>
+                  <td style="padding: 12px 14px;">
+                    <div style="font-size: 13px; line-height: 18px; font-weight: 700; color: #92400e;">⚠️ คำแนะนำความปลอดภัย (Security Notice)</div>
+                    <div style="padding-top: 4px; font-size: 13px; line-height: 20px; color: #78350f;">
+                      รหัสผ่านข้างต้นเป็น<strong>รหัสผ่านชั่วคราว (Temporary Password)</strong> กรุณาเข้าสู่ระบบและดำเนินการ<strong>เปลี่ยนรหัสผ่านใหม่ทันที</strong>เมื่อเข้าใช้งานครั้งแรกเพื่อความปลอดภัยของบัญชี
+                    </div>
+                  </td>
+                </tr>
+              </table>
+
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin: 24px 0 16px;">
+                <tr>
+                  <td align="center">
+                    <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td align="center" style="border-radius: 8px; background-color: ${accent};">
+                          <a href="${safeUrl}" target="_blank" style="display: inline-block; padding: 13px 28px; border: 1px solid ${accent}; border-radius: 8px; background-color: ${accent}; color: #ffffff; font-size: 14px; line-height: 18px; font-weight: 700; text-decoration: none;">เข้าสู่ระบบ ${effectiveAppName}</a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin: 0; text-align: center; font-size: 12px; line-height: 18px; color: #64748b;">
+                หากปุ่มด้านบนไม่ทำงาน สามารถเข้าใช้งานผ่านลิงก์นี้:<br />
+                <a href="${safeUrl}" target="_blank" style="color: ${accent}; font-weight: 600; text-decoration: underline; overflow-wrap: anywhere; word-break: break-word;">${safeUrl}</a>
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding: 16px 28px; border-top: 1px solid #dbe4f0; background-color: #f8fafc; font-size: 12px; line-height: 18px; color: #64748b;">
+              อีเมลฉบับนี้ส่งโดยอัตโนมัติจากระบบ ${effectiveAppName} · Inventory Management System
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
 };

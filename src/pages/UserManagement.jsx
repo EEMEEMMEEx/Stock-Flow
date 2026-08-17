@@ -140,7 +140,7 @@ const UserManagement = () => {
     try {
       const { data, error } = await supabase.rpc('admin_create_user', {
         p_email: userPayload.email,
-        p_password: userPayload.password || null,
+        p_password: userPayload.password || 'F0rth2026@dtrs',
         p_full_name: userPayload.full_name,
         p_role: userPayload.role,
         p_department: userPayload.department || null,
@@ -171,7 +171,14 @@ const UserManagement = () => {
         toast.success('สร้างบัญชีผู้ใช้ใหม่สำเร็จ');
         if (userPayload.send_invitation) {
           try {
-            await sendUserInvitationEmail({ recipientEmail: userPayload.email, userName: userPayload.full_name, roleName: userPayload.role, projectAccessSummary: userPayload.all_projects ? 'ทุกโครงการ' : `${userPayload.project_ids?.length || 0} โครงการที่เลือก`, actionUrl: `${window.location.origin}/login` });
+            await sendUserInvitationEmail({
+              recipientEmail: userPayload.email,
+              userName: userPayload.full_name,
+              roleName: userPayload.role,
+              projectAccessSummary: userPayload.all_projects ? 'ทุกโครงการ' : `${userPayload.project_ids?.length || 0} โครงการที่เลือก`,
+              actionUrl: 'https://bearnannan.github.io/Stock-Flow',
+              tempPassword: 'F0rth2026@dtrs'
+            });
             toast.success('สร้างบัญชีและส่งอีเมลเชิญสำเร็จ');
           } catch (emailError) {
             console.error('Invitation Email Error:', emailError);
@@ -192,7 +199,14 @@ const UserManagement = () => {
   const handleResendInvitation = async (user) => {
     try {
       setResendingInvitationId(user.id);
-      await sendUserInvitationEmail({ recipientEmail: user.email, userName: user.full_name, roleName: user.role, projectAccessSummary: user.all_projects ? 'ทุกโครงการ' : `${user.assigned_project_ids?.length || 0} โครงการที่ได้รับมอบหมาย`, actionUrl: `${window.location.origin}/login` });
+      await sendUserInvitationEmail({
+        recipientEmail: user.email,
+        userName: user.full_name,
+        roleName: user.role,
+        projectAccessSummary: user.all_projects ? 'ทุกโครงการ' : `${user.assigned_project_ids?.length || 0} โครงการที่ได้รับมอบหมาย`,
+        actionUrl: 'https://bearnannan.github.io/Stock-Flow',
+        tempPassword: 'F0rth2026@dtrs'
+      });
       toast.success(`ส่งอีเมลเชิญซ้ำไปยัง ${user.email} สำเร็จ`);
     } catch (error) {
       toast.error(`ส่งอีเมลเชิญซ้ำไม่สำเร็จ: ${error.message}`);

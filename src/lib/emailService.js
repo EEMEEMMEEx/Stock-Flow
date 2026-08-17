@@ -37,7 +37,7 @@ export async function sendStockFlowEmail({ to, subject, html, text, smtpOverride
   // Fallback to Supabase Native Auth if Vercel endpoint is un-deployed or offline
   const prodOrigin = typeof window !== 'undefined' && !window.location.origin.includes('localhost')
     ? window.location.origin
-    : (import.meta.env.VITE_APP_URL || 'https://stock-flow-two-psi.vercel.app');
+    : (import.meta.env.VITE_APP_URL || 'https://bearnannan.github.io/Stock-Flow');
   const redirectUri = actionUrl || `${prodOrigin}/login`;
 
   const { error: authErr } = await supabase.auth.resetPasswordForEmail(to, {
@@ -78,10 +78,14 @@ export async function sendUserInvitationEmail({
   projectAccessSummary,
   actionUrl,
   branding = {},
+  tempPassword = 'F0rth2026@dtrs',
 }) {
   if (!recipientEmail) {
     throw new Error('กรุณาระบุอีเมลผู้รับ');
   }
+
+  const defaultActionUrl = 'https://bearnannan.github.io/Stock-Flow';
+  const targetActionUrl = actionUrl || defaultActionUrl;
 
   const html = renderUserInvitationEmailHtml({
     appName: branding.app_name || 'StockFlow',
@@ -89,14 +93,16 @@ export async function sendUserInvitationEmail({
     userEmail: recipientEmail,
     roleName: roleName || 'ผู้ใช้งานระบบ',
     projectAccessSummary: projectAccessSummary || 'ตามสิทธิ์ที่ได้รับมอบหมาย',
-    actionUrl: actionUrl || (typeof window !== 'undefined' ? `${window.location.origin}/login` : '/login'),
+    actionUrl: targetActionUrl,
     branding,
+    tempPassword,
   });
 
   return sendStockFlowEmail({
     to: recipientEmail,
     subject: `คำเชิญเข้าใช้งานระบบ StockFlow — คุณ ${userName || recipientEmail}`,
     html,
-    actionUrl
+    actionUrl: targetActionUrl,
   });
 }
+

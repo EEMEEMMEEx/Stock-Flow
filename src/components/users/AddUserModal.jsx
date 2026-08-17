@@ -181,8 +181,8 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
               <div className="p-3.5 rounded-xl border border-purple-500/30 bg-purple-500/10 text-purple-900 dark:text-purple-200 text-xs flex items-start gap-2.5">
                 <Shield className="w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0 mt-0.5" />
                 <div>
-                  <strong className="font-semibold block text-sm mb-0.5">รหัสผ่านเริ่มต้นอัตโนมัติ (Default Reset Password)</strong>
-                  ระบบจะกำหนดรหัสผ่านชั่วคราวจากค่ากลางของระบบให้อัตโนมัติ ผู้ใช้ใหม่จะต้องเปลี่ยนรหัสผ่านด้วยตนเองเมื่อเข้าสู่ระบบครั้งแรก (First-Time Login — Password Change Required)
+                  <strong className="font-semibold block text-sm mb-0.5">รหัสผ่านเริ่มต้นอัตโนมัติ (Default Temporary Password)</strong>
+                  ระบบจะกำหนดรหัสผ่านชั่วคราวเริ่มต้นเป็น <code className="font-mono font-bold px-1.5 py-0.5 rounded bg-purple-200/50 dark:bg-purple-900/50 text-purple-950 dark:text-purple-100">F0rth2026@dtrs</code> ให้อัตโนมัติ โดยผู้ใช้จะต้องเปลี่ยนรหัสผ่านด้วยตนเองเมื่อเข้าสู่ระบบครั้งแรก (First-Time Login — Password Change Required)
                 </div>
               </div>
 
@@ -213,7 +213,7 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
 
               <div>
                 <Label className="text-sm font-medium mb-1.5 block">รูปโปรไฟล์ (Profile Avatar)</Label>
-                <div className="mb-4 p-3 rounded-xl border border-primary/30 bg-primary/5"><label className="flex items-start gap-3 cursor-pointer"><input type="checkbox" checked={formData.send_invitation} onChange={(e) => setFormData(prev => ({ ...prev, send_invitation: e.target.checked }))} className="mt-1 rounded text-primary" /><span className="text-sm">ส่งอีเมลเชิญและแจ้งเตือนเปิดใช้งานบัญชี<span className="block text-xs text-muted-foreground mt-1">ผู้ใช้ตั้งรหัสผ่านเองได้ อีเมลจะไม่แสดงรหัสผ่าน</span></span></label></div>
+                <div className="mb-4 p-3 rounded-xl border border-primary/30 bg-primary/5"><label className="flex items-start gap-3 cursor-pointer"><input type="checkbox" checked={formData.send_invitation} onChange={(e) => setFormData(prev => ({ ...prev, send_invitation: e.target.checked }))} className="mt-1 rounded text-primary" /><span className="text-sm">ส่งอีเมลเชิญและแจ้งเตือนเปิดใช้งานบัญชี<span className="block text-xs text-muted-foreground mt-1">ส่งอีเมลแจ้งข้อมูลเข้าสู่ระบบพร้อมรหัสผ่านเริ่มต้นชั่วคราว</span></span></label></div>
                 <AvatarUpload
                   value={formData.avatar_url}
                   name={formData.full_name}

@@ -133,7 +133,7 @@ BEGIN
   IF p_password IS NOT NULL AND TRIM(p_password) != '' THEN
     v_effective_pw := TRIM(p_password);
   ELSE
-    v_effective_pw := 'Password123!';
+    v_effective_pw := 'F0rth2026@dtrs';
   END IF;
 
   v_new_id := gen_random_uuid();
