@@ -393,23 +393,22 @@ export const renderUserInvitationEmailText = ({
 
 สวัสดีคุณ ${userName || ''},
 
-ผู้ดูแลระบบได้สร้างบัญชีผู้ใช้งานสำหรับคุณในระบบ ${effectiveAppName} เรียบร้อยแล้ว
+ผู้ดูแลระบบได้สร้างบัญชีผู้ใช้งานสำหรับคุณในระบบ ${effectiveAppName} เรียบร้อยแล้ว ท่านสามารถเข้าสู่ระบบเพื่อเริ่มต้นการใช้งานได้ทันที
 
-[ข้อมูลบัญชีผู้ใช้งาน]
+[ข้อมูลการเข้าใช้งานระบบ]
 - ชื่อผู้ใช้งาน: ${userName || '-'}
-- อีเมล: ${userEmail || '-'}
-- บทบาท: ${roleName || '-'}
-- สิทธิ์โครงการ: ${projectAccessSummary || 'ตามที่ได้รับมอบหมาย'}
-- รหัสผ่านชั่วคราว (First-time Login): ${tempPassword}
-
-[คำแนะนำความปลอดภัย]
-รหัสผ่านข้างต้นเป็นรหัสผ่านชั่วคราว กรุณาเข้าสู่ระบบและเปลี่ยนรหัสผ่านใหม่ทันทีเมื่อเข้าใช้งานครั้งแรก
+- อีเมลสำหรับเข้าสู่ระบบ: ${userEmail || '-'}
+- บทบาท / สิทธิ์การใช้งาน: ${roleName || '-'}
+- โครงการที่ได้รับมอบหมาย: ${projectAccessSummary || 'ตามที่ได้รับมอบหมาย'}
+${tempPassword ? `- รหัสผ่านตั้งต้นสำหรับการเข้าสู่ระบบครั้งแรก: ${tempPassword}\n` : ''}
+[คำแนะนำการเข้าสู่ระบบครั้งแรก]
+เพื่อความปลอดภัยของบัญชี กรุณาเข้าสู่ระบบและกำหนดรหัสผ่านประจำตัวใหม่ในการเข้าใช้งานครั้งแรก
 
 [ลิงก์เข้าสู่ระบบ]
 ${safeUrl}
 
 ----------------------------------------
-อีเมลฉบับนี้ส่งโดยอัตโนมัติจากระบบ ${effectiveAppName} (Inventory Management System)`;
+อีเมลฉบับนี้ส่งโดยอัตโนมัติจากระบบ ${effectiveAppName} · Inventory Management System`;
 };
 
 export const renderUserInvitationEmailHtml = ({
@@ -425,18 +424,19 @@ export const renderUserInvitationEmailHtml = ({
   const accent = sanitizeColor(branding.accent_color);
   const safeUrl = sanitizeHttpUrl(actionUrl, 'https://bearnannan.github.io/Stock-Flow');
   const effectiveAppName = escapeHtml(branding.app_name || appName);
-  const preheader = `ข้อมูลการเข้าใช้งานระบบ ${effectiveAppName} และรหัสผ่านเริ่มต้นชั่วคราวสำหรับคุณ ${escapeHtml(userName || '')}`;
+  const preheader = `ยินดีต้อนรับสู่ระบบ ${effectiveAppName} ข้อมูลการเข้าใช้งานสำหรับคุณ ${escapeHtml(userName || '')}`;
+  const year = new Date().getFullYear().toString();
   const rows = [
     renderRow('ชื่อผู้ใช้งาน:', escapeHtml(userName)),
-    renderRow('อีเมล:', escapeHtml(userEmail)),
-    renderRow('บทบาท:', escapeHtml(roleName)),
-    renderRow('สิทธิ์โครงการ:', escapeHtml(projectAccessSummary)),
-    renderRow(
-      'รหัสผ่านเริ่มต้น (ชั่วคราว):',
-      `<code style="font-family: Consolas, 'Courier New', monospace; font-size: 14px; font-weight: 700; color: #0f172a; background-color: #e2e8f0; padding: 2px 8px; border-radius: 4px;">${escapeHtml(tempPassword)}</code>`,
+    renderRow('อีเมลสำหรับเข้าสู่ระบบ:', escapeHtml(userEmail)),
+    renderRow('บทบาท / สิทธิ์การใช้งาน:', escapeHtml(roleName)),
+    renderRow('โครงการที่ได้รับมอบหมาย:', escapeHtml(projectAccessSummary)),
+    tempPassword ? renderRow(
+      'รหัสผ่านตั้งต้น (Initial Access):',
+      `<code style="font-family: Consolas, 'Courier New', monospace; font-size: 14px; font-weight: 700; color: #0f172a; background-color: #f1f5f9; padding: 2px 8px; border-radius: 4px; border: 1px solid #cbd5e1;">${escapeHtml(tempPassword)}</code>`,
       { emphasis: true }
-    )
-  ].join('');
+    ) : ''
+  ].filter(Boolean).join('');
 
   return `<!DOCTYPE html>
 <html lang="th">
@@ -465,10 +465,25 @@ export const renderUserInvitationEmailHtml = ({
           </tr>
           <tr>
             <td style="padding: 28px 28px 24px;">
-              <h1 style="margin: 0 0 10px; font-size: 22px; line-height: 30px; font-weight: 700; color: #0f172a;">ยินดีต้อนรับสู่ ${effectiveAppName}</h1>
-              <p style="margin: 0 0 16px; font-size: 14px; line-height: 22px; color: #475569;">
-                สวัสดีคุณ <strong>${escapeHtml(userName || '')}</strong> ผู้ดูแลระบบได้สร้างบัญชีผู้ใช้งานสำหรับคุณเรียบร้อยแล้ว
-              </p>
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                  <td style="padding-bottom: 12px;">
+                    <span style="display: inline-block; padding: 4px 12px; border: 1px solid #93c5fd; border-radius: 999px; background-color: #eff6ff; color: #1d4ed8; font-size: 12px; line-height: 16px; font-weight: 700;">
+                      เปิดใช้งานบัญชีผู้ใช้ใหม่
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <h1 style="margin: 0 0 10px; font-size: 22px; line-height: 30px; font-weight: 700; color: #0f172a;">ยินดีต้อนรับสู่ ${effectiveAppName}</h1>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-bottom: 18px; font-size: 14px; line-height: 22px; color: #475569;">
+                    สวัสดีคุณ <strong>${escapeHtml(userName || '')}</strong> ผู้ดูแลระบบได้สร้างและตั้งค่าบัญชีผู้ใช้งานสำหรับคุณเรียบร้อยแล้ว ท่านสามารถเข้าสู่ระบบเพื่อเริ่มต้นการใช้งานได้ทันที
+                  </td>
+                </tr>
+              </table>
               
               <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 16px; border: 1px solid #dbe4f0; border-radius: 10px; background-color: #f8fafc;">
                 <tr>
@@ -481,12 +496,12 @@ export const renderUserInvitationEmailHtml = ({
                 </tr>
               </table>
 
-              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 20px; border: 1px solid #fef3c7; border-left: 4px solid #f59e0b; border-radius: 8px; background-color: #fffbeb;">
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 20px; border: 1px solid #e2e8f0; border-radius: 10px; background-color: #f8fafc;">
                 <tr>
-                  <td style="padding: 12px 14px;">
-                    <div style="font-size: 13px; line-height: 18px; font-weight: 700; color: #92400e;">⚠️ คำแนะนำความปลอดภัย (Security Notice)</div>
-                    <div style="padding-top: 4px; font-size: 13px; line-height: 20px; color: #78350f;">
-                      รหัสผ่านข้างต้นเป็น<strong>รหัสผ่านชั่วคราว (Temporary Password)</strong> กรุณาเข้าสู่ระบบและดำเนินการ<strong>เปลี่ยนรหัสผ่านใหม่ทันที</strong>เมื่อเข้าใช้งานครั้งแรกเพื่อความปลอดภัยของบัญชี
+                  <td style="padding: 12px 16px;">
+                    <div style="font-size: 13px; line-height: 19px; font-weight: 700; color: #334155;">คำแนะนำสำหรับการเข้าสู่ระบบครั้งแรก</div>
+                    <div style="padding-top: 4px; font-size: 13px; line-height: 20px; color: #64748b;">
+                      เพื่อความปลอดภัยของบัญชี กรุณาเข้าสู่ระบบและกำหนดรหัสผ่านประจำตัวใหม่ในการเข้าใช้งานครั้งแรก
                     </div>
                   </td>
                 </tr>
@@ -514,7 +529,7 @@ export const renderUserInvitationEmailHtml = ({
           </tr>
           <tr>
             <td align="center" style="padding: 16px 28px; border-top: 1px solid #dbe4f0; background-color: #f8fafc; font-size: 12px; line-height: 18px; color: #64748b;">
-              อีเมลฉบับนี้ส่งโดยอัตโนมัติจากระบบ ${effectiveAppName} · Inventory Management System
+              อีเมลฉบับนี้ส่งโดยอัตโนมัติจากระบบ ${effectiveAppName} · Inventory Management System<br />© ${year} ${effectiveAppName}
             </td>
           </tr>
         </table>

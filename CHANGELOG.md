@@ -1,5 +1,20 @@
 # Changelog
 
+## [2026-08-17 19:44] 🛡️ Refactor User Invitation Email Template (Anti-Phishing & Deliverability Optimization)
+
+- **Modified files:**
+  - `src/lib/emailRenderer.js`
+  - `src/lib/emailService.js`
+- **Details:**
+  - `src/lib/emailRenderer.js`:
+    - ปรับโครงสร้างแม่แบบอีเมลเชิญผู้ใช้ใหม่ (`renderUserInvitationEmailHtml` และ `renderUserInvitationEmailText`) ให้ถอดคำและสัญลักษณ์ที่เป็นตัวกระตุ้นระบบตรวจจับ Phishing ของ Microsoft 365 EOP / Defender / Gmail (เช่น `⚠️`, `Security Notice`, `Temporary Password`, `รหัสผ่านชั่วคราว`)
+    - จัดวางข้อมูลรหัสผ่านตั้งต้น (`Initial Access`) ในรูปแบบการต้อนรับอย่างมืออาชีพด้วย Neutral Clean Tag และเปลี่ยนกล่องแจ้งเตือนความปลอดภัยสีเหลือง/แดงให้เป็นกล่องคำแนะนำสำหรับการเข้าสู่ระบบครั้งแรกแบบสุภาพและเป็นมิตรกับระบบกรองสแปม
+    - เพิ่ม Badge สถานะ "เปิดใช้งานบัญชีผู้ใช้ใหม่" ที่หัวข้อตาราง พร้อมจัดโครงสร้าง HTML Table ให้มีขนาดเบาและสอดคล้องกับมาตรฐานของ 'Test Email Notification' ที่ส่งผ่าน 100%
+    - ปรับปรุง Preheader และข้อความท้ายตาราง (Footer) ให้มีความชัดเจนและเป็นทางการ
+  - `src/lib/emailService.js`:
+    - ปรับหัวข้ออีเมล (Subject Line) ใน `sendUserInvitationEmail` ให้เป็นข้อความต้อนรับและแจ้งข้อมูลการเข้าใช้งานที่สะอาดและปลอดภัย (`ยินดีต้อนรับสู่ ${appName} — ข้อมูลการเข้าใช้งานสำหรับคุณ ${userName}`)
+- **Reason:** แก้ปัญหาอีเมลเทียบเชิญผู้ใช้งานใหม่ถูกระงับ (Blocked) หรือถูกจัดเข้าโฟลเดอร์ Quarantine/Junk จากการตรวจพบ Phishing Keyword Heuristics ตามคู่มือ `/gmail-smtp`
+
 ## [2026-08-17 17:30] ⚙️ Fix SMTP Server Configuration Form State Binding & Save Handler
 
 - **Modified files:**

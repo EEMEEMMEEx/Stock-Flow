@@ -111,9 +111,11 @@ export async function sendUserInvitationEmail({
     tempPassword,
   });
 
+  const effectiveAppName = branding.app_name || 'StockFlow';
+
   return sendStockFlowEmail({
     to: recipientEmail,
-    subject: `คำเชิญเข้าใช้งานระบบ StockFlow — คุณ ${userName || recipientEmail}`,
+    subject: `ยินดีต้อนรับสู่ ${effectiveAppName} — ข้อมูลการเข้าใช้งานสำหรับคุณ ${userName || recipientEmail}`,
     html,
     text,
     actionUrl: targetActionUrl,
