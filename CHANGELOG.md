@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-08-17 20:00] ✉️ Support EMAIL_FROM & EMAIL_FROM_NAME Environment Variable Aliases in Serverless Dispatcher
+
+- **Modified files:**
+  - `api/send-email.js`
+- **Details:**
+  - `api/send-email.js`:
+    - เพิ่ม Fallback รองรับชื่อตัวแปร `EMAIL_FROM` และ `EMAIL_FROM_NAME` ควบคู่กับ `SMTP_SENDER_EMAIL` และ `SMTP_SENDER_NAME` เพื่อให้สามารถใช้งานร่วมกับ `.env` และการตั้งค่าบน Vercel ได้อย่างยืดหยุ่น
+- **Reason:** รองรับการตั้งค่า Environment Variables รูปแบบมาตรฐานสำหรับการส่งอีเมลผ่าน Vercel Serverless Function
+
 ## [2026-08-17 19:44] 🛡️ Refactor User Invitation Email Template (Anti-Phishing & Deliverability Optimization)
 
 - **Modified files:**
