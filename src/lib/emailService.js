@@ -10,7 +10,10 @@ export async function sendStockFlowEmail({ to, subject, html, text, smtpOverride
     throw new Error('กรุณาระบุอีเมลผู้รับ (recipient email)');
   }
 
-  const endpoint = import.meta.env.VITE_EMAIL_SERVICE_URL || '/api/send-email';
+  const defaultEndpoint = typeof window !== 'undefined' && window.location.hostname.includes('github.io')
+    ? 'https://stock-flow-pi-coral.vercel.app/api/send-email'
+    : '/api/send-email';
+  const endpoint = import.meta.env.VITE_EMAIL_SERVICE_URL || defaultEndpoint;
 
   try {
     const response = await fetch(endpoint, {

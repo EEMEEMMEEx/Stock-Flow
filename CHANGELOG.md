@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-08-17 20:18] 🚀 Auto-route Email Dispatch Endpoint to Vercel Production on GitHub Pages
+
+- **Modified files:**
+  - `src/lib/emailService.js`
+- **Details:**
+  - `src/lib/emailService.js`:
+    - ปรับปรุงการหา Endpoint สำหรับส่งอีเมล (`defaultEndpoint`) ให้ชี้ตรงไปยัง `https://stock-flow-pi-coral.vercel.app/api/send-email` โดยอัตโนมัติเมื่อแอปทำงานอยู่บน GitHub Pages (`github.io`)
+    - ป้องกันปัญหา Relative Path `/api/send-email` คืนค่า HTTP 404 บน GitHub Pages ซึ่งเคยเป็นสาเหตุให้ระบบสลับไปใช้ Supabase Auth Native Fallback (`resetPasswordForEmail`) และส่งอีเมล "Reset your password" ภาษาอังกฤษแทนแม่แบบภาษาไทยของ StockFlow
+- **Reason:** แก้ไขปัญหาระบบส่งอีเมลตกไปที่ Supabase Password Reset แทนที่จะส่งผ่าน Vercel Serverless Function
+
 ## [2026-08-17 20:00] ✉️ Support EMAIL_FROM & EMAIL_FROM_NAME Environment Variable Aliases in Serverless Dispatcher
 
 - **Modified files:**
