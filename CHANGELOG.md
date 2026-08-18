@@ -1,6 +1,17 @@
 # Changelog
 
-## [2026-08-18 16:25] ⚡ Align Email Dispatch Engine with Life-Countdown Architecture & Activate Event Notifications
+## [2026-08-18 16:45] 🛡️ Eliminate Hidden Preheaders & Refine Invitation Subject to Pass Microsoft Defender Filters
+
+- **Modified files:**
+  - `src/lib/emailRenderer.js`
+  - `src/lib/emailService.js`
+- **Details:**
+  - `src/lib/emailRenderer.js`:
+    - ลบแถบ Hidden Preheader Div ที่มีอักขระ Zero-width Non-Joiner (`&zwnj;`) ออกจากเทมเพลตอีเมล `renderUserInvitationEmailHtml` เพื่อป้องกันไม่ให้ Microsoft 365 Defender ตรวจจับว่าเป็นเทคนิคซ่อนข้อความของ Phishing / Spambot
+  - `src/lib/emailService.js`:
+    - ปรับหัวเรื่องอีเมลคำเชิญจาก `แจ้งข้อมูลบัญชีผู้ใช้งานระบบ...` เป็น `ข้อมูลการเข้าใช้งานระบบ...` เพื่อหลีกเลี่ยงการกระตุ้นตัวกรองคำเสี่ยงด้านความปลอดภัยของ Exchange Online Protection
+- **Reason:** แก้ไขปัญหาอีเมลคำเชิญผู้ใช้งานใหม่ถูกตัวกรอง Defender ของ `@forth.co.th` สกัดกั้น
+
 
 - **Modified files:**
   - `api/send-email.js`
