@@ -464,7 +464,7 @@ const StockIn = () => {
               onClick={() => fileInputRef.current?.click()}
             >
               <Upload className="w-4 h-4" />
-              <span>นำเข้าไฟล์ DOPA (.csv)</span>
+              <span>นำเข้าไฟล์ (.csv)</span>
             </Button>
 
             <Button 
@@ -537,7 +537,7 @@ const StockIn = () => {
                 </div>
                 <div>
                   <DialogTitle className="text-lg font-bold flex items-center gap-2 text-foreground">
-                    <span>นำเข้าและตรวจสอบรายการรับเข้าสต็อก (DOPA+USO Stock Receipt)</span>
+                    <span>นำเข้าและตรวจสอบรายการรับเข้าสต็อก (Stock Receipt Preview)</span>
                   </DialogTitle>
                   <p className="text-xs text-muted-foreground mt-0.5">
                     ไฟล์: <strong className="text-foreground">{importFileName || 'CSV Document'}</strong>
@@ -886,7 +886,7 @@ const StockIn = () => {
               <div className="flex flex-wrap items-center justify-between gap-3 bg-emerald-500/10 p-3.5 rounded-2xl border border-emerald-500/20">
                 <div className="flex items-center gap-2 text-sm text-emerald-900 dark:text-emerald-200">
                   <Upload className="w-4 h-4 text-emerald-600" />
-                  <span className="font-semibold">นำเข้าไฟล์ DOPA+USO หรือ CSV โครงสร้าง Parent-Child (UTF-8 BOM)</span>
+                  <span className="font-semibold">นำเข้าไฟล์ CSV โครงสร้าง Parent-Child หรือหลายคลังจัดเก็บ (UTF-8 BOM)</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Button 
@@ -896,7 +896,7 @@ const StockIn = () => {
                     className="h-8 text-xs gap-1 border-emerald-500/30 hover:bg-emerald-500/10 font-bold"
                     onClick={handleDownloadCsvTemplate}
                   >
-                    <Download className="w-3.5 h-3.5" /> ดาวน์โหลด DOPA Template
+                    <Download className="w-3.5 h-3.5" /> ดาวน์โหลด CSV Template
                   </Button>
                   
                   <Button 

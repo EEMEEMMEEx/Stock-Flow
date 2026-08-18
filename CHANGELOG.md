@@ -1,6 +1,15 @@
 # Changelog
 
-## [2026-08-18 15:50] 🎨 Audit /stock-in & Replace All Raw Emojis with Lucide React SVG Icons
+## [2026-08-18 15:55] 🏷️ Update Stock-In Import Button Label to 'นำเข้าไฟล์ (.csv)'
+
+- **Modified files:**
+  - `src/pages/StockIn.jsx`
+- **Details:**
+  - `src/pages/StockIn.jsx`:
+    - ปรับข้อความบนปุ่มนำเข้าไฟล์จาก `นำเข้าไฟล์ DOPA (.csv)` เป็น `นำเข้าไฟล์ (.csv)` ให้กระชับและเป็นสากล
+    - ปรับข้อความส่วนหัวของ Dialog พรีวิวและแถบดาวน์โหลดเทมเพลตให้เป็นมาตรฐานทั่วไป
+- **Reason:** ปรับปรุงข้อความบนปุ่มให้เป็นสากลและตรงตามความต้องการของผู้ใช้งาน
+
 
 - **Modified files:**
   - `src/pages/StockIn.jsx`
