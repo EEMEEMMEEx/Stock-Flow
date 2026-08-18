@@ -322,7 +322,6 @@ export const renderEmailHtml = ({ branding = {}, template = {}, data = SAMPLE_EM
   <title>${renderText(template.subject || appName, safeData)}</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: Arial, Tahoma, 'Noto Sans Thai', sans-serif; color: #334155;">
-  <div style="display: none; max-height: 0; overflow: hidden; opacity: 0; color: #f1f5f9; font-size: 1px; line-height: 1px;">${preheader}&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;</div>
   <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="width: 100%; background-color: #f1f5f9;">
     <tr><td align="center" style="padding: 24px 12px;">
       <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="width: 100%; max-width: 620px; background-color: #ffffff; border: 1px solid #dbe4f0; border-radius: 14px; overflow: hidden;">

@@ -1,6 +1,33 @@
 # Changelog
 
-## [2026-08-18 15:55] 🏷️ Update Stock-In Import Button Label to 'นำเข้าไฟล์ (.csv)'
+## [2026-08-18 16:25] ⚡ Align Email Dispatch Engine with Life-Countdown Architecture & Activate Event Notifications
+
+- **Modified files:**
+  - `api/send-email.js`
+  - `src/lib/notificationDispatcher.js`
+  - `src/lib/emailService.js`
+- **Details:**
+  - `api/send-email.js`:
+    - ปรับปรุงการแยกแยะและกรองรายชื่อผู้รับอีเมล (`to` และ `cc`) ให้รองรับทั้งแบบ Array, String คั่นด้วยจุลภาค พร้อมตัดช่องว่างและตัดอีเมลซ้ำอัตโนมัติ ตามมาตรฐาน `life-countdown/server/smtp.js`
+    - กำหนดค่า `envelope: { from: user, to: [...toList, ...ccList] }` เพื่อให้สอดคล้องกับ SPF และ DKIM อย่างสมบูรณ์
+  - `src/lib/notificationDispatcher.js`:
+    - แก้ไข ReferenceError ขาดการ Import `supabase`
+    - เพิ่มระบบ Transactional Event Notification เต็มรูปแบบ ดึงข้อมูลคำขอเบิก, รายการวัสดุ, สิทธิ์ผู้รับ (`STAFF`, `ADMIN`, `SUPERVISOR`) และอีเมลเสริม (`to_extra`, `cc_extra`) พร้อมสร้างเทมเพลต HTML/Text และส่งอีเมลแจ้งเตือนอัตโนมัติเมื่อมีการส่งหรืออนุมัติคำขอเบิก
+- **Reason:** ถอดบทเรียนและเทียบเคียงสถาปัตยกรรมการส่งอีเมลจากโปรเจกต์ `D:\APP\life-countdown` เพื่อให้การส่งอีเมลเข้า `@forth.co.th` และระบบแจ้งเตือนของ StockFlow ทำงานได้อย่างเสถียรและแม่นยำ
+
+
+- **Modified files:**
+  - `src/lib/emailService.js`
+  - `api/send-email.js`
+- **Details:**
+  - `src/lib/emailService.js`:
+    - กำหนดให้การส่งอีเมลชี้ไปยัง Vercel Serverless Function สัมบูรณ์ (`https://stock-flow-pi-coral.vercel.app/api/send-email`) เสมอ ป้องกันปัญหา 404 เมื่อทดสอบบน Localhost (`localhost:5173`) หรือโดเมนอื่นๆ ซึ่งเดิมทำให้ตกไปเรียก Supabase Auth Fallback โดยไม่ผ่าน Gmail SMTP
+    - เพิ่ม Error Handling ให้แสดงข้อความแจ้งเตือนจาก Serverless Function และ SMTP โดยตรงแทนการกลืน Error
+  - `api/send-email.js`:
+    - บังคับใช้ Header From ให้สอดคล้องกับ Authenticated Gmail Account (`stockflow.noreply.app@gmail.com`) เสมอเมื่อเชื่อมต่อผ่าน Gmail SMTP เพื่อให้ผ่านการตรวจสอบ SPF (`_spf.google.com`), DKIM Signature และ DMARC 100% บนระบบ Microsoft 365 / Exchange Online Protection ของ `@forth.co.th`
+    - กำหนดค่า `Reply-To` ไปยัง `senderEmail` เพื่อให้ผู้รับสามารถตอบกลับได้ตามปกติ
+- **Reason:** แก้ไขปัญหาส่งอีเมลไม่เข้ากล่องข้อความโดเมนองค์กร `@forth.co.th` และ M365 Corporate Inboxes ตามมาตรฐานในคู่มือ `/gmail-smtp`
+
 
 - **Modified files:**
   - `src/pages/StockIn.jsx`

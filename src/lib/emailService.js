@@ -10,9 +10,8 @@ export async function sendStockFlowEmail({ to, subject, html, text, smtpOverride
     throw new Error('กรุณาระบุอีเมลผู้รับ (recipient email)');
   }
 
-  const defaultEndpoint = typeof window !== 'undefined' && window.location.hostname.includes('github.io')
-    ? 'https://stock-flow-pi-coral.vercel.app/api/send-email'
-    : '/api/send-email';
+  // Always route to the active Vercel serverless function unless explicitly overridden
+  const defaultEndpoint = 'https://stock-flow-pi-coral.vercel.app/api/send-email';
   const endpoint = import.meta.env.VITE_EMAIL_SERVICE_URL || defaultEndpoint;
 
   try {
@@ -30,28 +29,17 @@ export async function sendStockFlowEmail({ to, subject, html, text, smtpOverride
       }),
     });
 
-    if (response.ok) {
-      return await response.json().catch(() => ({ success: true }));
+    const result = await response.json().catch(() => ({}));
+
+    if (response.ok && result.success !== false) {
+      return result;
     }
+
+    throw new Error(result.message || `Server returned status ${response.status}`);
   } catch (error) {
-    console.warn('[emailService] Vercel API send-email fetch failed, trying Supabase Native Auth fallback:', error.message);
+    console.error('[emailService] Email dispatch failed:', error.message);
+    throw error;
   }
-
-  // Fallback to Supabase Native Auth if Vercel endpoint is un-deployed or offline
-  const prodOrigin = typeof window !== 'undefined' && !window.location.origin.includes('localhost')
-    ? window.location.origin
-    : (import.meta.env.VITE_APP_URL || 'https://bearnannan.github.io/Stock-Flow');
-  const redirectUri = actionUrl || `${prodOrigin}/login`;
-
-  const { error: authErr } = await supabase.auth.resetPasswordForEmail(to, {
-    redirectTo: redirectUri,
-  });
-
-  if (authErr) {
-    throw new Error(authErr.message || 'ไม่สามารถส่งอีเมลได้');
-  }
-
-  return { success: true, method: 'supabase_native', recipient: to };
 }
 
 /**
