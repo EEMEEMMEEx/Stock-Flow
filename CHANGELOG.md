@@ -1,6 +1,20 @@
 # Changelog
 
-## [2026-08-18 16:45] 🛡️ Eliminate Hidden Preheaders & Refine Invitation Subject to Pass Microsoft Defender Filters
+## [2026-08-18 17:12] 🏆 Standardize All Email Templates with Test Email Engine & Restore Aug 17 Headers
+
+- **Modified files:**
+  - `src/lib/emailRenderer.js`
+  - `src/lib/emailService.js`
+  - `api/send-email.js`
+- **Details:**
+  - `src/lib/emailRenderer.js`:
+    - ปรับ `renderUserInvitationEmailHtml` ให้เรียกใช้ `renderEmailHtml` (ฟังก์ชันแม่แบบหลักที่ใช้ใน Test Email Modal และผ่านเข้า Outlook สำเร็จ) แทนฟังก์ชันแยกเดี่ยว เพื่อให้โครงสร้าง HTML, Table layout และ CSS เป็นมาตรฐานเดียวกับอีเมลทดสอบ 100%
+  - `src/lib/emailService.js`:
+    - กำหนดหัวเรื่องอีเมลคำเชิญเป็น `ยินดีต้อนรับสู่ ${effectiveAppName} — ข้อมูลการเข้าใช้งานสำหรับคุณ ${userName}` ตามแม่แบบเดิมที่ส่งผ่านสำเร็จใน Commit วันที่ 17 ส.ค.
+  - `api/send-email.js`:
+    - คืนค่า Headers มาตรฐาน `X-Priority: 3` และ `X-Entity-Ref-ID` ตามที่เคยใช้งานได้สมบูรณ์ใน Commit วันที่ 17 ส.ค. (`160aa679c4a5ae6b99a47ac67f57ffdd4a2208b1`)
+- **Reason:** ปรับโครงสร้างแม่แบบอีเมลทุกส่วนในระบบให้ใช้ Engine เดียวกันกับ Test Email Modal เพื่อแก้ปัญหาอีเมลคำเชิญไม่เข้ากล่องจดหมาย
+
 
 - **Modified files:**
   - `src/lib/emailRenderer.js`

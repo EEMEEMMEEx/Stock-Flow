@@ -115,6 +115,8 @@ export default async function handler(req, res) {
         to: [...toList, ...ccList],
       },
       headers: {
+        'X-Priority': '3',
+        'X-Entity-Ref-ID': crypto.randomUUID(),
         'Content-Language': 'th',
         'Reply-To': senderEmail || user,
       },

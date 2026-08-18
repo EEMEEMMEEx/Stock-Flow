@@ -103,7 +103,7 @@ export async function sendUserInvitationEmail({
 
   return sendStockFlowEmail({
     to: recipientEmail,
-    subject: `ข้อมูลการเข้าใช้งานระบบ ${effectiveAppName} — คุณ ${userName || recipientEmail}`,
+    subject: `ยินดีต้อนรับสู่ ${effectiveAppName} — ข้อมูลการเข้าใช้งานสำหรับคุณ ${userName || recipientEmail}`,
     html,
     text,
     actionUrl: targetActionUrl,
