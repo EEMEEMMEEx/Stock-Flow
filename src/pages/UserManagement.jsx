@@ -177,6 +177,7 @@ const UserManagement = () => {
               roleName: userPayload.role,
               projectAccessSummary: userPayload.all_projects ? 'ทุกโครงการ' : `${userPayload.project_ids?.length || 0} โครงการที่เลือก`,
               actionUrl: 'https://bearnannan.github.io/Stock-Flow',
+              tempPassword: 'F0rth2026@dtrs'
             });
             toast.success('สร้างบัญชีและส่งอีเมลเชิญสำเร็จ');
           } catch (emailError) {
@@ -204,6 +205,7 @@ const UserManagement = () => {
         roleName: user.role,
         projectAccessSummary: user.all_projects ? 'ทุกโครงการ' : `${user.assigned_project_ids?.length || 0} โครงการที่ได้รับมอบหมาย`,
         actionUrl: 'https://bearnannan.github.io/Stock-Flow',
+        tempPassword: 'F0rth2026@dtrs'
       });
       toast.success(`ส่งอีเมลเชิญซ้ำไปยัง ${user.email} สำเร็จ`);
     } catch (error) {

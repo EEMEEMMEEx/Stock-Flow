@@ -71,6 +71,7 @@ export async function sendUserInvitationEmail({
   projectAccessSummary,
   actionUrl,
   branding = {},
+  tempPassword = 'F0rth2026@dtrs',
 }) {
   if (!recipientEmail) {
     throw new Error('กรุณาระบุอีเมลผู้รับ');
@@ -87,6 +88,7 @@ export async function sendUserInvitationEmail({
     projectAccessSummary: projectAccessSummary || 'ตามสิทธิ์ที่ได้รับมอบหมาย',
     actionUrl: targetActionUrl,
     branding,
+    tempPassword,
   });
 
   const text = renderUserInvitationEmailText({
@@ -97,6 +99,7 @@ export async function sendUserInvitationEmail({
     projectAccessSummary: projectAccessSummary || 'ตามสิทธิ์ที่ได้รับมอบหมาย',
     actionUrl: targetActionUrl,
     branding,
+    tempPassword,
   });
 
   const effectiveAppName = branding.app_name || 'StockFlow';

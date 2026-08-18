@@ -1,6 +1,23 @@
 # Changelog
 
-## [2026-08-18 17:12] 🏆 Standardize All Email Templates with Test Email Engine & Restore Aug 17 Headers
+## [2026-08-18 17:20] 🎯 Restore Exact Aug 17 (20:32) Proven Working Template & Initial Access Password
+
+- **Modified files:**
+  - `src/lib/emailRenderer.js`
+  - `src/lib/emailService.js`
+  - `src/pages/UserManagement.jsx`
+- **Details:**
+  - `src/lib/emailRenderer.js`:
+    - คืนค่าโครงสร้างและองค์ประกอบของ `renderUserInvitationEmailHtml` และ `renderUserInvitationEmailText` ให้ตรงกับเวอร์ชันวันที่ 17 ส.ค. (เวลา 20:32) 100% ตามภาพ Screenshot ที่ส่งเข้า Outlook กล่องหลักสำเร็จ:
+      - Badge: `เปิดใช้งานบัญชีผู้ใช้ใหม่`
+      - Heading: `ยินดีต้อนรับสู่ ${effectiveAppName}`
+      - Card ข้อมูลบัญชีผู้ใช้งาน พร้อมแถว `รหัสผ่านตั้งต้น (Initial Access): F0rth2026@dtrs`
+      - Card คำแนะนำสำหรับการเข้าสู่ระบบครั้งแรก
+      - ปุ่ม CTA `เข้าสู่ระบบ ${effectiveAppName}`
+  - `src/lib/emailService.js` & `src/pages/UserManagement.jsx`:
+    - ส่งพารามิเตอร์ `tempPassword: 'F0rth2026@dtrs'` สำหรับการสร้างผู้ใช้ใหม่และการกดส่งคำเชิญซ้ำ (Resend Invitation)
+- **Reason:** นำแม่แบบอีเมลคำเชิญผู้ใช้งานที่ได้รับการพิสูจน์แล้วว่าส่งเข้า Outlook `@forth.co.th` สำเร็จเมื่อวันที่ 17 ส.ค. กลับมาใช้งานอย่างสมบูรณ์
+
 
 - **Modified files:**
   - `src/lib/emailRenderer.js`

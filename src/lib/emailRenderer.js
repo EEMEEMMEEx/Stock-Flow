@@ -381,6 +381,7 @@ export const renderUserInvitationEmailText = ({
   projectAccessSummary,
   actionUrl,
   branding = {},
+  tempPassword = 'F0rth2026@dtrs',
 }) => {
   const effectiveAppName = branding.app_name || appName;
   const safeUrl = sanitizeHttpUrl(actionUrl, 'https://bearnannan.github.io/Stock-Flow');
@@ -389,15 +390,18 @@ export const renderUserInvitationEmailText = ({
 ยินดีต้อนรับสู่ ${effectiveAppName}
 ========================================
 
-เรียน คุณ ${userName || ''},
+สวัสดีคุณ ${userName || ''},
 
-ผู้ดูแลระบบได้สร้างและเปิดสิทธิ์การใช้งานสำหรับคุณในระบบ ${effectiveAppName} เรียบร้อยแล้ว ท่านสามารถเข้าสู่ระบบเพื่อเริ่มต้นการปฏิบัติงานได้ทันที
+ผู้ดูแลระบบได้สร้างและตั้งค่าบัญชีผู้ใช้งานสำหรับคุณเรียบร้อยแล้ว ท่านสามารถเข้าสู่ระบบเพื่อเริ่มต้นการใช้งานได้ทันที
 
-[ข้อมูลการเข้าใช้งานระบบ]
-- ชื่อ-สกุล: ${userName || '-'}
-- อีเมลสำหรับเข้าใช้งาน: ${userEmail || '-'}
+[ข้อมูลบัญชีผู้ใช้งาน]
+- ชื่อผู้ใช้งาน: ${userName || '-'}
+- อีเมลสำหรับเข้าสู่ระบบ: ${userEmail || '-'}
 - บทบาท / สิทธิ์การใช้งาน: ${roleName || '-'}
-- โครงการที่ได้รับมอบหมาย: ${projectAccessSummary || 'ตามที่ได้รับมอบหมาย'}
+- โครงการที่ได้รับมอบหมาย: ${projectAccessSummary || 'ตามที่ได้รับมอบหมาย'}${tempPassword ? `\n- รหัสผ่านตั้งต้น (Initial Access): ${tempPassword}` : ''}
+
+[คำแนะนำสำหรับการเข้าสู่ระบบครั้งแรก]
+เพื่อความปลอดภัยของบัญชี กรุณาเข้าสู่ระบบและกำหนดรหัสผ่านประจำตัวใหม่ในการเข้าใช้งานครั้งแรก
 
 [ลิงก์เข้าสู่ระบบ]
 ${safeUrl}
@@ -414,33 +418,121 @@ export const renderUserInvitationEmailHtml = ({
   projectAccessSummary,
   actionUrl,
   branding = {},
+  tempPassword = 'F0rth2026@dtrs',
 }) => {
+  const accent = sanitizeColor(branding.accent_color);
   const safeUrl = sanitizeHttpUrl(actionUrl, 'https://bearnannan.github.io/Stock-Flow');
   const effectiveAppName = escapeHtml(branding.app_name || appName);
+  const year = new Date().getFullYear().toString();
+  const rows = [
+    renderRow('ชื่อผู้ใช้งาน:', escapeHtml(userName)),
+    renderRow('อีเมลสำหรับเข้าสู่ระบบ:', escapeHtml(userEmail)),
+    renderRow('บทบาท / สิทธิ์การใช้งาน:', escapeHtml(roleName)),
+    renderRow('โครงการที่ได้รับมอบหมาย:', escapeHtml(projectAccessSummary)),
+    tempPassword ? renderRow(
+      'รหัสผ่านตั้งต้น (Initial Access):',
+      `<code style="font-family: Consolas, 'Courier New', monospace; font-size: 14px; font-weight: 700; color: #0f172a; background-color: #f1f5f9; padding: 2px 8px; border-radius: 4px; border: 1px solid #cbd5e1;">${escapeHtml(tempPassword)}</code>`,
+      { emphasis: true }
+    ) : ''
+  ].filter(Boolean).join('');
 
-  return renderEmailHtml({
-    branding,
-    template: {
-      event_type: 'withdrawal_submitted',
-      heading: `ยินดีต้อนรับสู่ ${effectiveAppName}`,
-      intro: `เรียน คุณ <strong>${escapeHtml(userName || '')}</strong>,<br />ผู้ดูแลระบบได้สร้างและเปิดสิทธิ์การใช้งานสำหรับคุณในระบบ ${effectiveAppName} เรียบร้อยแล้ว ท่านสามารถเข้าสู่ระบบเพื่อเริ่มต้นการปฏิบัติงานได้ทันที`,
-      cta_label: `เข้าสู่ระบบ ${effectiveAppName}`,
-      cta_url: safeUrl,
-      status_label: 'ข้อมูลบัญชีผู้ใช้งาน',
-      footer_note: 'เพื่อความปลอดภัย กรุณาเข้าสู่ระบบและกำหนดรหัสผ่านประจำตัวใหม่ในการเข้าใช้งานครั้งแรก'
-    },
-    data: {
-      ...SAMPLE_EMAIL_DATA,
-      app_name: effectiveAppName,
-      request_no: userEmail || '-',
-      project_name: projectAccessSummary || 'ตามที่ได้รับมอบหมาย',
-      project_code: roleName || 'staff',
-      requester_name: userName || '-',
-      requester_email: userEmail || '-',
-      status: roleName || 'staff',
-      status_badge: 'ข้อมูลบัญชีผู้ใช้งาน',
-      action_url: safeUrl,
-      items: []
-    }
-  });
+  return `<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ยินดีต้อนรับสู่ ${effectiveAppName}</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: Arial, Tahoma, 'Noto Sans Thai', sans-serif; color: #334155;">
+  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="width: 100%; background-color: #f1f5f9;">
+    <tr>
+      <td align="center" style="padding: 24px 12px;">
+        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="width: 100%; max-width: 620px; margin: auto; background-color: #ffffff; border: 1px solid #dbe4f0; border-radius: 14px; overflow: hidden;">
+          <tr>
+            <td style="padding: 20px 28px; border-bottom: 3px solid ${accent};">
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
+                <td style="vertical-align: middle;">
+                  <strong style="font-size: 22px; line-height: 28px; color: ${accent}; font-weight: 800;">${effectiveAppName}</strong>
+                </td>
+                <td align="right" style="vertical-align: middle; font-size: 10px; line-height: 14px; font-weight: 700; letter-spacing: .3px; color: #64748b;">
+                  INVENTORY MANAGEMENT SYSTEM
+                </td>
+              </tr></table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 28px 28px 24px;">
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                  <td style="padding-bottom: 12px;">
+                    <span style="display: inline-block; padding: 4px 12px; border: 1px solid #93c5fd; border-radius: 999px; background-color: #eff6ff; color: #1d4ed8; font-size: 12px; line-height: 16px; font-weight: 700;">
+                      เปิดใช้งานบัญชีผู้ใช้ใหม่
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <h1 style="margin: 0 0 10px; font-size: 22px; line-height: 30px; font-weight: 700; color: #0f172a;">ยินดีต้อนรับสู่ ${effectiveAppName}</h1>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-bottom: 18px; font-size: 14px; line-height: 22px; color: #475569;">
+                    สวัสดีคุณ <strong>${escapeHtml(userName || '')}</strong> ผู้ดูแลระบบได้สร้างและตั้งค่าบัญชีผู้ใช้งานสำหรับคุณเรียบร้อยแล้ว ท่านสามารถเข้าสู่ระบบเพื่อเริ่มต้นการใช้งานได้ทันที
+                  </td>
+                </tr>
+              </table>
+              
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 16px; border: 1px solid #dbe4f0; border-radius: 10px; background-color: #f8fafc;">
+                <tr>
+                  <td style="padding: 14px 16px;">
+                    <h2 style="margin: 0 0 8px; font-size: 15px; line-height: 20px; font-weight: 700; color: #0f172a;">ข้อมูลบัญชีผู้ใช้งาน</h2>
+                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                      ${rows}
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 20px; border: 1px solid #e2e8f0; border-radius: 10px; background-color: #f8fafc;">
+                <tr>
+                  <td style="padding: 12px 16px;">
+                    <div style="font-size: 13px; line-height: 19px; font-weight: 700; color: #334155;">คำแนะนำสำหรับการเข้าสู่ระบบครั้งแรก</div>
+                    <div style="padding-top: 4px; font-size: 13px; line-height: 20px; color: #64748b;">
+                      เพื่อความปลอดภัยของบัญชี กรุณาเข้าสู่ระบบและกำหนดรหัสผ่านประจำตัวใหม่ในการเข้าใช้งานครั้งแรก
+                    </div>
+                  </td>
+                </tr>
+              </table>
+
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin: 24px 0 16px;">
+                <tr>
+                  <td align="center">
+                    <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td align="center" style="border-radius: 8px; background-color: ${accent};">
+                          <a href="${safeUrl}" target="_blank" style="display: inline-block; padding: 13px 28px; border: 1px solid ${accent}; border-radius: 8px; background-color: ${accent}; color: #ffffff; font-size: 14px; line-height: 18px; font-weight: 700; text-decoration: none;">เข้าสู่ระบบ ${effectiveAppName}</a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin: 0; text-align: center; font-size: 12px; line-height: 18px; color: #64748b;">
+                หากปุ่มด้านบนไม่ทำงาน สามารถเข้าใช้งานผ่านลิงก์นี้:<br />
+                <a href="${safeUrl}" target="_blank" style="color: ${accent}; font-weight: 600; text-decoration: underline; overflow-wrap: anywhere; word-break: break-word;">${safeUrl}</a>
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding: 16px 28px; border-top: 1px solid #dbe4f0; background-color: #f8fafc; font-size: 12px; line-height: 18px; color: #64748b;">
+              ระบบบริหารจัดการพัสดุและคลังสินค้า — ${effectiveAppName}<br />© ${year} ${effectiveAppName} · Inventory Management System
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
 };
