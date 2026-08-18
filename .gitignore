@@ -93,6 +93,7 @@ stock_in_Report_*.pdf
 /.agents/
 /docs/
 /docs
+.freebuff/
 
 # Supabase local configuration (machine-specific)
 supabase/.gitignore

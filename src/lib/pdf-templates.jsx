@@ -130,38 +130,39 @@ const styles = StyleSheet.create({
   colQty: { width: '10%' },
   colSn: { width: '30%', borderRightWidth: 0 },
 
-  // Footer / Signatures
-  footerSection: {
+  // Signatures Section (Dual Clean Boxes)
+  signatureSection: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 30, // เว้นระยะห่างจากตารางด้านบน
-    paddingLeft: 10,
-    paddingRight: 10,
+    marginTop: 35,
+    paddingTop: 10,
+    paddingHorizontal: 15,
   },
-  signatureBlock: {
-    width: '40%',
-  },
-  signLine: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    marginBottom: 10,
-  },
-  signLabel: {
-    width: 60,
-    fontSize: 10, // ขนาดฟอนต์คำกำกับลายเซ็น เช่น "ผู้ส่งของ", "วันที่" (16pt)
-  },
-  signUnderline: {
-    flex: 1,
-    borderBottomWidth: 1,
-    borderBottomColor: '#000',
-    marginLeft: 5,
-    height: 15,
-    justifyContent: 'flex-end',
+  signatureBox: {
+    width: '42%',
     alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: '#94a3b8',
+    paddingTop: 8,
   },
-  signText: {
-    fontSize: 10, // ขนาดฟอนต์ชื่อผู้เซ็นที่ลอยอยู่บนเส้นบรรทัด (16pt)
-    marginBottom: 1,
+  sigName: {
+    fontSize: 11,
+    fontWeight: 'bold',
+    color: '#0f172a',
+    textAlign: 'center',
+    marginTop: 2,
+  },
+  sigRole: {
+    fontSize: 10,
+    color: '#64748b',
+    marginTop: 2,
+    textAlign: 'center',
+  },
+  sigDate: {
+    fontSize: 10,
+    color: '#94a3b8',
+    marginTop: 3,
+    textAlign: 'center',
   },
 
   // Report columns
@@ -253,40 +254,18 @@ export const MaterialWithdrawalPDF = ({ order, items, profile }) => {
           </Text>
         </View>
 
-        {/* Footer / Signatures */}
-        <View style={styles.footerSection} wrap={false}>
-          <View style={styles.signatureBlock}>
-            <View style={styles.signLine}>
-              <Text style={styles.signLabel}>ผู้ส่งของ</Text>
-              <View style={styles.signUnderline}>
-                <Text style={styles.signText}>{profile?.full_name || ''}</Text>
-              </View>
-            </View>
-            <View style={styles.signLine}>
-              <Text style={styles.signLabel}>เบอร์โทรศัพท์</Text>
-              <View style={styles.signUnderline}></View>
-            </View>
-            <View style={styles.signLine}>
-              <Text style={styles.signLabel}>วันที่</Text>
-              <View style={styles.signUnderline}></View>
-            </View>
+        {/* Signatures */}
+        <View style={styles.signatureSection} wrap={false}>
+          <View style={styles.signatureBox}>
+            <Text style={styles.sigName}>({order?.borrower_name || order?.requester_name || order?.projects?.name || '...................................................'})</Text>
+            <Text style={styles.sigRole}>ผู้ขอยืมพัสดุ / ช่างผู้เบิก</Text>
+            <Text style={styles.sigDate}>วันที่: ....../....../...........</Text>
           </View>
 
-          <View style={styles.signatureBlock}>
-            <View style={styles.signLine}>
-              <Text style={styles.signLabel}>ผู้รับของ</Text>
-              <View style={styles.signUnderline}>
-                <Text style={styles.signText}>{order?.projects?.name || ''}</Text>
-              </View>
-            </View>
-            <View style={styles.signLine}>
-              <Text style={styles.signLabel}>เบอร์โทรศัพท์</Text>
-              <View style={styles.signUnderline}></View>
-            </View>
-            <View style={styles.signLine}>
-              <Text style={styles.signLabel}>วันที่</Text>
-              <View style={styles.signUnderline}></View>
-            </View>
+          <View style={styles.signatureBox}>
+            <Text style={styles.sigName}>({order?.profiles?.full_name || profile?.full_name || '...................................................'})</Text>
+            <Text style={styles.sigRole}>เจ้าหน้าที่ผู้จ่ายพัสดุ / เจ้าหน้าที่คลัง</Text>
+            <Text style={styles.sigDate}>วันที่: ....../....../...........</Text>
           </View>
         </View>
 

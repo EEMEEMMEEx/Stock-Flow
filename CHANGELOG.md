@@ -1,6 +1,41 @@
 # Changelog
 
-## [2026-08-17 20:30] 🛡️ Integrate Proven Clean Delivery Pipeline from life-countdown & Supabase Dynamic SMTP Loader
+## [2026-08-18 09:55] ✍️ Standardize Dual-Box Signature Layout for Checkout & Withdrawal PDFs
+
+- **Modified files:**
+  - `src/lib/checkout-pdf-templates.jsx`
+  - `src/lib/pdf-templates.jsx`
+- **Details:**
+  - `src/lib/checkout-pdf-templates.jsx` & `src/lib/pdf-templates.jsx`:
+    - ปรับปรุงโครงสร้าง JSX ส่วนของลายเซ็นท้ายเอกสาร PDF ทั้งหมด (`MaterialCheckoutPDF`, `MaterialReturnPDF`, `MaterialWithdrawalPDF`) ให้ใช้โครงสร้างแบบ Dual Signature Boxes (`signatureSection` และ `signatureBox`)
+    - ใช้เส้นคั่นบนกล่องลายเซ็นสีเทาเรียบหรู (`borderTop: 1 solid #94a3b8`), ชื่อผู้ลงนามในวงเล็บกึ่งกลาง (`sigName`), บทบาทกำกับ (`sigRole`: `ผู้ขอยืมพัสดุ / ช่างผู้เบิก` และ `เจ้าหน้าที่ผู้จ่ายพัสดุ / เจ้าหน้าที่คลัง`), พร้อมวันที่ (`sigDate: วันที่: ....../....../...........`) ตรงตามสเปกที่ผู้ใช้กำหนด
+- **Reason:** จัดดีไซน์บล็อกลายเซ็นให้สวยงาม กะทัดรัด และเป็นรูปแบบเดียวกันทุกเอกสาร PDF ของระบบ
+
+## [2026-08-18 09:48] 📄 Standardize Checkout & Return PDF Templates to Match MaterialWithdrawalPDF
+
+- **Modified files:**
+  - `src/lib/checkout-pdf-templates.jsx`
+- **Details:**
+  - `src/lib/checkout-pdf-templates.jsx`:
+    - ปรับโครงสร้างแบบฟอร์ม PDF `MaterialCheckoutPDF` (ใบยืมพัสดุ) และ `MaterialReturnPDF` (ใบรับคืนพัสดุ) ให้ตรงตามรูปแบบเอกสารราชการ/องค์กรแบบเดียวกับ `MaterialWithdrawalPDF` (`src/lib/pdf-templates.jsx`) 100%
+    - ใช้โลโก้ทางการ `/images/logo.png`, ชื่อบริษัทภาษาไทยและภาษาอังกฤษสีฟ้านวล (`#5b9bd5`), และข้อความที่อยู่/เลขประจำตัวผู้เสียภาษี 2 บรรทัด (`#5d9cec`)
+    - ใช้การจัดตารางขอบเส้นสีดำคมชัด (`border: 1 solid #000`), Padding ข้อความ `2 5`, ความสูงขั้นต่ำ 16pt, จัดคอลัมน์กึ่งกลาง/ชิดซ้ายอย่างเหมาะสม พร้อมระบบ Auto-Padding ตารางให้มีขั้นต่ำ 15 แถว เพื่อรักษาสัดส่วนเอกสารกระดาษ A4
+    - ปรับโซนข้อมูลผู้ยืม-คลังปลายทาง และโซนลายเซ็นท้ายกระดาษ (ผู้ส่งของ/ผู้รับของ) ให้ใช้ Typography, เส้นขีดเขียน และขนาดฟอนต์ `THSarabunNew` แบบเดียวกับใบเบิกของ (`/withdrawals`)
+- **Reason:** จัดมาตรฐานรูปแบบใบยืมพัสดุและใบรับคืนพัสดุ (`/checkouts`) ให้มีหน้าตา สไตล์ และ Typography ตรงตามมาตรฐานเอกสารเดียวกับใบเบิกของ (`/withdrawals`)
+
+## [2026-08-18 09:30] 📦 Fix Stock Transactions Check Constraint for Checkout & Return System (Error 23514)
+
+- **Modified files:**
+  - `supabase/migrations/46_fix_stock_transactions_checkout_type_check.sql` [NEW]
+  - `supabase/migrations/44_material_checkout_and_return_system.sql`
+- **Details:**
+  - `supabase/migrations/46_fix_stock_transactions_checkout_type_check.sql`:
+    - สร้างไฟล์ Migration ใหม่เพื่อปลดและตั้งค่า `CHECK` Constraint (`stock_transactions_transaction_type_check`) บนตาราง `public.stock_transactions` ใหม่ ให้รองรับ `'checkout_out'`, `'return_in'`, `'transfer_in'`, `'transfer_out'`, `'adjustment'` นอกเหนือจาก `'stock_in'`, `'stock_out'` เดิม
+    - ปรับปรุง View `public.stock_balance` ให้รวมยอดตัดสต็อกจากการยืม (`checkout_out`) และเพิ่มสต็อกกลับจากการคืน (`return_in`) ในการคำนวณ `total_out` และ `balance`
+  - `supabase/migrations/44_material_checkout_and_return_system.sql`:
+    - เพิ่มคำสั่งอัปเดต Check Constraint และ View `stock_balance` โดยตรงเพื่อความสมบูรณ์สำหรับกรณีรัน Migration ตั้งแต่ต้น
+- **Reason:** แก้ไข Error 23514 (`check_violation: stock_transactions_transaction_type_check`) เมื่อเรียกใช้ Supabase RPC `process_checkout_order` และ `process_return_order`
+
 
 - **Modified files:**
   - `api/send-email.js`

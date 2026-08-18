@@ -1,6 +1,14 @@
 -- Migration 44: Material Checkout & Return System
 -- Enables tool/equipment/asset temporary checkout, due-date tracking, partial returns, and condition auditing
 
+-- 0. Update stock_transactions check constraint to support checkout_out and return_in
+ALTER TABLE public.stock_transactions 
+  DROP CONSTRAINT IF EXISTS stock_transactions_transaction_type_check;
+
+ALTER TABLE public.stock_transactions 
+  ADD CONSTRAINT stock_transactions_transaction_type_check 
+  CHECK (transaction_type IN ('stock_in', 'stock_out', 'checkout_out', 'return_in', 'transfer_in', 'transfer_out', 'adjustment'));
+
 -- 1. Create Checkout Orders Table (Header)
 CREATE TABLE IF NOT EXISTS public.checkout_orders (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -317,3 +325,42 @@ BEGIN
   );
 END;
 $$;
+
+-- 9. Recreate stock_balance view to accurately deduct checkout_out and restore return_in
+CREATE OR REPLACE VIEW public.stock_balance AS
+SELECT 
+  sio.project_id,
+  sii.item_id,
+  i.name AS item_name,
+  i.unit,
+  p.name AS project_name,
+  COALESCE(SUM(sii.quantity), 0) AS total_in,
+  COALESCE((
+    SELECT SUM(
+      CASE 
+        WHEN st.transaction_type IN ('stock_out', 'checkout_out', 'transfer_out') THEN st.quantity
+        WHEN st.transaction_type IN ('return_in') THEN -st.quantity
+        ELSE 0
+      END
+    )
+    FROM public.stock_transactions st
+    WHERE st.project_id = sio.project_id 
+    AND st.item_id = sii.item_id 
+  ), 0) AS total_out,
+  COALESCE(SUM(sii.quantity), 0) - COALESCE((
+    SELECT SUM(
+      CASE 
+        WHEN st.transaction_type IN ('stock_out', 'checkout_out', 'transfer_out') THEN st.quantity
+        WHEN st.transaction_type IN ('return_in') THEN -st.quantity
+        ELSE 0
+      END
+    )
+    FROM public.stock_transactions st
+    WHERE st.project_id = sio.project_id 
+    AND st.item_id = sii.item_id 
+  ), 0) AS balance
+FROM public.stock_in_items sii
+JOIN public.stock_in_orders sio ON sio.id = sii.order_id
+JOIN public.items i ON i.id = sii.item_id
+JOIN public.projects p ON p.id = sio.project_id
+GROUP BY sio.project_id, sii.item_id, i.name, i.unit, p.name;
