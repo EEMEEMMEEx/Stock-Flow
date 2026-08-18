@@ -1,5 +1,126 @@
 # Changelog
 
+## [2026-08-18 15:50] 🎨 Audit /stock-in & Replace All Raw Emojis with Lucide React SVG Icons
+
+- **Modified files:**
+  - `src/pages/StockIn.jsx`
+  - `src/components/common/ProjectLocationSelector.jsx`
+  - `src/pages/Items.jsx`
+  - `src/components/reports/ReportDataTable.jsx`
+  - `src/components/checkouts/CheckoutPosTerminal.jsx`
+  - `src/components/checkouts/CheckoutReturnModal.jsx`
+- **Details:**
+  - `src/pages/StockIn.jsx`:
+    - ตรวจสอบและเปลี่ยน Raw Emojis ทั้งหมด (เช่น 📊, 🏢, 🎯, ↳, └─) เป็น Lucide React SVG Icons (`<BarChart3>`, `<Building2>`, `<CornerDownRight>`)
+    - ปรับแต่งการแสดงผลปุ่มเลือกคลัง (Quick Warehouse Pills) และป้ายประเภทรายการ (PARENT / CHILD) ให้สวยงาม คมชัด และสอดคล้องกับ Design System
+  - `src/components/common/ProjectLocationSelector.jsx`:
+    - ลบอีโมจิดิบออกจากข้อความตัวเลือกใน Dropdown และแสดงผลด้วย Lucide React SVG Icons ในการ์ดสรุปผล
+  - ปรับปรุงการแสดงผลไอคอนในหน้า Items, Reports และ Checkouts ให้เป็น SVG ทั้งหมด
+- **Reason:** ยกระดับมาตรฐานการออกแบบ UI ให้เป็นแบบ Modern SVG Vector Icons ปราศจาก Emoji ดิบที่อาจแสดงผลผิดเพี้ยนตามระบบปฏิบัติการ
+
+
+- **Modified files:**
+  - `src/pages/Items.jsx`
+  - `src/pages/Reports.jsx`
+  - `src/components/reports/ReportFilterBar.jsx`
+  - `src/components/reports/ReportDataTable.jsx`
+- **Details:**
+  - `src/pages/Items.jsx`:
+    - ผสาน `ProjectLocationSelector` ในแถบเครื่องมือสำหรับกรองข้อมูลวัสดุและยอดสต็อกคงเหลือแยกรายคลังจัดเก็บ (Storage Location) ได้อย่างแม่นยำ
+    - แสดงป้ายระบุชื่อคลังจัดเก็บ (`🏢 คลัง Forth ชั้น 3`, `🏢 คลัง Factory C`, `🏢 คลัง EMS`, `🏢 ตึกโรงรับจำนำ`) อย่างโดดเด่นในทุกแถวตารางและ Bento Card
+  - `src/pages/Reports.jsx` & `src/components/reports/ReportFilterBar.jsx`:
+    - อัปเดตการดึงข้อมูลและตัวกรองรายงานทุกแท็บ (รับเข้า, เบิกจ่าย, ยอดคงเหลือ) ให้ดึงและแสดงสถานที่จัดเก็บ `location` และ `description`
+    - จัดกลุ่มตัวเลือกในดรอปดาวน์แยกตามโครงการและคลังจัดเก็บย่อยอย่างชัดเจน
+  - `src/components/reports/ReportDataTable.jsx`:
+    - แสดงป้ายสถานที่จัดเก็บ `🏢 Location` ประกอบชื่อโครงการในทุกรายการรายงาน
+- **Reason:** ทำให้ระบบสามารถแยกและกรองข้อมูลสต็อกคงเหลือตรงตามคลังจัดเก็บจริง (Storage Location / Warehouse) ในทุกหน้าจอ
+
+
+- **Modified files:**
+  - `src/lib/stock-in-parser.js`
+  - `src/pages/StockIn.jsx`
+- **Details:**
+  - `src/lib/stock-in-parser.js`:
+    - เพิ่มฟังก์ชัน `matchLocationToWarehouseColumn` สำหรับแมปชื่อสถานที่ตั้ง/คลังในฐานข้อมูลเข้ากับคอลัมน์คลังใน CSV อัตโนมัติ (เช่น `คลัง Forth ชั้น 3`, `คลัง Factory C`, `คลัง EMS`, `ตึกโรงรับจำนำ`, `คลัง EMS (SAP)`)
+    - เพิ่มฟังก์ชัน `filterAndAggregateWarehouseItems` สำหรับคัดกรองและคำนวณยอดสต็อกคงเหลือของแต่ละรายการแยกเฉพาะเจาะจงตามคลังที่เลือก พร้อมปรับลำดับเลขข้อและความสัมพันธ์ Parent-Child ให้ถูกต้อง
+  - `src/pages/StockIn.jsx`:
+    - เพิ่มระบบ Auto-Matching ในหน้าต่างพรีวิวนำเข้า CSV (Import Preview Modal) เมื่อเลือกโครงการ/คลังปลายทาง ระบบจะสลับไปดึงยอดและกรองเฉพาะรายการที่มีสต็อกในคลังนั้นทันที
+    - เพิ่มแถบปุ่ม Quick Warehouse Pills ให้สามารถคลิกสลับดูยอดระหว่างคลังต่างๆ ได้อย่างรวดเร็ว
+    - เพิ่มระบบ Auto-Aggregation ในหน้าต่างบันทึกรับเข้าโดยตรง (Direct Stock Receipt Modal) ปรับยอดและรายการอัตโนมัติตาม `storage_location_id` ที่เลือก
+    - เพิ่มสวิตช์เปิด-ปิด "แสดงเฉพาะรายการที่มียอด > 0" เพื่อความสะดวกในการตรวจนับ
+- **Reason:** รองรับการแยกและกรองยอดสต็อกคงเหลือตามคลังจัดเก็บเฉพาะแห่งจากไฟล์ DOPA+USO ได้อย่างถูกต้องและตรงตามการทำงานจริง
+
+
+- **Modified files:**
+  - `src/components/common/ProjectLocationSelector.jsx`
+  - `src/pages/StockIn.jsx`
+  - `src/components/withdrawals/WithdrawalPosTerminal.jsx`
+  - `src/components/checkouts/CheckoutPosTerminal.jsx`
+- **Details:**
+  - `src/components/common/ProjectLocationSelector.jsx`:
+    - พัฒนาคอมโพเนนต์เลือกระดับ 2 ชั้น (Dual-Stage Cascading Dropdown) แยกชัดเจนระหว่าง **1. โครงการ (Project)** และ **2. คลัง / สถานที่จัดเก็บ (Storage Location / Warehouse)**
+    - ขจัดความสับสนจากเดิมที่เป็น `<optgroup>` ในดรอปดาวน์เดียวที่เลือกหัวข้อไม่ได้
+    - รองรับการกรองรายการคลังอัตโนมัติตามโครงการที่เลือก และเลือกคลังแรกให้อัตโนมัติ
+    - แสดงป้ายสรุปรายละเอียด (Summary Card) แสดงรหัสโครงการ, ชื่อโครงการ, ชื่อคลัง และคำอธิบายสถานที่อย่างชัดเจน
+  - `src/pages/StockIn.jsx`:
+    - ผสานการใช้งาน `ProjectLocationSelector` ทั้งในหน้าต่างพรีวิวนำเข้า CSV (Import Preview) และหน้าต่างบันทึกรับเข้าโดยตรง (Direct Modal)
+  - `src/components/withdrawals/WithdrawalPosTerminal.jsx`:
+    - ผสาน `ProjectLocationSelector` ในส่วนหัว POS Terminal สำหรับการเบิกวัสดุ พร้อมตัวเลือก "ทุกโครงการ & ทุกคลังจัดเก็บ"
+  - `src/components/checkouts/CheckoutPosTerminal.jsx`:
+    - ผสาน `ProjectLocationSelector` ในขั้นตอนที่ 1 ของระบบยืม-คืนพัสดุ
+- **Reason:** แก้ไขความสับสนของผู้ใช้งานในการเลือกโครงการและคลังจัดเก็บให้มีความชัดเจน ใช้งานง่าย และไม่คลุมเครือ
+
+
+- **Modified files:**
+  - `supabase/migrations/47_reset_stock_and_items_inventory.sql`
+- **Details:**
+  - `supabase/migrations/47_reset_stock_and_items_inventory.sql`:
+    - สร้างสคริปต์ Migration สำหรับล้างข้อมูลประวัติธุรกรรมสต็อกทั้งหมด (`checkout_return_logs`, `checkout_items`, `checkout_orders`, `withdrawal_items`, `withdrawal_orders`, `withdrawals`, `stock_in_items`, `stock_in_orders`, `stock_entries`, `stock_transactions`)
+    - ลบรายการวัสดุ/สินค้าทั้งหมด (`items`) โดยตัดความสัมพันธ์ `parent_id` ก่อนเพื่อป้องกันข้อผิดพลาด Foreign Key
+    - เพิ่ม RPC `public.admin_reset_inventory` พร้อมระบบความปลอดภัยตรวจสอบ Token ยืนยัน สำหรับการ Reset ข้อมูล
+    - คงข้อมูลโครงการ/คลัง (`projects`), บัญชีผู้ใช้ (`profiles`), และบทบาทสิทธิ์ (`roles`, `permissions`) ไว้สมบูรณ์
+- **Reason:** เตรียมระบบและฐานข้อมูลให้พร้อมสำหรับการนำเข้าข้อมูลสต็อกรายการอุปกรณ์ DOPA+USO ชุดใหม่อย่างสะอาดและสมบูรณ์
+
+
+- **Modified files:**
+  - `src/pages/StockIn.jsx`
+  - `src/lib/stock-in-parser.js`
+  - `stock_in_canonical_template.csv`
+  - `docs/stock-receipt-dopa-import-redesign-plan.md`
+- **Details:**
+  - `src/lib/stock-in-parser.js`:
+    - พัฒนา Native Multi-Section CSV Parser สำหรับอ่านและแปลงไฟล์รายการอุปกรณ์ DOPA+USO (`บัญชีรายการอุปกรณ์ DOPA+USO SHF_14.8.2026.csv`) โดยไม่สะดุดกับ Header ซ้ำในแต่ละ Section
+    - ตรวจจับคอลัมน์คลังทั้งหมดในไฟล์อัตโนมัติ (`คลัง Factory C`, `คลัง EMS`, `คลัง Forth ชั้น 3`, `ตึกโรงรับจำนำ`, `คลัง EMS (SAP)`)
+    - รองรับการแปลงตัวเลขจำนวนสต็อกที่มี Comma (`3,317` -> `3317`)
+    - ตรวจจับ Parent-Child Hierarchy และสร้างการเชื่อมโยง Parent SKU อัตโนมัติ พร้อมตัดขีดนำหน้าชื่อรายการ
+  - `src/pages/StockIn.jsx`:
+    - เพิ่มหน้าต่าง Interactive Import Preview & Configuration Modal ให้แอดมินตรวจสอบรายการ สรุปยอด และเลือก Source Quantity Column (`คงเหลือ` vs คลังเฉพาะแห่ง) ก่อนบันทึก
+    - ปรับปรุงการตรวจสอบข้อมูล (Validation) ปลดล็อกเงื่อนไขบังคับระบุรุ่น (Model) ทำให้แถวที่รุ่นเป็น `-` หรือว่างสามารถนำเข้าได้อย่างราบรื่น
+    - ปรับปรุงฟังก์ชันดาวน์โหลด CSV Template ให้ส่งออกแม่แบบ DOPA+USO มาตรฐาน (UTF-8 BOM)
+  - `stock_in_canonical_template.csv`:
+    - อัปเดตแม่แบบตัวอย่างให้ตรงตามโครงสร้าง DOPA+USO มาตรฐาน
+- **Reason:** ตอบสนองความต้องการใช้งานจริงของฝ่ายปฏิบัติการในการนำเข้าข้อมูลรายการอุปกรณ์ DOPA+USO เข้าสู่ระบบ Stock Receipt ได้อย่างสมบูรณ์แบบ
+
+
+- **Modified files:**
+  - `src/components/checkouts/CheckoutPosTerminal.jsx`
+  - `src/components/checkouts/CheckoutReturnModal.jsx`
+  - `src/components/checkouts/CheckoutDetailModal.jsx`
+  - `src/components/checkouts/CheckoutHistoryList.jsx`
+  - `docs/multi-sn-batch-checkout-implementation-plan.md`
+- **Details:**
+  - `src/components/checkouts/CheckoutPosTerminal.jsx`:
+    - พัฒนาระบบ Multi-SN Entry สำหรับการยืมอุปกรณ์หลายหน่วยภายใต้เอกสารเดียว
+    - เพิ่ม Quick Batch Input Bar รองรับการคัดลอก/สแกนบาร์โค้ดหลาย S/N พร้อมกัน (คั่นด้วย comma หรือ Enter) และช่องกรอกแยกของแต่ละชิ้น (`ชิ้นที่ 1:`, `ชิ้นที่ 2:`, ...)
+    - เพิ่มระบบ Auto-Sync ระหว่างจำนวนที่ยืม (`quantity`) และจำนวนช่อง S/N โดยไม่ลบข้อมูลเดิม
+    - ปรับปรุงการ Transform Payload ขาออกให้ขยายรายการที่มีหลาย S/N เป็นแถว `checkout_items` รายชิ้น (`quantity_borrowed = 1`) อย่างถูกต้อง
+  - `src/components/checkouts/CheckoutReturnModal.jsx`:
+    - แสดงป้ายกำกับ Serial Number รายชิ้น พร้อมช่องค้นหาและปุ่ม "คืนทั้งหมด (Return All)"
+    - รองรับการเลือกรับคืนเฉพาะบาง S/N (Partial Return) และการระบุสภาพอุปกรณ์แยกชิ้น
+  - `src/components/checkouts/CheckoutDetailModal.jsx` & `src/components/checkouts/CheckoutHistoryList.jsx`:
+    - แสดงป้ายกำกับ S/N ในตารางประวัติการรับคืนและรายการประวัติยืม-คืน
+- **Reason:** รองรับการยืม-คืนอุปกรณ์ที่มี Serial Number หลายชิ้นในคำสั่งเดียวได้อย่างสะดวกรวดเร็วและแม่นยำ
+
 ## [2026-08-18 12:35] 🧹 Suppress Redundant Remark Section in PDF Templates
 
 - **Modified files:**

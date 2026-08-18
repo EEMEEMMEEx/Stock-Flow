@@ -1,14 +1,27 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { ArrowDownToLine, Download, Upload, Plus, Trash2, Check, RefreshCw, Package, Building2 } from 'lucide-react';
+import { 
+  ArrowDownToLine, Download, Upload, Plus, Trash2, Check, 
+  RefreshCw, Package, Building2, Eye, FileSpreadsheet, Layers, 
+  Filter, CheckCircle2, AlertCircle, Search, HelpCircle, 
+  ArrowRight, X, ChevronDown, ChevronUp, Sparkles, Tag, CheckSquare,
+  MapPin, SlidersHorizontal, ToggleLeft, ToggleRight, BarChart3, CornerDownRight
+} from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
+
+import { 
+  parseDopaStockCsv, 
+  matchLocationToWarehouseColumn, 
+  filterAndAggregateWarehouseItems 
+} from '@/lib/stock-in-parser';
+import { ProjectLocationSelector } from '@/components/common/ProjectLocationSelector';
 
 const StockIn = () => {
   const { can } = useAuth();
@@ -25,8 +38,21 @@ const StockIn = () => {
   const [lineItems, setLineItems] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
+  // Master Raw Parsed Items from CSV (to allow dynamic warehouse re-filtering anytime)
+  const [rawParsedCsvItems, setRawParsedCsvItems] = useState([]);
+  const [csvDetectedWarehouses, setCsvDetectedWarehouses] = useState([]);
+
   // File Input Ref for CSV Upload
   const fileInputRef = useRef(null);
+
+  // Interactive CSV Preview Modal State
+  const [isImportPreviewOpen, setIsImportPreviewOpen] = useState(false);
+  const [previewItems, setPreviewItems] = useState([]);
+  const [selectedQtySource, setSelectedQtySource] = useState('คงเหลือ');
+  const [onlyPositiveFilter, setOnlyPositiveFilter] = useState(true);
+  const [previewSearch, setPreviewSearch] = useState('');
+  const [previewProjectId, setPreviewProjectId] = useState('');
+  const [importFileName, setImportFileName] = useState('');
 
   // Details Dialog State
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -55,7 +81,7 @@ const StockIn = () => {
         .select('id, name, project_code, location, description')
         .eq('status', 'active')
         .order('name');
-      const { data: iData } = await supabase.from('items').select('id, name, unit, sku, image_url, category_id');
+      const { data: iData } = await supabase.from('items').select('id, name, unit, sku, image_url, category_id, model, description');
 
       setProjects(pData || []);
       setItems(iData || []);
@@ -67,7 +93,8 @@ const StockIn = () => {
   };
 
   const handleOpenCreateDialog = () => {
-    setFormData({ project_id: '' });
+    const defaultProjId = projects[0]?.id || '';
+    setFormData({ project_id: defaultProjId });
     setLineItems([createEmptyRow()]);
     setIsCreateDialogOpen(true);
   };
@@ -105,236 +132,69 @@ const StockIn = () => {
     }));
   };
 
-  // Download CSV Template with Parent-Child Canonical Schema (UTF-8 BOM \uFEFF)
+  // Download CSV Template with DOPA+USO Standard Format (UTF-8 BOM \uFEFF)
   const handleDownloadCsvTemplate = () => {
     const bom = '\uFEFF';
     const csvContent = bom + 
-      `No,Item_Type,SKU,Parent_SKU,Item_Name,Model,Quantity,Serial_Number,Part_Number,Remark\n` +
-      `7,PARENT,CAB-001,,ตู้ชุดDMO-GW+ขาตั้ง (ตั้งนอกอาคาร),DMO-GW,7,,,ติดตั้งภายนอกอาคาร\n` +
-      `8,CHILD,SUP-489,CAB-001,Support ขายึด SC-489,SC-489,2,SN-001,PN-489,ประกอบอยู่ในตู้แล้ว\n`;
+      `ลำดับ,Part No.,,รายการ,รุ่น/ยี่ห้อ,คลัง Factory C,คลัง EMS (SAP),เบิกใช้งาน,คงเหลือ,หมายเหตุ\n` +
+      `1,,PARENT,ตู้ชุดDMO-GW+ขาตั้ง (ตั้งนอกอาคาร), -,7,,,7,ส่งมอบกรมการปกครอง DMO\n` +
+      `,,CHILD,    - Support ขายึด SC-489 (2ชุด/1ตู้), -,3,,,3,\n` +
+      `,,CHILD,    - Lightning_arrestor NF-NF,Comsolution,5,,,5,\n` +
+      `1,30207-0024-04412,,สายอากาศ SC-488-HF1LDF(D00),Sinclar/Base,,6,,6,\n` +
+      `2,30207-0024-01779,,สายอากาศ Yagi 406-SF1SNF (ABK),Sinclar/Fixed,10,5,,15,\n` +
+      `3,30207-0024-01903,,CellFlex cable 1/2" (500m.),Comsolution,2317,1000,,3317,2317 อยู่โรงสีรอขอย้ายเข้า EMS\n`;
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', 'stock_in_canonical_template.csv');
+    link.setAttribute('download', 'บัญชีรายการอุปกรณ์_DOPA_USO_Template.csv');
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-    toast.success('ดาวน์โหลด CSV Template (Canonical Schema UTF-8 BOM) เรียบร้อย');
+    toast.success('ดาวน์โหลด DOPA+USO CSV Template (UTF-8 BOM) เรียบร้อย');
   };
 
-  // Direct CSV File Parsing with Deterministic Parent-Child State Machine & Heuristic Fallback
+  // Direct CSV File Parsing with Native DOPA+USO & Multi-Warehouse Detection
   const handleCsvFileUpload = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    setImportFileName(file.name);
+
     const reader = new FileReader();
     reader.onload = (event) => {
       try {
-        let text = event.target?.result;
+        const text = event.target?.result;
         if (typeof text !== 'string') return;
 
-        // Strip UTF-8 BOM if present
-        if (text.charCodeAt(0) === 0xFEFF) {
-          text = text.slice(1);
-        }
-
-        // State-machine CSV parser handling multi-line quoted fields, escaped quotes (""), CRLF/LF, and UTF-8 BOM
-        const parseCSV = (csvText) => {
-          let cleanText = csvText;
-          if (cleanText.charCodeAt(0) === 0xFEFF) {
-            cleanText = cleanText.slice(1);
-          }
-
-          const rows = [];
-          let currentRow = [];
-          let currentField = '';
-          let inQuotes = false;
-
-          for (let i = 0; i < cleanText.length; i++) {
-            const char = cleanText[i];
-            const nextChar = cleanText[i + 1];
-
-            if (char === '"') {
-              if (inQuotes && nextChar === '"') {
-                currentField += '"';
-                i++;
-              } else {
-                inQuotes = !inQuotes;
-              }
-            } else if (char === ',' && !inQuotes) {
-              currentRow.push(currentField.trim());
-              currentField = '';
-            } else if ((char === '\r' || char === '\n') && !inQuotes) {
-              if (char === '\r' && nextChar === '\n') {
-                i++;
-              }
-              currentRow.push(currentField.trim());
-              currentField = '';
-
-              if (currentRow.some(cell => cell !== '')) {
-                rows.push(currentRow);
-              }
-              currentRow = [];
-            } else {
-              currentField += char;
-            }
-          }
-
-          if (currentField !== '' || currentRow.length > 0) {
-            currentRow.push(currentField.trim());
-            if (currentRow.some(cell => cell !== '')) {
-              rows.push(currentRow);
-            }
-          }
-
-          return rows;
-        };
-
-        const rows = parseCSV(text);
-        if (rows.length <= 1) {
-          toast.error('ไฟล์ CSV ไม่มีข้อมูล');
+        const { items: parsed, detectedWarehouses } = parseDopaStockCsv(text);
+        
+        if (parsed.length === 0) {
+          toast.error('ไม่พบบรรทัดข้อมูลที่ถูกต้องในไฟล์ CSV');
           return;
         }
 
-        const cleanHeader = (h) => {
-          if (!h) return '';
-          return h.toLowerCase()
-            .replace(/^[\uFEFF\uFFFE]/, '')
-            .replace(/["'\s*]/g, '')
-            .trim();
-        };
+        setRawParsedCsvItems(parsed);
+        setCsvDetectedWarehouses(detectedWarehouses);
 
-        const headers = rows[0].map(cleanHeader);
-        
-        // Canonical English & Legacy Thai Alias Matchers
-        const noIdx = headers.findIndex(h => h === 'no' || h === 'num' || h === 'number' || h.includes('ลำดับ'));
-        const typeIdx = headers.findIndex(h => h === 'item_type' || h === 'itemtype' || h === 'type' || h.includes('ประเภท'));
-        const skuIdx = headers.findIndex(h => h === 'sku' || h.includes('รหัสวัสดุ') || h.includes('รหัส'));
-        const parentSkuIdx = headers.findIndex(h => h === 'parent_sku' || h === 'parentsku' || h === 'parent_id');
-        const nameIdx = headers.findIndex(h => h === 'item_name' || h === 'itemname' || h === 'name' || h === 'รายการ' || h === 'ชื่อวัสดุ' || h === 'ชื่อ');
-        const modelIdx = headers.findIndex(h => h === 'model' || h === 'รุ่น');
-        const qtyIdx = headers.findIndex(h => h === 'quantity' || h === 'qty' || h === 'amount' || h === 'count' || h === 'จำนวน');
-        const serialIdx = headers.findIndex(h => h === 'serial_number' || h === 'serialnumber' || h === 'serial' || h === 'sn' || h === 's/n' || h === 's_n');
-        const partIdx = headers.findIndex(h => h === 'part_number' || h === 'partnumber' || h === 'part' || h === 'pn' || h === 'part_no' || h === 'partno');
-        const notesIdx = headers.findIndex(h => h === 'remark' || h === 'remarks' || h === 'notes' || h === 'note' || h === 'หมายเหตุ');
+        const initialProjectId = formData.project_id || projects[0]?.id || '';
+        setPreviewProjectId(initialProjectId);
 
-        const newItems = [];
-        let last_seen_parent = null; // State machine context tracker
+        // Auto-match warehouse from initial selected project location
+        const targetProj = projects.find(p => p.id === initialProjectId);
+        const matchedWh = targetProj ? matchLocationToWarehouseColumn(targetProj.location, detectedWarehouses) : null;
+        const initialSource = matchedWh || 'คงเหลือ';
 
-        for (let i = 1; i < rows.length; i++) {
-          const cols = rows[i];
-          if (cols.every(c => c === '')) continue;
+        setSelectedQtySource(initialSource);
+        setOnlyPositiveFilter(true);
 
-          const rowNum = i + 1;
-          
-          // Safe column value extractor to prevent undefined.trim() crashes on incomplete CSV rows
-          const getColValue = (idx) => {
-            if (idx === -1 || idx === undefined || idx === null || idx >= cols.length) return '';
-            const val = cols[idx];
-            return (val === undefined || val === null) ? '' : val.toString().trim();
-          };
-
-          const rawNo = getColValue(noIdx);
-          let rawType = getColValue(typeIdx).toUpperCase();
-          const rawSku = getColValue(skuIdx);
-          let rawParentSku = getColValue(parentSkuIdx);
-          let rawName = getColValue(nameIdx) || (skuIdx !== 0 ? getColValue(1) : getColValue(0));
-          const rawModel = getColValue(modelIdx);
-          
-          const rawQtyStr = getColValue(qtyIdx);
-          const cleanQtyStr = rawQtyStr.replace(/["'\s]/g, '');
-
-          const rawNotes = getColValue(notesIdx);
-          const rawSerial = getColValue(serialIdx);
-          const rawPart = getColValue(partIdx);
-
-          if (!rawType) {
-            rawType = 'PARENT';
-          }
-
-          if (rawType !== 'PARENT' && rawType !== 'CHILD') {
-            console.warn(`CSV Parsing Error [Row ${rowNum}]: Invalid Item_Type "${rawType}"`);
-            toast.error(`ไฟล์ CSV แถวที่ ${rowNum}: ประเภทรายการ "${rawType}" ไม่ถูกต้อง (ต้องเป็น PARENT หรือ CHILD)`);
-            if (fileInputRef.current) fileInputRef.current.value = '';
-            return;
-          }
-
-          if (!rawName) {
-            console.warn(`CSV Parsing Error [Row ${rowNum}]: Missing required field "Item_Name"`);
-            toast.error(`ไฟล์ CSV แถวที่ ${rowNum}: ขาดข้อมูล "รายการ" (Item_Name) ซึ่งเป็นข้อมูลจำเป็น`);
-            if (fileInputRef.current) fileInputRef.current.value = '';
-            return;
-          }
-
-          const parsedQty = parseInt(cleanQtyStr, 10);
-          const validQty = isNaN(parsedQty) || parsedQty < 1 ? 1 : parsedQty;
-
-          if (rawType === 'PARENT') {
-            const parentObj = {
-              tempId: Date.now() + Math.random() + i,
-              no: rawNo ? parseInt(rawNo, 10) || null : null,
-              item_type: 'PARENT',
-              sku: rawSku.trim(),
-              parent_sku: '',
-              name: rawName.trim(),
-              model: rawModel.trim(),
-              quantity: validQty,
-              serial_number: rawSerial.trim(),
-              part_number: rawPart.trim(),
-              notes: rawNotes.trim()
-            };
-            newItems.push(parentObj);
-            last_seen_parent = parentObj;
-          } else if (rawType === 'CHILD') {
-            if (!rawParentSku && last_seen_parent) {
-              rawParentSku = last_seen_parent.sku || '';
-            }
-
-            let parentMatch = null;
-            if (rawParentSku) {
-              parentMatch = newItems.find(item => item.item_type === 'PARENT' && item.sku.toLowerCase() === rawParentSku.toLowerCase());
-            } else if (last_seen_parent) {
-              parentMatch = last_seen_parent;
-              rawParentSku = last_seen_parent.sku || '';
-            }
-
-            if (!parentMatch && !last_seen_parent) {
-              toast.error(`ไฟล์ CSV แถวที่ ${rowNum}: CHILD item "${rawName}" ไม่มีรายการหลัก (PARENT) ก่อนหน้าหรือระบุ Parent_SKU ที่ไม่มีอยู่จริง`);
-              if (fileInputRef.current) fileInputRef.current.value = '';
-              return;
-            }
-
-            if (rawParentSku && !parentMatch) {
-              toast.error(`ไฟล์ CSV แถวที่ ${rowNum}: CHILD item "${rawName}" อ้างอิง Parent_SKU "${rawParentSku}" ไม่พบรายการหลักในระบบ`);
-              if (fileInputRef.current) fileInputRef.current.value = '';
-              return;
-            }
-
-            newItems.push({
-              tempId: Date.now() + Math.random() + i,
-              no: null,
-              item_type: 'CHILD',
-              sku: rawSku.trim(),
-              parent_sku: rawParentSku,
-              name: rawName.trim(),
-              model: rawModel.trim(),
-              quantity: validQty,
-              serial_number: rawSerial.trim(),
-              part_number: rawPart.trim(),
-              notes: rawNotes.trim()
-            });
-          }
-        }
-
-        if (newItems.length > 0) {
-          setLineItems(newItems);
-          toast.success(`นำเข้าข้อมูลจาก CSV สำเร็จ ${newItems.length} รายการ (รักษา Parent/Child Hierarchy)`);
-        } else {
-          toast.error('ไม่พบบรรทัดข้อมูลที่ถูกต้องในไฟล์ CSV');
-        }
+        const aggregated = filterAndAggregateWarehouseItems(parsed, initialSource, { filterZeroQty: true });
+        setPreviewItems(aggregated);
+        setPreviewSearch('');
+        setIsImportPreviewOpen(true);
+        toast.success(`อ่านข้อมูลสำเร็จ ${parsed.length} รายการ (พบ ${detectedWarehouses.length} คลังจัดเก็บ)`);
       } catch (err) {
         console.error('CSV Parsing error:', err);
         toast.error('เกิดข้อผิดพลาดในการนำเข้า CSV: ' + err.message);
@@ -345,29 +205,95 @@ const StockIn = () => {
     reader.readAsText(file, 'UTF-8');
   };
 
-  // Submit Order via Direct Resolution & Supabase Atomic RPC process_stock_in
-  const handleSubmitOrder = async (e) => {
-    e.preventDefault();
-    if (isSubmitting) return;
+  // Handle Project Location change in Preview Modal -> Auto match warehouse & aggregate balance
+  const handlePreviewProjectChange = (newProjId) => {
+    setPreviewProjectId(newProjId);
+    const targetProj = projects.find(p => p.id === newProjId);
+    if (!targetProj || rawParsedCsvItems.length === 0) return;
 
-    if (!formData.project_id) {
+    const matchedWh = matchLocationToWarehouseColumn(targetProj.location, csvDetectedWarehouses);
+    if (matchedWh) {
+      setSelectedQtySource(matchedWh);
+      const aggregated = filterAndAggregateWarehouseItems(rawParsedCsvItems, matchedWh, { filterZeroQty: onlyPositiveFilter });
+      setPreviewItems(aggregated);
+      toast.success(`กรองข้อมูลตาม [${targetProj.location}] พบ ${aggregated.length} รายการ`);
+    }
+  };
+
+  // Handle Manual Switch of quantity source in preview (e.g. 'คงเหลือ' vs 'คลัง Factory C' vs 'คลัง EMS')
+  const handleChangeQtySource = (sourceName, filterZero = onlyPositiveFilter) => {
+    setSelectedQtySource(sourceName);
+    if (rawParsedCsvItems.length > 0) {
+      const aggregated = filterAndAggregateWarehouseItems(rawParsedCsvItems, sourceName, { filterZeroQty: filterZero });
+      setPreviewItems(aggregated);
+    }
+  };
+
+  // Toggle filter for only positive balance
+  const handleToggleOnlyPositive = () => {
+    const nextVal = !onlyPositiveFilter;
+    setOnlyPositiveFilter(nextVal);
+    handleChangeQtySource(selectedQtySource, nextVal);
+  };
+
+  // Handle Project Location change in Direct Creation Modal -> Auto re-filter lineItems if CSV data is present
+  const handleDirectProjectChange = (newProjId) => {
+    setFormData(prev => ({ ...prev, project_id: newProjId }));
+    
+    if (rawParsedCsvItems.length > 0) {
+      const targetProj = projects.find(p => p.id === newProjId);
+      if (targetProj) {
+        const matchedWh = matchLocationToWarehouseColumn(targetProj.location, csvDetectedWarehouses);
+        if (matchedWh) {
+          const aggregated = filterAndAggregateWarehouseItems(rawParsedCsvItems, matchedWh, { filterZeroQty: true });
+          if (aggregated.length > 0) {
+            setLineItems(aggregated);
+            toast.success(`อัปเดตรายการตาม [${targetProj.location}] สำเร็จ ${aggregated.length} รายการ`);
+          }
+        }
+      }
+    }
+  };
+
+  // Apply preview items to form
+  const handleApplyPreviewToForm = () => {
+    if (previewItems.length === 0) return;
+    setLineItems(previewItems);
+    setFormData(prev => ({ ...prev, project_id: previewProjectId || prev.project_id || projects[0]?.id || '' }));
+    setIsImportPreviewOpen(false);
+    setIsCreateDialogOpen(true);
+    toast.success(`โหลดข้อมูลเข้าฟอร์มสำเร็จ ${previewItems.length} รายการ`);
+  };
+
+  // Direct Submit from Preview Dialog
+  const handleDirectSubmitFromPreview = async () => {
+    if (!previewProjectId) {
+      return toast.error('กรุณาเลือกโครงการปลายทางก่อนบันทึกรับเข้า');
+    }
+    if (previewItems.length === 0) {
+      return toast.error('ไม่มีรายการวัสดุสำหรับบันทึกรับเข้า');
+    }
+
+    setFormData(prev => ({ ...prev, project_id: previewProjectId }));
+    setLineItems(previewItems);
+    await executeStockInSubmission(previewProjectId, previewItems);
+    setIsImportPreviewOpen(false);
+  };
+
+  // Execute Stock In Submission Core
+  const executeStockInSubmission = async (projectId, itemsToSubmit) => {
+    if (!projectId) {
       return toast.error('กรุณาเลือกโครงการปลายทางก่อนบันทึกรับเข้า');
     }
 
-    if (lineItems.length === 0) {
+    if (itemsToSubmit.length === 0) {
       return toast.error('กรุณาเพิ่มรายการวัสดุรับเข้าอย่างน้อย 1 รายการ');
     }
 
-    // Validate rows
-    const invalidRows = lineItems.filter(row => (!row.name && !row.sku) || !row.model || !row.model.trim() || !row.quantity || parseInt(row.quantity, 10) <= 0);
+    // Validate rows (Name is required, quantity must be > 0, model is optional)
+    const invalidRows = itemsToSubmit.filter(row => (!row.name && !row.sku) || !row.quantity || parseInt(row.quantity, 10) <= 0);
     if (invalidRows.length > 0) {
-      return toast.error('มีรายการวัสดุที่ไม่ได้ระบุรายการ/รุ่น/SKU หรือระบุจำนวนไม่ถูกต้อง');
-    }
-
-    // Validate CHILD rows have parent_sku or parent context
-    const invalidChildRows = lineItems.filter(row => row.item_type === 'CHILD' && !row.parent_sku && !lineItems.some(p => p.item_type === 'PARENT' && p.sku));
-    if (invalidChildRows.length > 0) {
-      return toast.error('มีรายการย่อย (CHILD) ที่ไม่ได้ระบุ Parent SKU หรือไม่มีรายการหลักในระบบ');
+      return toast.error('มีรายการวัสดุที่ไม่ได้ระบุชื่อ/SKU หรือระบุจำนวนไม่ถูกต้อง');
     }
 
     try {
@@ -375,11 +301,11 @@ const StockIn = () => {
 
       // Resolve or auto-create items in public.items directly
       const payloadItems = [];
-      for (const row of lineItems) {
+      for (const row of itemsToSubmit) {
         const normSku = (row.sku || '').trim().toLowerCase();
         const normName = (row.name || '').trim().toLowerCase();
 
-        // 1. Check existing items array
+        // 1. Check existing items in database state
         let matched = items.find(i => 
           (normSku && i.sku && i.sku.trim().toLowerCase() === normSku) ||
           (normName && i.name && i.name.trim().toLowerCase() === normName)
@@ -445,13 +371,13 @@ const StockIn = () => {
 
       // Call Atomic Supabase RPC process_stock_in
       const { data, error } = await supabase.rpc('process_stock_in', {
-        p_project_id: formData.project_id,
+        p_project_id: projectId,
         p_items: payloadItems
       });
 
       if (error) throw error;
 
-      toast.success('บันทึกรับเข้าสต็อก (Stock Receipt) สำเร็จ');
+      toast.success('บันทึกรับเข้าสต็อก (Stock Receipt) สำเร็จเรียบร้อย');
       setIsCreateDialogOpen(false);
       fetchData();
     } catch (error) {
@@ -460,6 +386,12 @@ const StockIn = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleSubmitOrder = async (e) => {
+    e.preventDefault();
+    if (isSubmitting) return;
+    await executeStockInSubmission(formData.project_id, lineItems);
   };
 
   const viewOrderDetails = async (order) => {
@@ -477,9 +409,31 @@ const StockIn = () => {
     }
   };
 
-  // Receipt summary calculations
+  // Filtered preview items for interactive preview search
+  const filteredPreviewItems = useMemo(() => {
+    if (!previewSearch.trim()) return previewItems;
+    const q = previewSearch.toLowerCase();
+    return previewItems.filter(i => 
+      (i.name && i.name.toLowerCase().includes(q)) ||
+      (i.sku && i.sku.toLowerCase().includes(q)) ||
+      (i.part_number && i.part_number.toLowerCase().includes(q)) ||
+      (i.model && i.model.toLowerCase().includes(q)) ||
+      (i.notes && i.notes.toLowerCase().includes(q))
+    );
+  }, [previewItems, previewSearch]);
+
+  // Selected Location object for active preview
+  const activePreviewProject = useMemo(() => {
+    return projects.find(p => p.id === previewProjectId) || null;
+  }, [projects, previewProjectId]);
+
+  // Calculations
   const totalItemsCount = lineItems.length;
   const totalQuantitySum = lineItems.reduce((acc, row) => acc + (parseInt(row.quantity, 10) || 0), 0);
+
+  const previewParentCount = previewItems.filter(i => i.item_type === 'PARENT').length;
+  const previewChildCount = previewItems.filter(i => i.item_type === 'CHILD').length;
+  const previewTotalQty = previewItems.reduce((sum, i) => sum + (parseInt(i.quantity, 10) || 0), 0);
 
   return (
     <div className="space-y-6">
@@ -490,22 +444,42 @@ const StockIn = () => {
             <ArrowDownToLine className="w-8 h-8 text-green-500" />
             รับเข้าสต็อก (Stock Receipt)
           </h2>
-          <p className="text-muted-foreground mt-2">ประวัติและใบบันทึกการรับเข้าวัสดุเข้าคลังโครงการ (รองรับโครงสร้าง Parent-Child)</p>
+          <p className="text-muted-foreground mt-2">
+            ประวัติและใบบันทึกการรับเข้าวัสดุเข้าคลังโครงการ (รองรับการแยกยอดตามคลังจัดเก็บ & DOPA+USO)
+          </p>
         </div>
         
         {can('stock_in.create') && (
-          <Button 
-            className="h-10 px-4 rounded-xl font-semibold text-sm bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white shadow-md hover:shadow-lg shadow-emerald-600/20 flex items-center gap-2 transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 shrink-0"
-            onClick={handleOpenCreateDialog}
-          >
-            <Plus className="w-4 h-4 shrink-0" />
-            <span>บันทึกรับเข้าสต็อก</span>
-          </Button>
+          <div className="flex items-center gap-2.5">
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              accept=".csv" 
+              className="hidden" 
+              onChange={handleCsvFileUpload} 
+            />
+            <Button 
+              variant="outline"
+              className="h-10 px-3.5 rounded-xl font-semibold text-xs border-emerald-500/30 hover:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 gap-1.5 cursor-pointer shadow-2xs"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Upload className="w-4 h-4" />
+              <span>นำเข้าไฟล์ DOPA (.csv)</span>
+            </Button>
+
+            <Button 
+              className="h-10 px-4 rounded-xl font-semibold text-xs bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white shadow-md hover:shadow-lg shadow-emerald-600/20 flex items-center gap-2 transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 shrink-0"
+              onClick={handleOpenCreateDialog}
+            >
+              <Plus className="w-4 h-4 shrink-0" />
+              <span>บันทึกรับเข้าสต็อก</span>
+            </Button>
+          </div>
         )}
       </div>
 
       {/* Main Stock Receipts Table */}
-      <Card className="overflow-hidden">
+      <Card className="overflow-hidden rounded-3xl glass border border-border/80 shadow-md">
         <Table>
           <TableHeader className="bg-muted/50">
             <TableRow>
@@ -522,14 +496,24 @@ const StockIn = () => {
               <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">ไม่มีข้อมูลบิลรับเข้า</TableCell></TableRow>
             ) : (
               orders.map((o) => (
-                <TableRow key={o.id}>
-                  <TableCell className="text-muted-foreground">{format(new Date(o.created_at), 'dd/MM/yy HH:mm')}</TableCell>
+                <TableRow key={o.id} className="hover:bg-muted/20">
+                  <TableCell className="text-muted-foreground font-mono">{format(new Date(o.created_at), 'dd/MM/yyyy HH:mm')}</TableCell>
                   <TableCell className="font-medium">
-                    {o.projects?.project_code ? `${o.projects.project_code} — ` : ''}{o.projects?.name}
+                    {o.projects?.project_code ? (
+                      <span className="font-mono text-emerald-600 dark:text-emerald-400 font-bold mr-1.5">
+                        [{o.projects.project_code}]
+                      </span>
+                    ) : ''}
+                    {o.projects?.name}
+                    {o.projects?.location && (
+                      <span className="text-xs text-muted-foreground font-normal ml-2">
+                        ({o.projects.location})
+                      </span>
+                    )}
                   </TableCell>
-                  <TableCell>{o.profiles?.full_name}</TableCell>
+                  <TableCell>{o.profiles?.full_name || 'Admin User'}</TableCell>
                   <TableCell className="text-right">
-                    <Button size="sm" variant="outline" onClick={() => viewOrderDetails(o)}>
+                    <Button size="sm" variant="outline" className="rounded-xl h-8 text-xs font-semibold" onClick={() => viewOrderDetails(o)}>
                       ดูรายละเอียด
                     </Button>
                   </TableCell>
@@ -540,132 +524,385 @@ const StockIn = () => {
         </Table>
       </Card>
 
-      {/* Direct Stock Receipt Modal */}
+      {/* ========================================================================= */}
+      {/* 1. INTERACTIVE DOPA+USO CSV IMPORT PREVIEW & WAREHOUSE FILTER MODAL */}
+      {/* ========================================================================= */}
+      <Dialog open={isImportPreviewOpen} onOpenChange={setIsImportPreviewOpen}>
+        <DialogContent className="max-w-6xl max-h-[92vh] overflow-hidden flex flex-col p-6 rounded-3xl glass shadow-2xl border-white/20 dark:border-slate-800">
+          <DialogHeader className="pb-3 border-b border-border/40 shrink-0">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                  <FileSpreadsheet className="w-5 h-5" />
+                </div>
+                <div>
+                  <DialogTitle className="text-lg font-bold flex items-center gap-2 text-foreground">
+                    <span>นำเข้าและตรวจสอบรายการรับเข้าสต็อก (DOPA+USO Stock Receipt)</span>
+                  </DialogTitle>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    ไฟล์: <strong className="text-foreground">{importFileName || 'CSV Document'}</strong>
+                  </p>
+                </div>
+              </div>
+
+              {/* Summary Badges */}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-emerald-500/15 text-emerald-600 border border-emerald-500/30 font-mono">
+                  รวม {previewItems.length} รายการ
+                </span>
+                <span className="px-2 py-0.5 rounded-lg text-[11px] font-bold bg-indigo-500/15 text-indigo-600 border border-indigo-500/30">
+                  PARENT: {previewParentCount}
+                </span>
+                <span className="px-2 py-0.5 rounded-lg text-[11px] font-bold bg-blue-500/15 text-blue-600 border border-blue-500/30">
+                  CHILD: {previewChildCount}
+                </span>
+                <span className="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 font-mono">
+                  ยอดรวม {previewTotalQty.toLocaleString()} ชิ้น
+                </span>
+              </div>
+            </div>
+          </DialogHeader>
+
+          <div className="py-4 space-y-4 overflow-y-auto flex-1 pr-1">
+            {/* Top Toolbar: Destination Project & Storage Location Selector */}
+            <div className="bg-muted/30 p-3.5 rounded-2xl border border-border/60 space-y-3">
+              <ProjectLocationSelector
+                projects={projects}
+                value={previewProjectId}
+                onChange={handlePreviewProjectChange}
+                required={true}
+                mode="dual"
+                size="sm"
+                label="1. เลือกโครงการและคลังปลายทางที่ต้องการรับเข้า (Destination Project & Storage Location)"
+                showSummaryCard={false}
+              />
+
+              {/* Warehouse Balance Filter Toolbar */}
+              <div className="pt-2 border-t border-border/40 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+                    <Filter className="w-3.5 h-3.5 text-indigo-600" />
+                    <span>2. กรองและคำนวณยอดคงเหลือตามคลัง (Storage Location Balance):</span>
+                  </div>
+                  
+                  {/* Quick Warehouse Pills */}
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <Button
+                      type="button"
+                      size="xs"
+                      variant={selectedQtySource === 'คงเหลือ' ? 'default' : 'outline'}
+                      onClick={() => handleChangeQtySource('คงเหลือ')}
+                      className={`h-7 rounded-lg text-[11px] font-bold cursor-pointer transition-all flex items-center gap-1 ${
+                        selectedQtySource === 'คงเหลือ'
+                          ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                          : 'border-border/60 hover:bg-muted'
+                      }`}
+                    >
+                      <BarChart3 className="w-3.5 h-3.5" />
+                      <span>ยอดรวมคงเหลือ (Total)</span>
+                    </Button>
+
+                    {csvDetectedWarehouses.map(wh => {
+                      const isSelected = selectedQtySource === wh;
+                      return (
+                        <Button
+                          key={wh}
+                          type="button"
+                          size="xs"
+                          variant={isSelected ? 'default' : 'outline'}
+                          onClick={() => handleChangeQtySource(wh)}
+                          className={`h-7 rounded-lg text-[11px] font-bold cursor-pointer transition-all flex items-center gap-1 ${
+                            isSelected
+                              ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-2xs'
+                              : 'border-border/60 hover:bg-muted text-foreground'
+                          }`}
+                        >
+                          <Building2 className="w-3.5 h-3.5 text-indigo-500" />
+                          <span>{wh}</span>
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Filter Zero Qty Toggle */}
+                <Button
+                  type="button"
+                  size="xs"
+                  variant="ghost"
+                  onClick={handleToggleOnlyPositive}
+                  className="h-7 text-xs font-semibold text-muted-foreground hover:text-foreground gap-1.5 self-start sm:self-auto cursor-pointer"
+                >
+                  {onlyPositiveFilter ? (
+                    <>
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                      <span>แสดงเฉพาะรายการมียอด &gt; 0</span>
+                    </>
+                  ) : (
+                    <>
+                      <Layers className="w-3.5 h-3.5 text-indigo-500" />
+                      <span>แสดงทุกรายการ (รวมยอด 0)</span>
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            {/* Active Filter Info Banner */}
+            {selectedQtySource !== 'คงเหลือ' && (
+              <div className="p-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-xs flex items-center justify-between gap-2 animate-in fade-in-50">
+                <span className="flex items-center gap-1.5 font-medium text-foreground">
+                  <MapPin className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                  <span>กำลังแสดงรายการและยอดสต็อกเฉพาะของคลัง: <strong className="text-indigo-600 dark:text-indigo-300">{selectedQtySource}</strong></span>
+                </span>
+                <span className="font-mono font-bold text-indigo-700 dark:text-indigo-300">
+                  {previewItems.length} รายการ ({previewTotalQty.toLocaleString()} ชิ้น)
+                </span>
+              </div>
+            )}
+
+            {/* Search Bar in Preview */}
+            <div className="flex items-center justify-between gap-3">
+              <div className="relative w-full sm:w-72">
+                <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="ค้นหาชื่อ, Part No, รุ่น ในตารางพรีวิว..."
+                  value={previewSearch}
+                  onChange={(e) => setPreviewSearch(e.target.value)}
+                  className="pl-8 h-8 text-xs rounded-xl"
+                />
+              </div>
+
+              <span className="text-xs text-muted-foreground">
+                แสดงผล {filteredPreviewItems.length} จาก {previewItems.length} รายการ
+              </span>
+            </div>
+
+            {/* Preview Items Table */}
+            <div className="border border-border/80 rounded-2xl overflow-hidden shadow-sm max-h-[44vh] overflow-y-auto">
+              <Table>
+                <TableHeader className="bg-muted/60 sticky top-0 z-10 backdrop-blur text-xs">
+                  <TableRow className="border-b">
+                    <TableHead className="w-[6%] text-center">ลำดับ</TableHead>
+                    <TableHead className="w-[8%]">ประเภท</TableHead>
+                    <TableHead className="w-[14%]">Part No. / SKU</TableHead>
+                    <TableHead className="w-[32%]">รายการวัสดุ</TableHead>
+                    <TableHead className="w-[15%]">รุ่น/ยี่ห้อ</TableHead>
+                    <TableHead className="w-[10%] text-right">จำนวน ({selectedQtySource})</TableHead>
+                    <TableHead className="w-[12%]">หมายเหตุ</TableHead>
+                    <TableHead className="w-[3%] text-center">ลบ</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody className="text-xs">
+                  {filteredPreviewItems.map((item, idx) => {
+                    const isChild = item.item_type === 'CHILD';
+
+                    return (
+                      <TableRow 
+                        key={item.tempId || idx}
+                        className={`hover:bg-muted/30 transition-colors ${isChild ? 'bg-blue-50/20 dark:bg-blue-950/10' : ''}`}
+                      >
+                        <TableCell className="text-center font-mono text-muted-foreground">
+                          {item.no || idx + 1}
+                        </TableCell>
+
+                        <TableCell>
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold border ${
+                            isChild 
+                              ? 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/60 dark:text-blue-200' 
+                              : 'bg-indigo-100 text-indigo-800 border-indigo-300 dark:bg-indigo-900/60 dark:text-indigo-200'
+                          }`}>
+                            <span>{isChild ? 'CHILD' : 'PARENT'}</span>
+                            {isChild && <CornerDownRight className="w-3 h-3 text-blue-600 dark:text-blue-300 shrink-0" />}
+                          </span>
+                        </TableCell>
+
+                        <TableCell className="font-mono text-muted-foreground text-[11px]">
+                          {item.part_number || item.sku || '—'}
+                        </TableCell>
+
+                        <TableCell className={isChild ? 'pl-6' : ''}>
+                          <div className="space-y-0.5">
+                            <div className="flex items-center gap-1">
+                              {isChild && <CornerDownRight className="w-3.5 h-3.5 text-blue-500 shrink-0 select-none" />}
+                              <span className={`font-semibold ${isChild ? 'text-blue-950 dark:text-blue-200' : 'text-foreground'}`}>
+                                {item.name}
+                              </span>
+                            </div>
+                            {item.parent_sku && isChild && (
+                              <div className="text-[10px] text-muted-foreground font-mono pl-3">
+                                แม่: {item.parent_sku}
+                              </div>
+                            )}
+                          </div>
+                        </TableCell>
+
+                        <TableCell className="text-muted-foreground">
+                          {item.model || '—'}
+                        </TableCell>
+
+                        <TableCell className="text-right font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm">
+                          +{item.quantity}
+                        </TableCell>
+
+                        <TableCell className="text-[11px] text-muted-foreground truncate max-w-[140px]">
+                          {item.notes || '—'}
+                        </TableCell>
+
+                        <TableCell className="text-center">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setPreviewItems(prev => prev.filter(x => x.tempId !== item.tempId))}
+                            className="h-6 w-6 text-muted-foreground hover:text-destructive rounded-lg cursor-pointer"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 sm:justify-between border-t border-border/40 pt-3 shrink-0">
+            <Button 
+              type="button" 
+              variant="outline" 
+              className="rounded-xl text-xs font-bold cursor-pointer"
+              onClick={() => setIsImportPreviewOpen(false)}
+            >
+              ยกเลิก
+            </Button>
+
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleApplyPreviewToForm}
+                className="rounded-xl h-10 px-4 text-xs font-bold gap-1.5 border-indigo-500/30 text-indigo-600 hover:bg-indigo-500/10 cursor-pointer"
+              >
+                <span>เปิดแก้ไขในแบบฟอร์ม</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Button>
+
+              <Button
+                type="button"
+                disabled={isSubmitting || !previewProjectId || previewItems.length === 0}
+                onClick={handleDirectSubmitFromPreview}
+                className="rounded-xl h-10 px-5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold gap-2 shadow-md cursor-pointer disabled:opacity-50"
+              >
+                {isSubmitting ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    <span>กำลังบันทึกรับเข้า...</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>ยืนยันบันทึกรับเข้า ({previewItems.length} รายการ)</span>
+                  </>
+                )}
+              </Button>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ========================================================================= */}
+      {/* 2. DIRECT STOCK RECEIPT EDIT / MANUAL ENTRY MODAL */}
+      {/* ========================================================================= */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto p-6 rounded-3xl glass shadow-2xl border-white/20 dark:border-slate-800">
           <form onSubmit={handleSubmitOrder}>
-            <DialogHeader>
+            <DialogHeader className="border-b border-border/40 pb-3">
               <DialogTitle className="text-xl font-bold flex items-center gap-2">
                 <ArrowDownToLine className="w-6 h-6 text-green-600" />
-                บันทึกรับเข้าสต็อก (Direct Stock Receipt - Parent/Child Hierarchy)
+                <span>บันทึกรับเข้าสต็อก (Direct Stock Receipt - Parent/Child Hierarchy)</span>
               </DialogTitle>
             </DialogHeader>
 
             <div className="space-y-6 py-4">
-              {/* Destination Project Selection */}
-              <div className="bg-muted/40 p-4 rounded-xl border neu-pressed space-y-3">
-                <div className="space-y-2">
-                  <label className="text-sm font-bold flex items-center justify-between">
-                    <span className="flex items-center gap-1.5 text-foreground">
-                      <Building2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                      <span>โครงการปลายทาง & สถานที่ตั้ง (Destination Project & Location)</span>
-                      <span className="text-destructive">*</span>
-                    </span>
-                    <span className="text-xs text-muted-foreground font-normal">
-                      {(() => {
-                        const map = new Map();
-                        projects.forEach(p => {
-                          const k = `${(p.name || '').trim()}|||${(p.project_code || '').trim()}`;
-                          map.set(k, true);
-                        });
-                        return `${map.size} โครงการหลัก (${projects.length} สถานที่ตั้ง)`;
-                      })()}
-                    </span>
-                  </label>
-                  
-                  <select 
-                    required 
-                    className="flex h-11 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 font-medium transition-all shadow-sm cursor-pointer" 
-                    value={formData.project_id} 
-                    onChange={e => setFormData({ ...formData, project_id: e.target.value })}
-                  >
-                    <option value="" disabled>-- เลือกโครงการปลายทางและสถานที่ตั้งจัดเก็บ --</option>
-                    {(() => {
-                      const map = new Map();
-                      projects.forEach(p => {
-                        const nameKey = (p.name || '').trim();
-                        const codeKey = (p.project_code || '').trim();
-                        const key = `${nameKey}|||${codeKey}`;
+              {/* Destination Project & Storage Location Selection */}
+              <div className="bg-muted/40 p-4 rounded-2xl border neu-pressed space-y-3">
+                <ProjectLocationSelector
+                  projects={projects}
+                  value={formData.project_id}
+                  onChange={handleDirectProjectChange}
+                  required={true}
+                  mode="dual"
+                  label="โครงการปลายทาง & สถานที่ตั้งจัดเก็บ (Destination Project & Storage Location)"
+                  showSummaryCard={true}
+                />
 
-                        if (!map.has(key)) {
-                          map.set(key, { key, name: p.name, project_code: p.project_code, locations: [p] });
-                        } else {
-                          map.get(key).locations.push(p);
-                        }
-                      });
-                      
-                      return Array.from(map.values()).map(group => (
-                        <optgroup 
-                          key={group.key} 
-                          label={`โครงการ: ${group.project_code ? `[${group.project_code}] ` : ''}${group.name}`}
+                {/* CSV Detected Warehouse Balance Selector (If CSV has been imported) */}
+                {csvDetectedWarehouses.length > 0 && (
+                  <div className="pt-2 border-t border-border/40 flex items-center justify-between gap-2 flex-wrap text-xs">
+                    <span className="font-bold text-muted-foreground flex items-center gap-1">
+                      <SlidersHorizontal className="w-3.5 h-3.5 text-indigo-500" />
+                      <span>กรองยอดด่วนตามคลังในไฟล์:</span>
+                    </span>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <Button
+                        type="button"
+                        size="xs"
+                        variant="outline"
+                        onClick={() => {
+                          const allAgg = filterAndAggregateWarehouseItems(rawParsedCsvItems, 'คงเหลือ', { filterZeroQty: false });
+                          setLineItems(allAgg);
+                          toast.success('แสดงยอดรวมคงเหลือทุกคลัง');
+                        }}
+                        className="h-6 text-[10px] rounded-lg font-bold flex items-center gap-1"
+                      >
+                        <BarChart3 className="w-3 h-3 text-emerald-600" />
+                        <span>ยอดรวมทั้งหมด</span>
+                      </Button>
+                      {csvDetectedWarehouses.map(wh => (
+                        <Button
+                          key={wh}
+                          type="button"
+                          size="xs"
+                          variant="outline"
+                          onClick={() => {
+                            const whAgg = filterAndAggregateWarehouseItems(rawParsedCsvItems, wh, { filterZeroQty: true });
+                            setLineItems(whAgg);
+                            toast.success(`กรองยอดเฉพาะ [${wh}] ${whAgg.length} รายการ`);
+                          }}
+                          className="h-6 text-[10px] rounded-lg font-bold border-indigo-500/30 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-500/10 flex items-center gap-1"
                         >
-                          {group.locations.map(loc => (
-                            <option key={loc.id} value={loc.id}>
-                              {loc.location || 'คลังหลัก / ไม่ระบุสถานที่'} {loc.description ? `— ${loc.description}` : ''}
-                            </option>
-                          ))}
-                        </optgroup>
-                      ));
-                    })()}
-                  </select>
-                </div>
-
-                {/* Selection Summary Preview Card */}
-                {formData.project_id && (() => {
-                  const p = projects.find(item => item.id === formData.project_id);
-                  if (!p) return null;
-                  return (
-                    <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs flex items-center justify-between gap-2 animate-in fade-in-50">
-                      <div className="space-y-0.5 min-w-0">
-                        <div className="font-bold text-foreground truncate">
-                          โครงการ: {p.project_code ? (
-                            <span className="font-mono text-emerald-700 dark:text-emerald-300 font-semibold mr-1">
-                              [{p.project_code}]
-                            </span>
-                          ) : ''}
-                          {p.name}
-                        </div>
-                        <div className="text-muted-foreground truncate font-medium">
-                          สถานที่ตั้ง: <span className="text-foreground font-semibold">{p.location || 'คลังหลัก'}</span>
-                          {p.description ? ` (${p.description})` : ''}
-                        </div>
-                      </div>
-                      <span className="shrink-0 px-2 py-0.5 rounded-full bg-emerald-600 text-white font-mono text-[10px] font-bold">
-                        SELECTED
-                      </span>
+                          <Building2 className="w-3 h-3 text-indigo-500" />
+                          <span>{wh}</span>
+                        </Button>
+                      ))}
                     </div>
-                  );
-                })()}
+                  </div>
+                )}
               </div>
 
               {/* CSV Tools Action Bar */}
-              <div className="flex flex-wrap items-center justify-between gap-3 bg-green-50/50 dark:bg-green-950/20 p-3 rounded-lg border border-green-200 dark:border-green-800">
-                <div className="flex items-center gap-2 text-sm text-green-800 dark:text-green-300">
-                  <Upload className="w-4 h-4" />
-                  <span className="font-semibold">นำเข้าด้วยไฟล์ CSV โครงสร้าง Parent-Child (รองรับภาษาไทย UTF-8 BOM)</span>
+              <div className="flex flex-wrap items-center justify-between gap-3 bg-emerald-500/10 p-3.5 rounded-2xl border border-emerald-500/20">
+                <div className="flex items-center gap-2 text-sm text-emerald-900 dark:text-emerald-200">
+                  <Upload className="w-4 h-4 text-emerald-600" />
+                  <span className="font-semibold">นำเข้าไฟล์ DOPA+USO หรือ CSV โครงสร้าง Parent-Child (UTF-8 BOM)</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Button 
                     type="button" 
                     variant="outline" 
                     size="sm"
-                    className="h-8 text-xs gap-1 border-green-300 hover:bg-green-100 dark:hover:bg-green-900"
+                    className="h-8 text-xs gap-1 border-emerald-500/30 hover:bg-emerald-500/10 font-bold"
                     onClick={handleDownloadCsvTemplate}
                   >
-                    <Download className="w-3.5 h-3.5" /> ดาวน์โหลด CSV Template
+                    <Download className="w-3.5 h-3.5" /> ดาวน์โหลด DOPA Template
                   </Button>
                   
-                  <input 
-                    type="file" 
-                    ref={fileInputRef} 
-                    accept=".csv" 
-                    className="hidden" 
-                    onChange={handleCsvFileUpload} 
-                  />
                   <Button 
                     type="button" 
                     size="sm"
-                    className="h-8 text-xs gap-1 bg-green-700 hover:bg-green-800 text-white font-semibold"
+                    className="h-8 text-xs gap-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold cursor-pointer"
                     onClick={() => fileInputRef.current?.click()}
                   >
                     <Upload className="w-3.5 h-3.5" /> นำเข้าไฟล์ .csv
@@ -684,7 +921,7 @@ const StockIn = () => {
                       type="button" 
                       variant="outline" 
                       size="sm"
-                      className="h-8 text-xs gap-1.5 px-3 rounded-xl text-emerald-700 dark:text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/10 font-bold shadow-2xs"
+                      className="h-8 text-xs gap-1.5 px-3 rounded-xl text-emerald-700 dark:text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/10 font-bold shadow-2xs cursor-pointer"
                       onClick={() => handleAddLineItem('PARENT')}
                     >
                       <Plus className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
@@ -694,7 +931,7 @@ const StockIn = () => {
                       type="button" 
                       variant="outline" 
                       size="sm"
-                      className="h-8 text-xs gap-1.5 px-3 rounded-xl text-blue-700 dark:text-blue-300 border-blue-500/30 hover:bg-blue-500/10 font-bold shadow-2xs"
+                      className="h-8 text-xs gap-1.5 px-3 rounded-xl text-blue-700 dark:text-blue-300 border-blue-500/30 hover:bg-blue-500/10 font-bold shadow-2xs cursor-pointer"
                       onClick={() => {
                         const lastParent = lineItems.slice().reverse().find(i => i.item_type === 'PARENT');
                         handleAddLineItem('CHILD', lastParent?.sku || '');
@@ -706,15 +943,15 @@ const StockIn = () => {
                   </div>
                 </div>
 
-                <div className="border rounded-md overflow-x-auto">
+                <div className="border border-border/80 rounded-2xl overflow-x-auto shadow-sm max-h-[44vh] overflow-y-auto">
                   <Table>
-                    <TableHeader className="bg-muted/40">
+                    <TableHeader className="bg-muted/40 sticky top-0 z-10 backdrop-blur">
                       <TableRow className="text-xs">
                         <TableHead className="w-[8%] min-w-[75px]">ประเภท</TableHead>
                         <TableHead className="w-[10%] min-w-[100px]">รหัสวัสดุ (SKU)</TableHead>
                         <TableHead className="w-[9%] min-w-[95px]">Parent SKU</TableHead>
                         <TableHead className="w-[20%] min-w-[160px]">รายการ *</TableHead>
-                        <TableHead className="w-[12%] min-w-[110px]">รุ่น *</TableHead>
+                        <TableHead className="w-[12%] min-w-[110px]">รุ่น/ยี่ห้อ</TableHead>
                         <TableHead className="w-[7%] min-w-[65px] text-center">จำนวน *</TableHead>
                         <TableHead className="w-[10%] min-w-[95px]">S/N</TableHead>
                         <TableHead className="w-[10%] min-w-[95px]">Part No.</TableHead>
@@ -738,7 +975,7 @@ const StockIn = () => {
                                 <select 
                                   value={row.item_type} 
                                   onChange={e => handleUpdateLineItem(row.tempId, 'item_type', e.target.value)}
-                                  className={`h-9 w-full rounded border px-1 text-[11px] font-bold ${isChild ? 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900 dark:text-blue-200' : 'bg-green-100 text-green-800 border-green-300 dark:bg-green-900 dark:text-green-200'}`}
+                                  className={`h-9 w-full rounded-lg border px-1 text-[11px] font-bold ${isChild ? 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900 dark:text-blue-200' : 'bg-green-100 text-green-800 border-green-300 dark:bg-green-900 dark:text-green-200'}`}
                                 >
                                   <option value="PARENT">PARENT</option>
                                   <option value="CHILD">CHILD</option>
@@ -750,7 +987,7 @@ const StockIn = () => {
                                   placeholder="SKU-001" 
                                   value={row.sku} 
                                   onChange={e => handleUpdateLineItem(row.tempId, 'sku', e.target.value)} 
-                                  className="h-9 text-xs font-mono font-semibold"
+                                  className="h-9 text-xs font-mono font-semibold rounded-lg"
                                 />
                               </TableCell>
 
@@ -760,7 +997,7 @@ const StockIn = () => {
                                   disabled={!isChild}
                                   value={row.parent_sku} 
                                   onChange={e => handleUpdateLineItem(row.tempId, 'parent_sku', e.target.value)} 
-                                  className="h-9 text-xs font-mono disabled:opacity-40"
+                                  className="h-9 text-xs font-mono disabled:opacity-40 rounded-lg"
                                 />
                               </TableCell>
 
@@ -772,18 +1009,17 @@ const StockIn = () => {
                                     placeholder={isChild ? "ระบุรายการย่อย" : "ระบุรายการ"} 
                                     value={row.name} 
                                     onChange={e => handleUpdateLineItem(row.tempId, 'name', e.target.value)} 
-                                    className={`h-9 text-xs ${isChild ? 'font-medium text-blue-950 dark:text-blue-200' : 'font-semibold'}`}
+                                    className={`h-9 text-xs rounded-lg ${isChild ? 'font-medium text-blue-950 dark:text-blue-200' : 'font-semibold'}`}
                                   />
                                 </div>
                               </TableCell>
 
                               <TableCell className="align-top">
                                 <Input 
-                                  required
-                                  placeholder="ระบุรุ่น" 
+                                  placeholder="ระบุรุ่น (ถ้ามี)" 
                                   value={row.model} 
                                   onChange={e => handleUpdateLineItem(row.tempId, 'model', e.target.value)} 
-                                  className="h-9 text-xs font-medium"
+                                  className="h-9 text-xs font-medium rounded-lg"
                                 />
                               </TableCell>
 
@@ -794,7 +1030,7 @@ const StockIn = () => {
                                   required 
                                   value={row.quantity ?? ''} 
                                   onChange={e => handleUpdateLineItem(row.tempId, 'quantity', e.target.value)} 
-                                  className="h-9 text-center text-xs font-bold px-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                  className="h-9 text-center text-xs font-bold px-1 rounded-lg [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                 />
                               </TableCell>
 
@@ -803,7 +1039,7 @@ const StockIn = () => {
                                   placeholder="S/N (ถ้ามี)" 
                                   value={row.serial_number} 
                                   onChange={e => handleUpdateLineItem(row.tempId, 'serial_number', e.target.value)} 
-                                  className="h-9 text-xs font-mono"
+                                  className="h-9 text-xs font-mono rounded-lg"
                                 />
                               </TableCell>
 
@@ -812,7 +1048,7 @@ const StockIn = () => {
                                   placeholder="Part No." 
                                   value={row.part_number} 
                                   onChange={e => handleUpdateLineItem(row.tempId, 'part_number', e.target.value)} 
-                                  className="h-9 text-xs font-mono"
+                                  className="h-9 text-xs font-mono rounded-lg"
                                 />
                               </TableCell>
 
@@ -821,7 +1057,7 @@ const StockIn = () => {
                                   placeholder="หมายเหตุ" 
                                   value={row.notes} 
                                   onChange={e => handleUpdateLineItem(row.tempId, 'notes', e.target.value)} 
-                                  className="h-9 text-xs"
+                                  className="h-9 text-xs rounded-lg"
                                 />
                               </TableCell>
 
@@ -830,7 +1066,7 @@ const StockIn = () => {
                                   type="button" 
                                   variant="ghost" 
                                   size="sm" 
-                                  className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                                  className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive cursor-pointer"
                                   onClick={() => handleRemoveLineItem(row.tempId)}
                                 >
                                   <Trash2 className="w-4 h-4" />
@@ -846,8 +1082,8 @@ const StockIn = () => {
               </div>
 
               {/* Receipt Summary Calculation */}
-              <div className="flex items-center justify-between bg-muted/50 p-3 rounded-lg border text-sm">
-                <div className="flex gap-6 text-xs sm:text-sm font-medium">
+              <div className="flex items-center justify-between bg-muted/50 p-3 rounded-2xl border text-sm">
+                <div className="flex gap-6 text-xs sm:text-sm font-medium flex-wrap">
                   <span>รวมรายการ: <strong className="text-foreground font-bold">{totalItemsCount}</strong> รายการ</span>
                   <span>รายการหลัก (PARENT): <strong className="text-green-600 font-bold">{lineItems.filter(i => i.item_type === 'PARENT').length}</strong></span>
                   <span>รายการย่อย (CHILD): <strong className="text-blue-600 font-bold">{lineItems.filter(i => i.item_type === 'CHILD').length}</strong></span>
@@ -856,14 +1092,14 @@ const StockIn = () => {
               </div>
             </div>
 
-            <DialogFooter className="gap-2 sm:gap-0 border-t pt-4">
-              <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)} disabled={isSubmitting}>
+            <DialogFooter className="gap-2 sm:gap-0 border-t border-border/40 pt-4">
+              <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)} disabled={isSubmitting} className="rounded-xl">
                 ยกเลิก
               </Button>
               <Button 
                 type="submit" 
                 className="h-10 px-5 rounded-xl font-semibold text-sm bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white shadow-md shadow-emerald-600/20 flex items-center gap-2 transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed" 
-                disabled={isSubmitting || !formData.project_id || lineItems.some(i => (!i.name && !i.sku) || !i.model?.trim())}
+                disabled={isSubmitting || !formData.project_id || lineItems.some(i => (!i.name && !i.sku))}
               >
                 {isSubmitting ? (
                   <>
@@ -882,9 +1118,11 @@ const StockIn = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Order Details Dialog */}
+      {/* ========================================================================= */}
+      {/* 3. ORDER DETAILS DIALOG */}
+      {/* ========================================================================= */}
       <Dialog open={!!selectedOrder} onOpenChange={(open) => !open && setSelectedOrder(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col p-6 rounded-2xl glass shadow-2xl border-white/20 dark:border-slate-800">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col p-6 rounded-3xl glass shadow-2xl border-white/20 dark:border-slate-800">
           <DialogHeader className="pb-3 border-b shrink-0">
             <div className="flex items-center justify-between">
               <DialogTitle className="text-xl font-bold flex items-center gap-2 text-foreground">
@@ -942,7 +1180,7 @@ const StockIn = () => {
             </div>
 
             {/* Scrollable Items Table */}
-            <div className="border rounded-xl overflow-hidden shadow-sm max-h-[50vh] overflow-y-auto">
+            <div className="border border-border/80 rounded-2xl overflow-hidden shadow-sm max-h-[50vh] overflow-y-auto">
               <Table>
                 <TableHeader className="bg-muted/60 sticky top-0 z-10 backdrop-blur text-xs">
                   <TableRow className="border-b">
@@ -1043,7 +1281,7 @@ const StockIn = () => {
             <Button 
               type="button" 
               variant="outline" 
-              className="px-6 rounded-xl font-semibold hover:bg-muted"
+              className="px-6 rounded-xl font-semibold hover:bg-muted cursor-pointer"
               onClick={() => setSelectedOrder(null)}
             >
               ปิด

@@ -104,23 +104,35 @@ const ReportFilterBar = ({
         {isExpanded && (
           <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 items-end">
-              {/* Project Filter */}
+              {/* Project & Storage Location Filter */}
               <div className="space-y-1.5">
                 <Label className="text-xs font-semibold text-foreground flex items-center gap-1">
-                  โครงการ {activeTab === 'balance' && <span className="text-rose-500">*</span>}
+                  โครงการ & คลังจัดเก็บ {activeTab === 'balance' && <span className="text-rose-500">*</span>}
                 </Label>
                 <select
                   name="project_id"
                   value={filters.project_id}
                   onChange={onFilterChange}
-                  className="flex h-9 w-full rounded-xl border border-input bg-background px-3 py-1 text-xs shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="flex h-9 w-full rounded-xl border border-input bg-background px-3 py-1 text-xs shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring font-medium cursor-pointer"
                 >
-                  {activeTab !== 'balance' && <option value="">ทุกโครงการ (All Projects)</option>}
-                  {projects.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.project_code ? `[${p.project_code}] ` : ''}{p.name}
-                    </option>
-                  ))}
+                  {activeTab !== 'balance' && <option value="">-- ทุกโครงการ & ทุกคลังจัดเก็บ (All Locations) --</option>}
+                  {(() => {
+                    const map = new Map();
+                    projects.forEach(p => {
+                      const key = `${(p.name || '').trim()}|||${(p.project_code || '').trim()}`;
+                      if (!map.has(key)) map.set(key, { key, name: p.name, project_code: p.project_code, locations: [p] });
+                      else map.get(key).locations.push(p);
+                    });
+                    return Array.from(map.values()).map(group => (
+                      <optgroup key={group.key} label={`โครงการ: ${group.project_code ? `[${group.project_code}] ` : ''}${group.name}`}>
+                        {group.locations.map(loc => (
+                          <option key={loc.id} value={loc.id}>
+                            {loc.location || 'คลังหลัก'} {loc.description ? `— ${loc.description}` : ''}
+                          </option>
+                        ))}
+                      </optgroup>
+                    ));
+                  })()}
                 </select>
               </div>
 

@@ -2,7 +2,7 @@ import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowUpDown, ArrowUp, ArrowDown, AlertCircle, CheckCircle2, Clock, XCircle } from 'lucide-react';
+import { ArrowUpDown, ArrowUp, ArrowDown, AlertCircle, CheckCircle2, Clock, XCircle, Building2 } from 'lucide-react';
 import ReportEmptyState from './ReportEmptyState';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -215,10 +215,18 @@ const ReportDataTable = ({
                     </TableCell>
 
                     <TableCell className="font-semibold text-foreground">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-accent text-accent-foreground border border-border/50 text-[11px]">
-                        {row.projects?.project_code ? `${row.projects.project_code} — ` : ''}
-                        {row.projects?.name}
-                      </span>
+                      <div className="space-y-0.5">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-accent text-accent-foreground border border-border/50 text-[11px] font-bold">
+                          {row.projects?.project_code ? `${row.projects.project_code} — ` : ''}
+                          {row.projects?.name}
+                        </span>
+                        {row.projects?.location && (
+                          <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold pl-1 flex items-center gap-1">
+                            <Building2 className="w-3 h-3 shrink-0 inline" />
+                            <span>{row.projects.location}</span>
+                          </div>
+                        )}
+                      </div>
                     </TableCell>
 
                     <TableCell>
@@ -245,10 +253,18 @@ const ReportDataTable = ({
                     </TableCell>
 
                     <TableCell className="font-semibold text-foreground">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-accent text-accent-foreground border border-border/50 text-[11px]">
-                        {row.projects?.project_code ? `${row.projects.project_code} — ` : ''}
-                        {row.projects?.name}
-                      </span>
+                      <div className="space-y-0.5">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-accent text-accent-foreground border border-border/50 text-[11px] font-bold">
+                          {row.projects?.project_code ? `${row.projects.project_code} — ` : ''}
+                          {row.projects?.name}
+                        </span>
+                        {row.projects?.location && (
+                          <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold pl-1 flex items-center gap-1">
+                            <Building2 className="w-3 h-3 shrink-0 inline" />
+                            <span>{row.projects.location}</span>
+                          </div>
+                        )}
+                      </div>
                     </TableCell>
 
                     <TableCell className="font-medium text-foreground">{row.items?.name}</TableCell>
@@ -309,10 +325,20 @@ const ReportDataTable = ({
                 {activeTab === 'balance' && (
                   <>
                     <TableCell className="font-semibold text-foreground">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-accent text-accent-foreground border border-border/50 text-[11px]">
-                        {row.project_name}
-                      </span>
+                      <div className="space-y-0.5">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-accent text-accent-foreground border border-border/50 text-[11px] font-bold">
+                          {row.projects?.project_code ? `${row.projects.project_code} — ` : ''}
+                          {row.projects?.name || row.project_name}
+                        </span>
+                        {row.projects?.location && (
+                          <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold pl-1 flex items-center gap-1">
+                            <Building2 className="w-3 h-3 shrink-0 inline" />
+                            <span>{row.projects.location}</span>
+                          </div>
+                        )}
+                      </div>
                     </TableCell>
+
 
                     <TableCell className="font-medium text-foreground">{row.item_name}</TableCell>
 

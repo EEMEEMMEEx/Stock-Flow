@@ -13,6 +13,7 @@ import toast from 'react-hot-toast';
 import WithdrawalItemCard from './WithdrawalItemCard';
 import StockLocationBreakdownModal from './StockLocationBreakdownModal';
 import WithdrawalCartPanel from './WithdrawalCartPanel';
+import { ProjectLocationSelector } from '@/components/common/ProjectLocationSelector';
 
 const WithdrawalPosTerminal = ({
   items = [],
@@ -163,40 +164,17 @@ const WithdrawalPosTerminal = ({
       {/* Left: Product Catalog & Controls */}
       <div className="flex-1 min-w-0 space-y-4 w-full">
         {/* Context Header: Target Project Selector */}
-        <div className="p-4 rounded-3xl glass border border-border/60 shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2.5 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
-              <Building2 className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <h3 className="font-extrabold text-sm text-foreground">โครงการเป้าหมาย (Target Project)</h3>
-                <span className="text-destructive font-bold text-xs">*</span>
-              </div>
-              <p className="text-[11px] text-muted-foreground">
-                เลือกโครงการเพื่อตรวจสอบและตัดสต็อกตามสถานที่จัดเก็บจริง
-              </p>
-            </div>
-          </div>
-
-          <div className="w-full sm:w-80">
-            <select
-              value={selectedProjectId}
-              onChange={(e) => onSelectProject(e.target.value)}
-              className="flex h-10 w-full rounded-2xl border border-input bg-background px-3 py-1 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 shadow-2xs transition-all cursor-pointer"
-            >
-              <option value="all">-- ทุกสถานที่จัดเก็บ (แสดงยอดรวมทั้งระบบ) --</option>
-              {groupedProjects.map(group => (
-                <optgroup key={group.key} label={`${group.project_code ? `[${group.project_code}] ` : ''}${group.name}`}>
-                  {group.locations.map(loc => (
-                    <option key={loc.id} value={loc.id}>
-                      {loc.location || 'คลังหลัก'} {loc.description ? `(${loc.description})` : ''}
-                    </option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
-          </div>
+        <div className="p-4 rounded-3xl glass border border-border/60 shadow-2xs">
+          <ProjectLocationSelector
+            projects={projects}
+            value={selectedProjectId}
+            onChange={(id) => onSelectProject(id)}
+            allowAll={true}
+            allLabel="-- ทุกโครงการ & ทุกคลังจัดเก็บ (แสดงยอดรวมทั้งระบบ) --"
+            label="โครงการเป้าหมาย & สถานที่จัดเก็บ (Target Project & Storage Location)"
+            mode="dual"
+            showSummaryCard={selectedProjectId !== 'all'}
+          />
         </div>
 
         {/* Search, Filter Toolbar & Density Controls */}

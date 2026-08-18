@@ -100,13 +100,14 @@ const CheckoutHistoryList = ({
                       </span>
                     </div>
 
-                    <div className="text-[11px] text-muted-foreground pt-1 flex flex-wrap gap-1.5">
-                      {order.checkout_items?.map((item, idx) => (
-                        <span key={item.id || idx} className="bg-muted/60 px-2 py-0.5 rounded-md border border-border/40 font-mono text-[10px]">
-                          {item.items?.name || 'อุปกรณ์'} ×{item.quantity_borrowed} {item.items?.unit || 'ชิ้น'}
-                        </span>
-                      ))}
-                    </div>
+                      <div className="text-[11px] text-muted-foreground pt-1 flex flex-wrap gap-1.5">
+                        {order.checkout_items?.map((item, idx) => (
+                          <span key={item.id || idx} className="bg-muted/60 px-2 py-0.5 rounded-md border border-border/40 font-mono text-[10px]">
+                            {item.items?.name || 'อุปกรณ์'} ×{item.quantity_borrowed} {item.items?.unit || 'ชิ้น'}
+                            {item.serial_number && <span className="text-indigo-600 dark:text-indigo-400 font-semibold"> (S/N: {item.serial_number})</span>}
+                          </span>
+                        ))}
+                      </div>
                   </div>
 
                   <div className="flex items-center gap-3 shrink-0 self-end md:self-center">

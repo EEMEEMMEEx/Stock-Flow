@@ -231,9 +231,15 @@ const CheckoutDetailModal = ({
                 {returnLogs.map(log => (
                   <div key={log.id} className="p-2.5 rounded-xl bg-muted/25 border border-border/40 text-xs flex items-center justify-between">
                     <div>
-                      <div className="font-semibold text-foreground">
-                        {log.checkout_items?.items?.name} — คืน {log.returned_quantity} {log.checkout_items?.items?.unit || 'ชิ้น'}
-                        <span className={`ml-2 px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                      <div className="font-semibold text-foreground flex items-center gap-1.5 flex-wrap">
+                        <span>{log.checkout_items?.items?.name || 'อุปกรณ์'}</span>
+                        {log.checkout_items?.serial_number && (
+                          <span className="font-mono text-[10px] text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 px-1.5 py-0.2 rounded font-bold">
+                            S/N: {log.checkout_items.serial_number}
+                          </span>
+                        )}
+                        <span>— คืน {log.returned_quantity} {log.checkout_items?.items?.unit || 'ชิ้น'}</span>
+                        <span className={`ml-1 px-1.5 py-0.5 rounded text-[10px] font-bold ${
                           log.item_condition === 'normal' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-red-500/10 text-red-600'
                         }`}>
                           {log.item_condition === 'normal' ? 'ปกติ' : log.item_condition}

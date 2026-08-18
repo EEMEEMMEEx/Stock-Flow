@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import toast from 'react-hot-toast';
+import { ProjectLocationSelector } from '@/components/common/ProjectLocationSelector';
 
 const Items = () => {
   const { can } = useAuth();
@@ -114,7 +115,7 @@ const Items = () => {
       // Fetch Projects for code & name resolution - only active projects
       const { data: pData } = await supabase
         .from('projects')
-        .select('id, name, project_code, location, status')
+        .select('id, name, project_code, location, description, status')
         .eq('status', 'active');
 
       setProjectsList(pData || []);
@@ -516,34 +517,18 @@ const Items = () => {
               </select>
             </div>
 
-            {/* Project Filter */}
-            <div className="flex items-center gap-1.5 min-w-[170px]">
-              <Building2 className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-              <select
-                className="h-10 w-full rounded-xl border border-input bg-background/80 px-3 py-1 text-xs font-semibold focus:ring-2 focus:ring-indigo-500 transition-all cursor-pointer shadow-sm"
+            {/* Project & Storage Location Filter */}
+            <div className="min-w-[260px] flex-1 sm:flex-initial">
+              <ProjectLocationSelector
+                projects={projectsList}
                 value={projectFilter}
-                onChange={(e) => setProjectFilter(e.target.value)}
-              >
-                <option value="all">ทุกโครงการปลายทาง</option>
-                <option value="none">ยังไม่มีสต็อกในโครงการ (0 สต็อก)</option>
-                {(() => {
-                  const map = new Map();
-                  projectsList.forEach(p => {
-                    const key = `${(p.name || '').trim()}|||${(p.project_code || '').trim()}`;
-                    if (!map.has(key)) map.set(key, { key, name: p.name, project_code: p.project_code, locations: [p] });
-                    else map.get(key).locations.push(p);
-                  });
-                  return Array.from(map.values()).map(group => (
-                    <optgroup key={group.key} label={`${group.project_code ? `[${group.project_code}] ` : ''}${group.name}`}>
-                      {group.locations.map(loc => (
-                        <option key={loc.id} value={loc.id}>
-                          {loc.location || 'คลังหลัก'}
-                        </option>
-                      ))}
-                    </optgroup>
-                  ));
-                })()}
-              </select>
+                onChange={(val) => setProjectFilter(val)}
+                allowAll={true}
+                allLabel="-- ทุกโครงการ & ทุกคลังจัดเก็บ (All Locations) --"
+                mode="unified"
+                size="sm"
+                showSummaryCard={false}
+              />
             </div>
 
             {/* View Mode Switcher */}
@@ -670,17 +655,18 @@ const Items = () => {
                         )}
                       </TableCell>
 
-                      {/* Destination Project */}
+                      {/* Destination Project & Storage Location */}
                       <TableCell>
                         {item.project_display !== '-' ? (
-                          <div className="space-y-0.5">
-                            <span className="inline-flex items-center gap-1 font-semibold text-indigo-700 dark:text-indigo-300">
+                          <div className="space-y-1">
+                            <span className="inline-flex items-center gap-1 font-semibold text-indigo-700 dark:text-indigo-300 text-xs">
                               <Building2 className="w-3 h-3 shrink-0" />
                               {item.project_display}
                             </span>
                             {item.project_location && (
-                              <span className="block text-[10px] text-muted-foreground font-medium">
-                                {item.project_location}
+                              <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
+                                <Building2 className="w-3 h-3 shrink-0 inline" />
+                                <span>{item.project_location}</span>
                               </span>
                             )}
                           </div>

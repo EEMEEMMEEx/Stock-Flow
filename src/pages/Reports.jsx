@@ -44,7 +44,7 @@ const Reports = () => {
   const fetchFilterOptions = async () => {
     try {
       const [projRes, catRes] = await Promise.all([
-        supabase.from('projects').select('id, name, project_code').eq('status', 'active').order('name'),
+        supabase.from('projects').select('id, name, project_code, location, description').eq('status', 'active').order('name'),
         supabase.from('categories').select('id, name').order('name')
       ]);
       if (projRes.data) setProjects(projRes.data);
@@ -86,7 +86,7 @@ const Reports = () => {
           .select(
             `
             received_date, supplier, po_number, project_id,
-            projects!inner(name, project_code),
+            projects!inner(name, project_code, location, description),
             stock_in_items!inner(
               quantity, unit_price, model, item_type, parent_sku,
               items!item_id(name, model, unit)
@@ -128,7 +128,7 @@ const Reports = () => {
           .select(
             `
             status, requested_at, project_id, has_shortage, is_shortage_override, override_reason,
-            projects!inner(name, project_code),
+            projects!inner(name, project_code, location, description),
             profiles!withdrawal_orders_requested_by_fkey(full_name),
             withdrawal_items!inner(
               quantity, available_at_approval, deducted_quantity, shortage_quantity,
@@ -178,7 +178,8 @@ const Reports = () => {
 
         let query = supabase.from('stock_balance').select(`
             *,
-            items!inner(category_id)
+            items!inner(category_id),
+            projects:project_id(name, project_code, location, description)
           `);
 
         if (filters.project_id) query = query.eq('project_id', filters.project_id);
