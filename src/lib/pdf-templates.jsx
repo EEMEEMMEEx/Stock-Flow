@@ -247,12 +247,14 @@ export const MaterialWithdrawalPDF = ({ order, items, profile }) => {
           })}
         </View>
 
-        {/* Remark Section */}
-        <View style={{ marginTop: 10, paddingLeft: 10 }} wrap={false}>
-          <Text style={{ fontSize: 14, fontWeight: 'bold' }}>
-            Remark: <Text style={{ fontWeight: 'normal' }}>{order?.purpose || ''}</Text>
-          </Text>
-        </View>
+        {/* Remark Section (Only if not empty) */}
+        {(order?.notes?.trim() || order?.purpose?.trim()) && (
+          <View style={{ marginTop: 10, paddingLeft: 10 }} wrap={false}>
+            <Text style={{ fontSize: 14, fontWeight: 'bold' }}>
+              Remark: <Text style={{ fontWeight: 'normal' }}>{order?.notes?.trim() || order?.purpose?.trim()}</Text>
+            </Text>
+          </View>
+        )}
 
         {/* Signatures */}
         <View style={styles.signatureSection} wrap={false}>

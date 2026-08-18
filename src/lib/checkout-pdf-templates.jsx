@@ -197,9 +197,12 @@ export const MaterialCheckoutPDF = ({ order }) => {
     ? new Date(order.expected_return_date).toLocaleDateString('th-TH')
     : '—';
 
-  const projectDisplay = order?.projects?.project_code 
-    ? `${order.projects.project_code} — ${order.projects.name || ''}`
-    : (order?.projects?.name || '—');
+  const warehouseName = order?.warehouse_name || order?.projects?.name || order?.projects?.location || '—';
+
+  // Suppress Remark if notes are empty or exact duplicate of purpose
+  const effectiveRemark = order?.notes?.trim() && order?.notes?.trim() !== order?.purpose?.trim()
+    ? order.notes.trim()
+    : null;
 
   return (
     <Document>
@@ -228,7 +231,7 @@ export const MaterialCheckoutPDF = ({ order }) => {
 
         {/* Meta Section */}
         <View style={styles.metaSection}>
-          <Text>ผู้ยืม : {order?.borrower_name || '—'} {order?.borrower_department ? `(${order.borrower_department})` : ''} — คลัง/โครงการ : {projectDisplay}</Text>
+          <Text>ผู้ยืม : {order?.borrower_name || '—'} {order?.borrower_department ? `(${order.borrower_department})` : ''} — คลัง : {warehouseName}</Text>
           <Text>เลขที่ : {order?.order_number || '—'}</Text>
         </View>
         <View style={[styles.metaSection, { marginBottom: 10 }]}>
@@ -274,12 +277,14 @@ export const MaterialCheckoutPDF = ({ order }) => {
           })}
         </View>
 
-        {/* Remark Section */}
-        <View style={{ marginTop: 10, paddingLeft: 10 }} wrap={false}>
-          <Text style={{ fontSize: 14, fontWeight: 'bold' }}>
-            Remark: <Text style={{ fontWeight: 'normal' }}>{order?.notes || order?.purpose || ''}</Text>
-          </Text>
-        </View>
+        {/* Remark Section (Suppressed if redundant/empty) */}
+        {effectiveRemark && (
+          <View style={{ marginTop: 10, paddingLeft: 10 }} wrap={false}>
+            <Text style={{ fontSize: 14, fontWeight: 'bold' }}>
+              Remark: <Text style={{ fontWeight: 'normal' }}>{effectiveRemark}</Text>
+            </Text>
+          </View>
+        )}
 
         {/* Signatures */}
         <View style={styles.signatureSection} wrap={false}>
@@ -325,9 +330,12 @@ export const MaterialReturnPDF = ({ order, returnLogs = [] }) => {
     ? new Date(order.actual_returned_date).toLocaleDateString('th-TH')
     : new Date().toLocaleDateString('th-TH');
 
-  const projectDisplay = order?.projects?.project_code 
-    ? `${order.projects.project_code} — ${order.projects.name || ''}`
-    : (order?.projects?.name || '—');
+  const warehouseName = order?.warehouse_name || order?.projects?.name || order?.projects?.location || '—';
+
+  // Suppress Remark if notes are empty or exact duplicate of purpose
+  const effectiveRemark = order?.notes?.trim() && order?.notes?.trim() !== order?.purpose?.trim()
+    ? order.notes.trim()
+    : null;
 
   const returnStatusText = order?.status === 'completed' 
     ? 'คืนครบถ้วน (Completed)' 
@@ -360,7 +368,7 @@ export const MaterialReturnPDF = ({ order, returnLogs = [] }) => {
 
         {/* Meta Section */}
         <View style={styles.metaSection}>
-          <Text>ผู้ส่งคืน : {order?.borrower_name || '—'} {order?.borrower_department ? `(${order.borrower_department})` : ''} — คลังจัดเก็บ : {projectDisplay}</Text>
+          <Text>ผู้ส่งคืน : {order?.borrower_name || '—'} {order?.borrower_department ? `(${order.borrower_department})` : ''} — คลัง : {warehouseName}</Text>
           <Text>อ้างอิงใบยืม : {order?.order_number || '—'}</Text>
         </View>
         <View style={[styles.metaSection, { marginBottom: 10 }]}>
@@ -415,12 +423,14 @@ export const MaterialReturnPDF = ({ order, returnLogs = [] }) => {
           })}
         </View>
 
-        {/* Remark Section */}
-        <View style={{ marginTop: 10, paddingLeft: 10 }} wrap={false}>
-          <Text style={{ fontSize: 14, fontWeight: 'bold' }}>
-            Remark: <Text style={{ fontWeight: 'normal' }}>{order?.notes || ''}</Text>
-          </Text>
-        </View>
+        {/* Remark Section (Suppressed if redundant/empty) */}
+        {effectiveRemark && (
+          <View style={{ marginTop: 10, paddingLeft: 10 }} wrap={false}>
+            <Text style={{ fontSize: 14, fontWeight: 'bold' }}>
+              Remark: <Text style={{ fontWeight: 'normal' }}>{effectiveRemark}</Text>
+            </Text>
+          </View>
+        )}
         {/* Signatures */}
         <View style={styles.signatureSection} wrap={false}>
           <View style={styles.signatureBox}>

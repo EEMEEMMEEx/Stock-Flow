@@ -1,5 +1,26 @@
 # Changelog
 
+## [2026-08-18 12:35] 🧹 Suppress Redundant Remark Section in PDF Templates
+
+- **Modified files:**
+  - `src/lib/checkout-pdf-templates.jsx`
+  - `src/lib/pdf-templates.jsx`
+- **Details:**
+  - `src/lib/checkout-pdf-templates.jsx`:
+    - เพิ่มการตรวจสอบข้อความหมายเหตุ (`effectiveRemark`) โดยระบบจะซ่อน (Suppress) กล่อง `Remark:` ทันที หากไม่มีหมายเหตุเพิ่มเติม หรือข้อความในหมายเหตุซ้ำกับ `วัตถุประสงค์ :` (Purpose) เพื่อป้องกันข้อมูลซ้ำซ้อนในเอกสาร PDF
+  - `src/lib/pdf-templates.jsx`:
+    - ปรับการแสดงผลกล่อง `Remark:` ให้แสดงเฉพาะกรณีที่มีข้อมูลเท่านั้น
+- **Reason:** ลดความซ้ำซ้อนของข้อมูลในเอกสาร PDF ตามความต้องการของผู้ใช้
+
+## [2026-08-18 12:25] 🏷️ Display Direct Warehouse Label in Checkout PDF Templates
+
+- **Modified files:**
+  - `src/lib/checkout-pdf-templates.jsx`
+- **Details:**
+  - `src/lib/checkout-pdf-templates.jsx`:
+    - ปรับการแสดงผลส่วนหัวข้อมูลในใบยืมพัสดุ (`MaterialCheckoutPDF`) และใบรับคืนพัสดุ (`MaterialReturnPDF`) จาก `คลัง/โครงการ : [รหัส] — ชื่อโครงการ` ให้แสดงเฉพาะชื่อคลังสินค้าที่เลือก `คลัง : {warehouseName}` เพื่อความกระชับและตรงตามฟอร์มที่ระบุ
+- **Reason:** ปรับปรุงป้ายกำกับคลังสินค้าในเอกสาร PDF การยืม-คืนพัสดุตามความต้องการของผู้ใช้
+
 ## [2026-08-18 09:55] ✍️ Standardize Dual-Box Signature Layout for Checkout & Withdrawal PDFs
 
 - **Modified files:**
