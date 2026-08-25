@@ -1,5 +1,20 @@
 # Changelog
 
+## [2026-08-25 11:35] 🌐 อัปเดต GitHub Pages และ Repository URL เป็น `eemeemmeex`
+
+- **Modified files:**
+  - `src/pages/UserManagement.jsx`
+  - `src/lib/notificationDispatcher.js`
+  - `src/lib/emailService.js`
+  - `src/lib/emailRenderer.js`
+  - `src/components/landing/LandingFooter.jsx`
+  - `README.md`
+- **Details:**
+  - เปลี่ยน URL ของ GitHub Pages จาก `https://bearnannan.github.io/Stock-Flow/` เป็น `https://eemeemmeex.github.io/Stock-Flow/` สำหรับการเข้าใช้งานระบบและ Landing Page
+  - อัปเดตลิงก์ Action URL ในการส่งอีเมลเชิญผู้ใช้งาน (`sendUserInvitationEmail`), การส่งอีเมลแจ้งเตือนรายการเบิกจ่าย (`notificationDispatcher.js`), และค่า Fallback URL ใน `emailRenderer.js`
+  - ปรับปรุงลิงก์ GitHub Repository ใน `LandingFooter.jsx` และเอกสาร `README.md` ให้ชี้ไปยังองค์กร/ผู้ใช้ใหม่ `eemeemmeex` อย่างถูกต้อง
+- **Reason:** อัปเดตการตั้งค่าโฮสติ้งและลิงก์ของ GitHub Pages ตามคำขอของผู้ใช้
+
 ## [2026-08-25 00:00] ปิดการส่งอีเมลเชิญ (Invitation Email) เป็นค่าเริ่มต้นตอนสร้างผู้ใช้ใหม่
 
 - **Modified files:**
