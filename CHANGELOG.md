@@ -1,31 +1,5 @@
 # Changelog
 
-## [2026-08-25 10:06] 🌐 Update GitHub Pages & Repository URL to eemeemmeex
-
-- **Modified files:**
-  - `README.md`
-  - `src/components/landing/LandingFooter.jsx`
-  - `src/lib/emailRenderer.js`
-  - `src/lib/emailService.js`
-  - `src/lib/notificationDispatcher.js`
-  - `src/pages/UserManagement.jsx`
-- **Details:**
-  - เปลี่ยน URL สำหรับ GitHub Pages และ Repository จาก `bearnannan` เป็น `eemeemmeex` ทั้งหมด:
-    - GitHub Pages: `https://eemeemmeex.github.io/Stock-Flow/`
-    - GitHub Repository: `https://github.com/eemeemmeex/Stock-Flow`
-    - ลิงก์ Action URL / CTA ในแม่แบบอีเมล (Invitation Email, Notification Dispatcher, User Management)
-- **Reason:** อัปเดต URL ทางการของระบบบน GitHub Pages และ Repository ให้ตรงกับชื่อผู้ใช้/องค์กรใหม่ (`eemeemmeex`)
-
-## [2026-08-23 20:59] 📧 Disable Default Invitation Email on User Sign-Up / Creation
-
-- **Modified files:**
-  - `src/components/users/AddUserModal.jsx`
-- **Details:**
-  - `src/components/users/AddUserModal.jsx`:
-    - ปรับค่าเริ่มต้นของ `send_invitation` ใน `formData` และ `resetForm` ให้เป็น `false` เพื่อปิดการส่งอีเมลเชิญผู้ใช้งานใหม่โดยอัตโนมัติในขั้นตอน Sign-up / สร้างผู้ใช้ (Add User)
-    - ผู้ดูแลระบบยังคงสามารถเลือกติ๊กถูกเพื่อส่งอีเมลเป็นรายกรณี หรือกด Resend Invitation ภายหลังได้ตามต้องการ
-- **Reason:** ปิดการส่งอีเมลเชิญผู้ใช้โดยอัตโนมัติในขั้นตอนการสร้างบัญชีผู้ใช้ใหม่ตามความต้องการของผู้ใช้งาน
-
 ## [2026-08-18 17:20] 🎯 Restore Exact Aug 17 (20:32) Proven Working Template & Initial Access Password
 
 - **Modified files:**

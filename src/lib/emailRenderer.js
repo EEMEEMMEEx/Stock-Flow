@@ -384,7 +384,7 @@ export const renderUserInvitationEmailText = ({
   tempPassword = 'F0rth2026@dtrs',
 }) => {
   const effectiveAppName = branding.app_name || appName;
-  const safeUrl = sanitizeHttpUrl(actionUrl, 'https://eemeemmeex.github.io/Stock-Flow');
+  const safeUrl = sanitizeHttpUrl(actionUrl, 'https://bearnannan.github.io/Stock-Flow');
 
   return `========================================
 ยินดีต้อนรับสู่ ${effectiveAppName}
@@ -421,7 +421,7 @@ export const renderUserInvitationEmailHtml = ({
   tempPassword = 'F0rth2026@dtrs',
 }) => {
   const accent = sanitizeColor(branding.accent_color);
-  const safeUrl = sanitizeHttpUrl(actionUrl, 'https://eemeemmeex.github.io/Stock-Flow');
+  const safeUrl = sanitizeHttpUrl(actionUrl, 'https://bearnannan.github.io/Stock-Flow');
   const effectiveAppName = escapeHtml(branding.app_name || appName);
   const year = new Date().getFullYear().toString();
   const rows = [

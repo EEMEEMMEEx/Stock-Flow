@@ -176,7 +176,7 @@ const UserManagement = () => {
               userName: userPayload.full_name,
               roleName: userPayload.role,
               projectAccessSummary: userPayload.all_projects ? 'ทุกโครงการ' : `${userPayload.project_ids?.length || 0} โครงการที่เลือก`,
-              actionUrl: 'https://eemeemmeex.github.io/Stock-Flow',
+              actionUrl: 'https://bearnannan.github.io/Stock-Flow',
               tempPassword: 'F0rth2026@dtrs'
             });
             toast.success('สร้างบัญชีและส่งอีเมลเชิญสำเร็จ');
@@ -204,7 +204,7 @@ const UserManagement = () => {
         userName: user.full_name,
         roleName: user.role,
         projectAccessSummary: user.all_projects ? 'ทุกโครงการ' : `${user.assigned_project_ids?.length || 0} โครงการที่ได้รับมอบหมาย`,
-        actionUrl: 'https://eemeemmeex.github.io/Stock-Flow',
+        actionUrl: 'https://bearnannan.github.io/Stock-Flow',
         tempPassword: 'F0rth2026@dtrs'
       });
       toast.success(`ส่งอีเมลเชิญซ้ำไปยัง ${user.email} สำเร็จ`);
