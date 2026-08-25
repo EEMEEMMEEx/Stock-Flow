@@ -1,5 +1,13 @@
 # Changelog
 
+## [2026-08-25 00:00] ปิดการส่งอีเมลเชิญ (Invitation Email) เป็นค่าเริ่มต้นตอนสร้างผู้ใช้ใหม่
+
+- **Modified files:**
+  - `src/components/users/AddUserModal.jsx`
+- **Details:**
+  - เปลี่ยนค่าเริ่มต้นของ `send_invitation` จาก `true` เป็น `false` ทั้งใน initial state และ `resetForm` ทำให้การสร้างผู้ใช้ใหม่ไม่ส่งอีเมลเชิญโดยอัตโนมัติ (แอดมินยังสามารถติ๊กเลือกส่งได้)
+- **Reason:** ปิดการส่ง invitation email ระหว่างขั้นตอน sign-up เป็นค่าเริ่มต้น
+
 ## [2026-08-18 17:20] 🎯 Restore Exact Aug 17 (20:32) Proven Working Template & Initial Access Password
 
 - **Modified files:**

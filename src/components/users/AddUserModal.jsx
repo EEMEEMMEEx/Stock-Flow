@@ -31,7 +31,7 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
     status: 'active',
     access_type: 'all', // 'all' | 'selected'
     selected_projects: [],
-    send_invitation: true
+    send_invitation: false
   });
 
 
@@ -95,7 +95,7 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
       status: 'active',
       access_type: 'all',
       selected_projects: [],
-      send_invitation: true
+      send_invitation: false
     });
     setActiveTab('account');
   };
