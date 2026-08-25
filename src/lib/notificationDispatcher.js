@@ -142,7 +142,7 @@ export const dispatchWithdrawalNotification = async ({
       rejected_by: approverName || order.rejected_by_name || 'ผู้ปฏิเสธ',
       completed_by: approverName || order.completed_by_name || 'ผู้จ่ายวัสดุ',
       rejection_reason: rejectionReason || order.rejection_reason || '',
-      action_url: 'https://bearnannan.github.io/Stock-Flow',
+      action_url: 'https://eemeemmeex.github.io/Stock-Flow',
       items
     };
 

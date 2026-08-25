@@ -10,7 +10,7 @@
 **Stock-Flow** is a production-grade, enterprise inventory and material tracking system developed for **Forth Corporation Public Company Limited** for managing equipment, assets, project allocations, rapid POS material withdrawals, multi-stage approvals, and real-time audit trails.
 
 🌐 **Live Web Application:** [https://stock-flow-pi-coral.vercel.app](https://stock-flow-pi-coral.vercel.app)  
-✨ **Official Landing Page:** [https://bearnannan.github.io/Stock-Flow/](https://bearnannan.github.io/Stock-Flow/)
+✨ **Official Landing Page:** [https://eemeemmeex.github.io/Stock-Flow/](https://eemeemmeex.github.io/Stock-Flow/)
 
 ---
 

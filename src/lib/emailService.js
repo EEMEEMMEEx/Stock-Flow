@@ -77,7 +77,7 @@ export async function sendUserInvitationEmail({
     throw new Error('กรุณาระบุอีเมลผู้รับ');
   }
 
-  const defaultActionUrl = 'https://bearnannan.github.io/Stock-Flow';
+  const defaultActionUrl = 'https://eemeemmeex.github.io/Stock-Flow';
   const targetActionUrl = actionUrl || defaultActionUrl;
 
   const html = renderUserInvitationEmailHtml({

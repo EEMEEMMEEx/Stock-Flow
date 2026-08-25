@@ -52,7 +52,7 @@ export default function LandingFooter() {
             <ExternalLink className="w-3.5 h-3.5" />
           </a>
           <a
-            href="https://github.com/bearnannan/Stock-Flow"
+            href="https://github.com/eemeemmeex/Stock-Flow"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1 text-zinc-300 hover:text-white transition-colors"
