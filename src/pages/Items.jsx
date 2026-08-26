@@ -9,14 +9,16 @@ import { Label } from '@/components/ui/label';
 import { 
   Search, Package, Layers, Tag, Building2, Edit3, Trash2, 
   LayoutGrid, List, Filter, RefreshCw, ImageIcon, Box, Hash, 
-  SlidersHorizontal, CheckCircle2, AlertCircle, ChevronLeft, ChevronRight
+  SlidersHorizontal, CheckCircle2, AlertCircle, ChevronLeft, ChevronRight,
+  ArrowRightLeft
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import toast from 'react-hot-toast';
 import { ProjectLocationSelector } from '@/components/common/ProjectLocationSelector';
+import { TransferItemDialog } from '@/components/items/TransferItemDialog';
 
 const Items = () => {
-  const { can } = useAuth();
+  const { can, profile } = useAuth();
   const [items, setItems] = useState([]);
   const [categories, setCategories] = useState([]);
   const [projectsList, setProjectsList] = useState([]);
@@ -33,9 +35,12 @@ const Items = () => {
   const [rowsPerPage, setRowsPerPage] = useState(25);
   const [pageInput, setPageInput] = useState('1');
 
-  // Modals & Forms
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [hasTransactionConflict, setHasTransactionConflict] = useState(false);
+  const [isTransferOpen, setIsTransferOpen] = useState(false);
+  const [itemToTransfer, setItemToTransfer] = useState(null);
   const [formData, setFormData] = useState({ name: '', model: '', sku: '', category_id: '', unit: 'ชิ้น', description: '', image_url: '' });
   const [selectedItem, setSelectedItem] = useState(null);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -54,6 +59,9 @@ const Items = () => {
         fetchItems();
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'stock_in_orders' }, () => {
+        fetchItems();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'stock_in_items' }, () => {
         fetchItems();
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'stock_transactions' }, () => {
@@ -296,23 +304,54 @@ const Items = () => {
     }
   };
 
-  const handleDeleteItem = async () => {
+  const handleDeleteItem = async (force = false) => {
+    if (!selectedItem || isDeleting) return;
+    setIsDeleting(true);
     try {
+      if (force || hasTransactionConflict) {
+        // Attempt atomic force delete RPC (Migration 48)
+        const { data, error: rpcError } = await supabase.rpc('admin_force_delete_item', {
+          p_item_id: selectedItem.id
+        });
+
+        if (rpcError) {
+          if (rpcError.code === 'PGRST202' || rpcError.status === 404) {
+            throw new Error('ฟังก์ชัน Force Delete ยังไม่ได้ติดตั้งในฐานข้อมูล กรุณารัน Migration 48 ใน Supabase SQL Editor');
+          }
+          throw rpcError;
+        }
+
+        toast.success(data?.message || 'บังคับลบรายการวัสดุและประวัติธุรกรรมสำเร็จ');
+        setIsDeleteOpen(false);
+        setHasTransactionConflict(false);
+        fetchItems();
+        return;
+      }
+
+      // Standard delete
       const { error } = await supabase
         .from('items')
         .delete()
         .eq('id', selectedItem.id);
 
-      if (error) throw error;
+      if (error) {
+        if (error.code === '23503') {
+          // Foreign key violation: switch dialog to Force Delete mode
+          setHasTransactionConflict(true);
+          return;
+        }
+        throw error;
+      }
+
       toast.success('ลบวัสดุสำเร็จ');
       setIsDeleteOpen(false);
+      setHasTransactionConflict(false);
       fetchItems();
     } catch (error) {
-      if (error.code === '23503') {
-        toast.error('ไม่สามารถลบได้ เนื่องจากมีการรับเข้า/เบิกจ่ายวัสดุนี้ไปแล้ว');
-      } else {
-        toast.error('เกิดข้อผิดพลาดในการลบวัสดุ');
-      }
+      console.error('Delete Item Error:', error);
+      toast.error('เกิดข้อผิดพลาดในการลบ: ' + (error.message || ''));
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -332,7 +371,13 @@ const Items = () => {
 
   const openDeleteDialog = (item) => {
     setSelectedItem(item);
+    setHasTransactionConflict(false);
     setIsDeleteOpen(true);
+  };
+
+  const openTransferDialog = (item) => {
+    setItemToTransfer(item);
+    setIsTransferOpen(true);
   };
 
   // Filtered items logic
@@ -705,6 +750,22 @@ const Items = () => {
                       {/* Actions */}
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-1">
+                          {(can('items.transfer') || can('items.update') || can('stock_in.create')) && (
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-8 w-8 rounded-lg text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 disabled:opacity-30 disabled:cursor-not-allowed" 
+                              onClick={() => openTransferDialog(item)} 
+                              disabled={!item.project_id || (parseInt(item.balance, 10) || 0) <= 0}
+                              title={
+                                !item.project_id || (parseInt(item.balance, 10) || 0) <= 0 
+                                  ? "ไม่สามารถโอนย้ายได้ (ไม่มีสต็อกในคลังนี้)" 
+                                  : "โอนย้ายสถานที่จัดเก็บ / คลัง"
+                              }
+                            >
+                              <ArrowRightLeft className="w-4 h-4" />
+                            </Button>
+                          )}
                           {can('items.update') && (
                             <Button 
                               variant="ghost" 
@@ -812,12 +873,29 @@ const Items = () => {
                   </div>
 
                   <div className="flex items-center gap-1">
+                    {(can('items.transfer') || can('items.update') || can('stock_in.create')) && (
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-7 w-7 rounded-lg text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 disabled:opacity-30 disabled:cursor-not-allowed"
+                        onClick={() => openTransferDialog(item)}
+                        disabled={!item.project_id || (parseInt(item.balance, 10) || 0) <= 0}
+                        title={
+                          !item.project_id || (parseInt(item.balance, 10) || 0) <= 0 
+                            ? "ไม่สามารถโอนย้ายได้ (ไม่มีสต็อกในคลังนี้)" 
+                            : "โอนย้ายสถานที่จัดเก็บ / คลัง"
+                        }
+                      >
+                        <ArrowRightLeft className="w-3.5 h-3.5" />
+                      </Button>
+                    )}
                     {can('items.update') && (
                       <Button 
                         variant="ghost" 
                         size="icon" 
                         className="h-7 w-7 rounded-lg text-blue-600 hover:bg-blue-50"
                         onClick={() => openEditDialog(item.originalItem || item)}
+                        title="แก้ไขข้อมูลวัสดุ Master"
                       >
                         <Edit3 className="w-3.5 h-3.5" />
                       </Button>
@@ -828,6 +906,7 @@ const Items = () => {
                         size="icon" 
                         className="h-7 w-7 rounded-lg text-red-500 hover:bg-red-50"
                         onClick={() => openDeleteDialog(item.originalItem || item)}
+                        title="ลบรายการวัสดุ"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </Button>
@@ -996,23 +1075,85 @@ const Items = () => {
       </Dialog>
 
       {/* Delete Master Item Modal */}
-      <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-        <DialogContent className="sm:max-w-[425px] rounded-2xl glass">
+      <Dialog 
+        open={isDeleteOpen} 
+        onOpenChange={(open) => {
+          setIsDeleteOpen(open);
+          if (!open) setHasTransactionConflict(false);
+        }}
+      >
+        <DialogContent className="sm:max-w-[450px] rounded-2xl glass">
           <DialogHeader>
             <DialogTitle className="text-red-600 font-bold text-lg flex items-center gap-2">
               <AlertCircle className="w-5 h-5" />
-              <span>ยืนยันการลบรายการวัสดุ</span>
+              <span>{hasTransactionConflict ? 'พบประวัติธุรกรรมในระบบ' : 'ยืนยันการลบรายการวัสดุ'}</span>
             </DialogTitle>
-            <DialogDescription className="pt-2">
-              คุณแน่ใจหรือไม่ว่าต้องการลบรายการ <strong>{selectedItem?.name}</strong>? การกระทำนี้ไม่สามารถย้อนกลับได้
+            <DialogDescription className="pt-2 text-foreground/80 space-y-2" asChild>
+              <div>
+                {hasTransactionConflict ? (
+                  <div className="space-y-2">
+                    <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 text-xs">
+                      รายการ <strong>{selectedItem?.name}</strong> (SKU: {selectedItem?.sku || '-'}) มีประวัติการรับเข้า/เบิกจ่าย หรือยอดคงเหลือผูกอยู่ในระบบ
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      หากคุณต้องการลบรายการนี้ออกจากระบบทั้งหมด ระบบจะทำการลบประวัติธุรกรรมและความเคลื่อนไหวที่เกี่ยวข้องกับสินค้านี้ออกไปด้วย การกระทำนี้ไม่สามารถย้อนกลับได้
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    คุณแน่ใจหรือไม่ว่าต้องการลบรายการ <strong>{selectedItem?.name}</strong> (SKU: {selectedItem?.sku || '-'})? การกระทำนี้ไม่สามารถย้อนกลับได้
+                  </p>
+                )}
+              </div>
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-4 gap-2 sm:gap-0">
-            <Button type="button" variant="outline" className="rounded-xl" onClick={() => setIsDeleteOpen(false)}>ยกเลิก</Button>
-            <Button type="button" variant="destructive" className="rounded-xl font-semibold" onClick={handleDeleteItem}>ยืนยันการลบ</Button>
+            <Button 
+              type="button" 
+              variant="outline" 
+              className="rounded-xl" 
+              disabled={isDeleting}
+              onClick={() => {
+                setIsDeleteOpen(false);
+                setHasTransactionConflict(false);
+              }}
+            >
+              ยกเลิก
+            </Button>
+            {hasTransactionConflict ? (
+              <Button 
+                type="button" 
+                variant="destructive" 
+                className="rounded-xl font-semibold bg-red-600 hover:bg-red-700 text-white" 
+                disabled={isDeleting}
+                onClick={() => handleDeleteItem(true)}
+              >
+                {isDeleting ? 'กำลังลบข้อมูล...' : 'บังคับลบรายการและประวัติทั้งหมด'}
+              </Button>
+            ) : (
+              <Button 
+                type="button" 
+                variant="destructive" 
+                className="rounded-xl font-semibold" 
+                disabled={isDeleting}
+                onClick={() => handleDeleteItem(false)}
+              >
+                {isDeleting ? 'กำลังตรวจสอบ...' : 'ยืนยันการลบ'}
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Item Warehouse Transfer Dialog Modal */}
+      <TransferItemDialog
+        open={isTransferOpen}
+        onOpenChange={setIsTransferOpen}
+        item={itemToTransfer}
+        projectsList={projectsList}
+        onSuccess={fetchItems}
+        currentProfile={profile}
+      />
     </div>
   );
 };

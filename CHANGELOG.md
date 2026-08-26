@@ -1,19 +1,31 @@
 # Changelog
 
-## [2026-08-25 11:35] 🌐 อัปเดต GitHub Pages และ Repository URL เป็น `eemeemmeex`
+## [2026-08-26 16:05] เพิ่มระบบโอนย้ายสถานที่จัดเก็บ/คลังสำหรับรายการวัสดุ Master (Item Warehouse Transfer)
 
 - **Modified files:**
-  - `src/pages/UserManagement.jsx`
-  - `src/lib/notificationDispatcher.js`
-  - `src/lib/emailService.js`
-  - `src/lib/emailRenderer.js`
-  - `src/components/landing/LandingFooter.jsx`
-  - `README.md`
+  - `src/pages/Items.jsx`
+  - `src/components/items/TransferItemDialog.jsx`
+  - `supabase/migrations/49_item_warehouse_transfer_rpc.sql`
+  - `docs/item-warehouse-transfer-plan.md`
 - **Details:**
-  - เปลี่ยน URL ของ GitHub Pages จาก `https://bearnannan.github.io/Stock-Flow/` เป็น `https://eemeemmeex.github.io/Stock-Flow/` สำหรับการเข้าใช้งานระบบและ Landing Page
-  - อัปเดตลิงก์ Action URL ในการส่งอีเมลเชิญผู้ใช้งาน (`sendUserInvitationEmail`), การส่งอีเมลแจ้งเตือนรายการเบิกจ่าย (`notificationDispatcher.js`), และค่า Fallback URL ใน `emailRenderer.js`
-  - ปรับปรุงลิงก์ GitHub Repository ใน `LandingFooter.jsx` และเอกสาร `README.md` ให้ชี้ไปยังองค์กร/ผู้ใช้ใหม่ `eemeemmeex` อย่างถูกต้อง
-- **Reason:** อัปเดตการตั้งค่าโฮสติ้งและลิงก์ของ GitHub Pages ตามคำขอของผู้ใช้
+  - เพิ่ม RPC `process_item_transfer` (Migration 49) สำหรับโอนย้ายสต็อกข้ามคลังและโครงการแบบ Atomic Transaction พร้อมตรวจสอบยอดคงเหลือและบันทึกประวัติ `transfer_out` และ `stock_in_orders` อย่างถูกต้อง
+  - เพิ่มสิทธิ์ RBAC `items.transfer` (โอนย้ายสถานที่จัดเก็บ) และเชื่อมโยงกับบทบาท `ADMIN` และ `SUPERVISOR`
+  - สร้างคอมโพเนนต์ `TransferItemDialog` สำหรับเลือกคลังปลายทาง, ระบุจำนวนโอนย้าย, ปุ่มลัด "โอนทั้งหมด", และบันทึกเหตุผล
+  - ปรับปรุง `src/pages/Items.jsx`: เพิ่มปุ่ม Action โอนย้าย (`ArrowRightLeft`) ใน Table View และ Grid View เมื่อมีสต็อกคงเหลือ > 0 พร้อม Realtime Live Sync อัปเดตยอดคงเหลือทันที
+- **Reason:** เพิ่มความสามารถในการโอนย้ายสต็อกวัสดุระหว่างคลังจัดเก็บและโครงการได้โดยตรงจากหน้า Items Master โดยไม่สูญเสียความถูกต้องของประวัติธุรกรรมสต็อก
+
+## [2026-08-25 16:05] เพิ่มระบบ Atomic Force Delete รายการวัสดุ Master พร้อมประวัติธุรกรรม และ Migration 48
+
+- **Modified files:**
+  - `src/pages/Items.jsx`
+  - `supabase/migrations/48_force_delete_specific_items_and_rpc.sql`
+- **Details:**
+  - เพิ่ม RPC `admin_force_delete_item` และ `admin_bulk_force_delete_items` สำหรับบังคับลบรายการวัสดุ Master ที่มีประวัติธุรกรรม (รับเข้า/เบิกจ่าย/ยืมคืน) แบบ Atomic Transaction โดยไม่กระทบกับรายการวัสดุอื่นในระบบ
+  - ปรับปรุง `src/pages/Items.jsx`:
+    - เพิ่ม Loading state (`isDeleting`) ป้องกันการกดย้ำและลดปัญหา INP Issue
+    - เมื่อตรวจพบข้อผิดพลาด Foreign Key (Error `23503`) กล่องยืนยันการลบจะสลับเป็นโหมด **"บังคับลบรายการและประวัติทั้งหมด"** โดยอัตโนมัติ เพื่อให้ผู้ใช้สามารถกดยืนยันลบได้ทันที
+  - เพิ่ม Script สำหรับลบ 10 SKUs เป้าหมาย (`SKU-1YMAPDB`, `SKU-VZJQSZ`, `SKU-1SS0QOD`, `SKU-28DJXOF`, `SKU-ARFNLB4`, `SKU-3TMA1K8`, `SKU-2PC1KIP`, `SKU-1NEMK2E`, `SKU-2H1I5O`, `SKU-365GEW7`) ในคลัง EMS (SAP) / ทั้งระบบ
+- **Reason:** แก้ไขปัญหาไม่สามารถลบรายการวัสดุที่มีประวัติธุรกรรมตกค้างในระบบได้ และให้ผู้ใช้สามารถจัดการลบรายการที่ต้องการได้ตามต้องการ
 
 ## [2026-08-25 00:00] ปิดการส่งอีเมลเชิญ (Invitation Email) เป็นค่าเริ่มต้นตอนสร้างผู้ใช้ใหม่
 

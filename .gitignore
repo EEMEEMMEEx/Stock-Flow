@@ -27,6 +27,7 @@ logs/
 # IDE & Editor Files
 .idea/
 .vscode/
+*.code-workspace
 *.suo
 *.ntvs*
 *.njsproj
