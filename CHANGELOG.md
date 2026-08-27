@@ -1,5 +1,27 @@
 # Changelog
 
+## [2026-08-27 09:35] แก้ไข TypeError ใน Notification Dispatcher (Fix RPC .catch Error)
+
+- **Modified files:**
+  - `src/lib/notificationDispatcher.js`
+- **Details:**
+  - แก้ไขการเรียก `supabase.rpc('admin_get_system_settings')` โดยตัดการต่อ `.catch()` บน PostgrestBuilder ที่ทำให้เกิด `TypeError: supabase.rpc(...).catch is not a function` เมื่อส่งอีเมลแจ้งเตือนคำขอเบิกจ่าย
+- **Reason:** PostgrestBuilder เป็น Thenable ไม่ใช่ native Promise จึงไม่มีเมธอด `.catch()` โดยตรง การแก้ไขช่วยให้ระบบ Dispatch Email แจ้งเตือนทำงานได้อย่างถูกต้องและราบรื่น
+
+## [2026-08-26 17:35] เพิ่มระบบเปิด/ปิดปุ่มลบรายการวัสดุ Master (Enable/Disable Delete Item Button)
+
+- **Modified files:**
+  - `src/pages/Items.jsx`
+  - `src/pages/Settings.jsx`
+  - `supabase/migrations/50_allow_item_deletion_setting.sql`
+  - `docs/item-deletion-toggle-implementation-plan.md`
+- **Details:**
+  - เพิ่ม Migration 50 เพื่อสร้างคีย์การตั้งค่า `allow_item_deletion` ในตาราง `public.system_settings` (หมวดหมู่ `inventory`)
+  - ปรับปรุง `src/pages/Settings.jsx`: เพิ่มตัวเลือก Toggle Checkbox ในหมวดหมู่ "2. กฎการเบิกและสต็อก (Inventory & Withdrawal Rules)" พร้อมการบันทึกผ่าน RPC `admin_update_system_settings` และส่งสัญญาณ Event `stockflow:settings-updated`
+  - ปรับปรุง `src/pages/Items.jsx`: ดึงค่าการตั้งค่า `allow_item_deletion` และฟังเหตุการณ์ Realtime เพื่อควบคุมการแสดง/ซ่อนปุ่มลบรายการวัสดุ (`Trash2`) ในทั้งมุมมอง Table View และ Bento Grid Card View รวมถึงเพิ่ม Guard ป้องกันในฟังก์ชัน `handleDeleteItem`
+- **Reason:** เพิ่มความยืดหยุ่นในการบริหารจัดการคลัง โดยให้ผู้ดูแลระบบสามารถเลือกเปิดหรือปิดปุ่มลบรายการวัสดุได้จากหน้า Settings เพื่อป้องกันการเผลอลบข้อมูล Master โดยไม่ตั้งใจ
+
+
 ## [2026-08-26 16:05] เพิ่มระบบโอนย้ายสถานที่จัดเก็บ/คลังสำหรับรายการวัสดุ Master (Item Warehouse Transfer)
 
 - **Modified files:**

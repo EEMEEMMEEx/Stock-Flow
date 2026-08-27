@@ -54,7 +54,8 @@ const Settings = () => {
   const [inventoryForm, setInventoryForm] = useState({
     low_stock_threshold: 10,
     require_withdrawal_purpose: true,
-    allow_inactive_project_view: true
+    allow_inactive_project_view: true,
+    allow_item_deletion: true
   });
 
   // Notification & SMTP State
@@ -115,11 +116,12 @@ const Settings = () => {
             app_subtitle: data.app_subtitle || APP_CONFIG.subtitle
           });
         }
-        if (data.low_stock_threshold !== undefined) {
+        if (data.low_stock_threshold !== undefined || data.allow_item_deletion !== undefined) {
           setInventoryForm({
             low_stock_threshold: Number(data.low_stock_threshold) || 10,
             require_withdrawal_purpose: data.require_withdrawal_purpose ?? true,
-            allow_inactive_project_view: data.allow_inactive_project_view ?? true
+            allow_inactive_project_view: data.allow_inactive_project_view ?? true,
+            allow_item_deletion: data.allow_item_deletion !== undefined ? Boolean(data.allow_item_deletion) : true
           });
         }
         if (data.smtp_config) {
@@ -223,7 +225,8 @@ const Settings = () => {
       const payload = {
         low_stock_threshold: Number(inventoryForm.low_stock_threshold) || 10,
         require_withdrawal_purpose: Boolean(inventoryForm.require_withdrawal_purpose),
-        allow_inactive_project_view: Boolean(inventoryForm.allow_inactive_project_view)
+        allow_inactive_project_view: Boolean(inventoryForm.allow_inactive_project_view),
+        allow_item_deletion: Boolean(inventoryForm.allow_item_deletion)
       };
 
       const { data, error } = await supabase.rpc('admin_update_system_settings', {
@@ -234,6 +237,7 @@ const Settings = () => {
       if (error) throw error;
       if (data?.success) {
         toast.success('บันทึกกฎการเบิกและสต็อกสำเร็จ');
+        window.dispatchEvent(new Event('stockflow:settings-updated'));
       }
     } catch (error) {
       console.error('Save Inventory Settings Error:', error);
@@ -568,6 +572,17 @@ const Settings = () => {
                       className="rounded text-primary focus:ring-primary h-4 w-4"
                     />
                     <span>อนุญาตให้ผู้ใช้เข้าดูประวัติและยอดยกมาจากโครงการที่ปิดตัวลงแล้ว (Inactive Projects)</span>
+                  </label>
+
+                  <label className="flex items-center gap-2.5 text-xs font-medium cursor-pointer">
+                    <input
+                      type="checkbox"
+                      disabled={!canUpdate}
+                      checked={inventoryForm.allow_item_deletion}
+                      onChange={(e) => setInventoryForm(prev => ({ ...prev, allow_item_deletion: e.target.checked }))}
+                      className="rounded text-primary focus:ring-primary h-4 w-4"
+                    />
+                    <span>อนุญาตให้แสดงปุ่มลบรายการวัสดุ (Enable Item Deletion Button)</span>
                   </label>
                 </div>
               </div>

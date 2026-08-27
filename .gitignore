@@ -23,6 +23,7 @@ npm-debug.log*
 yarn-debug.log*
 pnpm-debug.log*
 logs/
+supabase_logs.json
 
 # IDE & Editor Files
 .idea/

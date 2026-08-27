@@ -25,7 +25,7 @@ export const dispatchWithdrawalNotification = async ({
 
   try {
     // 1. Fetch system settings (notification_events & branding)
-    const { data: settingsData } = await supabase.rpc('admin_get_system_settings').catch(() => ({ data: null }));
+    const { data: settingsData } = await supabase.rpc('admin_get_system_settings');
     const notificationEvents = settingsData?.notification_events || {};
     const branding = settingsData?.branding || {};
 

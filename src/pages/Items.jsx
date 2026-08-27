@@ -38,6 +38,7 @@ const Items = () => {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [allowItemDeletion, setAllowItemDeletion] = useState(true);
   const [hasTransactionConflict, setHasTransactionConflict] = useState(false);
   const [isTransferOpen, setIsTransferOpen] = useState(false);
   const [itemToTransfer, setItemToTransfer] = useState(null);
@@ -48,8 +49,9 @@ const Items = () => {
   useEffect(() => {
     fetchItems();
     fetchCategories();
+    fetchSettings();
 
-    // Live Realtime synchronization on projects, items, and transactions
+    // Live Realtime synchronization on projects, items, transactions, and system_settings
     const channel = supabase
       .channel('items-master-live-sync')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'projects' }, () => {
@@ -67,20 +69,44 @@ const Items = () => {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'stock_transactions' }, () => {
         fetchItems();
       })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'system_settings' }, () => {
+        fetchSettings();
+      })
       .subscribe();
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         fetchItems();
+        fetchSettings();
       }
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
+    const handleSettingsUpdated = () => void fetchSettings();
+    window.addEventListener('stockflow:settings-updated', handleSettingsUpdated);
+
     return () => {
       supabase.removeChannel(channel);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('stockflow:settings-updated', handleSettingsUpdated);
     };
   }, []);
+
+  const fetchSettings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('system_settings')
+        .select('value')
+        .eq('key', 'allow_item_deletion')
+        .maybeSingle();
+
+      if (!error && data && data.value !== undefined) {
+        setAllowItemDeletion(Boolean(data.value));
+      }
+    } catch (err) {
+      console.warn('[Items] Failed to fetch allow_item_deletion setting:', err);
+    }
+  };
 
   const fetchCategories = async () => {
     try {
@@ -306,6 +332,10 @@ const Items = () => {
 
   const handleDeleteItem = async (force = false) => {
     if (!selectedItem || isDeleting) return;
+    if (!allowItemDeletion) {
+      toast.error('ระบบถูกตั้งค่าไม่อนุญาตให้ลบรายการวัสดุ');
+      return;
+    }
     setIsDeleting(true);
     try {
       if (force || hasTransactionConflict) {
@@ -777,7 +807,7 @@ const Items = () => {
                               <Edit3 className="w-4 h-4" />
                             </Button>
                           )}
-                          {can('items.delete') && (
+                          {can('items.delete') && allowItemDeletion && (
                             <Button 
                               variant="ghost" 
                               size="icon" 
@@ -900,7 +930,7 @@ const Items = () => {
                         <Edit3 className="w-3.5 h-3.5" />
                       </Button>
                     )}
-                    {can('items.delete') && (
+                    {can('items.delete') && allowItemDeletion && (
                       <Button 
                         variant="ghost" 
                         size="icon" 
