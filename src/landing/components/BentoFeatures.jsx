@@ -13,8 +13,8 @@ import {
   Sparkles,
   ArrowRight
 } from 'lucide-react';
-import SpotlightCard from '../reactbits/SpotlightCard';
-import { useLandingLanguage } from '@/contexts/LandingLanguageContext';
+import SpotlightCard from '@/components/reactbits/SpotlightCard';
+import { useLandingLanguage } from '../context/LandingLanguageContext';
 
 export default function BentoFeatures() {
   const { t } = useLandingLanguage();

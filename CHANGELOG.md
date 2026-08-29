@@ -1,5 +1,21 @@
 # Changelog
 
+## [2026-08-29 15:55] รวมศูนย์โมดูล Landing Page สู่โฟลเดอร์เฉพาะ src/landing/ และอัปเกรดเวอร์ชันระบบสู่ v1.0.2 (Modularize Landing Page & v1.0.2 Release)
+
+- **Modified files:**
+  - `src/landing/LandingPage.jsx` [MOVED]
+  - `src/landing/components/` [MOVED 9 COMPONENTS]
+  - `src/landing/context/LandingLanguageContext.jsx` [MOVED]
+  - `src/landing/data/landing-translations.js` [MOVED]
+  - `src/App.jsx`
+  - `src/config/appConfig.js`
+  - `package.json`
+- **Details:**
+  - **จัดโครงสร้างโฟลเดอร์เฉพาะ (Dedicated Feature Folder):** ย้ายไฟล์ทั้งหมดที่เกี่ยวข้องกับ Landing Page จากที่กระจายอยู่ (`src/pages/`, `src/components/landing/`, `src/contexts/`, `src/lib/`) มารวมศูนย์ไว้ในโฟลเดอร์ [`src/landing/`](file:///d:/APP/Stock-Flow-app/src/landing) เพียงจุดเดียวแบบ Self-contained Module
+  - **ปรับปรุง Relative Imports:** อัปเดตการอ้างอิงระหว่าง Components, Context, และ Translations ภายในโมดูลให้เป็นระเบียบ
+  - **อัปเกรดเวอร์ชันระบบ (System Version Increment):** ปรับเพิ่มเวอร์ชันแอปพลิเคชันจาก `v1.0.1` เป็น `v1.0.2` (PATCH) ตามข้อกำหนดสากลใน `GEMINI.md`
+- **Reason:** เพิ่มความเป็นระเบียบ สะดวกต่อการพัฒนาต่อยอด และรองรับ Code Splitting อย่างสมบูรณ์แบบ
+
 ## [2026-08-29 15:37] ทำความสะอาดโค้ดเบส จัดเก็บประวัติไมเกรชัน และอัปเกรดเวอร์ชันระบบสู่ v1.0.1 (Project Cleanup & v1.0.1 Release)
 
 - **Modified files:**

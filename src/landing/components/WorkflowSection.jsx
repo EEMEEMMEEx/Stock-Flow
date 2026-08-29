@@ -8,7 +8,7 @@ import {
   Sparkles,
   CheckCircle2
 } from 'lucide-react';
-import { useLandingLanguage } from '@/contexts/LandingLanguageContext';
+import { useLandingLanguage } from '../context/LandingLanguageContext';
 
 export default function WorkflowSection() {
   const { t } = useLandingLanguage();

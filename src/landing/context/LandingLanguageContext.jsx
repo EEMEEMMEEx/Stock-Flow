@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { SUPPORTED_LANGUAGES, landingTranslations } from '@/lib/landing-translations';
+import { SUPPORTED_LANGUAGES, landingTranslations } from '../data/landing-translations';
 
 const LandingLanguageContext = createContext(null);
 

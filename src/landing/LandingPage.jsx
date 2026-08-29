@@ -1,13 +1,13 @@
 import React, { useEffect } from 'react';
-import LandingNavbar from '../components/landing/LandingNavbar';
-import HeroSection from '../components/landing/HeroSection';
-import StatsSection from '../components/landing/StatsSection';
-import BentoFeatures from '../components/landing/BentoFeatures';
-import WorkflowSection from '../components/landing/WorkflowSection';
-import TechStackSection from '../components/landing/TechStackSection';
-import CtaSection from '../components/landing/CtaSection';
-import LandingFooter from '../components/landing/LandingFooter';
-import { LandingLanguageProvider } from '@/contexts/LandingLanguageContext';
+import LandingNavbar from './components/LandingNavbar';
+import HeroSection from './components/HeroSection';
+import StatsSection from './components/StatsSection';
+import BentoFeatures from './components/BentoFeatures';
+import WorkflowSection from './components/WorkflowSection';
+import TechStackSection from './components/TechStackSection';
+import CtaSection from './components/CtaSection';
+import LandingFooter from './components/LandingFooter';
+import { LandingLanguageProvider } from './context/LandingLanguageContext';
 
 export default function LandingPage() {
   useEffect(() => {

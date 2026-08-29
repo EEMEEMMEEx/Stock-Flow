@@ -1,6 +1,6 @@
 import React from 'react';
 import { Github, ExternalLink } from 'lucide-react';
-import { useLandingLanguage } from '@/contexts/LandingLanguageContext';
+import { useLandingLanguage } from '../context/LandingLanguageContext';
 
 export default function LandingFooter() {
   const { t } = useLandingLanguage();

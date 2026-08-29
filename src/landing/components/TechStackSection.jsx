@@ -9,7 +9,7 @@ import {
   Smartphone,
   Server
 } from 'lucide-react';
-import { useLandingLanguage } from '@/contexts/LandingLanguageContext';
+import { useLandingLanguage } from '../context/LandingLanguageContext';
 
 export default function TechStackSection() {
   const { t } = useLandingLanguage();

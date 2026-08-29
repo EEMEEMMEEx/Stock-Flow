@@ -1,10 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowUpRight, ShieldCheck, Zap, Lock } from 'lucide-react';
-import Squares from '../reactbits/Squares';
-import Magnet from '../reactbits/Magnet';
-import ShinyText from '../reactbits/ShinyText';
-import { useLandingLanguage } from '@/contexts/LandingLanguageContext';
+import Squares from '@/components/reactbits/Squares';
+import Magnet from '@/components/reactbits/Magnet';
+import ShinyText from '@/components/reactbits/ShinyText';
+import { useLandingLanguage } from '../context/LandingLanguageContext';
 
 export default function CtaSection() {
   const { t } = useLandingLanguage();

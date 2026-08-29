@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowUpRight, ShieldCheck, Layers, Cpu, Compass, Menu, X } from 'lucide-react';
 import LanguageSwitcher from './LanguageSwitcher';
-import { useLandingLanguage } from '@/contexts/LandingLanguageContext';
+import { useLandingLanguage } from '../context/LandingLanguageContext';
 
 export default function LandingNavbar() {
   const { t } = useLandingLanguage();

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Globe, ChevronDown, Check } from 'lucide-react';
-import { useLandingLanguage } from '@/contexts/LandingLanguageContext';
+import { useLandingLanguage } from '../context/LandingLanguageContext';
 
 export default function LanguageSwitcher({ className = '' }) {
   const { lang, setLang, supportedLanguages } = useLandingLanguage();

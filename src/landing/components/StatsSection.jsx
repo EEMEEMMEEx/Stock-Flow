@@ -1,8 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Zap, ShieldCheck, Database, Lock } from 'lucide-react';
-import ShinyText from '../reactbits/ShinyText';
-import { useLandingLanguage } from '@/contexts/LandingLanguageContext';
+import ShinyText from '@/components/reactbits/ShinyText';
+import { useLandingLanguage } from '../context/LandingLanguageContext';
 
 export default function StatsSection() {
   const { t } = useLandingLanguage();

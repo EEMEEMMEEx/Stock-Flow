@@ -19,7 +19,7 @@ import UserManagement from './pages/UserManagement';
 import RoleManagement from './pages/RoleManagement';
 import Settings from './pages/Settings';
 import Profile from './pages/Profile';
-import LandingPage from './pages/LandingPage';
+import LandingPage from './landing/LandingPage';
 import PermissionRoute from './components/auth/PermissionRoute';
 import { useAuth } from './contexts/AuthContext';
 

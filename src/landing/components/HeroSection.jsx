@@ -13,12 +13,12 @@ import {
   TrendingUp, 
   UserCheck 
 } from 'lucide-react';
-import Squares from '../reactbits/Squares';
-import DecryptedText from '../reactbits/DecryptedText';
-import ShinyText from '../reactbits/ShinyText';
-import Magnet from '../reactbits/Magnet';
-import TiltedCard from '../reactbits/TiltedCard';
-import { useLandingLanguage } from '@/contexts/LandingLanguageContext';
+import Squares from '@/components/reactbits/Squares';
+import DecryptedText from '@/components/reactbits/DecryptedText';
+import ShinyText from '@/components/reactbits/ShinyText';
+import Magnet from '@/components/reactbits/Magnet';
+import TiltedCard from '@/components/reactbits/TiltedCard';
+import { useLandingLanguage } from '../context/LandingLanguageContext';
 
 export default function HeroSection() {
   const { t, lang } = useLandingLanguage();
