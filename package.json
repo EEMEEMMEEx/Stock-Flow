@@ -1,7 +1,7 @@
 {
   "name": "stock-flow-app",
   "private": true,
-  "version": "1.0.3",
+  "version": "1.0.4",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "migrate:r2": "node scripts/migrate-legacy-images-to-r2.mjs",
+    "db:backup": "node scripts/backup-full-database.mjs",
     "generate:agents": "python .agents/scripts/generate_manifest.py && python .agents/scripts/dependency_graph.py",
     "check:agents": "python .agents/scripts/validate_kit.py",
     "check:antigravity": "node .agents/hooks/antigravity-doctor.mjs",

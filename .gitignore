@@ -24,6 +24,7 @@ yarn-debug.log*
 pnpm-debug.log*
 logs/
 supabase_logs.json
+backups/
 
 # IDE & Editor Files
 .idea/

@@ -1,5 +1,18 @@
 # Changelog
 
+## [2026-08-29 16:14] เพิ่มระบบสำรองข้อมูลฐานข้อมูลอัตโนมัติ (Automated Database Backup Engine) และอัปเกรดสู่ v1.0.4
+
+- **Modified files:**
+  - `scripts/backup-full-database.mjs` [NEW SCRIPT]
+  - `package.json`
+  - `src/config/appConfig.js`
+  - `.gitignore`
+- **Details:**
+  - **สร้างคำสั่งสำรองข้อมูลอัตโนมัติ (`npm run db:backup`):** พัฒนาสคริปต์ Node.js ดึงข้อมูลทุกตารางและเรคคอร์ดใน Supabase Database ออกมาจัดเก็บเป็นทั้งไฟล์ SQL Insert Statements (`data_inserts.sql`), JSON Dataset (`data_all_tables.json`), และแนบสำเนา Schema DDL (`schema_baseline.sql`) พร้อม Metadata ในโฟลเดอร์ `backups/`
+  - **ความปลอดภัย (Security):** เพิ่มโฟลเดอร์ `backups/` เข้าสู่ `.gitignore` เพื่อป้องกันข้อมูล Snapshot รั่วไหลเข้า Git
+  - **อัปเกรดเวอร์ชันระบบ (System Version Increment):** ปรับเพิ่มเวอร์ชันแอปพลิเคชันจาก `v1.0.3` เป็น `v1.0.4` (PATCH) ตามข้อกำหนดสากลใน `GEMINI.md`
+- **Reason:** เตรียมความพร้อมด้าน Disaster Recovery เพื่อให้สามารถกู้คืนข้อมูลทั้งหมดได้ทันทีหากระบบ Supabase มีปัญหา
+
 ## [2026-08-29 16:01] อัปเดตข้อมูลโมดูล Landing Page เพิ่ม Cloudflare R2 และ Site Kits BOM และอัปเกรดเวอร์ชันระบบสู่ v1.0.3 (Landing Page Content Update & v1.0.3 Release)
 
 - **Modified files:**
