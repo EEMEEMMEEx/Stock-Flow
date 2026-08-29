@@ -21,7 +21,7 @@ import { uploadAvatarImage } from '@/lib/avatarUpload';
 import { sendUserInvitationEmail } from '@/lib/emailService';
 
 const UserManagement = () => {
-  const { isAdmin, user } = useAuth();
+  const { isAdmin, user, can } = useAuth();
   const [users, setUsers] = useState([]);
   const [projects, setProjects] = useState([]);
   const [dbRoles, setDbRoles] = useState([]);
@@ -412,7 +412,9 @@ const UserManagement = () => {
 
           <Button 
             onClick={() => setIsAddModalOpen(true)}
-            className="neu-primary h-10 px-4 rounded-xl font-semibold text-sm flex items-center gap-2 transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 shrink-0"
+            disabled={!isAdmin && !can('users.create')}
+            title={!isAdmin && !can('users.create') ? 'ไม่มีสิทธิ์เพิ่มผู้ใช้งานใหม่ (ต้องการสิทธิ์ users.create)' : 'เพิ่มผู้ใช้งานใหม่'}
+            className="neu-primary h-10 px-4 rounded-xl font-semibold text-sm flex items-center gap-2 transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 shrink-0 disabled:opacity-30 disabled:cursor-not-allowed"
           >
             <Plus className="w-4 h-4 shrink-0" />
             <span>เพิ่มผู้ใช้</span>
@@ -526,162 +528,204 @@ const UserManagement = () => {
                     </td>
                   </tr>
                 ) : (
-                  filteredUsers.map((u) => (
-                    <tr key={u.id} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-                      {/* Avatar & Name & Email */}
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          {u.avatar_url ? (
-                            <img 
-                              src={u.avatar_url} 
-                              alt={u.full_name} 
-                              className="w-10 h-10 rounded-full object-cover shadow-sm border border-white/40"
-                              onError={(e) => { e.target.onerror = null; e.target.src = ''; }}
-                            />
-                          ) : (
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
-                              {getInitials(u.full_name)}
-                            </div>
-                          )}
+                  filteredUsers.map((u) => {
+                    const activeAdminsCount = users.filter(
+                      (item) => (item.role === 'admin' || item.role === 'ADMIN' || item.roles?.code === 'ADMIN') && item.status === 'active'
+                    ).length;
 
-                          <div>
-                            <div className="font-semibold text-foreground flex items-center gap-1.5">
-                              {u.full_name}
-                              {u.position && (
-                                <span className="text-[11px] font-normal text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full">
-                                  {u.position}
-                                </span>
-                              )}
-                            </div>
-                            <div className="text-xs text-muted-foreground flex items-center gap-3 mt-0.5">
-                              <span className="flex items-center gap-1"><Mail className="w-3 h-3" /> {u.email}</span>
-                              {u.phone && <span className="flex items-center gap-1"><Phone className="w-3 h-3" /> {u.phone}</span>}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
+                    const isSelf = u.id === user?.id;
+                    const isTargetAdmin = u.role === 'admin' || u.role === 'ADMIN' || u.roles?.code === 'ADMIN';
+                    const isLastActiveAdmin = isTargetAdmin && u.status === 'active' && activeAdminsCount <= 1;
 
-                      {/* Role Badge */}
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        {u.role === 'admin' ? (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300 border border-purple-300 dark:border-purple-800">
-                            <Shield className="w-3.5 h-3.5" /> ADMINISTRATOR
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                            STAFF / REQUESTER
-                          </span>
-                        )}
-                      </td>
+                    // RBAC Permission checks
+                    const canEditUser = isAdmin || can('users.update');
+                    const canResendInvite = isAdmin || can('users.create');
+                    const canResetPassword = isAdmin || can('users.reset_password');
+                    const canDeactivate = (isAdmin || can('users.deactivate') || can('users.update')) && !isSelf && !isLastActiveAdmin;
+                    const canDeleteUser = (isAdmin || can('users.delete')) && !isSelf && !isLastActiveAdmin;
 
-                      {/* Assigned Projects */}
-                      <td className="px-4 py-4 max-w-xs">
-                        {u.all_projects ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
-                            <FolderKanban className="w-3 h-3" /> ทุกโครงการ (All Projects)
-                          </span>
-                        ) : u.assigned_project_ids && u.assigned_project_ids.length > 0 ? (
-                          <div className="flex flex-wrap gap-1">
-                            {u.assigned_project_ids.map(pid => (
-                              <span key={pid} className="inline-block px-2 py-0.5 rounded text-[11px] bg-muted font-medium">
-                                {getProjectName(pid)}
-                              </span>
-                            ))}
-                          </div>
-                        ) : (
-                          <span className="text-xs text-muted-foreground font-italic">ไม่ได้ระบุโครงการ</span>
-                        )}
-                      </td>
+                    const getDeactivateTitle = () => {
+                      if (isSelf) return 'ไม่สามารถระงับการใช้งานบัญชีของตนเองได้';
+                      if (isLastActiveAdmin) return 'ไม่สามารถระงับบัญชี Administrator คนสุดท้ายของระบบได้';
+                      if (!isAdmin && !can('users.deactivate') && !can('users.update')) return 'ไม่มีสิทธิ์ระงับการใช้งานบัญชี (ต้องการสิทธิ์ users.deactivate)';
+                      return u.status === 'active' ? 'ระงับการใช้งานบัญชี (Deactivate)' : 'เปิดใช้งานบัญชี (Activate)';
+                    };
 
-                      {/* Account Status Badge */}
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        {u.status === 'active' ? (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-                            <span className="w-2 h-2 rounded-full bg-emerald-500"></span> ACTIVE
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300">
-                            <span className="w-2 h-2 rounded-full bg-red-500"></span> INACTIVE
-                          </span>
-                        )}
-                      </td>
+                    const getDeleteTitle = () => {
+                      if (isSelf) return 'ไม่สามารถลบบัญชีของตนเองได้';
+                      if (isLastActiveAdmin) return 'ไม่สามารถลบบัญชี Administrator คนสุดท้ายของระบบได้';
+                      if (!isAdmin && !can('users.delete')) return 'ไม่มีสิทธิ์ลบบัญชีผู้ใช้ (ต้องการสิทธิ์ users.delete)';
+                      return 'ลบบัญชีผู้ใช้ถาวร (Delete User)';
+                    };
 
-                      {/* Created Date */}
-                      <td className="px-4 py-4 whitespace-nowrap text-xs text-muted-foreground">
-                        {u.created_at ? format(new Date(u.created_at), 'dd/MM/yyyy') : '-'}
-                      </td>
-
-                      {/* Actions */}
-                      <td className="px-6 py-4 text-right whitespace-nowrap">
-                        <div className="flex items-center justify-end gap-1">
-                          {/* Edit User */}
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            title="แก้ไขข้อมูลผู้ใช้ (Edit User)"
-                            onClick={() => setSelectedUserForEdit(u)}
-                            className="h-8 w-8 text-slate-600 hover:text-primary hover:bg-primary/10"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </Button>
-
-                          {/* Resend Invitation */}
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            title="ส่งอีเมลเชิญซ้ำ (Resend Invitation)"
-                            onClick={() => handleResendInvitation(u)}
-                            disabled={resendingInvitationId === u.id}
-                            className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950"
-                          >
-                            {resendingInvitationId === u.id ? (
-                              <RefreshCw className="w-4 h-4 animate-spin text-blue-600" />
+                    return (
+                      <tr key={u.id} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                        {/* Avatar & Name & Email */}
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            {u.avatar_url ? (
+                              <img 
+                                src={u.avatar_url} 
+                                alt={u.full_name} 
+                                className="w-10 h-10 rounded-full object-cover shadow-sm border border-white/40"
+                                onError={(e) => { e.target.onerror = null; e.target.src = ''; }}
+                              />
                             ) : (
-                              <Mail className="w-4 h-4" />
+                              <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
+                                {getInitials(u.full_name)}
+                              </div>
                             )}
-                          </Button>
 
-                          {/* Reset Password */}
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            title="รีเซ็ตรหัสผ่าน (Reset Password)"
-                            onClick={() => setSelectedUserForResetPw(u)}
-                            className="h-8 w-8 text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950"
-                          >
-                            <KeyRound className="w-4 h-4" />
-                          </Button>
+                            <div>
+                              <div className="font-semibold text-foreground flex items-center gap-1.5">
+                                {u.full_name}
+                                {u.position && (
+                                  <span className="text-[11px] font-normal text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full">
+                                    {u.position}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-xs text-muted-foreground flex items-center gap-3 mt-0.5">
+                                <span className="flex items-center gap-1"><Mail className="w-3 h-3" /> {u.email}</span>
+                                {u.phone && <span className="flex items-center gap-1"><Phone className="w-3 h-3" /> {u.phone}</span>}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
 
-                          {/* Toggle Active/Inactive */}
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            title={u.status === 'active' ? 'ระงับการใช้งานบัญชี (Deactivate)' : 'เปิดใช้งานบัญชี (Activate)'}
-                            onClick={() => handleToggleStatus(u)}
-                            className={`h-8 w-8 ${
-                              u.status === 'active' 
-                                ? 'text-amber-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950' 
-                                : 'text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950'
-                            }`}
-                          >
-                            {u.status === 'active' ? <UserX className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
-                          </Button>
+                        {/* Role Badge */}
+                        <td className="px-4 py-4 whitespace-nowrap">
+                          {u.role === 'admin' ? (
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300 border border-purple-300 dark:border-purple-800">
+                              <Shield className="w-3.5 h-3.5" /> ADMINISTRATOR
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                              STAFF / REQUESTER
+                            </span>
+                          )}
+                        </td>
 
-                          {/* Delete User */}
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            title="ลบบัญชีผู้ใช้ถาวร (Delete User)"
-                            onClick={() => handleDeleteUserAttempt(u)}
-                            className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
+                        {/* Assigned Projects */}
+                        <td className="px-4 py-4 max-w-xs">
+                          {u.all_projects ? (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
+                              <FolderKanban className="w-3 h-3" /> ทุกโครงการ (All Projects)
+                            </span>
+                          ) : u.assigned_project_ids && u.assigned_project_ids.length > 0 ? (
+                            <div className="flex flex-wrap gap-1">
+                              {u.assigned_project_ids.map(pid => (
+                                <span key={pid} className="inline-block px-2 py-0.5 rounded text-[11px] bg-muted font-medium">
+                                  {getProjectName(pid)}
+                                </span>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="text-xs text-muted-foreground font-italic">ไม่ได้ระบุโครงการ</span>
+                          )}
+                        </td>
 
-                  ))
+                        {/* Account Status Badge */}
+                        <td className="px-4 py-4 whitespace-nowrap">
+                          {u.status === 'active' ? (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                              <span className="w-2 h-2 rounded-full bg-emerald-500"></span> ACTIVE
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300">
+                              <span className="w-2 h-2 rounded-full bg-red-500"></span> INACTIVE
+                            </span>
+                          )}
+                        </td>
+
+                        {/* Created Date */}
+                        <td className="px-4 py-4 whitespace-nowrap text-xs text-muted-foreground">
+                          {u.created_at ? format(new Date(u.created_at), 'dd/MM/yyyy') : '-'}
+                        </td>
+
+                        {/* Actions */}
+                        <td className="px-6 py-4 text-right whitespace-nowrap">
+                          <div className="flex items-center justify-end gap-1">
+                            {/* Edit User */}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              title={canEditUser ? "แก้ไขข้อมูลผู้ใช้ (Edit User)" : "ไม่มีสิทธิ์แก้ไขข้อมูลผู้ใช้"}
+                              onClick={() => setSelectedUserForEdit(u)}
+                              disabled={!canEditUser}
+                              className="h-8 w-8 text-slate-600 hover:text-primary hover:bg-primary/10 disabled:opacity-30 disabled:cursor-not-allowed"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+
+                            {/* Resend Invitation */}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              title={
+                                !canResendInvite
+                                  ? "ไม่มีสิทธิ์ส่งอีเมลเชิญ"
+                                  : "ส่งอีเมลเชิญซ้ำ (Resend Invitation)"
+                              }
+                              onClick={() => handleResendInvitation(u)}
+                              disabled={resendingInvitationId === u.id || !canResendInvite}
+                              className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950 disabled:opacity-30 disabled:cursor-not-allowed"
+                            >
+                              {resendingInvitationId === u.id ? (
+                                <RefreshCw className="w-4 h-4 animate-spin text-blue-600" />
+                              ) : (
+                                <Mail className="w-4 h-4" />
+                              )}
+                            </Button>
+
+                            {/* Reset Password */}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              title={
+                                !canResetPassword
+                                  ? "ไม่มีสิทธิ์รีเซ็ตรหัสผ่าน"
+                                  : "รีเซ็ตรหัสผ่าน (Reset Password)"
+                              }
+                              onClick={() => setSelectedUserForResetPw(u)}
+                              disabled={!canResetPassword}
+                              className="h-8 w-8 text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950 disabled:opacity-30 disabled:cursor-not-allowed"
+                            >
+                              <KeyRound className="w-4 h-4" />
+                            </Button>
+
+                            {/* Toggle Active/Inactive (Deactivate / Activate) */}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              title={getDeactivateTitle()}
+                              onClick={() => handleToggleStatus(u)}
+                              disabled={!canDeactivate}
+                              className={`h-8 w-8 ${
+                                u.status === 'active' 
+                                  ? 'text-amber-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950' 
+                                  : 'text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950'
+                              } disabled:opacity-30 disabled:cursor-not-allowed`}
+                            >
+                              {u.status === 'active' ? <UserX className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
+                            </Button>
+
+                            {/* Delete User */}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              title={getDeleteTitle()}
+                              onClick={() => handleDeleteUserAttempt(u)}
+                              disabled={!canDeleteUser}
+                              className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950 disabled:opacity-30 disabled:cursor-not-allowed"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>

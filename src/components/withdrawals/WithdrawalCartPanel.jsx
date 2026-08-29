@@ -58,7 +58,7 @@ const WithdrawalCartPanel = ({
     }
 
     if (!isValidProject) {
-      toast.error('กรุณาเลือกโครงการปลายทางที่จะนำไปใช้งาน');
+      toast.error('กรุณาเลือกสถานที่จัดเก็บ (Location) ที่จะนำไปใช้งาน');
       return;
     }
 
@@ -115,7 +115,7 @@ const WithdrawalCartPanel = ({
           <Building2 className={`w-4 h-4 shrink-0 mt-0.5 ${isValidProject ? 'text-indigo-600 dark:text-indigo-400' : 'text-amber-600 dark:text-amber-400'}`} />
           <div className="min-w-0 flex-1">
             <div className="font-bold flex items-center justify-between">
-              <span>โครงการปลายทาง (Target):</span>
+              <span>สถานที่จัดเก็บ (Location):</span>
               {!isValidProject && <span className="text-[10px] text-amber-600 dark:text-amber-400 font-extrabold">* จำเป็นต้องเลือก</span>}
             </div>
             {isValidProject ? (
@@ -125,7 +125,7 @@ const WithdrawalCartPanel = ({
               </p>
             ) : (
               <p className="text-[11px] text-amber-700 dark:text-amber-300 mt-0.5">
-                กรุณาเลือกโครงการที่แถบด้านบน เพื่อตัดสต็อกให้ถูกต้อง
+                กรุณาเลือกสถานที่จัดเก็บที่แถบด้านบน เพื่อตัดสต็อกให้ถูกต้อง
               </p>
             )}
           </div>

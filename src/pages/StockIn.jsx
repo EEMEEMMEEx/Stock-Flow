@@ -65,26 +65,27 @@ const StockIn = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      // Fetch stock in orders
-      const { data: oData, error: oError } = await supabase
-        .from('stock_in_orders')
-        .select('*, projects(name, project_code, location, description), profiles(full_name)')
-        .order('created_at', { ascending: false })
-        .limit(50);
+      // Parallelize fetching stock in orders, active projects, and items
+      const [oRes, pRes, iRes] = await Promise.all([
+        supabase
+          .from('stock_in_orders')
+          .select('*, projects(name, project_code, location, description), profiles(full_name)')
+          .order('created_at', { ascending: false })
+          .limit(50),
+        supabase
+          .from('projects')
+          .select('id, name, project_code, location, description')
+          .eq('status', 'active')
+          .order('name'),
+        supabase
+          .from('items')
+          .select('id, name, unit, sku, image_url, category_id, model, description')
+      ]);
         
-      if (oError && oError.code !== '42P01') throw oError;
-      setOrders(oData || []);
-
-      // Fetch active projects with locations & description
-      const { data: pData } = await supabase
-        .from('projects')
-        .select('id, name, project_code, location, description')
-        .eq('status', 'active')
-        .order('name');
-      const { data: iData } = await supabase.from('items').select('id, name, unit, sku, image_url, category_id, model, description');
-
-      setProjects(pData || []);
-      setItems(iData || []);
+      if (oRes.error && oRes.error.code !== '42P01') throw oRes.error;
+      setOrders(oRes.data || []);
+      setProjects(pRes.data || []);
+      setItems(iRes.data || []);
     } catch (error) {
       console.error(error);
     } finally {
@@ -268,7 +269,7 @@ const StockIn = () => {
   // Direct Submit from Preview Dialog
   const handleDirectSubmitFromPreview = async () => {
     if (!previewProjectId) {
-      return toast.error('กรุณาเลือกโครงการปลายทางก่อนบันทึกรับเข้า');
+      return toast.error('กรุณาเลือกสถานที่จัดเก็บ (Location) ก่อนบันทึกรับเข้า');
     }
     if (previewItems.length === 0) {
       return toast.error('ไม่มีรายการวัสดุสำหรับบันทึกรับเข้า');
@@ -283,7 +284,7 @@ const StockIn = () => {
   // Execute Stock In Submission Core
   const executeStockInSubmission = async (projectId, itemsToSubmit) => {
     if (!projectId) {
-      return toast.error('กรุณาเลือกโครงการปลายทางก่อนบันทึกรับเข้า');
+      return toast.error('กรุณาเลือกสถานที่จัดเก็บ (Location) ก่อนบันทึกรับเข้า');
     }
 
     if (itemsToSubmit.length === 0) {
@@ -484,7 +485,7 @@ const StockIn = () => {
           <TableHeader className="bg-muted/50">
             <TableRow>
               <TableHead>วันที่รับเข้า</TableHead>
-              <TableHead>โครงการปลายทาง</TableHead>
+              <TableHead>สถานที่จัดเก็บ (Location)</TableHead>
               <TableHead>ผู้บันทึก</TableHead>
               <TableHead className="text-right">จัดการ</TableHead>
             </TableRow>
@@ -573,7 +574,7 @@ const StockIn = () => {
                 required={true}
                 mode="dual"
                 size="sm"
-                label="1. เลือกโครงการและคลังปลายทางที่ต้องการรับเข้า (Destination Project & Storage Location)"
+                label="1. เลือกโครงการและสถานที่จัดเก็บ (Project & Location)"
                 showSummaryCard={false}
               />
 
@@ -834,7 +835,7 @@ const StockIn = () => {
                   onChange={handleDirectProjectChange}
                   required={true}
                   mode="dual"
-                  label="โครงการปลายทาง & สถานที่ตั้งจัดเก็บ (Destination Project & Storage Location)"
+                  label="โครงการและสถานที่จัดเก็บ (Project & Location)"
                   showSummaryCard={true}
                 />
 
@@ -1141,7 +1142,7 @@ const StockIn = () => {
             {/* Metadata Summary Banner */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs bg-muted/40 p-4 rounded-xl border neu-pressed">
               <div className="space-y-1">
-                <span className="text-muted-foreground font-medium block">โครงการปลายทาง</span>
+                <span className="text-muted-foreground font-medium block">สถานที่จัดเก็บ (Location)</span>
                 <span className="font-bold text-sm text-foreground block">
                   {selectedOrder?.projects?.project_code ? (
                     <span className="text-emerald-600 dark:text-emerald-400 font-mono mr-1">

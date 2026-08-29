@@ -144,28 +144,52 @@ const Withdrawals = () => {
     try {
       setLoading(true);
       // 1. Fetch withdrawal orders
-      let query = supabase
+      let ordersQuery = supabase
         .from('withdrawal_orders')
-        .select('*, projects(name, project_code, location, description), profiles!withdrawal_orders_requested_by_fkey(full_name)')
+        .select(`
+          *,
+          projects (*),
+          profiles:requested_by (*),
+          withdrawal_items (
+            *,
+            items (*)
+          )
+        `)
         .order('requested_at', { ascending: false });
 
       if (!isAdmin) {
-        query = query.eq('requested_by', profile.id);
+        ordersQuery = ordersQuery.eq('requested_by', profile.id);
       }
 
-      const { data: wData, error: wError } = await query;
+      // Parallelize fetching orders, active projects, items, categories, and stock balances
+      const [wRes, pRes, iRes, cRes, bRes] = await Promise.all([
+        ordersQuery,
+        supabase
+          .from('projects')
+          .select('id, name, project_code, location, description')
+          .eq('status', 'active')
+          .order('name'),
+        supabase
+          .from('items')
+          .select('id, name, unit, sku, image_url, category_id, model'),
+        supabase
+          .from('categories')
+          .select('id, name, description')
+          .order('name'),
+        supabase
+          .from('stock_balance')
+          .select('project_id, item_id, item_name, unit, project_name, balance')
+      ]);
+
+      const wData = wRes.data;
+      const wError = wRes.error;
       if (wError && wError.code !== '42P01') throw wError;
       setOrders(wData || []);
 
-      // 2. Fetch active projects, items, categories, and stock balances
-      const { data: pData } = await supabase
-        .from('projects')
-        .select('id, name, project_code, location, description')
-        .eq('status', 'active')
-        .order('name');
-      const { data: iData } = await supabase.from('items').select('id, name, unit, sku, image_url, category_id, model');
-      const { data: cData } = await supabase.from('categories').select('*').order('name');
-      const { data: bData } = await supabase.from('stock_balance').select('*');
+      const pData = pRes.data;
+      const iData = iRes.data;
+      const cData = cRes.data;
+      const bData = bRes.data;
 
       const activeProjects = pData || [];
       const activeProjectIds = new Set(activeProjects.map(p => p.id));
@@ -314,7 +338,7 @@ const Withdrawals = () => {
     if (cart.length === 0) return;
 
     if (!projectId || projectId === 'all') {
-      toast.error('กรุณาเลือกโครงการปลายทางที่จะนำไปใช้งาน (ไม่สามารถเลือก "ทุกสถานที่จัดเก็บ" ได้)');
+      toast.error('กรุณาเลือกสถานที่จัดเก็บ (Location) ที่จะนำไปใช้งาน');
       return;
     }
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -47,11 +47,7 @@ const History = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
 
-  useEffect(() => {
-    fetchHistory();
-  }, [profile]);
-
-  const fetchHistory = async () => {
+  const fetchHistory = useCallback(async () => {
     if (!profile) return;
     try {
       setLoading(true);
@@ -60,16 +56,42 @@ const History = () => {
       let query = supabase
         .from('withdrawal_orders')
         .select(`
-          *,
-          projects(id, name, project_code),
-          profiles!withdrawal_orders_requested_by_fkey(id, full_name),
-          withdrawal_items(
+          id,
+          project_id,
+          status,
+          purpose,
+          notes,
+          delivery_address,
+          requested_by,
+          approved_by,
+          reject_reason,
+          rejected_by,
+          rejected_at,
+          requested_at,
+          approved_at,
+          completed_at,
+          completed_by,
+          projects (
+            id,
+            name,
+            project_code
+          ),
+          profiles:requested_by (
+            id,
+            full_name
+          ),
+          withdrawal_items (
             id,
             quantity,
-            available_at_approval,
-            deducted_quantity,
-            shortage_quantity,
-            items(name, unit, sku)
+            delivery_to,
+            serial_number,
+            part_number,
+            items (
+              id,
+              name,
+              unit,
+              sku
+            )
           )
         `)
         .in('status', ['completed', 'rejected', 'approved'])
@@ -89,7 +111,11 @@ const History = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [profile, isAdmin]);
+
+  useEffect(() => {
+    fetchHistory();
+  }, [fetchHistory]);
 
   // Distinct Projects & Requesters for Filter Dropdowns
   const { projectsList, requestersList } = useMemo(() => {

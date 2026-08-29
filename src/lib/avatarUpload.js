@@ -1,3 +1,4 @@
+import { uploadFileToR2 } from './r2Storage';
 import { supabase } from './supabase';
 import toast from 'react-hot-toast';
 
@@ -8,32 +9,31 @@ export const uploadAvatarImage = async (userId, file) => {
     const fileExt = file.name.split('.').pop().toLowerCase();
     const fileName = `${userId}/avatar.${fileExt || 'png'}`;
 
-    // 1. Upload/Upsert file to Supabase Storage 'avatars' bucket
+    // 1. Primary: Upload directly to Cloudflare R2 (Zero Egress)
+    const r2Url = await uploadFileToR2(file, 'avatars', fileName, true);
+    if (r2Url) {
+      return r2Url;
+    }
+
+    // 2. Fallback: Supabase Storage 'avatars' bucket if R2 was unavailable
+    console.warn('[AvatarUpload] R2 upload unavailable, attempting Supabase Storage fallback...');
     const { error: uploadError } = await supabase.storage
       .from('avatars')
       .upload(fileName, file, {
         cacheControl: '3600',
-        upsert: true, // Replace existing avatar file without orphaned files
+        upsert: true,
         contentType: file.type
       });
 
     if (uploadError) {
-      console.warn('Storage upload warning:', uploadError);
-      if (uploadError.message?.includes('bucket not found') || uploadError.error === 'Bucket not found') {
-        toast.error('กรุณารันสคริปต์ Migration 10 ใน Supabase SQL Editor เพื่อสร้าง Bucket "avatars"');
-        return null;
-      }
       throw uploadError;
     }
 
-    // 2. Get Public URL
     const { data: urlData } = supabase.storage
       .from('avatars')
       .getPublicUrl(fileName);
 
-    // Append timestamp query parameter to bypass browser caching when updated
-    const publicUrl = `${urlData.publicUrl}?t=${Date.now()}`;
-    return publicUrl;
+    return `${urlData.publicUrl}?t=${Date.now()}`;
   } catch (error) {
     console.error('Upload Avatar Error:', error);
     toast.error('ไม่สามารถอัปโหลดรูปโปรไฟล์ได้: ' + (error.message || 'เกิดข้อผิดพลาด'));

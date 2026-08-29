@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,6 +16,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import toast from 'react-hot-toast';
 import { ProjectLocationSelector } from '@/components/common/ProjectLocationSelector';
 import { TransferItemDialog } from '@/components/items/TransferItemDialog';
+import { uploadFileToR2 } from '@/lib/r2Storage';
 
 const Items = () => {
   const { can, profile } = useAuth();
@@ -23,6 +24,7 @@ const Items = () => {
   const [categories, setCategories] = useState([]);
   const [projectsList, setProjectsList] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   // Filters & Layout States
   const [searchQuery, setSearchQuery] = useState('');
@@ -45,30 +47,30 @@ const Items = () => {
   const [formData, setFormData] = useState({ name: '', model: '', sku: '', category_id: '', unit: 'ชิ้น', description: '', image_url: '' });
   const [selectedItem, setSelectedItem] = useState(null);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const realtimeTimeoutRef = useRef(null);
+
+  const triggerDebouncedFetch = () => {
+    if (realtimeTimeoutRef.current) {
+      clearTimeout(realtimeTimeoutRef.current);
+    }
+    realtimeTimeoutRef.current = setTimeout(() => {
+      fetchItems(false);
+    }, 300);
+  };
 
   useEffect(() => {
-    fetchItems();
+    fetchItems(true);
     fetchCategories();
     fetchSettings();
 
-    // Live Realtime synchronization on projects, items, transactions, and system_settings
+    // Live Realtime synchronization on projects, items, transactions, and system_settings with debouncing
     const channel = supabase
       .channel('items-master-live-sync')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'projects' }, () => {
-        fetchItems();
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'items' }, () => {
-        fetchItems();
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'stock_in_orders' }, () => {
-        fetchItems();
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'stock_in_items' }, () => {
-        fetchItems();
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'stock_transactions' }, () => {
-        fetchItems();
-      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'projects' }, triggerDebouncedFetch)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'items' }, triggerDebouncedFetch)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'stock_in_orders' }, triggerDebouncedFetch)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'stock_in_items' }, triggerDebouncedFetch)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'stock_transactions' }, triggerDebouncedFetch)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'system_settings' }, () => {
         fetchSettings();
       })
@@ -76,7 +78,7 @@ const Items = () => {
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        fetchItems();
+        triggerDebouncedFetch();
         fetchSettings();
       }
     };
@@ -86,6 +88,9 @@ const Items = () => {
     window.addEventListener('stockflow:settings-updated', handleSettingsUpdated);
 
     return () => {
+      if (realtimeTimeoutRef.current) {
+        clearTimeout(realtimeTimeoutRef.current);
+      }
       supabase.removeChannel(channel);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('stockflow:settings-updated', handleSettingsUpdated);
@@ -110,7 +115,7 @@ const Items = () => {
 
   const fetchCategories = async () => {
     try {
-      let { data, error } = await supabase.from('categories').select('*').order('name');
+      let { data, error } = await supabase.from('categories').select('id, name, description').order('name');
       if (error) throw error;
       
       if (!data || data.length === 0) {
@@ -131,40 +136,48 @@ const Items = () => {
     }
   };
 
-  const fetchItems = async () => {
+  const fetchItems = async (isInitial = false) => {
     try {
-      setLoading(true);
-      // Fetch Master Items
-      const { data: iData, error: iError } = await supabase
-        .from('items')
-        .select('*, categories(name)')
-        .order('name');
-      if (iError) throw iError;
+      if (isInitial || items.length === 0) {
+        setLoading(true);
+      } else {
+        setRefreshing(true);
+      }
 
-      // Fetch Stock Balance per project-item relationship
-      const { data: bData } = await supabase
-        .from('stock_balance')
-        .select('*');
+      // Parallelize Supabase requests across items, stock_balance, and active projects
+      const [itemsRes, stockRes, projectsRes] = await Promise.all([
+        supabase
+          .from('items')
+          .select('id, name, model, sku, item_type, parent_sku, unit, description, notes, image_url, category_id, categories(name)')
+          .order('name'),
+        supabase
+          .from('stock_balance')
+          .select('project_id, item_id, item_name, unit, project_name, balance'),
+        supabase
+          .from('projects')
+          .select('id, name, project_code, location, description, status')
+          .eq('status', 'active')
+      ]);
 
-      // Fetch Projects for code & name resolution - only active projects
-      const { data: pData } = await supabase
-        .from('projects')
-        .select('id, name, project_code, location, description, status')
-        .eq('status', 'active');
+      if (itemsRes.error) throw itemsRes.error;
 
-      setProjectsList(pData || []);
+      const iData = itemsRes.data || [];
+      const bData = stockRes.data || [];
+      const pData = projectsRes.data || [];
+
+      setProjectsList(pData);
 
       const projectMap = {};
-      (pData || []).forEach(p => { projectMap[p.id] = p; });
+      pData.forEach(p => { projectMap[p.id] = p; });
 
       const itemMap = {};
-      (iData || []).forEach(i => { itemMap[i.id] = i; });
+      iData.forEach(i => { itemMap[i.id] = i; });
 
       const itemsWithBalanceSet = new Set();
       const records = [];
 
       // Construct project-specific stock balance records (only for active projects)
-      (bData || []).forEach(b => {
+      bData.forEach(b => {
         const project = projectMap[b.project_id];
         // Exclude stock balance records belonging to deleted or inactive projects
         if (!project || project.status === 'inactive') {
@@ -203,7 +216,7 @@ const Items = () => {
       });
 
       // Include master items that don't have stock balance records yet (Balance: 0)
-      (iData || []).forEach(item => {
+      iData.forEach(item => {
         if (!itemsWithBalanceSet.has(item.id)) {
           records.push({
             recordKey: `${item.id}_none`,
@@ -237,33 +250,39 @@ const Items = () => {
       toast.error('ไม่สามารถโหลดข้อมูลรายการวัสดุได้: ' + (error.message || ''));
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
-  const handleImageUpload = (e) => {
+  const handleImageUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 3 * 1024 * 1024) {
-      return toast.error('ขนาดไฟล์รูปภาพต้องไม่เกิน 3MB');
+    if (file.size > 5 * 1024 * 1024) {
+      return toast.error('ขนาดไฟล์รูปภาพต้องไม่เกิน 5MB');
     }
 
     setUploadingImage(true);
-    const toastId = toast.loading('กำลังประมวลผลรูปภาพ...');
-    const reader = new FileReader();
+    const toastId = toast.loading('กำลังอัปโหลดรูปภาพสู่ Cloudflare R2...');
 
-    reader.onload = () => {
-      setFormData(prev => ({ ...prev, image_url: reader.result }));
-      toast.success('อัปโหลดรูปภาพสำเร็จ', { id: toastId });
+    try {
+      const fileExt = file.name.split('.').pop()?.toLowerCase() || 'png';
+      const safeItemName = (selectedItem?.sku || selectedItem?.id || 'item').replace(/[^a-zA-Z0-9_-]/g, '_');
+      const customFileName = `item-${safeItemName}-${Date.now()}.${fileExt}`;
+
+      const publicUrl = await uploadFileToR2(file, 'items', customFileName);
+      if (publicUrl) {
+        setFormData(prev => ({ ...prev, image_url: publicUrl }));
+        toast.success('อัปโหลดรูปภาพสู่ Cloudflare R2 สำเร็จ', { id: toastId });
+      } else {
+        toast.error('ไม่สามารถอัปโหลดรูปภาพได้', { id: toastId });
+      }
+    } catch (err) {
+      console.error('[Items] Image upload error:', err);
+      toast.error('เกิดข้อผิดพลาดในการอัปโหลดรูปภาพ: ' + (err.message || ''));
+    } finally {
       setUploadingImage(false);
-    };
-
-    reader.onerror = () => {
-      toast.error('ไม่สามารถอ่านไฟล์รูปภาพได้', { id: toastId });
-      setUploadingImage(false);
-    };
-
-    reader.readAsDataURL(file);
+    }
   };
 
   const handleEditItem = async (e) => {
@@ -494,11 +513,12 @@ const Items = () => {
           <Button
             variant="outline"
             size="sm"
-            onClick={fetchItems}
-            className="rounded-xl h-10 gap-1.5 border-input hover:bg-accent text-xs font-semibold"
+            onClick={() => fetchItems(false)}
+            disabled={loading || refreshing}
+            className="rounded-xl h-10 gap-1.5 border-input hover:bg-accent text-xs font-semibold cursor-pointer"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-            รีเฟรชข้อมูล
+            <RefreshCw className={`w-3.5 h-3.5 ${(loading || refreshing) ? 'animate-spin text-indigo-600' : ''}`} />
+            <span>{refreshing ? 'กำลังซิงค์...' : 'รีเฟรชข้อมูล'}</span>
           </Button>
         </div>
       </div>
@@ -670,7 +690,7 @@ const Items = () => {
                   <TableHead className="min-w-[120px]">รุ่น (Model) *</TableHead>
                   <TableHead className="min-w-[130px]">รหัส SKU / Code</TableHead>
                   <TableHead className="min-w-[180px] font-bold text-indigo-600 dark:text-indigo-400">
-                    โครงการปลายทาง (Destination Project)
+                    สถานที่จัดเก็บ (Location)
                   </TableHead>
                   <TableHead className="min-w-[120px]">หมวดหมู่</TableHead>
                   <TableHead className="text-center w-[100px] font-bold">สต็อกปัจจุบัน</TableHead>

@@ -1,13 +1,14 @@
 {
   "name": "stock-flow-app",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "migrate:r2": "node scripts/migrate-legacy-images-to-r2.mjs",
     "generate:agents": "python .agents/scripts/generate_manifest.py && python .agents/scripts/dependency_graph.py",
     "check:agents": "python .agents/scripts/validate_kit.py",
     "check:antigravity": "node .agents/hooks/antigravity-doctor.mjs",
@@ -15,6 +16,8 @@
     "build:antigravity-plugin": "node .agents/hooks/build-plugin.mjs"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1121.0",
+    "@aws-sdk/s3-request-presigner": "^3.1121.0",
     "@radix-ui/react-dialog": "^1.1.1",
     "@radix-ui/react-dropdown-menu": "^2.1.1",
     "@radix-ui/react-label": "^2.1.0",

@@ -10,6 +10,7 @@ import ReportFilterBar from '@/components/reports/ReportFilterBar';
 import ReportCharts from '@/components/reports/ReportCharts';
 import ReportDataTable from '@/components/reports/ReportDataTable';
 import ReportPagination from '@/components/reports/ReportPagination';
+import ReportSiteKits from '@/components/reports/ReportSiteKits';
 
 const Reports = () => {
   const [activeTab, setActiveTab] = useState('stock_in'); // 'stock_in', 'withdrawals', 'balance'
@@ -287,7 +288,7 @@ const Reports = () => {
     });
   };
 
-  const handleExportExcel = () => {
+  const handleExportExcel = async () => {
     try {
       let exportData = [];
       let sheetName = '';
@@ -327,6 +328,39 @@ const Reports = () => {
           'คงเหลือ': r.balance,
           'หน่วย': r.unit
         }));
+      } else if (activeTab === 'site_kits') {
+        const { fetchSiteKitsAvailability } = await import('@/lib/siteKits');
+        const siteKitsData = await fetchSiteKitsAvailability(filters.project_id || null);
+        let itemsList = [];
+        (siteKitsData || []).forEach(cat => {
+          (cat.items || []).forEach(item => {
+            const isLimiting = item.is_mandatory && item.sets_possible === cat.complete_sets;
+            itemsList.push({
+              ...item,
+              category_id: cat.category_id,
+              category_name: cat.category_name,
+              category_complete_sets: cat.complete_sets,
+              isLimiting
+            });
+          });
+        });
+        sheetName = 'Site_Kits_BOM';
+        exportData = itemsList.map((item, index) => ({
+          'ลำดับ': index + 1,
+          'หมวดหมู่อุปกรณ์': item.category_name,
+          'Part Number': item.part_number || '-',
+          'รายการอุปกรณ์ตาม BOM': item.bom_name,
+          'สเปกจำนวนใช้ต่อไซต์': item.qty_per_site,
+          'หน่วย': item.unit || 'ชิ้น',
+          'ยอดคงเหลือจริงในสต็อก': item.total_stock,
+          'จำนวนชุดที่จัดได้': item.sets_possible,
+          'ขาดสำหรับชุดถัดไป': item.missing_for_next_set || 0,
+          'สถานะ': item.total_stock === 0 
+            ? 'หมดสต็อก' 
+            : item.isLimiting 
+            ? 'สต็อกจำกัด (Limiting)' 
+            : 'พร้อมจัดชุด'
+        }));
       }
 
       if (exportData.length === 0) {
@@ -350,15 +384,49 @@ const Reports = () => {
       setPdfLoading(true);
       const toastId = toast.loading('กำลังสร้างไฟล์ PDF...');
 
-      const { StockReportPDF } = await import('@/lib/pdf-templates.jsx');
+      const { StockReportPDF, SiteKitsReportPDF } = await import('@/lib/pdf-templates.jsx');
       const { pdf } = await import('@react-pdf/renderer');
 
-      const doc = <StockReportPDF data={processedData} type={activeTab} />;
+      let doc;
+      let downloadFileName = `${activeTab}_Report_${new Date().toISOString().split('T')[0]}.pdf`;
+
+      if (activeTab === 'site_kits') {
+        const { fetchSiteKitsAvailability } = await import('@/lib/siteKits');
+        const siteKitsData = await fetchSiteKitsAvailability(filters.project_id || null);
+        let itemsList = [];
+        (siteKitsData || []).forEach(cat => {
+          (cat.items || []).forEach(item => {
+            const isLimiting = item.is_mandatory && item.sets_possible === cat.complete_sets;
+            itemsList.push({
+              ...item,
+              category_id: cat.category_id,
+              category_name: cat.category_name,
+              category_complete_sets: cat.complete_sets,
+              isLimiting
+            });
+          });
+        });
+        const selectedProj = projects.find(p => p.id === filters.project_id);
+        const projectName = selectedProj ? (selectedProj.location ? `${selectedProj.name} (${selectedProj.location})` : selectedProj.name) : 'ทุกสถานที่จัดเก็บ (รวมทุกคลัง)';
+
+        doc = (
+          <SiteKitsReportPDF
+            items={itemsList}
+            siteKits={siteKitsData || []}
+            projectName={projectName}
+            categoryName="ทั้งหมด 4 หมวด"
+          />
+        );
+        downloadFileName = `รายงานความพร้อมชุดติดตั้งไซต์_BOM_${new Date().toISOString().split('T')[0]}.pdf`;
+      } else {
+        doc = <StockReportPDF data={processedData} type={activeTab} />;
+      }
+
       const blob = await pdf(doc).toBlob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${activeTab}_Report_${new Date().toISOString().split('T')[0]}.pdf`;
+      a.download = downloadFileName;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -387,54 +455,60 @@ const Reports = () => {
         pdfLoading={pdfLoading}
       />
 
-      {/* 2. Operational Summary KPI Grid */}
-      <ReportKpiGrid
-        activeTab={activeTab}
-        reportData={processedData}
-        projects={projects}
-        selectedProjectId={filters.project_id}
-      />
+      {activeTab === 'site_kits' ? (
+        <ReportSiteKits projects={projects} />
+      ) : (
+        <>
+          {/* 2. Operational Summary KPI Grid */}
+          <ReportKpiGrid
+            activeTab={activeTab}
+            reportData={processedData}
+            projects={projects}
+            selectedProjectId={filters.project_id}
+          />
 
-      {/* 3. Smart Filter Toolbar */}
-      <ReportFilterBar
-        activeTab={activeTab}
-        filters={filters}
-        onFilterChange={handleFilterChange}
-        onResetFilters={handleResetFilters}
-        onApplyFilters={fetchReportData}
-        projects={projects}
-        categories={categories}
-        showCharts={showCharts}
-        onToggleCharts={() => setShowCharts(!showCharts)}
-        loading={loading}
-      />
+          {/* 3. Smart Filter Toolbar */}
+          <ReportFilterBar
+            activeTab={activeTab}
+            filters={filters}
+            onFilterChange={handleFilterChange}
+            onResetFilters={handleResetFilters}
+            onApplyFilters={fetchReportData}
+            projects={projects}
+            categories={categories}
+            showCharts={showCharts}
+            onToggleCharts={() => setShowCharts(!showCharts)}
+            loading={loading}
+          />
 
-      {/* 4. Visual Analytics Section (Recharts) */}
-      {showCharts && <ReportCharts activeTab={activeTab} reportData={processedData} />}
+          {/* 4. Visual Analytics Section (Recharts) */}
+          {showCharts && <ReportCharts activeTab={activeTab} reportData={processedData} />}
 
-      {/* 5. Detailed Data Table */}
-      <ReportDataTable
-        activeTab={activeTab}
-        reportData={paginatedData}
-        sortConfig={sortConfig}
-        onSort={handleSort}
-        onResetFilters={handleResetFilters}
-        loading={loading}
-      />
+          {/* 5. Detailed Data Table */}
+          <ReportDataTable
+            activeTab={activeTab}
+            reportData={paginatedData}
+            sortConfig={sortConfig}
+            onSort={handleSort}
+            onResetFilters={handleResetFilters}
+            loading={loading}
+          />
 
-      {/* 6. Pagination Controls */}
-      {!loading && processedData.length > 0 && (
-        <ReportPagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          pageSize={pageSize}
-          totalItems={processedData.length}
-          onPageChange={setCurrentPage}
-          onPageSizeChange={(newSize) => {
-            setPageSize(newSize);
-            setCurrentPage(1);
-          }}
-        />
+          {/* 6. Pagination Controls */}
+          {!loading && processedData.length > 0 && (
+            <ReportPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              pageSize={pageSize}
+              totalItems={processedData.length}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={(newSize) => {
+                setPageSize(newSize);
+                setCurrentPage(1);
+              }}
+            />
+          )}
+        </>
       )}
     </div>
   );

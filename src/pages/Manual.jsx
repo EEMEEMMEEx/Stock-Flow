@@ -194,7 +194,7 @@ const Manual = () => {
                   <li>กดปุ่ม <strong className="text-primary font-semibold">+ สร้างคำขอเบิกจ่าย (POS)</strong> เพื่อเปิดระบบตะกร้าสินค้า</li>
                   <li>เลือกวัสดุที่ต้องการลงตะกร้า ปรับเพิ่ม/ลดจำนวนชิ้นตามความจำเป็น</li>
                   <li>กดปุ่ม <strong className="text-primary font-semibold">"ยืนยันและสรุปบิล" (Checkout)</strong></li>
-                  <li>เลือกระบุโครงการปลายทางและวัตถุประสงค์ในการนำไปใช้งาน จากนั้นกดยืนยันส่งคำขอ</li>
+                  <li>เลือกระบุสถานที่จัดเก็บ (Location) และวัตถุประสงค์ในการนำไปใช้งาน จากนั้นกดยืนยันส่งคำขอ</li>
                 </ul>
               </div>
 
@@ -268,7 +268,7 @@ const Manual = () => {
                 <h3 className="font-bold text-foreground border-b border-border pb-1">4.1 การรับเข้า Stock (Stock In Workflow)</h3>
                 <ul className="list-disc list-inside text-xs text-muted-foreground space-y-1.5 ml-1">
                   <li>ไปที่เมนู <strong className="text-foreground">รับเข้า Stock</strong> กดปุ่ม <strong className="text-primary font-semibold">+ บันทึกรับเข้าสต็อก</strong></li>
-                  <li><strong className="text-foreground font-semibold">Direct Receipt:</strong> เลือกโครงการปลายทาง กรอกรหัส SKU ชื่อวัสดุ จำนวน และ Serial/Part Number โดยตรง</li>
+                  <li><strong className="text-foreground font-semibold">Direct Receipt:</strong> เลือกสถานที่จัดเก็บ (Location) กรอกรหัส SKU ชื่อวัสดุ จำนวน และ Serial/Part Number โดยตรง</li>
                   <li><strong className="text-foreground font-semibold">CSV Import:</strong> อัปโหลดไฟล์ Excel/CSV (UTF-8 Encoding) ปริมาณมากเข้าสู่คลังโครงการได้ในครั้งเดียว</li>
                 </ul>
               </div>
@@ -286,7 +286,7 @@ const Manual = () => {
                 <h3 className="font-bold text-foreground border-b border-border pb-1">4.3 การจัดการโครงการและทะเบียนวัสดุ (Projects & Items Master)</h3>
                 <ul className="list-disc list-inside text-xs text-muted-foreground space-y-1.5 ml-1">
                   <li><strong className="text-foreground">โครงการ:</strong> สามารถเพิ่ม แก้ไข หรือเปลี่ยนสถานะเป็น Inactive (โครงการที่ Inactive จะไม่สามารถทำรายการรับเข้าหรือเบิกจ่ายได้)</li>
-                  <li><strong className="text-foreground">รายการวัสดุ Master:</strong> แสดงยอดรวมคลังสินค้า ยอดคงเหลือ และตำแหน่งจัดเก็บแยกตามโครงการปลายทาง (`[Project Code] — [Project Name]`)</li>
+                  <li><strong className="text-foreground">รายการวัสดุ Master:</strong> แสดงยอดรวมคลังสินค้า ยอดคงเหลือ และตำแหน่งจัดเก็บแยกตามสถานที่จัดเก็บ (Location) (`[Project Code] — [Project Name]`)</li>
                 </ul>
               </div>
             </CardContent>

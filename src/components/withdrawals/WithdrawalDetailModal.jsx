@@ -118,7 +118,7 @@ const WithdrawalDetailModal = ({
             <div className="space-y-1">
               <span className="text-muted-foreground flex items-center gap-1.5 font-semibold">
                 <Building2 className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-                โครงการปลายทาง:
+                สถานที่จัดเก็บ (Location):
               </span>
               <p className="font-bold text-foreground">
                 {order.projects?.project_code ? `[${order.projects.project_code}] ` : ''}{order.projects?.name || '-'}

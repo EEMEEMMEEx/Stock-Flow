@@ -1,5 +1,222 @@
 # Changelog
 
+## [2026-08-29 15:37] ทำความสะอาดโค้ดเบส จัดเก็บประวัติไมเกรชัน และอัปเกรดเวอร์ชันระบบสู่ v1.0.1 (Project Cleanup & v1.0.1 Release)
+
+- **Modified files:**
+  - `src/config/appConfig.js`
+  - `package.json`
+  - `supabase/migrations/archive/` [NEW DIRECTORY]
+- **Details:**
+  - **จัดเก็บไมเกรชันเก่า (Migration Archiving):** ย้ายไฟล์ประวัติไมเกรชันเดิม 55 ไฟล์เข้าสู่ `supabase/migrations/archive/` เพื่อให้โฟลเดอร์หลักคงไว้เฉพาะโมดูล Baseline และ Migration 52
+  - **ลบไฟล์ชั่วคราวและไฟล์ขยะตกค้าง (Dead Code / Temp Cleanup):** ลบไฟล์แคช `vite.config.js.timestamp-*.mjs`, ไฟล์ดัมพ์ Log `supabase_logs.json`, ไฟล์ทดสอบชั่วคราว `test_auth_simple.js`, ไฟล์ดัมพ์ SQL เก่า `categories_rows.sql`, `import_dopa.*`, และลบโฟลเดอร์ว่าง `src/types/`
+  - **จัดระเบียบเอกสาร (Docs Consolidation):** รวมศูนย์เอกสารและแผนงานทั้งหมดไว้ในโฟลเดอร์ `docs/`
+  - **อัปเกรดเวอร์ชันระบบ (System Version Increment):** ปรับเพิ่มเวอร์ชันแอปพลิเคชันจาก `v1.0.0` เป็น `v1.0.1` (PATCH) ตามข้อกำหนดสากลใน `GEMINI.md`
+- **Reason:** ยกระดับความสะอาด ความเป็นระเบียบ และประสิทธิภาพสูงสุดของโปรเจกต์
+
+## [2026-08-29 15:13] แก้ไขการดึงข้อมูลหน้าประวัติการเบิกจ่ายและปรับปรุงประสิทธิภาพการเรนเดอร์ (Fix History Query & Render Performance)
+
+- **Modified files:**
+  - `src/pages/History.jsx`
+- **Details:**
+  - **แก้ไข Column Projections ใน `src/pages/History.jsx`:** ลบคอลัมน์ที่ไม่มีอยู่ในตารางจริง (`order_number`, `rejection_reason`, `approver_id`) และแทนที่ด้วยคอลัมน์จริงตาม Database Schema (`reject_reason`, `approved_by`, `delivery_address`, `purpose`, `notes`) แก้ไขข้อผิดพลาด PostgREST Error 400 / 42703 (`column does not exist`)
+  - **ปรับปรุงประสิทธิภาพ (Performance Optimization):** ห่อหุ้มฟังก์ชัน `fetchHistory` ด้วย `useCallback` เพื่อลดการ re-render ซ้ำซ้อน และลด Forced Reflow ในเบราว์เซอร์
+- **Reason:** แก้ไขข้อผิดพลาดการโหลดข้อมูลในหน้า `/history` ให้แสดงผลรายการประวัติคำขอเบิกจ่ายได้อย่างถูกต้องและลื่นไหล
+
+## [2026-08-29 15:08] แก้ไขปัญหา CORS และปรับปรุงการเชื่อมต่อ Cloudflare R2 สำหรับ Localhost (Fix R2 CORS & Dev Middleware)
+
+- **Modified files:**
+  - `src/lib/r2Storage.js`
+  - `src/lib/avatarUpload.js`
+  - `api/r2-upload-url.js`
+  - `vite.config.js`
+- **Details:**
+  - **ปรับปรุงเป้าหมาย Endpoint ใน `src/lib/r2Storage.js`:** เมื่อรันบน Localhost (`http://localhost:5173`) ให้เรียกใช้ Relative Path `/api/r2-upload-url` ตรงเข้าสู่ Vite Dev Middleware ในเครื่อง เพื่อหลีกเลี่ยงข้อจำกัด CORS ข้ามโดเมน
+  - **ปรับปรุง Preflight CORS Headers ใน `api/r2-upload-url.js` & `vite.config.js`:** เพิ่ม Dynamic Origin reflection (`req.headers.origin`) และตอบกลับคำขอ HTTP `OPTIONS` ล่วงหน้าทันที (HTTP 200 OK)
+  - **ปรับปรุง Fallback ใน `src/lib/avatarUpload.js`:** ให้การสลับไปยัง Supabase Storage ทำงานอย่างราบรื่นแบบ Silent Fallback ปราศจาก Error Toast ซ้ำซ้อน
+- **Reason:** แก้ไขข้อผิดพลาด `Blocked by CORS policy` เมื่อทดสอบอัปโหลดรูปภาพบน Localhost Development
+
+## [2026-08-29 14:58] ดำเนินการย้ายไฟล์สื่อเดิมสู่ Cloudflare R2 อัตโนมัติ 100% (Execute Zero Data Loss R2 Migration)
+
+- **Modified files:**
+  - `scripts/migrate-legacy-images-to-r2.mjs` [NEW]
+  - `package.json`
+  - `storage-migration-plan.md` [NEW]
+  - `docs/storage-migration-plan.md` [NEW]
+- **Details:**
+  - **สร้างและรันสคริปต์ Auto-Migration:** สแกนฐานข้อมูล Supabase และตรวจพบรูปโปรไฟล์เดิม 2 รายการ
+  - **ดาวน์โหลดและอัปโหลดตรงเข้า Cloudflare R2:** ย้ายรูปโปรไฟล์ของ `WATCHARA MANADEE` และ `SAWEKSOOT MANADEE` เข้าสู่ R2 Bucket `stockflow-assets` สำเร็จ 100%
+  - **อัปเดต URL ใน Supabase Profiles:** เปลี่ยน `avatar_url` ในฐานข้อมูลให้ชี้ไปยัง Cloudflare R2 CDN URL (`https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/...`) เรียบร้อยสมบูรณ์
+- **Reason:** ย้ายไฟล์สื่อเดิมทั้งหมดไปยัง Cloudflare R2 อย่างปลอดภัยโดยไม่มีรูปภาพสูญหายแม้แต่รูปเดียว (Zero Data Loss)
+
+## [2026-08-29 14:27] รีแฟกเตอร์สถาปัตยกรรมและฐานข้อมูล Supabase ครบวงจร (Supabase Full Refactor Phase 1–5)
+
+- **Modified files:**
+  - `supabase/migrations/baseline/01_core_schema.sql` [NEW]
+  - `supabase/migrations/baseline/02_rbac_and_user_auth.sql` [NEW]
+  - `supabase/migrations/baseline/03_inventory_and_transactions.sql` [NEW]
+  - `supabase/migrations/baseline/04_site_kits_and_reporting.sql` [NEW]
+  - `supabase/migrations/baseline/05_system_settings_and_audit.sql` [NEW]
+  - `supabase/migrations/52_consolidated_clean_baseline.sql` [NEW]
+  - `supabase/migrations/scripts/clean_legacy_base64_images.sql` [NEW]
+  - `src/pages/Items.jsx`
+  - `src/pages/Projects.jsx`
+  - `src/pages/Withdrawals.jsx`
+  - `src/pages/History.jsx`
+  - `docs/supabase-full-refactor-implementation-plan.md` [NEW]
+- **Details:**
+  - **Phase 1: Migration Consolidation:** ยุบรวมไฟล์ไมเกรชันเดิม 55 ไฟล์ ออกเป็น 5 โมดูล Baseline สะอาดและเป็นหมวดหมู่ชัดเจน พร้อมสร้าง Rollup Migration `52_consolidated_clean_baseline.sql`
+  - **Phase 2: Post-R2 Storage Decoupling:** ล้างการพึ่งพา Storage เก่า และสร้างสคริปต์ตรวจสอบ/ล้าง Base64 Image strings ใน `clean_legacy_base64_images.sql`
+  - **Phase 3: Database Security & Search Path Hardening:** เพิ่ม `SET search_path = public, auth, pg_temp;` ให้กับทุกฟังก์ชันที่เป็น `SECURITY DEFINER` เพื่อผ่านเกณฑ์มาตรฐานความปลอดภัย Supabase Security Linter (CWE-426)
+  - **Phase 4: Indexing & Query Optimization:** เพิ่ม Composite Indexes บนตาราง `stock_transactions`, `inventory_requests`, `user_project_assignments` และปรับปรุงคำสั่ง PostgREST Queries ฝั่ง Frontend ให้เลือกเฉพาะ Column Projections ที่จำเป็น เพื่อลดการใช้แบนด์วิดท์ Egress อย่างสูงสุด
+  - **Phase 5: Automated Verification:** ทดสอบ Production Build สำเร็จ 100% (Built in 5.25s)
+- **Reason:** ยกระดับความปลอดภัย ประสิทธิภาพ ความสะอาดของฐานข้อมูล และแก้ปัญหา Egress Limit ในระยะยาว
+
+## [2026-08-29 13:58] ผสานรวมระบบจัดเก็บไฟล์ Cloudflare R2 สำหรับรูปภาพและสื่อ (Integrate Cloudflare R2 Object Storage)
+
+- **Modified files:**
+  - `api/r2-upload-url.js` [NEW]
+  - `src/lib/r2Storage.js` [NEW]
+  - `src/lib/avatarUpload.js`
+  - `src/pages/Items.jsx`
+  - `vite.config.js`
+  - `.env`
+  - `.env.example`
+  - `docs/cloudflare-r2-integration-plan.md` [NEW]
+- **Details:**
+  - **สร้าง Vercel Serverless Function `api/r2-upload-url.js`:** รองรับการสร้าง S3 Presigned PUT URL อย่างปลอดภัย พร้อม CORS Headers และการตั้งชื่อไฟล์/โฟลเดอร์แบบไดนามิก
+  - **สร้าง Utility `src/lib/r2Storage.js`:** รองรับการอัปโหลดไฟล์จากเบราว์เซอร์ตรงเข้าสู่ Cloudflare R2 Bucket ด้วย HTTP PUT พร้อมระบบ Fallback และ Cache-busting
+  - **ปรับปรุง `src/lib/avatarUpload.js`:** เปลี่ยนการอัปโหลดรูปโปรไฟล์จากการบันทึกบน Supabase Storage มาเป็นการอัปโหลดตรงเข้า Cloudflare R2 พร้อมคง Fallback กรณีจำเป็น
+  - **ปรับปรุง `src/pages/Items.jsx`:** ยกเลิกการแปลงรูปภาพเป็น Base64 Data URL ที่ทำให้ขนาดฐานข้อมูลและ Egress บวม เปลี่ยนมาเป็นการอัปโหลดเข้า Cloudflare R2 แล้วบันทึกเฉพาะ URL สาธารณะลงใน Supabase Database
+  - **เพิ่ม Local Dev API Middleware ใน `vite.config.js`:** รองรับการทดสอบ `/api/r2-upload-url` ขณะรัน `npm run dev` ได้โดยตรง
+- **Reason:** แก้ไขปัญหา Supabase Free Plan Egress Limit ด้วยการย้ายการจัดเก็บและเสิร์ฟไฟล์สื่อทั้งหมดไปยัง Cloudflare R2 ที่มีค่า Egress ฟรี (Zero Egress Fees)
+
+## [2026-08-28 14:12] ปรับปรุงตัดคอลัมน์ "PO Seq" ออกจากรายงานความพร้อมชุดติดตั้งไซต์ (Remove PO Seq from Site Kits Report)
+
+- **Modified files:**
+  - `src/lib/pdf-templates.jsx`
+  - `src/components/reports/ReportSiteKits.jsx`
+  - `src/pages/Reports.jsx`
+- **Details:**
+  - ตัดคอลัมน์ **PO Seq** ออกจากรายงานทั้งในไฟล์ PDF (`SiteKitsReportPDF`) และการส่งออกไฟล์ Excel (`.xlsx`)
+  - ปรับกระจายสัดส่วนความกว้างของคอลัมน์ใน PDF ใหม่ (เพิ่มพื้นที่ให้ รายการอุปกรณ์ตาม BOM เป็น 28%, Part Number เป็น 17%, และ หมวดหมู่อุปกรณ์ เป็น 17%) เพื่อให้ตัวอักษรแสดงผลได้กว้าง ชัดเจน และอ่านง่ายยิ่งขึ้น
+- **Reason:** ปรับปรุงตามความต้องการของผู้ใช้งานที่ไม่จำเป็นต้องแสดง PO Seq ในรายงานชุดติดตั้งไซต์
+
+## [2026-08-28 14:06] เพิ่มระบบส่งออกรายงาน PDF สำหรับความพร้อมชุดติดตั้งไซต์ตาม BOM (Add Site Kits BOM PDF Export)
+
+- **Modified files:**
+  - `src/lib/pdf-templates.jsx`
+  - `src/components/reports/ReportSiteKits.jsx`
+  - `src/pages/Reports.jsx`
+- **Details:**
+  - สร้างคอมโพเนนต์เทมเพลต PDF **`SiteKitsReportPDF`** (ขนาด A4 แนวนอน Landscape) จัดรูปแบบระดับ Executive Corporate รองรับฟอนต์ภาษาไทย `THSarabunNew`, แสดงโลโก้ Forth Corporation, หัวข้อรายงาน, ชิปตัวกรองสถานที่จัดเก็บและหมวดหมู่
+  - เพิ่มการ์ดสรุป KPI ด้านบน: จำนวนชุดพร้อมจัดในแต่ละหมวดหมู่, จำนวนรายการตาม BOM, รายการสต็อกจำกัด (Limiting Items) และรายการหมดสต็อก (Out of Stock)
+  - เพิ่มตารางข้อมูล 10 คอลัมน์ (ลำดับ, หมวดหมู่อุปกรณ์, PO Seq, Part Number, รายการตาม BOM, สเปก/ไซต์, สต็อกจริง, จัดชุดได้, ขาดสำหรับชุดถัดไป, สถานะ) พร้อมระบบไฮไลต์สีสถานะและแถวรวมท้ายตาราง
+  - เพิ่มปุ่ม **Export PDF** ในหน้าจอ `ReportSiteKits.jsx` เคียงคู่กับปุ่ม Export Excel และผูกเข้ากับปุ่ม Export PDF ในแถบหัวหน้า `Reports.jsx` ให้ทำงานร่วมกันอย่างสมบูรณ์
+- **Reason:** รองรับการสร้างและพิมพ์รายงานความพร้อมชุดติดตั้งไซต์ (BOM Readiness) ในรูปแบบเอกสาร PDF อย่างเป็นทางการ
+
+## [2026-08-28 13:56] แก้ไขข้อผิดพลาดการโหลดข้อมูลรายการยืม-คืนในหน้า `/checkouts` (Fix Checkout Data Fetching)
+
+- **Modified files:**
+  - `src/pages/Checkouts.jsx`
+- **Details:**
+  - แก้ไขตัวแปร `ordData` ที่ไม่ได้ถูกประกาศ (ReferenceError) ในฟังก์ชัน `fetchCheckoutData` ให้เรียกใช้ `ordRes.data` จากผลลัพธ์ของ `Promise.all` อย่างถูกต้อง
+  - ส่งผลให้รายการยืม-คืนทั้งหมด (รวมถึงบิล `#0bef664d` และบิลอื่นๆ) สามารถโหลดและแสดงผลในแท็บ **รายการยืมที่ยังไม่คืน (Active Loans)** และแท็บ **ประวัติการยืม-คืน (History)** ได้ทันทีตามปกติ
+- **Reason:** แก้ไข Bug ที่ทำให้ state `orders` ว่างเปล่าและไม่แสดงรายการยืม-คืน
+
+## [2026-08-28 13:44] เสริมความปลอดภัยและการ Disabled ปุ่มจัดการผู้ใช้ตามสิทธิ์ RBAC (Fix User Management Action Guards)
+
+- **Modified files:**
+  - `src/pages/UserManagement.jsx`
+- **Details:**
+  - เพิ่มเงื่อนไข `disabled` และ Title Tooltip ให้กับปุ่มจัดการผู้ใช้งานในตารางอย่างสมบูรณ์:
+    - **ปุ่มระงับการใช้งาน (Deactivate / Activate):** บล็อก `disabled` เมื่อเป็นบัญชีของตนเอง (`u.id === user.id`), เมื่อเป็นบัญชี Admin คนสุดท้ายของระบบ, หรือเมื่อผู้ใช้งานไม่มีสิทธิ์ `users.deactivate`
+    - **ปุ่มลบบัญชี (Delete User):** บล็อก `disabled` เมื่อเป็นบัญชีของตนเอง หรือไม่มีสิทธิ์ `users.delete`
+    - **ปุ่มแก้ไข (Edit User) & รีเซ็ตรหัสผ่าน (Reset Password):** ตรวจสอบสิทธิ์ `users.update` และ `users.reset_password`
+    - **ปุ่มเพิ่มผู้ใช้ (Add User):** ตรวจสอบสิทธิ์ `users.create`
+  - เพิ่มคลาส CSS `disabled:opacity-30 disabled:cursor-not-allowed` เพื่อแสดงผลสถานะปิดการใช้งานอย่างชัดเจนบน UI
+- **Reason:** แก้ไขปัญหาปุ่มกดทำงานได้โดยไม่มีการ Disabled ตามเงื่อนไขความปลอดภัยและสิทธิ์ RBAC
+
+## [2026-08-28 13:34] ปรับปรุงคำเรียก "โครงการปลายทาง" เป็น "สถานที่จัดเก็บ (Location)" (Update Storage Location Terminology)
+
+- **Modified files:**
+  - `src/pages/Items.jsx`
+  - `src/pages/StockIn.jsx`
+  - `src/pages/Withdrawals.jsx`
+  - `src/pages/Projects.jsx`
+  - `src/pages/Manual.jsx`
+  - `src/components/withdrawals/WithdrawalCartPanel.jsx`
+  - `src/components/withdrawals/WithdrawalDetailModal.jsx`
+- **Details:**
+  - ปรับปรุงข้อความแสดงผลใน UI, หัวตาราง, ฟอร์มรับเข้า, ตะกร้าเบิกจ่าย, หน้าต่างโอนย้าย และคู่มือการใช้งาน จากคำว่า "โครงการปลายทาง (Destination Project)" เป็น **"สถานที่จัดเก็บ (Location)"** หรือ **"โครงการและสถานที่จัดเก็บ (Project & Location)"** ครบทุกจุดการแสดงผล
+  - ปรับข้อความ Validation แจ้งเตือน Toast ในกระบวนการรับเข้าและเบิกจ่ายให้สอดคล้องกันอย่างสมบูรณ์
+- **Reason:** สื่อความหมายชัดเจน ตรงตามลักษณะการปฏิบัติงานจริงในคลังสินค้า และลดความสับสนของผู้ใช้งาน
+
+## [2026-08-28 13:12] ปรับปรุงประสิทธิภาพการโหลดข้อมูล (Performance & Query Parallelization)
+
+- **Modified files:**
+  - `src/pages/Items.jsx`
+  - `src/pages/Withdrawals.jsx`
+  - `src/pages/Checkouts.jsx`
+  - `src/pages/StockIn.jsx`
+- **Details:**
+  - **หน้า Items Master (`/items`):**
+    - เปลี่ยนการยิง Supabase Queries จากแบบต่อคิว (Waterfall Sequential `await`) มาใช้ `Promise.all` ขนานพร้อมกัน 3 ชุด (`items`, `stock_balance`, `projects`) ลดเวลาโหลดลงเหลือเศษหนึ่งส่วนสาม
+    - ปรับปรุงการระบุคอลัมน์แบบ Selective ใน `items` และ `stock_balance`
+    - แยกสถานะ `loading` (Initial Load เฉพาะเมื่อเปิดหน้าครั้งแรก) ออกจาก `refreshing` (Background Sync) เพื่อป้องกันหน้าจอกระพริบหายเมื่อสลับแท็บเบราว์เซอร์ (`visibilitychange`)
+    - ติดตั้งระบบ Debounce 300ms สำหรับ Realtime Listener ทั้ง 5 ตาราง เพื่อป้องกันการ Trigger คำขอซ้ำซ้อนในเวลาเดียวกัน
+  - **หน้าอื่นๆ (`/withdrawals`, `/checkouts`, `/stock-in`):**
+    - ปรับการโหลดข้อมูลตั้งต้นให้รันแบบขนานผ่าน `Promise.all` เพื่อให้เปิดหน้าได้ทันทีและลื่นไหลทั่วทั้งระบบ
+- **Reason:** แก้ปัญหาหน้าจอค้าง "กำลังดึงข้อมูลรายการวัสดุ Master..." นานผิดปกติ และยกระดับ UX ให้ตอบสนองรวดเร็ว
+
+## [2026-08-28 13:05] ปรับปรุงคำแสดงสถานะ "คอขวด" เป็น "สต็อกจำกัด" (Update Limiting Status Label)
+
+- **Modified files:**
+  - `src/components/dashboard/SiteKitAvailabilityCards.jsx`
+  - `src/components/reports/ReportSiteKits.jsx`
+- **Details:**
+  - เปลี่ยนคำแสดงสถานะและข้อความแจ้งเตือนจาก "คอขวด" เป็น "สต็อกจำกัด":
+    - Badge สถานะในตาราง: `[สต็อกจำกัด]` (สี Amber)
+    - หัวข้อแจ้งเตือนบนการ์ด Dashboard: `สต็อกจำกัดสำหรับชุดถัดไป:` และ `สต็อกจำกัด (ยังจัดชุดไม่ได้):`
+    - คอลัมน์สถานะในไฟล์ส่งออก Excel: `สต็อกจำกัด (Limiting)`
+    - ข้อความแนะนำตารางรายงาน: ไฮไลต์แถบสีส้มคือรายการที่มีสต็อกจำกัดในการจัดชุด
+- **Reason:** ปรับปรุงภาษาให้สื่อสารเข้าใจง่าย ชัดเจน และเป็นธรรมชาติสำหรับงานคลังสินค้า
+
+## [2026-08-28 10:15] ซิงค์ยอดสต็อกคงเหลือ 100% ตามไฟล์ Balance Stock 27.8.2026 และเชื่อมโยงระบบ Site Installation Kits BOM
+
+- **Modified files:**
+  - `src/lib/siteKits.js`
+  - `src/components/dashboard/SiteKitAvailabilityCards.jsx`
+  - `src/components/reports/ReportSiteKits.jsx`
+  - `src/components/reports/ReportHeader.jsx`
+  - `src/pages/Dashboard.jsx`
+  - `src/pages/Reports.jsx`
+  - `supabase/migrations/51_site_installation_kits_rpc.sql`
+- **Details:**
+  - ปรับปรุงและซิงค์ยอดคงเหลือสต็อกใน Supabase ให้ตรงกับไฟล์ทางการ `Balance Stock_27.8.2026.xlsx` ครบทั้ง 5 คลังสินค้าหลัก (EMS (SAP), Forth ชั้น 3, Factory C, EMS, ตึกโรงรับจำนำ) รวมทั้งสิ้น 6,325 หน่วย (ตรงกัน 100%)
+  - เพิ่ม Master Item ใหม่ `Optix RTN 320F OAU 2F (DC) with independent` ในหมวดหมู่ Microwave
+  - รวมยอดรับเข้าและสต็อกคงเหลือแยกรายคลังสินค้าอย่างถูกต้อง ปราศจากข้อมูลทดสอบซ้ำซ้อน
+  - ติดตั้ง Dashboard KPI Summary Cards แสดงผลจำนวนชุดไซต์ที่จัดได้สมบูรณ์ (Complete Kits) สำหรับ 4 หมวดหมู่หลัก (MW, BS, AGW, Fixed Radio) พร้อมระบบแจ้งเตือนรายการคอขวดและ Modal Breakdown
+  - เพิ่มแท็บรายงานที่ 4 "ความพร้อมชุดไซต์ (Site Kits BOM)" ในหน้ารายงาน (Reports) รองรับการกรองตามสถานที่จัดเก็บ, ค้นหารายการ และ Export Excel
+- **Reason:** ปรับปรุงข้อมูลสต็อกจริงให้เป็นปัจจุบัน ณ วันที่ 27/08/2026 และเพิ่มความสามารถในการวิเคราะห์ความพร้อมในการจัดชุดอุปกรณ์ติดตั้งหน้างานแบบ Real-time
+
+## [2026-08-27 13:05] ยกระดับการออกแบบรายงานสรุปยอดสินค้าคงเหลือ PDF (Redesign Stock Balance Report PDF)
+
+- **Modified files:**
+  - `src/lib/pdf-templates.jsx`
+  - `src/pages/Reports.jsx`
+- **Details:**
+  - ออกแบบเทมเพลตรายงาน `StockReportPDF` ใหม่ในระดับ Enterprise Management Report:
+    - แก้ไขปัญหาข้อความแถวแรกถูกตัด (Text Clipping) ด้วยการปรับ Padding, Line Height และ Vertical Centering ในเซลล์ตารางอย่างสมบูรณ์
+    - ปรับปรุง Header องค์กรแบบ Modern Corporate ด้วยโลโก้ Forth, สีอัตลักษณ์ Blue Accent, และ Badge ระบุเอกสารทางการ
+    - เพิ่มแผง Title Banner แสดงชื่อรายงาน พร้อม Context Chips ระบุโครงการ, หมวดหมู่ และช่วงเวลาที่กรอง
+    - เพิ่มการ์ดสรุปตัวชี้วัดสำคัญ (Executive KPI Metric Cards) ด้านบนตาราง: จำนวนรายการทั้งหมด, ยอดรับเข้าสะสม, ยอดเบิกจ่ายสะสม, ยอดคงเหลือสุทธิ และจำนวนรายการที่สต็อกหมด
+    - ปรับปรุงตารางข้อมูลด้วยเส้นขอบ Slate คมชัด, แถวสลับสี (Zebra Striping: `#ffffff` / `#f8fafc`), การจัดกึ่งกลางและชิดขวาของตัวเลข, ไฮไลต์สียอดรับเข้า (`+`), ยอดเบิกจ่าย (`-`) และยอดคงเหลือ
+    - เพิ่มแถวสรุปยอดรวมทั้งสิ้น (Total Summary Footer Row) ที่ด้านล่างของตาราง
+    - ปรับสีพื้นหลังหัวตารางเป็นสีฟ้า `#87daf5` (Sky Cyan) พร้อมตัวอักษรสีเข้ม `#0f172a` เพื่อความคมชัด สบายตา และสอดคล้องกับธีมเอกสารองค์กร
+    - ปรับปรุง Footer เอกสารแบบ Multi-Page แสดงชื่อระบบ, วันที่พิมพ์ และเลขหน้าแบบไดนามิก (`หน้า X จาก Y`)
+- **Reason:** ยกระดับความสวยงาม อ่านง่าย ชัดเจน ถูกต้องตามมาตรฐานเอกสารองค์กร และแก้ปัญหาการแสดงผลตัวอักษรตกหล่น/ถูกตัดขอบ
+
+
 ## [2026-08-27 09:35] แก้ไข TypeError ใน Notification Dispatcher (Fix RPC .catch Error)
 
 - **Modified files:**

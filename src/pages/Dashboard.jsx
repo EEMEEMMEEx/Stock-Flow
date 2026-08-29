@@ -16,6 +16,8 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTheme } from '@/components/theme-provider';
 import DashboardStatCard from '@/components/dashboard/DashboardStatCard';
+import SiteKitAvailabilityCards from '@/components/dashboard/SiteKitAvailabilityCards';
+import { fetchSiteKitsAvailability } from '@/lib/siteKits';
 
 // Custom Rotated & Truncated X-Axis Tick Component
 const CustomXAxisTick = ({ x, y, payload, isItemMode, theme }) => {
@@ -76,6 +78,7 @@ const Dashboard = () => {
   const [recentActivity, setRecentActivity] = useState([]);
   const [stockByProjects, setStockByProjects] = useState([]);
   const [topItemsStock, setTopItemsStock] = useState([]);
+  const [siteKits, setSiteKits] = useState([]);
   const [chartViewMode, setChartViewMode] = useState('project'); // 'project' | 'item'
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -211,6 +214,10 @@ const Dashboard = () => {
       });
 
       setRecentActivity(activityData || []);
+
+      // 7. Fetch Site Kits BOM Availability
+      const kitsData = await fetchSiteKitsAvailability();
+      setSiteKits(kitsData || []);
 
     } catch (error) {
       console.error('Dashboard fetch error:', error);
@@ -379,6 +386,9 @@ const Dashboard = () => {
           <span>{refreshing ? 'กำลังซิงค์...' : 'รีเฟรชข้อมูล'}</span>
         </Button>
       </div>
+
+      {/* Real-time Site Installation Kits Availability (BOM) */}
+      <SiteKitAvailabilityCards siteKits={siteKits} loading={loading} />
 
       {/* Redesigned Actionable KPI Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">

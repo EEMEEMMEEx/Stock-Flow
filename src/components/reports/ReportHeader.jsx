@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { FileText, Download, ArrowDownToLine, ArrowUpFromLine, Scale, Sparkles, RefreshCw } from 'lucide-react';
+import { FileText, Download, ArrowDownToLine, ArrowUpFromLine, Scale, Sparkles, RefreshCw, Layers } from 'lucide-react';
 
 const ReportHeader = ({
   activeTab,
@@ -34,6 +34,13 @@ const ReportHeader = ({
       icon: Scale,
       color: 'blue',
       activeClass: 'bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border-blue-200 dark:border-blue-800'
+    },
+    {
+      id: 'site_kits',
+      label: '4. ความพร้อมชุดไซต์ (Site Kits BOM)',
+      icon: Layers,
+      color: 'teal',
+      activeClass: 'bg-teal-50 text-teal-700 dark:bg-teal-950/60 dark:text-teal-300 border-teal-200 dark:border-teal-800'
     }
   ];
 

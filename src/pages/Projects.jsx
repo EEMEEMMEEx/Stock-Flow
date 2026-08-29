@@ -156,7 +156,7 @@ const Projects = () => {
       setLoading(true);
       const { data, error } = await supabase
         .from('projects')
-        .select('*, profiles!created_by(full_name)')
+        .select('id, name, project_code, location, description, status, created_at, created_by, profiles!created_by(full_name)')
         .neq('status', 'inactive')
         .order('created_at', { ascending: false });
         
@@ -353,7 +353,7 @@ const Projects = () => {
 
     const hasStock = deleteTarget.stockItems.length > 0;
     if (hasStock && !destinationProjectId) {
-      toast.error('กรุณาเลือกโครงการปลายทางที่จะรับโอนสต็อก');
+      toast.error('กรุณาเลือกสถานที่จัดเก็บ (Location) ปลายทางที่จะรับโอนสต็อก');
       return;
     }
 
@@ -919,7 +919,7 @@ const Projects = () => {
                     <span>พบวัสดุคงเหลืออยู่ในโครงการนี้รวม {deleteTarget.stockItems.length} รายการ ({deleteTarget.stockItems.reduce((s, i) => s + (Number(i.balance) || 0), 0)} ชิ้น)</span>
                   </p>
                   <p className="text-[11px] pl-5 opacity-90">
-                    เพื่อความถูกต้องของระบบสต็อก กรุณาเลือกโครงการปลายทางที่จะรับโอนวัสดุทั้งหมดก่อนทำการลบ
+                    เพื่อความถูกต้องของระบบสต็อก กรุณาเลือกสถานที่จัดเก็บ (Location) ปลายทางที่จะรับโอนวัสดุทั้งหมดก่อนทำการลบ
                   </p>
                 </div>
 
@@ -951,18 +951,18 @@ const Projects = () => {
                   </Table>
                 </div>
 
-                {/* Destination Project Selector */}
+                {/* Destination Location Selector */}
                 <div className="space-y-1.5 pt-1">
                   <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
                     <Building2 className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>เลือกโครงการปลายทางที่จะรับโอนสต็อก (Destination Project) <span className="text-destructive">*</span></span>
+                    <span>เลือกสถานที่จัดเก็บ (Location) ปลายทางที่จะรับโอนสต็อก <span className="text-destructive">*</span></span>
                   </Label>
                   <select
                     className="flex h-11 w-full rounded-2xl border border-input bg-background px-3 py-2 text-xs font-bold text-foreground focus:ring-2 focus:ring-emerald-500 cursor-pointer shadow-2xs transition-all"
                     value={destinationProjectId}
                     onChange={(e) => setDestinationProjectId(e.target.value)}
                   >
-                    <option value="" disabled>-- เลือกโครงการปลายทางที่เปิดใช้งานอยู่ --</option>
+                    <option value="" disabled>-- เลือกสถานที่จัดเก็บ (Location) ที่เปิดใช้งานอยู่ --</option>
                     {availableDestinationProjects.map(proj => (
                       <option key={proj.id} value={proj.id}>
                         {proj.project_code ? `[${proj.project_code}] ` : ''}{proj.name} ({proj.location || 'คลังหลัก'})

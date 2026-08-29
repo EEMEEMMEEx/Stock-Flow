@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { 
-  RotateCcw, Plus, Clock, History, RefreshCw, 
-  Layers, Package, CheckCircle2, AlertTriangle, Sparkles 
+import {
+  RotateCcw, Plus, Clock, History, RefreshCw,
+  Layers, Package, CheckCircle2, AlertTriangle, Sparkles
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { supabase } from '@/lib/supabase';
@@ -17,7 +17,7 @@ import CheckoutHistoryList from '@/components/checkouts/CheckoutHistoryList';
 
 const Checkouts = () => {
   const { can, user } = useAuth();
-  
+
   // Navigation Tabs: 'active' | 'pos' | 'history'
   const [activeTab, setActiveTab] = useState('active');
   const [loading, setLoading] = useState(true);
@@ -39,51 +39,49 @@ const Checkouts = () => {
     try {
       setLoading(true);
 
-      // 1. Fetch active projects
-      const { data: projData, error: projErr } = await supabase
-        .from('projects')
-        .select('*')
-        .eq('status', 'active')
-        .order('name');
-      if (projErr) throw projErr;
-      setProjects(projData || []);
+      // Parallelize queries for projects, items, stock balance, and checkout orders
+      const [projRes, itemRes, balRes, ordRes] = await Promise.all([
+        supabase
+          .from('projects')
+          .select('id, name, project_code, location, description, status')
+          .eq('status', 'active')
+          .order('name'),
+        supabase
+          .from('items')
+          .select('id, name, model, sku, item_type, parent_sku, unit, description, notes, image_url, category_id')
+          .order('name'),
+        supabase
+          .from('stock_balance')
+          .select('project_id, item_id, item_name, unit, project_name, balance'),
+        supabase
+          .from('checkout_orders')
+          .select(`
+            *,
+            projects (*),
+            profiles:created_by (*),
+            checkout_items (
+              *,
+              items (*)
+            )
+          `)
+          .order('created_at', { ascending: false })
+      ]);
 
-      // 2. Fetch active items
-      const { data: itemData, error: itemErr } = await supabase
-        .from('items')
-        .select('*')
-        .order('name');
-      if (itemErr) throw itemErr;
-      setItems(itemData || []);
+      if (projRes.error) throw projRes.error;
+      setProjects(projRes.data || []);
 
-      // 3. Fetch stock balances
-      const { data: balData, error: balErr } = await supabase
-        .from('stock_balance')
-        .select('*');
-      if (!balErr) {
-        setRawBalances(balData || []);
+      if (itemRes.error) throw itemRes.error;
+      setItems(itemRes.data || []);
+
+      if (!balRes.error) {
+        setRawBalances(balRes.data || []);
       }
 
-      // 4. Fetch checkout orders
-      const { data: ordData, error: ordErr } = await supabase
-        .from('checkout_orders')
-        .select(`
-          *,
-          projects (*),
-          profiles:created_by (*),
-          checkout_items (
-            *,
-            items (*)
-          )
-        `)
-        .order('created_at', { ascending: false });
-
-      if (ordErr) {
-        // If migration not run yet, handle gracefully
-        console.warn('Checkout orders fetch notice:', ordErr.message);
+      if (ordRes.error) {
+        console.warn('Checkout orders fetch notice:', ordRes.error.message);
         setOrders([]);
       } else {
-        setOrders(ordData || []);
+        setOrders(ordRes.data || []);
       }
     } catch (err) {
       console.error('Error fetching checkout data:', err);
@@ -144,7 +142,7 @@ const Checkouts = () => {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-16">
-      
+
       {/* Header & Action Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="space-y-1">
@@ -196,11 +194,10 @@ const Checkouts = () => {
         <button
           type="button"
           onClick={() => setActiveTab('active')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer select-none ${
-            activeTab === 'active' 
-              ? 'bg-background text-foreground shadow-sm' 
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer select-none ${activeTab === 'active'
+              ? 'bg-background text-foreground shadow-sm'
               : 'text-muted-foreground hover:text-foreground'
-          }`}
+            }`}
         >
           <Clock className="w-3.5 h-3.5" />
           <span>รายการยืมคงค้าง (Active Loans)</span>
@@ -214,11 +211,10 @@ const Checkouts = () => {
         <button
           type="button"
           onClick={() => setActiveTab('pos')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer select-none ${
-            activeTab === 'pos' 
-              ? 'bg-background text-indigo-600 dark:text-indigo-400 shadow-sm' 
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer select-none ${activeTab === 'pos'
+              ? 'bg-background text-indigo-600 dark:text-indigo-400 shadow-sm'
               : 'text-muted-foreground hover:text-foreground'
-          }`}
+            }`}
         >
           <Plus className="w-3.5 h-3.5" />
           <span>ขอยืมพัสดุ (Checkout POS)</span>
@@ -227,11 +223,10 @@ const Checkouts = () => {
         <button
           type="button"
           onClick={() => setActiveTab('history')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer select-none ${
-            activeTab === 'history' 
-              ? 'bg-background text-foreground shadow-sm' 
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer select-none ${activeTab === 'history'
+              ? 'bg-background text-foreground shadow-sm'
               : 'text-muted-foreground hover:text-foreground'
-          }`}
+            }`}
         >
           <History className="w-3.5 h-3.5" />
           <span>ประวัติยืม-คืน (History)</span>
