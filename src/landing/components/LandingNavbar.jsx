@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowUpRight, ShieldCheck, Layers, Cpu, Compass, Menu, X } from 'lucide-react';
 import LanguageSwitcher from './LanguageSwitcher';
 import { useLandingLanguage } from '../context/LandingLanguageContext';
+import { APP_CONFIG } from '@/config/appConfig';
 
 export default function LandingNavbar() {
   const { t } = useLandingLanguage();
@@ -56,7 +57,7 @@ export default function LandingNavbar() {
                 Stock<span className="text-emerald-400">-Flow</span>
               </span>
               <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold">
-                v1.0
+                v{APP_CONFIG.version}
               </span>
             </div>
             <span className="text-[11px] text-zinc-400 -mt-0.5 tracking-wide">

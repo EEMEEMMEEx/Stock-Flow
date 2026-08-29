@@ -1,5 +1,22 @@
 # Changelog
 
+## [2026-08-29 16:01] อัปเดตข้อมูลโมดูล Landing Page เพิ่ม Cloudflare R2 และ Site Kits BOM และอัปเกรดเวอร์ชันระบบสู่ v1.0.3 (Landing Page Content Update & v1.0.3 Release)
+
+- **Modified files:**
+  - `src/landing/components/LandingNavbar.jsx`
+  - `src/landing/components/BentoFeatures.jsx`
+  - `src/landing/components/TechStackSection.jsx`
+  - `src/landing/data/landing-translations.js`
+  - `src/config/appConfig.js`
+  - `package.json`
+- **Details:**
+  - **Dynamic Version Badge:** ปรับแถบแสดงเวอร์ชันใน Landing Navbar ให้อ่านค่าจาก `APP_CONFIG.version` แบบไดนามิก (แทนการ Hardcode)
+  - **Bento Grid Features:** เพิ่มการ์ดนำเสนอ Cloudflare R2 Zero-Egress Storage และ Site Installation Kits (BOM) Readiness Analysis
+  - **Tech Stack Highlights:** เพิ่ม Cloudflare R2 Object Storage เข้าสู่หมวด Cloud Infrastructure
+  - **Translations (i18n):** เพิ่มคำแปลและคำอธิบายฟีเจอร์ใหม่สำหรับ Cloudflare R2 และ Site Kits BOM
+  - **อัปเกรดเวอร์ชันระบบ (System Version Increment):** ปรับเพิ่มเวอร์ชันแอปพลิเคชันจาก `v1.0.2` เป็น `v1.0.3` (PATCH) ตามข้อกำหนดสากลใน `GEMINI.md`
+- **Reason:** ปรับปรุงเนื้อหาบน Landing Page ให้สอดคล้องกับสถาปัตยกรรมและฟังก์ชันจริงล่าสุดของระบบ
+
 ## [2026-08-29 15:55] รวมศูนย์โมดูล Landing Page สู่โฟลเดอร์เฉพาะ src/landing/ และอัปเกรดเวอร์ชันระบบสู่ v1.0.2 (Modularize Landing Page & v1.0.2 Release)
 
 - **Modified files:**

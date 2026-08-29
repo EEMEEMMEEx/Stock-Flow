@@ -7,7 +7,8 @@ import {
   Mail, 
   FileText, 
   Smartphone,
-  Server
+  Server,
+  Cloud
 } from 'lucide-react';
 import { useLandingLanguage } from '../context/LandingLanguageContext';
 
@@ -34,6 +35,12 @@ export default function TechStackSection() {
       category: 'Database & Auth',
     },
     {
+      title: 'Cloudflare R2 Object Storage',
+      description: 'Zero-egress asset storage with global CDN caching & presigned browser S3 direct upload',
+      icon: Cloud,
+      category: 'Cloud Storage',
+    },
+    {
       title: 'Vercel Serverless Email Engine',
       description: 'Dedicated serverless endpoints for secure transactional email invitations',
       icon: Mail,
@@ -44,12 +51,6 @@ export default function TechStackSection() {
       description: 'Client-side high-fidelity PDF issue voucher and material receipt generator',
       icon: FileText,
       category: 'Document Automation',
-    },
-    {
-      title: 'Progressive Web App (PWA)',
-      description: 'Installable on desktop and mobile with offline caching and native app feel',
-      icon: Smartphone,
-      category: 'Cross-Platform',
     },
   ];
 

@@ -11,7 +11,9 @@ import {
   Lock, 
   Layers, 
   Sparkles,
-  ArrowRight
+  ArrowRight,
+  Cloud,
+  PackageCheck
 } from 'lucide-react';
 import SpotlightCard from '@/components/reactbits/SpotlightCard';
 import { useLandingLanguage } from '../context/LandingLanguageContext';
@@ -40,7 +42,7 @@ export default function BentoFeatures() {
           </p>
         </div>
 
-        {/* 6-Card Bento Grid */}
+        {/* 7-Card Bento Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Card 1: POS-Style Rapid Withdrawal (Span 2 on desktop) */}
           <motion.div
@@ -116,12 +118,76 @@ export default function BentoFeatures() {
             </SpotlightCard>
           </motion.div>
 
-          {/* Card 3: Granular RBAC & Role Permissions */}
+          {/* Card 3: Cloudflare R2 Object Storage */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.15 }}
+          >
+            <SpotlightCard
+              spotlightColor="rgba(249, 115, 22, 0.18)"
+              className="h-full p-6 sm:p-8 flex flex-col justify-between"
+            >
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-400 mb-6 shadow-inner">
+                  <Cloud className="w-6 h-6" strokeWidth={1.75} />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2">
+                  {t.features.r2Title || 'Cloudflare R2 Storage'}
+                </h3>
+                <p className="text-zinc-400 text-sm leading-relaxed">
+                  {t.features.r2Desc || 'Direct presigned S3 upload with zero egress fees and global CDN edge caching.'}
+                </p>
+              </div>
+
+              <div className="mt-6 pt-6 border-t border-white/10">
+                <div className="flex items-center gap-2 text-xs font-mono text-orange-400">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>{t.features.r2Badge || 'Zero Egress & Global CDN'}</span>
+                </div>
+              </div>
+            </SpotlightCard>
+          </motion.div>
+
+          {/* Card 4: Site Installation Kits (BOM) */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <SpotlightCard
+              spotlightColor="rgba(59, 130, 246, 0.18)"
+              className="h-full p-6 sm:p-8 flex flex-col justify-between"
+            >
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 mb-6 shadow-inner">
+                  <PackageCheck className="w-6 h-6" strokeWidth={1.75} />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2">
+                  {t.features.siteKitsTitle || 'Site Kits BOM Engine'}
+                </h3>
+                <p className="text-zinc-400 text-sm leading-relaxed">
+                  {t.features.siteKitsDesc || 'Pre-configured Bill of Materials templates with real-time site deployment readiness.'}
+                </p>
+              </div>
+
+              <div className="mt-6 pt-6 border-t border-white/10">
+                <div className="flex items-center gap-2 text-xs font-mono text-blue-400">
+                  <Layers className="w-4 h-4" />
+                  <span>{t.features.siteKitsBadge || 'BOM Deployment Analysis'}</span>
+                </div>
+              </div>
+            </SpotlightCard>
+          </motion.div>
+
+          {/* Card 5: Granular RBAC & Role Permissions */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.25 }}
           >
             <SpotlightCard
               spotlightColor="rgba(16, 185, 129, 0.18)"
@@ -148,7 +214,7 @@ export default function BentoFeatures() {
             </SpotlightCard>
           </motion.div>
 
-          {/* Card 4: Material Checkout & Borrow Return Lifecycle */}
+          {/* Card 6: Material Checkout & Borrow Return Lifecycle */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -180,44 +246,12 @@ export default function BentoFeatures() {
             </SpotlightCard>
           </motion.div>
 
-          {/* Card 5: Batch CSV & Excel Validation Engine */}
+          {/* Card 7: Automated PDF Issue Vouchers (Span full row) */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-          >
-            <SpotlightCard
-              spotlightColor="rgba(16, 185, 129, 0.18)"
-              className="h-full p-6 sm:p-8 flex flex-col justify-between"
-            >
-              <div>
-                <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mb-6 shadow-inner">
-                  <FileSpreadsheet className="w-6 h-6" strokeWidth={1.75} />
-                </div>
-                <h3 className="text-xl font-bold text-white mb-2">
-                  {t.features.batchTitle}
-                </h3>
-                <p className="text-zinc-400 text-sm leading-relaxed">
-                  {t.features.batchDesc}
-                </p>
-              </div>
-
-              <div className="mt-6 pt-6 border-t border-white/10">
-                <div className="flex items-center gap-2 text-xs font-mono text-emerald-400">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>{t.features.batchBadge}</span>
-                </div>
-              </div>
-            </SpotlightCard>
-          </motion.div>
-
-          {/* Card 6: Automated PDF Issue Vouchers */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.5 }}
+            transition={{ duration: 0.5, delay: 0.35 }}
             className="md:col-span-3"
           >
             <SpotlightCard
