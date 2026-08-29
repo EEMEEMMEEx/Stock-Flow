@@ -1,5 +1,19 @@
 # Changelog
 
+## [2026-08-29 16:20] สร้างคู่มือการสำรองและกู้คืนฐานข้อมูล (Database Backup & Disaster Recovery Guide) และอัปเกรดสู่ v1.0.5
+
+- **Modified files:**
+  - `docs/database-backup-and-disaster-recovery-guide.md` [NEW GUIDE]
+  - `backups/README.md` [NEW GUIDE]
+  - `package.json`
+  - `src/config/appConfig.js`
+- **Details:**
+  - **จัดทำคู่มือ Database Backup & Disaster Recovery ฉบับสมบูรณ์:** บันทึกขั้นตอนการติดตั้ง ตั้งค่า และใช้งานระบบสำรองข้อมูลทั้ง 3 รูปแบบ (`npm run db:backup`, PostgreSQL `pg_dump`, และ Supabase CLI `supabase db dump`)
+  - **ขั้นตอนการ Restore และ Disaster Recovery:** จัดทำแผนภาพและคำสั่งการกู้คืนข้อมูลทีละสเต็ป (Step-by-Step) เพื่อรองรับกรณีที่ต้องย้ายฐานข้อมูลไปยัง Supabase Project ใหม่ หรือ Self-hosted PostgreSQL
+  - **คู่มือฉบับย่อในโฟลเดอร์ Backups:** เพิ่มไฟล์ `backups/README.md` สำหรับอ้างอิงโครงสร้างไฟล์ Snapshot และคำสั่ง Restore แบบเร่งด่วน
+  - **อัปเกรดเวอร์ชันระบบ (System Version Increment):** ปรับเพิ่มเวอร์ชันแอปพลิเคชันจาก `v1.0.4` เป็น `v1.0.5` (PATCH) ตามข้อกำหนดสากลใน `GEMINI.md`
+- **Reason:** ให้คำแนะนำเชิงปฏิบัติการและเตรียมความพร้อมด้านการกู้คืนระบบอย่างสมบูรณ์แบบ
+
 ## [2026-08-29 16:14] เพิ่มระบบสำรองข้อมูลฐานข้อมูลอัตโนมัติ (Automated Database Backup Engine) และอัปเกรดสู่ v1.0.4
 
 - **Modified files:**
