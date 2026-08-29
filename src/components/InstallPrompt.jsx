@@ -5,6 +5,8 @@ import { Card } from '@/components/ui/card';
 
 // PWA installation is only allowed on the primary web app production domain and local development
 const ALLOWED_APP_DOMAINS = [
+  'stockflowth.online',
+  'www.stockflowth.online',
   'stock-flow-pi-coral.vercel.app',
   'localhost',
   '127.0.0.1'

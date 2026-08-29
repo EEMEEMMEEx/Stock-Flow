@@ -43,7 +43,7 @@ export default function LandingFooter() {
         {/* Links */}
         <div className="flex items-center gap-6 text-xs">
           <a
-            href="https://stock-flow-pi-coral.vercel.app"
+            href="https://stockflowth.online"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1 text-zinc-300 hover:text-emerald-400 transition-colors"

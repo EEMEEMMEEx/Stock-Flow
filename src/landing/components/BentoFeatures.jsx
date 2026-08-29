@@ -274,7 +274,7 @@ export default function BentoFeatures() {
 
               <div className="flex-shrink-0">
                 <a
-                  href="https://stock-flow-pi-coral.vercel.app"
+                  href="https://stockflowth.online"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-white/10 text-white text-xs font-semibold transition-all hover:scale-105"

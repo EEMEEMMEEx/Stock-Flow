@@ -1,5 +1,27 @@
 # Changelog
 
+## [2026-08-29 17:55] เชื่อมต่อ Custom Domain stockflowth.online และปรับปรุงระบบรองรับโดเมนใหม่อย่างสมบูรณ์ (v1.0.6)
+
+- **Modified files:**
+  - `src/components/InstallPrompt.jsx`
+  - `src/lib/emailService.js`
+  - `src/lib/r2Storage.js`
+  - `src/landing/components/LandingNavbar.jsx`
+  - `src/landing/components/HeroSection.jsx`
+  - `src/landing/components/CtaSection.jsx`
+  - `src/landing/components/BentoFeatures.jsx`
+  - `src/landing/components/LandingFooter.jsx`
+  - `docs/custom-domain-setup-plan.md` [NEW PLAN]
+  - `README.md`
+  - `package.json`
+  - `src/config/appConfig.js`
+- **Details:**
+  - **PWA Installation Whitelist:** เพิ่ม `stockflowth.online` และ `www.stockflowth.online` เข้าใน `ALLOWED_APP_DOMAINS` เพื่อให้การแจ้งเตือนติดตั้ง PWA และ Add to Home Screen ทำงานบนโดเมนใหม่ได้ทันที
+  - **Dynamic Origin & Service Fallbacks:** ปรับปรุง `emailService.js` และ `r2Storage.js` ให้ตรวจสอบ Origin ของเบราว์เซอร์อัตโนมัติ และกำหนด fallback ไปที่ `https://stockflowth.online` แทน hardcoded vercel subdomain เดิม
+  - **Landing Page Direct Links:** ปรับลิงก์ปุ่ม "เข้าใช้งานระบบ" / "Launch App" ใน Navbar, Hero, CTA, Bento, และ Footer ให้เชื่อมตรงไปยัง `https://stockflowth.online`
+  - **อัปเกรดเวอร์ชันระบบ (System Version Increment):** ปรับเพิ่มเวอร์ชันแอปพลิเคชันจาก `v1.0.5` เป็น `v1.0.6` (PATCH) ตามข้อกำหนดสากล
+- **Reason:** รองรับการใช้งาน Production บน Custom Domain `stockflowth.online` และ `www.stockflowth.online` อย่างสมบูรณ์แบบ
+
 ## [2026-08-29 16:20] สร้างคู่มือการสำรองและกู้คืนฐานข้อมูล (Database Backup & Disaster Recovery Guide) และอัปเกรดสู่ v1.0.5
 
 - **Modified files:**

@@ -42,7 +42,7 @@ export default function CtaSection() {
         <div className="mt-8 flex flex-col sm:flex-row items-center gap-4">
           <Magnet padding={40} magnetStrength={3}>
             <a
-              href="https://stock-flow-pi-coral.vercel.app"
+              href="https://stockflowth.online"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-sm text-zinc-950 bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 transition-all duration-200 shadow-2xl shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-[1.03] active:scale-[0.98]"

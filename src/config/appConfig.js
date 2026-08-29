@@ -1,7 +1,7 @@
 export const APP_CONFIG = {
   name: 'StockFlow',
   subtitle: 'Inventory Management System',
-  version: '1.0.5',
+  version: '1.0.6',
   year: new Date().getFullYear(),
   orgName: 'StockFlow Organization',
 };

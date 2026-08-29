@@ -98,7 +98,7 @@ export default function HeroSection() {
         >
           <Magnet padding={40} magnetStrength={3}>
             <a
-              href="https://stock-flow-pi-coral.vercel.app"
+              href="https://stockflowth.online"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2.5 px-6 py-3.5 rounded-xl font-semibold text-sm text-zinc-950 bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 transition-all duration-200 shadow-xl shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:scale-[1.02] active:scale-[0.98]"

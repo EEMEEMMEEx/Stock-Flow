@@ -19,17 +19,21 @@ export async function uploadFileToR2(file, folder = 'uploads', customFileName = 
   const sanitizedFileName = rawFileName.replace(/[^a-zA-Z0-9._\-/]/g, '_');
 
   // Determine API endpoint: prefer local /api endpoint on localhost / full-stack servers
-  const isLocalhost = typeof window !== 'undefined' && (
+  const isBrowser = typeof window !== 'undefined';
+  const isGithubPages = isBrowser && window.location.hostname.includes('github.io');
+  const isLocalhost = isBrowser && (
     window.location.hostname === 'localhost' || 
     window.location.hostname === '127.0.0.1' ||
     window.location.hostname === '0.0.0.0'
   );
   
   const customServiceUrl = import.meta.env.VITE_R2_SERVICE_URL;
-  const vercelEndpoint = 'https://stock-flow-pi-coral.vercel.app/api/r2-upload-url';
+  const productionEndpoint = (isBrowser && !isGithubPages && window.location.origin)
+    ? `${window.location.origin}/api/r2-upload-url`
+    : 'https://stockflowth.online/api/r2-upload-url';
   
-  // When running locally on Vite, hit local Vite dev middleware directly (http://localhost:5173/api/r2-upload-url)
-  const targetEndpoint = customServiceUrl || (isLocalhost ? '/api/r2-upload-url' : vercelEndpoint);
+  // When running locally on Vite or production domain, use relative or dynamically resolved endpoint
+  const targetEndpoint = customServiceUrl || (isLocalhost ? '/api/r2-upload-url' : productionEndpoint);
 
   try {
     // 2. Request Presigned Upload URL from Serverless API
@@ -48,10 +52,10 @@ export async function uploadFileToR2(file, folder = 'uploads', customFileName = 
     const presignData = await presignResponse.json().catch(() => ({}));
 
     if (!presignResponse.ok || !presignData.success || !presignData.uploadUrl) {
-      // If relative/custom endpoint failed and we are not already on vercelEndpoint, retry with Vercel
-      if (targetEndpoint !== vercelEndpoint) {
+      // If relative/custom endpoint failed and we are not already on productionEndpoint, retry with production endpoint
+      if (targetEndpoint !== productionEndpoint) {
         try {
-          const fallbackRes = await fetch(vercelEndpoint, {
+          const fallbackRes = await fetch(productionEndpoint, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

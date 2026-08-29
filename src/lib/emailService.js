@@ -10,8 +10,11 @@ export async function sendStockFlowEmail({ to, subject, html, text, smtpOverride
     throw new Error('กรุณาระบุอีเมลผู้รับ (recipient email)');
   }
 
-  // Always route to the active Vercel serverless function unless explicitly overridden
-  const defaultEndpoint = 'https://stock-flow-pi-coral.vercel.app/api/send-email';
+  // Resolve active API endpoint: prefer dynamic origin on browser, fallback to custom domain
+  const isBrowser = typeof window !== 'undefined';
+  const isGithubPages = isBrowser && window.location.hostname.includes('github.io');
+  const dynamicOrigin = isBrowser && !isGithubPages && window.location.origin ? window.location.origin : 'https://stockflowth.online';
+  const defaultEndpoint = `${dynamicOrigin}/api/send-email`;
   const endpoint = import.meta.env.VITE_EMAIL_SERVICE_URL || defaultEndpoint;
 
   try {
