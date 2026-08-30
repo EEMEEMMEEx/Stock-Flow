@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { uploadAvatarImage } from '@/lib/avatarUpload';
+import RoleBadge, { getRoleLabel } from '@/components/ui/RoleBadge';
 
 const Profile = () => {
   const { user, profile, refreshProfile, assignedProjectIds, allProjectsAccess } = useAuth();
@@ -332,9 +333,11 @@ const Profile = () => {
 
               {/* Read-Only Badges */}
               <div className="flex items-center justify-center sm:justify-start gap-2 pt-1 flex-wrap">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300 border border-purple-300 dark:border-purple-800 uppercase">
-                  <Shield className="w-3.5 h-3.5" /> {profile?.role || 'STAFF'}
-                </span>
+                <RoleBadge 
+                  role={profile?.roles?.code || profile?.role || 'STAFF'} 
+                  roleName={profile?.roles?.name} 
+                  roleObj={profile?.roles} 
+                />
 
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> ACTIVE ACCOUNT
@@ -478,7 +481,7 @@ const Profile = () => {
                     <Input
                       type="text"
                       disabled
-                      value={(profile?.role || 'STAFF').toUpperCase()}
+                      value={getRoleLabel(profile?.roles?.code || profile?.role || 'STAFF', profile?.roles?.name)}
                       className="bg-muted/50 text-muted-foreground text-sm min-h-[44px] cursor-not-allowed border-dashed font-bold"
                     />
                     <p className="text-[11px] text-muted-foreground italic">

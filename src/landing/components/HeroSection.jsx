@@ -178,7 +178,7 @@ export default function HeroSection() {
                       : 'text-zinc-400 hover:text-white'
                   }`}
                 >
-                  <span>{t.hero.tabPos || '🛒 POS Dispatch'}</span>
+                  <span>{t.hero.tabPos || 'POS Dispatch'}</span>
                 </button>
                 <button
                   type="button"
@@ -189,7 +189,7 @@ export default function HeroSection() {
                       : 'text-zinc-400 hover:text-white'
                   }`}
                 >
-                  <span>{t.hero.tabStockAdjust || '📦 Stock Adjust'}</span>
+                  <span>{t.hero.tabStockAdjust || 'Stock Adjust'}</span>
                 </button>
                 <button
                   type="button"
@@ -200,7 +200,7 @@ export default function HeroSection() {
                       : 'text-zinc-400 hover:text-white'
                   }`}
                 >
-                  <span>{t.hero.tabDueDate || '⏱️ Extend Due Date'}</span>
+                  <span>{t.hero.tabDueDate || 'Extend Due Date'}</span>
                 </button>
                 <button
                   type="button"
@@ -211,7 +211,7 @@ export default function HeroSection() {
                       : 'text-zinc-400 hover:text-white'
                   }`}
                 >
-                  <span>{t.hero.tabSiteKits || '📋 Site Kits BOM'}</span>
+                  <span>{t.hero.tabSiteKits || 'Site Kits BOM'}</span>
                 </button>
               </div>
             </div>

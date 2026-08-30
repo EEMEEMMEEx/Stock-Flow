@@ -10,6 +10,7 @@ import { useTheme } from '@/components/theme-provider';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import NotificationBell from './NotificationBell';
+import RoleBadge, { getRoleLabel } from '@/components/ui/RoleBadge';
 
 const controlClassName = 'h-11 w-11 shrink-0 rounded-xl border border-[var(--glass-input-border)] bg-[var(--glass-input-bg)] text-[var(--glass-text)] shadow-sm transition-all duration-200 hover:bg-[var(--glass-hover)] hover:text-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 dark:shadow-none';
 const menuContentClassName = 'z-50 w-[min(20rem,calc(100vw-1.5rem))] overflow-hidden rounded-2xl border border-[var(--glass-card-border)] bg-[var(--glass-card-bg)] p-1.5 text-popover-foreground shadow-xl backdrop-blur-xl outline-none data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0';
@@ -34,7 +35,7 @@ const Topbar = ({ onMenuClick, menuButtonRef, isMobileMenuOpen }) => {
   const { profile, user, signOut, can } = useAuth();
   const { theme, resolvedTheme, setTheme } = useTheme();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const roleLabel = profile?.roles?.code || profile?.role || 'STAFF';
+  const roleLabel = getRoleLabel(profile?.roles?.code || profile?.role || 'STAFF', profile?.roles?.name);
   const themeLabel = resolvedTheme === 'dark' ? 'สลับเป็นโหมดสว่าง' : 'สลับเป็นโหมดมืด';
 
   const toggleTheme = () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
@@ -98,7 +99,13 @@ const Topbar = ({ onMenuClick, menuButtonRef, isMobileMenuOpen }) => {
             <DropdownMenu.Content align="end" sideOffset={10} className={menuContentClassName} aria-label="เมนูผู้ใช้งาน">
               <div className="flex items-center gap-3 px-3 py-3">
                 <Avatar profile={profile} user={user} className="h-10 w-10 shrink-0 text-base" />
-                <div className="min-w-0"><DropdownMenu.Label className="truncate p-0 text-sm font-semibold">{profile?.full_name || user?.email || 'ผู้ใช้งาน'}</DropdownMenu.Label><p className="mt-0.5 truncate text-xs text-muted-foreground">{user?.email || ''}</p><span className="mt-1 inline-flex rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary">{roleLabel}</span></div>
+                <div className="min-w-0">
+                  <DropdownMenu.Label className="truncate p-0 text-sm font-semibold">{profile?.full_name || user?.email || 'ผู้ใช้งาน'}</DropdownMenu.Label>
+                  <p className="mt-0.5 truncate text-xs text-muted-foreground">{user?.email || ''}</p>
+                  <div className="mt-1">
+                    <RoleBadge role={profile?.roles?.code || profile?.role || 'STAFF'} roleName={profile?.roles?.name} roleObj={profile?.roles} size="sm" />
+                  </div>
+                </div>
               </div>
               <DropdownMenu.Separator className="mx-1 my-1 h-px bg-border/70" />
               <DropdownMenu.Item asChild className={menuItemClassName}><Link to="/profile"><UserRound className="h-4 w-4 text-primary" />โปรไฟล์</Link></DropdownMenu.Item>

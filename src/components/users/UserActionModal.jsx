@@ -25,7 +25,9 @@ import {
   Mail,
   Briefcase,
   Lock,
+  User,
 } from 'lucide-react';
+import RoleBadge from '@/components/ui/RoleBadge';
 import toast from 'react-hot-toast';
 
 const UserActionModal = ({
@@ -235,15 +237,12 @@ const UserActionModal = ({
 
               <div className="flex items-center gap-2 mt-2">
                 {/* Role Badge */}
-                {user.role === 'admin' || user.role === 'ADMIN' ? (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300 border border-purple-300 dark:border-purple-800">
-                    <Shield className="w-3 h-3" /> ADMINISTRATOR
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                    STAFF / REQUESTER
-                  </span>
-                )}
+                <RoleBadge 
+                  role={user.roles?.code || user.role} 
+                  roleName={user.roles?.name}
+                  roleObj={user.roles}
+                  size="sm"
+                />
 
                 {/* Status Badge */}
                 {isActive ? (

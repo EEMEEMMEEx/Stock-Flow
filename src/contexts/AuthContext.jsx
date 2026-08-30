@@ -50,6 +50,40 @@ export const AuthProvider = ({ children }) => {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Listen for real-time RBAC updates (role_permissions, roles, profiles) for current user
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel(`realtime_auth_rbac_${user.id}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'role_permissions' },
+        () => {
+          fetchProfile(user);
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'roles' },
+        () => {
+          fetchProfile(user);
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'profiles', filter: `id=eq.${user.id}` },
+        () => {
+          fetchProfile(user);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
   const fetchProfile = async (userObj) => {
     if (!userObj) return;
     try {
@@ -103,10 +137,20 @@ export const AuthProvider = ({ children }) => {
           // If role_id was not set or not found, lookup by role code string
           if (!roleData && data.role) {
             const searchCode = (data.role || 'staff').toUpperCase().trim();
+            let targetCodes = [searchCode];
+            if (['STAFF', 'OPERATOR', 'REQUESTER'].includes(searchCode)) {
+              targetCodes = ['STAFF', 'OPERATOR', 'REQUESTER'];
+            } else if (['SUPERVISOR', 'APPROVER', 'MANAGER'].includes(searchCode)) {
+              targetCodes = ['SUPERVISOR', 'APPROVER', 'MANAGER'];
+            } else if (['ADMIN', 'ADMINISTRATOR'].includes(searchCode)) {
+              targetCodes = ['ADMIN', 'ADMINISTRATOR'];
+            }
+
             const { data: rd } = await supabase
               .from('roles')
               .select('*')
-              .eq('code', searchCode)
+              .in('code', targetCodes)
+              .limit(1)
               .maybeSingle();
             roleData = rd;
 
@@ -130,10 +174,11 @@ export const AuthProvider = ({ children }) => {
       // Step D: Determine role code & admin status
       const roleStr = (data?.role || '').toLowerCase();
       const roleCode = (data?.roles?.code || '').toUpperCase();
-      const isUserAdmin = (userObj.email || '').toLowerCase() === 'admin@stockflow.com' || roleStr === 'admin' || roleCode === 'ADMIN';
+      const isSuperAdmin = (userObj.email || '').toLowerCase() === 'admin@stockflow.com' || roleCode === 'SUPER';
+      const isUserAdmin = isSuperAdmin || roleStr === 'admin' || roleCode === 'ADMIN';
 
       // Step E: Fetch dynamic permissions (Configured Permissions Matrix)
-      await fetchPermissions(userId, data, isUserAdmin);
+      await fetchPermissions(userId, data, isSuperAdmin);
 
       // Step F: Set project access
       if (isUserAdmin) {
@@ -188,10 +233,20 @@ export const AuthProvider = ({ children }) => {
         query = query.eq('role_id', roleId);
       } else {
         const searchCode = (profileData?.role || 'staff').toUpperCase().trim();
+        let targetCodes = [searchCode];
+        if (['STAFF', 'OPERATOR', 'REQUESTER'].includes(searchCode)) {
+          targetCodes = ['STAFF', 'OPERATOR', 'REQUESTER'];
+        } else if (['SUPERVISOR', 'APPROVER', 'MANAGER'].includes(searchCode)) {
+          targetCodes = ['SUPERVISOR', 'APPROVER', 'MANAGER'];
+        } else if (['ADMIN', 'ADMINISTRATOR'].includes(searchCode)) {
+          targetCodes = ['ADMIN', 'ADMINISTRATOR'];
+        }
+
         const { data: rData } = await supabase
           .from('roles')
           .select('id')
-          .eq('code', searchCode)
+          .in('code', targetCodes)
+          .limit(1)
           .maybeSingle();
 
         if (rData?.id) {

@@ -17,6 +17,7 @@ import AddUserModal from '@/components/users/AddUserModal';
 import EditUserModal from '@/components/users/EditUserModal';
 import ResetPasswordModal from '@/components/users/ResetPasswordModal';
 import UserActionModal from '@/components/users/UserActionModal';
+import RoleBadge, { getRoleLabel } from '@/components/ui/RoleBadge';
 import { uploadAvatarImage } from '@/lib/avatarUpload';
 import { sendUserInvitationEmail } from '@/lib/emailService';
 
@@ -44,6 +45,37 @@ const UserManagement = () => {
 
   useEffect(() => {
     fetchInitialData();
+
+    // Subscribe to realtime updates on roles, role_permissions, and profiles
+    const channel = supabase
+      .channel('realtime_user_management_sync')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'roles' },
+        () => {
+          fetchDbRoles();
+          fetchUsers();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'role_permissions' },
+        () => {
+          fetchDbRoles();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'profiles' },
+        () => {
+          fetchUsers();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fetchInitialData = async () => {
@@ -60,7 +92,10 @@ const UserManagement = () => {
 
   const fetchDbRoles = async () => {
     try {
-      const { data } = await supabase.from('roles').select('id, code, name, description').eq('is_active', true);
+      const { data } = await supabase
+        .from('roles')
+        .select('id, code, name, description, badge_background, badge_text_color, is_system')
+        .order('is_system', { ascending: false });
       setDbRoles(data || []);
     } catch (e) {
       console.warn('fetchDbRoles error:', e);
@@ -114,17 +149,21 @@ const UserManagement = () => {
       email: p.email || (user && p.id === user.id ? user.email : `${p.full_name ? p.full_name.toLowerCase().replace(/\s+/g, '') : 'user'}@stockflow.local`),
       full_name: p.full_name,
       role: p.role || 'staff',
+      role_id: p.role_id || null,
       status: p.status || 'active',
       phone: p.phone || '',
+      department: p.department || '',
       position: p.position || '',
       avatar_url: p.avatar_url || '',
+      must_change_password: p.must_change_password === true,
       created_at: p.created_at,
       updated_at: p.updated_at,
       assigned_project_ids: assignmentMap[p.id] || [],
-      all_projects: p.role === 'admin' || !assignmentMap[p.id] || assignmentMap[p.id].length === 0
+      all_projects: p.all_projects !== undefined ? p.all_projects : (p.role === 'admin' || !assignmentMap[p.id] || assignmentMap[p.id].length === 0)
     }));
 
     setUsers(formattedUsers);
+    setRpcMissing(formattedUsers.length === 0);
   };
 
   const fetchProjects = async () => {
@@ -231,21 +270,38 @@ const UserManagement = () => {
         finalAvatarUrl = null;
       }
 
+      let matchedRoleId = userPayload.role_id;
+      if (!matchedRoleId && userPayload.role) {
+        const normalizedRole = userPayload.role.toUpperCase().trim();
+        const found = dbRoles.find(r => 
+          (r.code || '').toUpperCase().trim() === normalizedRole ||
+          (r.code === 'STAFF' && ['STAFF', 'OPERATOR', 'REQUESTER'].includes(normalizedRole)) ||
+          (r.code === 'SUPERVISOR' && ['SUPERVISOR', 'APPROVER', 'MANAGER'].includes(normalizedRole)) ||
+          (r.code === 'ADMIN' && ['ADMIN', 'ADMINISTRATOR'].includes(normalizedRole))
+        );
+        matchedRoleId = found?.id || null;
+      }
+
+      // 1. Try atomic PostgreSQL RPC first
       const { data, error } = await supabase.rpc('admin_update_user', {
         p_target_id: userId,
         p_full_name: userPayload.full_name,
         p_role: userPayload.role,
         p_status: userPayload.status,
         p_phone: userPayload.phone,
+        p_department: userPayload.department,
         p_position: userPayload.position,
         p_all_projects: userPayload.all_projects,
         p_project_ids: userPayload.project_ids,
-        p_avatar_url: finalAvatarUrl
+        p_avatar_url: finalAvatarUrl,
+        p_must_change_password: userPayload.must_change_password,
+        p_role_id: matchedRoleId
       });
 
       if (error) {
-        // Fallback to direct update on profiles
-        const matchedRoleId = userPayload.role_id || dbRoles.find(r => r.code === (userPayload.role || '').toUpperCase())?.id || null;
+        // Fallback to direct resilient update on profiles & project assignments
+        console.warn('admin_update_user RPC error or missing parameters, executing resilient direct update:', error);
+
         const { error: profileErr } = await supabase
           .from('profiles')
           .update({
@@ -254,21 +310,42 @@ const UserManagement = () => {
             role_id: matchedRoleId,
             status: userPayload.status,
             phone: userPayload.phone,
+            department: userPayload.department,
             position: userPayload.position,
             avatar_url: finalAvatarUrl,
+            must_change_password: userPayload.must_change_password,
+            all_projects: userPayload.all_projects,
             updated_at: new Date().toISOString()
           })
           .eq('id', userId);
 
         if (profileErr) throw profileErr;
-        toast.success('อัปเดตข้อมูลผู้ใช้เรียบร้อยแล้ว');
-        await fetchUsers();
+
+        // Sync project assignments in fallback mode
+        try {
+          await supabase.from('user_project_assignments').delete().eq('user_id', userId);
+          if (!userPayload.all_projects && Array.isArray(userPayload.project_ids) && userPayload.project_ids.length > 0) {
+            const assignmentInserts = userPayload.project_ids.map(pid => ({
+              user_id: userId,
+              project_id: pid,
+              created_by: user?.id || null
+            }));
+            await supabase.from('user_project_assignments').insert(assignmentInserts);
+          }
+        } catch (assignErr) {
+          console.warn('Direct project assignment sync warning:', assignErr);
+        }
+
+        toast.success('อัปเดตข้อมูลและสิทธิ์ผู้ใช้เรียบร้อยแล้ว');
+        await Promise.all([fetchUsers(), fetchDbRoles()]);
         return;
       }
 
       if (data?.success) {
-        toast.success('อัปเดตข้อมูลผู้ใช้สำเร็จ');
-        await fetchUsers();
+        toast.success('อัปเดตข้อมูลและสิทธิ์ผู้ใช้สำเร็จ');
+        await Promise.all([fetchUsers(), fetchDbRoles()]);
+      } else {
+        toast.error(data?.message || 'ไม่สามารถอัปเดตข้อมูลผู้ใช้ได้');
       }
     } catch (error) {
       console.error('Admin Update User Error:', error);
@@ -361,6 +438,29 @@ const UserManagement = () => {
     setSelectedUserForDelete(userObj);
   };
 
+  const getUserRoleBadge = (u) => {
+    const userRoleStr = (u.role || 'staff').toUpperCase().trim();
+    const matchedRole = dbRoles.find(r => 
+      (u.role_id && r.id === u.role_id) ||
+      (r.code || '').toUpperCase().trim() === userRoleStr ||
+      (r.code === 'STAFF' && ['STAFF', 'OPERATOR', 'REQUESTER'].includes(userRoleStr)) ||
+      (r.code === 'SUPERVISOR' && ['SUPERVISOR', 'APPROVER', 'MANAGER'].includes(userRoleStr)) ||
+      (r.code === 'ADMIN' && ['ADMIN', 'ADMINISTRATOR'].includes(userRoleStr)) ||
+      (r.code === 'SUPER' && ['SUPER', 'SUPERADMIN', 'SUPER_ADMIN'].includes(userRoleStr))
+    );
+
+    const roleCode = matchedRole?.code || userRoleStr;
+    const roleName = matchedRole?.name || getRoleLabel(roleCode);
+
+    return (
+      <RoleBadge 
+        role={roleCode} 
+        roleName={roleName} 
+        roleObj={matchedRole} 
+      />
+    );
+  };
+
   // Filtered Users
   const filteredUsers = users.filter(u => {
     const matchesSearch = 
@@ -370,7 +470,14 @@ const UserManagement = () => {
       u.position?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       u.phone?.includes(searchQuery);
 
-    const matchesRole = roleFilter === 'all' || u.role === roleFilter;
+    const userRoleLower = (u.role || 'staff').toLowerCase().trim();
+    const filterLower = roleFilter.toLowerCase().trim();
+    const matchesRole = filterLower === 'all' || 
+      userRoleLower === filterLower ||
+      (filterLower === 'staff' && ['staff', 'operator', 'requester'].includes(userRoleLower)) ||
+      (filterLower === 'supervisor' && ['supervisor', 'approver', 'manager'].includes(userRoleLower)) ||
+      (filterLower === 'admin' && ['admin', 'administrator'].includes(userRoleLower));
+
     const matchesStatus = statusFilter === 'all' || u.status === statusFilter;
 
     let matchesProject = true;
@@ -463,15 +570,27 @@ const UserManagement = () => {
           </div>
 
           {/* Role Filter */}
-          <div className="w-full sm:w-44">
+          <div className="w-full sm:w-48">
             <select
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value)}
               className="w-full p-2 rounded-xl neu-pressed bg-background text-foreground text-sm border-0 focus:ring-2 focus:ring-primary"
             >
               <option value="all">บทบาท: ทั้งหมด</option>
-              <option value="admin">ADMINISTRATOR</option>
-              <option value="staff">STAFF / REQUESTER</option>
+              {dbRoles.length > 0 ? (
+                dbRoles.map((r) => (
+                  <option key={r.id || r.code} value={(r.code || '').toLowerCase()}>
+                    {getRoleLabel(r.code, r.name)}
+                  </option>
+                ))
+              ) : (
+                <>
+                  <option value="super">SUPER ADMIN</option>
+                  <option value="admin">ADMINISTRATOR</option>
+                  <option value="supervisor">SUPERVISOR / APPROVER</option>
+                  <option value="staff">STAFF / REQUESTER</option>
+                </>
+              )}
             </select>
           </div>
 
@@ -603,15 +722,7 @@ const UserManagement = () => {
 
                         {/* Role Badge */}
                         <td className="px-4 py-4 whitespace-nowrap">
-                          {u.role === 'admin' ? (
-                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300 border border-purple-300 dark:border-purple-800">
-                              <Shield className="w-3.5 h-3.5" /> ADMINISTRATOR
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                              STAFF / REQUESTER
-                            </span>
-                          )}
+                          {getUserRoleBadge(u)}
                         </td>
 
                         {/* Assigned Projects */}
@@ -759,6 +870,7 @@ const UserManagement = () => {
           user={selectedUserForEdit}
           projects={projects}
           roles={dbRoles}
+          allUsers={users}
         />
       )}
 

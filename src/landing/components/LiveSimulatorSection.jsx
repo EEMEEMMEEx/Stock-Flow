@@ -88,7 +88,7 @@ export default function LiveSimulatorSection() {
               }`}
             >
               <ShoppingCart className="w-4 h-4" />
-              <span>{t.simulator.tabPos || '🛒 POS Withdrawal'}</span>
+              <span>{t.simulator.tabPos || 'POS Withdrawal'}</span>
             </button>
             <button
               type="button"
@@ -100,7 +100,7 @@ export default function LiveSimulatorSection() {
               }`}
             >
               <SlidersHorizontal className="w-4 h-4" />
-              <span>{t.simulator.tabStockAdjust || '📦 Stock Adjustment'}</span>
+              <span>{t.simulator.tabStockAdjust || 'Stock Adjustment'}</span>
             </button>
             <button
               type="button"
@@ -112,7 +112,7 @@ export default function LiveSimulatorSection() {
               }`}
             >
               <CalendarClock className="w-4 h-4" />
-              <span>{t.simulator.tabDueDate || '⏱️ Due Date Extension'}</span>
+              <span>{t.simulator.tabDueDate || 'Due Date Extension'}</span>
             </button>
             <button
               type="button"
@@ -124,7 +124,7 @@ export default function LiveSimulatorSection() {
               }`}
             >
               <PackageCheck className="w-4 h-4" />
-              <span>{t.simulator.tabSiteKits || '📋 BOM Kit Readiness'}</span>
+              <span>{t.simulator.tabSiteKits || 'BOM Kit Readiness'}</span>
             </button>
           </div>
         </div>

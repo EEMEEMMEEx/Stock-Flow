@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Eye, EyeOff, RefreshCw, Check, Shield, User, FolderKanban, AlertCircle, Mail } from 'lucide-react';
 import toast from 'react-hot-toast';
 import AvatarUpload from '@/components/users/AvatarUpload';
-
+import RoleBadge, { getRoleLabel } from '@/components/ui/RoleBadge';
 
 const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) => {
   const [activeTab, setActiveTab] = useState('account'); // 'account' | 'access'
@@ -14,9 +14,10 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
   const [projectSearch, setProjectSearch] = useState('');
 
   const defaultRoles = [
-    { code: 'OPERATOR', name: 'OPERATOR / STAFF', description: 'เบิกจ่ายวัสดุ ดูสต็อกเฉพาะโครงการที่ได้รับมอบหมาย' },
+    { code: 'STAFF', name: 'STAFF / REQUESTER', description: 'เบิกจ่ายวัสดุ ดูสต็อกเฉพาะโครงการที่ได้รับมอบหมาย' },
     { code: 'SUPERVISOR', name: 'SUPERVISOR / APPROVER', description: 'อนุมัติการเบิกจ่าย และดูรายงานระดับโครงการ' },
-    { code: 'ADMIN', name: 'ADMINISTRATOR', description: 'สิทธิ์สูงสุด อนุมัติเบิกจ่าย จัดการโครงการ และจัดการผู้ใช้' }
+    { code: 'ADMIN', name: 'ADMINISTRATOR', description: 'สิทธิ์สูงสุด อนุมัติเบิกจ่าย จัดการโครงการ และจัดการผู้ใช้' },
+    { code: 'SUPER', name: 'SUPER ADMIN', description: 'สิทธิ์สูงสุดระดับระบบ จัดการทุกอย่าง รวมถึง Admin, สิทธิ์, การตั้งค่าระบบ, Security, Integration' }
   ];
 
   const availableRoles = roles.length > 0 ? roles : defaultRoles;
@@ -27,7 +28,7 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
     phone: '',
     position: '',
     avatar_url: '',
-    role: 'operator',
+    role: 'staff',
     status: 'active',
     access_type: 'all', // 'all' | 'selected'
     selected_projects: [],
@@ -247,8 +248,11 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
                         }`}
                       >
                         <div className="flex items-center justify-between mb-1">
-                          <span className="font-semibold text-sm">{r.name || r.code}</span>
-                          {isSelected && <Check className="w-4 h-4 text-primary" />}
+                          <span className="font-semibold text-sm flex items-center gap-1.5">
+                            <Shield className={`w-3.5 h-3.5 ${isSelected ? 'text-primary' : 'text-muted-foreground'}`} />
+                            {getRoleLabel(r.code, r.name)}
+                          </span>
+                          {isSelected && <Check className="w-4 h-4 text-primary shrink-0" />}
                         </div>
                         {r.description && (
                           <p className="text-xs text-muted-foreground line-clamp-2">{r.description}</p>

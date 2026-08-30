@@ -68,7 +68,7 @@ const RoleManagement = () => {
         rolesData = directRoles || [];
       }
 
-      setRpcMissing(!isRpcActive);
+      setRpcMissing(rolesData.length === 0);
 
       // Fetch live profiles and role_permissions for accurate counts & self-healing
       const [profilesRes, rpRes] = await Promise.all([
@@ -221,26 +221,40 @@ const RoleManagement = () => {
 
   const handleCreateRole = async (rolePayload) => {
     try {
-      const { data, error } = await supabase.rpc('admin_create_role', {
-        p_code: rolePayload.code,
-        p_name: rolePayload.name,
-        p_description: rolePayload.description,
-        p_badge_background: rolePayload.badge_background,
-        p_badge_text_color: rolePayload.badge_text_color
-      });
-
-      if (error) {
-        if (error.code === 'PGRST202' || error.status === 404) {
-          toast.error('กรุณารันสคริปต์ Migration 09 ใน Supabase SQL Editor เพื่อสร้างบทบาทใหม่');
-          return;
+      let created = false;
+      try {
+        const { data, error } = await supabase.rpc('admin_create_role', {
+          p_code: rolePayload.code,
+          p_name: rolePayload.name,
+          p_description: rolePayload.description,
+          p_badge_background: rolePayload.badge_background,
+          p_badge_text_color: rolePayload.badge_text_color
+        });
+        if (!error && data?.success) {
+          created = true;
         }
-        throw error;
+      } catch (e) {
+        console.warn('admin_create_role RPC notice, using direct insert:', e);
       }
 
-      if (data?.success) {
-        toast.success('สร้างบทบาทใหม่สำเร็จ');
-        await fetchRoles();
+      if (!created) {
+        const { error: insertErr } = await supabase
+          .from('roles')
+          .insert({
+            code: rolePayload.code.toUpperCase().trim(),
+            name: rolePayload.name.trim(),
+            description: rolePayload.description,
+            badge_background: rolePayload.badge_background,
+            badge_text_color: rolePayload.badge_text_color,
+            is_system: false,
+            is_active: true
+          });
+
+        if (insertErr) throw insertErr;
       }
+
+      toast.success('สร้างบทบาทใหม่สำเร็จ');
+      await fetchRoles();
     } catch (error) {
       console.error('Create Role Error:', error);
       toast.error(error.message || 'เกิดข้อผิดพลาดในการสร้างบทบาท');
@@ -250,26 +264,39 @@ const RoleManagement = () => {
 
   const handleUpdateRole = async (roleId, rolePayload) => {
     try {
-      const { data, error } = await supabase.rpc('admin_update_role', {
-        p_role_id: roleId,
-        p_name: rolePayload.name,
-        p_description: rolePayload.description,
-        p_badge_background: rolePayload.badge_background,
-        p_badge_text_color: rolePayload.badge_text_color
-      });
-
-      if (error) {
-        if (error.code === 'PGRST202' || error.status === 404) {
-          toast.error('กรุณารันสคริปต์ Migration 09 ใน Supabase SQL Editor เพื่ออัปเดตบทบาท');
-          return;
+      let updated = false;
+      try {
+        const { data, error } = await supabase.rpc('admin_update_role', {
+          p_role_id: roleId,
+          p_name: rolePayload.name,
+          p_description: rolePayload.description,
+          p_badge_background: rolePayload.badge_background,
+          p_badge_text_color: rolePayload.badge_text_color
+        });
+        if (!error && data?.success) {
+          updated = true;
         }
-        throw error;
+      } catch (e) {
+        console.warn('admin_update_role RPC notice, using direct update:', e);
       }
 
-      if (data?.success) {
-        toast.success('อัปเดตข้อมูลบทบาทสำเร็จ');
-        await fetchRoles();
+      if (!updated) {
+        const { error: updateErr } = await supabase
+          .from('roles')
+          .update({
+            name: rolePayload.name.trim(),
+            description: rolePayload.description,
+            badge_background: rolePayload.badge_background,
+            badge_text_color: rolePayload.badge_text_color,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', roleId);
+
+        if (updateErr) throw updateErr;
       }
+
+      toast.success('อัปเดตข้อมูลบทบาทสำเร็จ');
+      await fetchRoles();
     } catch (error) {
       console.error('Update Role Error:', error);
       toast.error(error.message || 'เกิดข้อผิดพลาดในการอัปเดตบทบาท');

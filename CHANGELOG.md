@@ -1,5 +1,241 @@
 # Changelog
 
+## [2026-08-30 23:56] ปรับปรุงการแสดงผล Role Badges และ Role Labels ให้เป็นมาตรฐาน (v1.4.12)
+
+- **Modified / Created files:**
+  - `src/components/ui/RoleBadge.jsx` [NEW STANDARDIZED ROLE BADGE & GETROLELABEL UTILITY]
+  - `src/pages/UserManagement.jsx` [INTEGRATE ROLEBADGE & FRIENDLY FILTER LABELS]
+  - `src/components/users/EditUserModal.jsx` [INTEGRATE ROLEBADGE & SUPER ROLE IN DEFAULT LIST]
+  - `src/components/users/AddUserModal.jsx` [INTEGRATE ROLEBADGE LABELS & ICONS]
+  - `src/components/users/UserActionModal.jsx` [INTEGRATE ROLEBADGE]
+  - `src/components/layout/Topbar.jsx` [INTEGRATE ROLEBADGE & STANDARDIZED LABELS IN DROPDOWN]
+  - `src/pages/Profile.jsx` [INTEGRATE ROLEBADGE IN PROFILE HEADER & READONLY INPUT]
+  - `src/config/appConfig.js` [VERSION BUMP v1.4.12]
+  - `package.json` [VERSION BUMP v1.4.12]
+- **Details:**
+  - **ปรับปรุงชื่อ Role Labels ให้เป็นมาตรฐานและอ่านง่าย:**
+    - `staff` ➔ `STAFF / REQUESTER`
+    - `supervisor` ➔ `SUPERVISOR / APPROVER`
+    - `admin` ➔ `ADMINISTRATOR`
+    - `super` ➔ `SUPER ADMIN`
+  - **รักษา SVG Shield Icon และห้ามใช้อีโมจิ:** ใช้ SVG `<Shield />` และ `<Sparkles />` (Super Admin) อย่างสม่ำเสมอ
+  - **สร้าง RoleBadge Component กลาง:** จัดระดับสีและสไตล์ให้เห็นความแตกต่างชัดเจน (Admin สีม่วงเข้มพรีเมียม, Super Admin กราเดียนต์แอมเบอร์-ม่วง, Supervisor สีมรกต, Staff สีฟ้า)
+  - **อัปเกรดเวอร์ชันระบบ (System Version Increment):** ปรับเพิ่มเวอร์ชันแอปพลิเคชันจาก `v1.4.11` เป็น `v1.4.12` (PATCH)
+- **Reason:** ปรับปรุง UI ให้ชื่อและตราสัญลักษณ์บทบาทผู้ใช้งาน (Role Badges) สวยงาม สม่ำเสมอ และตรงตามที่กำหนดทุกจุดในระบบ
+
+
+## [2026-08-30 23:47] ปรับปรุงความเสถียรและ Fallback Baseline ของสิทธิ์ RBAC ใน Edit User Modal (v1.4.11)
+
+- **Modified / Created files:**
+  - `src/components/users/EditUserModal.jsx` [CASE-INSENSITIVE SET MATCHING & ROLE BASELINE FALLBACK]
+  - `src/pages/UserManagement.jsx` [REMOVE IS_ACTIVE FILTER TO MATCH ROLE MANAGEMENT]
+  - `src/config/appConfig.js` [VERSION BUMP v1.4.11]
+  - `package.json` [VERSION BUMP v1.4.11]
+- **Details:**
+  - **แก้ไขปัญหาป้ายเตือน "ยังไม่มีสิทธิ์เปิดใช้งานสำหรับบทบาทนี้ในระบบ /roles" และตัวเลขนับ 0/0 สิทธิ์:**
+    - ปรับการแมป `permission_id` และ `role_id` ด้วย `Set` และ `String().toLowerCase()` เพื่อป้องกันปัญหาความคลาดเคลื่อนของ UUID Format
+    - เพิ่ม Baseline Fallback อัตโนมัติสำหรับบทบาทพื้นฐาน (`STAFF`, `SUPERVISOR`, `ADMIN`, `SUPER`) ในกรณีที่การเชื่อมต่อตาราง `role_permissions` อยู่ระหว่างโหลดหรือตารางว่าง
+    - ปรับ `UserManagement.jsx` และ `EditUserModal.jsx` ให้ดึงบทบาททั้งหมดโดยไม่ฟิลเตอร์ `is_active` เหมือนหน้า `RoleManagement.jsx`
+  - **อัปเกรดเวอร์ชันระบบ (System Version Increment):** ปรับเพิ่มเวอร์ชันแอปพลิเคชันจาก `v1.4.10` เป็น `v1.4.11` (PATCH)
+- **Reason:** แก้ไขและป้องกันการแสดงผลสิทธิ์ว่างเปล่าในกล่องแก้ไขผู้ใช้ให้เสถียร 100%
+
+## [2026-08-30 23:44] แก้ไขข้อผิดพลาด column p.email does not exist ใน Migration 58 และเพิ่ม Direct Table Fallback ในการจัดการบทบาท (v1.4.10)
+
+- **Modified / Created files:**
+  - `supabase/migrations/58_dynamic_rbac_sync_fix.sql` [FIX P.EMAIL ERROR]
+  - `src/pages/RoleManagement.jsx` [DIRECT TABLE FALLBACK FOR CREATE & UPDATE]
+  - `src/config/appConfig.js` [VERSION BUMP v1.4.10]
+  - `package.json` [VERSION BUMP v1.4.10]
+- **Details:**
+  - **แก้ไขปัญหา Error: column p.email does not exist (Code 42703):**
+    - แก้ไขฟังก์ชัน `has_permission()` และ `get_user_permissions()` ใน `supabase/migrations/58_dynamic_rbac_sync_fix.sql` โดยยกเลิกการคิวรี `p.email` จากตาราง `public.profiles` (เนื่องจากในสคีมาของ Supabase คอลัมน์ `email` อยู่ที่ตาราง `auth.users`) และเปลี่ยนไปดึงค่า `email` จาก `auth.users` อย่างถูกต้องและปลอดภัย
+    - ผู้ใช้สามารถนำโค้ดใน `supabase/migrations/58_dynamic_rbac_sync_fix.sql` ไปรันใน Supabase SQL Editor ได้อย่างราบรื่นโดยไม่ติด Error
+  - **เพิ่ม Direct Table Fallback ใน `RoleManagement.jsx`:**
+    - เพิ่ม fallback การสร้างและแก้ไขบทบาทลงตาราง `roles` โดยตรง เพื่อให้การแก้ไขชื่อบทบาท, สีป้าย, และคำอธิบายสามารถทำงานได้ทันทีแม้ RPC ยังไม่ได้รันบน Database
+  - **อัปเกรดเวอร์ชันระบบ (System Version Increment):** ปรับเพิ่มเวอร์ชันแอปพลิเคชันจาก `v1.4.9` เป็น `v1.4.10` (PATCH)
+- **Reason:** แก้ไข Bug คอลัมน์ p.email ใน Migration 58 และเพิ่มความยืดหยุ่นในการจัดการบทบาท
+
+## [2026-08-30 23:40] ปรับปรุงการโหลดแคตตาล็อกสิทธิ์และตาราง role_permissions แบบคู่ขนานใน Edit User Modal (v1.4.9)
+
+- **Modified / Created files:**
+  - `src/components/users/EditUserModal.jsx` [PARALLEL FETCH & EXACT MATCHING]
+  - `src/config/appConfig.js` [VERSION BUMP v1.4.9]
+  - `package.json` [VERSION BUMP v1.4.9]
+- **Details:**
+  - **แก้ไขปัญหา Edit User Modal แสดงผลสิทธิ์ 0 / 0 สิทธิ์:**
+    - ปรับปรุงให้ `EditUserModal.jsx` ใช้โครงสร้างการคิวรีแบบคู่ขนาน (`Promise.all`) สำหรับตาราง `roles`, `permissions`, และ `role_permissions` ทั้งหมด เช่นเดียวกับในหน้า `RoleManagement.jsx`
+    - เพิ่มการเซ็ตค่า `totalCatalogCount` ให้ตรงกับจำนวนสิทธิ์ทั้งหมดในแคตตาล็อกเสมอ (36 สิทธิ์)
+    - ปรับการแมป `targetRole` และกรองรายการสิทธิ์จาก `role_permissions` ตาม `role_id` ทำให้แสดงสิทธิ์ที่ถูกต้องของบทบาท Staff (6 สิทธิ์), Supervisor (17 สิทธิ์), Admin (31 สิทธิ์), และ Super Admin (36 สิทธิ์) ได้ทันที
+    - เพิ่มการแมปบทบาท `SUPER` ใน `resolveRoleId`
+  - **อัปเกรดเวอร์ชันระบบ (System Version Increment):** ปรับเพิ่มเวอร์ชันแอปพลิเคชันจาก `v1.4.8` เป็น `v1.4.9` (PATCH)
+- **Reason:** แก้ไขการดึงข้อมูลสิทธิ์ในโมดัลแก้ไขผู้ใช้ให้มีความเสถียรและแสดงสิทธิ์ถูกต้องตรงตามฐานข้อมูล 100%
+
+## [2026-08-30 23:37] แก้ไขการแจ้งเตือน Migration 09 ในหน้า /roles และ /users ให้ตรวจจับสถานะตารางฐานข้อมูลจริง (v1.4.8)
+
+- **Modified / Created files:**
+  - `src/pages/RoleManagement.jsx` [FIX FALSE-POSITIVE MIGRATION NOTICE]
+  - `src/pages/UserManagement.jsx` [FIX FALSE-POSITIVE MIGRATION NOTICE]
+  - `src/config/appConfig.js` [VERSION BUMP v1.4.8]
+  - `package.json` [VERSION BUMP v1.4.8]
+- **Details:**
+  - **แก้ไขปัญหาป้ายแจ้งเตือนสีเหลือง (Warning Banner) แจ้งว่ายังไม่ได้รัน Migration 09 ปรากฏในหน้า `/roles`:**
+    - สาเหตุเกิดจากการตรวจสอบค่า `isRpcActive` หาก RPC `admin_get_roles_with_stats` คืนค่าว่าง จะตั้งค่า `rpcMissing = true` แม้ว่าตาราง `roles`, `permissions`, `role_permissions`, `profiles` จะทำงานได้สมบูรณ์แล้ว
+    - ปรับปรุงให้ตรวจสอบจากจำนวนบทบาทและข้อมูลจริง (`rolesData.length === 0`) หากตารางใน Cloud Database มีข้อมูลและทำงานได้ตามปกติ ป้ายแจ้งเตือนจะไม่แสดงผล
+  - **อัปเกรดเวอร์ชันระบบ (System Version Increment):** ปรับเพิ่มเวอร์ชันแอปพลิเคชันจาก `v1.4.7` เป็น `v1.4.8` (PATCH)
+- **Reason:** ปิดการแสดงป้ายแจ้งเตือนที่เป็น False-Positive เมื่อระบบ RBAC และตารางในฐานข้อมูลทำงานได้ปกติ 100%
+
+## [2026-08-30 23:30] ลบการฮาร์ดโค้ดสิทธิ์ Admin ใน Edit User Modal และฐานข้อมูล ให้ดึงสิทธิ์จริงตามที่กำหนดใน /roles 100% (v1.4.7)
+
+- **Modified / Created files:**
+  - `src/components/users/EditUserModal.jsx` [REMOVED HARDCODED ADMIN OVERRIDE & DYNAMIC PERMS]
+  - `src/contexts/AuthContext.jsx` [DYNAMIC PERMISSIONS PER ROLE]
+  - `supabase/migrations/58_dynamic_rbac_sync_fix.sql` [NEW MIGRATION]
+  - `src/config/appConfig.js` [VERSION BUMP v1.4.7]
+  - `package.json` [VERSION BUMP v1.4.7]
+- **Details:**
+  - **แก้ไขปัญหา Assigned RBAC Permissions สำหรับบทบาท Administrator (ADMIN) แสดง 36/36 ทั้งที่ใน /roles กำหนดไว้ 31 สิทธิ์:**
+    - พบสาเหตุว่าใน `fetchLiveRolePermissions` และ JSX มีการใส่เงื่อนไข `if (isAdminRole) return fullCatalog;` ทำให้บทบาท `ADMIN` ถูกฮาร์ดโค้ดเป็น 36 สิทธิ์เสมอโดยไม่สนใจตาราง `role_permissions`
+    - นำเงื่อนไขฮาร์ดโค้ดออกทั้งหมด ทุกบทบาท (`ADMIN`, `SUPERVISOR`, `STAFF`, `SUPER`, บทบาทที่สร้างใหม่) จะดึงสิทธิ์จากตาราง `role_permissions` ตาม `role_id` จริงจากฐานข้อมูล 100%
+    - ทำให้เมื่อ `ADMIN` มี 31 สิทธิ์ ในโมดัลจะแสดง `สิทธิ์ที่เปิดใช้งาน: 31 / 36 สิทธิ์` และแสดงชิปสิทธิ์ 31 รายการตรงกับ `/roles` ทุกประการ
+  - **สร้าง Migration 58 (`58_dynamic_rbac_sync_fix.sql`):** ปรับฟังก์ชัน `has_permission()` และ `get_user_permissions()` ใน PostgreSQL ให้ตรวจสอบสิทธิ์ตามตาราง `role_permissions` ของบทบาทจริง โดยสงวนการ Bypass สิทธิ์เต็มไว้เฉพาะ `SUPER` (Super Admin) และ Master System Admin เท่านั้น
+  - **อัปเกรดเวอร์ชันระบบ (System Version Increment):** ปรับเพิ่มเวอร์ชันแอปพลิเคชันจาก `v1.4.6` เป็น `v1.4.7` (PATCH)
+- **Reason:** แก้ไขปัญหาสิทธิ์ไม่ซิงค์กันระหว่างหน้า `/roles` และกล่องแก้ไขผู้ใช้ (Edit User Modal) ให้แสดงผลและบังคับใช้สิทธิ์ตามการกำหนดค่าจริง 100%
+
+## [2026-08-30 23:25] แก้ไขปัญหาการซิงโครไนซ์สิทธิ์ RBAC ใน Edit User Modal ให้ตรงกับ /roles อัตโนมัติแบบ Real-time (v1.4.6)
+
+- **Modified / Created files:**
+  - `src/components/users/EditUserModal.jsx` [REFACTORED & REALTIME SYNC]
+  - `src/contexts/AuthContext.jsx` [REALTIME RBAC SUBSCRIPTION]
+  - `src/pages/UserManagement.jsx` [REALTIME ROLES & USERS SYNC]
+  - `src/config/appConfig.js` [VERSION BUMP v1.4.6]
+  - `package.json` [VERSION BUMP v1.4.6]
+- **Details:**
+  - **แก้ไขปัญหา Assigned RBAC Permissions ไม่ซิงค์กับ `/roles` (Root Cause Resolution):**
+    - สาเหตุเกิดจากการที่ `EditUserModal` พึ่งพา `roles` props ที่ยังไม่ถูกอัปเดตหรือไม่มี `id` (`defaultRoles`) ทำให้ `resolveRoleId` ได้ค่า `null` และไม่สามารถคิวรีสิทธิ์จากตาราง `role_permissions` ได้
+    - ปรับปรุงให้ `EditUserModal` ดึงข้อมูล `roles` และแคตตาล็อกสิทธิ์ (`permissions`) จากฐานข้อมูล Supabase โดยตรงทุกครั้งที่เปิดโมดัลหรือเปลี่ยนบทบาท
+    - เชื่อมโยงสิทธิ์การใช้งานแบบไดนามิก 100% จากตาราง `role_permissions` ไม่มีการฮาร์ดโค้ดรายการหรือตัวเลขสิทธิ์
+  - **ระบบซิงโครไนซ์แบบ Real-time ข้ามระบบ (Supabase Realtime Channel):**
+    - เพิ่ม Realtime Subscription บนตาราง `role_permissions`, `roles`, และ `profiles` ใน `EditUserModal.jsx` ทำให้เมื่อ Admin ปรับเปลี่ยนสิทธิ์ใน `/roles` โมดัลจะอัปเดตรายการสิทธิ์และตัวเลขนับทันทีโดยไม่ต้องปิดโมดัล
+    - เพิ่ม Realtime Subscription ใน `AuthContext.jsx` เพื่อให้ผู้ใช้ที่ล็อกอินอยู่ได้รับสิทธิ์ใหม่และมีผลบังคับใช้กับการนำทางและปุ่ม UI ทันทีใน Real-time
+    - เพิ่ม Realtime Subscription ใน `UserManagement.jsx` ให้ตารางผู้ใช้และตัวกรองบทบาทอัปเดตเสมอ
+    - เพิ่มปุ่มกดรีเฟรชสิทธิ์ด้วยตนเอง (Manual Refresh Button) บริเวณหัวข้อ Assigned RBAC Permissions
+  - **อัปเกรดเวอร์ชันระบบ (System Version Increment):** ปรับเพิ่มเวอร์ชันแอปพลิเคชันจาก `v1.4.5` เป็น `v1.4.6` (PATCH)
+- **Reason:** แก้ไขปัญหาการซิงค์สิทธิ์ RBAC ระหว่าง `/roles` และหน้าจัดการผู้ใช้ให้เป็นไดนามิกและ Real-time 100% ตามข้อกำหนด
+
+## [2026-08-30 23:10] ปรับปรุงหน้าระบบและคู่มือ (/manual) ตามนโยบาย UI Icon Policy โดยยกเลิกการใช้ Unicode Emojis ทั้งหมด และใช้ Lucide SVG Icons 100% (v1.4.5)
+
+- **Modified / Created files:**
+  - `src/pages/Manual.jsx` [MODIFIED]
+  - `src/landing/data/landing-translations.js` [MODIFIED]
+  - `src/landing/components/LiveSimulatorSection.jsx` [MODIFIED]
+  - `src/landing/components/HeroSection.jsx` [MODIFIED]
+  - `src/config/appConfig.js` [VERSION BUMP v1.4.5]
+  - `package.json` [VERSION BUMP v1.4.5]
+- **Details:**
+  - **ลบ Unicode Emojis ทั้งหมดในหน้า `/manual` และคอมโพเนนต์ที่เกี่ยวข้อง:**
+    - ลบ Emojis ในแท็บกรองบทบาท (`roleFilters`) และข้อความหัวข้อใน `Manual.jsx`
+    - แทนที่ด้วย Lucide SVG Icons ที่มีสัดส่วนและสีสันที่ถูกต้องตามดีไซน์
+    - ลบข้อความ Fallback Emojis ใน `LiveSimulatorSection.jsx`, `HeroSection.jsx`, และ `landing-translations.js`
+  - **อัปเกรดเวอร์ชันระบบ (System Version Increment):** ปรับเพิ่มเวอร์ชันแอปพลิเคชันจาก `v1.4.4` เป็น `v1.4.5` (PATCH)
+- **Reason:** บังคับใช้นโยบายความเรียบร้อยของ UI (UI Icon Policy) ไม่ใช้ Unicode Emojis ในโค้ด UI และใช้ไอคอน SVG แบบ Scalable ที่เป็นมาตรฐาน
+
+## [2026-08-30 23:00] ยกระดับหน้าคู่มือการใช้งานระบบ (/manual) จัดโครงสร้างตามบทบาทและเวิร์กโฟลว์ พร้อมระบบค้นหาและการนำทางที่ชัดเจน (v1.4.4)
+
+- **Modified / Created files:**
+  - `src/pages/Manual.jsx` [REFACTORED & UPGRADED]
+  - `src/config/appConfig.js` [VERSION BUMP v1.4.4]
+  - `package.json` [VERSION BUMP v1.4.4]
+- **Details:**
+  - **ปรับโครงสร้างเนื้อหาคู่มือ 11 หมวดหมู่ตามบทบาทและเวิร์กโฟลว์จริง (Structured Workflow & Roles):**
+    - จัดกลุ่มเนื้อหาเป็น 5 หมวดหลัก: เจ้าหน้าที่ขอเบิก (`STAFF`), ผู้อนุมัติ (`SUPERVISOR`), ผู้ดูแลระบบ (`ADMIN`), การยืม-คืนอุปกรณ์ (`CHECKOUTS`), และการบริหารคลังสต็อก (`INVENTORY`)
+    - สร้าง Summary Matrix สรุปขอบเขตความรับผิดชอบและสิทธิ์สำคัญของ 3 บทบาทหลักที่ส่วนบนของหน้า
+  - **รูปแบบเนื้อหาแบบ Scannable 5 ส่วนมาตรฐานในทุกหัวข้อ:**
+    - 🎯 **ฟังก์ชันนี้ทำหน้าที่อะไร (What it does):** คำอธิบายวัตถุประสงค์สั้น กระชับ เข้าใจง่าย
+    - 👤 **ใครใช้งานได้บ้าง (Who can use it):** ระบุบทบาทและ Permission Codes ที่เกี่ยวข้อง (`withdrawals.create`, `projects.view`, `roles.manage_permissions` ฯลฯ)
+    - 🚀 **ขั้นตอนการใช้งานทีละสเต็ป (Step-by-Step Instructions):** ลำดับขั้นตอน `1.`, `2.`, `3.`, `4.` ชัดเจน
+    - 💡 **เคล็ดลับการใช้งาน (Pro-Tips):** คำแนะนำ เทคนิคพิเศษ และตัวอย่างสถานการณ์จริง
+    - ⚠️ **กฎความปลอดภัยและข้อควรระวัง (Safeguards & Rules):** กฎ All-or-Nothing, การคืนอุปกรณ์, การป้องกันบัญชี Admin คนสุดท้าย
+  - **ระบบการค้นหาและตัวกรองแบบทันที (Instant Live Search & Role Tabs):**
+    - ค้นหาคำสำคัญครอบคลุมทั้งชื่อหัวข้อ, ขั้นตอนการทำงาน, รหัสสิทธิ์, และบทบาท
+    - แท็บกรองตามบทบาทพร้อมไอคอนสีเฉพาะทาง
+    - ปุ่ม "เปิดหน้าการทำงานจริง" (Quick Jump Link) ในแต่ละหัวข้อเพื่อให้ผู้ใช้กดไปยังหน้าฟังก์ชันนั้นๆ ได้ทันที
+  - **อัปเกรดเวอร์ชันระบบ (System Version Increment):** ปรับเพิ่มเวอร์ชันแอปพลิเคชันจาก `v1.4.3` เป็น `v1.4.4` (PATCH)
+- **Reason:** ยกระดับหน้า `/manual` ให้เป็นศูนย์การเรียนรู้ระบบที่เข้าใจง่าย ค้นหาสะดวก จัดโครงสร้างตามบทบาท และสะท้อน UI/RBAC ล่าสุด 100%
+
+## [2026-08-30 22:55] แก้ไขการแสดงผลบทบาทผู้ใช้ในตาราง User List ให้สะท้อนค่าบทบาท RBAC จริงทันทีหลังบันทึก (v1.4.3)
+
+- **Modified / Created files:**
+  - `src/pages/UserManagement.jsx` [MODIFIED]
+  - `src/components/users/UserActionModal.jsx` [MODIFIED]
+  - `src/config/appConfig.js` [VERSION BUMP v1.4.3]
+  - `package.json` [VERSION BUMP v1.4.3]
+- **Details:**
+  - **แก้ไขปัญหา Role Badge ค้างเป็น STAFF / REQUESTER ในตารางผู้ใช้ (`UserManagement.jsx`):**
+    - ยกเลิกการแสดงผลแบบ Hardcoded Ternary ที่ตรวจสอบเฉพาะ `u.role === 'admin'` แล้ว Default เป็น `STAFF / REQUESTER`
+    - สร้างฟังก์ชัน `getUserRoleBadge(u)` ที่จับคู่บทบาทของผู้ใช้งานกับข้อมูลบทบาทจริงใน `dbRoles` (`roles` table) ครอบคลุมทั้ง `ADMINISTRATOR`, `SUPERVISOR / APPROVER`, `STAFF / REQUESTER`, และ Custom Roles ทั้งหมด พร้อมกำหนดสี Badge ตามที่กำหนดไว้ในฐานข้อมูล
+  - **ปรับปรุง Role Filter Dropdown ให้โหลด Dynamic Roles:**
+    - เปลี่ยน Dropdown กรองบทบาทในตารางให้โหลดรายชื่อบทบาททั้งหมดจาก `dbRoles` แทนตัวเลือกเดิมที่มีเพียง Admin และ Staff
+    - ปรับปรุง Logic การกรองบทบาท (`matchesRole`) ให้รองรับ Role Aliases และ Custom Roles
+  - **ปรับปรุง UserActionModal Role Badge (`UserActionModal.jsx`):**
+    - ปรับปรุงการแสดง Badge ในหน้าต่างยืนยันการระงับ/ลบผู้ใช้ให้แสดงผล `SUPERVISOR` และบทบาทอื่นๆ ได้อย่างถูกต้อง
+  - **อัปเกรดเวอร์ชันระบบ (System Version Increment):** ปรับเพิ่มเวอร์ชันแอปพลิเคชันจาก `v1.4.2` เป็น `v1.4.3` (PATCH)
+- **Reason:** แก้ไขปัญหาการแสดงผลบทบาทในหน้ารายการผู้ใช้ไม่เปลี่ยนตามบทบาทจริงที่ได้รับมอบหมายหลังจากการกดบันทึกแก้ไขข้อมูล
+
+## [2026-08-30 22:45] ตรวจสอบและยกระดับหน้าต่าง "แก้ไขข้อมูลผู้ใช้" (Edit User Dialog) ในระบบ User Management & RBAC พร้อมประสานสิทธิ์ตรงกับ /roles (v1.4.2)
+
+- **Modified / Created files:**
+  - `src/components/users/EditUserModal.jsx` [REFACTORED & UPGRADED]
+  - `src/pages/UserManagement.jsx` [MODIFIED]
+  - `src/contexts/AuthContext.jsx` [MODIFIED]
+  - `supabase/migrations/57_enhanced_admin_update_user_rpc.sql` [NEW MIGRATION]
+  - `src/config/appConfig.js` [VERSION BUMP v1.4.2]
+  - `package.json` [VERSION BUMP v1.4.2]
+  - `docs/edit-user-dialog-audit-plan.md` [AUDIT PLAN]
+- **Details:**
+  - **Edit User Modal Overhaul (`EditUserModal.jsx`):**
+    - ปรับโครงสร้างหน้าต่างเป็นระบบ 3 แท็บที่ใช้งานง่ายและเป็นระเบียบ:
+      - **TAB 1: ข้อมูลผู้ใช้งานและโปรไฟล์ (Profile Info):** แสดงบัญชี Login Email (Read-Only ID), ชื่อ-นามสกุล, เบอร์โทรศัพท์, แผนก/ฝ่าย (`department`), ตำแหน่ง/หน้าที่ (`position`), รูปโปรไฟล์ผ่าน Cloudflare R2 (`AvatarUpload`), และตัวเลือกบังคับเปลี่ยนรหัสผ่านในการเข้าสู่ระบบครั้งถัดไป (`must_change_password`).
+      - **TAB 2: บทบาทและสิทธิ์การใช้งาน (Role & RBAC):** แสดงตัวเลือกบทบาทแบบ Dynamic Cards ที่โหลดจากฐานข้อมูลจริง พร้อมแสดงสัญลักษณ์ System Role, โหลดและแสดงรายการสิทธิ์จริงจากตาราง `role_permissions` / `permissions` โดยไม่มีการ Hardcode รายการหรือจำนวนสิทธิ์, และเลือกสถานะบัญชี (`active`, `inactive`, `suspended`) พร้อมระบบป้องกันไม่ให้ลดระดับหรือปิดใช้งานบัญชี Admin คนสุดท้ายของระบบ.
+      - **TAB 3: การเข้าถึงโครงการ (Project Access):** เลือกสิทธิ์เข้าถึงทุกโครงการ (All Projects) หรือเลือกเฉพาะโครงการที่ได้รับมอบหมาย (Selected Projects) พร้อมช่องค้นหาโครงการ, ปุ่ม "เลือกทั้งหมด" และ "ล้างการเลือก".
+  - **Dynamic & Live Permission Synchronization with `/roles`:**
+    - ขจัดปัญหาข้อมูลสิทธิ์ไม่ตรงกัน โดยดึงรายการสิทธิ์จาก `role_permissions` ตรงตาม Role ID ที่กำหนดในหน้า `/roles` 100%
+    - บทบาท `ADMIN` แสดงและตรวจสอบสิทธิ์ตาม Permissions Catalog ทั้งหมดในระบบ
+    - บทบาท `SUPERVISOR`, `STAFF`, และบทบาทที่กำหนดขึ้นเอง (Custom Roles) จะแสดงสิทธิ์และจำนวนสิทธิ์ (`X / Y สิทธิ์`) ตรงตามที่ Admin บันทึกไว้ในหน้า `/roles`
+  - **Atomic Database Persistence (`admin_update_user` RPC & Fallback):**
+    - สร้าง Migration 57 (`supabase/migrations/57_enhanced_admin_update_user_rpc.sql`) รองรับการอัปเดต `department`, `must_change_password`, `role_id`, `all_projects`, และ `project_ids` อย่างสมบูรณ์แบบ Transaction
+    - ปรับปรุง Fallback Mode ใน `UserManagement.jsx` ให้บันทึกข้อมูล `department`, `must_change_password`, และ Sync ตาราง `user_project_assignments` ได้ถูกต้องแม้ไม่มี RPC บน Cloud
+  - **AuthContext Role Alias Matching:**
+    - ปรับปรุงการตรวจสอบบทบาทและสิทธิ์ใน `AuthContext.jsx` ให้รองรับ Role Aliases (`STAFF` / `OPERATOR`, `SUPERVISOR`, `ADMIN`) อย่างแม่นยำ
+  - **อัปเกรดเวอร์ชันระบบ (System Version Increment):** ปรับเพิ่มเวอร์ชันแอปพลิเคชันจาก `v1.4.1` เป็น `v1.4.2` (PATCH)
+- **Reason:** ตรวจสอบและแก้ไขหน้าต่าง Edit User ให้ครอบคลุมทุกข้อมูลใน Data Model ของระบบ, โหลดและแสดงสิทธิ์ RBAC ตรงกับ `/roles` จริง 100% โดยไม่มีการ Hardcode และบันทึกข้อมูลลงฐานข้อมูลอย่างปลอดภัย
+
+## [2026-08-30 13:05] สำรองฐานข้อมูล Supabase ฉบับสมบูรณ์ (Full Database Backup & Disaster Recovery Master SQL) พร้อม Auth Schema, Application Data และ DDL (v1.4.1)
+
+- **Modified / Created files:**
+  - `scripts/backup-full-database.mjs`
+  - `backups/backup-2026-08-30T06-04-37-753Z/00_full_schema_ddl.sql` [NEW]
+  - `backups/backup-2026-08-30T06-04-37-753Z/01_auth_schema_and_users.sql` [NEW]
+  - `backups/backup-2026-08-30T06-04-37-753Z/02_data_inserts.sql` [NEW]
+  - `backups/backup-2026-08-30T06-04-37-753Z/03_supabase_full_disaster_recovery.sql` [NEW MASTER DR]
+  - `backups/backup-2026-08-30T06-04-37-753Z/data_all_tables.json` [NEW]
+  - `backups/backup-2026-08-30T06-04-37-753Z/metadata.json` [NEW]
+  - `backups/README.md`
+  - `docs/database-backup-and-disaster-recovery-guide.md`
+  - `docs/supabase-full-database-backup-plan.md` [NEW PLAN]
+  - `src/config/appConfig.js`
+  - `package.json`
+- **Details:**
+  - **Full Database Backup Engine (`scripts/backup-full-database.mjs`):**
+    - อัปเกรดระบบสำรองข้อมูลให้รองรับการดึงและสร้าง Snapshot ครอบคลุมทั้ง DDL, Functions/RPCs, Triggers, Views, RLS, Auth Users และ Application Data
+    - จัดลำดับตารางตาม Foreign Key Dependency Order เพื่อป้องกันปัญหา Foreign Key Violation ตอนนำเข้า
+  - **Auth Schema & Accounts Backup (`01_auth_schema_and_users.sql`):**
+    - สำรองข้อมูลบัญชีผู้ใช้งาน 17 บัญชีจาก `auth.users` และ `auth.identities` พร้อม Password Hashes, Metadata, และ Role Mappings
+  - **Master Single-File Disaster Recovery Script (`03_supabase_full_disaster_recovery.sql`):**
+    - สร้างไฟล์ Master SQL สำหรับการกู้คืนระบบแบบคำสั่งเดียวจบ (Single-Command Restoration) รองรับทั้ง Supabase Cloud, Neon, AWS RDS, หรือ Self-Hosted Docker
+    - ใช้ Transaction ปลอดภัย (`SET session_replication_role = 'replica'`) ทำให้กู้คืนได้รวดเร็วและไม่มีปัญหา Triggers ขัดขวาง
+  - **อัปเกรดเวอร์ชันระบบ (System Version Increment):** ปรับเพิ่มเวอร์ชันแอปพลิเคชันจาก `v1.4.0` เป็น `v1.4.1` (PATCH)
+- **Reason:** สำรองข้อมูลและโครงสร้างระบบฐานข้อมูลทั้งหมด 100% ให้พร้อมสำหรับการกู้คืนระบบฉุกเฉินหรือย้ายฐานข้อมูล (Migration / Disaster Recovery)
+
 ## [2026-08-30 11:45] ยกระดับหน้า Landing Page สู่ดีไซน์พรีเมียม เพิ่ม Interactive Mockup Tabs และ Live Simulator Playground (v1.4.0)
 
 - **Modified / Created files:**
