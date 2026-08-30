@@ -62,6 +62,7 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
 
     try {
       setLoading(true);
+      const matchedRole = availableRoles.find(r => (r.code || '').toUpperCase() === (formData.role || '').toUpperCase()) || null;
       await onSave({
         email: formData.email.trim(),
         full_name: formData.full_name.trim(),
@@ -69,6 +70,7 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
         position: formData.position.trim() || null,
         avatar_url: formData.avatar_url.trim() || null,
         role: formData.role,
+        role_id: matchedRole?.id || null,
         status: formData.status,
         all_projects: formData.access_type === 'all',
         project_ids: formData.access_type === 'selected' ? formData.selected_projects : [],

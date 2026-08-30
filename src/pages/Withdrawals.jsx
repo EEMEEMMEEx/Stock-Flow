@@ -21,8 +21,13 @@ import WithdrawalRejectModal from '@/components/withdrawals/WithdrawalRejectModa
 const Withdrawals = () => {
   const { isAdmin, can, profile } = useAuth();
   
+  const canCreate = isAdmin || can('withdrawals.create');
+  const canApprove = isAdmin || can('withdrawals.approve');
+  const canReject = isAdmin || can('withdrawals.reject');
+  const canComplete = isAdmin || can('withdrawals.complete');
+
   // Navigation Tab: 'pos' (Terminal) | 'orders' (Requisition Tracking)
-  const [activeTab, setActiveTab] = useState('pos');
+  const [activeTab, setActiveTab] = useState(() => (canCreate ? 'pos' : 'orders'));
 
   // Core Data States
   const [orders, setOrders] = useState([]);
@@ -479,7 +484,7 @@ const Withdrawals = () => {
   // Reject Order via Supabase RPC
   const handleRejectSubmit = async (e) => {
     e.preventDefault();
-    if (!isAdmin || !orderToReject || isProcessing) return;
+    if ((!isAdmin && !canReject) || !orderToReject || isProcessing) return;
     if (!rejectReason.trim()) {
       toast.error('กรุณาระบุเหตุผลการปฏิเสธ');
       return;
@@ -689,6 +694,9 @@ const Withdrawals = () => {
           orders={orders}
           loading={loading}
           isAdmin={isAdmin}
+          canApprove={canApprove}
+          canReject={canReject}
+          canComplete={canComplete}
           onOpenPosMode={() => setActiveTab('pos')}
           onViewOrderDetails={viewOrderDetails}
           onDownloadPDF={handleDownloadPDF}
@@ -705,6 +713,9 @@ const Withdrawals = () => {
         order={selectedOrder}
         orderDetails={orderDetails}
         isAdmin={isAdmin}
+        canApprove={canApprove}
+        canReject={canReject}
+        canComplete={canComplete}
         onApproveOrder={(orderId) => {
           handleApproveOrder(orderId);
           setIsDetailsModalOpen(false);

@@ -313,10 +313,10 @@ const Manual = () => {
                   <li>กรอกข้อมูลบัญชี: อีเมล, รหัสผ่าน (มีระบบสุ่มรหัสผ่านอัตโนมัติ), ชื่อ-นามสกุล, เบอร์โทรศัพท์ และตำแหน่งงาน</li>
                   <li><strong className="text-foreground font-semibold">การจัดการรูปโปรไฟล์ (Profile Avatar Upload):</strong>
                     <ul className="list-circle list-inside ml-4 mt-1 space-y-1 text-muted-foreground">
-                      <li>กดปุ่ม <span className="text-primary font-medium">"อัปโหลดรูปโปรไฟล์"</span> เพื่อเลือกไฟล์ภาพจากเครื่อง (รองรับไฟล์ JPG และ PNG ขนาดไม่เกิน 2 MB)</li>
+                      <li>กดปุ่ม <span className="text-primary font-medium">"อัปโหลดรูปโปรไฟล์"</span> เพื่อเลือกไฟล์ภาพจากเครื่อง (รองรับไฟล์ JPG, PNG และ WebP)</li>
                       <li>ระบบจะแสดงตัวอย่างภาพขนาด 56x56 พิกเซลทันที (Immediate Local Preview)</li>
                       <li>หากไม่มีการเลือกรูปภาพ ระบบจะดึงตัวอักษรแรกของชื่อ (Initial Avatar) มาแสดงผลโดยอัตโนมัติ</li>
-                      <li>รูปภาพจะถูกจัดเก็บเข้าสู่ Supabase Storage (`avatars` bucket) โดยอัตโนมัติเมื่อกดบันทึก</li>
+                      <li>รูปภาพจะถูกจัดเก็บเข้าสู่ Cloudflare R2 Object Storage (`avatars` folder) โดยอัตโนมัติเมื่อกดบันทึก</li>
                     </ul>
                   </li>
                   <li>ระบุบทบาท (Role) และสถานะบัญชี (Active / Inactive)</li>

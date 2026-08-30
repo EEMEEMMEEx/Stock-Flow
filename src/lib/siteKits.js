@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase';
 
-// Official BOM Templates definition
+// Official Default BOM Templates definition (Factory Defaults / Fallback)
 export const SITE_BOM_TEMPLATES = [
   {
     category_id: '1d2b2e5d-f8a6-4b73-ad66-bbeb16483dba',
@@ -84,8 +84,14 @@ export const SITE_BOM_TEMPLATES = [
  * (An item can be shared and used in multiple categories)
  */
 function findMatchingItem(items, b) {
-  const bName = (b.name || '').toLowerCase().trim();
-  const bPart = (b.part || '').toLowerCase().trim();
+  // If direct item_id reference is provided, match by ID first
+  if (b.item_id) {
+    const byId = items.find(i => i.id === b.item_id);
+    if (byId) return byId;
+  }
+
+  const bName = (b.name || b.item_name || '').toLowerCase().trim();
+  const bPart = (b.part || b.part_number || '').toLowerCase().trim();
 
   // Priority 1: Specific domain exact / canonical name matching
   const byExactSpecific = items.find(i => {
@@ -141,21 +147,43 @@ function findMatchingItem(items, b) {
 
 /**
  * Fetch real-time site kits availability across all categories and warehouses
+ * Uses database `site_bom_templates` if configured, otherwise falls back to `SITE_BOM_TEMPLATES`.
  * @param {string|null} projectId - Optional project UUID to filter stock by project/location
  * @returns {Promise<Array>} List of category BOM availability objects
  */
 export async function fetchSiteKitsAvailability(projectId = null) {
   try {
-    // 1. Fetch all items (cross-category) and stock balance
-    const [itemsRes, stockRes] = await Promise.all([
+    // 1. Fetch items, stock balance, and dynamic BOM templates from DB
+    const [itemsRes, stockRes, dbTemplatesRes] = await Promise.all([
       supabase.from('items').select('*'),
       projectId 
         ? supabase.from('stock_balance').select('*').eq('project_id', projectId)
-        : supabase.from('stock_balance').select('*')
+        : supabase.from('stock_balance').select('*'),
+      supabase.from('site_bom_templates').select('*').order('po_seq', { ascending: true })
     ]);
 
     const items = itemsRes.data || [];
     const stock = stockRes.data || [];
+    const dbTemplates = dbTemplatesRes.data || [];
+
+    // Group dbTemplates by category_id
+    const dbTemplatesByCat = {};
+    dbTemplates.forEach(t => {
+      if (!dbTemplatesByCat[t.category_id]) {
+        dbTemplatesByCat[t.category_id] = [];
+      }
+      dbTemplatesByCat[t.category_id].push({
+        id: t.id,
+        po: t.po_seq || 1,
+        part: t.part_number || '',
+        name: t.item_name,
+        qty: Number(t.qty_per_site) || 1,
+        unit: t.unit || 'ชิ้น',
+        mandatory: t.is_mandatory !== false,
+        item_id: t.item_id || null,
+        notes: t.notes || ''
+      });
+    });
 
     const stockMap = {};
     stock.forEach(s => {
@@ -168,25 +196,33 @@ export async function fetchSiteKitsAvailability(projectId = null) {
       let minSets = Infinity;
       const itemsDetail = [];
 
-      for (const b of template.bom) {
+      // Prefer DB configured template if available for this category
+      const bomList = (dbTemplatesByCat[template.category_id] && dbTemplatesByCat[template.category_id].length > 0)
+        ? dbTemplatesByCat[template.category_id]
+        : template.bom;
+
+      for (const b of bomList) {
         const match = findMatchingItem(items, b);
         const totalStock = match ? (stockMap[match.id] || 0) : 0;
-        const setsPossible = Math.floor(totalStock / b.qty);
+        const setsPossible = Math.floor(totalStock / (b.qty || 1));
         
         if (b.mandatory && setsPossible < minSets) {
           minSets = setsPossible;
         }
 
         itemsDetail.push({
+          id: b.id,
+          item_id: b.item_id || match?.id || null,
           po_seq: b.po,
-          part_number: b.part,
+          part_number: b.part || (match ? match.sku : ''),
           bom_name: b.name,
           db_matched_name: match ? match.name : '(ยังไม่พบในระบบ)',
           qty_per_site: b.qty,
-          unit: b.unit,
+          unit: b.unit || (match ? match.unit : 'ชิ้น'),
           total_stock: totalStock,
           sets_possible: setsPossible,
-          is_mandatory: b.mandatory,
+          is_mandatory: b.mandatory !== false,
+          notes: b.notes || '',
           missing_for_next_set: Math.max(0, ((minSets === Infinity ? 0 : minSets) + 1) * b.qty - totalStock)
         });
       }
@@ -200,6 +236,7 @@ export async function fetchSiteKitsAvailability(projectId = null) {
         category_name: template.category_name,
         code: template.code,
         complete_sets: minSets,
+        is_customized: !!(dbTemplatesByCat[template.category_id] && dbTemplatesByCat[template.category_id].length > 0),
         bottlenecks: bottleneckItems.map(i => i.bom_name),
         bottleneck_details: bottleneckItems.map(i => 
           `${i.bom_name} (คงเหลือ: ${i.total_stock} ${i.unit}, ใช้: ${i.qty_per_site} ${i.unit}/ไซต์)`
@@ -212,6 +249,138 @@ export async function fetchSiteKitsAvailability(projectId = null) {
     return summaryKPI;
   } catch (error) {
     console.error('Error fetching site kits availability:', error);
+    return [];
+  }
+}
+
+/**
+ * Save / Update category BOM templates
+ * Uses secure RPC `admin_save_category_bom` or fallback to direct table operation with RLS
+ * @param {string} categoryId - Category UUID
+ * @param {Array} bomItems - List of BOM items [{ po_seq, part_number, item_name, item_id, qty_per_site, unit, is_mandatory, notes }]
+ */
+export async function saveCategoryBom(categoryId, bomItems) {
+  if (!categoryId) throw new Error('Category ID is required');
+
+  const formattedItems = bomItems.map((item, idx) => ({
+    po_seq: item.po_seq || idx + 1,
+    part_number: (item.part_number || item.part || '').trim(),
+    item_name: (item.item_name || item.name || '').trim(),
+    item_id: item.item_id || null,
+    qty_per_site: Number(item.qty_per_site || item.qty || 1),
+    unit: (item.unit || 'ชิ้น').trim(),
+    is_mandatory: item.is_mandatory !== false,
+    notes: (item.notes || '').trim()
+  })).filter(i => i.item_name.length > 0);
+
+  // 1. Try atomic PostgreSQL RPC first
+  try {
+    const { data, error } = await supabase.rpc('admin_save_category_bom', {
+      p_category_id: categoryId,
+      p_bom_items: formattedItems
+    });
+
+    if (!error) {
+      return { success: true, data };
+    }
+    console.warn('admin_save_category_bom RPC error, attempting direct table fallback:', error.message);
+  } catch (rpcErr) {
+    console.warn('RPC call failed, attempting direct table operation fallback:', rpcErr);
+  }
+
+  // 2. Direct table operation fallback (Protected by RLS)
+  const { error: deleteErr } = await supabase
+    .from('site_bom_templates')
+    .delete()
+    .eq('category_id', categoryId);
+
+  if (deleteErr) {
+    throw new Error(`Failed to update BOM: ${deleteErr.message}`);
+  }
+
+  if (formattedItems.length > 0) {
+    const rowsToInsert = formattedItems.map(item => ({
+      category_id: categoryId,
+      item_id: item.item_id || null,
+      po_seq: item.po_seq,
+      part_number: item.part_number || null,
+      item_name: item.item_name,
+      qty_per_site: item.qty_per_site,
+      unit: item.unit,
+      is_mandatory: item.is_mandatory,
+      notes: item.notes || null,
+      updated_at: new Date().toISOString()
+    }));
+
+    const { error: insertErr } = await supabase
+      .from('site_bom_templates')
+      .insert(rowsToInsert);
+
+    if (insertErr) {
+      throw new Error(`Failed to insert BOM items: ${insertErr.message}`);
+    }
+  }
+
+  return { success: true };
+}
+
+/**
+ * Reset category BOM to default factory template
+ * @param {string} categoryId - Category UUID
+ */
+export async function resetCategoryBomToDefault(categoryId) {
+  if (!categoryId) throw new Error('Category ID is required');
+
+  const defaultTemplate = SITE_BOM_TEMPLATES.find(t => t.category_id === categoryId);
+  if (!defaultTemplate) {
+    // If not a default category, just delete custom rows
+    const { error } = await supabase
+      .from('site_bom_templates')
+      .delete()
+      .eq('category_id', categoryId);
+    if (error) throw error;
+    return { success: true };
+  }
+
+  // Convert default bom items to standard structure
+  const defaultItems = defaultTemplate.bom.map((b, idx) => ({
+    po_seq: b.po || idx + 1,
+    part_number: b.part || '',
+    item_name: b.name,
+    item_id: null,
+    qty_per_site: b.qty || 1,
+    unit: b.unit || 'ชิ้น',
+    is_mandatory: b.mandatory !== false,
+    notes: ''
+  }));
+
+  return await saveCategoryBom(categoryId, defaultItems);
+}
+
+/**
+ * Fetch all master catalog items for dropdown selection
+ */
+export async function fetchMasterCatalogItems() {
+  try {
+    const [itemsRes, stockRes] = await Promise.all([
+      supabase.from('items').select('id, sku, name, unit, category_id, description').order('name'),
+      supabase.from('stock_balance').select('item_id, balance')
+    ]);
+
+    const items = itemsRes.data || [];
+    const stock = stockRes.data || [];
+
+    const stockMap = {};
+    stock.forEach(s => {
+      stockMap[s.item_id] = (stockMap[s.item_id] || 0) + Number(s.balance || 0);
+    });
+
+    return items.map(item => ({
+      ...item,
+      total_stock: stockMap[item.id] || 0
+    }));
+  } catch (error) {
+    console.error('Error fetching master catalog items:', error);
     return [];
   }
 }

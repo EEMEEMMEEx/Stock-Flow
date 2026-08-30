@@ -39,7 +39,7 @@ const UserActionModal = ({
   const { can } = useAuth();
   
   // RBAC Permission checks
-  const canSuspend = can('users.suspend') || can('users.deactivate') || can('users.update');
+  const canSuspend = can('users.deactivate') || can('users.suspend');
   const canDelete = can('users.delete');
 
   // Step state: 1 = Action overview, 2 = Delete confirmation
@@ -347,7 +347,7 @@ const UserActionModal = ({
                       ไม่อนุญาตให้ลบบัญชีนี้แบบถาวร (Hard Delete Blocked)
                     </div>
                     <p className="text-[11px] leading-relaxed opacity-90">
-                      {integrityBlock.reason} เพื่อรักษาความถูกต้องของข้อมูล audit log และประวัติคลังสินค้า แนะนำให้ใช้การ <strong className="underline">"ระงับการใช้งาน (Suspend)"</strong> แทน
+                      {integrityBlock.reason} เพื่อรักษาความถูกต้องของข้อมูล audit log และประวัติคลังสินค้า แนะนำให้ใช้การ <strong className="underline">&quot;ระงับการใช้งาน (Suspend)&quot;</strong> แทน
                     </p>
                   </div>
                 ) : (

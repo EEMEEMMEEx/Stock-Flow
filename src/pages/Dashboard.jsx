@@ -247,6 +247,9 @@ const Dashboard = () => {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'stock_transactions' }, () => {
         fetchDashboardData(false);
       })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'site_bom_templates' }, () => {
+        fetchDashboardData(false);
+      })
       .subscribe();
 
     // Also auto-refresh when tab gains focus
@@ -388,7 +391,7 @@ const Dashboard = () => {
       </div>
 
       {/* Real-time Site Installation Kits Availability (BOM) */}
-      <SiteKitAvailabilityCards siteKits={siteKits} loading={loading} />
+      <SiteKitAvailabilityCards siteKits={siteKits} loading={loading} onRefresh={() => fetchDashboardData(false)} />
 
       {/* Redesigned Actionable KPI Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">

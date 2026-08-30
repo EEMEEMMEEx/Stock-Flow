@@ -3,7 +3,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from '@/components/ui/button';
 import { 
   FileText, Download, Printer, CheckCircle2, Clock, 
-  AlertTriangle, User, Building2, Calendar, Phone, Layers, RotateCcw
+  AlertTriangle, User, Building2, Calendar, Phone, Layers, RotateCcw,
+  CalendarClock, ArrowRight
 } from 'lucide-react';
 import { pdf } from '@react-pdf/renderer';
 import { MaterialCheckoutPDF, MaterialReturnPDF } from '@/lib/checkout-pdf-templates';
@@ -15,17 +16,41 @@ const CheckoutDetailModal = ({
   isOpen,
   onClose,
   order,
-  onOpenReturnModal
+  canReturn = true,
+  canExtend = true,
+  onOpenReturnModal,
+  onOpenExtendModal
 }) => {
   const [returnLogs, setReturnLogs] = useState([]);
+  const [extensionLogs, setExtensionLogs] = useState([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
   const [generatingPdf, setGeneratingPdf] = useState(false);
 
   useEffect(() => {
     if (order?.id && isOpen) {
       fetchReturnLogs(order.id);
+      fetchExtensionLogs(order.id);
     }
   }, [order?.id, isOpen]);
+
+  const fetchExtensionLogs = async (orderId) => {
+    try {
+      const { data, error } = await supabase
+        .from('checkout_extension_logs')
+        .select(`
+          *,
+          profiles:extended_by (full_name)
+        `)
+        .eq('checkout_order_id', orderId)
+        .order('extended_at', { ascending: false });
+
+      if (!error && data) {
+        setExtensionLogs(data);
+      }
+    } catch (err) {
+      console.warn('Fetch extension logs notice:', err);
+    }
+  };
 
   const fetchReturnLogs = async (orderId) => {
     try {
@@ -258,6 +283,46 @@ const CheckoutDetailModal = ({
               </div>
             </div>
           )}
+
+          {/* Due Date Extension Audit Logs */}
+          {extensionLogs.length > 0 && (
+            <div className="space-y-2 pt-2 border-t border-border/40">
+              <h4 className="text-xs font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+                <CalendarClock className="w-3.5 h-3.5" />
+                <span>ประวัติการขอขยายเวลาส่งคืน ({extensionLogs.length} ครั้ง)</span>
+              </h4>
+
+              <div className="space-y-2">
+                {extensionLogs.map(log => (
+                  <div key={log.id} className="p-2.5 rounded-xl bg-amber-500/5 border border-amber-500/20 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                      <div className="font-semibold text-foreground flex items-center gap-1.5 flex-wrap">
+                        <span className="text-muted-foreground line-through font-mono text-[11px]">
+                          {format(new Date(log.previous_due_date), 'dd/MM/yyyy')}
+                        </span>
+                        <ArrowRight className="w-3 h-3 text-amber-500" />
+                        <span className="font-bold text-amber-700 dark:text-amber-400 font-mono">
+                          {format(new Date(log.new_due_date), 'dd/MM/yyyy')}
+                        </span>
+                        {log.extension_reason && (
+                          <span className="text-muted-foreground font-normal text-[11px]">
+                            — &quot;{log.extension_reason}&quot;
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-[10px] text-muted-foreground mt-0.5">
+                        ขยายเวลาโดย: {log.profiles?.full_name || 'เจ้าหน้าที่'}
+                      </div>
+                    </div>
+
+                    <div className="text-[11px] text-muted-foreground font-mono self-end sm:self-auto">
+                      {format(new Date(log.extended_at), 'dd/MM/yyyy HH:mm น.')}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         <DialogFooter className="gap-2 flex-wrap sm:justify-between border-t border-border/40 pt-3">
@@ -290,7 +355,23 @@ const CheckoutDetailModal = ({
           </div>
 
           <div className="flex items-center gap-2">
-            {remaining > 0 && onOpenReturnModal && (
+            {remaining > 0 && order.status !== 'completed' && onOpenExtendModal && canExtend && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  onClose();
+                  onOpenExtendModal(order);
+                }}
+                className="rounded-xl h-9 border-amber-500/30 text-amber-700 dark:text-amber-400 hover:bg-amber-500/10 text-xs gap-1.5 font-bold shadow-2xs cursor-pointer"
+              >
+                <CalendarClock className="w-3.5 h-3.5" />
+                <span>ขยายเวลาส่งคืน</span>
+              </Button>
+            )}
+
+            {remaining > 0 && onOpenReturnModal && canReturn && (
               <Button
                 type="button"
                 size="sm"

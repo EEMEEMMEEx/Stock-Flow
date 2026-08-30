@@ -11,7 +11,8 @@ const ReportHeader = ({
   onRefresh,
   totalItemsCount = 0,
   loading = false,
-  pdfLoading = false
+  pdfLoading = false,
+  canExport = true
 }) => {
   const tabs = [
     {
@@ -81,26 +82,30 @@ const ReportHeader = ({
             <span className="hidden sm:inline">รีเฟรช</span>
           </Button>
 
-          <Button
-            onClick={onExportPDF}
-            disabled={pdfLoading || loading}
-            variant="outline"
-            size="sm"
-            className="h-9 px-3.5 rounded-xl font-semibold text-xs border-rose-200 dark:border-rose-900/60 text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
-          >
-            <FileText className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
-            <span>{pdfLoading ? 'กำลังสร้าง PDF...' : 'Export PDF'}</span>
-          </Button>
+          {canExport && (
+            <>
+              <Button
+                onClick={onExportPDF}
+                disabled={pdfLoading || loading}
+                variant="outline"
+                size="sm"
+                className="h-9 px-3.5 rounded-xl font-semibold text-xs border-rose-200 dark:border-rose-900/60 text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
+              >
+                <FileText className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
+                <span>{pdfLoading ? 'กำลังสร้าง PDF...' : 'Export PDF'}</span>
+              </Button>
 
-          <Button
-            onClick={onExportExcel}
-            disabled={loading}
-            size="sm"
-            className="h-9 px-3.5 rounded-xl font-semibold text-xs bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white shadow-xs hover:shadow-md shadow-emerald-600/20 flex items-center gap-1.5 transition-all cursor-pointer"
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span>Export Excel</span>
-          </Button>
+              <Button
+                onClick={onExportExcel}
+                disabled={loading}
+                size="sm"
+                className="h-9 px-3.5 rounded-xl font-semibold text-xs bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white shadow-xs hover:shadow-md shadow-emerald-600/20 flex items-center gap-1.5 transition-all cursor-pointer"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Export Excel</span>
+              </Button>
+            </>
+          )}
 
           <Badge variant="outline" className="h-9 px-3 rounded-xl bg-background border-border text-muted-foreground text-xs font-medium flex items-center gap-1.5 ml-auto sm:ml-0">
             <span>ทั้งหมด:</span>

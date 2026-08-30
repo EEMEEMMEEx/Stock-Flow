@@ -13,10 +13,15 @@ import CheckoutPosTerminal from '@/components/checkouts/CheckoutPosTerminal';
 import CheckoutActiveList from '@/components/checkouts/CheckoutActiveList';
 import CheckoutReturnModal from '@/components/checkouts/CheckoutReturnModal';
 import CheckoutDetailModal from '@/components/checkouts/CheckoutDetailModal';
+import CheckoutExtendModal from '@/components/checkouts/CheckoutExtendModal';
 import CheckoutHistoryList from '@/components/checkouts/CheckoutHistoryList';
 
 const Checkouts = () => {
-  const { can, user } = useAuth();
+  const { can, user, isAdmin } = useAuth();
+
+  const canCreate = isAdmin || can('checkouts.create');
+  const canReturn = isAdmin || can('checkouts.return');
+  const canExtend = isAdmin || can('checkouts.extend') || can('checkouts.update');
 
   // Navigation Tabs: 'active' | 'pos' | 'history'
   const [activeTab, setActiveTab] = useState('active');
@@ -31,6 +36,8 @@ const Checkouts = () => {
   // Modal states
   const [selectedOrderForReturn, setSelectedOrderForReturn] = useState(null);
   const [isReturnModalOpen, setIsReturnModalOpen] = useState(false);
+  const [selectedOrderForExtend, setSelectedOrderForExtend] = useState(null);
+  const [isExtendModalOpen, setIsExtendModalOpen] = useState(false);
   const [selectedOrderForDetail, setSelectedOrderForDetail] = useState(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
@@ -111,6 +118,11 @@ const Checkouts = () => {
       )
       .on(
         'postgres_changes',
+        { event: '*', schema: 'public', table: 'checkout_extension_logs' },
+        () => fetchCheckoutData()
+      )
+      .on(
+        'postgres_changes',
         { event: '*', schema: 'public', table: 'stock_transactions' },
         () => fetchCheckoutData()
       )
@@ -131,8 +143,21 @@ const Checkouts = () => {
 
   // Modal triggers
   const handleOpenReturnModal = (order) => {
+    if (!canReturn) {
+      toast.error('คุณไม่มีสิทธิ์ทำรายการรับคืนพัสดุ (ต้องการสิทธิ์ checkouts.return)');
+      return;
+    }
     setSelectedOrderForReturn(order);
     setIsReturnModalOpen(true);
+  };
+
+  const handleOpenExtendModal = (order) => {
+    if (!canExtend) {
+      toast.error('คุณไม่มีสิทธิ์ขยายกำหนดวันส่งคืนพัสดุ (ต้องการสิทธิ์ checkouts.extend)');
+      return;
+    }
+    setSelectedOrderForExtend(order);
+    setIsExtendModalOpen(true);
   };
 
   const handleOpenDetailModal = (order) => {
@@ -158,7 +183,7 @@ const Checkouts = () => {
                 </span>
               </h1>
               <p className="text-xs text-muted-foreground">
-                ควบคุมการยืมเครื่องมือช่าง อุปกรณ์ราคาสูง ติดตามวันส่งคืน และตรวจสอบสภาพความเสียหาย
+                ควบคุมการยืมเครื่องมือช่าง อุปกรณ์ราคาสูง ติดตามวันส่งคืน ขยายกำหนดส่งคืน และตรวจสอบสภาพความเสียหาย
               </p>
             </div>
           </div>
@@ -176,7 +201,7 @@ const Checkouts = () => {
             <span>รีเฟรชข้อมูล</span>
           </Button>
 
-          {activeTab !== 'pos' && can('checkouts.create') && (
+          {activeTab !== 'pos' && canCreate && (
             <Button
               size="sm"
               onClick={() => setActiveTab('pos')}
@@ -208,17 +233,19 @@ const Checkouts = () => {
           )}
         </button>
 
-        <button
-          type="button"
-          onClick={() => setActiveTab('pos')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer select-none ${activeTab === 'pos'
-              ? 'bg-background text-indigo-600 dark:text-indigo-400 shadow-sm'
-              : 'text-muted-foreground hover:text-foreground'
-            }`}
-        >
-          <Plus className="w-3.5 h-3.5" />
-          <span>ขอยืมพัสดุ (Checkout POS)</span>
-        </button>
+        {canCreate && (
+          <button
+            type="button"
+            onClick={() => setActiveTab('pos')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer select-none ${activeTab === 'pos'
+                ? 'bg-background text-indigo-600 dark:text-indigo-400 shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
+              }`}
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>ขอยืมพัสดุ (Checkout POS)</span>
+          </button>
+        )}
 
         <button
           type="button"
@@ -238,7 +265,10 @@ const Checkouts = () => {
         <CheckoutActiveList
           orders={orders}
           loading={loading}
+          canReturn={canReturn}
+          canExtend={canExtend}
           onOpenReturnModal={handleOpenReturnModal}
+          onOpenExtendModal={handleOpenExtendModal}
           onOpenDetailModal={handleOpenDetailModal}
         />
       )}
@@ -277,6 +307,19 @@ const Checkouts = () => {
         }}
       />
 
+      {/* Extend Return Due Date Modal */}
+      <CheckoutExtendModal
+        isOpen={isExtendModalOpen}
+        onClose={() => {
+          setIsExtendModalOpen(false);
+          setSelectedOrderForExtend(null);
+        }}
+        order={selectedOrderForExtend}
+        onExtendSuccess={() => {
+          fetchCheckoutData();
+        }}
+      />
+
       {/* Detail & Print Modal */}
       <CheckoutDetailModal
         isOpen={isDetailModalOpen}
@@ -285,7 +328,10 @@ const Checkouts = () => {
           setSelectedOrderForDetail(null);
         }}
         order={selectedOrderForDetail}
+        canReturn={canReturn}
+        canExtend={canExtend}
         onOpenReturnModal={handleOpenReturnModal}
+        onOpenExtendModal={handleOpenExtendModal}
       />
     </div>
   );

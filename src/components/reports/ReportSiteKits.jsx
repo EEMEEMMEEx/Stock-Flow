@@ -12,6 +12,7 @@ import BaseStationTowerIcon from '@/components/icons/BaseStationTowerIcon';
 import { utils, writeFile } from 'xlsx';
 import toast from 'react-hot-toast';
 import { fetchSiteKitsAvailability } from '@/lib/siteKits';
+import { useAuth } from '@/contexts/AuthContext';
 
 const CATEGORY_ICONS = {
   '1d2b2e5d-f8a6-4b73-ad66-bbeb16483dba': MicrowaveAntennaIcon,
@@ -21,6 +22,8 @@ const CATEGORY_ICONS = {
 };
 
 const ReportSiteKits = ({ projects = [] }) => {
+  const { can, isAdmin } = useAuth();
+  const canExport = isAdmin || can('reports.export');
   const [selectedProjectId, setSelectedProjectId] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
@@ -80,6 +83,10 @@ const ReportSiteKits = ({ projects = [] }) => {
   }, [siteKits, selectedCategoryId, searchTerm]);
 
   const handleExportExcel = () => {
+    if (!canExport) {
+      toast.error('คุณไม่มีสิทธิ์ส่งออกรายงาน Excel (ต้องการสิทธิ์ reports.export)');
+      return;
+    }
     try {
       const exportData = filteredItems.map((item, index) => ({
         'ลำดับ': index + 1,
@@ -119,6 +126,10 @@ const ReportSiteKits = ({ projects = [] }) => {
   };
 
   const handleExportPDF = async () => {
+    if (!canExport) {
+      toast.error('คุณไม่มีสิทธิ์ส่งออกรายงาน PDF (ต้องการสิทธิ์ reports.export)');
+      return;
+    }
     try {
       setPdfLoading(true);
       const toastId = toast.loading('กำลังสร้างไฟล์ PDF รายงาน Site Kits BOM...');
@@ -241,26 +252,30 @@ const ReportSiteKits = ({ projects = [] }) => {
             <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin text-emerald-600' : ''}`} />
           </Button>
 
-          <Button
-            type="button"
-            onClick={handleExportPDF}
-            disabled={pdfLoading || loading}
-            variant="outline"
-            size="sm"
-            className="h-9 px-3.5 rounded-xl font-semibold text-xs border-rose-200 dark:border-rose-900/60 text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
-          >
-            <FileText className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
-            <span>{pdfLoading ? 'กำลังสร้าง PDF...' : 'Export PDF'}</span>
-          </Button>
+          {canExport && (
+            <>
+              <Button
+                type="button"
+                onClick={handleExportPDF}
+                disabled={pdfLoading || loading}
+                variant="outline"
+                size="sm"
+                className="h-9 px-3.5 rounded-xl font-semibold text-xs border-rose-200 dark:border-rose-900/60 text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
+              >
+                <FileText className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
+                <span>{pdfLoading ? 'กำลังสร้าง PDF...' : 'Export PDF'}</span>
+              </Button>
 
-          <Button
-            type="button"
-            onClick={handleExportExcel}
-            className="h-9 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold gap-1.5 shadow-xs cursor-pointer"
-          >
-            <FileSpreadsheet className="w-3.5 h-3.5" />
-            <span>Export Excel</span>
-          </Button>
+              <Button
+                type="button"
+                onClick={handleExportExcel}
+                className="h-9 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold gap-1.5 shadow-xs cursor-pointer"
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5" />
+                <span>Export Excel</span>
+              </Button>
+            </>
+          )}
         </div>
       </div>
 

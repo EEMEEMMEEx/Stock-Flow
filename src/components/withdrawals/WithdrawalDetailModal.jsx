@@ -14,6 +14,9 @@ const WithdrawalDetailModal = ({
   isOpen,
   onClose,
   isAdmin = false,
+  canApprove = false,
+  canReject = false,
+  canComplete = false,
   onApproveOrder,
   onOpenRejectModal,
   onCompleteOrder,
@@ -257,29 +260,33 @@ const WithdrawalDetailModal = ({
           </Button>
 
           <div className="flex items-center gap-2">
-            {isAdmin && isPending && (
+            {isPending && (
               <>
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="sm"
-                  className="rounded-xl text-xs font-bold cursor-pointer h-10"
-                  onClick={() => onOpenRejectModal(order)}
-                >
-                  ปฏิเสธคำขอ
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  className="rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer h-10 shadow-sm"
-                  onClick={() => onApproveOrder(order.id)}
-                >
-                  อนุมัติบิลนี้
-                </Button>
+                {(canReject || isAdmin) && (
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    className="rounded-xl text-xs font-bold cursor-pointer h-10"
+                    onClick={() => onOpenRejectModal(order)}
+                  >
+                    ปฏิเสธคำขอ
+                  </Button>
+                )}
+                {(canApprove || isAdmin) && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    className="rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer h-10 shadow-sm"
+                    onClick={() => onApproveOrder(order.id)}
+                  >
+                    อนุมัติบิลนี้
+                  </Button>
+                )}
               </>
             )}
 
-            {isApproved && (
+            {isApproved && (canComplete || isAdmin) && (
               <Button
                 type="button"
                 size="sm"

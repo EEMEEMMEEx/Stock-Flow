@@ -62,7 +62,9 @@ const UserManagement = () => {
     try {
       const { data } = await supabase.from('roles').select('id, code, name, description').eq('is_active', true);
       setDbRoles(data || []);
-    } catch (e) {}
+    } catch (e) {
+      console.warn('fetchDbRoles error:', e);
+    }
   };
 
 
@@ -160,6 +162,10 @@ const UserManagement = () => {
       }
       if (data?.success) {
         const newUserId = data.user_id;
+        // Sync role_id on profiles
+        if (newUserId && userPayload.role_id) {
+          await supabase.from('profiles').update({ role_id: userPayload.role_id }).eq('id', newUserId);
+        }
         // Upload avatar image if selected during user creation
         if (userPayload.avatar_file && newUserId) {
           const publicUrl = await uploadAvatarImage(newUserId, userPayload.avatar_file);
@@ -239,11 +245,13 @@ const UserManagement = () => {
 
       if (error) {
         // Fallback to direct update on profiles
+        const matchedRoleId = userPayload.role_id || dbRoles.find(r => r.code === (userPayload.role || '').toUpperCase())?.id || null;
         const { error: profileErr } = await supabase
           .from('profiles')
           .update({
             full_name: userPayload.full_name,
             role: userPayload.role,
+            role_id: matchedRoleId,
             status: userPayload.status,
             phone: userPayload.phone,
             position: userPayload.position,
@@ -541,13 +549,13 @@ const UserManagement = () => {
                     const canEditUser = isAdmin || can('users.update');
                     const canResendInvite = isAdmin || can('users.create');
                     const canResetPassword = isAdmin || can('users.reset_password');
-                    const canDeactivate = (isAdmin || can('users.deactivate') || can('users.update')) && !isSelf && !isLastActiveAdmin;
+                    const canDeactivate = (isAdmin || can('users.deactivate')) && !isSelf && !isLastActiveAdmin;
                     const canDeleteUser = (isAdmin || can('users.delete')) && !isSelf && !isLastActiveAdmin;
 
                     const getDeactivateTitle = () => {
                       if (isSelf) return 'ไม่สามารถระงับการใช้งานบัญชีของตนเองได้';
                       if (isLastActiveAdmin) return 'ไม่สามารถระงับบัญชี Administrator คนสุดท้ายของระบบได้';
-                      if (!isAdmin && !can('users.deactivate') && !can('users.update')) return 'ไม่มีสิทธิ์ระงับการใช้งานบัญชี (ต้องการสิทธิ์ users.deactivate)';
+                      if (!isAdmin && !can('users.deactivate')) return 'ไม่มีสิทธิ์ระงับการใช้งานบัญชี (ต้องการสิทธิ์ users.deactivate)';
                       return u.status === 'active' ? 'ระงับการใช้งานบัญชี (Deactivate)' : 'เปิดใช้งานบัญชี (Activate)';
                     };
 

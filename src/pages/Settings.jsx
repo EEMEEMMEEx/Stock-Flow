@@ -925,7 +925,7 @@ const Settings = () => {
             <Database className="w-5 h-5 text-cyan-600" />
             <div>
               <CardTitle className="text-base font-bold">5. สถานะการจัดเก็บข้อมูล (Storage Status)</CardTitle>
-              <CardDescription className="text-xs">สถานะของ Supabase Storage และนโยบายการจัดเก็บรูปโปรไฟล์</CardDescription>
+              <CardDescription className="text-xs">สถานะของ Cloudflare R2 Object Storage และนโยบายการจัดเก็บไฟล์ภาพ</CardDescription>
             </div>
           </div>
           {openSections.storage ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
@@ -936,17 +936,17 @@ const Settings = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div className="p-3 rounded-xl neu-pressed-sm space-y-1">
                 <span className="text-muted-foreground text-[11px] block">Provider</span>
-                <span className="font-bold text-sm text-foreground">Supabase Storage</span>
+                <span className="font-bold text-sm text-foreground">Cloudflare R2 (S3 API)</span>
               </div>
 
               <div className="p-3 rounded-xl neu-pressed-sm space-y-1">
                 <span className="text-muted-foreground text-[11px] block">Bucket ชื่อ</span>
-                <span className="font-bold text-sm text-primary font-mono">avatars (Public)</span>
+                <span className="font-bold text-sm text-primary font-mono">stockflow-assets</span>
               </div>
 
               <div className="p-3 rounded-xl neu-pressed-sm space-y-1">
                 <span className="text-muted-foreground text-[11px] block">ขนาดไฟล์สูงสุด</span>
-                <span className="font-bold text-sm text-emerald-600 dark:text-emerald-400">2 MB (JPG / PNG)</span>
+                <span className="font-bold text-sm text-emerald-600 dark:text-emerald-400">5 MB (JPG / PNG / WebP)</span>
               </div>
             </div>
           </CardContent>

@@ -45,71 +45,93 @@ const RoleManagement = () => {
 
   const fetchRoles = async () => {
     try {
-      const { data, error } = await supabase.rpc('admin_get_roles_with_stats');
-      if (!error && data) {
-        setRoles(data);
-        setRpcMissing(false);
+      // 1. Fetch roles, profiles, and role_permissions in parallel
+      let rolesData = [];
+      let isRpcActive = false;
+
+      try {
+        const { data, error } = await supabase.rpc('admin_get_roles_with_stats');
+        if (!error && Array.isArray(data) && data.length > 0) {
+          rolesData = data;
+          isRpcActive = true;
+        }
+      } catch (err) {
+        console.warn('RPC admin_get_roles_with_stats not found or error:', err);
+      }
+
+      // If RPC didn't return roles, query roles table directly
+      if (rolesData.length === 0) {
+        const { data: directRoles } = await supabase
+          .from('roles')
+          .select('*')
+          .order('is_system', { ascending: false });
+        rolesData = directRoles || [];
+      }
+
+      setRpcMissing(!isRpcActive);
+
+      // Fetch live profiles and role_permissions for accurate counts & self-healing
+      const [profilesRes, rpRes] = await Promise.all([
+        supabase.from('profiles').select('id, role, role_id'),
+        supabase.from('role_permissions').select('role_id, permission_id')
+      ]);
+
+      const profilesList = profilesRes.data || [];
+      const rpList = rpRes.data || [];
+
+      if (!rolesData || rolesData.length === 0) {
+        setRoles([]);
         return;
       }
-    } catch (err) {
-      console.warn('RPC admin_get_roles_with_stats not found, using fallback query:', err);
+
+      // Helper function to check if a user belongs to a role
+      const matchesRole = (userProfile, roleRecord) => {
+        if (!userProfile || !roleRecord) return false;
+        if (userProfile.role_id && userProfile.role_id === roleRecord.id) return true;
+
+        const userRole = (userProfile.role || '').toUpperCase().trim();
+        const roleCode = (roleRecord.code || '').toUpperCase().trim();
+
+        if (userRole === roleCode) return true;
+        if ((roleCode === 'STAFF' || roleCode === 'OPERATOR') && ['STAFF', 'OPERATOR', 'REQUESTER'].includes(userRole)) return true;
+        if (roleCode === 'SUPERVISOR' && ['SUPERVISOR', 'APPROVER', 'MANAGER'].includes(userRole)) return true;
+        if (roleCode === 'ADMIN' && ['ADMIN', 'ADMINISTRATOR'].includes(userRole)) return true;
+        return false;
+      };
+
+      // 2. Map and compute exact real-time user_count and permission_count
+      const reconciledRoles = rolesData.map(r => {
+        const uCount = profilesList.filter(p => matchesRole(p, r)).length;
+        const livePermCount = rpList.filter(rp => rp.role_id === r.id).length;
+        const pCount = livePermCount > 0 ? livePermCount : (r.permission_count || 0);
+
+        return {
+          ...r,
+          user_count: uCount,
+          permission_count: pCount
+        };
+      });
+
+      setRoles(reconciledRoles);
+
+      // 3. Self-healing: Auto-link missing role_id on profiles in background
+      const unlinkedProfiles = profilesList.filter(p => !p.role_id);
+      if (unlinkedProfiles.length > 0 && rolesData.length > 0) {
+        unlinkedProfiles.forEach(async (p) => {
+          const matchedRole = rolesData.find(r => matchesRole(p, r));
+          if (matchedRole?.id) {
+            try {
+              await supabase.from('profiles').update({ role_id: matchedRole.id }).eq('id', p.id);
+            } catch (healErr) {
+              console.warn('Profile role_id auto-heal notice:', healErr);
+            }
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching and reconciling roles:', error);
+      toast.error('เกิดข้อผิดพลาดในการโหลดข้อมูลบทบาท');
     }
-
-    // Fallback query if migration 09 not yet executed
-    setRpcMissing(true);
-    const { data: rolesData, error: rolesErr } = await supabase
-      .from('roles')
-      .select('*')
-      .order('is_system', { ascending: false });
-
-    if (rolesErr || !rolesData) {
-      // Hardcoded fallback baseline if roles table doesn't exist yet
-      setRoles([
-        {
-          id: 'system-admin',
-          code: 'ADMIN',
-          name: 'ผู้ดูแลระบบ (Administrator)',
-          description: 'สิทธิ์สูงสุด บริหารจัดการผู้ใช้งาน บทบาท สต็อก และโครงการทั้งหมด',
-          badge_background: 'bg-purple-100 dark:bg-purple-950',
-          badge_text_color: 'text-purple-700 dark:text-purple-300',
-          is_system: true,
-          is_active: true,
-          user_count: 1,
-          permission_count: 30
-        },
-        {
-          id: 'system-staff',
-          code: 'STAFF',
-          name: 'เจ้าหน้าที่ / ผู้ขอเบิก (Staff)',
-          description: 'สามารถขอเบิกจ่ายวัสดุ และดูข้อมูลสต็อกเฉพาะโครงการที่ได้รับมอบหมาย',
-          badge_background: 'bg-blue-100 dark:bg-blue-950',
-          badge_text_color: 'text-blue-700 dark:text-blue-300',
-          is_system: true,
-          is_active: true,
-          user_count: 2,
-          permission_count: 7
-        },
-        {
-          id: 'system-supervisor',
-          code: 'SUPERVISOR',
-          name: 'ผู้จัดการ / ผู้อนุมัติ (Supervisor)',
-          description: 'สามารถตรวจสอบ อนุมัติการเบิกจ่าย และดูรายงานระดับโครงการ',
-          badge_background: 'bg-emerald-100 dark:bg-emerald-950',
-          badge_text_color: 'text-emerald-700 dark:text-emerald-300',
-          is_system: true,
-          is_active: true,
-          user_count: 0,
-          permission_count: 11
-        }
-      ]);
-      return;
-    }
-
-    setRoles(rolesData.map(r => ({
-      ...r,
-      user_count: r.user_count || 0,
-      permission_count: r.permission_count || 0
-    })));
   };
 
   const fetchCatalog = async () => {
@@ -119,7 +141,9 @@ const RoleManagement = () => {
         setCatalog(data);
         return;
       }
-    } catch (e) {}
+    } catch (e) {
+      console.warn('admin_get_permissions_catalog RPC error:', e);
+    }
 
     // Fallback catalog query
     const { data: perms } = await supabase.from('permissions').select('*').order('category');
@@ -130,10 +154,10 @@ const RoleManagement = () => {
     try {
       setSelectedRoleForPerms(roleObj);
       const { data, error } = await supabase.rpc('admin_get_role_permissions', { p_role_id: roleObj.id });
-      if (!error && data) {
+      if (!error && Array.isArray(data)) {
         setCurrentRolePermissions(data);
       } else {
-        // Fallback fetch role_permissions
+        // Fallback fetch role_permissions table directly
         const { data: rpData } = await supabase
           .from('role_permissions')
           .select('permission_id')
@@ -148,24 +172,46 @@ const RoleManagement = () => {
 
   const handleSaveRolePermissions = async (roleId, permissionIds) => {
     try {
-      const { data, error } = await supabase.rpc('admin_save_role_permissions', {
-        p_role_id: roleId,
-        p_permission_ids: permissionIds
-      });
-
-      if (error) {
-        if (error.code === 'PGRST202' || error.status === 404) {
-          toast.error('กรุณารันสคริปต์ Migration 09 ใน Supabase SQL Editor เพื่อบันทึกสิทธิ์บทบาท');
-          return;
+      // 1. Try atomic PostgreSQL RPC first
+      let rpcSuccess = false;
+      try {
+        const { data, error } = await supabase.rpc('admin_save_role_permissions', {
+          p_role_id: roleId,
+          p_permission_ids: permissionIds
+        });
+        if (!error && data?.success) {
+          rpcSuccess = true;
         }
-        throw error;
+      } catch (e) {
+        console.warn('admin_save_role_permissions RPC failed, attempting direct table fallback:', e);
       }
 
-      if (data?.success) {
-        toast.success('บันทึกการกำหนดสิทธิ์เรียบร้อยแล้ว');
-        await fetchRoles();
-        await refreshProfile();
+      // 2. Direct database table fallback (Protected by RLS)
+      if (!rpcSuccess) {
+        const { error: delErr } = await supabase
+          .from('role_permissions')
+          .delete()
+          .eq('role_id', roleId);
+
+        if (delErr) throw delErr;
+
+        if (permissionIds.length > 0) {
+          const insertPayload = permissionIds.map(pid => ({
+            role_id: roleId,
+            permission_id: pid
+          }));
+
+          const { error: insErr } = await supabase
+            .from('role_permissions')
+            .insert(insertPayload);
+
+          if (insErr) throw insErr;
+        }
       }
+
+      toast.success('บันทึกการกำหนดสิทธิ์เรียบร้อยแล้ว');
+      await fetchRoles();
+      await refreshProfile();
     } catch (error) {
       console.error('Save Role Permissions Error:', error);
       toast.error(error.message || 'เกิดข้อผิดพลาดในการบันทึกสิทธิ์');

@@ -405,6 +405,10 @@ const Items = () => {
   };
 
   const openEditDialog = (item) => {
+    if (!can('items.update')) {
+      toast.error('คุณไม่มีสิทธิ์แก้ไขข้อมูลวัสดุ (ต้องการสิทธิ์ items.update)');
+      return;
+    }
     setSelectedItem(item);
     setFormData({ 
       name: item.name, 
@@ -419,12 +423,20 @@ const Items = () => {
   };
 
   const openDeleteDialog = (item) => {
+    if (!can('items.delete')) {
+      toast.error('คุณไม่มีสิทธิ์ลบรายการวัสดุ (ต้องการสิทธิ์ items.delete)');
+      return;
+    }
     setSelectedItem(item);
     setHasTransactionConflict(false);
     setIsDeleteOpen(true);
   };
 
   const openTransferDialog = (item) => {
+    if (!can('items.transfer')) {
+      toast.error('คุณไม่มีสิทธิ์โอนย้ายสต็อกวัสดุ (ต้องการสิทธิ์ items.transfer)');
+      return;
+    }
     setItemToTransfer(item);
     setIsTransferOpen(true);
   };
@@ -800,7 +812,7 @@ const Items = () => {
                       {/* Actions */}
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-1">
-                          {(can('items.transfer') || can('items.update') || can('stock_in.create')) && (
+                          {can('items.transfer') && (
                             <Button 
                               variant="ghost" 
                               size="icon" 
@@ -923,7 +935,7 @@ const Items = () => {
                   </div>
 
                   <div className="flex items-center gap-1">
-                    {(can('items.transfer') || can('items.update') || can('stock_in.create')) && (
+                    {can('items.transfer') && (
                       <Button 
                         variant="ghost" 
                         size="icon" 

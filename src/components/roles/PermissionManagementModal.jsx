@@ -18,6 +18,7 @@ const PERMISSION_DEPENDENCIES = {
   'withdrawals.complete': ['withdrawals.view'],
   'checkouts.create': ['checkouts.view'],
   'checkouts.return': ['checkouts.view'],
+  'checkouts.extend': ['checkouts.view'],
   'reports.export': ['reports.view'],
   'users.create': ['users.view'],
   'users.update': ['users.view'],

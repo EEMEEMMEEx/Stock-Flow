@@ -68,6 +68,7 @@ const EditUserModal = ({ isOpen, onClose, onSave, user, projects = [], roles = [
 
     try {
       setLoading(true);
+      const matchedRole = roles.find(r => (r.code || '').toUpperCase() === (formData.role || '').toUpperCase()) || null;
       await onSave(user.id, {
         full_name: formData.full_name.trim(),
         phone: formData.phone.trim() || null,
@@ -76,6 +77,7 @@ const EditUserModal = ({ isOpen, onClose, onSave, user, projects = [], roles = [
         avatar_file: formData.avatar_file,
         avatar_removed: formData.avatar_removed,
         role: formData.role,
+        role_id: matchedRole?.id || null,
         status: formData.status,
         all_projects: formData.access_type === 'all',
         project_ids: formData.access_type === 'selected' ? formData.selected_projects : []

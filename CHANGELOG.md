@@ -1,5 +1,119 @@
 # Changelog
 
+## [2026-08-30 10:10] เพิ่มฟีเจอร์ขยายกำหนดวันส่งคืนพัสดุ (Return Due Date Extension) ในระบบยืม-คืนเครื่องมือ พร้อม Audit Log และการควบคุมสิทธิ์ RBAC (v1.2.0)
+
+- **Modified / Created files:**
+  - `supabase/migrations/55_checkout_due_date_extension.sql` [NEW MIGRATION]
+  - `src/components/checkouts/CheckoutExtendModal.jsx` [NEW COMPONENT]
+  - `src/components/checkouts/CheckoutActiveList.jsx`
+  - `src/components/checkouts/CheckoutDetailModal.jsx`
+  - `src/pages/Checkouts.jsx`
+  - `src/contexts/AuthContext.jsx`
+  - `src/components/roles/PermissionManagementModal.jsx`
+  - `docs/return-due-date-extension-plan.md` [NEW PLAN]
+  - `package.json`
+  - `src/config/appConfig.js`
+- **Details:**
+  - **ฟีเจอร์ขยายกำหนดวันส่งคืนพัสดุ (`CheckoutExtendModal.jsx`):**
+    - เพิ่มหน้าต่าง Modal สำหรับขยายกำหนดวันส่งคืนของรายการยืมคงค้าง (Active Loans)
+    - มีการตรวจสอบ Validation ป้องกันการเลือกวันย้อนหลังหรือวันเดิม (ต้องมากกว่ากำหนดคืนปัจจุบันเสมอ)
+    - มีปุ่มลัดขยายเวลาด่วน (+3 วัน, +7 วัน, +14 วัน, +30 วัน)
+    - มี Realtime Preview แสดงจำนวนวันที่ขยายเพิ่ม และการพยากรณ์สถานะคำสั่งยืมใหม่ (Normal / Due Soon / Overdue)
+    - มีช่องระบุเหตุผลการขอขยายเวลา (Extension Reason)
+  - **การคำนวณสถานะใหม่แบบอัตโนมัติ (Status Recalculation):**
+    - เมื่อขยายวันส่งคืน รายการที่เคยเกินกำหนด (Overdue) หากขยายไปในอนาคตจะเปลี่ยนสถานะเป็นปกติ (Active/Normal) และการ์ด KPI ด้านบนจะอัปเดตยอดทันที
+  - **ระบบ Audit Trail & ประวัติการขยายเวลา (`checkout_extension_logs`):**
+    - สร้างตาราง `checkout_extension_logs` เก็บประวัติการขยายเวลาทุกครั้ง (วันเดิม, วันใหม่, เหตุผล, ผู้ขยาย, วันที่ขยาย)
+    - แสดงกล่องประวัติการขยายเวลา (Extension History) ในหน้าต่างรายละเอียดใบยืม (`CheckoutDetailModal.jsx`)
+  - **การควบคุมสิทธิ์ RBAC (`checkouts.extend`):**
+    - เพิ่มสิทธิ์ `checkouts.extend` ใน Canonical Permissions และระบบ Matrix สิทธิ์
+    - จำกัดปุ่มและการเรียกใช้งานเฉพาะผู้ใช้ที่มีสิทธิ์ `checkouts.extend` หรือ `checkouts.update` หรือ Admin
+  - **ความปลอดภัยระดับฐานข้อมูล & Atomic RPC:**
+    - สร้าง Stored Procedure / RPC `extend_checkout_due_date` แบบ `SECURITY DEFINER` ตรวจสอบสิทธิ์ผู้เรียกใช้และอัปเดตข้อมูลพร้อมบันทึก Log ใน Transaction เดียว
+  - **อัปเกรดเวอร์ชันระบบ (System Version Increment):** ปรับเพิ่มเวอร์ชันแอปพลิเคชันจาก `v1.1.1` เป็น `v1.2.0` (MINOR Feature)
+- **Reason:** อำนวยความสะดวกในการบริหารจัดการงานยืมพัสดุและเครื่องมือ เมื่อไซต์งานต้องการขยายระยะเวลาใช้งานโดยไม่จำเป็นต้องปิดใบยืมเดิมและสร้างใหม่ พร้อมมีบันทึกประวัติการขยายเวลาที่ตรวจสอบได้
+
+## [2026-08-30 09:45] การตรวจสอบและแก้ไขระบบ Role & Permission Management (RBAC) แบบครบวงจร (v1.1.1)
+
+- **Modified / Created files:**
+  - `src/contexts/AuthContext.jsx`
+  - `src/pages/RoleManagement.jsx`
+  - `src/pages/UserManagement.jsx`
+  - `src/components/users/AddUserModal.jsx`
+  - `src/components/users/EditUserModal.jsx`
+  - `src/components/users/UserActionModal.jsx`
+  - `src/pages/Withdrawals.jsx`
+  - `src/components/withdrawals/WithdrawalOrdersList.jsx`
+  - `src/components/withdrawals/WithdrawalDetailModal.jsx`
+  - `src/pages/Checkouts.jsx`
+  - `src/components/checkouts/CheckoutActiveList.jsx`
+  - `src/components/checkouts/CheckoutDetailModal.jsx`
+  - `src/pages/Items.jsx`
+  - `src/pages/Reports.jsx`
+  - `src/components/reports/ReportHeader.jsx`
+  - `src/components/reports/ReportSiteKits.jsx`
+  - `docs/rbac-system-audit-and-fix-plan.md` [NEW PLAN]
+  - `package.json`
+  - `src/config/appConfig.js`
+- **Details:**
+  - **แก้ไข Root Cause ใน `AuthContext.jsx`:**
+    - แก้ไขเงื่อนไข `data.length > 0` ที่ทำให้เมื่อมีการปิดสิทธิ์ทั้งหมดหรือปรับแต่งสิทธิ์ในระบบ ระบบดีดกลับไปใช้สิทธิ์เริ่มต้นแบบ Hardcoded
+    - เพิ่มระบบดึงสิทธิ์ตรงจากตาราง `role_permissions` join `permissions` แบบ Realtime แม้ RPC จะไม่พร้อมใช้งาน
+    - ซิงค์ `role_id` เข้ากับข้อมูลโปรไฟล์ผู้ใช้งานทุกครั้งที่ล็อกอิน
+  - **ปรับปรุง `RoleManagement.jsx`:**
+    - เพิ่ม Fallback ในการบันทึกสิทธิ์ (`role_permissions` upsert) โดยตรงผ่าน Supabase Client พร้อม RLS Security
+    - คำนวณจำนวนผู้ใช้งานต่อบทบาท (`user_count`) โดยจับคู่ทั้ง `role_id` และ `role` code
+  - **ซิงค์ `role_id` ใน User Management (`UserManagement.jsx`, `AddUserModal.jsx`, `EditUserModal.jsx`):**
+    - บันทึกทั้ง `role` (string) และ `role_id` (UUID) ทุกครั้งที่มีการสร้างหรือแก้ไขผู้ใช้งาน เพื่อให้สถิติตารางบทบาทและตารางสิทธิ์เชื่อมโยงกันอย่างสมบูรณ์
+  - **บังคับใช้สิทธิ์จริงในส่วนการดำเนินงาน (End-to-End Operational RBAC Enforcement):**
+    - **Withdrawals (เบิกจ่าย):** เปลี่ยนจากการเช็ค `isAdmin` แบบ Hardcoded เป็นการเช็คสิทธิ์ `withdrawals.approve`, `withdrawals.reject`, `withdrawals.complete`, และ `withdrawals.create` ทำให้ Supervisor สามารถอนุมัติหรือปฏิเสธคำขอได้ตามสิทธิ์ที่ได้รับ และเมื่อปิดสิทธิ์ ปุ่มจะหายไปทันที
+    - **Checkouts (ยืม-คืน):** ควบคุมการเปิดแท็บ POS ยืมพัสดุด้วย `checkouts.create` และปุ่มรับคืนพัสดุด้วย `checkouts.return`
+    - **Items (รายการวัสดุ):** เช็คสิทธิ์ `items.transfer` แบบเข้มงวดสำหรับการโอนย้ายสถานที่จัดเก็บคลัง
+    - **Reports (รายงาน):** ควบคุมการส่งออกไฟล์ Excel และ PDF ด้วยสิทธิ์ `reports.export`
+  - **อัปเกรดเวอร์ชันระบบ (System Version Increment):** ปรับเพิ่มเวอร์ชันแอปพลิเคชันจาก `v1.1.0` เป็น `v1.1.1` (PATCH)
+- **Reason:** แก้ไขปัญหาระบบกำหนดสิทธิ์ (RBAC) ไม่บังคับใช้จริงในแอปพลิเคชัน และเปิดให้ Supervisor / Staff ทำงานตามสิทธิ์ที่ตั้งค่าไว้ได้อย่างถูกต้อง
+
+## [2026-08-30 09:15] ระบบแก้ไขสเปกรายการ BOM แยกหมวดหมู่ พร้อมการควบคุมสิทธิ์ RBAC และความปลอดภัยระดับฐานข้อมูล (v1.1.0)
+
+- **Modified / Created files:**
+  - `supabase/migrations/53_editable_bom_selection_rbac.sql` [NEW MIGRATION]
+  - `src/lib/siteKits.js`
+  - `src/components/dashboard/SiteKitAvailabilityCards.jsx`
+  - `src/pages/Dashboard.jsx`
+  - `docs/bom-selection-rbac-implementation-plan.md` [NEW PLAN]
+  - `package.json`
+  - `src/config/appConfig.js`
+- **Details:**
+  - **ระบบสเปก BOM ไดนามิกจากฐานข้อมูล (`site_bom_templates`):** ปรับปรุง `src/lib/siteKits.js` ให้โหลดรายการ BOM จากฐานข้อมูล Supabase ตาราง `public.site_bom_templates` โดยอัตโนมัติ พร้อมระบบ Fallback ไปยังค่าเริ่มต้นมาตรฐานเมื่อยังไม่มีการปรับแต่ง
+  - **UI ควบคุมสำหรับ Admin (Admin Editable BOM Modal):** เพิ่มโหมดแก้ไขสเปก BOM ใน `SiteKitAvailabilityCards.jsx` ที่ให้ Admin สามารถ:
+    - เลือกวัสดุจาก Master Catalog (`items` table) พร้อมแสดง SKU, หน่วยนับ และยอดสต็อกคงเหลือปัจจุบัน
+    - ปรับแก้ Part Number, ชื่อวัสดุ, สเปกจำนวนที่ใช้ต่อไซต์ (`qty_per_site`), หน่วยนับ (`unit`)
+    - สลับสถานะความจำเป็นต่อชุด (`is_mandatory`)
+    - เพิ่ม/ลบรายการอุปกรณ์ใน BOM
+    - คืนค่ามาตรฐานโรงงาน (Reset Default) หรือบันทึกการเปลี่ยนแปลง (Save BOM)
+  - **การควบคุมสิทธิ์แบบ RBAC (Frontend Level):** ตรวจสอบสิทธิ์ผ่าน `useAuth()` (`isAdmin`) โดยซ่อนปุ่มและส่วนควบคุมการแก้ไขทั้งหมดสำหรับผู้ใช้ทั่วไป (Staff / Operator / Supervisor) ให้ดูข้อมูลได้แบบ Read-Only เท่านั้น
+  - **ความปลอดภัยระดับฐานข้อมูล (Database / Backend Security Level):**
+    - กำหนด Row Level Security (RLS) บนตาราง `site_bom_templates` ให้ `SELECT` ได้ทุกคน แต่จำกัด `INSERT`, `UPDATE`, `DELETE` เฉพาะผู้ใช้ที่มี `role = 'admin'`
+    - สร้าง Atomic Stored Procedure / RPC `admin_save_category_bom` แบบ `SECURITY DEFINER` ตรวจสอบสิทธิ์ผู้เรียกใช้และบันทึกข้อมูลใน Transaction เดียว
+  - **Realtime Synchronization:** เพิ่มการดักจับ Event การเปลี่ยนแปลงบนตาราง `site_bom_templates` ใน `Dashboard.jsx` เพื่อให้อัปเดตยอด KPI และขวดสต็อกทันทีที่แอดมินบันทึก
+  - **อัปเกรดเวอร์ชันระบบ (System Version Increment):** ปรับเพิ่มเวอร์ชันแอปพลิเคชันจาก `v1.0.7` เป็น `v1.1.0` (MINOR)
+- **Reason:** รองรับการปรับแต่งสเปกรายการอุปกรณ์ของชุดติดตั้งสถานี (Site Installation Kits) ตามการใช้งานจริงของแต่ละหมวดหมู่ โดยควบคุมความปลอดภัยให้เฉพาะผู้ดูแลระบบเท่านั้นที่สามารถแก้ไขได้
+
+## [2026-08-30 01:15] ยกเลิกการใช้งาน Supabase Storage อย่างสมบูรณ์และใช้ Cloudflare R2 สำหรับทุกไฟล์และรูปภาพ (v1.0.7)
+
+- **Modified files:**
+  - `src/lib/avatarUpload.js`
+  - `src/pages/Settings.jsx`
+  - `src/pages/Manual.jsx`
+  - `package.json`
+  - `src/config/appConfig.js`
+- **Details:**
+  - **ถอด Supabase Storage Fallback ใน `src/lib/avatarUpload.js`:** ปลดการเรียกใช้ `supabase.storage` และ Bucket `avatars` ทั้งหมดออก โดยให้อัปโหลดรูปโปรไฟล์ตรงเข้าสู่ Cloudflare R2 Object Storage ผ่าน Presigned URL แบบเบ็ดเสร็จ
+  - **ปรับปรุงหน้า Settings (Storage Status):** อัปเดตข้อมูล Provider ใน Section 5 จากเดิมที่เป็น Supabase Storage ให้เป็น Cloudflare R2 (S3 API) พร้อมระบุ Bucket `stockflow-assets` และขนาดไฟล์สูงสุด 5 MB
+  - **ปรับปรุงคู่มือการใช้งาน (Manual.jsx):** ปรับข้อมูลหัวข้อการจัดการรูปโปรไฟล์ให้ระบุการจัดเก็บบน Cloudflare R2 แทน Supabase Storage
+  - **อัปเกรดเวอร์ชันระบบ (System Version Increment):** ปรับเพิ่มเวอร์ชันแอปพลิเคชันจาก `v1.0.6` เป็น `v1.0.7` (PATCH)
+- **Reason:** ตอบสนองความต้องการของผู้ใช้ที่ไม่ต้องการให้มีการใช้งาน Supabase Storage (รวมถึง Fallback) ในระบบ โดยให้พื้นที่จัดเก็บข้อมูลทั้งหมดขึ้นตรงกับ Cloudflare R2
+
 ## [2026-08-29 17:55] เชื่อมต่อ Custom Domain stockflowth.online และปรับปรุงระบบรองรับโดเมนใหม่อย่างสมบูรณ์ (v1.0.6)
 
 - **Modified files:**

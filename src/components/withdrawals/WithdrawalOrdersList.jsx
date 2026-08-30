@@ -15,6 +15,9 @@ const WithdrawalOrdersList = ({
   orders = [],
   loading = false,
   isAdmin = false,
+  canApprove = false,
+  canReject = false,
+  canComplete = false,
   onOpenPosMode,
   onViewOrderDetails,
   onDownloadPDF,
@@ -383,29 +386,33 @@ const WithdrawalOrdersList = ({
                         <span>PDF</span>
                       </Button>
 
-                      {isAdmin && order.status === 'pending' && (
+                      {order.status === 'pending' && (
                         <>
-                          <Button
-                            type="button"
-                            size="xs"
-                            className="h-8 px-2.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer shadow-2xs"
-                            onClick={() => onApproveOrder(order.id)}
-                          >
-                            อนุมัติ
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="xs"
-                            className="h-8 px-2.5 rounded-xl text-xs font-bold cursor-pointer"
-                            onClick={() => onOpenRejectModal(order)}
-                          >
-                            ปฏิเสธ
-                          </Button>
+                          {(canApprove || isAdmin) && (
+                            <Button
+                              type="button"
+                              size="xs"
+                              className="h-8 px-2.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer shadow-2xs"
+                              onClick={() => onApproveOrder(order.id)}
+                            >
+                              อนุมัติ
+                            </Button>
+                          )}
+                          {(canReject || isAdmin) && (
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="xs"
+                              className="h-8 px-2.5 rounded-xl text-xs font-bold cursor-pointer"
+                              onClick={() => onOpenRejectModal(order)}
+                            >
+                              ปฏิเสธ
+                            </Button>
+                          )}
                         </>
                       )}
 
-                      {order.status === 'approved' && (
+                      {order.status === 'approved' && (canComplete || isAdmin) && (
                         <Button
                           type="button"
                           size="xs"

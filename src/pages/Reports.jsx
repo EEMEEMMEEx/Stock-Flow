@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/contexts/AuthContext';
 import { utils, writeFile } from 'xlsx';
 import toast from 'react-hot-toast';
 
@@ -13,6 +14,8 @@ import ReportPagination from '@/components/reports/ReportPagination';
 import ReportSiteKits from '@/components/reports/ReportSiteKits';
 
 const Reports = () => {
+  const { can, isAdmin } = useAuth();
+  const canExport = isAdmin || can('reports.export');
   const [activeTab, setActiveTab] = useState('stock_in'); // 'stock_in', 'withdrawals', 'balance'
 
   // Data State
@@ -289,6 +292,10 @@ const Reports = () => {
   };
 
   const handleExportExcel = async () => {
+    if (!canExport) {
+      toast.error('คุณไม่มีสิทธิ์ดาวน์โหลดรายงาน Excel (ต้องการสิทธิ์ reports.export)');
+      return;
+    }
     try {
       let exportData = [];
       let sheetName = '';
@@ -380,6 +387,10 @@ const Reports = () => {
   };
 
   const handleExportPDF = async () => {
+    if (!canExport) {
+      toast.error('คุณไม่มีสิทธิ์ดาวน์โหลดรายงาน PDF (ต้องการสิทธิ์ reports.export)');
+      return;
+    }
     try {
       setPdfLoading(true);
       const toastId = toast.loading('กำลังสร้างไฟล์ PDF...');
@@ -453,6 +464,7 @@ const Reports = () => {
         totalItemsCount={processedData.length}
         loading={loading}
         pdfLoading={pdfLoading}
+        canExport={canExport}
       />
 
       {activeTab === 'site_kits' ? (

@@ -4,16 +4,18 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 
   Search, Clock, AlertTriangle, CheckCircle2, RotateCcw, 
-  FileText, Eye, User, Building2, Calendar, Phone, Layers
+  FileText, Eye, User, Building2, Calendar, Phone, Layers, CalendarClock
 } from 'lucide-react';
-import { format, isPast, isToday, addDays, differenceInDays } from 'date-fns';
-import { th } from 'date-fns/locale';
+import { format, differenceInDays } from 'date-fns';
 
 const CheckoutActiveList = ({
   orders = [],
   loading = false,
+  canReturn = true,
+  canExtend = true,
   onOpenReturnModal,
-  onOpenDetailModal
+  onOpenDetailModal,
+  onOpenExtendModal
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all'); // 'all' | 'overdue' | 'due_soon' | 'active'
@@ -278,14 +280,29 @@ const CheckoutActiveList = ({
                         <span className="hidden sm:inline">ดูใบยืม</span>
                       </Button>
 
-                      <Button
-                        size="sm"
-                        onClick={() => onOpenReturnModal(order)}
-                        className="rounded-xl h-9 px-3.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs gap-1.5 font-bold shadow-sm cursor-pointer"
-                      >
-                        <RotateCcw className="w-3.5 h-3.5" />
-                        <span>รับคืนพัสดุ</span>
-                      </Button>
+                      {canExtend && onOpenExtendModal && order.status !== 'completed' && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => onOpenExtendModal(order)}
+                          className="rounded-xl h-9 text-xs gap-1.5 font-bold border-amber-500/30 text-amber-700 dark:text-amber-400 hover:bg-amber-500/10 shadow-2xs cursor-pointer"
+                          title="ขยายกำหนดวันส่งคืนพัสดุ (Extend Due Date)"
+                        >
+                          <CalendarClock className="w-3.5 h-3.5" />
+                          <span>ขยายเวลา</span>
+                        </Button>
+                      )}
+
+                      {canReturn && (
+                        <Button
+                          size="sm"
+                          onClick={() => onOpenReturnModal(order)}
+                          className="rounded-xl h-9 px-3.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs gap-1.5 font-bold shadow-sm cursor-pointer"
+                        >
+                          <RotateCcw className="w-3.5 h-3.5" />
+                          <span>รับคืนพัสดุ</span>
+                        </Button>
+                      )}
                     </div>
                   </div>
                 );

@@ -3,6 +3,21 @@ import { supabase } from '../lib/supabase';
 
 const AuthContext = createContext({});
 
+// Canonical All Permissions list for Admin bypass
+export const ALL_CANONICAL_PERMISSIONS = [
+  'dashboard.view',
+  'projects.view', 'projects.create', 'projects.update', 'projects.delete',
+  'items.view', 'items.create', 'items.update', 'items.delete', 'items.transfer',
+  'stock_in.view', 'stock_in.create',
+  'withdrawals.view', 'withdrawals.create', 'withdrawals.approve', 'withdrawals.reject', 'withdrawals.complete',
+  'checkouts.view', 'checkouts.create', 'checkouts.return', 'checkouts.extend',
+  'history.view',
+  'reports.view', 'reports.export',
+  'users.view', 'users.create', 'users.update', 'users.deactivate', 'users.reset_password', 'users.delete',
+  'roles.view', 'roles.create', 'roles.update', 'roles.delete', 'roles.manage_permissions',
+  'settings.view', 'settings.update'
+];
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
@@ -40,7 +55,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const userId = userObj.id;
       
-      // Step A: Safely fetch user profile directly without join syntax that fails if roles relation is missing
+      // Step A: Safely fetch user profile directly
       let { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -72,18 +87,42 @@ export const AuthProvider = ({ children }) => {
         return;
       }
 
-      // Step C: Try fetching role record from roles table if role_id is present
-      if (data && data.role_id) {
+      // Step C: Resolve role record and synchronize role_id
+      if (data) {
         try {
-          const { data: roleData } = await supabase
-            .from('roles')
-            .select('*')
-            .eq('id', data.role_id)
-            .maybeSingle();
+          let roleData = null;
+          if (data.role_id) {
+            const { data: rd } = await supabase
+              .from('roles')
+              .select('*')
+              .eq('id', data.role_id)
+              .maybeSingle();
+            roleData = rd;
+          }
+          
+          // If role_id was not set or not found, lookup by role code string
+          if (!roleData && data.role) {
+            const searchCode = (data.role || 'staff').toUpperCase().trim();
+            const { data: rd } = await supabase
+              .from('roles')
+              .select('*')
+              .eq('code', searchCode)
+              .maybeSingle();
+            roleData = rd;
+
+            // Auto-backfill role_id on profile in background
+            if (roleData?.id && !data.role_id) {
+              data.role_id = roleData.id;
+              supabase.from('profiles').update({ role_id: roleData.id }).eq('id', userId).then();
+            }
+          }
+
           if (roleData) {
             data.roles = roleData;
           }
-        } catch (e) {}
+        } catch (e) {
+          console.warn('Error resolving role metadata:', e);
+        }
       }
 
       setProfile(data);
@@ -91,9 +130,9 @@ export const AuthProvider = ({ children }) => {
       // Step D: Determine role code & admin status
       const roleStr = (data?.role || '').toLowerCase();
       const roleCode = (data?.roles?.code || '').toUpperCase();
-      const isUserAdmin = roleStr === 'admin' || roleCode === 'ADMIN';
+      const isUserAdmin = (userObj.email || '').toLowerCase() === 'admin@stockflow.com' || roleStr === 'admin' || roleCode === 'ADMIN';
 
-      // Step E: Fetch permissions
+      // Step E: Fetch dynamic permissions (Configured Permissions Matrix)
       await fetchPermissions(userId, data, isUserAdmin);
 
       // Step F: Set project access
@@ -124,43 +163,67 @@ export const AuthProvider = ({ children }) => {
   const fetchPermissions = async (userId, profileData, isUserAdmin) => {
     // If admin, grant all permissions immediately
     if (isUserAdmin) {
-      setPermissions([
-        'dashboard.view', 'projects.view', 'projects.create', 'projects.update', 'projects.delete',
-        'items.view', 'items.create', 'items.update', 'items.delete',
-        'stock_in.view', 'stock_in.create',
-        'withdrawals.view', 'withdrawals.create', 'withdrawals.approve', 'withdrawals.reject', 'withdrawals.complete',
-        'checkouts.view', 'checkouts.create', 'checkouts.return',
-        'history.view', 'reports.view', 'reports.export',
-        'users.view', 'users.create', 'users.update', 'users.deactivate', 'users.reset_password',
-        'roles.view', 'roles.create', 'roles.update', 'roles.delete', 'roles.manage_permissions',
-        'settings.view', 'settings.update'
-      ]);
+      setPermissions(ALL_CANONICAL_PERMISSIONS);
       return;
     }
 
+    // Step 1: Try database RPC get_user_permissions
     try {
       const { data, error } = await supabase.rpc('get_user_permissions', { p_user_id: userId });
-      if (!error && Array.isArray(data) && data.length > 0) {
-        setPermissions(data.map(p => p.permission_code || p.code || p));
+      if (!error && Array.isArray(data)) {
+        // Enforce exact permissions from database (even if empty array [])
+        setPermissions(data.map(p => p.permission_code || p.code || p).filter(Boolean));
         return;
       }
     } catch (e) {
-      // Fallback mode if migration 09 not yet executed
+      console.warn('RPC get_user_permissions call error, attempting direct table query:', e);
     }
 
-    // Fallback permissions based on role string
+    // Step 2: Resilient direct query on role_permissions joined with permissions
+    try {
+      const roleId = profileData?.role_id || profileData?.roles?.id;
+      let query = supabase.from('role_permissions').select('permissions(code)');
+      
+      if (roleId) {
+        query = query.eq('role_id', roleId);
+      } else {
+        const searchCode = (profileData?.role || 'staff').toUpperCase().trim();
+        const { data: rData } = await supabase
+          .from('roles')
+          .select('id')
+          .eq('code', searchCode)
+          .maybeSingle();
+
+        if (rData?.id) {
+          query = query.eq('role_id', rData.id);
+        }
+      }
+
+      const { data: rpData, error: rpErr } = await query;
+      if (!rpErr && Array.isArray(rpData)) {
+        const extractedCodes = rpData
+          .map(r => r.permissions?.code)
+          .filter(Boolean);
+        setPermissions(extractedCodes);
+        return;
+      }
+    } catch (directErr) {
+      console.warn('Direct role_permissions table query failed:', directErr);
+    }
+
+    // Step 3: Minimal fallback permissions ONLY if database is completely offline/unreachable
     const roleStr = (profileData?.role || 'staff').toLowerCase();
     if (roleStr === 'supervisor') {
       setPermissions([
         'dashboard.view', 'projects.view', 'items.view', 'stock_in.view',
-        'withdrawals.view', 'withdrawals.create', 'withdrawals.approve', 'withdrawals.reject',
-        'checkouts.view', 'checkouts.create', 'checkouts.return',
+        'withdrawals.view', 'withdrawals.create', 'withdrawals.approve', 'withdrawals.reject', 'withdrawals.complete',
+        'checkouts.view', 'checkouts.create', 'checkouts.return', 'checkouts.extend',
         'history.view', 'reports.view', 'reports.export'
       ]);
     } else {
       setPermissions([
         'dashboard.view', 'projects.view', 'items.view', 'stock_in.view',
-        'withdrawals.view', 'withdrawals.create',
+        'withdrawals.view', 'withdrawals.create', 'withdrawals.complete',
         'checkouts.view', 'checkouts.create', 'checkouts.return',
         'history.view'
       ]);
@@ -175,15 +238,13 @@ export const AuthProvider = ({ children }) => {
   const isAdmin = isUserEmailAdmin || roleCode === 'ADMIN' || (profile?.role || '').toLowerCase() === 'admin';
   const isActive = profile?.status === 'active';
 
-  // Permission authorization helper
+  // Strict Permission authorization helper
   const can = (permCode) => {
     if (!permCode) return true; // Public / unrestricted route for all logged-in active users
-    if (isUserEmailAdmin || isAdmin) return true; // Admin bypass
     if (!profile || profile.status === 'inactive') return false;
+    if (isUserEmailAdmin || isAdmin) return true; // Admin bypass
     return permissions.includes(permCode);
   };
-
-
 
   const canAny = (permCodes = []) => permCodes.some(code => can(code));
   const canAll = (permCodes = []) => permCodes.every(code => can(code));
@@ -206,7 +267,6 @@ export const AuthProvider = ({ children }) => {
       mustChangePassword: profile?.must_change_password === true,
       refreshProfile: () => fetchProfile(user)
     }}>
-
       {!loading && children}
     </AuthContext.Provider>
   );
@@ -215,4 +275,3 @@ export const AuthProvider = ({ children }) => {
 export const useAuth = () => {
   return useContext(AuthContext);
 };
-
