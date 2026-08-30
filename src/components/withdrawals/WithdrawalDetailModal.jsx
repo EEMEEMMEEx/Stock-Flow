@@ -262,7 +262,7 @@ const WithdrawalDetailModal = ({
           <div className="flex items-center gap-2">
             {isPending && (
               <>
-                {(canReject || isAdmin) && (
+                {canReject && (
                   <Button
                     type="button"
                     variant="destructive"
@@ -273,7 +273,7 @@ const WithdrawalDetailModal = ({
                     ปฏิเสธคำขอ
                   </Button>
                 )}
-                {(canApprove || isAdmin) && (
+                {canApprove && (
                   <Button
                     type="button"
                     size="sm"
@@ -286,7 +286,7 @@ const WithdrawalDetailModal = ({
               </>
             )}
 
-            {isApproved && (canComplete || isAdmin) && (
+            {isApproved && canComplete && (
               <Button
                 type="button"
                 size="sm"

@@ -388,7 +388,7 @@ const WithdrawalOrdersList = ({
 
                       {order.status === 'pending' && (
                         <>
-                          {(canApprove || isAdmin) && (
+                          {canApprove && (
                             <Button
                               type="button"
                               size="xs"
@@ -398,7 +398,7 @@ const WithdrawalOrdersList = ({
                               อนุมัติ
                             </Button>
                           )}
-                          {(canReject || isAdmin) && (
+                          {canReject && (
                             <Button
                               type="button"
                               variant="destructive"
@@ -412,7 +412,7 @@ const WithdrawalOrdersList = ({
                         </>
                       )}
 
-                      {order.status === 'approved' && (canComplete || isAdmin) && (
+                      {order.status === 'approved' && canComplete && (
                         <Button
                           type="button"
                           size="xs"

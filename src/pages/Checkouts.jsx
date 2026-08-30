@@ -17,11 +17,11 @@ import CheckoutExtendModal from '@/components/checkouts/CheckoutExtendModal';
 import CheckoutHistoryList from '@/components/checkouts/CheckoutHistoryList';
 
 const Checkouts = () => {
-  const { can, user, isAdmin } = useAuth();
+  const { can, user } = useAuth();
 
-  const canCreate = isAdmin || can('checkouts.create');
-  const canReturn = isAdmin || can('checkouts.return');
-  const canExtend = isAdmin || can('checkouts.extend') || can('checkouts.update');
+  const canCreate = can('checkouts.create');
+  const canReturn = can('checkouts.return');
+  const canExtend = can('checkouts.extend') || can('checkouts.update');
 
   // Navigation Tabs: 'active' | 'pos' | 'history'
   const [activeTab, setActiveTab] = useState('active');

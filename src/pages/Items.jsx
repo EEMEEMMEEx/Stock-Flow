@@ -65,7 +65,7 @@ const Items = () => {
   const [adjustmentHistoryLogs, setAdjustmentHistoryLogs] = useState([]);
   const [loadingHistoryLogs, setLoadingHistoryLogs] = useState(false);
 
-  const canAdjustStock = (isAdmin || can('items.adjust_stock')) && allowDirectStockAdjustment;
+  const canAdjustStock = can('items.adjust_stock') && allowDirectStockAdjustment;
 
   const triggerDebouncedFetch = () => {
     if (realtimeTimeoutRef.current) {

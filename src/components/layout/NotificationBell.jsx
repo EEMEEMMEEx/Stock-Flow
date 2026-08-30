@@ -96,7 +96,7 @@ const NotificationBell = () => {
   const [activeTab, setActiveTab] = useState('all'); // 'all' | 'unread' | 'action'
   const [approvingId, setApprovingId] = useState(null);
 
-  const canApproveWithdrawals = isAdmin || can('withdrawals.approve');
+  const canApproveWithdrawals = can('withdrawals.approve');
   const unreadLabel = unreadCount > 99 ? '99+' : String(unreadCount);
 
   // Filter notifications based on active tab

@@ -21,10 +21,10 @@ import WithdrawalRejectModal from '@/components/withdrawals/WithdrawalRejectModa
 const Withdrawals = () => {
   const { isAdmin, can, profile } = useAuth();
   
-  const canCreate = isAdmin || can('withdrawals.create');
-  const canApprove = isAdmin || can('withdrawals.approve');
-  const canReject = isAdmin || can('withdrawals.reject');
-  const canComplete = isAdmin || can('withdrawals.complete');
+  const canCreate = can('withdrawals.create');
+  const canApprove = can('withdrawals.approve');
+  const canReject = can('withdrawals.reject');
+  const canComplete = can('withdrawals.complete');
 
   // Navigation Tab: 'pos' (Terminal) | 'orders' (Requisition Tracking)
   const [activeTab, setActiveTab] = useState(() => (canCreate ? 'pos' : 'orders'));
@@ -406,7 +406,7 @@ const Withdrawals = () => {
 
   // Atomic Approve via Supabase RPC with Shortage Override support
   const handleApproveOrder = async (orderId, allowShortage = false, overrideReason = '') => {
-    if (!isAdmin || isProcessing) return;
+    if (!canApprove || isProcessing) return;
     setIsProcessing(true);
     const toastId = toast.loading('กำลังอนุมัติบิลและตัดสต็อกแบบ Atomic...');
     try {
@@ -484,7 +484,7 @@ const Withdrawals = () => {
   // Reject Order via Supabase RPC
   const handleRejectSubmit = async (e) => {
     e.preventDefault();
-    if ((!isAdmin && !canReject) || !orderToReject || isProcessing) return;
+    if (!canReject || !orderToReject || isProcessing) return;
     if (!rejectReason.trim()) {
       toast.error('กรุณาระบุเหตุผลการปฏิเสธ');
       return;

@@ -22,8 +22,8 @@ const CATEGORY_ICONS = {
 };
 
 const ReportSiteKits = ({ projects = [] }) => {
-  const { can, isAdmin } = useAuth();
-  const canExport = isAdmin || can('reports.export');
+  const { can } = useAuth();
+  const canExport = can('reports.export');
   const [selectedProjectId, setSelectedProjectId] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');

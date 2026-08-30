@@ -1,5 +1,31 @@
 # Changelog
 
+## [2026-08-31 00:38] ตรวจสอบและแก้ไขระบบ RBAC Dynamic Permission Enforcement ให้มีผลตามการตั้งค่าจริง (v1.4.18)
+
+- **Modified / Created files:**
+  - `src/contexts/AuthContext.jsx` [ENFORCE DYNAMIC ROLE PERMISSIONS FOR ADMIN & FIX CAN BYPASS]
+  - `src/pages/UserManagement.jsx` [USE CAN(...) DIRECTLY FOR RBAC CHECKS]
+  - `src/pages/Withdrawals.jsx` [USE CAN(...) DIRECTLY FOR REQUISITION CHECKS]
+  - `src/pages/Reports.jsx` [USE CAN(...) DIRECTLY FOR EXPORT CHECKS]
+  - `src/pages/Checkouts.jsx` [USE CAN(...) DIRECTLY FOR CHECKOUT CHECKS]
+  - `src/pages/Items.jsx` [USE CAN(...) DIRECTLY FOR STOCK ADJUSTMENT CHECKS]
+  - `src/components/withdrawals/WithdrawalOrdersList.jsx` [CLEAN UP ISADMIN OVERRIDES]
+  - `src/components/withdrawals/WithdrawalDetailModal.jsx` [CLEAN UP ISADMIN OVERRIDES]
+  - `src/components/reports/ReportSiteKits.jsx` [CLEAN UP ISADMIN OVERRIDES]
+  - `src/components/layout/NotificationBell.jsx` [CLEAN UP ISADMIN OVERRIDES]
+  - `src/config/appConfig.js` [VERSION BUMP v1.4.18]
+  - `package.json` [VERSION BUMP v1.4.18]
+- **Details:**
+  - **แก้ไขปัญหา Bypass สิทธิ์ของบทบาท ADMINISTRATOR:**
+    - แก้ไขฟังก์ชัน `fetchPermissions` และ `can(permCode)` ใน `AuthContext.jsx` ให้ข้ามการตรวจสิทธิ์ (Bypass) เฉพาะ `SUPER ADMIN` (`SUPER` / `admin@stockflow.com`) เท่านั้น
+    - บังคับใช้สิทธิ์การใช้งานของบทบาท `ADMINISTRATOR`, `SUPERVISOR`, `STAFF` และ Custom Roles แบบไดนามิกตามที่ถูกกำหนดไว้จริงในหน้า `/roles` (ตาราง `role_permissions`) 100%
+  - **ลบการข้ามการตรวจสิทธิ์ hardcoded `isAdmin || can(...)` ในคอมโพเนนต์ต่างๆ:**
+    - ปรับเปลี่ยนทุกจุดตรวจสอบสิทธิ์ในหน้าจัดการผู้ใช้, การเบิกจ่าย, รายงาน, การยืมคืน และการปรับสต็อกให้ใช้ `can(permCode)` โดยตรง
+    - เมื่อมีการปิดสิทธิ์ใดๆ ในหน้า `/roles` สิทธิ์นั้นจะถูกปฏิเสธ (Denied) ทันที และเมื่อเปิดสิทธิ์ จะได้รับอนุญาต (Granted) ในระบบและหน้าจออินเทอร์เฟซทันที
+  - **อัปเกรดเวอร์ชันระบบ (System Version Increment):** ปรับเพิ่มเวอร์ชันแอปพลิเคชันจาก `v1.4.17` เป็น `v1.4.18` (PATCH)
+- **Reason:** ให้ระบบจัดการสิทธิ์ RBAC ทำงานอย่างแม่นยำ ปลอดภัย และตรงตามสิทธิ์ที่ตั้งค่าในตารางแคตตาล็อกจริง 100%
+
+
 ## [2026-08-31 00:30] ปรับปรุงสีข้อความป้ายบทบาทในส่วนหัวของระบบ (v1.4.17)
 
 - **Modified / Created files:**

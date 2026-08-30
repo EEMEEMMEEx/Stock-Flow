@@ -205,9 +205,9 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const fetchPermissions = async (userId, profileData, isUserAdmin) => {
-    // If admin, grant all permissions immediately
-    if (isUserAdmin) {
+  const fetchPermissions = async (userId, profileData, isSuper) => {
+    // If Super Admin master bypass, grant all permissions immediately
+    if (isSuper) {
       setPermissions(ALL_CANONICAL_PERMISSIONS);
       return;
     }
@@ -290,14 +290,15 @@ export const AuthProvider = ({ children }) => {
 
   const isUserEmailAdmin = (user?.email || '').toLowerCase() === 'admin@stockflow.com';
   const roleCode = profile?.roles?.code || (profile?.role ? profile.role.toUpperCase() : 'STAFF');
-  const isAdmin = isUserEmailAdmin || roleCode === 'ADMIN' || (profile?.role || '').toLowerCase() === 'admin';
+  const isSuperAdmin = isUserEmailAdmin || roleCode === 'SUPER';
+  const isAdmin = isSuperAdmin || roleCode === 'ADMIN' || (profile?.role || '').toLowerCase() === 'admin';
   const isActive = profile?.status === 'active';
 
   // Strict Permission authorization helper
   const can = (permCode) => {
     if (!permCode) return true; // Public / unrestricted route for all logged-in active users
     if (!profile || profile.status === 'inactive') return false;
-    if (isUserEmailAdmin || isAdmin) return true; // Admin bypass
+    if (isSuperAdmin) return true; // Super Admin master bypass ONLY
     return permissions.includes(permCode);
   };
 
@@ -311,6 +312,7 @@ export const AuthProvider = ({ children }) => {
       loading, 
       signIn, 
       signOut, 
+      isSuperAdmin,
       isAdmin, 
       isActive,
       permissions,

@@ -527,8 +527,8 @@ const UserManagement = () => {
 
           <Button 
             onClick={() => setIsAddModalOpen(true)}
-            disabled={!isAdmin && !can('users.create')}
-            title={!isAdmin && !can('users.create') ? 'ไม่มีสิทธิ์เพิ่มผู้ใช้งานใหม่ (ต้องการสิทธิ์ users.create)' : 'เพิ่มผู้ใช้งานใหม่'}
+            disabled={!can('users.create')}
+            title={!can('users.create') ? 'ไม่มีสิทธิ์เพิ่มผู้ใช้งานใหม่ (ต้องการสิทธิ์ users.create)' : 'เพิ่มผู้ใช้งานใหม่'}
             className="neu-primary h-10 px-4 rounded-xl font-semibold text-sm flex items-center gap-2 transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 shrink-0 disabled:opacity-30 disabled:cursor-not-allowed"
           >
             <Plus className="w-4 h-4 shrink-0" />

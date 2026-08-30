@@ -14,8 +14,8 @@ import ReportPagination from '@/components/reports/ReportPagination';
 import ReportSiteKits from '@/components/reports/ReportSiteKits';
 
 const Reports = () => {
-  const { can, isAdmin } = useAuth();
-  const canExport = isAdmin || can('reports.export');
+  const { can } = useAuth();
+  const canExport = can('reports.export');
   const [activeTab, setActiveTab] = useState('stock_in'); // 'stock_in', 'withdrawals', 'balance'
 
   // Data State
