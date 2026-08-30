@@ -7,7 +7,7 @@ const AuthContext = createContext({});
 export const ALL_CANONICAL_PERMISSIONS = [
   'dashboard.view',
   'projects.view', 'projects.create', 'projects.update', 'projects.delete',
-  'items.view', 'items.create', 'items.update', 'items.delete', 'items.transfer',
+  'items.view', 'items.create', 'items.update', 'items.delete', 'items.transfer', 'items.adjust_stock',
   'stock_in.view', 'stock_in.create',
   'withdrawals.view', 'withdrawals.create', 'withdrawals.approve', 'withdrawals.reject', 'withdrawals.complete',
   'checkouts.view', 'checkouts.create', 'checkouts.return', 'checkouts.extend',
@@ -215,7 +215,7 @@ export const AuthProvider = ({ children }) => {
     const roleStr = (profileData?.role || 'staff').toLowerCase();
     if (roleStr === 'supervisor') {
       setPermissions([
-        'dashboard.view', 'projects.view', 'items.view', 'stock_in.view',
+        'dashboard.view', 'projects.view', 'items.view', 'items.adjust_stock', 'stock_in.view',
         'withdrawals.view', 'withdrawals.create', 'withdrawals.approve', 'withdrawals.reject', 'withdrawals.complete',
         'checkouts.view', 'checkouts.create', 'checkouts.return', 'checkouts.extend',
         'history.view', 'reports.view', 'reports.export'

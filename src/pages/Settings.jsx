@@ -55,7 +55,8 @@ const Settings = () => {
     low_stock_threshold: 10,
     require_withdrawal_purpose: true,
     allow_inactive_project_view: true,
-    allow_item_deletion: true
+    allow_item_deletion: true,
+    allow_direct_stock_adjustment: false
   });
 
   // Notification & SMTP State
@@ -116,12 +117,13 @@ const Settings = () => {
             app_subtitle: data.app_subtitle || APP_CONFIG.subtitle
           });
         }
-        if (data.low_stock_threshold !== undefined || data.allow_item_deletion !== undefined) {
+        if (data.low_stock_threshold !== undefined || data.allow_item_deletion !== undefined || data.allow_direct_stock_adjustment !== undefined) {
           setInventoryForm({
             low_stock_threshold: Number(data.low_stock_threshold) || 10,
             require_withdrawal_purpose: data.require_withdrawal_purpose ?? true,
             allow_inactive_project_view: data.allow_inactive_project_view ?? true,
-            allow_item_deletion: data.allow_item_deletion !== undefined ? Boolean(data.allow_item_deletion) : true
+            allow_item_deletion: data.allow_item_deletion !== undefined ? Boolean(data.allow_item_deletion) : true,
+            allow_direct_stock_adjustment: data.allow_direct_stock_adjustment !== undefined ? Boolean(data.allow_direct_stock_adjustment) : false
           });
         }
         if (data.smtp_config) {
@@ -161,7 +163,9 @@ const Settings = () => {
         { code: 'SUPERVISOR', name: 'SUPERVISOR' },
         { code: 'STAFF', name: 'STAFF' }
       ]);
-    } catch (e) {}
+    } catch (e) {
+      console.warn('Failed to load roles catalog:', e);
+    }
   };
 
   const fetchStats = async () => {
@@ -176,7 +180,9 @@ const Settings = () => {
         users: uCount || 0,
         roles: rCount || 0
       });
-    } catch (e) {}
+    } catch (e) {
+      console.warn('Failed to load stats:', e);
+    }
   };
 
   const handleSaveAppSettings = async (e) => {
@@ -226,7 +232,8 @@ const Settings = () => {
         low_stock_threshold: Number(inventoryForm.low_stock_threshold) || 10,
         require_withdrawal_purpose: Boolean(inventoryForm.require_withdrawal_purpose),
         allow_inactive_project_view: Boolean(inventoryForm.allow_inactive_project_view),
-        allow_item_deletion: Boolean(inventoryForm.allow_item_deletion)
+        allow_item_deletion: Boolean(inventoryForm.allow_item_deletion),
+        allow_direct_stock_adjustment: Boolean(inventoryForm.allow_direct_stock_adjustment)
       };
 
       const { data, error } = await supabase.rpc('admin_update_system_settings', {
@@ -547,7 +554,7 @@ const Settings = () => {
                     className="mt-1 neu-pressed bg-transparent text-sm"
                   />
                   <p className="text-[11px] text-muted-foreground mt-1">
-                    * เมื่อจำนวนวัสดุเหลือต่ำกว่าเกณฑ์นี้ ระบบจะขึ้นป้ายเตือน "สินค้าใกล้หมด" ในหน้าคลัง
+                    * เมื่อจำนวนวัสดุเหลือต่ำกว่าเกณฑ์นี้ ระบบจะขึ้นป้ายเตือน &quot;สินค้าใกล้หมด&quot; ในหน้าคลัง
                   </p>
                 </div>
 
@@ -584,6 +591,22 @@ const Settings = () => {
                     />
                     <span>อนุญาตให้แสดงปุ่มลบรายการวัสดุ (Enable Item Deletion Button)</span>
                   </label>
+
+                  <div className="space-y-1.5 pt-1 border-t border-border/40">
+                    <label className="flex items-center gap-2.5 text-xs font-bold text-foreground cursor-pointer">
+                      <input
+                        type="checkbox"
+                        disabled={!canUpdate}
+                        checked={inventoryForm.allow_direct_stock_adjustment}
+                        onChange={(e) => setInventoryForm(prev => ({ ...prev, allow_direct_stock_adjustment: e.target.checked }))}
+                        className="rounded text-primary focus:ring-primary h-4 w-4"
+                      />
+                      <span>อนุญาตให้แก้ไขยอดสต็อกคงเหลือปัจจุบันในหน้า Master Items (Enable Current Stock Editing)</span>
+                    </label>
+                    <div className="pl-6.5 text-[11px] text-amber-800 dark:text-amber-300 bg-amber-500/10 border border-amber-500/20 p-2 rounded-xl">
+                      <strong>คำแนะนำ/Warning:</strong> “Adjust the current stock before enabling Current Stock Editing.” (ปรับยอดสต็อกปัจจุบันก่อนเปิดใช้งานการแก้ไขสต็อกโดยตรง)
+                    </div>
+                  </div>
                 </div>
               </div>
 

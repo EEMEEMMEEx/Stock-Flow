@@ -11,6 +11,8 @@ const PERMISSION_DEPENDENCIES = {
   'items.create': ['items.view'],
   'items.update': ['items.view'],
   'items.delete': ['items.view'],
+  'items.transfer': ['items.view'],
+  'items.adjust_stock': ['items.view', 'items.update'],
   'stock_in.create': ['stock_in.view'],
   'withdrawals.create': ['withdrawals.view'],
   'withdrawals.approve': ['withdrawals.view'],

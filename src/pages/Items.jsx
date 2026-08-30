@@ -7,22 +7,24 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { 
-  Search, Package, Layers, Tag, Building2, Edit3, Trash2, 
-  LayoutGrid, List, Filter, RefreshCw, ImageIcon, Box, Hash, 
+  Search, Package, Tag, Building2, Edit3, Trash2, 
+  LayoutGrid, List, RefreshCw, ImageIcon, Box, 
   SlidersHorizontal, CheckCircle2, AlertCircle, ChevronLeft, ChevronRight,
-  ArrowRightLeft
+  ArrowRightLeft, Lock, Sparkles, History
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import toast from 'react-hot-toast';
+import { format } from 'date-fns';
 import { ProjectLocationSelector } from '@/components/common/ProjectLocationSelector';
 import { TransferItemDialog } from '@/components/items/TransferItemDialog';
 import { uploadFileToR2 } from '@/lib/r2Storage';
 
 const Items = () => {
-  const { can, profile } = useAuth();
+  const { can, profile, isAdmin } = useAuth();
   const [items, setItems] = useState([]);
   const [categories, setCategories] = useState([]);
   const [projectsList, setProjectsList] = useState([]);
+  const [rawStockBalances, setRawStockBalances] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -41,6 +43,7 @@ const Items = () => {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [allowItemDeletion, setAllowItemDeletion] = useState(true);
+  const [allowDirectStockAdjustment, setAllowDirectStockAdjustment] = useState(false);
   const [hasTransactionConflict, setHasTransactionConflict] = useState(false);
   const [isTransferOpen, setIsTransferOpen] = useState(false);
   const [itemToTransfer, setItemToTransfer] = useState(null);
@@ -48,6 +51,21 @@ const Items = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const realtimeTimeoutRef = useRef(null);
+
+  // Direct Stock Adjustment States in Edit Dialog
+  const [adjustProjectId, setAdjustProjectId] = useState('');
+  const [currentStockQty, setCurrentStockQty] = useState(0);
+  const [newStockQty, setNewStockQty] = useState('');
+  const [stockAdjustReason, setStockAdjustReason] = useState('');
+  const [isAdjustingStock, setIsAdjustingStock] = useState(false);
+
+  // Stock Adjustment History Dialog States
+  const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
+  const [selectedItemForHistory, setSelectedItemForHistory] = useState(null);
+  const [adjustmentHistoryLogs, setAdjustmentHistoryLogs] = useState([]);
+  const [loadingHistoryLogs, setLoadingHistoryLogs] = useState(false);
+
+  const canAdjustStock = (isAdmin || can('items.adjust_stock')) && allowDirectStockAdjustment;
 
   const triggerDebouncedFetch = () => {
     if (realtimeTimeoutRef.current) {
@@ -101,15 +119,20 @@ const Items = () => {
     try {
       const { data, error } = await supabase
         .from('system_settings')
-        .select('value')
-        .eq('key', 'allow_item_deletion')
-        .maybeSingle();
+        .select('key, value')
+        .in('key', ['allow_item_deletion', 'allow_direct_stock_adjustment']);
 
-      if (!error && data && data.value !== undefined) {
-        setAllowItemDeletion(Boolean(data.value));
+      if (!error && data) {
+        data.forEach(setting => {
+          if (setting.key === 'allow_item_deletion') {
+            setAllowItemDeletion(Boolean(setting.value));
+          } else if (setting.key === 'allow_direct_stock_adjustment') {
+            setAllowDirectStockAdjustment(Boolean(setting.value));
+          }
+        });
       }
     } catch (err) {
-      console.warn('[Items] Failed to fetch allow_item_deletion setting:', err);
+      console.warn('[Items] Failed to fetch system_settings:', err);
     }
   };
 
@@ -166,6 +189,7 @@ const Items = () => {
       const pData = projectsRes.data || [];
 
       setProjectsList(pData);
+      setRawStockBalances(bData);
 
       const projectMap = {};
       pData.forEach(p => { projectMap[p.id] = p; });
@@ -285,10 +309,82 @@ const Items = () => {
     }
   };
 
+  const handleProjectChangeForAdjustment = (projId) => {
+    setAdjustProjectId(projId);
+    if (!selectedItem) return;
+    const foundBalance = rawStockBalances.find(b => b.item_id === selectedItem.id && b.project_id === projId);
+    const qty = foundBalance && foundBalance.balance !== undefined ? foundBalance.balance : 0;
+    setCurrentStockQty(qty);
+    setNewStockQty(String(qty));
+    setStockAdjustReason('');
+  };
+
+  const openAdjustmentHistoryDialog = async (item) => {
+    setSelectedItemForHistory(item);
+    setIsHistoryDialogOpen(true);
+    setLoadingHistoryLogs(true);
+    try {
+      const { data, error } = await supabase
+        .from('stock_adjustment_logs')
+        .select(`
+          id,
+          previous_quantity,
+          new_quantity,
+          difference,
+          reason,
+          created_at,
+          projects:project_id (name, location, project_code),
+          profiles:created_by (full_name)
+        `)
+        .eq('item_id', item.id)
+        .order('created_at', { ascending: false });
+
+      if (!error && data) {
+        setAdjustmentHistoryLogs(data);
+      } else {
+        setAdjustmentHistoryLogs([]);
+      }
+    } catch (err) {
+      console.warn('[Items] Failed to fetch stock adjustment logs:', err);
+      setAdjustmentHistoryLogs([]);
+    } finally {
+      setLoadingHistoryLogs(false);
+    }
+  };
+
   const handleEditItem = async (e) => {
     e.preventDefault();
     try {
-      // Build payload with only valid items columns (no updated_at — column doesn't exist)
+      setIsAdjustingStock(true);
+
+      // Check stock adjustment first if requested
+      const parsedNewStock = parseInt(newStockQty, 10);
+      const isStockChanged = !isNaN(parsedNewStock) && parsedNewStock >= 0 && parsedNewStock !== currentStockQty;
+
+      if (isStockChanged) {
+        if (!allowDirectStockAdjustment) {
+          toast.error('ระบบถูกปิดการแก้ไขยอดสต็อกคงเหลือในการตั้งค่าระบบ');
+          setIsAdjustingStock(false);
+          return;
+        }
+        if (!canAdjustStock) {
+          toast.error('คุณไม่มีสิทธิ์ปรับปรุงยอดสต็อกสินค้า (ต้องการสิทธิ์ items.adjust_stock)');
+          setIsAdjustingStock(false);
+          return;
+        }
+        if (!adjustProjectId) {
+          toast.error('กรุณาเลือกคลัง/โครงการที่ต้องการปรับปรุงยอดสต็อก');
+          setIsAdjustingStock(false);
+          return;
+        }
+        if (!stockAdjustReason.trim()) {
+          toast.error('กรุณาระบุเหตุผลในการปรับปรุงยอดสต็อก (Adjustment Reason is required)');
+          setIsAdjustingStock(false);
+          return;
+        }
+      }
+
+      // 1. Build payload with only valid items columns (no updated_at — column doesn't exist)
       const updatePayload = {
         name: formData.name,
         model: formData.model || null,
@@ -300,29 +396,85 @@ const Items = () => {
         image_url: formData.image_url || null,
       };
 
-      const { error } = await supabase
+      const { error: itemErr } = await supabase
         .from('items')
         .update(updatePayload)
         .eq('id', selectedItem.id);
 
-      if (error) throw error;
-      toast.success('อัปเดตวัสดุสำเร็จ');
+      if (itemErr) throw itemErr;
+
+      // 2. Execute Stock Adjustment if changed
+      if (isStockChanged) {
+        const { data: rpcData, error: rpcError } = await supabase.rpc('adjust_item_current_stock', {
+          p_item_id: selectedItem.id,
+          p_project_id: adjustProjectId,
+          p_new_quantity: parsedNewStock,
+          p_reason: stockAdjustReason.trim(),
+          p_actor_id: profile?.id || null
+        });
+
+        if (rpcError) {
+          console.warn('[Items] RPC adjust_item_current_stock error, attempting fallback:', rpcError);
+          const diff = parsedNewStock - currentStockQty;
+          if (diff > 0) {
+            const { data: inOrder, error: inOrderErr } = await supabase
+              .from('stock_in_orders')
+              .insert([{
+                project_id: adjustProjectId,
+                created_by: profile?.id || null,
+                received_date: new Date().toISOString().split('T')[0],
+                notes: `ปรับยอดสต็อกคงเหลือ (+${diff} ${formData.unit}) | เหตุผล: ${stockAdjustReason.trim()}`
+              }])
+              .select().single();
+            if (!inOrderErr && inOrder) {
+              await supabase.from('stock_in_items').insert([{
+                order_id: inOrder.id,
+                item_id: selectedItem.id,
+                quantity: diff,
+                notes: `ปรับยอดสต็อกคงเหลือเพิ่ม | เหตุผล: ${stockAdjustReason.trim()}`
+              }]);
+              await supabase.from('stock_transactions').insert([{
+                project_id: adjustProjectId,
+                item_id: selectedItem.id,
+                quantity: diff,
+                transaction_type: 'stock_in',
+                notes: `ปรับยอดสต็อกคงเหลือเพิ่ม (+${diff} ${formData.unit}) | เหตุผล: ${stockAdjustReason.trim()}`,
+                created_by: profile?.id || null
+              }]);
+            }
+          } else if (diff < 0) {
+            await supabase.from('stock_transactions').insert([{
+              project_id: adjustProjectId,
+              item_id: selectedItem.id,
+              quantity: Math.abs(diff),
+              transaction_type: 'stock_out',
+              notes: `ปรับยอดสต็อกคงเหลือลดลง (-${Math.abs(diff)} ${formData.unit}) | เหตุผล: ${stockAdjustReason.trim()}`,
+              created_by: profile?.id || null
+            }]);
+          }
+
+          // Insert audit log
+          await supabase.from('stock_adjustment_logs').insert([{
+            item_id: selectedItem.id,
+            project_id: adjustProjectId,
+            previous_quantity: currentStockQty,
+            new_quantity: parsedNewStock,
+            difference: diff,
+            reason: stockAdjustReason.trim(),
+            created_by: profile?.id || null
+          }]);
+        }
+        toast.success(rpcData?.message || `ปรับยอดสต็อกสำเร็จ: ${currentStockQty} ➔ ${parsedNewStock} ${formData.unit}`);
+      } else {
+        toast.success('อัปเดตวัสดุสำเร็จ');
+      }
+
       setIsEditOpen(false);
       fetchItems();
     } catch (error) {
-      // Log full error for debugging
-      console.error('[Items] Update error:', {
-        code: error?.code,
-        message: error?.message,
-        details: error?.details,
-        hint: error?.hint,
-        status: error?.status,
-      });
-
-      // Provide actionable Thai error messages based on actual error type
+      console.error('[Items] Update error:', error);
       const code = error?.code;
       if (code === '23505') {
-        // Unique constraint violation
         const detail = error?.details || '';
         if (detail.includes('sku')) {
           toast.error('รหัส SKU นี้ซ้ำกับรายการอื่นในระบบ กรุณาใช้รหัส SKU ที่ไม่ซ้ำกัน');
@@ -330,22 +482,20 @@ const Items = () => {
           toast.error('ข้อมูลซ้ำกับรายการที่มีอยู่: ' + (error?.message || ''));
         }
       } else if (code === '23503') {
-        // Foreign key violation
         toast.error('หมวดหมู่ที่เลือกไม่มีอยู่ในระบบ กรุณาเลือกหมวดหมู่ใหม่อีกครั้ง');
       } else if (code === '23502') {
-        // NOT NULL violation
         toast.error('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน (ชื่อรายการและหน่วยนับ)');
       } else if (code === '23514') {
-        // CHECK constraint violation
         toast.error('ข้อมูลที่กรอกไม่ผ่านเงื่อนไขที่กำหนด: ' + (error?.message || ''));
       } else if (error?.status === 403 || code === '42501') {
-        // RLS / permission error
         toast.error('คุณไม่มีสิทธิ์แก้ไขรายการวัสดุ กรุณาติดต่อผู้ดูแลระบบ');
       } else if (error?.message) {
         toast.error('เกิดข้อผิดพลาด: ' + error.message);
       } else {
         toast.error('เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุในการบันทึกข้อมูล');
       }
+    } finally {
+      setIsAdjustingStock(false);
     }
   };
 
@@ -419,6 +569,21 @@ const Items = () => {
       description: item.description || item.notes || '',
       image_url: item.image_url || ''
     });
+
+    // Initialize stock adjustment states
+    const targetProjId = item.project_id || (projectsList[0]?.id || '');
+    setAdjustProjectId(targetProjId);
+    
+    let currentQty = 0;
+    if (item.balance !== undefined && item.project_id === targetProjId) {
+      currentQty = item.balance;
+    } else {
+      const foundBalance = rawStockBalances.find(b => b.item_id === item.id && b.project_id === targetProjId);
+      currentQty = foundBalance && foundBalance.balance !== undefined ? foundBalance.balance : 0;
+    }
+    setCurrentStockQty(currentQty);
+    setNewStockQty(String(currentQty));
+    setStockAdjustReason('');
     setIsEditOpen(true);
   };
 
@@ -812,6 +977,15 @@ const Items = () => {
                       {/* Actions */}
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-1">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 rounded-lg text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950/40" 
+                            onClick={() => openAdjustmentHistoryDialog(item)} 
+                            title="ดูประวัติการปรับปรุงยอดสต็อก (Stock Adjustment History)"
+                          >
+                            <History className="w-4 h-4" />
+                          </Button>
                           {can('items.transfer') && (
                             <Button 
                               variant="ghost" 
@@ -833,7 +1007,7 @@ const Items = () => {
                               variant="ghost" 
                               size="icon" 
                               className="h-8 w-8 rounded-lg text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/40" 
-                              onClick={() => openEditDialog(item.originalItem || item)} 
+                              onClick={() => openEditDialog(item)} 
                               title="แก้ไขข้อมูลวัสดุ Master"
                             >
                               <Edit3 className="w-4 h-4" />
@@ -935,6 +1109,15 @@ const Items = () => {
                   </div>
 
                   <div className="flex items-center gap-1">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-7 w-7 rounded-lg text-amber-600 hover:bg-amber-50"
+                      onClick={() => openAdjustmentHistoryDialog(item)}
+                      title="ดูประวัติการปรับปรุงยอดสต็อก (Stock Adjustment History)"
+                    >
+                      <History className="w-3.5 h-3.5" />
+                    </Button>
                     {can('items.transfer') && (
                       <Button 
                         variant="ghost" 
@@ -956,7 +1139,7 @@ const Items = () => {
                         variant="ghost" 
                         size="icon" 
                         className="h-7 w-7 rounded-lg text-blue-600 hover:bg-blue-50"
-                        onClick={() => openEditDialog(item.originalItem || item)}
+                        onClick={() => openEditDialog(item)}
                         title="แก้ไขข้อมูลวัสดุ Master"
                       >
                         <Edit3 className="w-3.5 h-3.5" />
@@ -1126,11 +1309,127 @@ const Items = () => {
                   <Input id="edit-image" type="file" accept="image/*" onChange={handleImageUpload} disabled={uploadingImage} className="rounded-xl text-xs" />
                 </div>
               </div>
+
+              {/* Section: ปรับยอดสต็อกคงเหลือปัจจุบัน (Current Stock Adjustment) */}
+              <div className="pt-3 border-t border-border/40 space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-bold flex items-center gap-1.5 text-foreground">
+                    <SlidersHorizontal className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                    <span>ปรับยอดสต็อกคงเหลือปัจจุบัน (Current Stock Adjustment)</span>
+                  </Label>
+
+                  {allowDirectStockAdjustment && canAdjustStock ? (
+                    <span className="text-[10px] font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full flex items-center gap-1">
+                      <Sparkles className="w-2.5 h-2.5" />
+                      <span>เปิดใช้งาน</span>
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-bold bg-muted text-muted-foreground border border-border/40 px-2 py-0.5 rounded-full flex items-center gap-1">
+                      <Lock className="w-2.5 h-2.5" />
+                      <span>ปิดใช้งาน</span>
+                    </span>
+                  )}
+                </div>
+
+                {!allowDirectStockAdjustment ? (
+                  <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-800 dark:text-amber-300 flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                    <div>
+                      การแก้ไขยอดสต็อกโดยตรงถูกปิดใช้งานในการตั้งค่าระบบ (คุณสามารถเปิดได้ที่ <strong>Settings &gt; กฎการเบิกและสต็อก</strong>)
+                    </div>
+                  </div>
+                ) : !canAdjustStock ? (
+                  <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-800 dark:text-amber-300 flex items-start gap-2">
+                    <Lock className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                    <div>
+                      คุณไม่มีสิทธิ์ในการปรับปรุงยอดสต็อกสินค้า (ต้องการสิทธิ์ <code>items.adjust_stock</code> หรือ Admin)
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3 p-3 rounded-xl bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-500/20">
+                    {/* Project Selector for adjustment */}
+                    <div className="space-y-1">
+                      <Label htmlFor="adjust-project" className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
+                        <Building2 className="w-3 h-3 text-indigo-500" />
+                        <span>เลือกคลัง/โครงการที่ต้องการปรับปรุงยอด</span>
+                      </Label>
+                      <select
+                        id="adjust-project"
+                        value={adjustProjectId}
+                        onChange={(e) => handleProjectChangeForAdjustment(e.target.value)}
+                        className="flex h-9 w-full rounded-xl border border-input bg-background px-3 py-1.5 text-xs font-semibold text-foreground focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+                      >
+                        {projectsList.map(p => (
+                          <option key={p.id} value={p.id}>
+                            {p.project_code ? `${p.project_code} — ` : ''}{p.name}{p.location ? ` (${p.location})` : ''}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Stock comparison & input */}
+                    <div className="grid grid-cols-2 gap-3 items-end">
+                      <div className="space-y-1">
+                        <Label className="text-[11px] font-semibold text-muted-foreground">ยอดสต็อกเดิม (Current Stock)</Label>
+                        <div className="h-9 px-3 rounded-xl bg-background border border-border/80 flex items-center justify-between font-mono text-xs font-bold">
+                          <span className="text-foreground">{currentStockQty}</span>
+                          <span className="text-muted-foreground text-[10px]">{formData.unit || 'ชิ้น'}</span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <Label htmlFor="adjust-new-qty" className="text-[11px] font-bold text-foreground flex items-center justify-between">
+                          <span>ยอดสต็อกใหม่ (New Stock)</span>
+                          {parseInt(newStockQty, 10) !== currentStockQty && !isNaN(parseInt(newStockQty, 10)) && (
+                            <span className={`text-[10px] font-mono font-extrabold px-1.5 py-0.2 rounded-md ${
+                              parseInt(newStockQty, 10) > currentStockQty 
+                                ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300' 
+                                : 'bg-rose-500/20 text-rose-700 dark:text-rose-300'
+                            }`}>
+                              {parseInt(newStockQty, 10) > currentStockQty ? `+${parseInt(newStockQty, 10) - currentStockQty}` : `${parseInt(newStockQty, 10) - currentStockQty}`} {formData.unit}
+                            </span>
+                          )}
+                        </Label>
+                        <Input
+                          id="adjust-new-qty"
+                          type="number"
+                          min="0"
+                          value={newStockQty}
+                          onChange={(e) => setNewStockQty(e.target.value)}
+                          className="h-9 rounded-xl font-mono text-xs font-bold bg-background"
+                          placeholder="ระบุยอดคงเหลือใหม่"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Mandatory reason when stock changes */}
+                    {parseInt(newStockQty, 10) !== currentStockQty && !isNaN(parseInt(newStockQty, 10)) && (
+                      <div className="space-y-1.5 pt-1 animate-in fade-in-50 duration-200">
+                        <Label htmlFor="adjust-reason" className="text-[11px] font-bold text-indigo-700 dark:text-indigo-300 flex items-center gap-1">
+                          <Sparkles className="w-3 h-3 text-amber-500" />
+                          <span>เหตุผลในการปรับปรุงยอดสต็อก (Adjustment Reason) <span className="text-destructive">*</span></span>
+                        </Label>
+                        <textarea
+                          id="adjust-reason"
+                          rows={2}
+                          required
+                          value={stockAdjustReason}
+                          onChange={(e) => setStockAdjustReason(e.target.value)}
+                          placeholder="เช่น ตรวจนับสต็อกประจำปี, พบสินค้าชำรุดเสียหาย, ปรับปรุงยอดยกมาเริ่มต้น..."
+                          className="w-full rounded-xl border border-input bg-background px-3 py-2 text-xs shadow-2xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
 
             <DialogFooter className="gap-2 sm:gap-0">
               <Button type="button" variant="outline" className="rounded-xl" onClick={() => setIsEditOpen(false)}>ยกเลิก</Button>
-              <Button type="submit" className="rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold">อัปเดตวัสดุ</Button>
+              <Button type="submit" disabled={isAdjustingStock} className="rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold">
+                {isAdjustingStock ? 'กำลังบันทึก...' : 'อัปเดตวัสดุและสต็อก'}
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>
@@ -1216,6 +1515,92 @@ const Items = () => {
         onSuccess={fetchItems}
         currentProfile={profile}
       />
+
+      {/* Stock Adjustment Audit History Dialog */}
+      <Dialog open={isHistoryDialogOpen} onOpenChange={setIsHistoryDialogOpen}>
+        <DialogContent className="sm:max-w-[620px] rounded-2xl glass">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold flex items-center gap-2 text-foreground">
+              <History className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+              <span>ประวัติการปรับปรุงยอดสต็อก (Stock Adjustment History)</span>
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              รายการ: <strong className="text-foreground">{selectedItemForHistory?.name}</strong> (SKU: {selectedItemForHistory?.sku || '-'})
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="py-2 space-y-3 max-h-[400px] overflow-y-auto pr-1">
+            {loadingHistoryLogs ? (
+              <div className="py-8 text-center text-xs text-muted-foreground">
+                <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-amber-600" />
+                <span>กำลังโหลดประวัติการปรับปรุงสต็อก...</span>
+              </div>
+            ) : adjustmentHistoryLogs.length === 0 ? (
+              <div className="p-6 rounded-xl border border-dashed border-border/80 text-center text-xs text-muted-foreground">
+                <History className="w-6 h-6 mx-auto mb-1 opacity-40" />
+                <span>ยังไม่มีประวัติการปรับปรุงยอดสต็อกสำหรับรายการนี้</span>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {adjustmentHistoryLogs.map((log) => {
+                  const projName = log.projects?.project_code 
+                    ? `${log.projects.project_code} — ${log.projects.name}` 
+                    : (log.projects?.name || 'คลังสินค้า');
+                  return (
+                    <div 
+                      key={log.id} 
+                      className="p-3 rounded-xl bg-muted/40 border border-border/60 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 hover:bg-muted/60 transition-colors"
+                    >
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-bold text-foreground flex items-center gap-1">
+                            <Building2 className="w-3 h-3 text-indigo-500" />
+                            {projName}
+                          </span>
+                          <span className="text-muted-foreground font-mono text-[11px]">
+                            {log.previous_quantity} ➔ <strong className="text-foreground font-bold">{log.new_quantity}</strong>
+                          </span>
+                          <span className={`px-1.5 py-0.2 rounded-md font-mono text-[10px] font-extrabold ${
+                            log.difference > 0 
+                              ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30' 
+                              : log.difference < 0
+                              ? 'bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-500/30'
+                              : 'bg-muted text-muted-foreground'
+                          }`}>
+                            {log.difference > 0 ? `+${log.difference}` : log.difference} {selectedItemForHistory?.unit || 'ชิ้น'}
+                          </span>
+                        </div>
+                        <div className="text-[11px] text-muted-foreground">
+                          เหตุผล: <span className="text-foreground font-medium">&quot;{log.reason}&quot;</span>
+                        </div>
+                        <div className="text-[10px] text-muted-foreground">
+                          ผู้ทำรายการ: {log.profiles?.full_name || 'เจ้าหน้าที่'}
+                        </div>
+                      </div>
+
+                      <div className="text-[11px] text-muted-foreground font-mono self-end sm:self-auto shrink-0">
+                        {format(new Date(log.created_at), 'dd/MM/yyyy HH:mm น.')}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          <DialogFooter className="border-t border-border/40 pt-3">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setIsHistoryDialogOpen(false)}
+              className="rounded-xl text-xs"
+            >
+              ปิดหน้าต่าง
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

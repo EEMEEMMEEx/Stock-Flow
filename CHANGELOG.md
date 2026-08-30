@@ -1,5 +1,37 @@
 # Changelog
 
+## [2026-08-30 11:20] เพิ่มฟีเจอร์ปรับยอดสต็อกคงเหลือปัจจุบัน (Current Stock Adjustment) ในหน้า Master Items พร้อม Global Setting ใน /settings, สิทธิ์ RBAC และระบบ Audit Log (v1.3.0)
+
+- **Modified / Created files:**
+  - `supabase/migrations/56_current_stock_adjustment_feature.sql` [NEW MIGRATION]
+  - `src/pages/Items.jsx`
+  - `src/pages/Settings.jsx`
+  - `src/contexts/AuthContext.jsx`
+  - `src/components/roles/PermissionManagementModal.jsx`
+  - `docs/current-stock-adjustment-plan.md` [NEW PLAN]
+  - `package.json`
+  - `src/config/appConfig.js`
+- **Details:**
+  - **ฟีเจอร์ปรับยอดสต็อกคงเหลือปัจจุบันในหน้า Edit Master Item (`Items.jsx`):**
+    - เพิ่มส่วน "ปรับยอดสต็อกคงเหลือปัจจุบัน (Current Stock Adjustment)" ในหน้าต่างแก้ไขรายการวัสดุ Master
+    - แสดงคลัง/โครงการที่เลือก ยอดเดิม (Previous Stock) และช่องกรอกยอดสต็อกใหม่ (New Stock)
+    - แสดง Realtime Difference Badge (`+X`, `-X`, หรือ `ไม่เปลี่ยนแปลง`)
+    - บังคับระบุเหตุผลการปรับปรุงยอดสต็อก (Adjustment Reason / Note) เสมอเมื่อมีการเปลี่ยนแปลงยอดสต็อก
+  - **Global Setting Toggle ใน `/settings`:**
+    - เพิ่มสวิตช์เปิด/ปิดการแก้ไขสต็อกโดยตรง: `allow_direct_stock_adjustment` (หมวดหมู่ `inventory`)
+    - เพิ่มข้อความเตือนคำแนะนำ: **“Adjust the current stock before enabling Current Stock Editing.”** (ปรับยอดสต็อกปัจจุบันก่อนเปิดใช้งานการแก้ไขสต็อกโดยตรง)
+  - **การควบคุมสิทธิ์ RBAC (`items.adjust_stock`):**
+    - เพิ่มสิทธิ์ `items.adjust_stock` ใน Canonical Permissions และ Matrix สิทธิ์
+    - เมื่อ Setting ถูกปิด หรือผู้ใช้ไม่มีสิทธิ์ ช่องปรับสต็อกจะถูก Disabled พร้อมแสดงแบนเนอร์แจ้งเตือนอย่างชัดเจน
+  - **ระบบ Audit Trail และประวัติการปรับปรุงสต็อก (`stock_adjustment_logs`):**
+    - สร้างตาราง `stock_adjustment_logs` เก็บประวัติการปรับยอด (ยอดเดิม, ยอดใหม่, ผลต่าง, เหตุผล, ผู้ทำรายการ, วันเวลา)
+    - เพิ่มปุ่มและหน้าต่างดูประวัติการปรับยอดสต็อกของแต่ละรายการในตารางและ Bento Grid
+    - บันทึกการเคลื่อนไหวลง `audit_logs` และ `stock_transactions` (Non-destructive) เพื่อให้ยอดคงเหลือใน Items, Dashboard, Stock In, Withdrawals, Checkouts, Reports ถูกต้องสอดคล้องกันทั่วทั้งระบบ
+  - **Atomic RPC Function `adjust_item_current_stock`:**
+    - ตรวจสอบ Global Setting, ตรวจสอบสิทธิ์ RBAC, ตรวจสอบ Validation และคำนวณตัด/เพิ่มสต็อกใน Transaction เดียว
+  - **อัปเกรดเวอร์ชันระบบ (System Version Increment):** ปรับเพิ่มเวอร์ชันแอปพลิเคชันจาก `v1.2.0` เป็น `v1.3.0` (MINOR Feature)
+- **Reason:** รองรับการตรวจนับสต็อกประจำปีและการปรับปรุงยอดยกมาเริ่มต้นอย่างถูกต้อง ปลอดภัย และมีหลักฐานตรวจสอบย้อนหลังได้ครบถ้วน
+
 ## [2026-08-30 10:10] เพิ่มฟีเจอร์ขยายกำหนดวันส่งคืนพัสดุ (Return Due Date Extension) ในระบบยืม-คืนเครื่องมือ พร้อม Audit Log และการควบคุมสิทธิ์ RBAC (v1.2.0)
 
 - **Modified / Created files:**
