@@ -33,6 +33,19 @@ export const getRoleLabel = (roleInput, roleNameInput) => {
 };
 
 /**
+ * Role Text Color Class Helper
+ * Provides distinctive color styling per role code/label while maintaining consistent RBAC theme
+ */
+export const getRoleTextColorClass = (roleInput, roleNameInput) => {
+  const label = getRoleLabel(roleInput, roleNameInput);
+  if (label === 'SUPER ADMIN') return 'text-amber-600 dark:text-amber-400 font-bold';
+  if (label === 'ADMINISTRATOR') return 'text-purple-600 dark:text-purple-400 font-bold';
+  if (label === 'SUPERVISOR / APPROVER') return 'text-emerald-600 dark:text-emerald-400 font-semibold';
+  if (label === 'STAFF / REQUESTER') return 'text-blue-600 dark:text-blue-400 font-medium';
+  return 'text-purple-600 dark:text-purple-400 font-semibold';
+};
+
+/**
  * Standardized UI Role Badge Component
  * Ensures visual distinction, proper friendly labels, scalable SVG Shield icons, and zero emojis.
  */

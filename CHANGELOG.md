@@ -1,5 +1,20 @@
 # Changelog
 
+## [2026-08-31 00:30] ปรับปรุงสีข้อความป้ายบทบาทในส่วนหัวของระบบ (v1.4.17)
+
+- **Modified / Created files:**
+  - `src/components/ui/RoleBadge.jsx` [ADD GETROLETEXTCOLORCLASS HELPER]
+  - `src/components/layout/Topbar.jsx` [APPLY DISTINCTIVE ROLE TEXT STYLING TO TOPBAR SPAN]
+  - `src/config/appConfig.js` [VERSION BUMP v1.4.17]
+  - `package.json` [VERSION BUMP v1.4.17]
+- **Details:**
+  - **ปรับปรุงการแสดงผลสีบทบาทของผู้ใช้ใน Topbar:**
+    - เปลี่ยนสีข้อความป้ายบทบาท `ADMINISTRATOR` จากสี `text-muted-foreground` ทั่วไป เป็นสีม่วงโดดเด่น `text-purple-600 dark:text-purple-400 font-bold` ให้ตรงตามธีม RBAC Badge
+    - รองรับการแสดงผลสีเฉพาะของบทบาทอื่นอย่างสวยงาม (Super Admin สีแอมเบอร์, Supervisor สีมรกต, Staff สีฟ้า) ทั้งใน Light Mode และ Dark Mode
+  - **อัปเกรดเวอร์ชันระบบ (System Version Increment):** ปรับเพิ่มเวอร์ชันแอปพลิเคชันจาก `v1.4.16` เป็น `v1.4.17` (PATCH)
+- **Reason:** เพิ่มความชัดเจนและสวยงามในการแยกแยะบทบาทผู้ใช้งานในเมนูส่วนหัว
+
+
 ## [2026-08-31 00:27] แก้ไขข้อผิดพลาด Sparkles is not defined ใน RoleManagement.jsx (v1.4.16)
 
 - **Modified / Created files:**
