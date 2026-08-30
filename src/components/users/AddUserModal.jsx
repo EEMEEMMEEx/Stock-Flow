@@ -7,8 +7,10 @@ import { Eye, EyeOff, RefreshCw, Check, Shield, User, FolderKanban, AlertCircle,
 import toast from 'react-hot-toast';
 import AvatarUpload from '@/components/users/AvatarUpload';
 import RoleBadge, { getRoleLabel } from '@/components/ui/RoleBadge';
+import { useAuth } from '@/contexts/AuthContext';
 
 const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) => {
+  const { isSuperAdmin } = useAuth();
   const [activeTab, setActiveTab] = useState('account'); // 'account' | 'access'
   const [loading, setLoading] = useState(false);
   const [projectSearch, setProjectSearch] = useState('');
@@ -20,7 +22,12 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
     { code: 'SUPER', name: 'SUPER ADMIN', description: 'สิทธิ์สูงสุดระดับระบบ จัดการทุกอย่าง รวมถึง Admin, สิทธิ์, การตั้งค่าระบบ, Security, Integration' }
   ];
 
-  const availableRoles = roles.length > 0 ? roles : defaultRoles;
+  const rawRoles = roles.length > 0 ? roles : defaultRoles;
+  const availableRoles = rawRoles.filter(r => {
+    const code = (r.code || '').toUpperCase();
+    if (code === 'SUPER' && !isSuperAdmin) return false;
+    return true;
+  });
 
   const [formData, setFormData] = useState({
     email: '',

@@ -22,7 +22,7 @@ import { uploadAvatarImage } from '@/lib/avatarUpload';
 import { sendUserInvitationEmail } from '@/lib/emailService';
 
 const UserManagement = () => {
-  const { isAdmin, user, can } = useAuth();
+  const { isAdmin, isSuperAdmin, user, can } = useAuth();
   const [users, setUsers] = useState([]);
   const [projects, setProjects] = useState([]);
   const [dbRoles, setDbRoles] = useState([]);
@@ -380,6 +380,12 @@ const UserManagement = () => {
 
 
   const handleToggleStatus = async (userObj) => {
+    const isTargetSuper = (userObj.role || '').toLowerCase() === 'super' || (userObj.roles?.code || '').toUpperCase() === 'SUPER' || (userObj.email || '').toLowerCase() === 'admin@stockflow.com';
+    if (isTargetSuper && !isSuperAdmin) {
+      toast.error('ความปลอดภัยของระบบ: เฉพาะ Super Admin เท่านั้นที่สามารถเปลี่ยนสถานะบัญชี Super Admin ได้');
+      return;
+    }
+
     const nextStatus = userObj.status === 'active' ? 'inactive' : 'active';
     try {
       const { data, error } = await supabase.rpc('admin_toggle_user_status', {
@@ -405,6 +411,13 @@ const UserManagement = () => {
 
   const confirmDeleteUserPermanent = async () => {
     if (!selectedUserForDelete) return;
+    const isTargetSuper = (selectedUserForDelete.role || '').toLowerCase() === 'super' || (selectedUserForDelete.roles?.code || '').toUpperCase() === 'SUPER' || (selectedUserForDelete.email || '').toLowerCase() === 'admin@stockflow.com';
+    if (isTargetSuper) {
+      toast.error('ความปลอดภัยของระบบ: ไม่สามารถลบบัญชี Super Admin ได้');
+      setSelectedUserForDelete(null);
+      return;
+    }
+
     try {
       setLoading(true);
       const { data, error } = await supabase.rpc('admin_delete_user', {
@@ -427,6 +440,12 @@ const UserManagement = () => {
   };
 
   const handleDeleteUserAttempt = (userObj) => {
+    const isTargetSuper = (userObj.role || '').toLowerCase() === 'super' || (userObj.roles?.code || '').toUpperCase() === 'SUPER' || (userObj.email || '').toLowerCase() === 'admin@stockflow.com';
+    if (isTargetSuper) {
+      toast.error('ความปลอดภัยของระบบ: ไม่สามารถลบบัญชี Super Admin ได้');
+      return;
+    }
+
     // Check if user is active admin
     if (userObj.role === 'admin' && userObj.status === 'active') {
       const activeAdmins = users.filter(u => u.role === 'admin' && u.status === 'active');
@@ -662,26 +681,36 @@ const UserManagement = () => {
 
                     const isSelf = u.id === user?.id;
                     const isTargetAdmin = u.role === 'admin' || u.role === 'ADMIN' || u.roles?.code === 'ADMIN';
+                    const isTargetSuper = u.role === 'super' || u.role === 'SUPER' || u.roles?.code === 'SUPER' || (u.email || '').toLowerCase() === 'admin@stockflow.com';
                     const isLastActiveAdmin = isTargetAdmin && u.status === 'active' && activeAdminsCount <= 1;
 
-                    // RBAC Permission checks
-                    const canEditUser = isAdmin || can('users.update');
-                    const canResendInvite = isAdmin || can('users.create');
-                    const canResetPassword = isAdmin || can('users.reset_password');
-                    const canDeactivate = (isAdmin || can('users.deactivate')) && !isSelf && !isLastActiveAdmin;
-                    const canDeleteUser = (isAdmin || can('users.delete')) && !isSelf && !isLastActiveAdmin;
+                    // RBAC Permission checks with Super Admin hierarchy enforcement
+                    const canEditUser = (!isTargetSuper || isSuperAdmin) && can('users.update');
+                    const canResendInvite = (!isTargetSuper || isSuperAdmin) && can('users.create');
+                    const canResetPassword = (!isTargetSuper || isSuperAdmin) && can('users.reset_password');
+                    const canDeactivate = (!isTargetSuper || isSuperAdmin) && can('users.deactivate') && !isSelf && !isLastActiveAdmin;
+                    const canDeleteUser = !isTargetSuper && isSuperAdmin && can('users.delete') && !isSelf && !isLastActiveAdmin;
+
+                    const getEditTitle = () => {
+                      if (isTargetSuper && !isSuperAdmin) return 'เฉพาะ Super Admin เท่านั้นที่สามารถแก้ไขผู้ดูแลระบบสูงสุดได้';
+                      if (!can('users.update')) return 'ไม่มีสิทธิ์แก้ไขข้อมูลผู้ใช้ (ต้องการสิทธิ์ users.update)';
+                      return 'แก้ไขข้อมูลผู้ใช้ (Edit User)';
+                    };
 
                     const getDeactivateTitle = () => {
                       if (isSelf) return 'ไม่สามารถระงับการใช้งานบัญชีของตนเองได้';
+                      if (isTargetSuper && !isSuperAdmin) return 'เฉพาะ Super Admin เท่านั้นที่สามารถระงับการใช้งาน Super Admin ได้';
                       if (isLastActiveAdmin) return 'ไม่สามารถระงับบัญชี Administrator คนสุดท้ายของระบบได้';
-                      if (!isAdmin && !can('users.deactivate')) return 'ไม่มีสิทธิ์ระงับการใช้งานบัญชี (ต้องการสิทธิ์ users.deactivate)';
+                      if (!can('users.deactivate')) return 'ไม่มีสิทธิ์ระงับการใช้งานบัญชี (ต้องการสิทธิ์ users.deactivate)';
                       return u.status === 'active' ? 'ระงับการใช้งานบัญชี (Deactivate)' : 'เปิดใช้งานบัญชี (Activate)';
                     };
 
                     const getDeleteTitle = () => {
                       if (isSelf) return 'ไม่สามารถลบบัญชีของตนเองได้';
+                      if (isTargetSuper) return 'ไม่สามารถลบบัญชี Super Admin ได้';
                       if (isLastActiveAdmin) return 'ไม่สามารถลบบัญชี Administrator คนสุดท้ายของระบบได้';
-                      if (!isAdmin && !can('users.delete')) return 'ไม่มีสิทธิ์ลบบัญชีผู้ใช้ (ต้องการสิทธิ์ users.delete)';
+                      if (!isSuperAdmin) return 'เฉพาะ Super Admin เท่านั้นที่สามารถลบบัญชีผู้ใช้ได้';
+                      if (!can('users.delete')) return 'ไม่มีสิทธิ์ลบบัญชีผู้ใช้ (ต้องการสิทธิ์ users.delete)';
                       return 'ลบบัญชีผู้ใช้ถาวร (Delete User)';
                     };
 
@@ -769,7 +798,7 @@ const UserManagement = () => {
                             <Button
                               variant="ghost"
                               size="icon"
-                              title={canEditUser ? "แก้ไขข้อมูลผู้ใช้ (Edit User)" : "ไม่มีสิทธิ์แก้ไขข้อมูลผู้ใช้"}
+                              title={getEditTitle()}
                               onClick={() => setSelectedUserForEdit(u)}
                               disabled={!canEditUser}
                               className="h-8 w-8 text-slate-600 hover:text-primary hover:bg-primary/10 disabled:opacity-30 disabled:cursor-not-allowed"

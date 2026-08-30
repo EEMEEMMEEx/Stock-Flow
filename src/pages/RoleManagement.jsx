@@ -14,7 +14,7 @@ import EditRoleModal from '@/components/roles/EditRoleModal';
 import PermissionManagementModal from '@/components/roles/PermissionManagementModal';
 
 const RoleManagement = () => {
-  const { can, refreshProfile } = useAuth();
+  const { can, refreshProfile, isSuperAdmin } = useAuth();
   const [roles, setRoles] = useState([]);
   const [catalog, setCatalog] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -172,6 +172,11 @@ const RoleManagement = () => {
 
   const handleSaveRolePermissions = async (roleId, permissionIds) => {
     try {
+      if (selectedRoleForPerms?.code === 'SUPER' && !isSuperAdmin) {
+        toast.error('เฉพาะผู้ดูแลระบบสูงสุด (Super Admin) เท่านั้นที่สามารถจัดการสิทธิ์ของ Super Admin ได้');
+        return;
+      }
+
       // 1. Try atomic PostgreSQL RPC first
       let rpcSuccess = false;
       try {
@@ -264,6 +269,11 @@ const RoleManagement = () => {
 
   const handleUpdateRole = async (roleId, rolePayload) => {
     try {
+      if (selectedRoleForEdit?.code === 'SUPER' && !isSuperAdmin) {
+        toast.error('เฉพาะผู้ดูแลระบบสูงสุด (Super Admin) เท่านั้นที่สามารถแก้ไขบทบาท Super Admin ได้');
+        return;
+      }
+
       let updated = false;
       try {
         const { data, error } = await supabase.rpc('admin_update_role', {
@@ -305,7 +315,7 @@ const RoleManagement = () => {
   };
 
   const handleDeleteRole = async (roleObj) => {
-    if (roleObj.is_system) {
+    if (roleObj.code === 'SUPER' || roleObj.is_system) {
       toast.error(`ไม่สามารถลบบทบาทของระบบ (System Role: ${roleObj.name || roleObj.code}) ได้ เพื่อรักษาเสถียรภาพของระบบ`);
       return;
     }
@@ -495,11 +505,21 @@ const RoleManagement = () => {
                     <Button
                       variant="outline"
                       size="sm"
+                      disabled={roleObj.code === 'SUPER' && !isSuperAdmin}
+                      title={roleObj.code === 'SUPER' && !isSuperAdmin ? 'เฉพาะ Super Admin เท่านั้นที่สามารถจัดการสิทธิ์ของ Super Admin ได้' : 'กำหนดสิทธิ์การใช้งาน (Permissions Configuration)'}
                       onClick={() => handleOpenPermissionModal(roleObj)}
-                      className="neu-button text-xs font-semibold text-purple-600 dark:text-purple-400 flex items-center gap-1.5"
+                      className={`neu-button text-xs font-semibold flex items-center gap-1.5 ${
+                        roleObj.code === 'SUPER' && !isSuperAdmin 
+                          ? 'opacity-40 cursor-not-allowed text-muted-foreground' 
+                          : 'text-purple-600 dark:text-purple-400'
+                      }`}
                     >
-                      <ShieldCheck className="w-4 h-4" />
-                      กำหนดสิทธิ์ (Shield)
+                      {roleObj.code === 'SUPER' && !isSuperAdmin ? (
+                        <Lock className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                      ) : (
+                        <ShieldCheck className="w-4 h-4" />
+                      )}
+                      กำหนดสิทธิ์
                     </Button>
                   ) : (
                     <div></div>
@@ -511,11 +531,24 @@ const RoleManagement = () => {
                       <Button
                         variant="ghost"
                         size="icon"
-                        title="แก้ไขบทบาท (Edit Role)"
+                        disabled={roleObj.code === 'SUPER' && !isSuperAdmin}
+                        title={
+                          roleObj.code === 'SUPER' && !isSuperAdmin 
+                            ? 'เฉพาะ Super Admin เท่านั้นที่สามารถแก้ไขบทบาท Super Admin ได้' 
+                            : 'แก้ไขบทบาท (Edit Role)'
+                        }
                         onClick={() => setSelectedRoleForEdit(roleObj)}
-                        className="h-8 w-8 text-slate-600 hover:text-primary hover:bg-primary/10"
+                        className={`h-8 w-8 transition-colors ${
+                          roleObj.code === 'SUPER' && !isSuperAdmin
+                            ? 'opacity-40 cursor-not-allowed text-muted-foreground'
+                            : 'text-slate-600 hover:text-primary hover:bg-primary/10'
+                        }`}
                       >
-                        <Edit className="w-4 h-4" />
+                        {roleObj.code === 'SUPER' && !isSuperAdmin ? (
+                          <Lock className="w-3.5 h-3.5 text-amber-500" />
+                        ) : (
+                          <Edit className="w-4 h-4" />
+                        )}
                       </Button>
                     )}
 
@@ -524,8 +557,11 @@ const RoleManagement = () => {
                       <Button
                         variant="ghost"
                         size="icon"
+                        disabled={roleObj.code === 'SUPER'}
                         title={
-                          roleObj.is_system
+                          roleObj.code === 'SUPER'
+                            ? 'ไม่สามารถลบบทบาท Super Admin ได้'
+                            : roleObj.is_system
                             ? 'ไม่สามารถลบบทบาทของระบบได้ (System Role)'
                             : roleObj.user_count > 0
                             ? `มีผู้ใช้ประจำอยู่ ${roleObj.user_count} คน (คลิกเพื่อดูรายละเอียด)`
@@ -533,7 +569,9 @@ const RoleManagement = () => {
                         }
                         onClick={() => handleDeleteRole(roleObj)}
                         className={`h-8 w-8 transition-colors ${
-                          roleObj.is_system || roleObj.user_count > 0
+                          roleObj.code === 'SUPER'
+                            ? 'opacity-30 cursor-not-allowed text-muted-foreground'
+                            : roleObj.is_system || roleObj.user_count > 0
                             ? 'text-red-400/80 hover:text-red-600 hover:bg-red-50/80 dark:hover:bg-red-950/60'
                             : 'text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950'
                         }`}

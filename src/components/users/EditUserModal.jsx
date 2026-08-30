@@ -13,6 +13,7 @@ import toast from 'react-hot-toast';
 import AvatarUpload from '@/components/users/AvatarUpload';
 import RoleBadge, { getRoleLabel } from '@/components/ui/RoleBadge';
 import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/contexts/AuthContext';
 
 const EditUserModal = ({ 
   isOpen, 
@@ -24,6 +25,7 @@ const EditUserModal = ({
   allUsers = [] 
 }) => {
   const navigate = useNavigate();
+  const { isSuperAdmin } = useAuth();
   const [activeTab, setActiveTab] = useState('profile'); // 'profile' | 'rbac' | 'projects'
   const [loading, setLoading] = useState(false);
   const [projectSearch, setProjectSearch] = useState('');
@@ -41,7 +43,12 @@ const EditUserModal = ({
     { code: 'SUPER', name: 'SUPER ADMIN', description: 'สิทธิ์สูงสุดระดับระบบ จัดการทุกอย่าง รวมถึง Admin, สิทธิ์, การตั้งค่าระบบ, Security, Integration' }
   ];
 
-  const availableRoles = liveRoles.length > 0 ? liveRoles : (roles.length > 0 ? roles : defaultRoles);
+  const rawRoles = liveRoles.length > 0 ? liveRoles : (roles.length > 0 ? roles : defaultRoles);
+  const availableRoles = rawRoles.filter(r => {
+    const code = (r.code || '').toUpperCase();
+    if (code === 'SUPER' && !isSuperAdmin) return false;
+    return true;
+  });
 
   const [formData, setFormData] = useState({
     email: '',
@@ -66,6 +73,7 @@ const EditUserModal = ({
   );
   const isTargetAdmin = user && (user.role === 'admin' || user.role === 'ADMIN' || user.roles?.code === 'ADMIN');
   const isLastActiveAdmin = isTargetAdmin && user?.status === 'active' && activeAdmins.length <= 1;
+  const isTargetSuper = Boolean(user && ((user.role || '').toLowerCase() === 'super' || (user.roles?.code || '').toUpperCase() === 'SUPER' || (user.email || '').toLowerCase() === 'admin@stockflow.com'));
 
   // Helper to resolve role ID from code/aliases or existing ID
   const resolveRoleId = (roleCode, existingRoleId, roleList = availableRoles) => {
@@ -299,6 +307,11 @@ const EditUserModal = ({
       return;
     }
 
+    if (isTargetSuper && !isSuperAdmin) {
+      toast.error('ความปลอดภัยของระบบ: เฉพาะผู้ดูแลระบบสูงสุด (Super Admin) เท่านั้นที่สามารถแก้ไขหรือบันทึกข้อมูลของบัญชีนี้ได้');
+      return;
+    }
+
     if (isLastActiveAdmin && (formData.role !== 'admin' || formData.status !== 'active')) {
       toast.error('ความปลอดภัยของระบบ: ไม่สามารถลดระดับหรือปิดใช้งานบัญชี Administrator คนสุดท้ายได้');
       return;
@@ -457,6 +470,19 @@ const EditUserModal = ({
           {/* TAB 1: Profile Information */}
           {activeTab === 'profile' && (
             <div className="space-y-5">
+              {/* Super Admin Security Protection Banner */}
+              {isTargetSuper && !isSuperAdmin && (
+                <div className="p-3.5 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-900 dark:text-purple-200 text-xs flex items-start gap-2.5">
+                  <Lock className="w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="font-semibold block text-xs">
+                      คำเตือนความปลอดภัย: บัญชีผู้ดูแลระบบสูงสุด (Super Admin)
+                    </strong>
+                    บัญชีนี้เป็น Super Admin ของระบบ เฉพาะผู้ดูแลระบบสูงสุด (Super Admin) เท่านั้นที่สามารถแก้ไขหรือบันทึกข้อมูลของบัญชีนี้ได้
+                  </div>
+                </div>
+              )}
+
               {/* Avatar Upload */}
               <div className="p-4 rounded-xl neu-pressed-sm bg-white/40 dark:bg-black/20 space-y-2">
                 <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
@@ -572,8 +598,21 @@ const EditUserModal = ({
           {/* TAB 2: Roles, RBAC Permissions Preview & Account Status */}
           {activeTab === 'rbac' && (
             <div className="space-y-5">
+              {/* Super Admin Security Protection Banner */}
+              {isTargetSuper && !isSuperAdmin && (
+                <div className="p-3.5 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-900 dark:text-purple-200 text-xs flex items-start gap-2.5">
+                  <Lock className="w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="font-semibold block text-xs">
+                      คำเตือนความปลอดภัย: บัญชีผู้ดูแลระบบสูงสุด (Super Admin)
+                    </strong>
+                    บัญชีนี้เป็น Super Admin ของระบบ เฉพาะผู้ดูแลระบบสูงสุด (Super Admin) เท่านั้นที่สามารถเปลี่ยนบทบาทหรือแก้ไขสิทธิ์ของบัญชีนี้ได้
+                  </div>
+                </div>
+              )}
+
               {/* Last Active Admin Protection Banner */}
-              {isLastActiveAdmin && (
+              {isLastActiveAdmin && !isTargetSuper && (
                 <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs flex items-start gap-2.5">
                   <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                   <div>
@@ -605,7 +644,7 @@ const EditUserModal = ({
                   {availableRoles.map((r) => {
                     const roleCode = (r.code || r.role || '').toLowerCase();
                     const isSelected = (formData.role || '').toLowerCase() === roleCode;
-                    const isRoleDisabled = isLastActiveAdmin && roleCode !== 'admin';
+                    const isRoleDisabled = (isLastActiveAdmin && roleCode !== 'admin') || (isTargetSuper && !isSuperAdmin);
 
                     return (
                       <div
@@ -1014,8 +1053,9 @@ const EditUserModal = ({
               </Button>
               <Button
                 type="submit"
-                disabled={loading}
-                className="neu-primary text-xs h-9 px-5 font-semibold flex items-center gap-2"
+                disabled={loading || (isTargetSuper && !isSuperAdmin)}
+                title={isTargetSuper && !isSuperAdmin ? 'เฉพาะ Super Admin เท่านั้นที่สามารถแก้ไขบัญชีนี้ได้' : 'บันทึกการแก้ไข'}
+                className="neu-primary text-xs h-9 px-5 font-semibold flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <>

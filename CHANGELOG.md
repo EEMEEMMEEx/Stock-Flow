@@ -1,5 +1,29 @@
 # Changelog
 
+## [2026-08-31 00:48] จำกัดสิทธิ์และป้องกันลำดับชั้น RBAC ให้เฉพาะ Super Admin เท่านั้นที่จัดการ Super Admin ได้ (v1.4.19)
+
+- **Modified / Created files:**
+  - `supabase/migrations/60_restrict_super_admin_management.sql` [DATABASE HARDENING MIGRATION FOR SUPER ADMIN HIERARCHY]
+  - `src/pages/RoleManagement.jsx` [RESTRICT SUPER ADMIN ROLE EDITING, DELETION, AND PERMISSION MANAGEMENT TO SUPER ADMIN ONLY]
+  - `src/components/users/AddUserModal.jsx` [HIDE SUPER ROLE FROM ROLE ASSIGNMENT SELECTION FOR NON-SUPERADMINS]
+  - `src/components/users/EditUserModal.jsx` [LOCK SUPER ADMIN USERS AND OMIT SUPER ROLE SELECTION FOR NON-SUPERADMINS]
+  - `src/pages/UserManagement.jsx` [ENFORCE SUPER ADMIN PRIVILEGE ISOLATION IN TABLE ROW ACTIONS AND HANDLERS]
+  - `src/config/appConfig.js` [VERSION BUMP v1.4.19]
+  - `package.json` [VERSION BUMP v1.4.19]
+- **Details:**
+  - **จำกัดสิทธิ์ในระบบจัดการบทบาท (Role Management):**
+    - Administrator ไม่สามารถแก้ไขบทบาท Super Admin, กำหนดสิทธิ์ของ Super Admin หรือลบบทบาท Super Admin ได้
+    - ปุ่ม "กำหนดสิทธิ์" และ "แก้ไข" บนการ์ดบทบาท `SUPER` จะถูกปิดการใช้งาน (Disabled) และแสดงไอคอนล็อกพร้อมข้อความชี้แจงสำหรับผู้ใช้ที่ไม่ใช่ Super Admin
+    - มีการป้องกันในฟังก์ชัน `handleSaveRolePermissions`, `handleUpdateRole` และ `handleDeleteRole`
+  - **จำกัดสิทธิ์ในระบบจัดการผู้ใช้งาน (User Management):**
+    - ใน `AddUserModal` และ `EditUserModal`: กรองบทบาท `SUPER` ออกจากตัวเลือกการกำหนดบทบาท หากผู้ใช้งานที่เข้าสู่ระบบไม่ใช่ Super Admin เพื่อป้องกันไม่ให้ Administrator แต่งตั้งหรือยกระดับสิทธิ์ตนเอง/ผู้อื่นเป็น Super Admin ได้
+    - หากแก้ไขบัญชีผู้ใช้ที่เป็น Super Admin ระบบจะแสดงแบนเนอร์แจ้งเตือนความปลอดภัย ล็อกฟอร์ม และปิดการทำงานของปุ่มบันทึก
+    - ในตารางผู้ใช้งาน (`UserManagement`): ปิดการทำงานของปุ่มแก้ไข, รีเซ็ตรหัสผ่าน, ระงับการใช้งาน และลบบัญชีของ Super Admin สำหรับผู้ใช้งานที่ไม่ใช่ Super Admin
+  - **การป้องกันระดับฐานข้อมูล (PostgreSQL & Supabase Security Hardening):**
+    - สร้าง Migration `60_restrict_super_admin_management.sql` ป้องกันใน RPC `admin_save_role_permissions`, `admin_update_role`, `admin_delete_role`, `admin_update_user`, `admin_create_user` ให้ปฏิเสธ (Reject) คำขอใดๆ ที่พยายามแก้ไขหรือแต่งตั้ง `SUPER` หากผู้เรียกไม่ใช่ Super Admin
+  - **อัปเกรดเวอร์ชันระบบ (System Version Increment):** ปรับเพิ่มเวอร์ชันแอปพลิเคชันจาก `v1.4.18` เป็น `v1.4.19` (PATCH)
+- **Reason:** ยกระดับความปลอดภัยและโครงสร้างลำดับชั้นของระบบ RBAC ป้องกัน Privilege Escalation และปกป้องบัญชี/บทบาทระดับสูงสุดของระบบ
+
 ## [2026-08-31 00:38] ตรวจสอบและแก้ไขระบบ RBAC Dynamic Permission Enforcement ให้มีผลตามการตั้งค่าจริง (v1.4.18)
 
 - **Modified / Created files:**
