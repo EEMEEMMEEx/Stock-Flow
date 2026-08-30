@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowUpRight, ShieldCheck, Layers, Cpu, Compass, Menu, X } from 'lucide-react';
+import { ArrowUpRight, ShieldCheck, Layers, Cpu, Compass, Menu, X, Play } from 'lucide-react';
 import LanguageSwitcher from './LanguageSwitcher';
 import { useLandingLanguage } from '../context/LandingLanguageContext';
 import { APP_CONFIG } from '@/config/appConfig';
@@ -19,6 +19,7 @@ export default function LandingNavbar() {
 
   const navLinks = [
     { label: t.nav.features, href: '#features', icon: Layers },
+    { label: t.nav.simulator || 'จำลองการทำงาน', href: '#simulator', icon: Play },
     { label: t.nav.workflows, href: '#workflows', icon: Compass },
     { label: t.nav.architecture, href: '#architecture', icon: Cpu },
     { label: t.nav.security, href: '#security', icon: ShieldCheck },
@@ -28,8 +29,8 @@ export default function LandingNavbar() {
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? 'bg-zinc-950/80 backdrop-blur-xl border-b border-white/10 shadow-lg shadow-black/40 py-3.5'
-          : 'bg-transparent py-5'
+          ? 'bg-zinc-950/85 backdrop-blur-xl border-b border-white/10 shadow-lg shadow-black/40 py-3'
+          : 'bg-transparent py-4 sm:py-5'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
@@ -56,7 +57,7 @@ export default function LandingNavbar() {
               <span className="font-bold text-lg tracking-tight text-white font-sans">
                 Stock<span className="text-emerald-400">-Flow</span>
               </span>
-              <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold">
+              <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
                 v{APP_CONFIG.version}
               </span>
             </div>
@@ -77,7 +78,7 @@ export default function LandingNavbar() {
                 className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-zinc-300 hover:text-white rounded-full transition-colors duration-150 hover:bg-white/5"
               >
                 <Icon className="w-3.5 h-3.5 text-emerald-400" strokeWidth={1.75} />
-                {link.label}
+                <span>{link.label}</span>
               </a>
             );
           })}
@@ -88,10 +89,8 @@ export default function LandingNavbar() {
           <LanguageSwitcher />
 
           <a
-            href="https://stockflowth.online"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-zinc-950 bg-emerald-400 hover:bg-emerald-300 transition-all duration-200 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 hover:scale-[1.02] active:scale-[0.98]"
+            href="/login"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-zinc-950 bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 transition-all duration-200 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 hover:scale-[1.02] active:scale-[0.98]"
           >
             <span>{t.nav.launchApp}</span>
             <ArrowUpRight className="w-4 h-4" strokeWidth={2.2} />
@@ -102,6 +101,7 @@ export default function LandingNavbar() {
         <div className="flex sm:hidden items-center gap-2">
           <LanguageSwitcher />
           <button
+            type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="p-2 rounded-lg bg-zinc-900 border border-white/10 text-zinc-400 hover:text-white"
             aria-label="Toggle menu"
@@ -129,15 +129,13 @@ export default function LandingNavbar() {
                   className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-zinc-200 hover:bg-white/5"
                 >
                   <Icon className="w-4 h-4 text-emerald-400" strokeWidth={2} />
-                  {link.label}
+                  <span>{link.label}</span>
                 </a>
               );
             })}
             <div className="pt-2 border-t border-white/10 mt-1 flex flex-col gap-2">
               <a
-                href="https://stockflowth.online"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/login"
                 className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-zinc-950 bg-emerald-400 hover:bg-emerald-300"
               >
                 <span>{t.nav.launchApp}</span>

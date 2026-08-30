@@ -6,9 +6,8 @@ import {
   Cpu, 
   Mail, 
   FileText, 
-  Smartphone,
-  Server,
-  Cloud
+  Server, 
+  Cloud 
 } from 'lucide-react';
 import { useLandingLanguage } from '../context/LandingLanguageContext';
 

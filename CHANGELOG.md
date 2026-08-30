@@ -1,5 +1,43 @@
 # Changelog
 
+## [2026-08-30 11:45] ยกระดับหน้า Landing Page สู่ดีไซน์พรีเมียม เพิ่ม Interactive Mockup Tabs และ Live Simulator Playground (v1.4.0)
+
+- **Modified / Created files:**
+  - `src/landing/components/HeroSection.jsx`
+  - `src/landing/components/BentoFeatures.jsx`
+  - `src/landing/components/LiveSimulatorSection.jsx` [NEW COMPONENT]
+  - `src/landing/components/WorkflowSection.jsx`
+  - `src/landing/components/TechStackSection.jsx`
+  - `src/landing/components/CtaSection.jsx`
+  - `src/landing/components/LandingNavbar.jsx`
+  - `src/landing/LandingPage.jsx`
+  - `src/landing/context/LandingLanguageContext.jsx`
+  - `src/landing/data/landing-translations.js`
+  - `docs/landing-page-improvement-plan.md` [NEW PLAN]
+  - `package.json`
+  - `src/config/appConfig.js`
+- **Details:**
+  - **Hero Section & Interactive Showcase 4 Tabs (`HeroSection.jsx`):**
+    - ปรับปรุงการแสดงผล Mockup หน้าเว็บให้สามารถสลับแท็บดูระบบจริง 4 ระบบได้ทันที:
+      1. 🛒 POS Rapid Dispatch (สแกนบาร์โค้ด & หักสต็อก)
+      2. 📦 Realtime Stock Adjustment (ปรับยอดสต็อก & Audit Log)
+      3. ⏱️ Return Due Date Extension (ขยายกำหนดวันส่งคืนพัสดุ)
+      4. 📋 Site Installation Kits BOM (วิเคราะห์ความพร้อมไซต์งานตามสูตร BOM)
+    - ผสานการทำงานร่วมกับ ReactBits SVGs, Squares backdrop, DecryptedText, ShinyText, และ Magnet CTAs
+  - **8-Card Upgraded Bento Features Grid (`BentoFeatures.jsx`):**
+    - เพิ่มการ์ดนำเสนอ 8 จุดเด่นหลักของ StockFlow พร้อม SpotlightCard และไอคอน SVG:
+      - POS-Style Rapid Withdrawal, 100% Atomic Transactions, Current Stock Adjustment & Audit Trail, Equipment Loans & Return Due Date Extension, Site Installation Kits (BOM), Cloudflare R2 Object Storage, Granular RBAC Matrix, Automated PDF Issue Vouchers & Reports
+  - **Interactive Live Simulator Playground (`LiveSimulatorSection.jsx` [NEW]):**
+    - เพิ่มโมดูลจำลองการทำงานจริงแบบ Interactive 4 โหมดให้ผู้ใช้สามารถทดลองกดเล่นได้ในหน้าเว็บ:
+      - จำลองการเบิกจ่ายสินค้า POS, จำลองการปรับยอดสต็อกพร้อมดูผลต่าง, จำลองการขยายวันส่งคืน, และคำนวณความพร้อมชุดติดตั้ง BOM
+  - **Navigation & Mobile Responsiveness (`LandingNavbar.jsx`):**
+    - ปรับปรุงการ Scroll, การเปิด-ปิดเมนูบน Mobile, อัปเดต Version Badge อัตโนมัติจาก `APP_CONFIG.version`
+    - รองรับการนำทางไปยังหน้าเข้าสู่ระบบ `/login` และการเปลี่ยนภาษา
+  - **Multi-language System (i18n):**
+    - เพิ่มคีย์แปลภาษาครบทั้ง 12 ภาษา พร้อมระบบ Deep Recursive Safe Proxy Fallback
+  - **อัปเกรดเวอร์ชันระบบ (System Version Increment):** ปรับเพิ่มเวอร์ชันแอปพลิเคชันจาก `v1.3.0` เป็น `v1.4.0` (MINOR Feature)
+- **Reason:** ปรับปรุงหน้า Landing Page ให้ทันสมัย สวยงามระดับพรีเมียม ตอบสนองทุกอุปกรณ์ และสะท้อนฟังก์ชันล่าสุดของระบบ StockFlow ได้ครบถ้วน
+
 ## [2026-08-30 11:20] เพิ่มฟีเจอร์ปรับยอดสต็อกคงเหลือปัจจุบัน (Current Stock Adjustment) ในหน้า Master Items พร้อม Global Setting ใน /settings, สิทธิ์ RBAC และระบบ Audit Log (v1.3.0)
 
 - **Modified / Created files:**

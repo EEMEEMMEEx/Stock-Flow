@@ -32,7 +32,31 @@ export const LandingLanguageProvider = ({ children }) => {
     }
   };
 
-  const t = landingTranslations[lang] || landingTranslations.th;
+  const rawT = landingTranslations[lang] || landingTranslations.th;
+  const fallbackT = landingTranslations.th;
+
+  // Safe recursive fallback proxy so any missing translation key gracefully resolves to Thai fallback
+  const createSafeProxy = (current, fallback) => {
+    return new Proxy(current || {}, {
+      get(obj, prop) {
+        if (prop in obj && obj[prop] !== undefined) {
+          if (typeof obj[prop] === 'object' && obj[prop] !== null && !Array.isArray(obj[prop])) {
+            return createSafeProxy(obj[prop], fallback?.[prop] || {});
+          }
+          return obj[prop];
+        }
+        if (fallback && prop in fallback && fallback[prop] !== undefined) {
+          if (typeof fallback[prop] === 'object' && fallback[prop] !== null && !Array.isArray(fallback[prop])) {
+            return createSafeProxy(fallback[prop], {});
+          }
+          return fallback[prop];
+        }
+        return '';
+      }
+    });
+  };
+
+  const t = createSafeProxy(rawT, fallbackT);
 
   return (
     <LandingLanguageContext.Provider value={{ lang, setLang: changeLanguage, t, supportedLanguages: SUPPORTED_LANGUAGES }}>

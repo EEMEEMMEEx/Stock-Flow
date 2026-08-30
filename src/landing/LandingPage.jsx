@@ -3,6 +3,7 @@ import LandingNavbar from './components/LandingNavbar';
 import HeroSection from './components/HeroSection';
 import StatsSection from './components/StatsSection';
 import BentoFeatures from './components/BentoFeatures';
+import LiveSimulatorSection from './components/LiveSimulatorSection';
 import WorkflowSection from './components/WorkflowSection';
 import TechStackSection from './components/TechStackSection';
 import CtaSection from './components/CtaSection';
@@ -22,6 +23,7 @@ export default function LandingPage() {
           <HeroSection />
           <StatsSection />
           <BentoFeatures />
+          <LiveSimulatorSection />
           <WorkflowSection />
           <TechStackSection />
           <CtaSection />
