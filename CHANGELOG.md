@@ -1,5 +1,19 @@
 # Changelog
 
+## [2026-08-31 00:27] แก้ไขข้อผิดพลาด Sparkles is not defined ใน RoleManagement.jsx (v1.4.16)
+
+- **Modified / Created files:**
+  - `src/pages/RoleManagement.jsx` [ADD MISSING SPARKLES IMPORT FROM LUCIDE-REACT]
+  - `src/config/appConfig.js` [VERSION BUMP v1.4.16]
+  - `package.json` [VERSION BUMP v1.4.16]
+- **Details:**
+  - **แก้ไขปัญหา `Sparkles is not defined` Runtime Error:**
+    - เพิ่มการนำเข้าไอคอน `<Sparkles />` จาก `lucide-react` ในไฟล์ `RoleManagement.jsx`
+    - ทำให้หน้า `/roles` โหลดและแสดงผลการ์ดบทบาท `SUPER` พร้อมไอคอน SVG `<Sparkles />` ราบรื่น 100% ไร้ข้อผิดพลาด
+  - **อัปเกรดเวอร์ชันระบบ (System Version Increment):** ปรับเพิ่มเวอร์ชันแอปพลิเคชันจาก `v1.4.15` เป็น `v1.4.16` (PATCH)
+- **Reason:** แก้ไขข้อผิดพลาดการอ้างอิงตัวแปรไอคอนที่ไม่ได้ถูกนำเข้าเพื่อให้หน้าจัดการบทบาททำงานได้ปกติ
+
+
 ## [2026-08-31 00:20] เพิ่ม Super Gradient Theme ในระบบ Badge Presets และ Live Preview (v1.4.15)
 
 - **Modified / Created files:**
