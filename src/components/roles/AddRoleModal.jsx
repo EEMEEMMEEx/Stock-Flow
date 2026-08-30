@@ -5,16 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Shield, Sparkles, Check, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
-
-const BADGE_COLOR_PRESETS = [
-  { name: 'Purple', bg: 'bg-purple-100 dark:bg-purple-950', text: 'text-purple-700 dark:text-purple-300' },
-  { name: 'Blue', bg: 'bg-blue-100 dark:bg-blue-950', text: 'text-blue-700 dark:text-blue-300' },
-  { name: 'Emerald', bg: 'bg-emerald-100 dark:bg-emerald-950', text: 'text-emerald-700 dark:text-emerald-300' },
-  { name: 'Amber', bg: 'bg-amber-100 dark:bg-amber-950', text: 'text-amber-700 dark:text-amber-300' },
-  { name: 'Rose', bg: 'bg-rose-100 dark:bg-rose-950', text: 'text-rose-700 dark:text-rose-300' },
-  { name: 'Indigo', bg: 'bg-indigo-100 dark:bg-indigo-950', text: 'text-indigo-700 dark:text-indigo-300' },
-  { name: 'Slate', bg: 'bg-slate-200 dark:bg-slate-800', text: 'text-slate-700 dark:text-slate-300' },
-];
+import { BADGE_COLOR_PRESETS } from '@/config/badgePresets';
 
 const AddRoleModal = ({ isOpen, onClose, onSave }) => {
   const [loading, setLoading] = useState(false);
@@ -126,7 +117,8 @@ const AddRoleModal = ({ isOpen, onClose, onSave }) => {
               <div className="flex items-center gap-1.5 text-xs">
                 <Sparkles className="w-3.5 h-3.5 text-amber-500" />
                 <span>ตัวอย่างสด:</span>
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${formData.badge_background} ${formData.badge_text_color}`}>
+                <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold ${formData.badge_background} ${formData.badge_text_color}`}>
+                  {formData.badge_background.includes('gradient') ? <Sparkles className="w-3 h-3 text-amber-500 shrink-0" /> : <Shield className="w-3 h-3 shrink-0" />}
                   {formData.code || 'ROLE_CODE'}
                 </span>
               </div>

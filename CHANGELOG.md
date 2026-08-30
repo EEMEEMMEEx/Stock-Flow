@@ -1,5 +1,25 @@
 # Changelog
 
+## [2026-08-31 00:20] เพิ่ม Super Gradient Theme ในระบบ Badge Presets และ Live Preview (v1.4.15)
+
+- **Modified / Created files:**
+  - `src/config/badgePresets.js` [NEW BADGE THEME PRESET CONFIG WITH SUPER GRADIENT]
+  - `src/components/roles/AddRoleModal.jsx` [INTEGRATE BADGE PRESETS & LIVE PREVIEW WITH SVG ICONS]
+  - `src/components/roles/EditRoleModal.jsx` [INTEGRATE BADGE PRESETS & LIVE PREVIEW WITH SVG ICONS]
+  - `src/pages/RoleManagement.jsx` [ADD SVG ICONS TO ROLE BADGES ON CARDS]
+  - `src/config/appConfig.js` [VERSION BUMP v1.4.15]
+  - `package.json` [VERSION BUMP v1.4.15]
+- **Details:**
+  - **เพิ่ม ธีมป้ายบทบาท "Super" Gradient:** 
+    - `badge_background`: `bg-gradient-to-r from-amber-500/15 via-purple-500/15 to-rose-500/15`
+    - `badge_text_color`: `text-purple-900 dark:text-purple-200`
+  - **เชื่อมโยงธีมสีกิจกรรมไปยังตัวเลือกธีมและ Live Preview:**
+    - แสดงธีม `Super` ในรายการตัวเลือก Badge Theme และในส่วนแสดงผลสด (Live Preview) ของทั้ง `AddRoleModal` และ `EditRoleModal`
+    - แสดง SVG ไอคอน `<Sparkles />` สำหรับธีม Super/Gradient และ `<Shield />` สำหรับธีมทั่วไป (ห้ามใช้อีโมจิ)
+  - **อัปเกรดเวอร์ชันระบบ (System Version Increment):** ปรับเพิ่มเวอร์ชันแอปพลิเคชันจาก `v1.4.14` เป็น `v1.4.15` (PATCH)
+- **Reason:** ให้ระบบเลือกธีมสีป้ายบทบาทสวยงาม รองรับธีมไล่ระดับสี Super Gradient และแสดงผลตรงตามข้อกำหนดสม่ำเสมอทุกจุด
+
+
 ## [2026-08-31 00:11] กำหนดและตั้งค่า SUPER (Super Admin) ให้เป็น System Role สิทธิ์สูงสุด (v1.4.14)
 
 - **Modified / Created files:**
