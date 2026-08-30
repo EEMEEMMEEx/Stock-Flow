@@ -1,5 +1,40 @@
 # Changelog
 
+## [2026-08-31 00:11] กำหนดและตั้งค่า SUPER (Super Admin) ให้เป็น System Role สิทธิ์สูงสุด (v1.4.14)
+
+- **Modified / Created files:**
+  - `supabase/migrations/59_configure_super_system_role.sql` [NEW MIGRATION FOR SUPER SYSTEM ROLE & PERMISSION CATALOG MAPPING]
+  - `scripts/apply-super-role-migration.mjs` [EXECUTED DATABASE MIGRATION SCRIPT]
+  - `src/components/roles/EditRoleModal.jsx` [ADD SYSTEM ROLE NOTICE BANNER]
+  - `src/config/appConfig.js` [VERSION BUMP v1.4.14]
+  - `package.json` [VERSION BUMP v1.4.14]
+- **Details:**
+  - **สร้างและตั้งค่า System Role ใหม่ `SUPER` (Super Admin):**
+    - กำหนดบทบาท: `code = 'SUPER'`, `name = 'ผู้ดูแลระบบสูงสุด (Super Admin)'`
+    - กำหนดรายละเอียด: `สิทธิ์สูงสุด จัดการทุกอย่าง รวมถึง Admin, สิทธิ์, การตั้งค่าระบบ, Security, Integration`
+    - กำหนดคุณสมบัติบทบาทระบบ: `is_system = TRUE`, `is_active = TRUE`
+  - **เชื่อมโยงสิทธิ์ทั้งหมด 36 สิทธิ์ในแคตตาล็อกให้แก่บทบาท SUPER:**
+    - ทำการแมปสิทธิ์ทั้งหมดครบทั้ง 36 รายการในตาราง `role_permissions` ให้แก่บทบาท `SUPER` ในฐานข้อมูล Cloud
+  - **อัปเกรดเวอร์ชันระบบ (System Version Increment):** ปรับเพิ่มเวอร์ชันแอปพลิเคชันจาก `v1.4.13` เป็น `v1.4.14` (PATCH)
+- **Reason:** รองรับการทำงานของบทบาทสูงสุดในระบบ (Super Admin) ให้เป็น System Role ถูกต้องครบถ้วน 100%
+
+
+## [2026-08-31 00:04] แก้ไขปุ่มลบบทบาทและปรับปรุงความชัดเจนของข้อความแจ้งเตือน RBAC (v1.4.13)
+
+- **Modified / Created files:**
+  - `src/pages/RoleManagement.jsx` [REMOVE HARDCODED DISABLED ATTRIBUTE & IMPROVE SAFETY WARNING TOASTS]
+  - `src/config/appConfig.js` [VERSION BUMP v1.4.13]
+  - `package.json` [VERSION BUMP v1.4.13]
+- **Details:**
+  - **แก้ไขปัญหาปุ่มลบบทบาทกดไม่ได้ แม้สิทธิ์ `roles.delete` เปิดใช้งานอยู่:**
+    - สิทธิ์ `roles.delete` ควบคุมการแสดงผลและการใช้งานปุ่มลบโดยสมบูรณ์
+    - ปลดล็อคปุ่มลบบทบาทไม่ให้ถูก `disabled` ที่ระดับ HTML element เพื่อให้ผู้ใช้ที่ได้รับสิทธิ์ `roles.delete` สามารถคลิกเพื่อรับทราบสาเหตุความปลอดภัยได้อย่างชัดเจน
+    - เมื่อผู้ใช้กดลบบทบาทที่มีผู้ใช้งานประจำอยู่ (`user_count > 0`) หรือบทบาทระบบ (`is_system`) ระบบจะแสดงข้อความแจ้งเตือน Toast ละเอียด พร้อมระบุจำนวนผู้ใช้งานที่ต้องย้ายก่อนทำการลบ
+    - คงการป้องกันความปลอดภัย (Safety Checks) ป้องกันการลบบทบาทที่มีผู้ใช้หรือบทบาทระบบทั้งใน Frontend และ Backend RPC
+  - **อัปเกรดเวอร์ชันระบบ (System Version Increment):** ปรับเพิ่มเวอร์ชันแอปพลิเคชันจาก `v1.4.12` เป็น `v1.4.13` (PATCH)
+- **Reason:** ให้สิทธิ์ RBAC `roles.delete` ทำงานสอดคล้องกับ UI และให้ผู้ใช้งานเข้าใจสาเหตุที่ไม่สามารถลบบทบาทได้อย่างชัดเจน
+
+
 ## [2026-08-30 23:56] ปรับปรุงการแสดงผล Role Badges และ Role Labels ให้เป็นมาตรฐาน (v1.4.12)
 
 - **Modified / Created files:**

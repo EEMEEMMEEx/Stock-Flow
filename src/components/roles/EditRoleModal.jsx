@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Shield, Sparkles } from 'lucide-react';
+import { Shield, Sparkles, Lock } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const BADGE_COLOR_PRESETS = [
@@ -73,6 +73,12 @@ const EditRoleModal = ({ isOpen, onClose, onSave, role }) => {
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {role?.is_system && (
+            <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-900 dark:text-purple-200 text-xs flex items-center gap-2">
+              <Lock className="w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0" />
+              <span>บทบาทของระบบ (System Role) — ป้องกันการลบหรือเปลี่ยนรหัสบทบาทเพื่อความเสถียรของระบบ</span>
+            </div>
+          )}
           <div>
             <Label className="text-sm font-medium">รหัสบทบาท (Role Code)</Label>
             <Input

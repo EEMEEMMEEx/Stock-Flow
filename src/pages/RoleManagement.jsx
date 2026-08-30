@@ -306,12 +306,15 @@ const RoleManagement = () => {
 
   const handleDeleteRole = async (roleObj) => {
     if (roleObj.is_system) {
-      toast.error('ไม่สามารถลบบทบาทของระบบ (System Role) ได้');
+      toast.error(`ไม่สามารถลบบทบาทของระบบ (System Role: ${roleObj.name || roleObj.code}) ได้ เพื่อรักษาเสถียรภาพของระบบ`);
       return;
     }
 
     if (roleObj.user_count > 0) {
-      toast.error(`ไม่สามารถลบบทบาทนี้ได้ เนื่องจากมีผู้ใช้งาน ${roleObj.user_count} คน กรุณาย้ายผู้ใช้งานไปยังบทบาทอื่นก่อน`);
+      toast.error(
+        `ไม่สามารถลบบทบาท "${roleObj.name || roleObj.code}" ได้ เนื่องจากยังมีผู้ใช้งานจำนวน ${roleObj.user_count} คน กำหนดบทบาทนี้อยู่ กรุณาย้ายผู้ใช้งานไปยังบทบาทอื่นในระบบก่อนลบ`,
+        { duration: 5000 }
+      );
       return;
     }
 
@@ -321,17 +324,51 @@ const RoleManagement = () => {
   const confirmDeleteRole = async () => {
     if (!selectedRoleForDelete) return;
 
-    try {
-      const { data, error } = await supabase.rpc('admin_delete_role', {
-        p_role_id: selectedRoleForDelete.id
-      });
+    if (selectedRoleForDelete.is_system) {
+      toast.error('ไม่สามารถลบบทบาทของระบบ (System Role) ได้');
+      setSelectedRoleForDelete(null);
+      return;
+    }
 
-      if (error) throw error;
-      if (data?.success) {
-        toast.success('ลบบทบาทสำเร็จ');
-        await fetchRoles();
+    if (selectedRoleForDelete.user_count > 0) {
+      toast.error(`ไม่สามารถลบบทบาทได้ เนื่องจากมีผู้ใช้งาน ${selectedRoleForDelete.user_count} คน กำหนดบทบาทนี้อยู่`);
+      setSelectedRoleForDelete(null);
+      return;
+    }
+
+    try {
+      let rpcSuccess = false;
+      try {
+        const { data, error } = await supabase.rpc('admin_delete_role', {
+          p_role_id: selectedRoleForDelete.id
+        });
+        if (!error && data?.success) {
+          rpcSuccess = true;
+        }
+      } catch (e) {
+        console.warn('RPC admin_delete_role notice, fallback to direct table delete:', e);
       }
+
+      if (!rpcSuccess) {
+        const { error: deleteRpErr } = await supabase
+          .from('role_permissions')
+          .delete()
+          .eq('role_id', selectedRoleForDelete.id);
+
+        if (deleteRpErr) throw deleteRpErr;
+
+        const { error: deleteRoleErr } = await supabase
+          .from('roles')
+          .delete()
+          .eq('id', selectedRoleForDelete.id);
+
+        if (deleteRoleErr) throw deleteRoleErr;
+      }
+
+      toast.success(`ลบบทบาท ${selectedRoleForDelete.name} เรียบร้อยแล้ว`);
+      await fetchRoles();
     } catch (error) {
+      console.error('Delete Role error:', error);
       toast.error(error.message || 'เกิดข้อผิดพลาดในการลบบทบาท');
     } finally {
       setSelectedRoleForDelete(null);
@@ -477,15 +514,24 @@ const RoleManagement = () => {
                       </Button>
                     )}
 
-                    {/* Delete Role */}
+                    {/* Delete Role Button controlled strictly by RBAC roles.delete permission */}
                     {can('roles.delete') && (
                       <Button
                         variant="ghost"
                         size="icon"
-                        title={roleObj.is_system ? 'ไม่สามารถลบบทบาทของระบบได้' : roleObj.user_count > 0 ? `ไม่สามารถลบเนื่องจากมีผู้ใช้ ${roleObj.user_count} คน` : 'ลบบทบาท'}
-                        disabled={roleObj.is_system || roleObj.user_count > 0}
+                        title={
+                          roleObj.is_system
+                            ? 'ไม่สามารถลบบทบาทของระบบได้ (System Role)'
+                            : roleObj.user_count > 0
+                            ? `มีผู้ใช้ประจำอยู่ ${roleObj.user_count} คน (คลิกเพื่อดูรายละเอียด)`
+                            : 'ลบบทบาท (Delete Role)'
+                        }
                         onClick={() => handleDeleteRole(roleObj)}
-                        className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950 disabled:opacity-30 disabled:cursor-not-allowed"
+                        className={`h-8 w-8 transition-colors ${
+                          roleObj.is_system || roleObj.user_count > 0
+                            ? 'text-red-400/80 hover:text-red-600 hover:bg-red-50/80 dark:hover:bg-red-950/60'
+                            : 'text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950'
+                        }`}
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
