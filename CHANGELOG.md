@@ -1,5 +1,96 @@
 # Changelog
 
+## [v1.4.25] [2026-09-01 00:35] ปรับปรุง Email Template Manager ใน Webapp พร้อมปุ่ม Reset to Defaults และอัปเดตคำทางการ "ไม่ได้รับการอนุมัติ"
+- **Modified files:**
+  - `src/components/settings/EmailTemplateManager.jsx`: เพิ่มฟังก์ชัน `handleResetCurrentEvent` และ `handleResetAllEvents` พร้อมปุ่ม "คืนค่าเริ่มต้น" สำหรับแต่ละแม่แบบและปุ่ม "รีเซ็ตทั้งหมด", ปรับปรุง `mergeEventsWithDefaults` เพื่ออัปเกรดคำเดิมที่เป็น Legacy ในฐานข้อมูล (เช่น 'ไม่อนุมัติ', 'เตือนภัย') ให้เปลี่ยนเป็นค่ามาตรฐานปัจจุบันโดยอัตโนมัติ
+  - `src/lib/emailRenderer.js`: อัปเดตแม่แบบ `withdrawal_rejected` ให้ใช้คำว่า "ไม่ได้รับการอนุมัติ" ในทุกจุด (Heading, Badge, Preheader, Intro) และปรับการจัดวาง `low_stock_alert` ภายใต้ Shared Renderer
+  - `src/lib/notificationDispatcher.js`: ปรับปรุง Fallback Subject และ Status Label ของ `withdrawal_rejected` ให้ใช้คำว่า "ไม่ได้รับการอนุมัติ"
+  - `src/lib/emailRenderer.test.js`: อัปเดตชุดทดสอบครอบคลุมทั้ง 6 เหตุการณ์ผ่าน 5/5
+  - `package.json`: ปรับเวอร์ชันเป็น `1.4.25`
+- **Verification:** Unit tests `npm run test:email` ผ่าน 5/5, `npx vite build` ผ่านสมบูรณ์
+
+## [v1.4.24] [2026-08-31 23:42] เพิ่ม Event Dispatcher และปรับปรุง Template สำหรับ Stock In และ Low Stock Alert
+- **Modified files:**
+  - `src/lib/notificationDispatcher.js`: เพิ่มฟังก์ชัน `dispatchStockInNotification` และ `dispatchLowStockAlertNotification` สำหรับส่งอีเมลแจ้งเตือนการรับเข้าสต็อกและพัสดุคงเหลือต่ำกว่าเกณฑ์อัตโนมัติ พร้อมการดึง Role ผู้รับ (`ADMIN`, `SUPERVISOR`) และการทำ Deduplication Cache
+  - `src/pages/StockIn.jsx`: เชื่อมต่อ `dispatchStockInNotification` เข้ากับการบันทึกรับเข้าพัสดุจริง
+  - `src/lib/emailRenderer.js`: ปรับปรุงระบบ Preheader แยกตาม Event ทั้ง 6 ประเภทเพื่อไม่ให้เกิดช่องว่างตกหล่น (Whitespace / Missing Variable) ที่กระตุ้นตัวกรอง Spam ของ Microsoft 365 และปรับ Label รายการพัสดุของ `stock_in_created` เป็น "จำนวนที่รับเข้า"
+  - `package.json`: ปรับเวอร์ชันเป็น `1.4.24`
+- **Verification:** Unit tests `npm run test:email` ผ่าน 5/5, Live API Test สำหรับ `stock_in_created` และ `low_stock_alert` ผ่าน 100%, `npx vite build` ผ่านสมบูรณ์
+
+## [v1.4.23] [2026-08-31 23:20] ปรับปรุง Vercel API / Web UI Connectivity Test Template ให้ตรงกับ RFC Diagnostic Format และสอดคล้องกับ Zero-Credential Policy
+- **Modified files:**
+  - `src/lib/emailRenderer.js`: ปรับปรุง `renderTestEmailHtml` ในโหมด Connectivity Test (ปุ่มทดสอบส่งอีเมลจากหน้าการตั้งค่า) ให้ใช้โครงสร้าง Table การ์ด 2 แถว (`เวลาที่ส่ง`, `สถานะ: จัดส่งสำเร็จ`) ตามมาตรฐานเดียวกับ RFC Deliverability Diagnostic Test โดยไม่มีข้อมูลจำลองคำขอเบิกพัสดุติดไป และถอด plaintext password ออกจากแม่แบบเทียบเชิญผู้ใช้งาน
+  - `src/lib/emailService.js`: ปรับปรุง `sendTestEmail` ให้รองรับทั้ง Connectivity Test และ Draft Event Template พร้อม dynamic Subject/Text fallback
+  - `src/lib/emailRenderer.test.js`: ครอบคลุมการทดสอบทั้ง 6 Event Notification, Connectivity Test และ User Invitation
+  - `api/send-email.js`: ทำความสะอาด RFC Headers และ Envelope Sender Alignment
+  - `package.json`: เพิ่มคำสั่ง `test:email` และอัปเดตเวอร์ชันเป็น `1.4.23`
+- **Verification:** Unit tests `npm run test:email` ผ่าน 5/5, Live API Dispatch Test ผ่าน 100% (`250 2.0.0 OK`), `npx vite build` ผ่านสมบูรณ์ (`built in 14.29s`)
+
+## [2026-08-31 22:54] สร้างรายงานฉบับเต็มของเหตุการณ์ Email Delivery และ Outlook Junk Placement
+
+- **Modified / Created files:**
+  - `EMAIL_DELIVERY_INCIDENT_REPORT.md` [DETAILED INCIDENT REPORT COVERING ROOT CAUSE, INVESTIGATION, FINDINGS, CHANGES, VERIFICATION, DELIVERY SUCCESS, AND JUNK EMAIL FOLLOW-UP]
+- **Details:**
+  - รวมสาเหตุ HTTP 404 จาก Vite route ที่ไม่ส่งต่อ `/api/send-email` ไปยัง serverless handler
+  - บันทึก request flow ตั้งแต่ EmailTemplateManager, shared renderer, emailService, Nodemailer, Gmail SMTP จนถึง Outlook
+  - แยกผลสำเร็จของ transport/HTML rendering ออกจากปัญหา Outlook Inbox placement ที่ยังเข้า Junk Email
+  - รวมรายละเอียด shared six-event template system, plain-text fallback, dynamic data escaping, Gmail/Outlook compatibility และ test/build verification
+  - ระบุข้อจำกัดของหลักฐานและขั้นตอนตรวจ SPF, DKIM, DMARC, message headers และ Outlook filtering metadata เพิ่มเติม
+- **Reason:** จัดทำเอกสาร incident แบบละเอียดสำหรับตรวจสอบย้อนหลังและป้องกันการสรุปสาเหตุ Junk Email เกินกว่าหลักฐานที่มี
+
+## [2026-08-31 22:45] ปรับปรุง UX/UI ของ HTML Email ทั้ง 6 ประเภทให้ใช้ shared visual language เดียวกับ Connectivity Test
+
+- **Modified / Created files:**
+  - `src/lib/emailRenderer.js` [SHARED EMAIL THEME, SECTION-CARD COMPONENT, PREHEADER, AND GMAIL/OUTLOOK-SAFE VISUAL HIERARCHY]
+  - `src/lib/emailService.js` [CONSISTENT EVENT TEMPLATE/DATA/BRANDING COMPOSITION FOR TEST EMAIL DELIVERY]
+  - `src/lib/emailRenderer.test.js` [VALIDATION FOR ALL SIX EVENT TEMPLATES AND SHARED DESIGN MARKERS]
+- **Details:**
+  - ใช้แนวทาง Minimalism/Swiss จาก `ui-ux-pro-max` ด้วย slate typography, whitespace, accent rail, high-contrast CTA และการจัดลำดับข้อมูลแบบชัดเจน
+  - ประยุกต์แนวคิด React Bits เช่น SpotlightCard, ShinyText และ Magnet ให้เหมาะกับ static HTML email โดยไม่ใช้ React runtime, JavaScript, animation หรือ external CSS
+  - รวม Summary, Workflow และ Notes ผ่าน `renderSectionCard()` เพื่อลด markup ซ้ำ และเพิ่ม hidden preheader สำหรับ email clients
+  - คงเนื้อหา dynamic/status/CTA เฉพาะของ `withdrawal_submitted`, `withdrawal_approved`, `withdrawal_rejected`, `withdrawal_completed`, `stock_in_created` และ `low_stock_alert`
+- **Reason:** ทำให้ทุก notification ใช้โครงสร้างและ visual language เดียวกับ Connectivity Test พร้อมรักษาความเข้ากันได้ของ Gmail/Outlook และไม่ทำลาย `sendTestEmail`
+
+## [2026-08-31 22:33] ปรับ UI/UX ของ HTML Email ให้เป็น shared design system เดียวกันทั้ง 6 Notification Templates
+
+- **Modified / Created files:**
+  - `src/lib/emailRenderer.js` [REFINE SHARED EMAIL DESIGN TOKENS, SECTION CARDS, PREHEADER, AND OUTLOOK-SAFE VISUAL HIERARCHY]
+  - `src/lib/emailService.js` [ALLOW EVENT TEST PAYLOADS TO CARRY TEMPLATE DATA AND BRANDING CONSISTENTLY]
+  - `src/lib/emailRenderer.test.js` [VERIFY SHARED DESIGN MARKERS, PREHEADER, EVENT CONTENT, AND PLAIN-TEXT FALLBACK]
+- **Details:**
+  - ปรับทุก event ให้ใช้ visual hierarchy แบบ Minimalism/Swiss สำหรับระบบ SaaS องค์กร: พื้นที่ว่างที่ชัดเจน, slate typography, accent rail และ high-contrast CTA
+  - แยก `renderSectionCard()` เป็น shared rendering component สำหรับ summary, workflow และ notes เพื่อลด markup ซ้ำ
+  - เพิ่ม hidden preheader ที่ปลอดภัยกับ email clients และคง table-based inline CSS สำหรับ Gmail/Outlook
+  - ประยุกต์แนวคิดจาก React Bits เช่น SpotlightCard, ShinyText และ Magnet เป็น static-email-safe design language โดยไม่ฝัง React, JavaScript, animation หรือ external CSS ในอีเมล
+  - คงเนื้อหา dynamic/status/CTA เฉพาะของ `withdrawal_submitted`, `withdrawal_approved`, `withdrawal_rejected`, `withdrawal_completed`, `stock_in_created` และ `low_stock_alert`
+- **Reason:** ทำให้ notification emails ทั้ง 6 ประเภทมีหน้าตาและโครงสร้างระดับเดียวกับ Connectivity Test โดยไม่ทำลาย `sendTestEmail`, plain-text fallback หรือความเข้ากันได้กับ Gmail/Outlook
+
+## [2026-08-31 22:28] เพิ่มรายงานเหตุการณ์การส่งอีเมลสำเร็จและปัญหา Outlook Junk Email
+
+- **Modified / Created files:**
+  - `EMAIL_DELIVERY_INCIDENT_REPORT.md` [DETAILED EMAIL DELIVERY ROOT-CAUSE, INVESTIGATION, EVIDENCE, CHANGES, VERIFICATION, AND JUNK-PLACEMENT FOLLOW-UP REPORT]
+- **Details:**
+  - บันทึกสาเหตุ HTTP 404 เดิมจากการที่ Vite development middleware ยังไม่ได้ route `/api/send-email`
+  - บันทึกการตรวจสอบ request flow ตั้งแต่ `EmailTemplateManager` ถึง Gmail SMTP และผลการยืนยันว่า Outlook ได้รับและ render อีเมลสำเร็จ
+  - แยกปัญหา transport/delivery ที่แก้แล้วออกจาก inbox placement ที่ Outlook จัดเข้า Junk Email
+  - ระบุข้อจำกัดของหลักฐานจากภาพแนบและรายการ message headers ที่ต้องใช้เพื่อยืนยันสาเหตุ Junk อย่างเด็ดขาด
+- **Reason:** จัดทำเอกสาร incident แบบตรวจสอบย้อนหลังได้ โดยไม่สรุปเกินหลักฐานว่าเหตุใด Outlook จึงจัดประเภทข้อความเป็น Junk
+
+## [2026-08-31 22:17] ใช้ระบบอีเมล renderer เดียวกันสำหรับการแจ้งเตือนทั้ง 6 ประเภท และแก้เส้นทาง Vite Dev API
+
+- **Modified / Created files:**
+  - `src/lib/emailRenderer.js` [SHARED RESPONSIVE HTML/TEXT RENDERER FOR SIX NOTIFICATION EVENTS]
+  - `src/lib/emailService.js` [EVENT-AWARE TEMPLATE BUILDING, PLAIN-TEXT FALLBACK, AND API PAYLOAD ROUTING]
+  - `src/lib/emailRenderer.test.js` [COVERAGE FOR SIX EVENTS, SHARED EMAIL SHELL, VARIABLES, TEXT FALLBACK, AND HTML ESCAPING]
+  - `src/components/settings/EmailTemplateManager.jsx` [SELECTED EVENT SAMPLE DATA AND TEST EMAIL PREVIEW/SEND WIRING]
+  - `vite.config.js` [ROUTE /API/SEND-EMAIL TO THE SERVERLESS HANDLER DURING VITE DEVELOPMENT]
+- **Details:**
+  - เพิ่ม sample data, dynamic variables, status, summary, workflow, CTA และข้อความ plain text เฉพาะสำหรับ `withdrawal_submitted`, `withdrawal_approved`, `withdrawal_rejected`, `withdrawal_completed`, `stock_in_created` และ `low_stock_alert`
+  - ให้ทุก notification ใช้ table-based inline HTML shell เดียวกับ Connectivity Test เพื่อรองรับ Gmail และ Outlook พร้อมคง multipart plain-text fallback
+  - เชื่อมปุ่มส่งอีเมลทดสอบและ preview ใน `EmailTemplateManager` ให้ใช้ event ที่เลือกจริง ไม่ fallback เป็น Connectivity Test content
+  - เพิ่ม `/api/send-email` ใน Vite dev middleware และส่ง `cc` ผ่าน `emailService` ให้ครบถ้วน
+- **Reason:** แก้ 404 ในสภาพแวดล้อม Vite development และทำให้ template ที่ส่งจริงมีดีไซน์/โครงสร้างเดียวกัน โดยยังคงเนื้อหาเฉพาะของแต่ละเหตุการณ์
+
 ## [2026-08-31 00:48] จำกัดสิทธิ์และป้องกันลำดับชั้น RBAC ให้เฉพาะ Super Admin เท่านั้นที่จัดการ Super Admin ได้ (v1.4.19)
 
 - **Modified / Created files:**

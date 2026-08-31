@@ -1,11 +1,20 @@
-import { renderTestEmailHtml, renderUserInvitationEmailHtml, renderUserInvitationEmailText } from './emailRenderer';
-import { supabase } from './supabase';
+import {
+  getSampleEmailData,
+  renderEmailHtml,
+  renderEmailText,
+  renderTestEmailHtml,
+  renderUserInvitationEmailHtml,
+  renderUserInvitationEmailText,
+  resolveEmailVariables,
+} from './emailRenderer.js';
+
+const viteEnv = import.meta.env || {};
 
 /**
  * Send an email through the StockFlow Vercel API service (/api/send-email)
  * with graceful fallback to Supabase Native Auth
  */
-export async function sendStockFlowEmail({ to, subject, html, text, smtpOverrides, actionUrl }) {
+export async function sendStockFlowEmail({ to, cc, subject, html, text, smtpOverrides }) {
   if (!to) {
     throw new Error('กรุณาระบุอีเมลผู้รับ (recipient email)');
   }
@@ -15,7 +24,7 @@ export async function sendStockFlowEmail({ to, subject, html, text, smtpOverride
   const isGithubPages = isBrowser && window.location.hostname.includes('github.io');
   const dynamicOrigin = isBrowser && !isGithubPages && window.location.origin ? window.location.origin : 'https://stockflowth.online';
   const defaultEndpoint = `${dynamicOrigin}/api/send-email`;
-  const endpoint = import.meta.env.VITE_EMAIL_SERVICE_URL || defaultEndpoint;
+  const endpoint = viteEnv.VITE_EMAIL_SERVICE_URL || defaultEndpoint;
 
   try {
     const response = await fetch(endpoint, {
@@ -25,6 +34,7 @@ export async function sendStockFlowEmail({ to, subject, html, text, smtpOverride
       },
       body: JSON.stringify({
         to,
+        cc,
         subject,
         html,
         text,
@@ -46,18 +56,88 @@ export async function sendStockFlowEmail({ to, subject, html, text, smtpOverride
 }
 
 /**
- * Send a test email displaying the original clean test email layout
+ * Build an event-specific message with the same shared shell used by the test email.
  */
-export async function sendTestEmail(toEmail, eventType = null, smtpOverrides = null) {
-  const html = renderTestEmailHtml({
-    appName: 'StockFlow',
-    isoTimestamp: new Date().toISOString(),
+export const buildNotificationEmail = ({ eventType, template = {}, data = {}, branding = {} } = {}) => {
+  const resolvedEventType = eventType || template.event_type || data.event_type || 'withdrawal_submitted';
+  const sampleData = {
+    ...getSampleEmailData(resolvedEventType),
+    ...data,
+    event_type: resolvedEventType,
+  };
+  const resolvedTemplate = { ...template, event_type: resolvedEventType };
+  const appName = branding.app_name || sampleData.app_name || 'StockFlow';
+
+  return {
+    subject: resolveEmailVariables(
+      resolvedTemplate.subject || `[${appName}] แจ้งเตือน ${resolvedEventType}`,
+      sampleData
+    ),
+    html: renderEmailHtml({
+      branding: { ...branding, app_name: appName },
+      template: resolvedTemplate,
+      data: sampleData,
+    }),
+    text: renderEmailText({
+      branding: { ...branding, app_name: appName },
+      template: resolvedTemplate,
+      data: sampleData,
+    }),
+  };
+};
+
+export async function sendNotificationEmail({ to, cc, eventType, template = {}, data = {}, branding = {}, smtpOverrides } = {}) {
+  const message = buildNotificationEmail({ eventType, template, data, branding });
+
+  return sendStockFlowEmail({
+    to,
+    cc,
+    ...message,
+    smtpOverrides,
   });
-  const text = `ทดสอบการเชื่อมต่ออีเมล — StockFlow\nระบบส่งอีเมลทำงานสำเร็จเมื่อ ${new Date().toISOString()}\nนี่คืออีเมลทดสอบการเชื่อมต่อ SMTP จากระบบ StockFlow`;
+}
+
+/**
+ * Send the connectivity test or a selected event template draft.
+ */
+export async function sendTestEmail(toEmail, eventOrTemplate = null, smtpOverrides = null) {
+  if (eventOrTemplate && typeof eventOrTemplate === 'object' && eventOrTemplate.event_type) {
+    const template = eventOrTemplate.template || eventOrTemplate;
+    const data = eventOrTemplate.data || {};
+    const branding = eventOrTemplate.branding || {};
+    const message = buildNotificationEmail({
+      eventType: template.event_type,
+      template,
+      data,
+      branding,
+    });
+
+    return sendStockFlowEmail({
+      to: toEmail,
+      ...message,
+      smtpOverrides,
+    });
+  }
+
+  if (typeof eventOrTemplate === 'string' && eventOrTemplate) {
+    const message = buildNotificationEmail({ eventType: eventOrTemplate });
+    return sendStockFlowEmail({ to: toEmail, ...message, smtpOverrides });
+  }
+
+  const branding = (eventOrTemplate && typeof eventOrTemplate === 'object' && eventOrTemplate.branding) || {};
+  const effectiveAppName = branding.app_name || 'StockFlow';
+  const isoTimestamp = new Date().toUTCString();
+  const html = renderTestEmailHtml({
+    appName: effectiveAppName,
+    branding,
+    isoTimestamp,
+  });
+  const subject = `[${effectiveAppName}] ทดสอบการส่งอีเมลระบบแจ้งเตือน (${isoTimestamp})`;
+  const text = `ทดสอบการส่งอีเมลจากระบบ ${effectiveAppName}\nเวลาที่ส่ง: ${isoTimestamp}\nหากคุณได้รับอีเมลนี้ แสดงว่าระบบส่งอีเมลสามารถส่งเข้าสู่ Inbox ของคุณได้อย่างสมบูรณ์`;
 
   return sendStockFlowEmail({
     to: toEmail,
-    subject: 'ทดสอบการเชื่อมต่ออีเมล — StockFlow',
+    subject,
     html,
     text,
     smtpOverrides,

@@ -15,6 +15,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
+import { dispatchStockInNotification } from '@/lib/notificationDispatcher';
 
 import { 
   parseDopaStockCsv, 
@@ -24,7 +25,7 @@ import {
 import { ProjectLocationSelector } from '@/components/common/ProjectLocationSelector';
 
 const StockIn = () => {
-  const { can } = useAuth();
+  const { can, user } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   
@@ -379,6 +380,14 @@ const StockIn = () => {
       if (error) throw error;
 
       toast.success('บันทึกรับเข้าสต็อก (Stock Receipt) สำเร็จเรียบร้อย');
+
+      dispatchStockInNotification({
+        orderId: data?.order_id || data?.id,
+        projectId,
+        items: payloadItems,
+        receivedBy: user?.user_metadata?.full_name || user?.email || 'Warehouse Admin'
+      }).catch(err => console.warn('[StockIn Notification Warning]:', err));
+
       setIsCreateDialogOpen(false);
       fetchData();
     } catch (error) {

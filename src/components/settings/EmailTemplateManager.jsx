@@ -5,16 +5,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { 
   Mail, Send, Sparkles, Check, X, Smartphone, Monitor, Code, 
-  Users, ShieldCheck, ChevronRight, Search, RefreshCw, AlertCircle, Save, Info
+  Users, ShieldCheck, ChevronRight, Search, RefreshCw, AlertCircle, Save, Info, RotateCcw
 } from 'lucide-react';
-import { renderEmailHtml, SUPPORTED_EVENT_VARIABLES, SAMPLE_EMAIL_DATA } from '@/lib/emailRenderer';
+import { getSampleEmailData, renderEmailHtml, SUPPORTED_EVENT_VARIABLES } from '@/lib/emailRenderer';
 import { APP_CONFIG } from '@/config/appConfig';
 import toast from 'react-hot-toast';
 import { sendTestEmail } from '@/lib/emailService';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
-
-const DEFAULT_EVENTS_CONFIG = {
+export const DEFAULT_EVENTS_CONFIG = {
   withdrawal_submitted: {
     enabled: true,
     title: '1. ส่งคำขอเบิกจ่ายใหม่ (Withdrawal Submitted)',
@@ -35,31 +34,31 @@ const DEFAULT_EVENTS_CONFIG = {
   withdrawal_approved: {
     enabled: true,
     title: '2. อนุมัติคำขอเบิกจ่าย (Withdrawal Approved)',
-    desc: 'แจ้งเตือนไปยังผู้ขอเบิกเมื่อคำขอได้รับการอนุมัติเรียบร้อย',
+    desc: 'แจ้งเตือนไปยังผู้ขอเบิกและเจ้าหน้าที่คลังเมื่อคำขอได้รับการอนุมัติ',
     primary_recipient: 'ผู้ขอเบิก (Requester)',
-    subject: '[StockFlow] คำขอเบิก {{request_no}} ได้รับการอนุมัติแล้ว',
-    status_label: 'อนุมัติแล้ว / รอจ่ายวัสดุ',
+    subject: '[StockFlow] คำขอเบิก {{request_no}} ได้รับการอนุมัติแล้ว — {{project_name}}',
+    status_label: 'อนุมัติแล้ว',
     status_type: 'approved',
     heading: 'คำขอเบิกจ่ายวัสดุของคุณได้รับการอนุมัติแล้ว',
     intro: 'เรียน คุณ {{user_name}} คำขอเบิกจ่ายวัสดุเลขที่ {{request_no}} สำหรับโครงการ {{project_name}} ได้รับการอนุมัติโดย {{approved_by}} เรียบร้อยแล้ว',
     cta_label: 'ดูรายละเอียดและเตรียมรับวัสดุ',
     cta_url: '{{action_url}}',
-    footer_note: 'คุณสามารถนำเลขที่คำขอเบิกไปติดต่อรับวัสดุ ณ คลังสินค้าโครงการได้ทันที',
-    roles: ['STAFF'],
+    footer_note: 'กรุณาติดต่อเจ้าหน้าที่คลังเพื่อรับมอบวัสดุตามเวลาที่กำหนด',
+    roles: ['STAFF', 'ADMIN'],
     to_extra: '',
     cc_extra: ''
   },
   withdrawal_rejected: {
     enabled: true,
     title: '3. ปฏิเสธคำขอเบิกจ่าย (Withdrawal Rejected)',
-    desc: 'แจ้งเตือนไปยังผู้ขอเบิกเมื่อคำขอถูกปฏิเสธพร้อมระบุเหตุผล',
+    desc: 'แจ้งเตือนไปยังผู้ขอเบิกเมื่อคำขอไม่ได้รับการอนุมัติพร้อมระบุเหตุผล',
     primary_recipient: 'ผู้ขอเบิก (Requester)',
-    subject: '[StockFlow] คำขอเบิก {{request_no}} ไม่ได้รับการอนุมัติ',
+    subject: '[StockFlow] คำขอเบิก {{request_no}} ไม่ได้รับการอนุมัติ — {{project_name}}',
     status_label: 'ไม่ได้รับการอนุมัติ',
     status_type: 'rejected',
     heading: 'คำขอเบิกจ่ายวัสดุไม่ได้รับการอนุมัติ',
-    intro: 'เรียน คุณ {{user_name}} คำขอเบิกจ่ายวัสดุเลขที่ {{request_no}} ถูกปฏิเสธ กรุณาตรวจสอบเหตุผลการปฏิเสธและปรับปรุงข้อมูลก่อนส่งคำขอใหม่',
-    cta_label: 'ดูเหตุผลการปฏิเสธ',
+    intro: 'คำขอเบิกเลขที่ {{request_no}} สำหรับโครงการ {{project_name}} ไม่ได้รับการอนุมัติ กรุณาตรวจสอบเหตุผลและรายละเอียดด้านล่าง',
+    cta_label: 'ดูรายละเอียดคำขอเบิก',
     cta_url: '{{action_url}}',
     footer_note: 'หากต้องการแก้ไขรายการ สามารถติดต่อผู้อนุมัติโครงการหรือส่งคำขอใหม่ได้',
     roles: ['STAFF'],
@@ -102,17 +101,17 @@ const DEFAULT_EVENTS_CONFIG = {
   },
   low_stock_alert: {
     enabled: true,
-    title: '6. แจ้งเตือนวัสดุคงเหลือน้อย (Low Stock Alert)',
-    desc: 'แจ้งเตือนอัตโนมัติเมื่อจำนวนวัสดุในคลังลดลงต่ำกว่าเกณฑ์',
+    title: '6. แจ้งเตือนพัสดุถึงจุดสั่งซื้อ (Low Stock Alert)',
+    desc: 'แจ้งเตือนอัตโนมัติเมื่อจำนวนพัสดุในคลังลดลงถึงเกณฑ์สั่งซื้อเติมสต็อก',
     primary_recipient: 'ผู้ดูแลคลัง / ผู้อนุมัติ',
-    subject: '[StockFlow] แจ้งเตือน Stock ต่ำ — {{item_name}} ({{project_name}})',
-    status_label: 'Stock ต่ำกว่าเกณฑ์',
-    status_type: 'rejected',
-    heading: 'แจ้งเตือนวัสดุคงเหลือต่ำกว่ากำหนด',
-    intro: 'รายการวัสดุ "{{item_name}}" ในโครงการ {{project_name}} เหลือคงเหลือเพียง {{current_stock}} (เกณฑ์เตือนสต็อกต่ำ: {{threshold}})',
-    cta_label: 'ตรวจสอบยอดคงเหลือ',
+    subject: '[StockFlow] แจ้งเตือนรายการพัสดุถึงจุดสั่งซื้อ — {{item_name}} ({{project_name}})',
+    status_label: 'ต้องเติมสต็อก',
+    status_type: 'warning',
+    heading: 'แจ้งเตือนรายการวัสดุถึงจุดสั่งซื้อ (Reorder Point Alert)',
+    intro: 'รายการวัสดุ "{{item_name}}" ในโครงการ {{project_name}} มียอดคงเหลือปัจจุบัน {{current_stock}} ซึ่งต่ำกว่าเกณฑ์การสั่งซื้อเติมคลัง ({{threshold}})',
+    cta_label: 'ดูรายการวัสดุและวางแผนสั่งซื้อ',
     cta_url: '{{action_url}}',
-    footer_note: 'กรุณาวางแผนสั่งซื้อวัสดุเติมคลังเพื่อป้องกันผลกระทบต่อโครงการ',
+    footer_note: 'กรุณาตรวจสอบยอดคงเหลือและวางแผนจัดซื้อเพื่อความต่อเนื่องของโครงการ',
     roles: ['ADMIN', 'SUPERVISOR'],
     to_extra: '',
     cc_extra: ''
@@ -122,27 +121,28 @@ const DEFAULT_EVENTS_CONFIG = {
 const mergeEventsWithDefaults = (inputConfig) => {
   const merged = { ...DEFAULT_EVENTS_CONFIG };
   if (inputConfig && typeof inputConfig === 'object') {
-    Object.keys(inputConfig).forEach(key => {
-      if (merged[key]) {
-        merged[key] = { ...merged[key], ...inputConfig[key] };
-      } else {
+    Object.keys(DEFAULT_EVENTS_CONFIG).forEach(key => {
+      const defaultVal = DEFAULT_EVENTS_CONFIG[key];
+      const savedVal = inputConfig[key];
+      if (savedVal) {
+        const isLegacyWithdrawalRejected = key === 'withdrawal_rejected' && (savedVal.status_label === 'ไม่อนุมัติ');
+        const isLegacyLowStock = key === 'low_stock_alert' && (
+          String(savedVal.heading || '').includes('เตือนภัย') ||
+          String(savedVal.subject || '').includes('เตือนภัย') ||
+          savedVal.status_label === 'Stock ต่ำกว่าเกณฑ์'
+        );
+
         merged[key] = {
-          enabled: true,
-          title: inputConfig[key]?.title || key,
-          desc: inputConfig[key]?.desc || '',
-          primary_recipient: inputConfig[key]?.primary_recipient || 'ผู้เกี่ยวข้อง',
-          subject: inputConfig[key]?.subject || `[StockFlow] ${key}`,
-          status_label: inputConfig[key]?.status_label || 'แจ้งเตือน',
-          status_type: inputConfig[key]?.status_type || 'info',
-          heading: inputConfig[key]?.heading || 'รายการแจ้งเตือนใหม่',
-          intro: inputConfig[key]?.intro || '',
-          cta_label: inputConfig[key]?.cta_label || 'ดูรายละเอียด',
-          cta_url: inputConfig[key]?.cta_url || '{{action_url}}',
-          footer_note: inputConfig[key]?.footer_note || '',
-          roles: inputConfig[key]?.roles || [],
-          to_extra: inputConfig[key]?.to_extra || '',
-          cc_extra: inputConfig[key]?.cc_extra || '',
-          ...inputConfig[key]
+          ...defaultVal,
+          ...savedVal,
+          title: defaultVal.title,
+          desc: defaultVal.desc,
+          primary_recipient: defaultVal.primary_recipient,
+          status_label: isLegacyWithdrawalRejected ? defaultVal.status_label : (isLegacyLowStock ? defaultVal.status_label : (savedVal.status_label || defaultVal.status_label)),
+          status_type: defaultVal.status_type,
+          heading: isLegacyLowStock ? defaultVal.heading : (savedVal.heading || defaultVal.heading),
+          subject: isLegacyLowStock ? defaultVal.subject : (savedVal.subject || defaultVal.subject),
+          intro: isLegacyLowStock ? defaultVal.intro : (savedVal.intro || defaultVal.intro),
         };
       }
     });
@@ -168,7 +168,7 @@ const EmailTemplateManager = ({
   const defaultBranding = {
     app_name: APP_CONFIG.name,
     logo_url: '',
-    public_base_url: window.location.origin,
+    public_base_url: typeof window !== 'undefined' ? window.location.origin : 'https://stockflow.app',
     accent_color: '#3b82f6',
     footer_text: 'หากคุณไม่ได้ทำรายการนี้ กรุณาติดต่อผู้ดูแลระบบเพื่อความปลอดภัย'
   };
@@ -218,6 +218,24 @@ const EmailTemplateManager = ({
     setIsDirty(true);
   };
 
+  const handleResetCurrentEvent = () => {
+    const defaultEvt = DEFAULT_EVENTS_CONFIG[selectedEventKey];
+    if (defaultEvt) {
+      setEvents(prev => ({
+        ...prev,
+        [selectedEventKey]: { ...defaultEvt }
+      }));
+      setIsDirty(true);
+      toast.success(`รีเซ็ตแม่แบบ "${defaultEvt.title}" เป็นค่าเริ่มต้นเรียบร้อยแล้ว`);
+    }
+  };
+
+  const handleResetAllEvents = () => {
+    setEvents({ ...DEFAULT_EVENTS_CONFIG });
+    setIsDirty(true);
+    toast.success('รีเซ็ตแม่แบบอีเมลทั้งหมดเป็นค่าเริ่มต้นของระบบเรียบร้อยแล้ว');
+  };
+
   const handleInsertVariable = (varCode) => {
     handleUpdateSelectedEvent('subject', (selectedEvent.subject || '') + ' ' + varCode);
   };
@@ -246,7 +264,7 @@ const EmailTemplateManager = ({
 
     try {
       setSendingTest(true);
-      await sendTestEmail(trimmedEmail, selectedEvent);
+      await sendTestEmail(trimmedEmail, { ...selectedEvent, event_type: selectedEventKey });
       toast.success(`ส่งอีเมลทดสอบไปยัง ${trimmedEmail} สำเร็จเรียบร้อยแล้ว`);
       setIsTestEmailOpen(false);
     } catch (e) {
@@ -256,15 +274,14 @@ const EmailTemplateManager = ({
     }
   };
 
-
   // Render HTML preview using current selected template and branding (Memoized to prevent forced reflow)
   const currentPreviewHtml = useMemo(() => {
     return renderEmailHtml({
       branding,
       template: selectedEvent,
-      data: SAMPLE_EMAIL_DATA
+      data: getSampleEmailData(selectedEventKey)
     });
-  }, [branding, selectedEvent]);
+  }, [branding, selectedEvent, selectedEventKey]);
 
   // Filtered event keys (Memoized)
   const filteredEventKeys = useMemo(() => {
@@ -277,8 +294,6 @@ const EmailTemplateManager = ({
       return !q || title.includes(q) || desc.includes(q);
     });
   }, [events, searchQuery]);
-
-
 
   return (
     <div className="space-y-6">
@@ -298,39 +313,41 @@ const EmailTemplateManager = ({
           {isDirty && (
             <span className="text-xs text-amber-600 font-semibold bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 rounded-full animate-pulse flex items-center gap-1 w-fit">
               <AlertCircle className="w-3.5 h-3.5" />
-              มีการแก้ไขที่ยังไม่ได้บันทึก
+              มีการเปลี่ยนแปลงที่ยังไม่ได้บันทึก
             </span>
           )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
           <div>
-            <Label className="text-[11px] font-semibold">ชื่อแบรนด์ / แอป</Label>
+            <Label className="text-[11px] font-semibold">ชื่อระบบที่แสดง (Sender Display Name)</Label>
             <Input
               disabled={!canUpdate}
               value={branding.app_name}
               onChange={(e) => { setBranding(prev => ({ ...prev, app_name: e.target.value })); setIsDirty(true); }}
+              placeholder="StockFlow"
               className="mt-1 neu-pressed bg-transparent text-xs"
             />
           </div>
 
           <div>
-            <Label className="text-[11px] font-semibold">Logo Image URL</Label>
+            <Label className="text-[11px] font-semibold">URL โลโก้องค์กร (Logo Image URL)</Label>
             <Input
               disabled={!canUpdate}
-              placeholder="https://domain.com/logo.png"
               value={branding.logo_url}
               onChange={(e) => { setBranding(prev => ({ ...prev, logo_url: e.target.value })); setIsDirty(true); }}
+              placeholder="https://domain.com/logo.png"
               className="mt-1 neu-pressed bg-transparent text-xs"
             />
           </div>
 
           <div>
-            <Label className="text-[11px] font-semibold">Public Base URL</Label>
+            <Label className="text-[11px] font-semibold">URL หน้าเว็บหลัก (Public Base URL)</Label>
             <Input
               disabled={!canUpdate}
               value={branding.public_base_url}
               onChange={(e) => { setBranding(prev => ({ ...prev, public_base_url: e.target.value })); setIsDirty(true); }}
+              placeholder="https://stockflow.app"
               className="mt-1 neu-pressed bg-transparent text-xs font-mono"
             />
           </div>
@@ -362,7 +379,18 @@ const EmailTemplateManager = ({
         {/* LEFT COLUMN: Master Event List (4 Cols) */}
         <div className="lg:col-span-4 space-y-3">
           <div className="flex items-center justify-between">
-            <h4 className="text-xs font-bold text-foreground">เหตุการณ์แจ้งเตือน ({filteredEventKeys.length})</h4>
+            <div className="flex items-center gap-2">
+              <h4 className="text-xs font-bold text-foreground">เหตุการณ์แจ้งเตือน ({filteredEventKeys.length})</h4>
+              <button
+                type="button"
+                disabled={!canUpdate}
+                onClick={handleResetAllEvents}
+                className="text-[10px] text-primary hover:underline font-medium"
+                title="คืนค่าแม่แบบทั้งหมดเป็นค่าเริ่มต้น"
+              >
+                รีเซ็ตทั้งหมด
+              </button>
+            </div>
             <div className="relative w-36">
               <Search className="w-3 h-3 absolute left-2 top-2.5 text-muted-foreground" />
               <Input
@@ -432,22 +460,37 @@ const EmailTemplateManager = ({
                 <CardDescription className="text-xs">{selectedEvent.desc}</CardDescription>
               </div>
 
-              {/* Event Enable/Disable Master Switch */}
-              <div className="flex items-center gap-2 bg-background p-1.5 rounded-xl border border-border/50">
-                <span className="text-xs font-medium text-muted-foreground">สถานะ:</span>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    disabled={!canUpdate}
-                    checked={selectedEvent.enabled}
-                    onChange={(e) => handleUpdateSelectedEvent('enabled', e.target.checked)}
-                    className="sr-only peer"
-                  />
-                  <div className="w-9 h-5 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
-                </label>
-                <span className={`text-xs font-bold ${selectedEvent.enabled ? 'text-emerald-600' : 'text-muted-foreground'}`}>
-                  {selectedEvent.enabled ? 'เปิดใช้งาน' : 'ปิด'}
-                </span>
+              {/* Action Buttons: Reset & Enable Switch */}
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={!canUpdate}
+                  onClick={handleResetCurrentEvent}
+                  className="text-xs h-8 px-2.5 flex items-center gap-1 text-muted-foreground hover:text-foreground border-border/60"
+                  title="คืนค่าแม่แบบนี้เป็นค่าเริ่มต้นของระบบ"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  คืนค่าเริ่มต้น
+                </Button>
+
+                <div className="flex items-center gap-2 bg-background p-1.5 rounded-xl border border-border/50">
+                  <span className="text-xs font-medium text-muted-foreground">สถานะ:</span>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      disabled={!canUpdate}
+                      checked={selectedEvent.enabled}
+                      onChange={(e) => handleUpdateSelectedEvent('enabled', e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-9 h-5 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+                  </label>
+                  <span className={`text-xs font-bold ${selectedEvent.enabled ? 'text-emerald-600' : 'text-muted-foreground'}`}>
+                    {selectedEvent.enabled ? 'เปิดใช้งาน' : 'ปิด'}
+                  </span>
+                </div>
               </div>
             </CardHeader>
 
@@ -518,10 +561,10 @@ const EmailTemplateManager = ({
                       disabled={!canUpdate}
                       value={selectedEvent.subject}
                       onChange={(e) => handleUpdateSelectedEvent('subject', e.target.value)}
-                      className="neu-pressed bg-transparent font-medium text-xs"
+                      className="neu-pressed bg-transparent font-medium"
                     />
 
-                    {/* Variable Chips */}
+                    {/* Variable Pills */}
                     <div className="flex flex-wrap gap-1.5 pt-1">
                       {(SUPPORTED_EVENT_VARIABLES[selectedEventKey] || []).map(v => (
                         <button
@@ -529,130 +572,167 @@ const EmailTemplateManager = ({
                           type="button"
                           disabled={!canUpdate}
                           onClick={() => handleInsertVariable(v.code)}
-                          className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20 transition-colors flex items-center gap-1"
+                          className="bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-md px-2 py-0.5 text-[10px] font-mono transition-colors flex items-center gap-1"
                           title={v.desc}
                         >
-                          + {v.code}
+                          <span>{v.code}</span>
+                          <span className="text-[9px] text-muted-foreground font-sans">({v.desc})</span>
                         </button>
                       ))}
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Status Badge & Heading */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
-                      <Label className="font-semibold text-xs">หัวข้อเรื่องในจดหมาย (Main Heading)</Label>
+                      <Label className="font-semibold text-xs">ข้อความบนป้ายสถานะ (Badge Label)</Label>
+                      <Input
+                        disabled={!canUpdate}
+                        value={selectedEvent.status_label}
+                        onChange={(e) => handleUpdateSelectedEvent('status_label', e.target.value)}
+                        className="mt-1 neu-pressed bg-transparent"
+                      />
+                    </div>
+
+                    <div>
+                      <Label className="font-semibold text-xs">โทนสีสถานะ (Badge Color Theme)</Label>
+                      <select
+                        disabled={!canUpdate}
+                        value={selectedEvent.status_type}
+                        onChange={(e) => handleUpdateSelectedEvent('status_type', e.target.value)}
+                        className="w-full mt-1 h-9 rounded-md border border-input bg-transparent px-3 py-1 text-xs shadow-sm neu-pressed focus-visible:outline-none"
+                      >
+                        <option value="warning">สีส้ม / รอดำเนินการ (Amber/Warning)</option>
+                        <option value="approved">สีเขียว / สำเร็จ (Emerald/Approved)</option>
+                        <option value="rejected">สีแดง / ไม่อนุมัติ (Rose/Rejected)</option>
+                        <option value="info">สีน้ำเงิน / ข้อมูล (Blue/Info)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <Label className="font-semibold text-xs">หัวข้อหลักของเนื้อหา (Heading)</Label>
                       <Input
                         disabled={!canUpdate}
                         value={selectedEvent.heading}
                         onChange={(e) => handleUpdateSelectedEvent('heading', e.target.value)}
-                        className="mt-1 neu-pressed bg-transparent text-xs"
+                        className="mt-1 neu-pressed bg-transparent"
                       />
                     </div>
+                  </div>
 
+                  {/* Intro Message */}
+                  <div>
+                    <Label className="font-semibold text-xs">ข้อความเกริ่นนำ (Intro Message)</Label>
+                    <textarea
+                      disabled={!canUpdate}
+                      rows={2}
+                      value={selectedEvent.intro}
+                      onChange={(e) => handleUpdateSelectedEvent('intro', e.target.value)}
+                      className="w-full mt-1 rounded-md border border-input bg-transparent p-2 text-xs shadow-sm neu-pressed focus-visible:outline-none"
+                    />
+                  </div>
+
+                  {/* CTA Button Label & Link */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <Label className="font-semibold text-xs">ข้อความบนปุ่มกด (Primary CTA Label)</Label>
+                      <Label className="font-semibold text-xs">ข้อความบนปุ่มหลัก (CTA Label)</Label>
                       <Input
                         disabled={!canUpdate}
                         value={selectedEvent.cta_label}
                         onChange={(e) => handleUpdateSelectedEvent('cta_label', e.target.value)}
-                        className="mt-1 neu-pressed bg-transparent text-xs"
+                        className="mt-1 neu-pressed bg-transparent"
+                      />
+                    </div>
+
+                    <div>
+                      <Label className="font-semibold text-xs">ลิงก์ปลายทางของปุ่ม (CTA Target URL)</Label>
+                      <Input
+                        disabled={!canUpdate}
+                        value={selectedEvent.cta_url}
+                        onChange={(e) => handleUpdateSelectedEvent('cta_url', e.target.value)}
+                        className="mt-1 neu-pressed bg-transparent font-mono text-[11px]"
                       />
                     </div>
                   </div>
 
+                  {/* Footer Note */}
                   <div>
-                    <Label className="font-semibold text-xs">ข้อความเกริ่นนำ (Intro Message)</Label>
-                    <textarea
-                      rows={3}
-                      disabled={!canUpdate}
-                      value={selectedEvent.intro}
-                      onChange={(e) => handleUpdateSelectedEvent('intro', e.target.value)}
-                      className="w-full mt-1 p-2.5 rounded-xl neu-pressed bg-transparent text-xs focus:outline-none focus:ring-1 focus:ring-primary"
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="font-semibold text-xs">ข้อความส่วนท้าย (Footer Note)</Label>
+                    <Label className="font-semibold text-xs">ข้อความหมายเหตุด้านล่าง (Footer Note)</Label>
                     <Input
                       disabled={!canUpdate}
                       value={selectedEvent.footer_note}
                       onChange={(e) => handleUpdateSelectedEvent('footer_note', e.target.value)}
-                      className="mt-1 neu-pressed bg-transparent text-xs"
+                      className="mt-1 neu-pressed bg-transparent"
                     />
                   </div>
                 </div>
               )}
 
-              {/* TAB 2: Recipients & Roles */}
+              {/* TAB 2: Recipients & Routing */}
               {activeTab === 'recipients' && (
                 <div className="space-y-4 text-xs">
-                  {/* Primary Recipient Strategy Description */}
-                  <div className="p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/30 text-blue-900 dark:text-blue-200 flex items-start gap-2.5">
-                    <Info className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-                    <div>
-                      <span className="font-bold block">ยุทธศาสตร์ผู้รับหลัก (Primary Recipient):</span>
-                      <p className="text-[11px] leading-relaxed opacity-90">
-                        {selectedEvent.primary_recipient} — ระบบส่งอีเมลแจ้งเตือนไปยังผู้เกี่ยวข้องหลักตามขั้นตอนอัตโนมัติ
-                      </p>
-                    </div>
+                  <div className="p-3.5 rounded-xl bg-primary/5 border border-primary/20 space-y-1">
+                    <span className="font-bold text-foreground flex items-center gap-1.5">
+                      <ShieldCheck className="w-4 h-4 text-primary" />
+                      ผู้รับอีเมลหลักตามบทบาท (Primary Target)
+                    </span>
+                    <p className="text-muted-foreground text-[11px]">
+                      ระบบจะส่งไปยัง <strong className="text-foreground">{selectedEvent.primary_recipient}</strong> ที่เกี่ยวข้องกับรายการโดยอัตโนมัติ
+                    </p>
                   </div>
 
-                  {/* Dynamic Role Selection Checkboxes */}
+                  {/* Additional Role Checkboxes */}
                   <div className="space-y-2">
-                    <Label className="font-semibold text-xs">แจ้งเตือนไปยังบทบาทเพิ่มเติม (Notify Roles)</Label>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+                    <Label className="font-semibold text-xs">ส่งสำเนาแจ้งเตือนไปยังกลุ่มบทบาทเพิ่มเติม (CC by Roles):</Label>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                       {roles.map(r => {
                         const isChecked = (selectedEvent.roles || []).includes(r.code);
                         return (
-                          <label 
-                            key={r.code} 
-                            className={`p-2.5 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
+                          <div
+                            key={r.code}
+                            onClick={() => canUpdate && handleToggleRole(r.code)}
+                            className={`p-3 rounded-xl border flex items-center gap-2.5 cursor-pointer transition-all ${
                               isChecked 
-                                ? 'neu-pressed border-primary/50 bg-primary/5' 
-                                : 'neu-flat hover:neu-pressed border-border/40'
+                                ? 'neu-pressed border-primary/50 bg-primary/10' 
+                                : 'neu-flat hover:neu-pressed border-border/50'
                             }`}
                           >
-                            <div className="flex items-center gap-2">
-                              <input
-                                type="checkbox"
-                                disabled={!canUpdate}
-                                checked={isChecked}
-                                onChange={() => handleToggleRole(r.code)}
-                                className="rounded text-primary focus:ring-primary h-4 w-4"
-                              />
-                              <span className="font-semibold text-xs">{r.name || r.code}</span>
+                            <div className={`w-4 h-4 rounded flex items-center justify-center border ${
+                              isChecked ? 'bg-primary border-primary text-primary-foreground' : 'border-border'
+                            }`}>
+                              {isChecked && <Check className="w-3 h-3" />}
                             </div>
-                            <span className="text-[10px] font-mono bg-muted px-1.5 py-0.5 rounded text-muted-foreground">
-                              {r.code}
-                            </span>
-                          </label>
+                            <span className="font-semibold text-xs text-foreground">{r.name || r.code}</span>
+                          </div>
                         );
                       })}
                     </div>
                   </div>
 
                   {/* Extra To / CC Emails */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                     <div>
-                      <Label className="font-semibold text-xs">อีเมลเพิ่มเติม (Extra To)</Label>
+                      <Label className="font-semibold text-xs">อีเมลรับเพิ่มโดยตรง (To Extra)</Label>
                       <Input
                         disabled={!canUpdate}
-                        placeholder="manager@company.com, audit@company.com"
+                        placeholder="extra1@company.com, extra2@company.com"
                         value={selectedEvent.to_extra || ''}
                         onChange={(e) => handleUpdateSelectedEvent('to_extra', e.target.value)}
-                        className="mt-1 neu-pressed bg-transparent text-xs font-mono"
+                        className="mt-1 neu-pressed bg-transparent font-mono text-[11px]"
                       />
+                      <span className="text-[10px] text-muted-foreground mt-0.5 block">คั่นหลายอีเมลด้วยเครื่องหมายจุลภาค (,)</span>
                     </div>
 
                     <div>
-                      <Label className="font-semibold text-xs">สำเนาถึง (CC Emails)</Label>
+                      <Label className="font-semibold text-xs">อีเมลสำเนาเพิ่มโดยตรง (CC Extra)</Label>
                       <Input
                         disabled={!canUpdate}
-                        placeholder="archive@company.com"
+                        placeholder="manager@company.com, audit@company.com"
                         value={selectedEvent.cc_extra || ''}
                         onChange={(e) => handleUpdateSelectedEvent('cc_extra', e.target.value)}
-                        className="mt-1 neu-pressed bg-transparent text-xs font-mono"
+                        className="mt-1 neu-pressed bg-transparent font-mono text-[11px]"
                       />
+                      <span className="text-[10px] text-muted-foreground mt-0.5 block">คั่นหลายอีเมลด้วยเครื่องหมายจุลภาค (,)</span>
                     </div>
                   </div>
                 </div>
@@ -661,13 +741,14 @@ const EmailTemplateManager = ({
               {/* TAB 3: Live Preview */}
               {activeTab === 'preview' && (
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-muted-foreground">
-                      ตัวอย่างการแสดงผลอีเมลจริงตามข้อมูลจำลอง (Live Production HTML Render):
+                  {/* Viewport Toolbar */}
+                  <div className="flex items-center justify-between bg-muted/40 p-2 rounded-xl border border-border/40">
+                    <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                      <Monitor className="w-3.5 h-3.5 text-primary" />
+                      ตัวอย่างการแสดงผลอีเมลจริง (Live HTML Renderer)
                     </span>
 
-                    {/* Desktop / Mobile Switcher */}
-                    <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-lg border border-border/50 text-xs">
+                    <div className="flex items-center gap-1 bg-muted p-0.5 rounded-lg border border-border/50">
                       <button
                         type="button"
                         onClick={() => setPreviewDevice('desktop')}

@@ -110,7 +110,7 @@ export const dispatchWithdrawalNotification = async ({
       });
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[^s@]+@[^s@]+.[^s@]+$/;
     const validRecipients = [...recipientEmails].filter(e => emailRegex.test(e));
 
     if (!validRecipients.length) {
@@ -132,7 +132,7 @@ export const dispatchWithdrawalNotification = async ({
       approved_date: formatThaiDateTime(order.approved_at || new Date().toISOString()),
       rejected_date: formatThaiDateTime(order.rejected_at || new Date().toISOString()),
       completed_date: formatThaiDateTime(order.completed_at || new Date().toISOString()),
-      status: eventType === 'withdrawal_approved' ? 'อนุมัติแล้ว' : (eventType === 'withdrawal_rejected' ? 'ไม่อนุมัติ' : (eventType === 'withdrawal_completed' ? 'จ่ายวัสดุแล้ว' : 'รออนุมัติ')),
+      status: eventType === 'withdrawal_approved' ? 'อนุมัติแล้ว' : (eventType === 'withdrawal_rejected' ? 'ไม่ได้รับการอนุมัติ' : (eventType === 'withdrawal_completed' ? 'จ่ายวัสดุแล้ว' : 'รออนุมัติ')),
       fulfillment_status: order.fulfillment_status || order.status || 'รอพิจารณา',
       item_count: `${items.length} รายการ`,
       total_quantity: `${totalQuantity} หน่วย`,
@@ -142,7 +142,7 @@ export const dispatchWithdrawalNotification = async ({
       rejected_by: approverName || order.rejected_by_name || 'ผู้ปฏิเสธ',
       completed_by: approverName || order.completed_by_name || 'ผู้จ่ายวัสดุ',
       rejection_reason: rejectionReason || order.rejection_reason || '',
-      action_url: 'https://bearnannan.github.io/Stock-Flow',
+      action_url: branding.public_base_url || 'https://stockflow.app/withdrawals',
       items
     };
 
@@ -152,11 +152,11 @@ export const dispatchWithdrawalNotification = async ({
       data: emailData
     });
 
-    const plainText = `[StockFlow] แจ้งเตือนรายการคำขอเบิก ${emailData.request_no}\nโครงการ: ${emailData.project_name}\nผู้ขอเบิก: ${emailData.requester_name}\nสถานะ: ${emailData.status}\nจำนวน: ${emailData.item_count}\nเปิดดูรายละเอียด: ${emailData.action_url}`;
+    const plainText = `[${emailData.app_name}] แจ้งเตือนรายการคำขอเบิก ${emailData.request_no}\nโครงการ: ${emailData.project_name}\nผู้ขอเบิก: ${emailData.requester_name}\nสถานะ: ${emailData.status}\nจำนวน: ${emailData.item_count}\nเปิดดูรายละเอียด: ${emailData.action_url}`;
 
     const subject = eventConfig?.subject
       ? eventConfig.subject.replace(/\{\{\s*request_no\s*\}\}/g, emailData.request_no).replace(/\{\{\s*project_name\s*\}\}/g, emailData.project_name)
-      : `[StockFlow] แจ้งเตือนคำขอเบิก ${emailData.request_no} (${emailData.project_name})`;
+      : `[${emailData.app_name}] ${eventType === 'withdrawal_rejected' ? `คำขอเบิก ${emailData.request_no} ไม่ได้รับการอนุมัติ` : `แจ้งเตือนคำขอเบิก ${emailData.request_no}`} (${emailData.project_name})`;
 
     // 6. Send transactional email
     const ccList = eventConfig?.cc_extra ? String(eventConfig.cc_extra).split(',').map(s => s.trim()).filter(e => emailRegex.test(e)) : [];
@@ -173,7 +173,240 @@ export const dispatchWithdrawalNotification = async ({
     dispatchedEventsCache.add(cacheKey);
     return { success: true, dispatched: true, recipientCount: validRecipients.length };
   } catch (err) {
-    console.error('[NotificationDispatcher] Dispatch error:', err);
+    console.error('[NotificationDispatcher] dispatchWithdrawalNotification error:', err);
+    return { success: false, error: err.message };
+  }
+};
+
+/**
+ * Dispatches transactional email notifications when stock-in is recorded.
+ */
+export const dispatchStockInNotification = async ({
+  orderId,
+  projectId,
+  items: preloadedItems = [],
+  receivedBy = ''
+}) => {
+  const cacheKey = `stock_in_created:${orderId || projectId}:${Date.now()}`;
+  try {
+    const { data: settingsData } = await supabase.rpc('admin_get_system_settings');
+    const notificationEvents = settingsData?.notification_events || {};
+    const branding = settingsData?.branding || {};
+
+    const eventConfig = notificationEvents['stock_in_created'];
+    if (eventConfig && eventConfig.enabled === false) {
+      return { success: true, skipped: 'EVENT_DISABLED' };
+    }
+
+    let project = null;
+    if (projectId) {
+      const { data: projData } = await supabase
+        .from('projects')
+        .select('id, name, code, location')
+        .eq('id', projectId)
+        .maybeSingle();
+      project = projData;
+    }
+
+    let lineItems = preloadedItems;
+    if (!lineItems.length && orderId) {
+      const { data: fetchedItems } = await supabase
+        .from('stock_in_items')
+        .select('*, items!item_id(name, model, unit, sku)')
+        .eq('order_id', orderId);
+      if (fetchedItems?.length) {
+        lineItems = fetchedItems.map(si => ({
+          name: si.items?.name || si.name || 'วัสดุ',
+          sku: si.items?.sku || si.sku || '-',
+          unit: si.items?.unit || 'หน่วย',
+          quantity: si.quantity,
+          available_stock: si.quantity
+        }));
+      }
+    }
+
+    const targetRoles = eventConfig?.roles || ['ADMIN', 'SUPERVISOR'];
+    const recipientEmails = new Set();
+
+    if (targetRoles.length > 0) {
+      const { data: roleUsers } = await supabase
+        .from('profiles')
+        .select('email, role')
+        .in('role', targetRoles);
+
+      if (roleUsers?.length) {
+        roleUsers.forEach(u => {
+          if (u.email) recipientEmails.add(u.email.trim());
+        });
+      }
+    }
+
+    if (eventConfig?.to_extra) {
+      String(eventConfig.to_extra).split(',').forEach(e => {
+        const trimmed = e.trim();
+        if (trimmed) recipientEmails.add(trimmed);
+      });
+    }
+
+    const emailRegex = /^[^s@]+@[^s@]+.[^s@]+$/;
+    const validRecipients = [...recipientEmails].filter(e => emailRegex.test(e));
+
+    if (!validRecipients.length) {
+      return { success: true, skipped: 'NO_VALID_RECIPIENTS' };
+    }
+
+    const stockInNo = orderId ? `SI-${String(orderId).slice(0, 8).toUpperCase()}` : `SI-${Date.now().toString().slice(-6)}`;
+    const totalQuantity = lineItems.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
+    const emailData = {
+      event_type: 'stock_in_created',
+      app_name: branding.app_name || 'StockFlow',
+      stock_in_no: stockInNo,
+      project_name: project?.name || 'โครงการทั่วไป',
+      project_code: project?.code || project?.project_code || '-',
+      received_by: receivedBy || 'Warehouse Admin',
+      received_date: formatThaiDateTime(new Date().toISOString()),
+      supplier_name: 'Forth Supply Co., Ltd.',
+      po_number: '-',
+      status: 'รับเข้า Stock แล้ว',
+      status_badge: 'รับเข้า Stock',
+      item_count: `${lineItems.length} รายการ`,
+      total_quantity: `${totalQuantity} หน่วย`,
+      action_url: branding.public_base_url ? `${branding.public_base_url}/stock-in` : 'https://stockflow.app/stock-in',
+      items: lineItems
+    };
+
+    const html = renderEmailHtml({
+      branding,
+      template: eventConfig || {},
+      data: emailData
+    });
+
+    const plainText = `[${emailData.app_name}] มีการรับวัสดุเข้าสต็อกเรียบร้อยแล้ว\nเลขที่รับเข้า: ${emailData.stock_in_no}\nโครงการ: ${emailData.project_name}\nผู้รับเข้า: ${emailData.received_by}\nจำนวน: ${emailData.item_count} (${emailData.total_quantity})\nเปิดดูรายการ: ${emailData.action_url}`;
+
+    const subject = eventConfig?.subject
+      ? eventConfig.subject.replace(/\{\{\s*stock_in_no\s*\}\}/g, emailData.stock_in_no).replace(/\{\{\s*project_name\s*\}\}/g, emailData.project_name)
+      : `[${emailData.app_name}] รับเข้า Stock ${emailData.stock_in_no} — ${emailData.project_name}`;
+
+    const ccList = eventConfig?.cc_extra ? String(eventConfig.cc_extra).split(',').map(s => s.trim()).filter(e => emailRegex.test(e)) : [];
+
+    await sendStockFlowEmail({
+      to: validRecipients,
+      cc: ccList.length ? ccList : undefined,
+      subject,
+      html,
+      text: plainText,
+      actionUrl: emailData.action_url
+    });
+
+    dispatchedEventsCache.add(cacheKey);
+    return { success: true, dispatched: true, recipientCount: validRecipients.length };
+  } catch (err) {
+    console.error('[NotificationDispatcher] dispatchStockInNotification error:', err);
+    return { success: false, error: err.message };
+  }
+};
+
+/**
+ * Dispatches transactional email notifications when an item stock drops below threshold.
+ */
+export const dispatchLowStockAlertNotification = async ({
+  itemId,
+  itemName,
+  itemCode,
+  currentStock,
+  threshold,
+  projectName,
+  warehouseName,
+  projectId
+}) => {
+  const cacheKey = `low_stock_alert:${itemId || itemName}:${projectId || 'all'}`;
+  if (dispatchedEventsCache.has(cacheKey)) {
+    return { success: true, deduplicated: true };
+  }
+
+  try {
+    const { data: settingsData } = await supabase.rpc('admin_get_system_settings');
+    const notificationEvents = settingsData?.notification_events || {};
+    const branding = settingsData?.branding || {};
+
+    const eventConfig = notificationEvents['low_stock_alert'];
+    if (eventConfig && eventConfig.enabled === false) {
+      return { success: true, skipped: 'EVENT_DISABLED' };
+    }
+
+    const targetRoles = eventConfig?.roles || ['ADMIN', 'SUPERVISOR'];
+    const recipientEmails = new Set();
+
+    if (targetRoles.length > 0) {
+      const { data: roleUsers } = await supabase
+        .from('profiles')
+        .select('email, role')
+        .in('role', targetRoles);
+
+      if (roleUsers?.length) {
+        roleUsers.forEach(u => {
+          if (u.email) recipientEmails.add(u.email.trim());
+        });
+      }
+    }
+
+    if (eventConfig?.to_extra) {
+      String(eventConfig.to_extra).split(',').forEach(e => {
+        const trimmed = e.trim();
+        if (trimmed) recipientEmails.add(trimmed);
+      });
+    }
+
+    const emailRegex = /^[^s@]+@[^s@]+.[^s@]+$/;
+    const validRecipients = [...recipientEmails].filter(e => emailRegex.test(e));
+
+    if (!validRecipients.length) {
+      return { success: true, skipped: 'NO_VALID_RECIPIENTS' };
+    }
+
+    const emailData = {
+      event_type: 'low_stock_alert',
+      app_name: branding.app_name || 'StockFlow',
+      item_name: itemName || 'วัสดุ',
+      item_code: itemCode || '-',
+      project_name: projectName || 'คลังส่วนกลาง',
+      project_code: '-',
+      warehouse_name: warehouseName || 'คลังหลัก',
+      current_stock: `${currentStock ?? 0} หน่วย`,
+      threshold: `${threshold ?? 10} หน่วย`,
+      status: 'ต่ำกว่าเกณฑ์',
+      status_badge: 'Stock ต่ำกว่าเกณฑ์',
+      action_url: branding.public_base_url ? `${branding.public_base_url}/items` : 'https://stockflow.app/items',
+      items: []
+    };
+
+    const html = renderEmailHtml({
+      branding,
+      template: eventConfig || {},
+      data: emailData
+    });
+
+    const plainText = `[${emailData.app_name}] แจ้งเตือนวัสดุคงเหลือต่ำกว่ากำหนด\nวัสดุ: ${emailData.item_name} (${emailData.item_code})\nโครงการ: ${emailData.project_name}\nคงเหลือ: ${emailData.current_stock}\nเกณฑ์แจ้งเตือน: ${emailData.threshold}\nเปิดดูรายการ: ${emailData.action_url}`;
+
+    const subject = eventConfig?.subject
+      ? eventConfig.subject.replace(/\{\{\s*item_name\s*\}\}/g, emailData.item_name).replace(/\{\{\s*project_name\s*\}\}/g, emailData.project_name)
+      : `[${emailData.app_name}] แจ้งเตือน Stock ต่ำ — ${emailData.item_name} (${emailData.project_name})`;
+
+    const ccList = eventConfig?.cc_extra ? String(eventConfig.cc_extra).split(',').map(s => s.trim()).filter(e => emailRegex.test(e)) : [];
+
+    await sendStockFlowEmail({
+      to: validRecipients,
+      cc: ccList.length ? ccList : undefined,
+      subject,
+      html,
+      text: plainText,
+      actionUrl: emailData.action_url
+    });
+
+    dispatchedEventsCache.add(cacheKey);
+    return { success: true, dispatched: true, recipientCount: validRecipients.length };
+  } catch (err) {
+    console.error('[NotificationDispatcher] dispatchLowStockAlertNotification error:', err);
     return { success: false, error: err.message };
   }
 };

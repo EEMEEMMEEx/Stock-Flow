@@ -14,7 +14,9 @@ function devApiPlugin() {
     configureServer(server) {
       server.middlewares.use(async (req, res, next) => {
         const url = req.url?.split('?')[0];
-        if (url === '/api/r2-upload-url' || url?.endsWith('/api/r2-upload-url')) {
+        const isR2UploadUrl = url === '/api/r2-upload-url' || url?.endsWith('/api/r2-upload-url');
+        const isSendEmail = url === '/api/send-email' || url?.endsWith('/api/send-email');
+        if (isR2UploadUrl || isSendEmail) {
           try {
             const origin = req.headers?.origin || '*';
             res.setHeader('Access-Control-Allow-Origin', origin);
@@ -51,8 +53,10 @@ function devApiPlugin() {
                   };
                 },
               };
-              const { default: r2Handler } = await import('./api/r2-upload-url.js');
-              await r2Handler(req, mockRes);
+              const { default: apiHandler } = isSendEmail
+                ? await import('./api/send-email.js')
+                : await import('./api/r2-upload-url.js');
+              await apiHandler(req, mockRes);
             });
             return;
           } catch (err) {

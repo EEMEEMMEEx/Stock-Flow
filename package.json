@@ -1,13 +1,14 @@
 {
   "name": "stock-flow-app",
   "private": true,
-  "version": "1.4.19",
+  "version": "1.4.25",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "test:email": "node --test src/lib/emailRenderer.test.js",
     "migrate:r2": "node scripts/migrate-legacy-images-to-r2.mjs",
     "db:backup": "node scripts/backup-full-database.mjs",
     "generate:agents": "python .agents/scripts/generate_manifest.py && python .agents/scripts/dependency_graph.py",
