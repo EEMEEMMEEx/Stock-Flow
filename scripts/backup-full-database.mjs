@@ -82,8 +82,6 @@ CREATE EXTENSION IF NOT EXISTS "btree_gist";
 
 -- 2. Ensure Schemas Exist
 CREATE SCHEMA IF NOT EXISTS public;
-CREATE SCHEMA IF NOT EXISTS auth;
-CREATE SCHEMA IF NOT EXISTS extensions;
 
 -- ==============================================================================
 -- 3. Core Tables Definition
@@ -1842,60 +1840,6 @@ async function runCompleteBackup() {
 
       authInsertStatements.push(`-- ========================================================`);
       authInsertStatements.push(`-- 01_auth_schema_and_users.sql`);
-      authInsertStatements.push(`-- Supabase Auth Schema & User Accounts (${users.length} users)`);
-      authInsertStatements.push(`-- ========================================================`);
-      authInsertStatements.push(``);
-      authInsertStatements.push(`CREATE SCHEMA IF NOT EXISTS auth;`);
-      authInsertStatements.push(``);
-      authInsertStatements.push(`CREATE TABLE IF NOT EXISTS auth.users (`);
-      authInsertStatements.push(`  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),`);
-      authInsertStatements.push(`  instance_id UUID DEFAULT '00000000-0000-0000-0000-000000000000',`);
-      authInsertStatements.push(`  email VARCHAR(255) UNIQUE,`);
-      authInsertStatements.push(`  encrypted_password VARCHAR(255),`);
-      authInsertStatements.push(`  email_confirmed_at TIMESTAMPTZ DEFAULT NOW(),`);
-      authInsertStatements.push(`  invited_at TIMESTAMPTZ,`);
-      authInsertStatements.push(`  confirmation_token VARCHAR(255) DEFAULT '',`);
-      authInsertStatements.push(`  confirmation_sent_at TIMESTAMPTZ,`);
-      authInsertStatements.push(`  recovery_token VARCHAR(255) DEFAULT '',`);
-      authInsertStatements.push(`  recovery_sent_at TIMESTAMPTZ,`);
-      authInsertStatements.push(`  email_change_token_new VARCHAR(255) DEFAULT '',`);
-      authInsertStatements.push(`  email_change VARCHAR(255) DEFAULT '',`);
-      authInsertStatements.push(`  email_change_sent_at TIMESTAMPTZ,`);
-      authInsertStatements.push(`  last_sign_in_at TIMESTAMPTZ,`);
-      authInsertStatements.push(`  raw_app_meta_data JSONB DEFAULT '{"provider":"email","providers":["email"]}'::jsonb,`);
-      authInsertStatements.push(`  raw_user_meta_data JSONB DEFAULT '{}'::jsonb,`);
-      authInsertStatements.push(`  is_super_admin BOOLEAN DEFAULT FALSE,`);
-      authInsertStatements.push(`  created_at TIMESTAMPTZ DEFAULT NOW(),`);
-      authInsertStatements.push(`  updated_at TIMESTAMPTZ DEFAULT NOW(),`);
-      authInsertStatements.push(`  phone TEXT,`);
-      authInsertStatements.push(`  phone_confirmed_at TIMESTAMPTZ,`);
-      authInsertStatements.push(`  phone_change TEXT DEFAULT '',`);
-      authInsertStatements.push(`  phone_change_token VARCHAR(255) DEFAULT '',`);
-      authInsertStatements.push(`  phone_change_sent_at TIMESTAMPTZ,`);
-      authInsertStatements.push(`  confirmed_at TIMESTAMPTZ,`);
-      authInsertStatements.push(`  email_change_token_current VARCHAR(255) DEFAULT '',`);
-      authInsertStatements.push(`  email_change_confirm_status SMALLINT DEFAULT 0,`);
-      authInsertStatements.push(`  banned_until TIMESTAMPTZ,`);
-      authInsertStatements.push(`  reauthentication_token VARCHAR(255) DEFAULT '',`);
-      authInsertStatements.push(`  reauthentication_sent_at TIMESTAMPTZ,`);
-      authInsertStatements.push(`  is_sso_user BOOLEAN DEFAULT FALSE,`);
-      authInsertStatements.push(`  deleted_at TIMESTAMPTZ,`);
-      authInsertStatements.push(`  is_anonymous BOOLEAN DEFAULT FALSE,`);
-      authInsertStatements.push(`  aud VARCHAR(255) DEFAULT 'authenticated',`);
-      authInsertStatements.push(`  role VARCHAR(255) DEFAULT 'authenticated'`);
-      authInsertStatements.push(`);`);
-      authInsertStatements.push(``);
-      authInsertStatements.push(`CREATE TABLE IF NOT EXISTS auth.identities (`);
-      authInsertStatements.push(`  id TEXT NOT NULL,`);
-      authInsertStatements.push(`  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,`);
-      authInsertStatements.push(`  identity_data JSONB NOT NULL,`);
-      authInsertStatements.push(`  provider TEXT NOT NULL,`);
-      authInsertStatements.push(`  last_sign_in_at TIMESTAMPTZ,`);
-      authInsertStatements.push(`  created_at TIMESTAMPTZ DEFAULT NOW(),`);
-      authInsertStatements.push(`  updated_at TIMESTAMPTZ DEFAULT NOW(),`);
-      authInsertStatements.push(`  provider_id TEXT,`);
-      authInsertStatements.push(`  PRIMARY KEY (provider, provider_id)`);
-      authInsertStatements.push(`);`);
       authInsertStatements.push(``);
 
       for (const u of users) {
@@ -1908,23 +1852,72 @@ async function runCompleteBackup() {
         const uCreatedAt = formatSqlValue(u.created_at || new Date().toISOString());
         const uUpdatedAt = formatSqlValue(u.updated_at || new Date().toISOString());
         const uEmailConfirmed = formatSqlValue(u.email_confirmed_at || u.created_at || new Date().toISOString());
-        const uPhone = formatSqlValue(u.phone);
+        const uPhone = (u.phone && String(u.phone).trim() !== '') ? formatSqlValue(u.phone) : 'NULL';
 
-        // Fallback default bcrypt hash ('F0rth2026@dtrs') if encrypted_password is empty
-        const defaultHash = '$2a$10$w6T/HjU2Yy3s0tZt9aL1i.qZ3n4P4lE5A3vN2rJ9gB5cV6dE7fG8h';
+        // Default bcrypt hash for 'F0rth2026@dtrs' via pgcrypto
+        const defaultHashExpr = `extensions.crypt('F0rth2026@dtrs', extensions.gen_salt('bf'))`;
 
         authInsertStatements.push(
-          `INSERT INTO auth.users (id, instance_id, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, aud, role, phone, is_sso_user, is_anonymous, created_at, updated_at) ` +
-          `VALUES (${uId}, '00000000-0000-0000-0000-000000000000', ${uEmail}, '${defaultHash}', ${uEmailConfirmed}, ${uAppMeta}, ${uUserMeta}, ${uAud}, ${uRole}, ${uPhone}, FALSE, FALSE, ${uCreatedAt}, ${uUpdatedAt}) ` +
-          `ON CONFLICT (id) DO UPDATE SET email = EXCLUDED.email, raw_user_meta_data = EXCLUDED.raw_user_meta_data, updated_at = EXCLUDED.updated_at;`
+          `INSERT INTO auth.users (` +
+          `id, instance_id, email, encrypted_password, email_confirmed_at, ` +
+          `confirmation_token, recovery_token, email_change_token_new, email_change_token_current, ` +
+          `email_change, phone_change, phone_change_token, reauthentication_token, ` +
+          `raw_app_meta_data, raw_user_meta_data, aud, role, phone, ` +
+          `is_super_admin, is_sso_user, is_anonymous, email_change_confirm_status, created_at, updated_at` +
+          `) VALUES (` +
+          `${uId}, '00000000-0000-0000-0000-000000000000', ${uEmail}, ${defaultHashExpr}, ${uEmailConfirmed}, ` +
+          `'', '', '', '', ` +
+          `'', '', '', '', ` +
+          `${uAppMeta}, ${uUserMeta}, ${uAud}, ${uRole}, ${uPhone}, ` +
+          `FALSE, FALSE, FALSE, 0, ${uCreatedAt}, ${uUpdatedAt}` +
+          `) ON CONFLICT (id) DO UPDATE SET ` +
+          `email = EXCLUDED.email, ` +
+          `raw_user_meta_data = EXCLUDED.raw_user_meta_data, ` +
+          `confirmation_token = '', ` +
+          `recovery_token = '', ` +
+          `email_change_token_new = '', ` +
+          `email_change_token_current = '', ` +
+          `email_change = '', ` +
+          `phone_change = '', ` +
+          `phone_change_token = '', ` +
+          `reauthentication_token = '', ` +
+          `email_confirmed_at = COALESCE(auth.users.email_confirmed_at, EXCLUDED.email_confirmed_at), ` +
+          `is_super_admin = FALSE, ` +
+          `is_sso_user = FALSE, ` +
+          `is_anonymous = FALSE, ` +
+          `email_change_confirm_status = 0, ` +
+          `updated_at = EXCLUDED.updated_at;`
         );
 
         authInsertStatements.push(
-          `INSERT INTO auth.identities (id, user_id, identity_data, provider, provider_id, created_at, updated_at) ` +
-          `VALUES (${uId}, ${uId}, jsonb_build_object('sub', ${uId}::text, 'email', ${uEmail}), 'email', ${uId}::text, ${uCreatedAt}, ${uUpdatedAt}) ` +
-          `ON CONFLICT (provider, provider_id) DO NOTHING;`
+          `INSERT INTO auth.identities (id, user_id, identity_data, provider, provider_id, last_sign_in_at, created_at, updated_at) ` +
+          `VALUES (${uId}, ${uId}, jsonb_build_object('sub', ${uId}::text, 'email', ${uEmail}), 'email', ${uId}::text, ${uCreatedAt}, ${uCreatedAt}, ${uUpdatedAt}) ` +
+          `ON CONFLICT (provider, provider_id) DO UPDATE SET ` +
+          `identity_data = EXCLUDED.identity_data, ` +
+          `updated_at = EXCLUDED.updated_at;`
         );
       }
+
+      // Add a safety update to guarantee no NULL strings exist in GoTrue columns
+      authInsertStatements.push(`\n-- Safety GoTrue Auth Scanner Repair`);
+      authInsertStatements.push(`UPDATE auth.users SET ` +
+        `confirmation_token = COALESCE(confirmation_token, ''), ` +
+        `recovery_token = COALESCE(recovery_token, ''), ` +
+        `email_change_token_new = COALESCE(email_change_token_new, ''), ` +
+        `email_change_token_current = COALESCE(email_change_token_current, ''), ` +
+        `email_change = COALESCE(email_change, ''), ` +
+        `phone_change = COALESCE(phone_change, ''), ` +
+        `phone_change_token = COALESCE(phone_change_token, ''), ` +
+        `reauthentication_token = COALESCE(reauthentication_token, ''), ` +
+        `is_super_admin = COALESCE(is_super_admin, FALSE), ` +
+        `is_sso_user = COALESCE(is_sso_user, FALSE), ` +
+        `is_anonymous = COALESCE(is_anonymous, FALSE), ` +
+        `email_change_confirm_status = COALESCE(email_change_confirm_status, 0), ` +
+        `email_confirmed_at = COALESCE(email_confirmed_at, NOW()), ` +
+        `aud = COALESCE(aud, 'authenticated'), ` +
+        `role = COALESCE(role, 'authenticated'), ` +
+        `instance_id = COALESCE(instance_id, '00000000-0000-0000-0000-000000000000');`
+      );
     }
   } catch (err) {
     console.warn(`  ❌ Error fetching auth users:`, err.message);
@@ -1967,7 +1960,12 @@ async function runCompleteBackup() {
 
         for (const row of data) {
           const columns = Object.keys(row);
-          const values = columns.map((col) => formatSqlValue(row[col]));
+          const values = columns.map((col) => {
+            if (table === 'system_settings' && col === 'value') {
+              return `'${JSON.stringify(row[col]).replace(/'/g, "''")}'::jsonb`;
+            }
+            return formatSqlValue(row[col]);
+          });
 
           dataInsertStatements.push(
             `INSERT INTO public.${table} (${columns.join(', ')}) VALUES (${values.join(', ')}) ON CONFLICT DO NOTHING;`
