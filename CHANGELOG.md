@@ -1,5 +1,11 @@
 # Changelog
 
+## [v1.4.39] [2026-09-01 13:37] แก้ไขปัญหา PostgREST PGRST200 ในหน้า Projects โดยดึงข้อมูลและเชื่อมโยง Profile ผู้สร้างอย่างปลอดภัย
+- **Modified files:**
+  - `src/pages/Projects.jsx`: ปรับปรุง `fetchProjects` ให้ดึงข้อมูลโครงการและเชื่อมโยงข้อมูล `profiles` ของผู้สร้าง (`created_by`) อย่างปลอดภัยโดยไม่พึ่งพา Foreign Key Hint `profiles!created_by` บน PostgREST Schema Cache ป้องกัน HTTP 400 Bad Request
+  - `package.json`: ปรับเวอร์ชันเป็น `1.4.39`
+- **Verification:** ทดสอบเรียกใช้งาน Supabase REST API `GET /rest/v1/projects` และตรวจสอบการโหลดข้อมูลโครงการและชื่อผู้สร้างสำเร็จ 100% (200 OK)
+
 ## [v1.4.38] [2026-09-01 13:12] ปรับปรุงระบบ Send Invitation Email ให้ใช้ Shared Master Responsive Shell และภาษาทางการระดับองค์กร (EOP Filter Friendly)
 - **Modified files:**
   - `src/lib/emailRenderer.js`: ปรับปรุง `renderUserInvitationEmailHtml` และ `renderUserInvitationEmailText` ให้ใช้โครงสร้าง Master Responsive HTML เดียวกันกับระบบแจ้งเตือนหลัก (100% Shared Shell, 620px Centered Table, Brand Header, Preheader, Action Button) พร้อมปรับภาษาเป็น Clean Onboarding Notice ปราศจากคีย์เวิร์ดล่อแหลมด้านความปลอดภัย

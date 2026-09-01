@@ -154,14 +154,35 @@ const Projects = () => {
   const fetchProjects = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      const { data: rawProjects, error: projError } = await supabase
         .from('projects')
-        .select('id, name, project_code, location, description, status, created_at, created_by, profiles!created_by(full_name)')
+        .select('id, name, project_code, location, description, status, created_at, created_by')
         .neq('status', 'inactive')
         .order('created_at', { ascending: false });
         
-      if (error) throw error;
-      setProjects(data || []);
+      if (projError) throw projError;
+
+      if (rawProjects && rawProjects.length > 0) {
+        const creatorIds = [...new Set(rawProjects.map(p => p.created_by).filter(Boolean))];
+        let profileMap = new Map();
+        if (creatorIds.length > 0) {
+          const { data: profilesData } = await supabase
+            .from('profiles')
+            .select('id, full_name')
+            .in('id', creatorIds);
+          if (profilesData) {
+            profilesData.forEach(pr => profileMap.set(pr.id, pr));
+          }
+        }
+
+        const enrichedProjects = rawProjects.map(p => ({
+          ...p,
+          profiles: p.created_by && profileMap.has(p.created_by) ? profileMap.get(p.created_by) : null
+        }));
+        setProjects(enrichedProjects);
+      } else {
+        setProjects([]);
+      }
     } catch (error) {
       console.error('Fetch projects error:', error);
       toast.error('ไม่สามารถโหลดข้อมูลโครงการได้');
