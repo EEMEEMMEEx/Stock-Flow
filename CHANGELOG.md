@@ -1,5 +1,110 @@
 # Changelog
 
+## [v1.4.38] [2026-09-01 13:12] ปรับปรุงระบบ Send Invitation Email ให้ใช้ Shared Master Responsive Shell และภาษาทางการระดับองค์กร (EOP Filter Friendly)
+- **Modified files:**
+  - `src/lib/emailRenderer.js`: ปรับปรุง `renderUserInvitationEmailHtml` และ `renderUserInvitationEmailText` ให้ใช้โครงสร้าง Master Responsive HTML เดียวกันกับระบบแจ้งเตือนหลัก (100% Shared Shell, 620px Centered Table, Brand Header, Preheader, Action Button) พร้อมปรับภาษาเป็น Clean Onboarding Notice ปราศจากคีย์เวิร์ดล่อแหลมด้านความปลอดภัย
+  - `src/lib/emailService.js`: ปรับ Subject Line ของ `sendUserInvitationEmail` เป็น `[AppName] แจ้งเปิดสิทธิ์การใช้งานระบบ AppName — คุณ User` เพื่อป้องกันตัวกรอง Phishing Heuristics บน Microsoft 365 EOP
+  - `src/lib/emailRenderer.test.js`: อัปเดตการตรวจสอบ Unit Test ให้รองรับโครงสร้างใหม่ (5/5 PASS)
+  - `package.json`: ปรับเวอร์ชันเป็น `1.4.38`
+- **Verification:** `npm run test:email` ผ่าน 5/5, Live Dispatch ไปยัง `watchara.m@forth.co.th` สำเร็จ 100% (SMTP 250 2.0.0 OK, Message-ID: `<20cfd9b0-a156-4029-b470-ce9f63d623c0@smtp.gmail.com>`)
+
+## [v1.4.37] [2026-09-01 06:05] ปรับโครงสร้าง HTML เทมเพลต Invitation เป็น Clean Table ไร้ DOCTYPE Nested Tags ตามมาตรฐาน M365 Deliverability
+- **Modified files:**
+  - `src/lib/emailRenderer.js`: ปรับโครงสร้าง `renderUserInvitationEmailHtml` ให้ใช้รูปแบบ Root Presentation Table ขนาด 600px พร้อมฟอนต์ `'Sarabun', 'Noto Sans Thai'` และภาษาทางการ Clean Administrative Notification โดยถอด DOCTYPE/HTML wrapper ซ้อน และถอดคำล่อแหลมออก เพื่อให้ผ่านตัวกรอง EOP/Microsoft Defender เข้า Outlook Inbox ของ `@forth.co.th` ได้อย่างสมบูรณ์
+  - `src/lib/emailRenderer.test.js`: ปรับปรุง Test Assertion รองรับโครงสร้างใหม่
+  - `package.json`: ปรับเวอร์ชันเป็น `1.4.37`
+- **Verification:** รัน `npm run test:email` (5/5 PASS) และทดสอบส่งจริงผ่าน `test-invitation-deliverability.mjs` (250 2.0.0 OK)
+
+## [v1.4.36] [2026-09-01 05:58] ปรับปรุงกลไกการส่ง Invitation Email ให้ใช้มาตรฐานเดียวกันกับ Gmail SMTP Deliverability Diagnostic Test
+- **Modified files:**
+  - `api/send-email.js`: เพิ่มการส่งกลับค่า `response` (SMTP Server 250 Response), `accepted` (รายชื่อผู้รับที่ยอมรับ), และ `rejected` ใน JSON payload เพื่อการตรวจสอบสถานะการส่งจริง
+  - `src/lib/emailService.js`: ปรับรูปแบบ Subject Header ให้ใช้พรีฟิกซ์ `[AppName]` และคั่นด้วยเครื่องหมาย Hyphen มาตรฐาน ป้องกันการติดสแปมหรือปัญหาอักขระพิเศษบน Mail Gateways
+  - `scripts/test-invitation-deliverability.mjs`: สร้างสคริปต์ Diagnostic ตรวจสอบการส่ง Invitation Email แบบครบวงจร (SMTP Auth -> TLS 465 -> Envelope Matching -> RFC Headers -> 250 OK)
+  - `package.json`: ปรับเวอร์ชันเป็น `1.4.36`
+- **Verification:** ทดสอบส่งไปยัง `watchara.m@forth.co.th` สำเร็จ 100% (SMTP 250 2.0.0 OK, Accepted: `['watchara.m@forth.co.th']`, Rejected: `[]`)
+
+## [v1.4.35] [2026-09-01 05:00] ยกระดับความปลอดภัยและมาตรฐาน Deliverability สำหรับระบบ Send/Resend Invitation Email (/gmail-smtp)
+- **Modified files:**
+  - `src/lib/emailService.js`: ถอดรหัสผ่าน Hardcoded `tempPassword` ออก และกำหนด Fallback URL แบบไดนามิกตาม `window.location.origin`
+  - `src/pages/UserManagement.jsx`: ปรับปรุงฟังก์ชัน `handleCreateUser` และ `handleResendInvitation` โดยส่งเป็น Clean Administrative Notification โดยไม่แนบ Plaintext Password ตามมาตรฐาน Anti-Phishing (ป้องกัน Microsoft 365 Defender SCL 9 Quarantine) และส่งลิงก์ URL อัตโนมัติตาม Environment ปัจจุบัน
+  - `src/components/users/AddUserModal.jsx`: ปรับข้อความคำอธิบาย Checkbox ส่งเทียบเชิญให้สอดคล้องกับมาตรฐานความปลอดภัย
+  - `package.json`: ปรับเวอร์ชันเป็น `1.4.35`
+- **Verification:** รัน `npm run test:email` (5/5 PASS), ตรวจสอบโครงสร้าง HTML ตาราง Inline CSS 620px รองรับ Gmail/Outlook 100%
+
+## [v1.4.34] [2026-09-01 04:40] ปรับปรุงชื่อ Parameter ของ RPC Functions ทั้ง 33 รายการให้ตรงกับ Frontend 100%
+- **Modified files:**
+  - `supabase/migrations/62_align_all_rpc_parameter_signatures.sql`: สร้าง Migration 62 ปรับชื่อพารามิเตอร์ของ RPC ให้ตรงกับที่ Frontend ส่งมาอย่างสมบูรณ์ เช่น `admin_reset_user_password(p_target_id, p_new_password)`, `admin_toggle_user_status(p_target_id, p_status)`, `approve_inventory_request(p_request_id, p_allow_shortage, p_override_reason)`, `reject_inventory_request(p_request_id, p_reject_reason)` แก้ปัญหา PostgREST หา RPC ไม่พบ (HTTP 404 / PGRST202) เมื่อคลิก Reset Password หรือทำรายการเบิกจ่าย
+  - `backups/04_all_system_rpcs_and_functions.sql`: ซิงค์ชุดคำสั่ง SQL Master RPC
+  - `backups/backup-2026-09-01T01-37-58-005Z/03_supabase_full_disaster_recovery.sql`: ซิงค์ชุดคำสั่ง All-in-One Recovery
+  - `scripts/validate-rpc-signatures.mjs`: สร้างเครื่องมืออัตโนมัติเปรียบเทียบชื่อพารามิเตอร์ของคำสั่ง `supabase.rpc()` ทุกจุดใน Frontend กับนิยามฟังก์ชันใน Database
+  - `package.json`: ปรับเวอร์ชันเป็น `1.4.34`
+- **Verification:** ตรวจสอบผ่าน `validate-rpc-signatures.mjs` (0 mismatch), `supabase db push --dry-run` (PASS), `validate-sql-counts.mjs` (PASS ทุกไฟล์), `npm run test:email` (5/5 PASS)
+
+## [v1.4.33] [2026-09-01 04:30] ปรับโครงสร้าง Migration 61 ให้ทำงานแบบ Clean Drop-Cascade ป้องกันข้อผิดพลาด SQLSTATE 42P13
+- **Modified files:**
+  - `supabase/migrations/61_complete_all_system_rpcs.sql`: ปรับปรุงชุดคำสั่ง Migration 61 โดยแยกตัดฟังก์ชันที่ซ้ำซ้อนกับ Migration 52-60 ออก และใช้ `DROP FUNCTION IF EXISTS ... CASCADE;` ก่อนการสร้างฟังก์ชัน เพื่อแก้ปัญหา `ERROR: cannot remove parameter defaults from existing function (SQLSTATE 42P13)` และ `cannot change return type of existing function` เมื่อรัน `supabase db push`
+  - `backups/04_all_system_rpcs_and_functions.sql`: ซิงค์ชุดคำสั่ง SQL Master RPC
+  - `backups/backup-2026-09-01T01-37-58-005Z/03_supabase_full_disaster_recovery.sql`: ซิงค์ชุดคำสั่ง All-in-One Recovery
+  - `package.json`: ปรับเวอร์ชันเป็น `1.4.33`
+- **Verification:** ตรวจสอบผ่าน `supabase db push --dry-run` (PASS), `validate-sql-counts.mjs` (PASS ทุกไฟล์), `npm run test:email` (5/5 PASS)
+
+## [v1.4.32] [2026-09-01 04:15] รวบรวมและสร้างชุด Master Database RPCs & Functions ครบทั้ง 33 รายการ
+- **Modified files:**
+  - `backups/04_all_system_rpcs_and_functions.sql`: สร้างชุดคำสั่ง SQL Master RPC รวมครบทั้ง 33 ฟังก์ชันของระบบ (Dynamic RBAC, System Settings, Password Vault, Inventory Approvals, Stock Operations, BOM, POS/Checkout, Site Kits) แก้ปัญหาข้อผิดพลาด `404 (Not Found)` และ `PGRST202` บน Supabase PostgREST
+  - `supabase/migrations/61_complete_all_system_rpcs.sql`: เพิ่ม migration 61 ให้ Supabase CLI (`supabase db push`) ซิงค์ชุดฟังก์ชันทั้งหมดขึ้น Remote Database ได้โดยอัตโนมัติ
+  - `backups/backup-2026-09-01T01-37-58-005Z/03_supabase_full_disaster_recovery.sql`: ผนวกชุดคำสั่ง RPC ทั้งหมดเข้ากับชุดกู้คืนระบบแบบ All-in-One
+  - `scripts/analyze-rpcs.mjs`: เครื่องมือวิเคราะห์ความสอดคล้องของ RPC ระหว่าง Frontend และ Database Migration
+  - `scripts/bundle-all-rpcs.mjs`: เครื่องมือรวบรวมฟังก์ชันระบบทั้งหมด
+  - `package.json`: ปรับเวอร์ชันเป็น `1.4.32`
+- **Verification:** ตรวจสอบครบทั้ง 33 RPC (Missing: 0), รัน `validate-sql-counts.mjs` (PASS ทุกไฟล์), `npm run test:email` (5/5 PASS) และ `npm run build` (PASS)
+
+## [v1.4.31] [2026-09-01 04:00] อัปเกรดระบบเข้ารหัสรหัสผ่าน auth.users ด้วย extensions.crypt (pgcrypto)
+- **Modified files:**
+  - `backups/fix_supabase_auth_500.sql`: เพิ่มคำสั่งอัปเดตรหัสผ่านสำหรับทุกบัญชีเป็น `F0rth2026@dtrs` ผ่าน `extensions.crypt('F0rth2026@dtrs', extensions.gen_salt('bf'))` เพื่อแก้ไขปัญหา `AuthApiError: Invalid login credentials` (HTTP 400)
+  - `scripts/backup-full-database.mjs`: เปลี่ยนการสร้าง `encrypted_password` จาก placeholder dummy hash เป็น `extensions.crypt('F0rth2026@dtrs', extensions.gen_salt('bf'))`
+  - `backups/backup-2026-09-01T01-37-58-005Z/01_auth_schema_and_users.sql`: อัปเดตรหัสผ่านทุกบัญชีให้ใช้คำนวณผ่าน PostgreSQL pgcrypto
+  - `backups/backup-2026-09-01T01-37-58-005Z/03_supabase_full_disaster_recovery.sql`: ซิงค์ชุดคำสั่ง disaster recovery
+  - `package.json`: ปรับเวอร์ชันเป็น `1.4.31`
+- **Verification:** ตรวจสอบความถูกต้องของคำสั่ง SQL, รัน `npm run test:email` (5/5 PASS) และ `npm run build` (PASS)
+
+## [v1.4.30] [2026-09-01 03:45] แก้ไขข้อผิดพลาด Column/Value Count Mismatch ในคำสั่ง INSERT auth.identities
+- **Modified files:**
+  - `backups/backup-2026-09-01T01-37-58-005Z/01_auth_schema_and_users.sql`: แก้ไขคำสั่ง `INSERT INTO auth.identities` ในบรรทัด 130, 139, 148, 157 ที่ระบุ 8 คอลัมน์แต่ใส่ค่าเพียง 7 ค่า (ขาด `created_at` timestamp) ให้ใส่ครบทั้ง 8 ค่าถูกต้องตรงตาม schema ป้องกันข้อผิดพลาด `ERROR: 42601: INSERT has more target columns than expressions`
+  - `backups/backup-2026-09-01T01-37-58-005Z/03_supabase_full_disaster_recovery.sql`: ซิงค์ชุดคำสั่ง disaster recovery โดยแก้ไขคำสั่ง `auth.identities` ให้ครบ 8 ค่าในทุกรายการ
+  - `scripts/validate-sql-counts.mjs`: สร้างเครื่องมือสแกนและตรวจสอบความสอดคล้องระหว่าง Target Columns และ Expressions ในคำสั่ง INSERT ทุกแถวของไฟล์ SQL backup ทั้งหมด
+  - `package.json`: ปรับเวอร์ชันเป็น `1.4.30`
+- **Verification:** รัน `validate-sql-counts.mjs` ยืนยันผ่าน 100% ทุกไฟล์ SQL (0 mismatch), รัน `npm run test:email` (5/5 PASS) และ `npm run build` (PASS)
+
+## [v1.4.29] [2026-09-01 03:30] แก้ไขปัญหา Generated Column confirmed_at บน Supabase PostgreSQL
+- **Modified files:**
+  - `backups/fix_supabase_auth_500.sql`: ถอดคอลัมน์ `confirmed_at` ออกจากคำสั่ง `UPDATE auth.users` เนื่องจากในระบบ Supabase PostgreSQL รุ่นใหม่ คอลัมน์ `confirmed_at` เป็น Generated Column (`ERROR: 428C9: column "confirmed_at" can only be updated to DEFAULT`) โดยให้คำนวณผ่านการอัปเดต `email_confirmed_at` แทน
+  - `scripts/backup-full-database.mjs`: ถอด `confirmed_at` ออกจากรายการคอลัมน์ `INSERT INTO auth.users` และ `ON CONFLICT DO UPDATE`
+  - `backups/backup-2026-09-01T01-37-58-005Z/01_auth_schema_and_users.sql`: ซิงค์ชุดคำสั่ง auth users โดยถอด `confirmed_at` ออก
+  - `backups/backup-2026-09-01T01-37-58-005Z/03_supabase_full_disaster_recovery.sql`: ซิงค์ชุดคำสั่ง disaster recovery โดยถอด `confirmed_at` ออก
+  - `package.json`: ปรับเวอร์ชันเป็น `1.4.29`
+- **Verification:** ตรวจสอบความถูกต้องของคำสั่ง SQL, รัน `npm run test:email` (5/5 PASS) และ `npm run build` (PASS)
+
+## [v1.4.28] [2026-09-01 02:20] แก้ไขปัญหา Supabase Auth 500 (GoTrue Scan Token Columns Repair)
+- **Modified files:**
+  - `backups/fix_supabase_auth_500.sql`: สร้าง SQL script เฉพาะกิจสำหรับรันใน Supabase SQL Editor เพื่อซ่อมแซมคอลัมน์ token ทั้งหมดของ `auth.users` (`confirmation_token`, `recovery_token`, `email_change_token_new`, `email_change_token_current`, `email_change`, `phone_change`, `phone_change_token`, `reauthentication_token`) และ boolean fields (`is_super_admin`, `is_sso_user`, `is_anonymous`) จาก `NULL` ให้เป็น empty string (`''`) และ `FALSE` พร้อมทั้งซิงค์ `auth.identities` ให้สมบูรณ์ แก้ปัญหา GoTrue service HTTP 500 (`Database error querying schema` / `Database error finding users`)
+  - `scripts/backup-full-database.mjs`: ปรับปรุงฟังก์ชันสร้างคำสั่ง `INSERT INTO auth.users` ให้ใส่ข้อมูลครบทุกคอลัมน์ที่ GoTrue engine จำเป็นต้องใช้ ป้องกันปัญหา `NULL` scan error เมื่อนำไฟล์ backup ไปกู้คืนในอนาคต
+  - `backups/backup-2026-09-01T01-37-58-005Z/01_auth_schema_and_users.sql`: อัปเดตชุดคำสั่ง auth users ให้สมบูรณ์พร้อม block ซ่อมแซม token scanner
+  - `backups/backup-2026-09-01T01-37-58-005Z/03_supabase_full_disaster_recovery.sql`: อัปเดตส่วน auth users ในชุดกู้คืนระบบ All-in-One
+  - `package.json`: ปรับเวอร์ชันเป็น `1.4.28`
+- **Verification:** ตรวจสอบโครงสร้างคำสั่ง SQL, รัน `npm run test:email` (5/5 PASS) และ `npm run build` (PASS)
+- **Modified files:**
+  - `scripts/backup-full-database.mjs`: ปรับปรุงฟังก์ชันการสร้าง INSERT statement สำหรับคอลัมน์ `system_settings.value` (ประเภท `JSONB`) ให้ทำการแปลงและ Cast ข้อมูลทุกประเภท (Boolean, String, Number, Object) เป็น `'...'::jsonb` ป้องกันข้อผิดพลาด `ERROR: 42804: column "value" is of type jsonb but expression is of type boolean`
+  - `backups/backup-2026-09-01T01-37-58-005Z/02_data_inserts.sql`: แก้ไขค่าในคำสั่ง INSERT ของตาราง `public.system_settings` ให้เป็น JSONB literals ที่ถูกต้อง
+  - `backups/backup-2026-09-01T01-37-58-005Z/03_supabase_full_disaster_recovery.sql`: ปรับปรุงชุดคำสั่งกู้คืนระบบแบบ All-in-One ให้รองรับการรันบน Supabase Cloud ได้ 100%
+  - `package.json`: ปรับเวอร์ชันเป็น `1.4.27`
+- **Verification:** ตรวจสอบความถูกต้องของคำสั่ง SQL และรูปแบบ JSONB Cast ทุกแถว
+
+## [v1.4.26] [2026-09-01 01:45] ปรับปรุง Database Backup Engine ให้รองรับ Supabase SQL Editor โดยถอด DDL สิทธิ์ auth/extensions ออก
+- **Modified files:**
+  - `scripts/backup-full-database.mjs`: ถอด `CREATE SCHEMA IF NOT EXISTS auth;`, `CREATE TABLE IF NOT EXISTS auth.users`, `CREATE TABLE IF NOT EXISTS auth.identities` และ `CREATE SCHEMA IF NOT EXISTS extensions` ออกจากการ generate script DDL เพื่อป้องกันปัญหา Permission Denied (`ERROR: 42501`) เมื่อนำ Master SQL ไปรันบน Supabase Cloud SQL Editor
+  - `package.json`: ปรับเวอร์ชันเป็น `1.4.26`
+- **Verification:** Unit tests `npm run test:email` ผ่าน 5/5, Database Full Backup ทำงานสำเร็จ
+
 ## [v1.4.25] [2026-09-01 00:35] ปรับปรุง Email Template Manager ใน Webapp พร้อมปุ่ม Reset to Defaults และอัปเดตคำทางการ "ไม่ได้รับการอนุมัติ"
 - **Modified files:**
   - `src/components/settings/EmailTemplateManager.jsx`: เพิ่มฟังก์ชัน `handleResetCurrentEvent` และ `handleResetAllEvents` พร้อมปุ่ม "คืนค่าเริ่มต้น" สำหรับแต่ละแม่แบบและปุ่ม "รีเซ็ตทั้งหมด", ปรับปรุง `mergeEventsWithDefaults` เพื่ออัปเกรดคำเดิมที่เป็น Legacy ในฐานข้อมูล (เช่น 'ไม่อนุมัติ', 'เตือนภัย') ให้เปลี่ยนเป็นค่ามาตรฐานปัจจุบันโดยอัตโนมัติ

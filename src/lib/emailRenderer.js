@@ -739,28 +739,23 @@ export const renderUserInvitationEmailText = ({
   const effectiveAppName = branding.app_name || appName;
   const safeUrl = sanitizeHttpUrl(actionUrl, 'https://bearnannan.github.io/Stock-Flow');
 
-  return `========================================
-ยินดีต้อนรับสู่ ${effectiveAppName}
-========================================
+  return `[${effectiveAppName}] แจ้งเปิดสิทธิ์การใช้งานระบบ ${effectiveAppName}
 
-สวัสดีคุณ ${userName || ''},
+เรียน คุณ ${userName || ''},
 
-ผู้ดูแลระบบได้สร้างและตั้งค่าบัญชีผู้ใช้งานสำหรับคุณเรียบร้อยแล้ว ท่านสามารถเข้าสู่ระบบเพื่อเริ่มต้นการใช้งานได้ทันที
+ผู้ดูแลระบบได้กำหนดสิทธิ์และเปิดการใช้งานระบบ ${effectiveAppName} สำหรับคุณเรียบร้อยแล้ว ท่านสามารถเข้าใช้งานระบบเพื่อบริหารจัดการพัสดุและโครงการตามที่ได้รับมอบหมาย
 
 [ข้อมูลบัญชีผู้ใช้งาน]
 - ชื่อผู้ใช้งาน: ${userName || '-'}
-- อีเมลสำหรับเข้าสู่ระบบ: ${userEmail || '-'}
-- บทบาท / สิทธิ์การใช้งาน: ${roleName || '-'}
-- โครงการที่ได้รับมอบหมาย: ${projectAccessSummary || 'ตามที่ได้รับมอบหมาย'}${tempPassword ? `\n- รหัสผ่านตั้งต้น (Initial Access): ${tempPassword}` : ''}
+- อีเมลผู้ใช้งาน: ${userEmail || '-'}
+- บทบาทในระบบ: ${roleName || '-'}
+- โครงการที่ได้รับมอบหมาย: ${projectAccessSummary || 'ตามสิทธิ์ที่ได้รับมอบหมาย'}${tempPassword ? `\n- รหัสผ่านตั้งต้น (Initial Access): ${tempPassword}` : ''}
 
-[คำแนะนำสำหรับการเข้าสู่ระบบครั้งแรก]
-เพื่อความปลอดภัยของบัญชี กรุณาเข้าสู่ระบบและกำหนดรหัสผ่านประจำตัวใหม่ในการเข้าใช้งานครั้งแรก
-
-[ลิงก์เข้าสู่ระบบ]
+เปิดเข้าใช้งานระบบ ${effectiveAppName}:
 ${safeUrl}
 
-----------------------------------------
-ระบบบริหารจัดการพัสดุและคลังสินค้า — ${effectiveAppName} (Inventory Management System)`;
+---
+อีเมลฉบับนี้ส่งโดยอัตโนมัติจากระบบ ${effectiveAppName} (Inventory Management System)`;
 };
 
 export const renderUserInvitationEmailHtml = ({
@@ -773,18 +768,19 @@ export const renderUserInvitationEmailHtml = ({
   branding = {},
   tempPassword = '',
 }) => {
-  const accent = sanitizeColor(branding.accent_color);
+  const accent = sanitizeColor(branding.accent_color || '#2563eb');
   const safeUrl = sanitizeHttpUrl(actionUrl, 'https://bearnannan.github.io/Stock-Flow');
   const effectiveAppName = escapeHtml(branding.app_name || appName);
   const year = new Date().getFullYear().toString();
+  const preheader = `ระบบ ${effectiveAppName} ได้เปิดสิทธิ์การใช้งานสำหรับคุณ ${escapeHtml(userName || '')} เรียบร้อยแล้ว`;
   const rows = [
-    renderRow('ชื่อผู้ใช้งาน:', escapeHtml(userName)),
-    renderRow('อีเมลสำหรับเข้าสู่ระบบ:', escapeHtml(userEmail)),
-    renderRow('บทบาท / สิทธิ์การใช้งาน:', escapeHtml(roleName)),
-    renderRow('โครงการที่ได้รับมอบหมาย:', escapeHtml(projectAccessSummary)),
+    renderRow('ชื่อผู้ใช้งาน:', escapeHtml(userName || '-'), { emphasis: true }),
+    renderRow('อีเมลผู้ใช้งาน:', escapeHtml(userEmail || '-')),
+    renderRow('บทบาทในระบบ:', escapeHtml(roleName || '-'), { emphasis: true }),
+    renderRow('โครงการที่ได้รับมอบหมาย:', escapeHtml(projectAccessSummary || 'ตามสิทธิ์ที่ได้รับมอบหมาย')),
     tempPassword ? renderRow(
       'รหัสผ่านตั้งต้น (Initial Access):',
-      `<code style="font-family: Consolas, 'Courier New', monospace; font-size: 14px; font-weight: 700; color: #0f172a; background-color: #f1f5f9; padding: 2px 8px; border-radius: 4px; border: 1px solid #cbd5e1;">${escapeHtml(tempPassword)}</code>`,
+      `<code style="font-family: Consolas, 'Courier New', monospace; font-size: 13px; font-weight: 700; color: #0f172a; background-color: #f1f5f9; padding: 2px 6px; border-radius: 4px; border: 1px solid #cbd5e1;">${escapeHtml(tempPassword)}</code>`,
       { emphasis: true }
     ) : ''
   ].filter(Boolean).join('');
@@ -794,98 +790,40 @@ export const renderUserInvitationEmailHtml = ({
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ยินดีต้อนรับสู่ ${effectiveAppName}</title>
+  <title>[${effectiveAppName}] แจ้งเปิดสิทธิ์การใช้งานระบบ ${effectiveAppName}</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: Arial, Tahoma, 'Noto Sans Thai', sans-serif; color: #334155;">
-  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="width: 100%; background-color: #f1f5f9;">
-    <tr>
-      <td align="center" style="padding: 24px 12px;">
-        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="width: 100%; max-width: 620px; margin: auto; background-color: #ffffff; border: 1px solid #dbe4f0; border-radius: 14px; overflow: hidden;">
-          <tr>
-            <td style="padding: 22px 28px; border-bottom: 3px solid ${accent};">
-              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
-                <tr>
-                  <td style="vertical-align: middle;">
-                    <span style="font-size: 24px; line-height: 30px; font-weight: 800; color: ${accent}; letter-spacing: -0.5px;">${effectiveAppName}</span>
-                  </td>
-                  <td align="right" style="vertical-align: middle; font-size: 10px; line-height: 14px; font-weight: 700; letter-spacing: 0.3px; color: #64748b;">
-                    INVENTORY MANAGEMENT SYSTEM
-                  </td>
-                </tr>
+<body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: Arial, Tahoma, 'Noto Sans Thai', sans-serif; color: #334155;">
+  <div style="display: none; max-height: 0; overflow: hidden; opacity: 0; color: transparent; mso-hide: all;">${preheader}</div>
+  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="width: 100%; background-color: #f8fafc;">
+    <tr><td align="center" style="padding: 24px 12px;">
+      <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="width: 100%; max-width: 620px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; overflow: hidden;">
+        <tr><td style="padding: 20px 28px; border-bottom: 3px solid ${accent};">
+          <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
+            <td style="vertical-align: middle;"><span style="font-size: 22px; line-height: 28px; font-weight: 800; color: ${accent};">${effectiveAppName}</span></td>
+            <td align="right" style="vertical-align: middle; font-size: 10px; line-height: 14px; font-weight: 700; letter-spacing: .3px; color: #64748b;">INVENTORY MANAGEMENT SYSTEM</td>
+          </tr></table>
+        </td></tr>
+        <tr><td style="padding: 28px 28px 24px;">
+          <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+            <tr><td style="padding-bottom: 13px;"><span style="display: inline-block; padding: 5px 11px; border: 1px solid #86efac; border-radius: 999px; background-color: #dcfce7; color: #166534; font-size: 12px; line-height: 16px; font-weight: 700;">เปิดสิทธิ์การใช้งาน</span></td></tr>
+            <tr><td><h1 style="margin: 0 0 10px; font-size: 22px; line-height: 30px; font-weight: 700; color: #0f172a;">แจ้งเปิดสิทธิ์การใช้งานระบบ ${effectiveAppName}</h1></td></tr>
+            <tr><td style="padding-bottom: 20px; font-size: 14px; line-height: 22px; color: #475569;">เรียน คุณ <strong>${escapeHtml(userName || '')}</strong>,<br />ผู้ดูแลระบบได้กำหนดสิทธิ์และเปิดการใช้งานระบบ ${effectiveAppName} สำหรับคุณเรียบร้อยแล้ว ท่านสามารถเข้าใช้งานระบบเพื่อบริหารจัดการพัสดุและโครงการตามที่ได้รับมอบหมาย</td></tr>
+            <tr><td style="padding: 0 0 20px;">
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="border: 1px solid #e2e8f0; border-left: 4px solid ${accent}; border-radius: 10px; background-color: #f8fafc;">
+                <tr><td style="padding: 16px 18px;">
+                  <h2 style="margin: 0 0 8px; font-size: 16px; line-height: 22px; font-weight: 700; color: #0f172a;">ข้อมูลบัญชีผู้ใช้งาน</h2>
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">${rows}</table>
+                </td></tr>
               </table>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding: 28px 28px 24px;">
-              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
-                <tr>
-                  <td style="padding-bottom: 12px;">
-                    <span style="display: inline-block; padding: 4px 12px; border: 1px solid #93c5fd; border-radius: 999px; background-color: #eff6ff; color: #1d4ed8; font-size: 12px; line-height: 16px; font-weight: 700;">
-                      เทียบเชิญเข้าใช้งานระบบ
-                    </span>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <h1 style="margin: 0 0 10px; font-size: 22px; line-height: 30px; font-weight: 700; color: #0f172a;">
-                      ยินดีต้อนรับสู่ระบบ ${effectiveAppName}
-                    </h1>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding-bottom: 20px; font-size: 14px; line-height: 22px; color: #475569;">
-                    สวัสดีคุณ <strong>${escapeHtml(userName || '')}</strong>,<br />
-                    ผู้ดูแลระบบได้สร้างและตั้งค่าบัญชีผู้ใช้งานสำหรับคุณเรียบร้อยแล้ว ท่านสามารถเข้าสู่ระบบเพื่อเริ่มต้นการบริหารจัดการพัสดุและคลังสินค้าได้ทันที
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding: 0 0 20px;">
-                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="border: 1px solid #e2e8f0; border-left: 4px solid ${accent}; border-radius: 10px; background-color: #f8fafc;">
-                      <tr>
-                        <td style="padding: 16px 18px;">
-                          <h2 style="margin: 0 0 8px; font-size: 16px; line-height: 22px; font-weight: 700; color: #0f172a;">ข้อมูลบัญชีผู้ใช้งาน</h2>
-                          <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">${rows}</table>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-                <tr>
-                  <td align="center" style="padding: 4px 0 16px;">
-                    <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-                      <tr>
-                        <td align="center" style="border-radius: 8px; background-color: ${accent};">
-                          <a href="${safeUrl}" target="_blank" style="display: inline-block; padding: 13px 26px; border: 1px solid ${accent}; border-radius: 8px; color: #ffffff; font-size: 14px; line-height: 18px; font-weight: 700; text-decoration: none;">
-                            เข้าสู่ระบบ ${effectiveAppName}
-                          </a>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-                <tr>
-                  <td align="center" style="padding: 0 0 20px; font-size: 12px; line-height: 18px; color: #64748b;">
-                    หากปุ่มด้านบนไม่ทำงาน สามารถเข้าใช้งานได้จากลิงก์นี้:<br />
-                    <a href="${safeUrl}" target="_blank" style="color: ${accent}; font-weight: 600; text-decoration: underline; overflow-wrap: anywhere; word-break: break-word;">${safeUrl}</a>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding-top: 14px; border-top: 1px solid #e2e8f0; font-size: 12px; line-height: 18px; color: #64748b;">
-                    คำแนะนำ: เพื่อความปลอดภัยของข้อมูล กรุณาเข้าสู่ระบบและเปลี่ยนรหัสผ่านประจำตัวทันทีในการเข้าใช้งานครั้งแรก
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-          <tr>
-            <td align="center" style="padding: 16px 28px; border-top: 1px solid #e2e8f0; background-color: #f8fafc; font-size: 12px; line-height: 18px; color: #64748b;">
-              อีเมลฉบับนี้ส่งโดยอัตโนมัติจากระบบ ${effectiveAppName}<br />
-              © ${year} ${effectiveAppName} · Inventory Management System
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
+            </td></tr>
+            <tr><td align="center" style="padding: 2px 0 14px;"><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td align="center" style="border-radius: 8px; background-color: ${accent};"><a href="${safeUrl}" target="_blank" style="display: inline-block; padding: 13px 24px; border: 1px solid ${accent}; border-radius: 8px; color: #ffffff; font-size: 14px; line-height: 18px; font-weight: 700; text-decoration: none;">เปิดเข้าใช้งานระบบ ${effectiveAppName}</a></td></tr></table></td></tr>
+            <tr><td align="center" style="padding: 0 0 20px; font-size: 12px; line-height: 18px; color: #64748b;">หากปุ่มด้านบนไม่ทำงาน สามารถเปิดเข้าใช้งานได้จากลิงก์นี้:<br /><a href="${safeUrl}" target="_blank" style="color: ${accent}; font-weight: 600; text-decoration: underline; overflow-wrap: anywhere; word-break: break-word;">${safeUrl}</a></td></tr>
+            <tr><td style="padding-top: 14px; border-top: 1px solid #e2e8f0; font-size: 12px; line-height: 18px; color: #64748b;">หากมีข้อสงสัยเกี่ยวกับการใช้งานหรือสิทธิ์โครงการ สามารถติดต่อผู้ดูแลระบบได้โดยตรง</td></tr>
+          </table>
+        </td></tr>
+        <tr><td align="center" style="padding: 16px 28px; border-top: 1px solid #e2e8f0; background-color: #f8fafc; font-size: 12px; line-height: 18px; color: #64748b;">อีเมลฉบับนี้ส่งโดยอัตโนมัติจากระบบ ${effectiveAppName}<br />© ${year} ${effectiveAppName} · Inventory Management System</td></tr>
+      </table>
+    </td></tr>
   </table>
 </body>
 </html>`;

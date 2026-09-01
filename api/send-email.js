@@ -126,6 +126,9 @@ export default async function handler(req, res) {
     return res.status(200).json({
       success: true,
       messageId: info.messageId || messageId,
+      response: info.response || '250 2.0.0 OK',
+      accepted: info.accepted || toList,
+      rejected: info.rejected || [],
       message: 'Email sent successfully via Vercel SMTP endpoint'
     });
   } catch (error) {

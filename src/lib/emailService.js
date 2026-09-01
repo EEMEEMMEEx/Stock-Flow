@@ -154,13 +154,15 @@ export async function sendUserInvitationEmail({
   projectAccessSummary,
   actionUrl,
   branding = {},
-  tempPassword = 'F0rth2026@dtrs',
+  tempPassword = '',
 }) {
   if (!recipientEmail) {
     throw new Error('กรุณาระบุอีเมลผู้รับ');
   }
 
-  const defaultActionUrl = 'https://bearnannan.github.io/Stock-Flow';
+  const defaultActionUrl = (typeof window !== 'undefined' && window.location?.origin)
+    ? window.location.origin
+    : 'https://bearnannan.github.io/Stock-Flow';
   const targetActionUrl = actionUrl || defaultActionUrl;
 
   const html = renderUserInvitationEmailHtml({
@@ -189,11 +191,9 @@ export async function sendUserInvitationEmail({
 
   return sendStockFlowEmail({
     to: recipientEmail,
-    subject: `ยินดีต้อนรับสู่ ${effectiveAppName} — ข้อมูลการเข้าใช้งานสำหรับคุณ ${userName || recipientEmail}`,
+    subject: `[${effectiveAppName}] แจ้งเปิดสิทธิ์การใช้งานระบบ ${effectiveAppName} — คุณ ${userName || recipientEmail}`,
     html,
     text,
     actionUrl: targetActionUrl,
   });
 }
-
-

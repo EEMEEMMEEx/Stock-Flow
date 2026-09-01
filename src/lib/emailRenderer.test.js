@@ -149,7 +149,7 @@ test('renders clean RFC-compliant connectivity test email and user invitation', 
     projectAccessSummary: '2 โครงการ',
     actionUrl: 'https://stockflow.example.com',
   });
-  assert.ok(invitationHtml.includes('ยินดีต้อนรับสู่ StockFlow QA'));
+  assert.ok(invitationHtml.includes('แจ้งเปิดสิทธิ์การใช้งานระบบ StockFlow QA'));
   assert.ok(invitationHtml.includes('สมชาย ใจดี'));
   assert.doesNotMatch(invitationHtml, /Initial Access/);
   assert.doesNotMatch(invitationHtml, /F0rth2026@dtrs/);

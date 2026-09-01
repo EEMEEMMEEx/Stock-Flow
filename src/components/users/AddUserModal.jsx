@@ -223,7 +223,7 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
 
               <div>
                 <Label className="text-sm font-medium mb-1.5 block">รูปโปรไฟล์ (Profile Avatar)</Label>
-                <div className="mb-4 p-3 rounded-xl border border-primary/30 bg-primary/5"><label className="flex items-start gap-3 cursor-pointer"><input type="checkbox" checked={formData.send_invitation} onChange={(e) => setFormData(prev => ({ ...prev, send_invitation: e.target.checked }))} className="mt-1 rounded text-primary" /><span className="text-sm">ส่งอีเมลเชิญและแจ้งเตือนเปิดใช้งานบัญชี<span className="block text-xs text-muted-foreground mt-1">ส่งอีเมลแจ้งข้อมูลเข้าสู่ระบบพร้อมรหัสผ่านเริ่มต้นชั่วคราว</span></span></label></div>
+                <div className="mb-4 p-3 rounded-xl border border-primary/30 bg-primary/5"><label className="flex items-start gap-3 cursor-pointer"><input type="checkbox" checked={formData.send_invitation} onChange={(e) => setFormData(prev => ({ ...prev, send_invitation: e.target.checked }))} className="mt-1 rounded text-primary" /><span className="text-sm">ส่งอีเมลเชิญและแจ้งเตือนเปิดใช้งานบัญชี<span className="block text-xs text-muted-foreground mt-1">ส่งอีเมลแจ้งข้อมูลบัญชีผู้ใช้งานพร้อมลิงก์เข้าสู่ระบบครั้งแรก</span></span></label></div>
                 <AvatarUpload
                   value={formData.avatar_url}
                   name={formData.full_name}
