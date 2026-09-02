@@ -1,6 +1,11 @@
 # Changelog
 
 ## [2026-09-02]
+- **Files Modified:** `package.json`
+- **Changes:** ปรับ version ของแอปเป็น `1.4.51` ตามขั้นตอน commit ของ repository
+- **Verification:** `git diff --check` ไม่พบข้อผิดพลาด
+
+## [2026-09-02]
 - **Files Modified:** `src/components/settings/EmailTemplateManager.jsx`, `src/lib/emailRenderer.js`, `src/lib/emailRenderer.test.js`, `src/lib/notificationDispatcher.js`
 - **Changes:** เปลี่ยน default public URL และ CTA URL ของ notification email จาก `stockflow.app` เป็น `stockflowth.online` พร้อมปรับ test ที่เกี่ยวข้อง
 - **Verification:** `npm.cmd run test:email` ผ่านครบ 5 tests และ `git diff --check` ไม่พบข้อผิดพลาด
