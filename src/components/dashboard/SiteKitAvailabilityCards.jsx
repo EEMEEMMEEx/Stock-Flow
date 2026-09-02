@@ -631,21 +631,11 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                * ADMIN EDITABLE COMPLETE SET BOM FORM VIEW
                * ======================================================= */
               <div className="space-y-3">
-                <div className="flex items-center justify-between bg-blue-500/10 border border-blue-500/20 rounded-2xl p-3 px-4 text-xs text-blue-800 dark:text-blue-300">
-                  <div className="flex items-center gap-2">
-                    <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
-                    <span>
-                      รายการวัสดุสำหรับชุดติดตั้งสมบูรณ์ (Complete Set) หากย้ายรายการใดไป Spare Equipment รายการนั้นจะถูกตัดออกจากชุดติดตั้งอัตโนมัติ
-                    </span>
-                  </div>
-                  <Button
-                    size="sm"
-                    onClick={() => handleAddRow(false)}
-                    className="rounded-xl h-8 px-3 gap-1.5 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shrink-0 cursor-pointer shadow-xs"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>เพิ่มรายการ Complete Set</span>
-                  </Button>
+                <div className="flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 rounded-2xl p-3 px-4 text-xs text-blue-800 dark:text-blue-300">
+                  <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
+                  <span>
+                    รายการวัสดุสำหรับชุดติดตั้งสมบูรณ์ (Complete Set) หากย้ายรายการใดไป Spare Equipment รายการนั้นจะถูกตัดออกจากชุดติดตั้งอัตโนมัติ
+                  </span>
                 </div>
 
                 <div className="rounded-2xl border border-border/70 overflow-hidden shadow-2xs bg-card">
@@ -790,21 +780,11 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                * ADMIN EDITABLE SPARE EQUIPMENT FORM VIEW
                * ======================================================= */
               <div className="space-y-3">
-                <div className="flex items-center justify-between bg-blue-500/10 border border-blue-500/20 rounded-2xl p-3 px-4 text-xs text-blue-800 dark:text-blue-300">
-                  <div className="flex items-center gap-2">
-                    <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
-                    <span>
-                      รายการอุปกรณ์สำรอง (Spare Equipment) จะถูกแยกออกจาก Complete Set โดยอัตโนมัติ และไม่ถูกนำไปเป็นตัวจำกัดจำนวนชุดติดตั้ง
-                    </span>
-                  </div>
-                  <Button
-                    size="sm"
-                    onClick={() => handleAddRow(true)}
-                    className="rounded-xl h-8 px-3 gap-1.5 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shrink-0 cursor-pointer shadow-xs"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>เพิ่ม Spare Equipment</span>
-                  </Button>
+                <div className="flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 rounded-2xl p-3 px-4 text-xs text-blue-800 dark:text-blue-300">
+                  <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
+                  <span>
+                    รายการอุปกรณ์สำรอง (Spare Equipment) จะถูกแยกออกจาก Complete Set โดยอัตโนมัติ และไม่ถูกนำไปเป็นตัวจำกัดจำนวนชุดติดตั้ง
+                  </span>
                 </div>
 
                 <div className="rounded-2xl border border-border/70 overflow-hidden shadow-2xs bg-card">

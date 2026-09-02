@@ -1,5 +1,11 @@
 # Changelog
 
+## [v1.4.48] [2026-09-02] ลบปุ่ม Add ที่ซ้ำซ้อนในแบนเนอร์ข้อมูล คงเหลือเฉพาะแถว Action ด้านล่างของตาราง
+- **Modified files:**
+  - `src/components/dashboard/SiteKitAvailabilityCards.jsx`: ลบปุ่ม `เพิ่มรายการ Complete Set` และ `เพิ่ม Spare Equipment` ที่อยู่ในกล่องข้อความข้อมูลด้านบนออกอย่างสมบูรณ์ เพื่อลดความซ้ำซ้อน โดยคงเหลือเฉพาะแถวปุ่ม Action ด้านล่างของตาราง (`+ เพิ่มรายการอุปกรณ์ใน Complete Set` พร้อมแสดงจำนวนรายการ และ `+ เพิ่มรายการ Spare Equipment` พร้อมแสดงจำนวนรายการ)
+  - `package.json`: อัปเดตเวอร์ชันเป็น `1.4.48`
+- **Verification:** `npm run build` ผ่านเรียบร้อย
+
 ## [v1.4.47] [2026-09-02] ลบแถบ Action Bar ซ้ำซ้อนในแท็บ Spare Equipment คงไว้เฉพาะปุ่มหลักใน Header
 - **Modified files:**
   - `src/components/dashboard/SiteKitAvailabilityCards.jsx`: ลบแถบ Action Bar "รายการอุปกรณ์สำรอง (แยกจากชุดติดตั้ง Complete Set)" และปุ่ม duplicate ภายในแท็บ Spare Equipment ออก เพื่อ UI ที่สะอาดเรียบร้อย โดยใช้ปุ่ม `Edit Spare Equipment` หลักใน Header Modal เพียงจุดเดียวในการเข้าสู่โหมดแก้ไข ทั้งการแก้ไขรายการเดิมและการเพิ่มรายการใหม่
