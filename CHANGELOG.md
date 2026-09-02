@@ -1,5 +1,17 @@
 # Changelog
 
+## [v1.4.56] [2026-09-02] อัปเดต .gitignore ข้ามการติดตามไฟล์ .pdf และ .xlsx ทั้งหมดทั่วทั้งโปรเจกต์
+- **Modified files:**
+  - `.gitignore`: เปลี่ยนกฎจาก `/*.xlsx` และ `/*.pdf` เป็น `*.xlsx` และ `*.pdf` เพื่อละเว้นไฟล์เอกสารและรายงานตารางการทำงานในทุกโฟลเดอร์ของโปรเจกต์
+  - `package.json`: อัปเดตเวอร์ชันเป็น `1.4.56`
+- **Verification:** `git status` ยืนยันว่าไฟล์ `.pdf` และ `.xlsx` ถูกข้ามการติดตามแล้ว และ `npm run build` ผ่านเรียบร้อย
+
+## [v1.4.55] [2026-09-02] กำหนดให้ .gitignore ยกเลิกและข้ามการติดตามโฟลเดอร์ supabase/ ทั้งหมด
+- **Modified files:**
+  - `.gitignore`: อัปเดตการละเว้นโฟลเดอร์ `supabase/` ทั้งหมดและไฟล์ย่อยภายใน เพื่อป้องกันไม่ให้โครงสร้างฐานข้อมูลและไฟล์คอนฟิกหลุดไปยัง Public Repository
+  - `package.json`: อัปเดตเวอร์ชันเป็น `1.4.55`
+- **Verification:** `git status` ยืนยันว่าโฟลเดอร์ `supabase/` ถูก untrack และ ignore แล้ว และ `npm run build` ผ่านเรียบร้อย
+
 ## [v1.4.54] [2026-09-02] กำหนดให้ .gitignore ข้ามการติดตามไฟล์ memory.md และ CONTEXT.md
 - **Modified files:**
   - `.gitignore`: เพิ่มกฎข้ามการติดตามไฟล์ `memory.md` และ `CONTEXT.md` เพื่อป้องกันไม่ให้ข้อมูลบริบทและโน้ตภายในหลุดไปยัง Public Repository

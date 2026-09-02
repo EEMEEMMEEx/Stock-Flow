@@ -49,6 +49,9 @@ Desktop.ini
 # Temporary Test Exports & Reports
 *_Report_*.xlsx
 *_Report_*.pdf
+MaterialWithdrawal_*.pdf
+DeliveryNote_*.pdf
+stock_in_Report_*.pdf
 
 # AI Agent Local Logs & Caches
 .gemini/
@@ -77,18 +80,11 @@ rbac-workflow.html
 stock-in-vs-items-workflow.html
 stock-flow-atomic-transaction-workflow.*
 
-# Generated Export Reports & Temporary PDFs
-*_Report_*.xlsx
-*_Report_*.pdf
-MaterialWithdrawal_*.pdf
-DeliveryNote_*.pdf
-stock_in_Report_*.pdf
-
-# Root-level data import files and template files (Preserves supabase/migrations/*.sql)
-/*.sql
-/*.csv
-/*.xlsx
-/*.pdf
+# Export reports, data files, and documents
+*.sql
+*.csv
+*.xlsx
+*.pdf
 
 # Local directories to exclude from Git tracking
 /PDF Template/
@@ -98,9 +94,8 @@ stock_in_Report_*.pdf
 /docs
 .freebuff/
 
-# Supabase local configuration (machine-specific)
-supabase/.gitignore
-supabase/config.toml
+# Exclude entire Supabase folder from Git tracking
+supabase/
 .ua/
 
 # Project context and internal development notes
