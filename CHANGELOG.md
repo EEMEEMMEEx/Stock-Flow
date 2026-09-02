@@ -1,5 +1,11 @@
 # Changelog
 
+## [v1.4.54] [2026-09-02] กำหนดให้ .gitignore ข้ามการติดตามไฟล์ memory.md และ CONTEXT.md
+- **Modified files:**
+  - `.gitignore`: เพิ่มกฎข้ามการติดตามไฟล์ `memory.md` และ `CONTEXT.md` เพื่อป้องกันไม่ให้ข้อมูลบริบทและโน้ตภายในหลุดไปยัง Public Repository
+  - `package.json`: อัปเดตเวอร์ชันเป็น `1.4.54`
+- **Verification:** `git status` ยืนยันว่าไฟล์ทั้งสองถูกละเว้นเรียบร้อยแล้ว และ `npm run build` ผ่านเรียบร้อย
+
 ## [v1.4.53] [2026-09-02] ซิงค์ Single Source of Truth สำหรับเวอร์ชันระบบ (APP_CONFIG.version) จาก package.json
 - **Modified files:**
   - `src/config/appConfig.js`: ปรับปรุงการกำหนดค่า `APP_CONFIG.version` ให้อ่านจาก `package.json` โดยตรง เพื่อให้การแสดงผลเวอร์ชันในทุกส่วนของแอปพลิเคชัน (Sidebar, Footer, Settings, LandingNavbar) เป็นแหล่งข้อมูลเดียวกันโดยตรง (Single Source of Truth)

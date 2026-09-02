@@ -103,5 +103,6 @@ supabase/.gitignore
 supabase/config.toml
 .ua/
 
-
-
+# Project context and internal development notes
+memory.md
+CONTEXT.md
