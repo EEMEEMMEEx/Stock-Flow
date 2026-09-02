@@ -1,5 +1,11 @@
 # Changelog
 
+## [v1.4.49] [2026-09-02] รองรับการจัดลำดับรายการอุปกรณ์และ Spare Equipment ด้วย Drag-and-Drop พร้อมบันทึกลำดับลงฐานข้อมูล
+- **Modified files:**
+  - `src/components/dashboard/SiteKitAvailabilityCards.jsx`: เพิ่มฟังก์ชัน Drag-and-Drop Reordering ในโหมดแก้ไข ทั้งในแท็บ Complete Set (BOM Items) และแท็บ Spare Equipment แยกจากกันอย่างอิสระ พร้อม Drag Handle (`GripVertical`), visual indicator ขณะลาก, และบันทึก `po_seq` ลำดับใหม่ลงฐานข้อมูล Supabase อย่างถูกต้อง ทำให้ลำดับคงอยู่ถาวรเมื่อเปิดกลับมาดูใหม่
+  - `package.json`: อัปเดตเวอร์ชันเป็น `1.4.49`
+- **Verification:** `npm run build` ผ่านเรียบร้อย
+
 ## [2026-09-02 22:46] เพิ่มไฟล์บริบทโครงการและไฟล์สำรอง Supabase
 - **Modified files:**
   - `memory.md`: เพิ่มไฟล์บันทึกบริบทและสถานะการดำเนินงานล่าสุดของโครงการ

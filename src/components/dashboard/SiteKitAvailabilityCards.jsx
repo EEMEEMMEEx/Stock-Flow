@@ -8,7 +8,7 @@ import {
   AlertTriangle, CheckCircle2, Layers, 
   ChevronRight, AlertCircle, Edit3, PenLine, Plus, 
   Trash2, RotateCcw, Save, Search, 
-  Package, ShieldCheck, Check, Info
+  Package, ShieldCheck, Check, Info, GripVertical
 } from 'lucide-react';
 import MicrowaveAntennaIcon from '@/components/icons/MicrowaveAntennaIcon';
 import BaseStationTowerIcon from '@/components/icons/BaseStationTowerIcon';
@@ -55,9 +55,88 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
   const [catalogPickerTargetIndex, setCatalogPickerTargetIndex] = useState(null);
   const [bomView, setBomView] = useState('complete');
 
+  // Drag and drop state for reordering items
+  const [draggedItem, setDraggedItem] = useState(null); // { index: number, section: 'complete' | 'spare' }
+  const [dragOverIndex, setDragOverIndex] = useState(null);
+
   // Helpers for mutual exclusivity between Complete Set and Spare Equipment
   const isSpareItem = (item) => item.is_mandatory === false || item.notes === 'spare';
   const isCompleteSetItem = (item) => !isSpareItem(item);
+
+  // Reorder handlers
+  const handleDragStart = (e, displayIdx, section) => {
+    setDraggedItem({ index: displayIdx, section });
+    setDragOverIndex(displayIdx);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', `${section}:${displayIdx}`);
+  };
+
+  const handleDragOver = (e, displayIdx, section) => {
+    e.preventDefault();
+    if (!draggedItem || draggedItem.section !== section) return;
+    e.dataTransfer.dropEffect = 'move';
+    if (dragOverIndex !== displayIdx) {
+      setDragOverIndex(displayIdx);
+    }
+  };
+
+  const handleDragEnd = () => {
+    setDraggedItem(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDrop = (e, targetDisplayIdx, targetSection) => {
+    e.preventDefault();
+    if (!draggedItem || draggedItem.section !== targetSection) {
+      setDraggedItem(null);
+      setDragOverIndex(null);
+      return;
+    }
+
+    const sourceDisplayIdx = draggedItem.index;
+    setDraggedItem(null);
+    setDragOverIndex(null);
+
+    if (sourceDisplayIdx === targetDisplayIdx) return;
+
+    setBomDraft(prev => {
+      const isComplete = targetSection === 'complete';
+      const completeItems = prev.filter(isCompleteSetItem);
+      const spareItems = prev.filter(isSpareItem);
+
+      if (isComplete) {
+        if (
+          sourceDisplayIdx < 0 || sourceDisplayIdx >= completeItems.length ||
+          targetDisplayIdx < 0 || targetDisplayIdx >= completeItems.length
+        ) {
+          return prev;
+        }
+        const updatedComplete = [...completeItems];
+        const [moved] = updatedComplete.splice(sourceDisplayIdx, 1);
+        updatedComplete.splice(targetDisplayIdx, 0, moved);
+
+        return [...updatedComplete, ...spareItems].map((it, idx) => ({
+          ...it,
+          po_seq: idx + 1
+        }));
+      } else {
+        if (
+          sourceDisplayIdx < 0 || sourceDisplayIdx >= spareItems.length ||
+          targetDisplayIdx < 0 || targetDisplayIdx >= spareItems.length
+        ) {
+          return prev;
+        }
+        const updatedSpare = [...spareItems];
+        const [moved] = updatedSpare.splice(sourceDisplayIdx, 1);
+        updatedSpare.splice(targetDisplayIdx, 0, moved);
+
+        return [...completeItems, ...updatedSpare].map((it, idx) => ({
+          ...it,
+          po_seq: idx + 1
+        }));
+      }
+    });
+  };
 
   // Initialize draft when category is selected
   useEffect(() => {
@@ -113,9 +192,8 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
   }, [masterItems, searchCatalogQuery]);
 
   const handleAddRow = (isSpareContext = false) => {
-    setBomDraft(prev => [
-      ...prev,
-      {
+    setBomDraft(prev => {
+      const newItem = {
         po_seq: prev.length + 1,
         part_number: '',
         item_name: '',
@@ -124,8 +202,15 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
         unit: 'ชิ้น',
         is_mandatory: !isSpareContext,
         notes: isSpareContext ? 'spare' : ''
+      };
+      const completeItems = prev.filter(isCompleteSetItem);
+      const spareItems = prev.filter(isSpareItem);
+      if (!isSpareContext) {
+        return [...completeItems, newItem, ...spareItems].map((it, idx) => ({ ...it, po_seq: idx + 1 }));
+      } else {
+        return [...completeItems, ...spareItems, newItem].map((it, idx) => ({ ...it, po_seq: idx + 1 }));
       }
-    ]);
+    });
   };
 
   const getRowSpareMetrics = (item) => {
@@ -254,15 +339,18 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
       return;
     }
 
-    // Enforce mutual exclusion & deduplication before saving
+    // Enforce mutual exclusion & deduplication before saving, strictly preserving user-defined order
     const cleanBomDraft = [];
     const seen = new Set();
-    for (let i = bomDraft.length - 1; i >= 0; i--) {
+    for (let i = 0; i < bomDraft.length; i++) {
       const item = bomDraft[i];
       const key = item.item_id || `${(item.item_name || '').trim().toLowerCase()}_${(item.part_number || '').trim().toLowerCase()}`;
       if (!seen.has(key)) {
         seen.add(key);
-        cleanBomDraft.unshift(item);
+        cleanBomDraft.push({
+          ...item,
+          po_seq: cleanBomDraft.length + 1
+        });
       }
     }
 
@@ -642,7 +730,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                   <table className="w-full text-left text-xs border-collapse">
                     <thead className="bg-muted/70 text-muted-foreground font-bold border-b border-border/70">
                       <tr>
-                        <th className="py-2.5 px-3 w-12 text-center">ลำดับ</th>
+                        <th className="py-2.5 px-2 w-16 text-center">ลำดับ</th>
                         <th className="py-2.5 px-3 min-w-[200px]">รายการอุปกรณ์ใน Complete Set / Part Number</th>
                         <th className="py-2.5 px-3 text-center w-28">ใช้ต่อไซต์</th>
                         <th className="py-2.5 px-3 text-center w-28">หน่วยนับ</th>
@@ -654,101 +742,142 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                       {bomDraft
                         .map((item, originalIndex) => ({ item, originalIndex }))
                         .filter(({ item }) => isCompleteSetItem(item))
-                        .map(({ item, originalIndex }, displayIdx) => (
-                          <tr key={originalIndex} className="hover:bg-muted/30 transition-colors">
-                            {/* Sequence */}
-                            <td className="py-2 px-3 text-center font-bold text-muted-foreground">
-                              {displayIdx + 1}
-                            </td>
+                        .map(({ item, originalIndex }, displayIdx) => {
+                          const isDraggingThis = draggedItem?.section === 'complete' && draggedItem?.index === displayIdx;
+                          const isDragOverThis = draggedItem?.section === 'complete' && dragOverIndex === displayIdx && draggedItem?.index !== displayIdx;
 
-                            {/* Item Name & Part Selector */}
-                            <td className="py-2 px-3 space-y-1">
-                              <div className="flex items-center gap-1.5">
+                          return (
+                            <tr
+                              key={item.item_id || item.part_number || originalIndex}
+                              draggable
+                              onDragStart={(e) => handleDragStart(e, displayIdx, 'complete')}
+                              onDragOver={(e) => handleDragOver(e, displayIdx, 'complete')}
+                              onDragEnd={handleDragEnd}
+                              onDrop={(e) => handleDrop(e, displayIdx, 'complete')}
+                              className={`transition-all duration-150 ${
+                                isDraggingThis
+                                  ? 'opacity-40 bg-muted/60 scale-[0.99]'
+                                  : isDragOverThis
+                                    ? 'bg-blue-500/10 border-t-2 border-blue-500 shadow-xs'
+                                    : 'hover:bg-muted/30'
+                              }`}
+                            >
+                              {/* Sequence & Drag Handle */}
+                              <td className="py-2 px-2 text-center font-bold text-muted-foreground select-none">
+                                <div className="flex items-center justify-center gap-1">
+                                  <span
+                                    className="cursor-grab active:cursor-grabbing p-1 -ml-1 rounded hover:bg-muted text-muted-foreground/60 hover:text-foreground transition-colors inline-flex items-center justify-center"
+                                    title="ลากเพื่อจัดลำดับรายการ (Drag to reorder)"
+                                  >
+                                    <GripVertical className="w-3.5 h-3.5" />
+                                  </span>
+                                  <span className="w-4 text-center">{displayIdx + 1}</span>
+                                </div>
+                              </td>
+
+                              {/* Item Name & Part Selector */}
+                              <td className="py-2 px-3 space-y-1">
+                                <div className="flex items-center gap-1.5">
+                                  <Input
+                                    value={item.item_name}
+                                    onChange={(e) => handleFieldChange(originalIndex, 'item_name', e.target.value)}
+                                    placeholder="ระบุชื่ออุปกรณ์ หรือเลือกจากคลัง..."
+                                    className="h-8 text-xs font-semibold rounded-lg bg-background"
+                                    draggable={false}
+                                    onDragStart={(e) => e.stopPropagation()}
+                                  />
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => {
+                                      setCatalogPickerTargetIndex(originalIndex);
+                                      setSearchCatalogQuery(item.item_name || '');
+                                    }}
+                                    title="เลือกจากรายการวัสดุในคลัง (Master Catalog)"
+                                    className="h-8 px-2.5 gap-1 text-[11px] font-bold rounded-lg border-blue-500/40 text-blue-700 dark:text-blue-300 hover:bg-blue-500/10 shrink-0 cursor-pointer"
+                                    draggable={false}
+                                    onDragStart={(e) => e.stopPropagation()}
+                                  >
+                                    <Package className="w-3.5 h-3.5" />
+                                    <span>เลือกจากคลัง</span>
+                                  </Button>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] text-muted-foreground shrink-0 font-medium">Part Number / SKU:</span>
+                                  <Input
+                                    value={item.part_number}
+                                    onChange={(e) => handleFieldChange(originalIndex, 'part_number', e.target.value)}
+                                    placeholder="เช่น 30207-0024-XXXXX"
+                                    className="h-6 text-[11px] font-mono rounded-md bg-muted/30"
+                                    draggable={false}
+                                    onDragStart={(e) => e.stopPropagation()}
+                                  />
+                                </div>
+                              </td>
+
+                              {/* Quantity per site */}
+                              <td className="py-2 px-3 text-center">
                                 <Input
-                                  value={item.item_name}
-                                  onChange={(e) => handleFieldChange(originalIndex, 'item_name', e.target.value)}
-                                  placeholder="ระบุชื่ออุปกรณ์ หรือเลือกจากคลัง..."
-                                  className="h-8 text-xs font-semibold rounded-lg bg-background"
+                                  type="number"
+                                  min="0"
+                                  step="any"
+                                  value={item.qty_per_site}
+                                  onChange={(e) => handleFieldChange(originalIndex, 'qty_per_site', e.target.value)}
+                                  className="h-8 text-xs text-center font-bold rounded-lg w-20 mx-auto bg-background"
+                                  draggable={false}
+                                  onDragStart={(e) => e.stopPropagation()}
                                 />
-                                <Button
+                              </td>
+
+                              {/* Unit */}
+                              <td className="py-2 px-3 text-center">
+                                <Input
+                                  value={item.unit}
+                                  onChange={(e) => handleFieldChange(originalIndex, 'unit', e.target.value)}
+                                  placeholder="ชิ้น"
+                                  list={`unit-list-${originalIndex}`}
+                                  className="h-8 text-xs text-center font-medium rounded-lg w-20 mx-auto bg-background"
+                                  draggable={false}
+                                  onDragStart={(e) => e.stopPropagation()}
+                                />
+                                <datalist id={`unit-list-${originalIndex}`}>
+                                  {COMMON_UNITS.map(u => (
+                                    <option key={u} value={u} />
+                                  ))}
+                                </datalist>
+                              </td>
+
+                              {/* Move to Spare Toggle */}
+                              <td className="py-2 px-3 text-center">
+                                <button
                                   type="button"
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => {
-                                    setCatalogPickerTargetIndex(originalIndex);
-                                    setSearchCatalogQuery(item.item_name || '');
-                                  }}
-                                  title="เลือกจากรายการวัสดุในคลัง (Master Catalog)"
-                                  className="h-8 px-2.5 gap-1 text-[11px] font-bold rounded-lg border-blue-500/40 text-blue-700 dark:text-blue-300 hover:bg-blue-500/10 shrink-0 cursor-pointer"
+                                  onClick={() => handleToggleSection(originalIndex)}
+                                  title="คลิกเพื่อย้ายไปแท็บ Spare Equipment (ตัดออกจาก Complete Set)"
+                                  className="px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-colors cursor-pointer bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/40 hover:bg-sky-500/20 hover:text-sky-700"
+                                  draggable={false}
+                                  onDragStart={(e) => e.stopPropagation()}
                                 >
-                                  <Package className="w-3.5 h-3.5" />
-                                  <span>เลือกจากคลัง</span>
-                                </Button>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-[10px] text-muted-foreground shrink-0 font-medium">Part Number / SKU:</span>
-                                <Input
-                                  value={item.part_number}
-                                  onChange={(e) => handleFieldChange(originalIndex, 'part_number', e.target.value)}
-                                  placeholder="เช่น 30207-0024-XXXXX"
-                                  className="h-6 text-[11px] font-mono rounded-md bg-muted/30"
-                                />
-                              </div>
-                            </td>
+                                  Complete Set
+                                </button>
+                              </td>
 
-                            {/* Quantity per site */}
-                            <td className="py-2 px-3 text-center">
-                              <Input
-                                type="number"
-                                min="0"
-                                step="any"
-                                value={item.qty_per_site}
-                                onChange={(e) => handleFieldChange(originalIndex, 'qty_per_site', e.target.value)}
-                                className="h-8 text-xs text-center font-bold rounded-lg w-20 mx-auto bg-background"
-                              />
-                            </td>
-
-                            {/* Unit */}
-                            <td className="py-2 px-3 text-center">
-                              <Input
-                                value={item.unit}
-                                onChange={(e) => handleFieldChange(originalIndex, 'unit', e.target.value)}
-                                placeholder="ชิ้น"
-                                list={`unit-list-${originalIndex}`}
-                                className="h-8 text-xs text-center font-medium rounded-lg w-20 mx-auto bg-background"
-                              />
-                              <datalist id={`unit-list-${originalIndex}`}>
-                                {COMMON_UNITS.map(u => (
-                                  <option key={u} value={u} />
-                                ))}
-                              </datalist>
-                            </td>
-
-                            {/* Move to Spare Toggle */}
-                            <td className="py-2 px-3 text-center">
-                              <button
-                                type="button"
-                                onClick={() => handleToggleSection(originalIndex)}
-                                title="คลิกเพื่อย้ายไปแท็บ Spare Equipment (ตัดออกจาก Complete Set)"
-                                className="px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-colors cursor-pointer bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/40 hover:bg-sky-500/20 hover:text-sky-700"
-                              >
-                                Complete Set
-                              </button>
-                            </td>
-
-                            {/* Delete */}
-                            <td className="py-2 px-3 text-center">
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveRow(originalIndex)}
-                                title="ลบรายการนี้"
-                                className="p-1.5 rounded-lg text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 transition-colors cursor-pointer"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
+                              {/* Delete */}
+                              <td className="py-2 px-3 text-center">
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveRow(originalIndex)}
+                                  title="ลบรายการนี้"
+                                  className="p-1.5 rounded-lg text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                                  draggable={false}
+                                  onDragStart={(e) => e.stopPropagation()}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
                     </tbody>
                   </table>
                   {bomDraft.filter(isCompleteSetItem).length === 0 && (
@@ -791,7 +920,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                   <table className="w-full text-left text-xs border-collapse">
                     <thead className="bg-muted/70 text-muted-foreground font-bold border-b border-border/70">
                       <tr>
-                        <th className="py-2.5 px-3 w-12 text-center">ลำดับ</th>
+                        <th className="py-2.5 px-2 w-16 text-center">ลำดับ</th>
                         <th className="py-2.5 px-3 min-w-[200px]">รายการอุปกรณ์ใน Spare / Part Number</th>
                         <th className="py-2.5 px-3 text-center w-24">สเปกต่อไซต์</th>
                         <th className="py-2.5 px-3 text-center w-24">หน่วยนับ</th>
@@ -806,11 +935,36 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                         .filter(({ item }) => isSpareItem(item))
                         .map(({ item, originalIndex }, displayIdx) => {
                           const { stock, spareStock } = getRowSpareMetrics(item);
+                          const isDraggingThis = draggedItem?.section === 'spare' && draggedItem?.index === displayIdx;
+                          const isDragOverThis = draggedItem?.section === 'spare' && dragOverIndex === displayIdx && draggedItem?.index !== displayIdx;
+
                           return (
-                            <tr key={originalIndex} className="hover:bg-muted/30 transition-colors">
-                              {/* Sequence */}
-                              <td className="py-2 px-3 text-center font-bold text-muted-foreground">
-                                {displayIdx + 1}
+                            <tr
+                              key={item.item_id || item.part_number || originalIndex}
+                              draggable
+                              onDragStart={(e) => handleDragStart(e, displayIdx, 'spare')}
+                              onDragOver={(e) => handleDragOver(e, displayIdx, 'spare')}
+                              onDragEnd={handleDragEnd}
+                              onDrop={(e) => handleDrop(e, displayIdx, 'spare')}
+                              className={`transition-all duration-150 ${
+                                isDraggingThis
+                                  ? 'opacity-40 bg-muted/60 scale-[0.99]'
+                                  : isDragOverThis
+                                    ? 'bg-blue-500/10 border-t-2 border-blue-500 shadow-xs'
+                                    : 'hover:bg-muted/30'
+                              }`}
+                            >
+                              {/* Sequence & Drag Handle */}
+                              <td className="py-2 px-2 text-center font-bold text-muted-foreground select-none">
+                                <div className="flex items-center justify-center gap-1">
+                                  <span
+                                    className="cursor-grab active:cursor-grabbing p-1 -ml-1 rounded hover:bg-muted text-muted-foreground/60 hover:text-foreground transition-colors inline-flex items-center justify-center"
+                                    title="ลากเพื่อจัดลำดับรายการ (Drag to reorder)"
+                                  >
+                                    <GripVertical className="w-3.5 h-3.5" />
+                                  </span>
+                                  <span className="w-4 text-center">{displayIdx + 1}</span>
+                                </div>
                               </td>
 
                               {/* Item Name & Part Selector */}
@@ -821,6 +975,8 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                                     onChange={(e) => handleFieldChange(originalIndex, 'item_name', e.target.value)}
                                     placeholder="ระบุชื่ออุปกรณ์ หรือเลือกจากคลัง..."
                                     className="h-8 text-xs font-semibold rounded-lg bg-background"
+                                    draggable={false}
+                                    onDragStart={(e) => e.stopPropagation()}
                                   />
                                   <Button
                                     type="button"
@@ -832,6 +988,8 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                                     }}
                                     title="เลือกจากรายการวัสดุในคลัง (Master Catalog)"
                                     className="h-8 px-2.5 gap-1 text-[11px] font-bold rounded-lg border-blue-500/40 text-blue-700 dark:text-blue-300 hover:bg-blue-500/10 shrink-0 cursor-pointer"
+                                    draggable={false}
+                                    onDragStart={(e) => e.stopPropagation()}
                                   >
                                     <Package className="w-3.5 h-3.5" />
                                     <span>เลือกจากคลัง</span>
@@ -844,6 +1002,8 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                                     onChange={(e) => handleFieldChange(originalIndex, 'part_number', e.target.value)}
                                     placeholder="เช่น 30207-0024-XXXXX"
                                     className="h-6 text-[11px] font-mono rounded-md bg-muted/30"
+                                    draggable={false}
+                                    onDragStart={(e) => e.stopPropagation()}
                                   />
                                 </div>
                               </td>
@@ -857,6 +1017,8 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                                   value={item.qty_per_site}
                                   onChange={(e) => handleFieldChange(originalIndex, 'qty_per_site', e.target.value)}
                                   className="h-8 text-xs text-center font-bold rounded-lg w-20 mx-auto bg-background"
+                                  draggable={false}
+                                  onDragStart={(e) => e.stopPropagation()}
                                 />
                               </td>
 
@@ -868,6 +1030,8 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                                   placeholder="ชิ้น"
                                   list={`unit-list-spare-${originalIndex}`}
                                   className="h-8 text-xs text-center font-medium rounded-lg w-20 mx-auto bg-background"
+                                  draggable={false}
+                                  onDragStart={(e) => e.stopPropagation()}
                                 />
                                 <datalist id={`unit-list-spare-${originalIndex}`}>
                                   {COMMON_UNITS.map(u => (
@@ -883,6 +1047,8 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                                   onClick={() => handleToggleSection(originalIndex)}
                                   title="คลิกเพื่อย้ายไปแท็บ Complete Set (นำเข้าเป็นอุปกรณ์ชุดสมบูรณ์)"
                                   className="px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-colors cursor-pointer bg-sky-500/15 text-sky-700 dark:text-sky-300 border-sky-500/40 hover:bg-emerald-500/20 hover:text-emerald-700"
+                                  draggable={false}
+                                  onDragStart={(e) => e.stopPropagation()}
                                 >
                                   Spare Equipment
                                 </button>
@@ -911,6 +1077,8 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                                   onClick={() => handleRemoveRow(originalIndex)}
                                   title="ลบรายการนี้"
                                   className="p-1.5 rounded-lg text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                                  draggable={false}
+                                  onDragStart={(e) => e.stopPropagation()}
                                 >
                                   <Trash2 className="w-4 h-4" />
                                 </button>
