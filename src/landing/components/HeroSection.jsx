@@ -108,7 +108,7 @@ export default function HeroSection() {
         >
           <Magnet padding={40} magnetStrength={3}>
             <a
-              href="/login"
+              href="https://stockflowth.online"
               className="flex items-center gap-2.5 px-6 py-3.5 rounded-xl font-semibold text-sm text-zinc-950 bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-400 hover:from-emerald-300 hover:to-teal-200 transition-all duration-200 shadow-xl shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:scale-[1.02] active:scale-[0.98] border border-emerald-300/40"
             >
               <span>{t.hero.launchCta}</span>
@@ -313,7 +313,7 @@ export default function HeroSection() {
                     </div>
 
                     <a
-                      href="/login"
+                      href="https://stockflowth.online"
                       className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-emerald-400 text-zinc-950 font-bold text-xs shadow-lg shadow-emerald-500/20 hover:bg-emerald-300 transition-colors"
                     >
                       <FileText className="w-3.5 h-3.5" />
@@ -403,7 +403,7 @@ export default function HeroSection() {
                   </div>
 
                   <a
-                    href="/login"
+                    href="https://stockflowth.online"
                     className="w-full mt-3 flex items-center justify-center gap-2 py-2.5 rounded-lg bg-emerald-400 text-zinc-950 font-bold text-xs shadow-lg shadow-emerald-500/20 hover:bg-emerald-300 transition-colors"
                   >
                     <span>บันทึก & อัปเดต Ledger</span>
@@ -478,7 +478,7 @@ export default function HeroSection() {
                   </div>
 
                   <a
-                    href="/login"
+                    href="https://stockflowth.online"
                     className="w-full mt-3 flex items-center justify-center gap-2 py-2.5 rounded-lg bg-emerald-400 text-zinc-950 font-bold text-xs shadow-lg shadow-emerald-500/20 hover:bg-emerald-300 transition-colors"
                   >
                     <span>ยืนยันขยายกำหนดวันส่งคืน</span>
@@ -529,7 +529,7 @@ export default function HeroSection() {
                   </div>
 
                   <a
-                    href="/login"
+                    href="https://stockflowth.online"
                     className="w-full mt-3 flex items-center justify-center gap-2 py-2.5 rounded-lg bg-emerald-400 text-zinc-950 font-bold text-xs shadow-lg shadow-emerald-500/20 hover:bg-emerald-300 transition-colors"
                   >
                     <span>สร้างชุดเบิกไซต์งาน</span>

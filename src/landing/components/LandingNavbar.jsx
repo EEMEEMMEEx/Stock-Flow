@@ -89,7 +89,7 @@ export default function LandingNavbar() {
           <LanguageSwitcher />
 
           <a
-            href="/login"
+            href="https://stockflowth.online"
             className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-zinc-950 bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 transition-all duration-200 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 hover:scale-[1.02] active:scale-[0.98]"
           >
             <span>{t.nav.launchApp}</span>
@@ -135,7 +135,7 @@ export default function LandingNavbar() {
             })}
             <div className="pt-2 border-t border-white/10 mt-1 flex flex-col gap-2">
               <a
-                href="/login"
+                href="https://stockflowth.online"
                 className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-zinc-950 bg-emerald-400 hover:bg-emerald-300"
               >
                 <span>{t.nav.launchApp}</span>

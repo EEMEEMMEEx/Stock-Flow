@@ -40,7 +40,7 @@ export default function CtaSection() {
         <div className="mt-9 flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto">
           <Magnet padding={40} magnetStrength={3}>
             <a
-              href="/login"
+              href="https://stockflowth.online"
               className="w-full sm:w-auto flex items-center justify-center gap-2.5 px-8 py-4 rounded-xl font-bold text-sm text-zinc-950 bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-400 hover:from-emerald-300 hover:to-teal-200 transition-all duration-200 shadow-2xl shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-[1.03] active:scale-[0.98] border border-emerald-300/40"
             >
               <span>{t.cta.button}</span>

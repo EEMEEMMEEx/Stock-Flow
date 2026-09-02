@@ -308,7 +308,7 @@ export default function BentoFeatures() {
 
               <div className="flex-shrink-0">
                 <a
-                  href="/login"
+                  href="https://stockflowth.online"
                   className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-white/10 text-white text-xs font-semibold transition-all hover:scale-105"
                 >
                   <span>{t.features.pdfCta}</span>

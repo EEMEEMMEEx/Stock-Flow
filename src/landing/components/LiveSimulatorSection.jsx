@@ -416,7 +416,7 @@ export default function LiveSimulatorSection() {
                     สต็อกปัจจุบันสามารถประกอบชุดติดตั้งได้สูงสุด: <span className="text-emerald-400 font-bold font-mono">3 ไซต์</span>
                   </div>
                   <a
-                    href="/login"
+                    href="https://stockflowth.online"
                     className="px-5 py-2 rounded-xl bg-blue-500 hover:bg-blue-400 text-white font-semibold text-xs shadow-lg shadow-blue-500/20 transition-all flex items-center gap-1.5"
                   >
                     <span>สร้างชุดเบิกไซต์งานจริง</span>

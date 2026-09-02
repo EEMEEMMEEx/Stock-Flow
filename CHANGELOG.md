@@ -1,5 +1,15 @@
 # Changelog
 
+## [v1.4.50] [2026-09-02] ปรับเปลี่ยนเป้าหมายปลายทางปุ่มเชื่อมโยงใน Landing Page เป็น stockflowth.online
+- **Modified files:**
+  - `src/landing/components/HeroSection.jsx`: อัปเดตลิงก์ปุ่ม "เปิดใช้งาน Stock-Flow App" (`launchCta`) และปุ่มการทำงานต่าง ๆ ให้ชี้ไปยัง `https://stockflowth.online` แทนเส้นทาง `/login` เดิม โดยคงรูปแบบ ดีไซน์ ออนิเมชัน และเลย์เอาต์ไว้เหมือนเดิม 100%
+  - `src/landing/components/LandingNavbar.jsx`: อัปเดตลิงก์ปุ่ม "Launch App" ทั้งเดสก์ท็อปและโมบายล์ไปยัง `https://stockflowth.online`
+  - `src/landing/components/CtaSection.jsx`: อัปเดตปุ่ม CTA ท้ายหน้าไปยัง `https://stockflowth.online`
+  - `src/landing/components/BentoFeatures.jsx`: อัปเดตลิงก์ไปยัง `https://stockflowth.online`
+  - `src/landing/components/LiveSimulatorSection.jsx`: อัปเดตลิงก์ไปยัง `https://stockflowth.online`
+  - `package.json`: อัปเดตเวอร์ชันเป็น `1.4.50`
+- **Verification:** `npm run build` ผ่านเรียบร้อย
+
 ## [v1.4.49] [2026-09-02] รองรับการจัดลำดับรายการอุปกรณ์และ Spare Equipment ด้วย Drag-and-Drop พร้อมบันทึกลำดับลงฐานข้อมูล
 - **Modified files:**
   - `src/components/dashboard/SiteKitAvailabilityCards.jsx`: เพิ่มฟังก์ชัน Drag-and-Drop Reordering ในโหมดแก้ไข ทั้งในแท็บ Complete Set (BOM Items) และแท็บ Spare Equipment แยกจากกันอย่างอิสระ พร้อม Drag Handle (`GripVertical`), visual indicator ขณะลาก, และบันทึก `po_seq` ลำดับใหม่ลงฐานข้อมูล Supabase อย่างถูกต้อง ทำให้ลำดับคงอยู่ถาวรเมื่อเปิดกลับมาดูใหม่
