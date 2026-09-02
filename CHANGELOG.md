@@ -1,5 +1,13 @@
 # Changelog
 
+## [2026-09-02 22:46] เพิ่มไฟล์บริบทโครงการและไฟล์สำรอง Supabase
+- **Modified files:**
+  - `memory.md`: เพิ่มไฟล์บันทึกบริบทและสถานะการดำเนินงานล่าสุดของโครงการ
+  - `supabase/dump.sql`: เพิ่มไฟล์สำรองโครงสร้างฐานข้อมูล Supabase
+  - `supabase/dump_data.sql`: เพิ่มไฟล์สำรองข้อมูล Supabase
+  - `supabase/dump_roles.sql`: เพิ่มไฟล์สำรองบทบาทและสิทธิ์ของ Supabase
+- **Verification:** ตรวจสอบสถานะไฟล์และ `git diff --check` ก่อน commit
+
 ## [v1.4.48] [2026-09-02] ลบปุ่ม Add ที่ซ้ำซ้อนในแบนเนอร์ข้อมูล คงเหลือเฉพาะแถว Action ด้านล่างของตาราง
 - **Modified files:**
   - `src/components/dashboard/SiteKitAvailabilityCards.jsx`: ลบปุ่ม `เพิ่มรายการ Complete Set` และ `เพิ่ม Spare Equipment` ที่อยู่ในกล่องข้อความข้อมูลด้านบนออกอย่างสมบูรณ์ เพื่อลดความซ้ำซ้อน โดยคงเหลือเฉพาะแถวปุ่ม Action ด้านล่างของตาราง (`+ เพิ่มรายการอุปกรณ์ใน Complete Set` พร้อมแสดงจำนวนรายการ และ `+ เพิ่มรายการ Spare Equipment` พร้อมแสดงจำนวนรายการ)
