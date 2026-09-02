@@ -162,7 +162,7 @@ export async function sendUserInvitationEmail({
 
   const defaultActionUrl = (typeof window !== 'undefined' && window.location?.origin)
     ? window.location.origin
-    : 'https://bearnannan.github.io/Stock-Flow';
+    : 'https://eemeemmeex.github.io/Stock-Flow';
   const targetActionUrl = actionUrl || defaultActionUrl;
 
   const html = renderUserInvitationEmailHtml({
