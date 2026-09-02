@@ -1,5 +1,12 @@
 # Changelog
 
+## [v1.4.53] [2026-09-02] ซิงค์ Single Source of Truth สำหรับเวอร์ชันระบบ (APP_CONFIG.version) จาก package.json
+- **Modified files:**
+  - `src/config/appConfig.js`: ปรับปรุงการกำหนดค่า `APP_CONFIG.version` ให้อ่านจาก `package.json` โดยตรง เพื่อให้การแสดงผลเวอร์ชันในทุกส่วนของแอปพลิเคชัน (Sidebar, Footer, Settings, LandingNavbar) เป็นแหล่งข้อมูลเดียวกันโดยตรง (Single Source of Truth)
+  - `README.md`: อัปเดต Version Badge เป็น `v1.4.53`
+  - `package.json`: อัปเดตเวอร์ชันเป็น `1.4.53`
+- **Verification:** `npm run build` ผ่านเรียบร้อย
+
 ## [v1.4.52] [2026-09-02] เปลี่ยนการอ้างอิง URL หน้า GitHub Pages จาก bearnannan.github.io/Stock-Flow เป็น eemeemmeex.github.io/Stock-Flow
 - **Modified files:**
   - `src/lib/emailService.js`: เปลี่ยน default `actionUrl` สำหรับการส่งอีเมลเชิญผู้ใช้จาก `bearnannan` เป็น `eemeemmeex.github.io/Stock-Flow`
