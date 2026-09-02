@@ -56,7 +56,7 @@ export const SAMPLE_EMAIL_DATA_BY_EVENT = {
     total_quantity: '174 หน่วย',
     purpose: 'ใช้ติดตั้งระบบไฟฟ้าสำหรับพื้นที่ปฏิบัติงานชั้น 3',
     note: 'โปรดจัดส่งตามแผนงานโครงการ',
-    action_url: 'https://stockflow.app/withdrawals',
+    action_url: 'https://stockflowth.online/withdrawals',
     items: SAMPLE_ITEM_DATA,
   },
   withdrawal_approved: {
@@ -79,7 +79,7 @@ export const SAMPLE_EMAIL_DATA_BY_EVENT = {
     purpose: 'ใช้ติดตั้งระบบไฟฟ้าสำหรับพื้นที่ปฏิบัติงานชั้น 3',
     note: 'โปรดจัดส่งตามแผนงานโครงการ',
     approved_by: 'Admin User',
-    action_url: 'https://stockflow.app/withdrawals',
+    action_url: 'https://stockflowth.online/withdrawals',
     items: SAMPLE_ITEM_DATA,
   },
   withdrawal_rejected: {
@@ -103,7 +103,7 @@ export const SAMPLE_EMAIL_DATA_BY_EVENT = {
     note: 'โปรดจัดส่งตามแผนงานโครงการ',
     rejected_by: 'Admin User',
     rejection_reason: 'วัสดุบางรายการมียอดคงเหลือไม่เพียงพอสำหรับรอบการเบิกนี้ กรุณาปรับลดจำนวนและส่งคำขอใหม่อีกครั้ง',
-    action_url: 'https://stockflow.app/withdrawals',
+    action_url: 'https://stockflowth.online/withdrawals',
     items: SAMPLE_ITEM_DATA,
   },
   withdrawal_completed: {
@@ -127,7 +127,7 @@ export const SAMPLE_EMAIL_DATA_BY_EVENT = {
     purpose: 'ใช้ติดตั้งระบบไฟฟ้าสำหรับพื้นที่ปฏิบัติงานชั้น 3',
     note: 'โปรดจัดส่งตามแผนงานโครงการ',
     completed_by: 'Warehouse Admin',
-    action_url: 'https://stockflow.app/withdrawals',
+    action_url: 'https://stockflowth.online/withdrawals',
     items: SAMPLE_ITEM_DATA.map(item => ({
       ...item,
       issued_qty: item.approved_qty,
@@ -147,7 +147,7 @@ export const SAMPLE_EMAIL_DATA_BY_EVENT = {
     status_badge: 'รับเข้า Stock',
     item_count: '2 รายการ',
     total_quantity: '70 หน่วย',
-    action_url: 'https://stockflow.app/stock-in',
+    action_url: 'https://stockflowth.online/stock-in',
     items: [
       { name: 'สายไฟ THW 1x2.5 sq.mm.', sku: 'THW-1X2.5', unit: 'เมตร', quantity: 50, available_stock: 130 },
       { name: 'กล่องพักสายไฟ', sku: 'JBOX-4X4', unit: 'ใบ', quantity: 20, available_stock: 48 },
@@ -165,7 +165,7 @@ export const SAMPLE_EMAIL_DATA_BY_EVENT = {
     threshold: '20 เมตร',
     status: 'ถึงจุดสั่งซื้อ',
     status_badge: 'ต้องเติมสต็อก',
-    action_url: 'https://stockflow.app/items',
+    action_url: 'https://stockflowth.online/items',
     items: [
       {
         name: 'สายไฟ THW 1x2.5 sq.mm.',
@@ -512,7 +512,7 @@ export const renderEmailHtml = ({ branding = {}, template = {}, data = SAMPLE_EM
   const accentColor = sanitizeColor(branding.accent_color);
   const appName = escapeHtml(branding.app_name || data.app_name || 'StockFlow');
   const logoUrl = sanitizeHttpUrl(branding.logo_url, '');
-  const actionUrl = sanitizeHttpUrl(resolveEmailVariables(template.cta_url || data.action_url || '', data), 'https://stockflow.app/withdrawals');
+  const actionUrl = sanitizeHttpUrl(resolveEmailVariables(template.cta_url || data.action_url || '', data), 'https://stockflowth.online/withdrawals');
   const statusType = template.status_type || defaults.type;
   const status = statusColors(statusType);
   const heading = renderText(template.heading || defaults.heading, safeData);
@@ -710,7 +710,7 @@ export const renderEmailText = ({ branding = {}, template = {}, data = SAMPLE_EM
   const event = template.event_type || data.event_type || 'withdrawal_submitted';
   const defaults = EVENT_DEFAULTS[event] || EVENT_DEFAULTS.withdrawal_submitted;
   const appName = branding.app_name || data.app_name || 'StockFlow';
-  const actionUrl = sanitizeHttpUrl(resolveEmailVariables(template.cta_url || data.action_url || '', data), 'https://stockflow.app/withdrawals');
+  const actionUrl = sanitizeHttpUrl(resolveEmailVariables(template.cta_url || data.action_url || '', data), 'https://stockflowth.online/withdrawals');
   const heading = resolveEmailVariables(template.heading || defaults.heading, data);
   const intro = resolveEmailVariables(template.intro || defaults.intro, data).replace(/<br\s*\/?>/gi, '\n');
 

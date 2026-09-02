@@ -142,7 +142,7 @@ export const dispatchWithdrawalNotification = async ({
       rejected_by: approverName || order.rejected_by_name || 'ผู้ปฏิเสธ',
       completed_by: approverName || order.completed_by_name || 'ผู้จ่ายวัสดุ',
       rejection_reason: rejectionReason || order.rejection_reason || '',
-      action_url: branding.public_base_url || 'https://stockflow.app/withdrawals',
+      action_url: branding.public_base_url || 'https://stockflowth.online/withdrawals',
       items
     };
 
@@ -271,7 +271,7 @@ export const dispatchStockInNotification = async ({
       status_badge: 'รับเข้า Stock',
       item_count: `${lineItems.length} รายการ`,
       total_quantity: `${totalQuantity} หน่วย`,
-      action_url: branding.public_base_url ? `${branding.public_base_url}/stock-in` : 'https://stockflow.app/stock-in',
+      action_url: branding.public_base_url ? `${branding.public_base_url}/stock-in` : 'https://stockflowth.online/stock-in',
       items: lineItems
     };
 
@@ -376,7 +376,7 @@ export const dispatchLowStockAlertNotification = async ({
       threshold: `${threshold ?? 10} หน่วย`,
       status: 'ต่ำกว่าเกณฑ์',
       status_badge: 'Stock ต่ำกว่าเกณฑ์',
-      action_url: branding.public_base_url ? `${branding.public_base_url}/items` : 'https://stockflow.app/items',
+      action_url: branding.public_base_url ? `${branding.public_base_url}/items` : 'https://stockflowth.online/items',
       items: []
     };
 

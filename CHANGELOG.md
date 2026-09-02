@@ -1,5 +1,19 @@
 # Changelog
 
+## [2026-09-02]
+- **Files Modified:** `src/components/settings/EmailTemplateManager.jsx`, `src/lib/emailRenderer.js`, `src/lib/emailRenderer.test.js`, `src/lib/notificationDispatcher.js`
+- **Changes:** เปลี่ยน default public URL และ CTA URL ของ notification email จาก `stockflow.app` เป็น `stockflowth.online` พร้อมปรับ test ที่เกี่ยวข้อง
+- **Verification:** `npm.cmd run test:email` ผ่านครบ 5 tests และ `git diff --check` ไม่พบข้อผิดพลาด
+
+## [v1.4.51] [2026-09-02] เปลี่ยนการอ้างอิง URL ทั้งหมดจาก stockflow.app เป็น stockflowth.online
+- **Modified files:**
+  - `src/lib/notificationDispatcher.js`: เปลี่ยนการสร้าง `action_url` พื้นฐานจาก `stockflow.app` เป็น `stockflowth.online`
+  - `src/lib/emailRenderer.js`: เปลี่ยน `action_url` ตัวอย่างและ fallback URL ในระบบเรนเดอร์อีเมลเป็น `stockflowth.online`
+  - `src/lib/emailRenderer.test.js`: อัปเดตชุดการทดสอบอีเมลให้รองรับ `stockflowth.online` (ทดสอบผ่าน 5/5)
+  - `src/components/settings/EmailTemplateManager.jsx`: เปลี่ยน `public_base_url` เริ่มต้นและ placeholder ในหน้าจัดการ Email Branding เป็น `stockflowth.online`
+  - `package.json`: อัปเดตเวอร์ชันเป็น `1.4.51`
+- **Verification:** `npm run test:email` และ `npm run build` ผ่านเรียบร้อย
+
 ## [v1.4.50] [2026-09-02] ปรับเปลี่ยนเป้าหมายปลายทางปุ่มเชื่อมโยงใน Landing Page เป็น stockflowth.online
 - **Modified files:**
   - `src/landing/components/HeroSection.jsx`: อัปเดตลิงก์ปุ่ม "เปิดใช้งาน Stock-Flow App" (`launchCta`) และปุ่มการทำงานต่าง ๆ ให้ชี้ไปยัง `https://stockflowth.online` แทนเส้นทาง `/login` เดิม โดยคงรูปแบบ ดีไซน์ ออนิเมชัน และเลย์เอาต์ไว้เหมือนเดิม 100%

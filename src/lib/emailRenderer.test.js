@@ -80,7 +80,7 @@ test('keeps event-specific dynamic variables and plain-text fallback', () => {
     heading: 'ตรวจสอบ {{item_name}}',
     intro: 'วัสดุเหลือ {{current_stock}} ใน {{warehouse_name}}',
     cta_label: 'เปิดรายการ {{item_code}}',
-    cta_url: 'https://stockflow.app/items',
+    cta_url: 'https://stockflowth.online/items',
     footer_note: 'แจ้งเตือนสำหรับ {{project_name}}',
   };
   const data = getSampleEmailData('low_stock_alert');

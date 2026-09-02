@@ -168,7 +168,7 @@ const EmailTemplateManager = ({
   const defaultBranding = {
     app_name: APP_CONFIG.name,
     logo_url: '',
-    public_base_url: typeof window !== 'undefined' ? window.location.origin : 'https://stockflow.app',
+    public_base_url: typeof window !== 'undefined' ? window.location.origin : 'https://stockflowth.online',
     accent_color: '#3b82f6',
     footer_text: 'หากคุณไม่ได้ทำรายการนี้ กรุณาติดต่อผู้ดูแลระบบเพื่อความปลอดภัย'
   };
@@ -347,7 +347,7 @@ const EmailTemplateManager = ({
               disabled={!canUpdate}
               value={branding.public_base_url}
               onChange={(e) => { setBranding(prev => ({ ...prev, public_base_url: e.target.value })); setIsDirty(true); }}
-              placeholder="https://stockflow.app"
+              placeholder="https://stockflowth.online"
               className="mt-1 neu-pressed bg-transparent text-xs font-mono"
             />
           </div>
