@@ -172,6 +172,7 @@ export async function fetchSiteKitsAvailability(projectId = null) {
       if (!dbTemplatesByCat[t.category_id]) {
         dbTemplatesByCat[t.category_id] = [];
       }
+      const isSpare = t.is_mandatory === false || t.notes === 'spare';
       dbTemplatesByCat[t.category_id].push({
         id: t.id,
         po: t.po_seq || 1,
@@ -179,9 +180,9 @@ export async function fetchSiteKitsAvailability(projectId = null) {
         name: t.item_name,
         qty: Number(t.qty_per_site) || 1,
         unit: t.unit || 'ชิ้น',
-        mandatory: t.is_mandatory !== false,
+        mandatory: !isSpare,
         item_id: t.item_id || null,
-        notes: t.notes || ''
+        notes: t.notes || (isSpare ? 'spare' : '')
       });
     });
 
@@ -202,11 +203,12 @@ export async function fetchSiteKitsAvailability(projectId = null) {
         : template.bom;
 
       for (const b of bomList) {
+        const isSpare = b.mandatory === false || b.notes === 'spare';
         const match = findMatchingItem(items, b);
         const totalStock = match ? (stockMap[match.id] || 0) : 0;
         const setsPossible = Math.floor(totalStock / (b.qty || 1));
         
-        if (b.mandatory && setsPossible < minSets) {
+        if (!isSpare && setsPossible < minSets) {
           minSets = setsPossible;
         }
 
@@ -221,9 +223,9 @@ export async function fetchSiteKitsAvailability(projectId = null) {
           unit: b.unit || (match ? match.unit : 'ชิ้น'),
           total_stock: totalStock,
           sets_possible: setsPossible,
-          is_mandatory: b.mandatory !== false,
-          notes: b.notes || '',
-          missing_for_next_set: Math.max(0, ((minSets === Infinity ? 0 : minSets) + 1) * b.qty - totalStock)
+          is_mandatory: !isSpare,
+          notes: b.notes || (isSpare ? 'spare' : ''),
+          missing_for_next_set: isSpare ? 0 : Math.max(0, ((minSets === Infinity ? 0 : minSets) + 1) * b.qty - totalStock)
         });
       }
 
@@ -255,73 +257,37 @@ export async function fetchSiteKitsAvailability(projectId = null) {
 
 /**
  * Save / Update category BOM templates
- * Uses secure RPC `admin_save_category_bom` or fallback to direct table operation with RLS
+ * Uses secure RPC `admin_save_category_bom` for an atomic replacement protected by RBAC
  * @param {string} categoryId - Category UUID
  * @param {Array} bomItems - List of BOM items [{ po_seq, part_number, item_name, item_id, qty_per_site, unit, is_mandatory, notes }]
  */
 export async function saveCategoryBom(categoryId, bomItems) {
   if (!categoryId) throw new Error('Category ID is required');
 
-  const formattedItems = bomItems.map((item, idx) => ({
-    po_seq: item.po_seq || idx + 1,
-    part_number: (item.part_number || item.part || '').trim(),
-    item_name: (item.item_name || item.name || '').trim(),
-    item_id: item.item_id || null,
-    qty_per_site: Number(item.qty_per_site || item.qty || 1),
-    unit: (item.unit || 'ชิ้น').trim(),
-    is_mandatory: item.is_mandatory !== false,
-    notes: (item.notes || '').trim()
-  })).filter(i => i.item_name.length > 0);
-
-  // 1. Try atomic PostgreSQL RPC first
-  try {
-    const { data, error } = await supabase.rpc('admin_save_category_bom', {
-      p_category_id: categoryId,
-      p_bom_items: formattedItems
-    });
-
-    if (!error) {
-      return { success: true, data };
-    }
-    console.warn('admin_save_category_bom RPC error, attempting direct table fallback:', error.message);
-  } catch (rpcErr) {
-    console.warn('RPC call failed, attempting direct table operation fallback:', rpcErr);
-  }
-
-  // 2. Direct table operation fallback (Protected by RLS)
-  const { error: deleteErr } = await supabase
-    .from('site_bom_templates')
-    .delete()
-    .eq('category_id', categoryId);
-
-  if (deleteErr) {
-    throw new Error(`Failed to update BOM: ${deleteErr.message}`);
-  }
-
-  if (formattedItems.length > 0) {
-    const rowsToInsert = formattedItems.map(item => ({
-      category_id: categoryId,
+  const formattedItems = bomItems.map((item, idx) => {
+    const isSpare = item.is_mandatory === false || item.notes === 'spare';
+    return {
+      po_seq: item.po_seq || idx + 1,
+      part_number: (item.part_number || item.part || '').trim(),
+      item_name: (item.item_name || item.name || '').trim(),
       item_id: item.item_id || null,
-      po_seq: item.po_seq,
-      part_number: item.part_number || null,
-      item_name: item.item_name,
-      qty_per_site: item.qty_per_site,
-      unit: item.unit,
-      is_mandatory: item.is_mandatory,
-      notes: item.notes || null,
-      updated_at: new Date().toISOString()
-    }));
+      qty_per_site: Number(item.qty_per_site || item.qty || 1),
+      unit: (item.unit || 'ชิ้น').trim(),
+      is_mandatory: !isSpare,
+      notes: (item.notes || (isSpare ? 'spare' : '')).trim()
+    };
+  }).filter(i => i.item_name.length > 0);
 
-    const { error: insertErr } = await supabase
-      .from('site_bom_templates')
-      .insert(rowsToInsert);
+  const { data, error } = await supabase.rpc('admin_save_category_bom', {
+    p_category_id: categoryId,
+    p_bom_items: formattedItems
+  });
 
-    if (insertErr) {
-      throw new Error(`Failed to insert BOM items: ${insertErr.message}`);
-    }
+  if (error) {
+    throw new Error(error.message || 'Failed to update BOM');
   }
 
-  return { success: true };
+  return { success: true, data };
 }
 
 /**
@@ -333,13 +299,8 @@ export async function resetCategoryBomToDefault(categoryId) {
 
   const defaultTemplate = SITE_BOM_TEMPLATES.find(t => t.category_id === categoryId);
   if (!defaultTemplate) {
-    // If not a default category, just delete custom rows
-    const { error } = await supabase
-      .from('site_bom_templates')
-      .delete()
-      .eq('category_id', categoryId);
-    if (error) throw error;
-    return { success: true };
+    // Use the same atomic, authorized write path for custom categories.
+    return await saveCategoryBom(categoryId, []);
   }
 
   // Convert default bom items to standard structure

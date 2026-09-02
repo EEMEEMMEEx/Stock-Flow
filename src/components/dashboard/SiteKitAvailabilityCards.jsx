@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { 
   Router, Antenna, 
   AlertTriangle, CheckCircle2, Layers, 
-  ChevronRight, AlertCircle, Edit3, Plus, 
+  ChevronRight, AlertCircle, Edit3, PenLine, Plus, 
   Trash2, RotateCcw, Save, Search, 
   Package, ShieldCheck, Check, Info
 } from 'lucide-react';
@@ -53,25 +53,42 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
   const [resetting, setResetting] = useState(false);
   const [searchCatalogQuery, setSearchCatalogQuery] = useState('');
   const [catalogPickerTargetIndex, setCatalogPickerTargetIndex] = useState(null);
+  const [bomView, setBomView] = useState('complete');
 
-  // Initialize draft when category is selected or editing starts
+  // Helpers for mutual exclusivity between Complete Set and Spare Equipment
+  const isSpareItem = (item) => item.is_mandatory === false || item.notes === 'spare';
+  const isCompleteSetItem = (item) => !isSpareItem(item);
+
+  // Initialize draft when category is selected
   useEffect(() => {
     if (selectedCategory) {
-      const initialDraft = (selectedCategory.items || []).map((item, idx) => ({
-        po_seq: item.po_seq || idx + 1,
-        part_number: item.part_number || '',
-        item_name: item.bom_name || '',
-        item_id: item.item_id || null,
-        qty_per_site: item.qty_per_site || 1,
-        unit: item.unit || 'ชิ้น',
-        is_mandatory: item.is_mandatory !== false,
-        notes: item.notes || ''
-      }));
+      const initialDraft = (selectedCategory.items || []).map((item, idx) => {
+        const isSpare = item.is_mandatory === false || item.notes === 'spare';
+        return {
+          po_seq: item.po_seq || idx + 1,
+          part_number: item.part_number || '',
+          item_name: item.bom_name || '',
+          item_id: item.item_id || null,
+          qty_per_site: item.qty_per_site || 1,
+          unit: item.unit || 'ชิ้น',
+          is_mandatory: !isSpare,
+          notes: item.notes || (isSpare ? 'spare' : '')
+        };
+      });
       setBomDraft(initialDraft);
-      setIsEditing(false);
       setCatalogPickerTargetIndex(null);
     }
-  }, [selectedCategory]);
+  }, [selectedCategory?.category_id, selectedCategory?.total_items_in_bom]);
+
+  // Sync selectedCategory with fresh siteKits from parent onRefresh
+  useEffect(() => {
+    if (selectedCategory && !isEditing) {
+      const updatedCat = siteKits.find(c => c.category_id === selectedCategory.category_id);
+      if (updatedCat) {
+        setSelectedCategory(prev => prev ? { ...prev, ...updatedCat } : null);
+      }
+    }
+  }, [siteKits, isEditing]);
 
   // Load master catalog items when modal opens
   useEffect(() => {
@@ -95,7 +112,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
     ).slice(0, 50);
   }, [masterItems, searchCatalogQuery]);
 
-  const handleAddRow = () => {
+  const handleAddRow = (isSpareContext = false) => {
     setBomDraft(prev => [
       ...prev,
       {
@@ -105,10 +122,26 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
         item_id: null,
         qty_per_site: 1,
         unit: 'ชิ้น',
-        is_mandatory: true,
-        notes: ''
+        is_mandatory: !isSpareContext,
+        notes: isSpareContext ? 'spare' : ''
       }
     ]);
+  };
+
+  const getRowSpareMetrics = (item) => {
+    const previous = (selectedCategory?.items || []).find(p => 
+      (item.item_id && p.item_id === item.item_id) || 
+      (item.part_number && p.part_number === item.part_number) ||
+      p.bom_name === item.item_name
+    );
+    const masterItem = masterItems.find(m => m.id === item.item_id || (item.part_number && m.sku === item.part_number));
+    const stock = previous?.total_stock !== undefined ? previous.total_stock : (masterItem?.total_stock || 0);
+    const isSpare = item.is_mandatory === false || item.notes === 'spare';
+    const completeSets = Number(selectedCategory?.complete_sets) || 0;
+    const qtyPerSite = Number(item.qty_per_site) || 0;
+    const allocatedStock = isSpare ? 0 : (completeSets * qtyPerSite);
+    const spareStock = isSpare ? stock : Math.max(stock - allocatedStock, 0);
+    return { stock, allocatedStock, spareStock };
   };
 
   const handleRemoveRow = (index) => {
@@ -126,22 +159,79 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
     });
   };
 
+  const handleToggleSection = (index) => {
+    setBomDraft(prev => {
+      const updated = [...prev];
+      const current = updated[index];
+      const currentlySpare = current.is_mandatory === false || current.notes === 'spare';
+      const willBeSpare = !currentlySpare;
+      
+      updated[index] = {
+        ...current,
+        is_mandatory: !willBeSpare,
+        notes: willBeSpare ? 'spare' : ''
+      };
+
+      toast.info(
+        willBeSpare
+          ? `ย้าย "${current.item_name || 'รายการ'}" ไปยัง Spare Equipment แล้ว`
+          : `ย้าย "${current.item_name || 'รายการ'}" ไปยัง Complete Set แล้ว`
+      );
+
+      return updated;
+    });
+  };
+
   const handleSelectMasterItem = (item) => {
     if (catalogPickerTargetIndex === null) return;
     setBomDraft(prev => {
-      const updated = [...prev];
-      updated[catalogPickerTargetIndex] = {
-        ...updated[catalogPickerTargetIndex],
-        item_id: item.id,
-        item_name: item.name,
-        part_number: item.sku || '',
-        unit: item.unit || updated[catalogPickerTargetIndex].unit || 'ชิ้น'
-      };
-      return updated;
+      const targetIsSpare = bomView === 'spare' || prev[catalogPickerTargetIndex]?.is_mandatory === false || prev[catalogPickerTargetIndex]?.notes === 'spare';
+
+      // Find if this item already exists in ANY other row in the draft
+      const duplicateIndex = prev.findIndex((d, idx) => 
+        idx !== catalogPickerTargetIndex && (
+          (item.id && d.item_id === item.id) ||
+          (item.sku && d.part_number && d.part_number.trim().toLowerCase() === item.sku.trim().toLowerCase()) ||
+          (d.item_name && d.item_name.trim().toLowerCase() === item.name.trim().toLowerCase())
+        )
+      );
+
+      let updated = [...prev];
+      if (duplicateIndex !== -1) {
+        // Automatically remove the duplicate from the other section to enforce mutual exclusion
+        updated.splice(duplicateIndex, 1);
+        const adjustedTargetIndex = duplicateIndex < catalogPickerTargetIndex ? catalogPickerTargetIndex - 1 : catalogPickerTargetIndex;
+        updated[adjustedTargetIndex] = {
+          ...updated[adjustedTargetIndex],
+          item_id: item.id,
+          item_name: item.name,
+          part_number: item.sku || '',
+          unit: item.unit || updated[adjustedTargetIndex]?.unit || 'ชิ้น',
+          is_mandatory: !targetIsSpare,
+          notes: targetIsSpare ? 'spare' : ''
+        };
+      } else {
+        updated[catalogPickerTargetIndex] = {
+          ...updated[catalogPickerTargetIndex],
+          item_id: item.id,
+          item_name: item.name,
+          part_number: item.sku || '',
+          unit: item.unit || updated[catalogPickerTargetIndex]?.unit || 'ชิ้น',
+          is_mandatory: !targetIsSpare,
+          notes: targetIsSpare ? 'spare' : ''
+        };
+      }
+
+      return updated.map((it, idx) => ({ ...it, po_seq: idx + 1 }));
     });
+
     setCatalogPickerTargetIndex(null);
     setSearchCatalogQuery('');
-    toast.success(`เลือก "${item.name}" สำเร็จ`);
+    toast.success(
+      bomView === 'spare'
+        ? `เลือก "${item.name}" เป็น Spare Equipment (ตัดออกจาก Complete Set อัตโนมัติ)`
+        : `เลือก "${item.name}" เป็น Complete Set (ตัดออกจาก Spare Equipment อัตโนมัติ)`
+    );
   };
 
   const handleSaveBom = async () => {
@@ -158,22 +248,80 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
       return;
     }
 
-    const invalidQty = bomDraft.filter(i => !i.qty_per_site || Number(i.qty_per_site) <= 0);
+    const invalidQty = bomDraft.filter(i => i.qty_per_site === undefined || i.qty_per_site === null || Number(i.qty_per_site) < 0);
     if (invalidQty.length > 0) {
-      toast.error('จำนวนที่ใช้ต่อไซต์ต้องมากกว่า 0');
+      toast.error('จำนวนที่ใช้ต่อไซต์ต้องไม่ติดลบ (>= 0)');
       return;
+    }
+
+    // Enforce mutual exclusion & deduplication before saving
+    const cleanBomDraft = [];
+    const seen = new Set();
+    for (let i = bomDraft.length - 1; i >= 0; i--) {
+      const item = bomDraft[i];
+      const key = item.item_id || `${(item.item_name || '').trim().toLowerCase()}_${(item.part_number || '').trim().toLowerCase()}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        cleanBomDraft.unshift(item);
+      }
     }
 
     try {
       setSaving(true);
-      await saveCategoryBom(selectedCategory.category_id, bomDraft);
+      await saveCategoryBom(selectedCategory.category_id, cleanBomDraft);
       toast.success(`บันทึกสเปก BOM สำหรับ ${selectedCategory.category_name} เรียบร้อยแล้ว`);
       setIsEditing(false);
-      
+
+      // Keep the dialog in sync so the new BOM items and Spare Equipment are visible immediately.
+      setSelectedCategory(prev => {
+        if (!prev) return null;
+        const updatedItems = cleanBomDraft.map((item, idx) => {
+          const previous = (prev.items || []).find(p => 
+            (item.item_id && p.item_id === item.item_id) || 
+            (item.part_number && p.part_number === item.part_number) ||
+            p.bom_name === item.item_name
+          ) || {};
+          const masterItem = masterItems.find(m => m.id === item.item_id || (item.part_number && m.sku === item.part_number));
+          const totalStock = previous.total_stock !== undefined ? previous.total_stock : (masterItem?.total_stock || 0);
+          const qtyPerSite = Number(item.qty_per_site) || 1;
+          const setsPossible = Math.floor(totalStock / qtyPerSite);
+          const isSpare = item.is_mandatory === false || item.notes === 'spare';
+
+          return {
+            ...previous,
+            item_id: item.item_id || previous.item_id || null,
+            po_seq: idx + 1,
+            part_number: item.part_number || '',
+            bom_name: item.item_name,
+            qty_per_site: qtyPerSite,
+            unit: item.unit || 'ชิ้น',
+            is_mandatory: !isSpare,
+            notes: item.notes || (isSpare ? 'spare' : ''),
+            total_stock: totalStock,
+            sets_possible: setsPossible
+          };
+        });
+
+        let minSets = Infinity;
+        updatedItems.forEach(i => {
+          if (i.is_mandatory && i.notes !== 'spare' && i.sets_possible < minSets) {
+            minSets = i.sets_possible;
+          }
+        });
+        if (minSets === Infinity) minSets = 0;
+
+        return {
+          ...prev,
+          is_customized: true,
+          complete_sets: minSets,
+          total_items_in_bom: updatedItems.length,
+          items: updatedItems
+        };
+      });
+
       if (onRefresh) {
         await onRefresh();
       }
-      setSelectedCategory(null);
     } catch (error) {
       console.error('Error saving BOM:', error);
       toast.error(error.message || 'เกิดข้อผิดพลาดในการบันทึก BOM');
@@ -343,6 +491,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
           setSelectedCategory(null);
           setIsEditing(false);
           setCatalogPickerTargetIndex(null);
+          setBomView('complete');
         }
       }}>
         <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col rounded-3xl p-0 overflow-hidden border-border/80 shadow-2xl">
@@ -361,7 +510,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                     </DialogTitle>
                     {isEditing ? (
                       <Badge className="bg-blue-600 text-white text-[11px] font-bold px-2 py-0.5 rounded-md">
-                        โหมดแก้ไข BOM (Admin)
+                        {bomView === 'spare' ? 'โหมดแก้ไข Spare Equipment (Admin)' : 'โหมดแก้ไข BOM (Admin)'}
                       </Badge>
                     ) : (
                       <Badge variant="outline" className="text-[11px] font-semibold border-emerald-500/40 text-emerald-700 dark:text-emerald-300">
@@ -371,8 +520,12 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                   </div>
                   <DialogDescription className="text-xs text-muted-foreground mt-0.5">
                     {isEditing 
-                      ? 'ปรับแต่งรายการวัสดุที่ใช้ในชุดติดตั้ง สเปกจำนวน และเงื่อนไขความจำเป็นต่อชุด'
-                      : 'เทียบยอดคงเหลือสต็อกจริงกับจำนวนที่ต้องใช้ต่อ 1 ไซต์งาน'}
+                      ? (bomView === 'spare' 
+                          ? 'ปรับแต่งรายการอุปกรณ์สำรอง เพิ่มรายการใหม่ และเงื่อนไขการจัดสรร' 
+                          : 'ปรับแต่งรายการวัสดุที่ใช้ในชุดติดตั้ง สเปกจำนวน และเงื่อนไขความจำเป็นต่อชุด')
+                      : (bomView === 'spare'
+                          ? 'รายการอุปกรณ์และสต็อกสำรองคงเหลือที่จัดชุดแล้ว'
+                          : 'เทียบยอดคงเหลือสต็อกจริงกับจำนวนที่ต้องใช้ต่อ 1 ไซต์งาน')}
                   </DialogDescription>
                 </div>
               </div>
@@ -386,8 +539,8 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                     onClick={() => setIsEditing(true)}
                     className="rounded-xl h-9 px-3 gap-1.5 text-xs font-bold border-blue-500/30 text-blue-700 dark:text-blue-300 hover:bg-blue-500/10 cursor-pointer shadow-2xs"
                   >
-                    <Edit3 className="w-3.5 h-3.5" />
-                    <span>แก้ไขสเปก BOM</span>
+                    <PenLine className="w-3.5 h-3.5" />
+                    <span>{bomView === 'spare' ? 'Edit Spare Equipment' : 'Edit BOM Specification'}</span>
                   </Button>
                 )}
 
@@ -421,7 +574,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                       className="rounded-xl h-9 px-4 gap-1.5 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer shadow-sm"
                     >
                       <Save className={`w-3.5 h-3.5 ${saving ? 'animate-spin' : ''}`} />
-                      <span>{saving ? 'กำลังบันทึก...' : 'บันทึก BOM'}</span>
+                      <span>{saving ? 'กำลังบันทึก...' : 'บันทึกข้อมูล'}</span>
                     </Button>
                   </div>
                 )}
@@ -429,27 +582,69 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
             </div>
           </DialogHeader>
 
+          {/* Navigation Tabs (Accessible in both View and Edit modes) */}
+          <div className="px-6 pt-3">
+            <div
+              role="tablist"
+              aria-label="BOM inventory views"
+              className="flex w-full border-b border-border/60"
+            >
+              <button
+                type="button"
+                role="tab"
+                aria-selected={bomView === 'complete'}
+                onClick={() => setBomView('complete')}
+                className={`relative flex-1 px-3 py-2.5 text-xs font-bold transition-colors cursor-pointer ${
+                  bomView === 'complete'
+                    ? 'text-emerald-700 dark:text-emerald-300'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Complete Set
+                {bomView === 'complete' && (
+                  <span className="absolute inset-x-0 -bottom-px h-0.5 bg-emerald-600 dark:bg-emerald-400" />
+                )}
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={bomView === 'spare'}
+                onClick={() => setBomView('spare')}
+                className={`relative flex-1 px-3 py-2.5 text-xs font-bold transition-colors cursor-pointer ${
+                  bomView === 'spare'
+                    ? 'text-emerald-700 dark:text-emerald-300'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Spare Equipment
+                {bomView === 'spare' && (
+                  <span className="absolute inset-x-0 -bottom-px h-0.5 bg-emerald-600 dark:bg-emerald-400" />
+                )}
+              </button>
+            </div>
+          </div>
+
           {/* Dialog Body */}
           <div className="flex-1 overflow-y-auto p-6 pt-3 space-y-4">
-            {isEditing ? (
+            {isEditing && bomView === 'complete' ? (
               /* =======================================================
-               * ADMIN EDITABLE BOM FORM VIEW
+               * ADMIN EDITABLE COMPLETE SET BOM FORM VIEW
                * ======================================================= */
               <div className="space-y-3">
                 <div className="flex items-center justify-between bg-blue-500/10 border border-blue-500/20 rounded-2xl p-3 px-4 text-xs text-blue-800 dark:text-blue-300">
                   <div className="flex items-center gap-2">
                     <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
                     <span>
-                      คุณสามารถเลือกวัสดุจาก Master Catalog หรือพิมพ์ระบุสเปกเองได้ ยอดสต็อกและการคำนวณชุดจะอัปเดตแบบเรียลไทม์หลังบันทึก
+                      รายการวัสดุสำหรับชุดติดตั้งสมบูรณ์ (Complete Set) หากย้ายรายการใดไป Spare Equipment รายการนั้นจะถูกตัดออกจากชุดติดตั้งอัตโนมัติ
                     </span>
                   </div>
                   <Button
                     size="sm"
-                    onClick={handleAddRow}
+                    onClick={() => handleAddRow(false)}
                     className="rounded-xl h-8 px-3 gap-1.5 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shrink-0 cursor-pointer shadow-xs"
                   >
                     <Plus className="w-3.5 h-3.5" />
-                    <span>เพิ่มรายการ</span>
+                    <span>เพิ่มรายการ Complete Set</span>
                   </Button>
                 </div>
 
@@ -458,114 +653,119 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                     <thead className="bg-muted/70 text-muted-foreground font-bold border-b border-border/70">
                       <tr>
                         <th className="py-2.5 px-3 w-12 text-center">ลำดับ</th>
-                        <th className="py-2.5 px-3 min-w-[200px]">รายการอุปกรณ์ใน BOM / Part Number</th>
+                        <th className="py-2.5 px-3 min-w-[200px]">รายการอุปกรณ์ใน Complete Set / Part Number</th>
                         <th className="py-2.5 px-3 text-center w-28">ใช้ต่อไซต์</th>
                         <th className="py-2.5 px-3 text-center w-28">หน่วยนับ</th>
-                        <th className="py-2.5 px-3 text-center w-28">ความจำเป็น</th>
+                        <th className="py-2.5 px-3 text-center w-32">หมวดหมู่ชุด</th>
                         <th className="py-2.5 px-3 text-center w-14">ลบ</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border/40">
-                      {bomDraft.map((item, idx) => (
-                        <tr key={idx} className="hover:bg-muted/30 transition-colors">
-                          {/* Sequence */}
-                          <td className="py-2 px-3 text-center font-bold text-muted-foreground">
-                            {idx + 1}
-                          </td>
+                      {bomDraft
+                        .map((item, originalIndex) => ({ item, originalIndex }))
+                        .filter(({ item }) => isCompleteSetItem(item))
+                        .map(({ item, originalIndex }, displayIdx) => (
+                          <tr key={originalIndex} className="hover:bg-muted/30 transition-colors">
+                            {/* Sequence */}
+                            <td className="py-2 px-3 text-center font-bold text-muted-foreground">
+                              {displayIdx + 1}
+                            </td>
 
-                          {/* Item Name & Part Selector */}
-                          <td className="py-2 px-3 space-y-1">
-                            <div className="flex items-center gap-1.5">
+                            {/* Item Name & Part Selector */}
+                            <td className="py-2 px-3 space-y-1">
+                              <div className="flex items-center gap-1.5">
+                                <Input
+                                  value={item.item_name}
+                                  onChange={(e) => handleFieldChange(originalIndex, 'item_name', e.target.value)}
+                                  placeholder="ระบุชื่ออุปกรณ์ หรือเลือกจากคลัง..."
+                                  className="h-8 text-xs font-semibold rounded-lg bg-background"
+                                />
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    setCatalogPickerTargetIndex(originalIndex);
+                                    setSearchCatalogQuery(item.item_name || '');
+                                  }}
+                                  title="เลือกจากรายการวัสดุในคลัง (Master Catalog)"
+                                  className="h-8 px-2.5 gap-1 text-[11px] font-bold rounded-lg border-blue-500/40 text-blue-700 dark:text-blue-300 hover:bg-blue-500/10 shrink-0 cursor-pointer"
+                                >
+                                  <Package className="w-3.5 h-3.5" />
+                                  <span>เลือกจากคลัง</span>
+                                </Button>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-[10px] text-muted-foreground shrink-0 font-medium">Part Number / SKU:</span>
+                                <Input
+                                  value={item.part_number}
+                                  onChange={(e) => handleFieldChange(originalIndex, 'part_number', e.target.value)}
+                                  placeholder="เช่น 30207-0024-XXXXX"
+                                  className="h-6 text-[11px] font-mono rounded-md bg-muted/30"
+                                />
+                              </div>
+                            </td>
+
+                            {/* Quantity per site */}
+                            <td className="py-2 px-3 text-center">
                               <Input
-                                value={item.item_name}
-                                onChange={(e) => handleFieldChange(idx, 'item_name', e.target.value)}
-                                placeholder="ระบุชื่ออุปกรณ์ หรือเลือกจากคลัง..."
-                                className="h-8 text-xs font-semibold rounded-lg bg-background"
+                                type="number"
+                                min="0"
+                                step="any"
+                                value={item.qty_per_site}
+                                onChange={(e) => handleFieldChange(originalIndex, 'qty_per_site', e.target.value)}
+                                className="h-8 text-xs text-center font-bold rounded-lg w-20 mx-auto bg-background"
                               />
-                              <Button
+                            </td>
+
+                            {/* Unit */}
+                            <td className="py-2 px-3 text-center">
+                              <Input
+                                value={item.unit}
+                                onChange={(e) => handleFieldChange(originalIndex, 'unit', e.target.value)}
+                                placeholder="ชิ้น"
+                                list={`unit-list-${originalIndex}`}
+                                className="h-8 text-xs text-center font-medium rounded-lg w-20 mx-auto bg-background"
+                              />
+                              <datalist id={`unit-list-${originalIndex}`}>
+                                {COMMON_UNITS.map(u => (
+                                  <option key={u} value={u} />
+                                ))}
+                              </datalist>
+                            </td>
+
+                            {/* Move to Spare Toggle */}
+                            <td className="py-2 px-3 text-center">
+                              <button
                                 type="button"
-                                size="sm"
-                                variant="outline"
-                                onClick={() => {
-                                  setCatalogPickerTargetIndex(idx);
-                                  setSearchCatalogQuery(item.item_name || '');
-                                }}
-                                title="เลือกจากรายการวัสดุในคลัง (Master Catalog)"
-                                className="h-8 px-2.5 gap-1 text-[11px] font-bold rounded-lg border-blue-500/40 text-blue-700 dark:text-blue-300 hover:bg-blue-500/10 shrink-0 cursor-pointer"
+                                onClick={() => handleToggleSection(originalIndex)}
+                                title="คลิกเพื่อย้ายไปแท็บ Spare Equipment (ตัดออกจาก Complete Set)"
+                                className="px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-colors cursor-pointer bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/40 hover:bg-sky-500/20 hover:text-sky-700"
                               >
-                                <Package className="w-3.5 h-3.5" />
-                                <span>เลือกจากคลัง</span>
-                              </Button>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-[10px] text-muted-foreground shrink-0 font-medium">Part Number / SKU:</span>
-                              <Input
-                                value={item.part_number}
-                                onChange={(e) => handleFieldChange(idx, 'part_number', e.target.value)}
-                                placeholder="เช่น 30207-0024-XXXXX"
-                                className="h-6 text-[11px] font-mono rounded-md bg-muted/30"
-                              />
-                            </div>
-                          </td>
+                                Complete Set
+                              </button>
+                            </td>
 
-                          {/* Quantity per site */}
-                          <td className="py-2 px-3 text-center">
-                            <Input
-                              type="number"
-                              min="0.1"
-                              step="any"
-                              value={item.qty_per_site}
-                              onChange={(e) => handleFieldChange(idx, 'qty_per_site', e.target.value)}
-                              className="h-8 text-xs text-center font-bold rounded-lg w-20 mx-auto bg-background"
-                            />
-                          </td>
-
-                          {/* Unit */}
-                          <td className="py-2 px-3 text-center">
-                            <Input
-                              value={item.unit}
-                              onChange={(e) => handleFieldChange(idx, 'unit', e.target.value)}
-                              placeholder="ชิ้น"
-                              list={`unit-list-${idx}`}
-                              className="h-8 text-xs text-center font-medium rounded-lg w-20 mx-auto bg-background"
-                            />
-                            <datalist id={`unit-list-${idx}`}>
-                              {COMMON_UNITS.map(u => (
-                                <option key={u} value={u} />
-                              ))}
-                            </datalist>
-                          </td>
-
-                          {/* Mandatory Toggle */}
-                          <td className="py-2 px-3 text-center">
-                            <button
-                              type="button"
-                              onClick={() => handleFieldChange(idx, 'is_mandatory', !item.is_mandatory)}
-                              className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-colors cursor-pointer ${
-                                item.is_mandatory
-                                  ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/40'
-                                  : 'bg-muted text-muted-foreground border-border/60'
-                              }`}
-                            >
-                              {item.is_mandatory ? 'จำเป็น' : 'ทางเลือก'}
-                            </button>
-                          </td>
-
-                          {/* Delete */}
-                          <td className="py-2 px-3 text-center">
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveRow(idx)}
-                              title="ลบรายการนี้"
-                              className="p-1.5 rounded-lg text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 transition-colors cursor-pointer"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
+                            {/* Delete */}
+                            <td className="py-2 px-3 text-center">
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveRow(originalIndex)}
+                                title="ลบรายการนี้"
+                                className="p-1.5 rounded-lg text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
                     </tbody>
                   </table>
+                  {bomDraft.filter(isCompleteSetItem).length === 0 && (
+                    <div className="p-8 text-center text-xs text-muted-foreground">
+                      ยังไม่มีรายการใน Complete Set
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex justify-between items-center pt-2">
@@ -573,28 +773,207 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={handleAddRow}
+                    onClick={() => handleAddRow(false)}
                     className="rounded-xl h-8 px-3 gap-1.5 text-xs font-bold border-dashed border-border/80 hover:border-emerald-500/60 text-muted-foreground hover:text-foreground cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" />
-                    <span>เพิ่มรายการอุปกรณ์ใน BOM</span>
+                    <span>เพิ่มรายการอุปกรณ์ใน Complete Set</span>
                   </Button>
 
                   <span className="text-xs text-muted-foreground">
-                    ทั้งหมด {bomDraft.length} รายการ
+                    Complete Set มีทั้งหมด {bomDraft.filter(isCompleteSetItem).length} รายการ
                   </span>
                 </div>
               </div>
-            ) : (
+            ) : isEditing && bomView === 'spare' ? (
               /* =======================================================
-               * READ-ONLY BOM BREAKDOWN VIEW (FOR NON-ADMIN & ADMIN PREVIEW)
+               * ADMIN EDITABLE SPARE EQUIPMENT FORM VIEW
+               * ======================================================= */
+              <div className="space-y-3">
+                <div className="flex items-center justify-between bg-blue-500/10 border border-blue-500/20 rounded-2xl p-3 px-4 text-xs text-blue-800 dark:text-blue-300">
+                  <div className="flex items-center gap-2">
+                    <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
+                    <span>
+                      รายการอุปกรณ์สำรอง (Spare Equipment) จะถูกแยกออกจาก Complete Set โดยอัตโนมัติ และไม่ถูกนำไปเป็นตัวจำกัดจำนวนชุดติดตั้ง
+                    </span>
+                  </div>
+                  <Button
+                    size="sm"
+                    onClick={() => handleAddRow(true)}
+                    className="rounded-xl h-8 px-3 gap-1.5 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shrink-0 cursor-pointer shadow-xs"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>เพิ่ม Spare Equipment</span>
+                  </Button>
+                </div>
+
+                <div className="rounded-2xl border border-border/70 overflow-hidden shadow-2xs bg-card">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead className="bg-muted/70 text-muted-foreground font-bold border-b border-border/70">
+                      <tr>
+                        <th className="py-2.5 px-3 w-12 text-center">ลำดับ</th>
+                        <th className="py-2.5 px-3 min-w-[200px]">รายการอุปกรณ์ใน Spare / Part Number</th>
+                        <th className="py-2.5 px-3 text-center w-24">สเปกต่อไซต์</th>
+                        <th className="py-2.5 px-3 text-center w-24">หน่วยนับ</th>
+                        <th className="py-2.5 px-3 text-center w-32">หมวดหมู่ชุด</th>
+                        <th className="py-2.5 px-3 text-center w-28">สต็อก / Spare</th>
+                        <th className="py-2.5 px-3 text-center w-12">ลบ</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border/40">
+                      {bomDraft
+                        .map((item, originalIndex) => ({ item, originalIndex }))
+                        .filter(({ item }) => isSpareItem(item))
+                        .map(({ item, originalIndex }, displayIdx) => {
+                          const { stock, spareStock } = getRowSpareMetrics(item);
+                          return (
+                            <tr key={originalIndex} className="hover:bg-muted/30 transition-colors">
+                              {/* Sequence */}
+                              <td className="py-2 px-3 text-center font-bold text-muted-foreground">
+                                {displayIdx + 1}
+                              </td>
+
+                              {/* Item Name & Part Selector */}
+                              <td className="py-2 px-3 space-y-1">
+                                <div className="flex items-center gap-1.5">
+                                  <Input
+                                    value={item.item_name}
+                                    onChange={(e) => handleFieldChange(originalIndex, 'item_name', e.target.value)}
+                                    placeholder="ระบุชื่ออุปกรณ์ หรือเลือกจากคลัง..."
+                                    className="h-8 text-xs font-semibold rounded-lg bg-background"
+                                  />
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => {
+                                      setCatalogPickerTargetIndex(originalIndex);
+                                      setSearchCatalogQuery(item.item_name || '');
+                                    }}
+                                    title="เลือกจากรายการวัสดุในคลัง (Master Catalog)"
+                                    className="h-8 px-2.5 gap-1 text-[11px] font-bold rounded-lg border-blue-500/40 text-blue-700 dark:text-blue-300 hover:bg-blue-500/10 shrink-0 cursor-pointer"
+                                  >
+                                    <Package className="w-3.5 h-3.5" />
+                                    <span>เลือกจากคลัง</span>
+                                  </Button>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] text-muted-foreground shrink-0 font-medium">Part Number / SKU:</span>
+                                  <Input
+                                    value={item.part_number}
+                                    onChange={(e) => handleFieldChange(originalIndex, 'part_number', e.target.value)}
+                                    placeholder="เช่น 30207-0024-XXXXX"
+                                    className="h-6 text-[11px] font-mono rounded-md bg-muted/30"
+                                  />
+                                </div>
+                              </td>
+
+                              {/* Quantity per site */}
+                              <td className="py-2 px-3 text-center">
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  step="any"
+                                  value={item.qty_per_site}
+                                  onChange={(e) => handleFieldChange(originalIndex, 'qty_per_site', e.target.value)}
+                                  className="h-8 text-xs text-center font-bold rounded-lg w-20 mx-auto bg-background"
+                                />
+                              </td>
+
+                              {/* Unit */}
+                              <td className="py-2 px-3 text-center">
+                                <Input
+                                  value={item.unit}
+                                  onChange={(e) => handleFieldChange(originalIndex, 'unit', e.target.value)}
+                                  placeholder="ชิ้น"
+                                  list={`unit-list-spare-${originalIndex}`}
+                                  className="h-8 text-xs text-center font-medium rounded-lg w-20 mx-auto bg-background"
+                                />
+                                <datalist id={`unit-list-spare-${originalIndex}`}>
+                                  {COMMON_UNITS.map(u => (
+                                    <option key={u} value={u} />
+                                  ))}
+                                </datalist>
+                              </td>
+
+                              {/* Move to Complete Set Toggle */}
+                              <td className="py-2 px-3 text-center">
+                                <button
+                                  type="button"
+                                  onClick={() => handleToggleSection(originalIndex)}
+                                  title="คลิกเพื่อย้ายไปแท็บ Complete Set (นำเข้าเป็นอุปกรณ์ชุดสมบูรณ์)"
+                                  className="px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-colors cursor-pointer bg-sky-500/15 text-sky-700 dark:text-sky-300 border-sky-500/40 hover:bg-emerald-500/20 hover:text-emerald-700"
+                                >
+                                  Spare Equipment
+                                </button>
+                              </td>
+
+                              {/* Live Stock & Spare Preview */}
+                              <td className="py-2 px-3 text-center">
+                                <div className="space-y-0.5">
+                                  <div className="text-[11px] font-semibold text-foreground">
+                                    สต็อก: {stock.toLocaleString()}
+                                  </div>
+                                  <span className={`inline-block text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
+                                    spareStock > 0 
+                                      ? 'bg-sky-500/15 text-sky-700 dark:text-sky-300' 
+                                      : 'bg-muted text-muted-foreground'
+                                  }`}>
+                                    Spare: {spareStock.toLocaleString()}
+                                  </span>
+                                </div>
+                              </td>
+
+                              {/* Delete */}
+                              <td className="py-2 px-3 text-center">
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveRow(originalIndex)}
+                                  title="ลบรายการนี้"
+                                  className="p-1.5 rounded-lg text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                    </tbody>
+                  </table>
+                  {bomDraft.filter(isSpareItem).length === 0 && (
+                    <div className="p-8 text-center text-xs text-muted-foreground">
+                      ยังไม่มีรายการใน Spare Equipment
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex justify-between items-center pt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleAddRow(true)}
+                    className="rounded-xl h-8 px-3 gap-1.5 text-xs font-bold border-dashed border-border/80 hover:border-emerald-500/60 text-muted-foreground hover:text-foreground cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>เพิ่มรายการ Spare Equipment</span>
+                  </Button>
+
+                  <span className="text-xs text-muted-foreground">
+                    Spare Equipment มีทั้งหมด {bomDraft.filter(isSpareItem).length} รายการ
+                  </span>
+                </div>
+              </div>
+            ) : bomView === 'complete' ? (
+              /* =======================================================
+               * READ-ONLY COMPLETE SET BOM BREAKDOWN VIEW
                * ======================================================= */
               <div className="rounded-2xl border border-border/70 overflow-hidden shadow-2xs">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead className="bg-muted/70 text-muted-foreground font-bold border-b border-border/70">
                     <tr>
                       <th className="py-2.5 px-3 w-12 text-center">ลำดับ</th>
-                      <th className="py-2.5 px-3">รายการอุปกรณ์ตาม BOM</th>
+                      <th className="py-2.5 px-3">รายการอุปกรณ์ตาม Complete Set</th>
                       <th className="py-2.5 px-3 text-center w-24">ใช้ต่อไซต์</th>
                       <th className="py-2.5 px-3 text-center w-24">สต็อกจริง</th>
                       <th className="py-2.5 px-3 text-center w-24">จัดได้ (ชุด)</th>
@@ -602,17 +981,17 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/40">
-                    {selectedCategory?.items?.map((item, idx) => {
+                    {(selectedCategory?.items || []).filter(isCompleteSetItem).map((item, idx) => {
                       const isLimiting = item.is_mandatory && item.sets_possible === selectedCategory.complete_sets;
                       return (
                         <tr 
-                          key={idx} 
+                          key={item.item_id || item.po_seq || idx} 
                           className={`hover:bg-muted/30 transition-colors ${
                             isLimiting ? 'bg-amber-500/5 dark:bg-amber-500/10' : ''
                           }`}
                         >
                           <td className="py-2.5 px-3 text-center font-semibold text-muted-foreground">
-                            {item.po_seq || idx + 1}
+                            {idx + 1}
                           </td>
                           <td className="py-2.5 px-3">
                             <div className="font-semibold text-foreground">{item.bom_name}</div>
@@ -661,6 +1040,66 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                     })}
                   </tbody>
                 </table>
+                {(selectedCategory?.items || []).filter(isCompleteSetItem).length === 0 && (
+                  <div className="p-8 text-center text-xs text-muted-foreground">
+                    ยังไม่มีรายการใน Complete Set
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* =======================================================
+               * READ-ONLY SPARE EQUIPMENT VIEW
+               * ======================================================= */
+              <div className="rounded-2xl border border-border/70 overflow-hidden shadow-2xs">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead className="bg-muted/70 text-muted-foreground font-bold border-b border-border/70">
+                    <tr>
+                      <th className="py-2.5 px-3 w-12 text-center">No.</th>
+                      <th className="py-2.5 px-3">Equipment</th>
+                      <th className="py-2.5 px-3 text-center w-28">Required / site</th>
+                      <th className="py-2.5 px-3 text-center w-24">Stock</th>
+                      <th className="py-2.5 px-3 text-center w-32">Complete set stock</th>
+                      <th className="py-2.5 px-3 text-center w-24">Spare</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/40">
+                    {(selectedCategory?.items || []).filter(isSpareItem).map((item, idx) => {
+                      const stock = Number(item.total_stock) || 0;
+                      const qtyPerSite = Number(item.qty_per_site) || 0;
+                      const allocatedStock = 0;
+                      const spareStock = stock;
+
+                      return (
+                        <tr key={item.item_id || item.po_seq || idx} className="hover:bg-muted/30 transition-colors">
+                          <td className="py-2.5 px-3 text-center font-semibold text-muted-foreground">
+                            {idx + 1}
+                          </td>
+                          <td className="py-2.5 px-3">
+                            <div className="font-semibold text-foreground">{item.bom_name}</div>
+                            {item.part_number && (
+                              <div className="text-[10px] text-muted-foreground font-mono">Part: {item.part_number}</div>
+                            )}
+                          </td>
+                          <td className="py-2.5 px-3 text-center font-bold text-foreground">
+                            {item.qty_per_site} <span className="text-[10px] font-normal text-muted-foreground">{item.unit || 'unit'}</span>
+                          </td>
+                          <td className="py-2.5 px-3 text-center font-bold text-foreground">{stock.toLocaleString()}</td>
+                          <td className="py-2.5 px-3 text-center text-muted-foreground">{allocatedStock.toLocaleString()}</td>
+                          <td className="py-2.5 px-3 text-center font-black">
+                            <span className="px-2 py-0.5 rounded-md bg-sky-500/15 text-sky-700 dark:text-sky-300">
+                              {spareStock.toLocaleString()}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+                {(selectedCategory?.items || []).filter(isSpareItem).length === 0 && (
+                  <div className="p-8 text-center text-xs text-muted-foreground">
+                    ยังไม่มีรายการใน Spare Equipment สำหรับหมวดหมู่นี้
+                  </div>
+                )}
               </div>
             )}
           </div>

@@ -1,5 +1,60 @@
 # Changelog
 
+## [v1.4.47] [2026-09-02] ลบแถบ Action Bar ซ้ำซ้อนในแท็บ Spare Equipment คงไว้เฉพาะปุ่มหลักใน Header
+- **Modified files:**
+  - `src/components/dashboard/SiteKitAvailabilityCards.jsx`: ลบแถบ Action Bar "รายการอุปกรณ์สำรอง (แยกจากชุดติดตั้ง Complete Set)" และปุ่ม duplicate ภายในแท็บ Spare Equipment ออก เพื่อ UI ที่สะอาดเรียบร้อย โดยใช้ปุ่ม `Edit Spare Equipment` หลักใน Header Modal เพียงจุดเดียวในการเข้าสู่โหมดแก้ไข ทั้งการแก้ไขรายการเดิมและการเพิ่มรายการใหม่
+  - `package.json`: อัปเดตเวอร์ชันเป็น `1.4.47`
+- **Verification:** `npm run build` ผ่านเรียบร้อย
+
+## [v1.4.46] [2026-09-02] แยกรายการ Complete Set และ Spare Equipment ให้ Mutual Exclusive ไม่ซ้ำซ้อนกัน
+- **Modified files:**
+  - `src/components/dashboard/SiteKitAvailabilityCards.jsx`: บังคับใช้กฎ Mutual Exclusion อย่างเคร่งครัด หากเพิ่มหรือเลือกรายการเข้า "Spare Equipment" จะตัดหรือกรองออกจาก "Complete Set" โดยอัตโนมัติ และไม่มีรายการอุปกรณ์ชิ้นเดียวกันปรากฏทั้งสองแท็บพร้อมกัน ทั้งในมุมมอง Read-only, โหมดแก้ไข (Edit Mode), และตอนบันทึกลงฐานข้อมูล
+  - `src/lib/siteKits.js`: ปรับปรุงฟังก์ชัน `fetchSiteKitsAvailability` และ `saveCategoryBom` ให้แยกการจัดเก็บและคำนวณ Complete Sets โดยไม่นำ Spare Equipment มาเป็นตัวจำกัดคอขวด
+  - `package.json`: อัปเดตเวอร์ชันเป็น `1.4.46`
+- **Verification:** `npm run build` ผ่านเรียบร้อย
+
+## [v1.4.45] [2026-09-02] รองรับการแก้ไข เพิ่ม และลบรายการในแท็บ Spare Equipment อย่างสมบูรณ์
+- **Modified files:**
+  - `src/components/dashboard/SiteKitAvailabilityCards.jsx`: รองรับการแก้ไข เพิ่มรายการใหม่ เลือกลิงก์กับ Master Catalog และลบรายการในแท็บ Spare Equipment พร้อมแสดงยอดสต็อกและ Spare คงเหลือแบบเรียลไทม์ระหว่างแก้ไข และบันทึกข้อมูลลงฐานข้อมูลโดยคงการทำงานของ Complete Set ไว้อย่างถูกต้อง
+  - `package.json`: อัปเดตเวอร์ชันเป็น `1.4.45`
+  - `docs/edit-bom-specification-implementation-plan.md`: เอกสาร Implementation Plan
+- **Verification:** `npm run build` ผ่านเรียบร้อย
+
+## [v1.4.44] [2026-09-02] เพิ่มปุ่ม Edit BOM Specification และปรับปรุงการซิงค์ข้อมูล Spare Equipment
+- **Modified files:**
+  - `src/components/dashboard/SiteKitAvailabilityCards.jsx`: เพิ่มปุ่ม `Edit BOM Specification` พร้อมไอคอน `PenLine` ใน Header Modal และ Empty State ของแท็บ Spare Equipment พร้อมปรับปรุงการคำนวณ optimistic state และ sync ให้สะท้อนข้อมูลอุปกรณ์และ Spare Equipment ทันทีหลังบันทึก
+  - `package.json`: อัปเดตเวอร์ชันเป็น `1.4.44`
+  - `docs/edit-bom-specification-implementation-plan.md`: เอกสาร Implementation Plan และ Verification Plan
+- **Verification:** `npx eslint src/components/dashboard/SiteKitAvailabilityCards.jsx` และ `npm run build` ผ่านเรียบร้อย
+
+## [v1.4.43] [2026-09-02] ลบปุ่ม เพิ่ม Spare Equipment ออกจากแท็บ Spare Equipment
+- **Modified files:**
+  - `src/components/dashboard/SiteKitAvailabilityCards.jsx`: ลบปุ่มและแบนเนอร์ `เพิ่ม Spare Equipment` ออกจากแท็บ Spare Equipment เพื่อความเรียบร้อยและป้องกันความสับสน
+  - `package.json`: อัปเดตเวอร์ชันเป็น `1.4.43`
+- **Verification:** `npx eslint src/components/dashboard/SiteKitAvailabilityCards.jsx` และ `npm run build` ผ่านเรียบร้อย
+
+## [v1.4.42] [2026-09-01] ลบปุ่ม Edit Spare Equipment ที่ยังไม่พร้อมใช้งาน
+- **Modified files:**
+  - `src/components/dashboard/SiteKitAvailabilityCards.jsx`: ลบปุ่มและไอคอน `PenLine` ออกจากแท็บ Spare Equipment โดยคงฟังก์ชัน ตารางข้อมูล การคำนวณ และสิทธิ์เดิมไว้
+- **Verification:** `npx eslint src/components/dashboard/SiteKitAvailabilityCards.jsx`, `npm run build` และ `git diff --check` ผ่านเรียบร้อย
+
+## [v1.4.41] [2026-09-01] เพิ่มปุ่ม Edit Spare Equipment ในแท็บ Spare Equipment
+- **Modified files:**
+  - `src/components/dashboard/SiteKitAvailabilityCards.jsx`: เพิ่มปุ่ม `Edit Spare Equipment` พร้อมไอคอน `PenLine` สำหรับผู้ใช้ที่มีสิทธิ์แก้ไข BOM โดยเรียกใช้ BOM editor flow เดิมและไม่เปลี่ยนพฤติกรรมของแท็บ Complete Set
+- **Verification:** `npx eslint src/components/dashboard/SiteKitAvailabilityCards.jsx` และ `npm run build` ผ่านเรียบร้อย
+
+## [v1.4.40] [2026-09-01] แก้ไขการบันทึก Site Kit BOM ที่ถูกปฏิเสธจาก RLS
+- **Modified files:**
+  - `supabase/migrations/63_fix_site_bom_rbac.sql`: ปรับ RLS และ `admin_save_category_bom` ให้ใช้ authorization model เดียวกับระบบ โดยอนุญาตเฉพาะผู้ใช้ที่ active และมีสิทธิ์ผู้ดูแลที่เกี่ยวข้อง พร้อมคง atomic replacement และ `SECURITY DEFINER`
+  - `src/lib/siteKits.js`: ใช้ RPC ที่ตรวจสอบสิทธิ์เป็นเส้นทางบันทึกเดียว ตัด direct table fallback ที่ไม่ atomic ออก และให้การ reset BOM ใช้ RPC เดียวกัน
+- **Reason:** แก้ปัญหา authorized administrator ถูกปฏิเสธด้วย HTTP 400/403 และ RLS ระหว่างบันทึก BOM
+- **Verification:** `npx eslint src/lib/siteKits.js`, `npm run build`, `node scripts/validate-rpc-signatures.mjs`, `node scripts/validate-sql-counts.mjs` ผ่าน; การทดสอบฐานข้อมูลจริงยังรอ Docker/local Supabase และสิทธิ์ CLI ที่พร้อมใช้งาน
+
+## [v1.4.39] [2026-09-01] เพิ่มแท็บ Complete Set และ Spare Equipment ในรายละเอียด BOM
+- **Modified files:**
+  - `src/components/dashboard/SiteKitAvailabilityCards.jsx`: เพิ่มแท็บสำหรับสลับระหว่างตาราง BOM เดิมและรายการอุปกรณ์สำรองที่คำนวณจากสต็อกจริง จำนวนชุดที่จัดได้ และจำนวนที่ต้องใช้ต่อไซต์
+- **Verification:** `npx eslint src/components/dashboard/SiteKitAvailabilityCards.jsx` และ `npm run build` ผ่านเรียบร้อย
+
 ## [v1.4.39] [2026-09-01 13:37] แก้ไขปัญหา PostgREST PGRST200 ในหน้า Projects โดยดึงข้อมูลและเชื่อมโยง Profile ผู้สร้างอย่างปลอดภัย
 - **Modified files:**
   - `src/pages/Projects.jsx`: ปรับปรุง `fetchProjects` ให้ดึงข้อมูลโครงการและเชื่อมโยงข้อมูล `profiles` ของผู้สร้าง (`created_by`) อย่างปลอดภัยโดยไม่พึ่งพา Foreign Key Hint `profiles!created_by` บน PostgREST Schema Cache ป้องกัน HTTP 400 Bad Request
