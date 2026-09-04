@@ -549,26 +549,50 @@ SET search_path = public, auth, pg_temp
 AS $$
 DECLARE
   v_user_id UUID;
+  v_project RECORD;
   v_order_id UUID;
   v_item JSONB;
   v_item_id UUID;
   v_qty NUMERIC;
-  v_lot_number TEXT;
   v_unit_price NUMERIC;
   v_model TEXT;
   v_part_number TEXT;
+  v_delivery_to TEXT;
+  v_serial_number TEXT;
   v_item_notes TEXT;
   v_parent_id UUID;
+  v_parent_sku TEXT;
   v_item_type TEXT;
   v_seq_no INTEGER;
+  v_item_exists BOOLEAN;
 BEGIN
   v_user_id := auth.uid();
   IF v_user_id IS NULL THEN
     RAISE EXCEPTION 'Unauthorized: User is not authenticated.';
   END IF;
 
-  IF NOT (public.has_permission(v_user_id, 'inventory.stock_in') OR public.has_permission(v_user_id, 'inventory.manage')) THEN
-    RAISE EXCEPTION 'Unauthorized: Requires inventory.stock_in permission.';
+  IF NOT (public.has_permission(v_user_id, 'stock_in.create') OR public.is_super_admin(v_user_id)) THEN
+    RAISE EXCEPTION 'Unauthorized: Requires stock_in.create permission.';
+  END IF;
+
+  IF p_project_id IS NULL THEN
+    RAISE EXCEPTION 'Invalid project: Project ID cannot be empty.';
+  END IF;
+
+  SELECT * INTO v_project
+  FROM public.projects
+  WHERE id = p_project_id;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Project not found: %', p_project_id;
+  END IF;
+
+  IF v_project.status != 'active' THEN
+    RAISE EXCEPTION 'Invalid project: Project "%" is currently % (only active projects can receive stock).', v_project.name, v_project.status;
+  END IF;
+
+  IF p_items IS NULL OR jsonb_array_length(p_items) = 0 THEN
+    RAISE EXCEPTION 'Invalid items: At least one item is required for stock in.';
   END IF;
 
   INSERT INTO public.stock_in_orders (
@@ -581,44 +605,68 @@ BEGIN
     v_item_id := (v_item->>'item_id')::UUID;
     v_qty := (v_item->>'quantity')::NUMERIC;
     v_unit_price := COALESCE((v_item->>'unit_price')::NUMERIC, 0);
-    v_lot_number := v_item->>'lot_number';
-    v_model := v_item->>'model';
+    v_delivery_to := v_item->>'delivery_to';
+    v_serial_number := v_item->>'serial_number';
     v_part_number := v_item->>'part_number';
+    v_model := v_item->>'model';
+    v_item_type := UPPER(COALESCE(NULLIF(TRIM(v_item->>'item_type'), ''), 'PARENT'));
+    v_parent_sku := NULLIF(TRIM(v_item->>'parent_sku'), '');
+    v_seq_no := (v_item->>'seq_no')::INTEGER;
     v_item_notes := v_item->>'notes';
     v_parent_id := (v_item->>'parent_id')::UUID;
-    v_item_type := COALESCE(v_item->>'item_type', 'PARENT');
-    v_seq_no := (v_item->>'seq_no')::INTEGER;
 
     IF v_qty IS NULL OR v_qty <= 0 THEN
       RAISE EXCEPTION 'Invalid quantity: % for item %', v_qty, v_item_id;
     END IF;
 
-    IF v_model IS NOT NULL AND TRIM(v_model) != '' THEN
-      UPDATE public.items SET model = TRIM(v_model), updated_at = NOW() WHERE id = v_item_id AND (model IS NULL OR model != TRIM(v_model));
+    IF v_item_id IS NULL THEN
+      IF (v_item->>'sku') IS NOT NULL AND TRIM(v_item->>'sku') != '' THEN
+        SELECT id INTO v_item_id FROM public.items WHERE LOWER(sku) = LOWER(TRIM(v_item->>'sku')) LIMIT 1;
+      END IF;
+      IF v_item_id IS NULL AND (v_item->>'name') IS NOT NULL AND TRIM(v_item->>'name') != '' THEN
+        SELECT id INTO v_item_id FROM public.items WHERE LOWER(name) = LOWER(TRIM(v_item->>'name')) LIMIT 1;
+      END IF;
+      IF v_item_id IS NULL THEN
+        INSERT INTO public.items (name, model, sku, unit)
+        VALUES (
+          COALESCE(NULLIF(TRIM(v_item->>'name'), ''), COALESCE(NULLIF(TRIM(v_item->>'sku'), ''), 'วัสดุทั่วไป')),
+          NULLIF(TRIM(v_item->>'model'), ''),
+          NULLIF(TRIM(v_item->>'sku'), ''),
+          COALESCE(NULLIF(TRIM(v_item->>'unit'), ''), 'ชิ้น')
+        )
+        RETURNING id INTO v_item_id;
+      END IF;
+    ELSE
+      SELECT EXISTS (SELECT 1 FROM public.items WHERE id = v_item_id) INTO v_item_exists;
+      IF NOT v_item_exists THEN
+        RAISE EXCEPTION 'Item not found: %', v_item_id;
+      END IF;
     END IF;
-    IF v_part_number IS NOT NULL AND TRIM(v_part_number) != '' THEN
-      UPDATE public.items SET part_number = TRIM(v_part_number), updated_at = NOW() WHERE id = v_item_id AND (part_number IS NULL OR part_number != TRIM(v_part_number));
+
+    IF v_parent_id IS NULL AND v_parent_sku IS NOT NULL THEN
+      SELECT id INTO v_parent_id FROM public.items WHERE LOWER(sku) = LOWER(v_parent_sku) LIMIT 1;
+    END IF;
+
+    IF v_model IS NOT NULL AND TRIM(v_model) != '' THEN
+      UPDATE public.items 
+      SET model = TRIM(v_model), updated_at = NOW() 
+      WHERE id = v_item_id AND (model IS NULL OR model = '' OR model = '-');
     END IF;
 
     INSERT INTO public.stock_in_items (
-      order_id, item_id, quantity, unit_price, lot_number, notes,
-      item_type, parent_id, seq_no
+      order_id, item_id, quantity, unit_price, delivery_to, serial_number,
+      part_number, model, item_type, parent_id, parent_sku, seq_no, notes
     ) VALUES (
-      v_order_id, v_item_id, v_qty, v_unit_price, v_lot_number, v_item_notes,
-      v_item_type, v_parent_id, v_seq_no
+      v_order_id, v_item_id, v_qty, v_unit_price, v_delivery_to, v_serial_number,
+      v_part_number, v_model, v_item_type, v_parent_id, v_parent_sku, v_seq_no, v_item_notes
     );
 
-    UPDATE public.items
-    SET current_stock = COALESCE(current_stock, 0) + v_qty,
-        updated_at = NOW()
-    WHERE id = v_item_id;
-
     INSERT INTO public.stock_transactions (
-      item_id, project_id, transaction_type, quantity, unit_price,
-      notes, created_by, reference_type, reference_id
+      project_id, item_id, quantity, transaction_type, reference_type,
+      reference_id, notes, created_by
     ) VALUES (
-      v_item_id, p_project_id, 'IN', v_qty, v_unit_price,
-      v_item_notes, v_user_id, 'stock_in_order', v_order_id
+      p_project_id, v_item_id, v_qty, 'stock_in', 'stock_in_order',
+      v_order_id, v_item_notes, v_user_id
     );
   END LOOP;
 

@@ -12,6 +12,13 @@
         var savedTheme = localStorage.getItem('stock-flow-theme-v2');
         var theme = savedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
         document.documentElement.classList.add(theme === 'dark' ? 'dark' : 'light');
+
+        // Prevent third-party browser extension content script disconnection errors from polluting the console
+        window.addEventListener('error', function (event) {
+          if (event && event.message && event.message.includes("Cannot read properties of undefined (reading 'onMessage')")) {
+            event.stopImmediatePropagation();
+          }
+        }, true);
       })();
     </script>
   </head>

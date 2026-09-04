@@ -1,5 +1,19 @@
 # Changelog
 
+## [v1.4.57] [2026-09-04] แก้ไขข้อผิดพลาด Stock-In (lot_number schema mismatch, process_stock_in RPC และ content.js error)
+- **Modified files:**
+  - `src/pages/StockIn.jsx`: ปรับปรุงฟังก์ชัน `executeStockInSubmission` ให้แมปฟิลด์รับเข้าตรงตาม Database Schema จริง พร้อมเพิ่มระบบ Direct Database Transaction Fallback รองรับกรณี RPC ฝั่งคลาวด์ยังไม่ได้รันไมเกรชันใหม่ เพื่อให้ผู้ใช้สามารถบันทึกรับเข้าพัสดุได้สำเร็จทันที 100% ไม่เกิดข้อผิดพลาด HTTP 400
+  - `supabase/migrations/64_fix_process_stock_in_schema_alignment.sql`: [NEW] สร้างไมเกรชัน 64 ปรับปรุงฟังก์ชัน `process_stock_in` ให้สอดคล้องกับคอลัมน์จริงของตาราง `stock_in_items` (`delivery_to`, `serial_number`, `part_number`, `model`, `item_type`, `parent_id`, `parent_sku`, `seq_no`, `notes`), ถอดคอลัมน์ที่ไม่มีอยู่จริง (`lot_number`, `items.current_stock`, `items.part_number`, `stock_transactions.unit_price`) ออกทั้งหมด และแก้ไขการตรวจสอบสิทธิ์ให้ใช้ `stock_in.create` และ `is_super_admin`
+  - `supabase/migrations/62_align_all_rpc_parameter_signatures.sql`: แก้ไขโค้ดฟังก์ชัน `process_stock_in` ให้ตรงตาม Database Schema จริง
+  - `scripts/build-migration-62.mjs`: ซิงค์ฟังก์ชัน `process_stock_in` ในสคริปต์ตัวสร้างไมเกรชัน 62
+  - `index.html`: เพิ่มตัวดักจับความปลอดภัยของบราวเซอร์เพื่อกรองข้อผิดพลาด Disconnection ของส่วนขยายบราวเซอร์บุคคลที่สาม (`Cannot read properties of undefined (reading 'onMessage')` จาก `content.js`)
+  - `docs/stock-in-fix-implementation-plan.md`: [NEW] แผนงานการตรวจสอบและแก้ไขข้อผิดพลาดระบบ Stock-In
+  - `package.json`: ปรับเวอร์ชันระบบเป็น `1.4.57`
+- **Verification:**
+  - ตรวจสอบ Database Schema จริง ยืนยันคอลัมน์ของ `stock_in_orders`, `stock_in_items`, `stock_transactions`, และ `items`
+  - ทดสอบ Transaction Insert กับฐานข้อมูลจริงสำเร็จสมบูรณ์
+  - รัน `npm run build` ผ่าน 100% ปราศจากข้อผิดพลาด
+
 ## [v1.4.56] [2026-09-02] อัปเดต .gitignore ข้ามการติดตามไฟล์ .pdf และ .xlsx ทั้งหมดทั่วทั้งโปรเจกต์
 - **Modified files:**
   - `.gitignore`: เปลี่ยนกฎจาก `/*.xlsx` และ `/*.pdf` เป็น `*.xlsx` และ `*.pdf` เพื่อละเว้นไฟล์เอกสารและรายงานตารางการทำงานในทุกโฟลเดอร์ของโปรเจกต์
