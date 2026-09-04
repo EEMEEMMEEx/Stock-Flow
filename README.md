@@ -6,7 +6,7 @@
 ![Supabase](https://img.shields.io/badge/Supabase-2.45-3ECF8E.svg?style=for-the-badge&logo=supabase&logoColor=white)
 ![Cloudflare R2](https://img.shields.io/badge/Cloudflare_R2-Zero_Egress-F38020.svg?style=for-the-badge&logo=cloudflare&logoColor=white)
 ![PWA](https://img.shields.io/badge/PWA-Ready-orange.svg?style=for-the-badge&logo=pwa)
-![Production Version](https://img.shields.io/badge/Version-1.4.53-emerald.svg?style=for-the-badge)
+![Production Version](https://img.shields.io/badge/Version-1.4.58-emerald.svg?style=for-the-badge)
 
 **Stock-Flow** is a production-grade, enterprise inventory and material tracking system developed for **Forth Corporation Public Company Limited** for managing equipment, assets, project allocations, rapid POS material withdrawals, multi-stage approvals, Cloudflare R2 object storage, and real-time audit trails.
 

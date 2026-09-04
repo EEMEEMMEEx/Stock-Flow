@@ -1,5 +1,15 @@
 # Changelog
 
+## [v1.4.58] [2026-09-04] จัดทำเอกสารนโยบายความปลอดภัย SECURITY.md และอัปเดตสถานะเวอร์ชันระบบ
+- **Modified files:**
+  - `SECURITY.md`: [NEW] สร้างเอกสารนโยบายความปลอดภัยของโปรเจกต์ Stock-Flow ตามมาตรฐาน GitHub Security Policy ครอบคลุมตาราง Supported Versions อิงข้อมูลเวอร์ชันจริงของระบบ (`1.4.x` Supported, เวอร์ชันต่ำกว่า `1.4.0` เป็น End of Life), แนวทางการรายงานช่องโหว่ผ่าน GitHub Private Vulnerability Reporting อย่างปลอดภัย, รูปแบบข้อมูลที่จำเป็นต้องระบุ, ระยะเวลาและขั้นตอนการตอบรับ/แก้ไข (SLA), ข้อกำหนด Responsible / Coordinated Disclosure และขอบเขต In Scope / Out of Scope โดยไม่มีการเปิดเผยข้อมูล Credentials หรือ Secrets ใดๆ
+  - `docs/security-policy-implementation-plan.md`: [NEW] จัดทำแผนการดำเนินงานสำหรับการกำหนดค่า Security Policy
+  - `README.md`: ปรับปรุง Version Badge เป็น `v1.4.58`
+  - `package.json`: ปรับเวอร์ชันระบบเป็น `1.4.58`
+- **Verification:**
+  - ตรวจสอบเนื้อหา `SECURITY.md` สอดคล้องกับมาตรฐานความปลอดภัยของ GitHub และโปรเจกต์ Stock-Flow
+  - ตรวจสอบการเชื่อมโยงเวอร์ชัน `APP_CONFIG.version` และ `package.json` เป็น `1.4.58`
+
 ## [v1.4.57] [2026-09-04] แก้ไขข้อผิดพลาด Stock-In (lot_number schema mismatch, process_stock_in RPC และ content.js error)
 - **Modified files:**
   - `src/pages/StockIn.jsx`: ปรับปรุงฟังก์ชัน `executeStockInSubmission` ให้แมปฟิลด์รับเข้าตรงตาม Database Schema จริง พร้อมเพิ่มระบบ Direct Database Transaction Fallback รองรับกรณี RPC ฝั่งคลาวด์ยังไม่ได้รันไมเกรชันใหม่ เพื่อให้ผู้ใช้สามารถบันทึกรับเข้าพัสดุได้สำเร็จทันที 100% ไม่เกิดข้อผิดพลาด HTTP 400
