@@ -82,13 +82,13 @@ const CheckoutActiveList = ({
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         <Card 
           onClick={() => setStatusFilter('all')}
-          className={`p-4 rounded-2xl border transition-all cursor-pointer select-none ${
+          className={`p-4 rounded-xl border transition-all cursor-pointer select-none ${
             statusFilter === 'all' ? 'bg-indigo-500/10 border-indigo-500/40 ring-1 ring-indigo-500/30' : 'bg-card/70 hover:bg-accent/40'
           }`}
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-muted-foreground">รายการยืมคงค้าง</span>
-            <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+            <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
               <Clock className="w-4 h-4" />
             </div>
           </div>
@@ -100,13 +100,13 @@ const CheckoutActiveList = ({
 
         <Card 
           onClick={() => setStatusFilter('due_soon')}
-          className={`p-4 rounded-2xl border transition-all cursor-pointer select-none ${
+          className={`p-4 rounded-xl border transition-all cursor-pointer select-none ${
             statusFilter === 'due_soon' ? 'bg-amber-500/10 border-amber-500/40 ring-1 ring-amber-500/30' : 'bg-card/70 hover:bg-accent/40'
           }`}
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-muted-foreground">ใกล้ครบกำหนด (≤ 2 วัน)</span>
-            <div className="p-2 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
+            <div className="p-2 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
               <Clock className="w-4 h-4" />
             </div>
           </div>
@@ -118,13 +118,13 @@ const CheckoutActiveList = ({
 
         <Card 
           onClick={() => setStatusFilter('overdue')}
-          className={`p-4 rounded-2xl border transition-all cursor-pointer select-none ${
+          className={`p-4 rounded-xl border transition-all cursor-pointer select-none ${
             statusFilter === 'overdue' ? 'bg-red-500/10 border-red-500/40 ring-1 ring-red-500/30' : 'bg-card/70 hover:bg-accent/40'
           }`}
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-red-600 dark:text-red-400">เกินกำหนดส่งคืน (Overdue)</span>
-            <div className="p-2 rounded-xl bg-red-500/10 text-red-600 dark:text-red-400">
+            <div className="p-2 rounded-lg bg-red-500/10 text-red-600 dark:text-red-400">
               <AlertTriangle className="w-4 h-4" />
             </div>
           </div>
@@ -136,13 +136,13 @@ const CheckoutActiveList = ({
 
         <Card 
           onClick={() => setStatusFilter('active')}
-          className={`p-4 rounded-2xl border transition-all cursor-pointer select-none ${
+          className={`p-4 rounded-xl border transition-all cursor-pointer select-none ${
             statusFilter === 'active' ? 'bg-emerald-500/10 border-emerald-500/40 ring-1 ring-emerald-500/30' : 'bg-card/70 hover:bg-accent/40'
           }`}
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-muted-foreground">สถานะปกติ</span>
-            <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+            <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
               <CheckCircle2 className="w-4 h-4" />
             </div>
           </div>
@@ -156,10 +156,10 @@ const CheckoutActiveList = ({
       </div>
 
       {/* Main Table Card */}
-      <Card className="rounded-3xl glass border border-border/80 shadow-md">
+      <Card className="rounded-xl bg-card border border-border shadow-xs">
         <CardHeader className="border-b border-border/40 pb-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <CardTitle className="text-sm font-bold flex items-center gap-2 text-foreground">
-            <div className="p-1.5 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+            <div className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
               <Layers className="w-4 h-4" />
             </div>
             <span>รายการยืมที่ยังไม่ได้คืนครบ ({filteredOrders.length} รายการ)</span>
@@ -172,7 +172,7 @@ const CheckoutActiveList = ({
               placeholder="ค้นหาเลขที่, ผู้ยืม, แผนก, S/N..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-8 h-9 text-xs rounded-xl"
+              className="pl-8 h-9 text-xs rounded-lg"
             />
           </div>
         </CardHeader>
@@ -273,7 +273,7 @@ const CheckoutActiveList = ({
                         variant="outline"
                         size="sm"
                         onClick={() => onOpenDetailModal(order)}
-                        className="rounded-xl h-9 text-xs gap-1.5 font-bold shadow-2xs cursor-pointer"
+                        className="rounded-lg h-9 text-xs gap-1.5 font-semibold shadow-2xs cursor-pointer"
                         title="ดูรายละเอียดใบยืมและพิมพ์เอกสาร"
                       >
                         <Eye className="w-3.5 h-3.5" />
@@ -285,7 +285,7 @@ const CheckoutActiveList = ({
                           variant="outline"
                           size="sm"
                           onClick={() => onOpenExtendModal(order)}
-                          className="rounded-xl h-9 text-xs gap-1.5 font-bold border-amber-500/30 text-amber-700 dark:text-amber-400 hover:bg-amber-500/10 shadow-2xs cursor-pointer"
+                          className="rounded-lg h-9 text-xs gap-1.5 font-semibold border-amber-500/30 text-amber-700 dark:text-amber-400 hover:bg-amber-500/10 shadow-2xs cursor-pointer"
                           title="ขยายกำหนดวันส่งคืนพัสดุ (Extend Due Date)"
                         >
                           <CalendarClock className="w-3.5 h-3.5" />
@@ -297,7 +297,7 @@ const CheckoutActiveList = ({
                         <Button
                           size="sm"
                           onClick={() => onOpenReturnModal(order)}
-                          className="rounded-xl h-9 px-3.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs gap-1.5 font-bold shadow-sm cursor-pointer"
+                          className="rounded-lg h-9 px-3.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs gap-1.5 font-semibold shadow-xs cursor-pointer"
                         >
                           <RotateCcw className="w-3.5 h-3.5" />
                           <span>รับคืนพัสดุ</span>

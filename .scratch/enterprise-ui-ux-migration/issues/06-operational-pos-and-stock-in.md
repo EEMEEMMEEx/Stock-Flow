@@ -4,9 +4,9 @@
 
 **Blocked by:** 04: Global App Shell & Navigation, 05: Operational Workflows — Dashboard & Items Inventory catalog
 
-**Status:** ready-for-agent
+**Status:** closed
 
-- [ ] Stock In receipt flow and template forms refactored to clean card layout and standardized buttons
-- [ ] Withdrawal POS terminal and requisition modals (shortage, reject, detail) converted to solid opaque surfaces
-- [ ] Checkout POS terminal and material loan modals (active list, extend due date, return) converted to clean modern modals
-- [ ] Barcode scanning visual feedback and item selection states feel crisp and responsive
+- [x] Stock In receipt flow and template forms refactored to clean card layout and standardized buttons
+- [x] Withdrawal POS terminal and requisition modals (shortage, reject, detail) converted to solid opaque surfaces
+- [x] Checkout POS terminal and material loan modals (active list, extend due date, return) converted to clean modern modals
+- [x] Barcode scanning visual feedback and item selection states feel crisp and responsive

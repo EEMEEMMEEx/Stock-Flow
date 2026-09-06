@@ -32,11 +32,11 @@ const WithdrawalDetailModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-3xl rounded-3xl glass p-6 border border-border/80 shadow-2xl">
+      <DialogContent className="max-w-3xl rounded-xl bg-card p-6 border border-border shadow-xl">
         <DialogHeader className="space-y-3 border-b border-border/40 pb-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 dark:bg-indigo-950/40 border border-indigo-500/20 flex items-center justify-center shrink-0">
+              <div className="w-12 h-12 rounded-lg bg-indigo-500/10 dark:bg-indigo-950/40 border border-indigo-500/20 flex items-center justify-center shrink-0">
                 <FileText className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
               </div>
               <div>
@@ -117,7 +117,7 @@ const WithdrawalDetailModal = ({
 
         <div className="py-3 space-y-4 max-h-[60vh] overflow-y-auto pr-1">
           {/* Order Metadata Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-muted/40 dark:bg-muted/20 p-4 rounded-2xl border border-border/60 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-muted/40 dark:bg-muted/20 p-4 rounded-xl border border-border text-xs">
             <div className="space-y-1">
               <span className="text-muted-foreground flex items-center gap-1.5 font-semibold">
                 <Building2 className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
@@ -184,7 +184,7 @@ const WithdrawalDetailModal = ({
               <span>รายการวัสดุที่ขอเบิก ({orderDetails.length} รายการ)</span>
             </h4>
 
-            <div className="border border-border/60 rounded-2xl overflow-hidden glass shadow-2xs">
+            <div className="border border-border rounded-xl overflow-hidden shadow-xs">
               <Table>
                 <TableHeader className="bg-muted/50 text-xs">
                   <TableRow>
@@ -253,7 +253,7 @@ const WithdrawalDetailModal = ({
             variant="outline"
             size="sm"
             onClick={() => onDownloadPDF(order, orderDetails)}
-            className="rounded-xl text-xs font-bold text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 gap-1.5 cursor-pointer h-10"
+            className="rounded-lg text-xs font-semibold text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 gap-1.5 cursor-pointer h-9 px-4"
           >
             <FileText className="w-4 h-4 text-indigo-600" />
             <span>พิมพ์ / ดาวน์โหลด PDF ใบเบิกของ</span>
@@ -267,7 +267,7 @@ const WithdrawalDetailModal = ({
                     type="button"
                     variant="destructive"
                     size="sm"
-                    className="rounded-xl text-xs font-bold cursor-pointer h-10"
+                    className="rounded-lg text-xs font-semibold cursor-pointer h-9 px-4"
                     onClick={() => onOpenRejectModal(order)}
                   >
                     ปฏิเสธคำขอ
@@ -277,7 +277,7 @@ const WithdrawalDetailModal = ({
                   <Button
                     type="button"
                     size="sm"
-                    className="rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer h-10 shadow-sm"
+                    className="rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer h-9 px-4 shadow-xs"
                     onClick={() => onApproveOrder(order.id)}
                   >
                     อนุมัติบิลนี้
@@ -290,7 +290,7 @@ const WithdrawalDetailModal = ({
               <Button
                 type="button"
                 size="sm"
-                className="rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer h-10 shadow-sm"
+                className="rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer h-9 px-4 shadow-xs"
                 onClick={() => onCompleteOrder(order.id)}
               >
                 ยืนยันรับของเสร็จสิ้น
@@ -302,7 +302,7 @@ const WithdrawalDetailModal = ({
               variant="outline"
               size="sm"
               onClick={onClose}
-              className="rounded-xl text-xs h-10"
+              className="rounded-lg text-xs h-9 px-4 font-semibold"
             >
               ปิดหน้าต่าง
             </Button>

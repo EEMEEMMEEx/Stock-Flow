@@ -172,7 +172,7 @@ const Checkouts = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2.5">
-            <div className="p-2.5 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400">
+            <div className="p-2.5 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400">
               <RotateCcw className="w-6 h-6" />
             </div>
             <div>
@@ -195,7 +195,7 @@ const Checkouts = () => {
             size="sm"
             onClick={fetchCheckoutData}
             disabled={loading}
-            className="rounded-xl h-10 gap-1.5 border-input hover:bg-accent text-xs font-semibold cursor-pointer shadow-2xs"
+            className="rounded-lg h-9 px-3 gap-1.5 border-input hover:bg-accent text-xs font-semibold cursor-pointer shadow-2xs"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
             <span>รีเฟรชข้อมูล</span>
@@ -205,7 +205,7 @@ const Checkouts = () => {
             <Button
               size="sm"
               onClick={() => setActiveTab('pos')}
-              className="rounded-xl h-10 px-4 bg-indigo-600 hover:bg-indigo-700 text-white text-xs gap-1.5 font-bold cursor-pointer shadow-sm active:scale-[0.98] transition-all"
+              className="rounded-lg h-9 px-4 bg-indigo-600 hover:bg-indigo-700 text-white text-xs gap-1.5 font-semibold cursor-pointer shadow-xs transition-colors"
             >
               <Plus className="w-4 h-4" />
               <span>สร้างรายการยืมใหม่</span>
@@ -215,12 +215,12 @@ const Checkouts = () => {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="flex items-center p-1.5 bg-muted/60 rounded-2xl border border-border/60 w-fit">
+      <div className="flex items-center p-1 bg-muted/50 rounded-lg border border-border w-fit">
         <button
           type="button"
           onClick={() => setActiveTab('active')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer select-none ${activeTab === 'active'
-              ? 'bg-background text-foreground shadow-sm'
+          className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md text-xs font-semibold transition-colors cursor-pointer select-none ${activeTab === 'active'
+              ? 'bg-background text-foreground shadow-xs'
               : 'text-muted-foreground hover:text-foreground'
             }`}
         >
@@ -237,8 +237,8 @@ const Checkouts = () => {
           <button
             type="button"
             onClick={() => setActiveTab('pos')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer select-none ${activeTab === 'pos'
-                ? 'bg-background text-indigo-600 dark:text-indigo-400 shadow-sm'
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md text-xs font-semibold transition-colors cursor-pointer select-none ${activeTab === 'pos'
+                ? 'bg-background text-indigo-600 dark:text-indigo-400 shadow-xs'
                 : 'text-muted-foreground hover:text-foreground'
               }`}
           >
@@ -250,8 +250,8 @@ const Checkouts = () => {
         <button
           type="button"
           onClick={() => setActiveTab('history')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer select-none ${activeTab === 'history'
-              ? 'bg-background text-foreground shadow-sm'
+          className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md text-xs font-semibold transition-colors cursor-pointer select-none ${activeTab === 'history'
+              ? 'bg-background text-foreground shadow-xs'
               : 'text-muted-foreground hover:text-foreground'
             }`}
         >

@@ -22,17 +22,17 @@ const WithdrawalItemCard = React.memo(({
 
   return (
     <Card
-      className={`p-3.5 rounded-2xl glass border shadow-2xs transition-all duration-200 flex flex-col justify-between relative overflow-hidden group select-none ${
+      className={`p-3.5 rounded-xl bg-card border shadow-xs transition-colors flex flex-col justify-between relative overflow-hidden group select-none ${
         isInCart
-          ? 'ring-2 ring-indigo-500 border-indigo-500/50 bg-indigo-500/5 dark:bg-indigo-950/20 shadow-md'
+          ? 'ring-2 ring-indigo-500 border-indigo-500/50 bg-indigo-500/5 dark:bg-indigo-950/20 shadow-xs'
           : completelyEmpty
             ? 'opacity-40 bg-muted/20 border-border/40'
-            : 'hover:shadow-lg hover:border-indigo-500/40 border-border/60'
+            : 'hover:border-indigo-500/40 border-border shadow-xs'
       }`}
     >
       {/* Top Left: In-Cart Ribbon Indicator */}
       {isInCart && (
-        <div className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded-lg text-[10px] font-extrabold font-mono bg-indigo-600 text-white shadow-sm flex items-center gap-1 animate-in zoom-in-90 duration-150">
+        <div className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded text-[10px] font-extrabold font-mono bg-indigo-600 text-white shadow-xs flex items-center gap-1">
           <Check className="w-3 h-3 stroke-[2.5]" />
           <span>{cartQuantity} ในคำขอ</span>
         </div>
@@ -40,16 +40,16 @@ const WithdrawalItemCard = React.memo(({
 
       <div className="space-y-2.5">
         {/* Product Image & Stock Badge Overlay */}
-        <div className="aspect-square bg-muted/30 dark:bg-muted/10 rounded-xl flex items-center justify-center p-3 relative overflow-hidden border border-border/40 group-hover:border-indigo-500/20 transition-colors">
+        <div className="aspect-square bg-muted/30 dark:bg-muted/10 rounded-lg flex items-center justify-center p-3 relative overflow-hidden border border-border group-hover:border-indigo-500/30 transition-colors">
           {item.image_url ? (
             <img
               src={item.image_url}
               alt={item.name}
-              className="object-contain w-full h-full group-hover:scale-105 transition-transform duration-300"
+              className="object-contain w-full h-full"
               loading="lazy"
             />
           ) : (
-            <Package className="w-10 h-10 text-muted-foreground/30 stroke-[1.5] group-hover:scale-105 transition-transform" />
+            <Package className="w-10 h-10 text-muted-foreground/30 stroke-[1.5]" />
           )}
 
           {/* Stock Level Badge */}
@@ -63,14 +63,14 @@ const WithdrawalItemCard = React.memo(({
                 }
               }}
               title="คลิกเพื่อดูสต็อกแยกรายคลัง"
-              className={`absolute top-2 right-2 px-2 py-0.5 rounded-lg text-[10px] font-extrabold font-mono shadow-xs backdrop-blur-md transition-all cursor-pointer ${
+              className={`absolute top-2 right-2 px-2 py-0.5 rounded text-[10px] font-bold font-mono shadow-xs transition-colors cursor-pointer ${
                 isLowStock
                   ? 'bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 hover:bg-amber-500/30'
                   : availableStock > 0
                     ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/30'
                     : hasStockInOtherWarehouse
-                      ? 'bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-500/30 hover:bg-blue-500/30 animate-pulse'
-                      : 'bg-slate-200/80 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 border border-slate-300 dark:border-slate-700'
+                      ? 'bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-500/30 hover:bg-blue-500/30'
+                      : 'bg-muted text-muted-foreground border border-border'
               }`}
             >
               {isLowStock
@@ -120,13 +120,13 @@ const WithdrawalItemCard = React.memo(({
 
         {/* Action Button or In-Card Stepper */}
         {isInCart ? (
-          <div className="flex items-center justify-between bg-muted/60 dark:bg-muted/30 border border-border/60 rounded-xl p-1 shadow-2xs">
+          <div className="flex items-center justify-between bg-muted/60 dark:bg-muted/30 border border-border rounded-lg p-1 shadow-2xs">
             <Button
               type="button"
               variant="ghost"
               size="icon"
               onClick={() => onUpdateQuantity(item.id, -1)}
-              className="h-7 w-7 rounded-lg hover:bg-background text-foreground shrink-0 cursor-pointer"
+              className="h-7 w-7 rounded hover:bg-background text-foreground shrink-0 cursor-pointer"
             >
               <Minus className="w-3.5 h-3.5" />
             </Button>
@@ -141,7 +141,7 @@ const WithdrawalItemCard = React.memo(({
               size="icon"
               disabled={cartQuantity >= availableStock}
               onClick={() => onUpdateQuantity(item.id, 1)}
-              className="h-7 w-7 rounded-lg hover:bg-background text-foreground shrink-0 disabled:opacity-30 cursor-pointer"
+              className="h-7 w-7 rounded hover:bg-background text-foreground shrink-0 disabled:opacity-30 cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
             </Button>
@@ -157,7 +157,7 @@ const WithdrawalItemCard = React.memo(({
                 onAddToCart(item);
               }
             }}
-            className={`w-full h-8 rounded-xl text-xs font-bold gap-1.5 transition-all shadow-2xs cursor-pointer ${
+            className={`w-full h-8 rounded-lg text-xs font-semibold gap-1.5 transition-all shadow-2xs cursor-pointer ${
               isOutOfStock && hasStockInOtherWarehouse
                 ? 'bg-blue-600 hover:bg-blue-700 text-white'
                 : completelyEmpty

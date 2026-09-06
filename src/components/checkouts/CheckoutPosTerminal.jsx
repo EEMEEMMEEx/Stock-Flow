@@ -305,10 +305,10 @@ const CheckoutPosTerminal = ({
         {/* Left Column: Project Location & Item Selection (7 Cols) */}
         <div className="lg:col-span-7 space-y-5">
           {/* Step 1: Project & Location Picker */}
-          <Card className="rounded-3xl glass border border-border/80 shadow-md">
+          <Card className="rounded-xl bg-card border border-border shadow-xs">
             <CardHeader className="border-b border-border/40 pb-3">
               <CardTitle className="text-sm font-bold flex items-center gap-2 text-foreground">
-                <div className="p-1.5 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+                <div className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
                   <Building2 className="w-4 h-4" />
                 </div>
                 <span>1. เลือกโครงการและคลังต้นทาง (Source Project & Storage Location)</span>
@@ -329,7 +329,7 @@ const CheckoutPosTerminal = ({
               />
 
               {selectedProjectId && (
-                <div className="flex items-center justify-between text-xs text-muted-foreground bg-indigo-500/5 dark:bg-indigo-950/20 p-2.5 rounded-xl border border-indigo-500/20">
+                <div className="flex items-center justify-between text-xs text-muted-foreground bg-indigo-500/5 dark:bg-indigo-950/20 p-2.5 rounded-lg border border-indigo-500/20">
                   <span className="flex items-center gap-1.5 font-medium">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
                     <span>มีอุปกรณ์พร้อมให้ยืมในคลังนี้:</span>
@@ -343,10 +343,10 @@ const CheckoutPosTerminal = ({
           </Card>
 
           {/* Step 2: Item Catalog Search & Add */}
-          <Card className="rounded-3xl glass border border-border/80 shadow-md">
+          <Card className="rounded-xl bg-card border border-border shadow-xs">
             <CardHeader className="border-b border-border/40 pb-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <CardTitle className="text-sm font-bold flex items-center gap-2 text-foreground">
-                <div className="p-1.5 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+                <div className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
                   <Package className="w-4 h-4" />
                 </div>
                 <span>2. เลือกอุปกรณ์ / วัสดุที่ต้องการยืม</span>
@@ -360,20 +360,20 @@ const CheckoutPosTerminal = ({
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   disabled={!selectedProjectId}
-                  className="pl-8 h-9 text-xs rounded-xl"
+                  className="pl-8 h-9 text-xs rounded-lg"
                 />
               </div>
             </CardHeader>
 
             <CardContent className="pt-4">
               {!selectedProjectId ? (
-                <div className="py-12 text-center text-muted-foreground text-xs space-y-1 bg-muted/20 rounded-2xl border border-dashed border-border/60">
+                <div className="py-12 text-center text-muted-foreground text-xs space-y-1 bg-muted/20 rounded-xl border border-dashed border-border/60">
                   <Building2 className="w-8 h-8 mx-auto mb-2 opacity-40 stroke-1" />
                   <p className="font-semibold text-foreground">กรุณาเลือกคลัง/โครงการต้นทางก่อน</p>
                   <p className="text-[11px]">เพื่อโหลดรายการอุปกรณ์ที่มีสต็อกคงเหลือพร้อมให้ยืม</p>
                 </div>
               ) : filteredItems.length === 0 ? (
-                <div className="py-12 text-center text-muted-foreground text-xs space-y-1 bg-muted/20 rounded-2xl border border-dashed border-border/60">
+                <div className="py-12 text-center text-muted-foreground text-xs space-y-1 bg-muted/20 rounded-xl border border-dashed border-border/60">
                   <Package className="w-8 h-8 mx-auto mb-2 opacity-40 stroke-1" />
                   <p className="font-semibold text-foreground">ไม่พบรายการอุปกรณ์ในคลังนี้</p>
                   <p className="text-[11px]">หรือสต็อกคงเหลือในคลังนี้เป็น 0</p>
@@ -388,10 +388,10 @@ const CheckoutPosTerminal = ({
                       <div
                         key={item.id}
                         onClick={() => handleAddToCart(item)}
-                        className={`p-3 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between select-none ${
+                        className={`p-3 rounded-xl border transition-colors cursor-pointer flex flex-col justify-between select-none ${
                           isAdded 
                             ? 'bg-indigo-500/10 border-indigo-500/40 ring-1 ring-indigo-500/30' 
-                            : 'bg-card/70 hover:bg-accent/40 border-border/70 hover:border-indigo-500/30'
+                            : 'bg-card hover:bg-accent/40 border-border/70 hover:border-indigo-500/30'
                         }`}
                       >
                         <div className="space-y-1 min-w-0">
@@ -405,10 +405,10 @@ const CheckoutPosTerminal = ({
                         </div>
 
                         <div className="mt-2 pt-2 border-t border-border/40 flex items-center justify-between">
-                          <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+                          <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
                             คงเหลือ: {item.availableStock} {item.unit || 'ชิ้น'}
                           </span>
-                          <span className={`px-2 py-0.5 rounded-lg text-[10px] font-bold flex items-center gap-1 ${
+                          <span className={`px-2 py-0.5 rounded-lg text-[10px] font-semibold flex items-center gap-1 ${
                             isAdded 
                               ? 'bg-indigo-600 text-white' 
                               : 'bg-muted text-muted-foreground hover:bg-indigo-500 hover:text-white'
@@ -430,10 +430,10 @@ const CheckoutPosTerminal = ({
         <div className="lg:col-span-5 space-y-5">
           
           {/* Step 3: Borrower & Due Date Form */}
-          <div className="neu-flat text-card-foreground rounded-3xl glass border border-border/80 shadow-md">
+          <div className="bg-card text-card-foreground rounded-xl border border-border shadow-xs">
             <div className="flex flex-col space-y-1.5 p-6 border-b border-border/40 pb-3">
               <h3 className="tracking-tight text-sm font-bold flex items-center gap-2 text-foreground">
-                <div className="p-1.5 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+                <div className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
                   <User className="w-4 h-4" />
                 </div>
                 <span>3. ข้อมูลผู้ยืมและกำหนดส่งคืน</span>
@@ -442,38 +442,38 @@ const CheckoutPosTerminal = ({
             <div className="p-6 pt-4 space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <Label className="text-xs font-bold text-foreground">ชื่อผู้ยืม / ช่างผู้เบิก <span className="text-destructive">*</span></Label>
+                  <Label className="text-xs font-semibold text-foreground">ชื่อผู้ยืม / ช่างผู้เบิก <span className="text-destructive">*</span></Label>
                   <Input
                     required
                     placeholder="เช่น สมชาย ใจดี"
                     value={borrowerName}
                     onChange={(e) => setBorrowerName(e.target.value)}
-                    className="h-10 text-xs rounded-xl neu-pressed"
+                    className="h-9 text-xs rounded-lg bg-background border border-input"
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs font-bold text-foreground">เบอร์โทรติดต่อ</Label>
+                  <Label className="text-xs font-semibold text-foreground">เบอร์โทรติดต่อ</Label>
                   <Input
                     placeholder="เช่น 081-234-5678"
                     value={borrowerPhone}
                     onChange={(e) => setBorrowerPhone(e.target.value)}
-                    className="h-10 text-xs rounded-xl neu-pressed"
+                    className="h-9 text-xs rounded-lg bg-background border border-input"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <Label className="text-xs font-bold text-foreground">แผนก / ทีมงาน</Label>
+                  <Label className="text-xs font-semibold text-foreground">แผนก / ทีมงาน</Label>
                   <Input
                     placeholder="เช่น ทีมติดตั้ง DOPA ภาคใต้"
                     value={borrowerDepartment}
                     onChange={(e) => setBorrowerDepartment(e.target.value)}
-                    className="h-10 text-xs rounded-xl neu-pressed"
+                    className="h-9 text-xs rounded-lg bg-background border border-input"
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs font-bold text-foreground flex items-center gap-1 text-red-600 dark:text-red-400">
+                  <Label className="text-xs font-semibold text-foreground flex items-center gap-1 text-red-600 dark:text-red-400">
                     <Calendar className="w-3 h-3" />
                     <span>กำหนดส่งคืน <span className="text-destructive">*</span></span>
                   </Label>
@@ -482,28 +482,28 @@ const CheckoutPosTerminal = ({
                     required
                     value={expectedReturnDate}
                     onChange={(e) => setExpectedReturnDate(e.target.value)}
-                    className="h-10 text-xs rounded-xl font-bold neu-pressed"
+                    className="h-9 text-xs rounded-lg font-semibold bg-background border border-input"
                   />
                 </div>
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs font-bold text-foreground">วัตถุประสงค์การยืม / งานที่นำไปใช้</Label>
+                <Label className="text-xs font-semibold text-foreground">วัตถุประสงค์การยืม / งานที่นำไปใช้</Label>
                 <Input
                   placeholder="เช่น ซ่อมบำรุงสถานีฐาน DTRS ภูเก็ต"
                   value={purpose}
                   onChange={(e) => setPurpose(e.target.value)}
-                  className="h-10 text-xs rounded-xl neu-pressed"
+                  className="h-9 text-xs rounded-lg bg-background border border-input"
                 />
               </div>
             </div>
           </div>
 
           {/* Step 4: Checkout Cart & Multi-SN Batch Inputs */}
-          <Card className="rounded-3xl glass border border-border/80 shadow-md">
+          <Card className="rounded-xl bg-card border border-border shadow-xs">
             <CardHeader className="border-b border-border/40 pb-3 flex items-center justify-between">
               <CardTitle className="text-sm font-bold flex items-center gap-2 text-foreground">
-                <div className="p-1.5 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+                <div className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
                   <Layers className="w-4 h-4" />
                 </div>
                 <span>4. ตะกร้ายืมพัสดุ ({cart.length} รายการ / {totalUnits} ชิ้น)</span>
@@ -528,7 +528,7 @@ const CheckoutPosTerminal = ({
 
             <CardContent className="pt-4 space-y-3">
               {cart.length === 0 ? (
-                <div className="py-8 text-center text-muted-foreground text-xs bg-muted/15 rounded-2xl border border-dashed border-border/60">
+                <div className="py-8 text-center text-muted-foreground text-xs bg-muted/15 rounded-xl border border-dashed border-border/60">
                   ยังไม่ได้เลือกรายการอุปกรณ์
                 </div>
               ) : (
@@ -540,7 +540,7 @@ const CheckoutPosTerminal = ({
                     const isBatchOpen = showBatchInput[item.item_id];
 
                     return (
-                      <div key={item.item_id} className="p-3.5 rounded-2xl bg-card/70 border border-border/80 shadow-xs space-y-3">
+                      <div key={item.item_id} className="p-3.5 rounded-xl bg-card border border-border shadow-xs space-y-3">
                         {/* Item Header & Delete */}
                         <div className="flex items-start justify-between gap-2">
                           <div className="min-w-0 flex-1">
@@ -563,8 +563,8 @@ const CheckoutPosTerminal = ({
                         </div>
 
                         {/* Quantity Controls */}
-                        <div className="flex items-center justify-between gap-2 bg-muted/30 p-2 rounded-xl border border-border/40">
-                          <span className="text-[11px] font-bold text-muted-foreground flex items-center gap-1">
+                        <div className="flex items-center justify-between gap-2 bg-muted/30 p-2 rounded-lg border border-border/40">
+                          <span className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
                             <Hash className="w-3.5 h-3.5 text-indigo-500" />
                             <span>จำนวนที่ต้องการยืม ({item.unit}):</span>
                           </span>
@@ -587,7 +587,7 @@ const CheckoutPosTerminal = ({
                               max={item.availableStock}
                               value={item.quantity}
                               onChange={(e) => handleUpdateQuantity(item.item_id, e.target.value)}
-                              className="h-7 w-16 text-center text-xs font-bold font-mono rounded-lg p-0"
+                              className="h-7 w-16 text-center text-xs font-semibold font-mono rounded-lg p-0"
                             />
 
                             <Button
@@ -607,12 +607,12 @@ const CheckoutPosTerminal = ({
                         {!isMulti ? (
                           <div className="space-y-1">
                             <div className="flex items-center justify-between">
-                              <Label className="text-[10px] font-bold text-muted-foreground flex items-center gap-1">
+                              <Label className="text-[10px] font-semibold text-muted-foreground flex items-center gap-1">
                                 <Barcode className="w-3 h-3 text-indigo-500" />
                                 <span>Serial Number / รหัสเฉพาะ:</span>
                               </Label>
                               {sns[0] && (
-                                <span className="text-[9px] font-bold text-emerald-600 bg-emerald-500/10 px-1.5 py-0.2 rounded">
+                                <span className="text-[9px] font-semibold text-emerald-600 bg-emerald-500/10 px-1.5 py-0.5 rounded">
                                   ระบุแล้ว
                                 </span>
                               )}
@@ -621,20 +621,20 @@ const CheckoutPosTerminal = ({
                               placeholder="สแกนบาร์โค้ด หรือพิมพ์ S/N..."
                               value={sns[0] || ''}
                               onChange={(e) => handleUpdateItemSN(item.item_id, 0, e.target.value)}
-                              className="h-8 text-xs rounded-xl font-mono"
+                              className="h-8 text-xs rounded-lg font-mono"
                             />
                           </div>
                         ) : (
                           /* Multi-SN Batch Input Mode (Quantity > 1) */
                           <div className="space-y-2.5 pt-1 border-t border-border/50">
                             <div className="flex items-center justify-between">
-                              <span className="text-[11px] font-bold text-foreground flex items-center gap-1.5">
+                              <span className="text-[11px] font-semibold text-foreground flex items-center gap-1.5">
                                 <Tag className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
                                 <span>ระบุ Serial Number ({item.quantity} ชิ้น)</span>
                               </span>
 
                               <div className="flex items-center gap-1.5">
-                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border ${
+                                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-lg border ${
                                   filledSNCount === item.quantity
                                     ? 'bg-emerald-500/15 text-emerald-600 border-emerald-500/30'
                                     : filledSNCount > 0
@@ -649,7 +649,7 @@ const CheckoutPosTerminal = ({
                                   variant="ghost"
                                   size="sm"
                                   onClick={() => setShowBatchInput(prev => ({ ...prev, [item.item_id]: !prev[item.item_id] }))}
-                                  className="h-6 px-2 text-[10px] font-bold text-indigo-600 hover:bg-indigo-500/10 rounded-lg gap-1 cursor-pointer"
+                                  className="h-6 px-2 text-[10px] font-semibold text-indigo-600 hover:bg-indigo-500/10 rounded-lg gap-1 cursor-pointer"
                                   title="เปิด/ปิดกล่องวาง S/N แบบชุด"
                                 >
                                   <ClipboardPaste className="w-3 h-3" />
@@ -660,7 +660,7 @@ const CheckoutPosTerminal = ({
 
                             {/* Batch Paste / Scanner Bar */}
                             {isBatchOpen && (
-                              <div className="p-2.5 rounded-xl bg-indigo-500/5 dark:bg-indigo-950/20 border border-indigo-500/20 space-y-2 animate-in fade-in duration-200">
+                              <div className="p-2.5 rounded-lg bg-indigo-500/5 dark:bg-indigo-950/20 border border-indigo-500/20 space-y-2 animate-in fade-in duration-200">
                                 <div className="flex items-center justify-between text-[10px] text-muted-foreground">
                                   <span className="font-semibold text-indigo-600 dark:text-indigo-400 flex items-center gap-1">
                                     <ClipboardPaste className="w-3 h-3 inline" />
@@ -693,7 +693,7 @@ const CheckoutPosTerminal = ({
                                     type="button"
                                     size="sm"
                                     onClick={() => handleApplyBatchSN(item.item_id)}
-                                    className="h-8 px-3 bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold rounded-lg cursor-pointer shrink-0"
+                                    className="h-8 px-3 bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-semibold rounded-lg cursor-pointer shrink-0"
                                   >
                                     นำเข้า
                                   </Button>
@@ -704,8 +704,8 @@ const CheckoutPosTerminal = ({
                             {/* Individual Unit S/N Input Slots */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[160px] overflow-y-auto pr-1">
                               {sns.map((snVal, sIdx) => (
-                                <div key={sIdx} className="flex items-center gap-1.5 bg-muted/20 p-1.5 rounded-xl border border-border/40">
-                                  <span className="text-[10px] font-bold text-muted-foreground w-12 shrink-0 text-right">
+                                <div key={sIdx} className="flex items-center gap-1.5 bg-muted/20 p-1.5 rounded-lg border border-border/40">
+                                  <span className="text-[10px] font-semibold text-muted-foreground w-12 shrink-0 text-right">
                                     ชิ้นที่ {sIdx + 1}:
                                   </span>
                                   <Input
@@ -729,7 +729,7 @@ const CheckoutPosTerminal = ({
               <Button
                 type="submit"
                 disabled={submitting || cart.length === 0 || !selectedProjectId}
-                className="w-full h-11 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs gap-2 cursor-pointer shadow-md shadow-indigo-500/20 active:scale-[0.98] transition-all"
+                className="w-full h-10 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs gap-2 cursor-pointer shadow-xs transition-colors"
               >
                 <Send className="w-4 h-4" />
                 <span>{submitting ? 'กำลังบันทึก...' : `ยืนยันการทำรายการยืม (${totalUnits} ชิ้น)`}</span>

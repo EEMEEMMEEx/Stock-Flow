@@ -164,7 +164,7 @@ const WithdrawalPosTerminal = ({
       {/* Left: Product Catalog & Controls */}
       <div className="flex-1 min-w-0 space-y-4 w-full">
         {/* Context Header: Target Project Selector */}
-        <div className="p-4 rounded-3xl glass border border-border/60 shadow-2xs">
+        <div className="p-4 rounded-xl bg-card border border-border shadow-xs">
           <ProjectLocationSelector
             projects={projects}
             value={selectedProjectId}
@@ -178,7 +178,7 @@ const WithdrawalPosTerminal = ({
         </div>
 
         {/* Search, Filter Toolbar & Density Controls */}
-        <div className="p-4 rounded-3xl glass border border-border/60 shadow-2xs space-y-3.5">
+        <div className="p-4 rounded-xl bg-card border border-border shadow-xs space-y-3">
           {/* Top Search Row */}
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
@@ -186,7 +186,7 @@ const WithdrawalPosTerminal = ({
               <Input
                 ref={searchInputRef}
                 placeholder="ค้นหาวัสดุ... (ชื่อรายการ, รหัส SKU, รุ่น Model) กด / เพื่อค้นหาทันที"
-                className="pl-9 pr-8 h-11 rounded-2xl bg-background border-border/60 focus:ring-2 focus:ring-indigo-500 text-xs shadow-2xs"
+                className="pl-9 pr-8 h-9 rounded-lg bg-background border-border text-xs shadow-2xs"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
@@ -202,13 +202,13 @@ const WithdrawalPosTerminal = ({
             </div>
 
             {/* Density View Mode Selector */}
-            <div className="flex items-center gap-1 bg-muted/60 dark:bg-muted/30 p-1 rounded-2xl border border-border/50 shrink-0">
+            <div className="flex items-center gap-1 bg-muted/60 dark:bg-muted/30 p-1 rounded-lg border border-border/50 shrink-0">
               <Button
                 type="button"
                 variant={viewMode === 'grid' ? 'default' : 'ghost'}
                 size="xs"
                 onClick={() => setViewMode('grid')}
-                className={`h-9 px-3 rounded-xl text-xs font-semibold gap-1.5 transition-all cursor-pointer ${
+                className={`h-7 px-2.5 rounded-md text-xs font-semibold gap-1.5 transition-all cursor-pointer ${
                   viewMode === 'grid'
                     ? 'bg-background text-foreground shadow-xs border border-border/60'
                     : 'text-muted-foreground hover:text-foreground'
@@ -223,7 +223,7 @@ const WithdrawalPosTerminal = ({
                 variant={viewMode === 'table' ? 'default' : 'ghost'}
                 size="xs"
                 onClick={() => setViewMode('table')}
-                className={`h-9 px-3 rounded-xl text-xs font-semibold gap-1.5 transition-all cursor-pointer ${
+                className={`h-7 px-2.5 rounded-md text-xs font-semibold gap-1.5 transition-all cursor-pointer ${
                   viewMode === 'table'
                     ? 'bg-background text-foreground shadow-xs border border-border/60'
                     : 'text-muted-foreground hover:text-foreground'
@@ -369,8 +369,8 @@ const WithdrawalPosTerminal = ({
           {isLoading ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
               {[...Array(8)].map((_, i) => (
-                <div key={i} className="p-4 rounded-3xl glass border border-border/40 space-y-3 animate-pulse">
-                  <div className="aspect-square bg-muted/60 rounded-2xl" />
+                <div key={i} className="p-4 rounded-xl bg-card border border-border space-y-3 animate-pulse">
+                  <div className="aspect-square bg-muted/60 rounded-lg" />
                   <div className="h-3 bg-muted/60 rounded w-2/3" />
                   <div className="h-4 bg-muted/60 rounded w-5/6" />
                   <div className="h-3 bg-muted/60 rounded w-1/2" />
@@ -378,7 +378,7 @@ const WithdrawalPosTerminal = ({
               ))}
             </div>
           ) : filteredItems.length === 0 ? (
-            <div className="flex flex-col items-center justify-center p-12 text-muted-foreground glass rounded-3xl border border-border/60 space-y-2">
+            <div className="flex flex-col items-center justify-center p-12 text-muted-foreground bg-card rounded-xl border border-border space-y-2">
               <Package className="w-12 h-12 text-muted-foreground/30 stroke-1" />
               <p className="font-bold text-sm text-foreground">ไม่พบรายการวัสดุที่ตรงกับเงื่อนไข</p>
               <p className="text-xs text-muted-foreground max-w-sm text-center">
@@ -389,14 +389,14 @@ const WithdrawalPosTerminal = ({
                 variant="outline"
                 size="sm"
                 onClick={handleResetFilters}
-                className="rounded-xl text-xs mt-2"
+                className="rounded-lg text-xs mt-2"
               >
                 รีเซ็ตตัวกรองทั้งหมด
               </Button>
             </div>
           ) : viewMode === 'table' ? (
             /* List/Table View */
-            <Card className="overflow-hidden glass border border-border/60 rounded-3xl shadow-sm">
+            <Card className="overflow-hidden bg-card border border-border rounded-xl shadow-xs">
               <Table>
                 <TableHeader className="bg-muted/50 text-xs">
                   <TableRow>
@@ -458,14 +458,14 @@ const WithdrawalPosTerminal = ({
                                 setBreakdownModalItem(item);
                               }
                             }}
-                            className={`px-2.5 py-1 rounded-xl text-[11px] font-extrabold font-mono inline-flex items-center gap-1 cursor-pointer transition-all ${
+                            className={`px-2.5 py-1 rounded-md text-[11px] font-bold font-mono inline-flex items-center gap-1 cursor-pointer transition-all ${
                               isLowStock
                                 ? 'bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30'
                                 : availableStock > 0
                                   ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30'
                                   : hasStockInOtherWarehouse
-                                    ? 'bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-500/30 animate-pulse'
-                                    : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                                    ? 'bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-500/30'
+                                    : 'bg-muted text-muted-foreground border border-border'
                             }`}
                           >
                             {availableStock > 0
@@ -477,7 +477,7 @@ const WithdrawalPosTerminal = ({
                         </TableCell>
                         <TableCell className="text-right">
                           {isInCart ? (
-                            <div className="inline-flex items-center border border-border/60 rounded-xl overflow-hidden bg-background shadow-2xs">
+                            <div className="inline-flex items-center border border-border rounded-lg overflow-hidden bg-background shadow-2xs">
                               <Button
                                 type="button"
                                 variant="ghost"
@@ -514,7 +514,7 @@ const WithdrawalPosTerminal = ({
                                   onAddToCart(item);
                                 }
                               }}
-                              className={`h-8 px-3 rounded-xl text-xs font-bold gap-1 transition-all cursor-pointer ${
+                              className={`h-8 px-3 rounded-lg text-xs font-semibold gap-1 transition-all cursor-pointer ${
                                 isOutOfStock && hasStockInOtherWarehouse
                                   ? 'bg-blue-600 hover:bg-blue-700 text-white'
                                   : completelyEmpty
@@ -552,7 +552,7 @@ const WithdrawalPosTerminal = ({
 
         {/* Compact Pagination Controls */}
         {filteredItems.length > 0 && (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-5 py-3.5 bg-muted/40 rounded-3xl border border-border/60 glass shadow-2xs text-xs text-muted-foreground select-none">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 bg-muted/30 rounded-xl border border-border text-xs text-muted-foreground select-none">
             <div className="flex items-center gap-2">
               <Button
                 type="button"
@@ -564,7 +564,7 @@ const WithdrawalPosTerminal = ({
                   setCurrentPage(p);
                   setPageInput(String(p));
                 }}
-                className="h-8 w-8 rounded-xl border-border/80 text-foreground hover:bg-accent disabled:opacity-30 transition-all cursor-pointer shadow-2xs"
+                className="h-8 w-8 rounded-lg border-border text-foreground hover:bg-accent disabled:opacity-30 transition-all cursor-pointer shadow-2xs"
                 aria-label="Previous Page"
               >
                 <ChevronLeft className="w-4 h-4" />
@@ -580,7 +580,7 @@ const WithdrawalPosTerminal = ({
                   onChange={handlePageInputChange}
                   onBlur={handlePageInputBlur}
                   onKeyDown={(e) => { if (e.key === 'Enter') handlePageInputBlur(); }}
-                  className="h-8 w-12 text-center font-mono text-xs font-bold rounded-xl border border-input bg-background focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all shadow-2xs"
+                  className="h-8 w-12 text-center font-mono text-xs font-bold rounded-lg border border-input bg-background focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all shadow-2xs"
                 />
                 <span>จาก</span>
                 <span className="font-mono font-bold text-foreground">{totalPages}</span>
@@ -596,7 +596,7 @@ const WithdrawalPosTerminal = ({
                   setCurrentPage(p);
                   setPageInput(String(p));
                 }}
-                className="h-8 w-8 rounded-xl border-border/80 text-foreground hover:bg-accent disabled:opacity-30 transition-all cursor-pointer shadow-2xs"
+                className="h-8 w-8 rounded-lg border-border text-foreground hover:bg-accent disabled:opacity-30 transition-all cursor-pointer shadow-2xs"
                 aria-label="Next Page"
               >
                 <ChevronRight className="w-4 h-4" />
@@ -607,7 +607,7 @@ const WithdrawalPosTerminal = ({
               <select
                 value={rowsPerPage}
                 onChange={(e) => setRowsPerPage(Number(e.target.value))}
-                className="h-8 rounded-xl border border-input bg-background px-2.5 text-xs font-bold text-foreground focus:ring-2 focus:ring-indigo-500 cursor-pointer shadow-2xs transition-all"
+                className="h-8 rounded-lg border border-input bg-background px-2.5 text-xs font-bold text-foreground focus:ring-2 focus:ring-indigo-500 cursor-pointer shadow-2xs transition-all"
               >
                 <option value={24}>24 รายการ/หน้า</option>
                 <option value={48}>48 รายการ/หน้า</option>
@@ -623,7 +623,7 @@ const WithdrawalPosTerminal = ({
       </div>
 
       {/* Right: Desktop Sticky Order Summary Cart Panel */}
-      <Card className="hidden lg:flex w-[380px] xl:w-[420px] rounded-3xl glass border border-border/70 shadow-lg p-5 flex-col space-y-4 shrink-0 sticky top-4">
+      <Card className="hidden lg:flex w-[380px] xl:w-[420px] rounded-xl bg-card border border-border shadow-md p-5 flex-col space-y-4 shrink-0 sticky top-4">
         <WithdrawalCartPanel
           cart={cart}
           projects={projects}
@@ -646,10 +646,10 @@ const WithdrawalPosTerminal = ({
           <Button
             type="button"
             onClick={() => setIsMobileCartOpen(true)}
-            className="w-full h-14 rounded-3xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-2xl flex items-center justify-between px-5 gap-2 border border-indigo-400/40 backdrop-blur-md cursor-pointer"
+            className="w-full h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-lg flex items-center justify-between px-4 gap-2 border border-indigo-500 cursor-pointer"
           >
             <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-2xl bg-white/20">
+              <div className="p-2 rounded-lg bg-white/20">
                 <ShoppingCart className="w-5 h-5" />
               </div>
               <div className="text-left">
@@ -657,7 +657,7 @@ const WithdrawalPosTerminal = ({
                 <p className="text-[11px] font-mono opacity-90">{cart.length} รายการ ({totalCartUnits} ชิ้น)</p>
               </div>
             </div>
-            <span className="text-xs font-extrabold bg-white/20 px-3.5 py-1.5 rounded-2xl">
+            <span className="text-xs font-extrabold bg-white/20 px-3 py-1 rounded-lg">
               ดูตะกร้า & ส่งคำขอ →
             </span>
           </Button>
@@ -666,7 +666,7 @@ const WithdrawalPosTerminal = ({
 
       {/* Mobile/Tablet Cart Dialog Sheet */}
       <Dialog open={isMobileCartOpen} onOpenChange={setIsMobileCartOpen}>
-        <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto rounded-3xl glass p-5">
+        <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto rounded-xl bg-card border border-border shadow-xl p-5">
           <WithdrawalCartPanel
             cart={cart}
             projects={projects}

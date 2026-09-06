@@ -33,10 +33,10 @@ const CheckoutHistoryList = ({
   }, [completedOrders, searchQuery]);
 
   return (
-    <Card className="rounded-3xl glass border border-border/80 shadow-md">
+    <Card className="rounded-xl bg-card border border-border shadow-xs">
       <CardHeader className="border-b border-border/40 pb-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <CardTitle className="text-sm font-bold flex items-center gap-2 text-foreground">
-          <div className="p-1.5 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+          <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
             <History className="w-4 h-4" />
           </div>
           <span>ประวัติรายการยืม-คืนที่เสร็จสมบูรณ์แล้ว ({filteredOrders.length} รายการ)</span>
@@ -48,7 +48,7 @@ const CheckoutHistoryList = ({
             placeholder="ค้นหาประวัติ, เลขที่, ผู้ยืม..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-8 h-9 text-xs rounded-xl"
+            className="pl-8 h-9 text-xs rounded-lg"
           />
         </div>
       </CardHeader>
@@ -124,7 +124,7 @@ const CheckoutHistoryList = ({
                       variant="outline"
                       size="sm"
                       onClick={() => onOpenDetailModal(order)}
-                      className="rounded-xl h-9 text-xs gap-1.5 font-bold shadow-2xs cursor-pointer"
+                      className="rounded-lg h-9 text-xs gap-1.5 font-semibold shadow-2xs cursor-pointer"
                     >
                       <Eye className="w-3.5 h-3.5" />
                       <span>ดูเอกสาร / พิมพ์</span>

@@ -1,5 +1,62 @@
 # Changelog
 
+## [v1.4.70] [2026-09-06] Enterprise UI/UX Migration — Operational POS & Stock In (Ticket 06)
+
+- **Stock In Receipt Flow & Forms Modernization:**
+  - `src/pages/StockIn.jsx`:
+    - ปรับปรุงตารางประวัติการรับเข้า (Stock In Receipts Table) จากสไตล์นูนเดิมเป็น Solid Card `rounded-xl bg-card border border-border shadow-xs`
+    - ปรับแต่ง CSV Batch Import Preview Modal และ Manual Entry Dialog ให้เป็น Solid Surface `rounded-xl bg-card border-border shadow-xl`
+    - กำจัดคลาส `neu-pressed` และปรับความสูงปุ่มคำสั่งหลักเป็นมาตรฐาน `h-9 rounded-lg`
+- **Withdrawal Workflows & POS Terminal Modernization:**
+  - `src/pages/Withdrawals.jsx`:
+    - ปรับคอนเทนเนอร์ Navigation Tabs เป็น `rounded-xl bg-card border border-border shadow-xs` พร้อมปุ่มแท็บ `rounded-lg font-semibold`
+  - `src/components/withdrawals/WithdrawalPosTerminal.jsx`:
+    - ปรับแต่ง Project & Location Selector Card, Search Toolbar, Skeleton Loaders, และมุมมอง Grid/Table เป็น Solid Opaque `rounded-xl bg-card border border-border shadow-xs`
+    - ปรับปรุง Desktop Sticky Cart Panel และ Mobile Cart Sheet ให้มีความคมชัดสูง พร้อมปุ่ม Checkout มาตรฐาน `h-10 rounded-lg`
+  - `src/components/withdrawals/WithdrawalItemCard.jsx`:
+    - แปลงการ์ดพัสดุจาก `rounded-2xl glass` เป็น `rounded-xl bg-card border border-border shadow-xs`
+    - ตัดแอนิเมชันกระตุก `group-hover:scale-105` และ `backdrop-blur-md` ออกเพื่อประสิทธิภาพการเรนเดอร์ระดับ Enterprise
+  - `src/components/withdrawals/WithdrawalCartPanel.jsx`:
+    - ปรับปรุงกล่องตะกร้าเบิกจ่าย, รายการแถวพัสดุ, ปุ่มเพิ่ม/ลดจำนวน, และปุ่มยืนยันส่งใบเบิก
+  - `src/components/withdrawals/WithdrawalOrdersList.jsx`:
+    - แปลง KPI Metric Cards สถิติใบเบิกเป็น Solid Card `rounded-xl bg-card border border-border shadow-xs`
+    - ปรับแถบเครื่องมือค้นหา/ตัวกรองสถานะใบเบิก และการ์ดแสดงตารางรายการคำขอเบิก
+  - `src/components/withdrawals/WithdrawalShortageModal.jsx`:
+    - ปรับปรุง Dialog แจ้งพัสดุขาดสต็อกเป็น Solid Card `rounded-xl bg-card border border-border shadow-xl` พร้อมคอนโทรล `h-9 rounded-lg`
+  - `src/components/withdrawals/WithdrawalRejectModal.jsx`:
+    - ปรับปรุง Dialog ปฏิเสธคำขอเบิก พร้อมช่องระบุเหตุผลและปุ่มยืนยัน
+  - `src/components/withdrawals/StockLocationBreakdownModal.jsx`:
+    - ปรับปรุง Modal แสดงยอดสต็อกแยกตามคลังย่อยและโครงการเป็น Solid Layout `rounded-xl`
+  - `src/components/withdrawals/WithdrawalDetailModal.jsx`:
+    - ปรับปรุง Dialog แสดงรายละเอียดใบเบิกและตารางรายการพัสดุ พร้อมปุ่มพิมพ์ PDF / อนุมัติ / ปฏิเสธ
+- **Checkouts & Equipment Loan Modernization:**
+  - `src/pages/Checkouts.jsx`:
+    - ปรับปรุง Header Toolbar, ปุ่มรีเฟรช และปุ่มสร้างรายการยืมใหม่เป็น `h-9 rounded-lg`
+    - ปรับแท็บสลับสถานะเป็น `p-1 bg-muted/50 rounded-lg border border-border` และตัด `active:scale-[0.98]`
+  - `src/components/checkouts/CheckoutActiveList.jsx`:
+    - แปลงการ์ด KPI สถิติอุปกรณ์ที่อยู่ระหว่างการยืม/เกินกำหนดส่งคืนเป็น `rounded-xl bg-card border border-border shadow-xs`
+    - ปรับตารางแสดงรายการยืมที่ยังไม่ส่งคืน พร้อมปุ่มดำเนินการ `h-9 rounded-lg font-semibold`
+  - `src/components/checkouts/CheckoutDetailModal.jsx`:
+    - ปรับปรุง Dialog รายละเอียดการยืม-คืนอุปกรณ์, ตารางพัสดุ และปุ่มพิมพ์ใบคืน/ขยายเวลา
+  - `src/components/checkouts/CheckoutExtendModal.jsx`:
+    - ปรับปรุง Dialog ขยายเวลาส่งคืนอุปกรณ์, ปฏิทินเลือกวันคืนใหม่ และ Quick Extension Pills
+  - `src/components/checkouts/CheckoutReturnModal.jsx`:
+    - ปรับปรุง Dialog รับคืนอุปกรณ์, แถบค้นหา และปุ่มยืนยันการรับคืน
+  - `src/components/checkouts/CheckoutHistoryList.jsx`:
+    - ปรับปรุงการ์ดประวัติการคืนอุปกรณ์ที่เสร็จสิ้นแล้วเป็น Solid Opaque `rounded-xl`
+  - `src/components/checkouts/CheckoutPosTerminal.jsx`:
+    - แปลงการ์ดแบบฟอร์มข้อมูลผู้ยืม (Borrower Info), ตะกร้ายืมพัสดุ และกล่องระบุ Serial Number (Single & Multi-SN Batch) ให้เป็น Solid Surface `rounded-xl bg-card border border-border shadow-xs`
+    - ปรับอินพุตทั้งหมดเป็นขนาดมาตรฐาน `h-9 rounded-lg bg-background border border-input` และปุ่ม Submit `h-10 rounded-lg`
+- **Modified files:**
+  - `src/pages/StockIn.jsx`, `src/pages/Withdrawals.jsx`, `src/pages/Checkouts.jsx`
+  - `src/components/withdrawals/*`, `src/components/checkouts/*`
+  - `package.json`: ขยับเวอร์ชันระบบเป็น `1.4.70`
+  - `README.md`: อัปเดต Version Badge เป็น `v1.4.70`
+  - `wiki/Home.md`, `wiki/_Footer.md`: ปรับเวอร์ชันระบบเป็น `v1.4.70`
+- **Verification:**
+  - `npm run build` ผ่าน 100% (24.13s)
+  - `npm run test:email` ผ่าน 5/5 tests
+
 ## [v1.4.69] [2026-09-06] Enterprise UI/UX Migration — Dashboard & Items Catalog (Ticket 05)
 
 - **Operational Dashboard Modernization:**

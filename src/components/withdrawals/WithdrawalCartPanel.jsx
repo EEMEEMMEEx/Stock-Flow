@@ -78,7 +78,7 @@ const WithdrawalCartPanel = ({
       {/* Cart Header */}
       <div className="flex items-center justify-between border-b border-border/40 pb-3">
         <div className="flex items-center gap-2">
-          <div className="p-2 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+          <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
             <ShoppingCart className="w-5 h-5" />
           </div>
           <div>
@@ -97,7 +97,7 @@ const WithdrawalCartPanel = ({
             variant="ghost"
             size="xs"
             onClick={onClearCart}
-            className="text-[11px] font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-xl px-2.5 h-7 gap-1"
+            className="text-[11px] font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg px-2.5 h-7 gap-1"
           >
             <Trash2 className="w-3.5 h-3.5" />
             <span>ล้างทั้งหมด</span>
@@ -106,7 +106,7 @@ const WithdrawalCartPanel = ({
       </div>
 
       {/* Target Project Validation Notice */}
-      <div className={`p-3 rounded-2xl border transition-all text-xs ${
+      <div className={`p-3 rounded-xl border transition-all text-xs ${
         isValidProject
           ? 'bg-indigo-500/5 border-indigo-500/20 text-indigo-900 dark:text-indigo-200'
           : 'bg-amber-500/10 border-amber-500/30 text-amber-900 dark:text-amber-200 animate-pulse'
@@ -135,7 +135,7 @@ const WithdrawalCartPanel = ({
       {/* Cart Items List Container */}
       <div className="flex-1 overflow-y-auto space-y-2.5 pr-1 max-h-[380px] scrollbar-thin">
         {cart.length === 0 ? (
-          <div className="flex flex-col items-center justify-center p-8 text-center text-muted-foreground/70 space-y-2 border-2 border-dashed border-border/60 rounded-3xl bg-muted/10 my-4">
+          <div className="flex flex-col items-center justify-center p-8 text-center text-muted-foreground/70 space-y-2 border-2 border-dashed border-border/60 rounded-xl bg-muted/10 my-4">
             <ShoppingCart className="w-10 h-10 opacity-30 stroke-1" />
             <p className="text-xs font-bold text-foreground">ยังไม่มีรายการในตะกร้า</p>
             <p className="text-[11px] text-muted-foreground max-w-[220px]">
@@ -151,7 +151,7 @@ const WithdrawalCartPanel = ({
             return (
               <div
                 key={item.id}
-                className="p-3 rounded-2xl bg-card border border-border/60 shadow-2xs space-y-2 transition-all hover:border-indigo-500/30"
+                className="p-3 rounded-xl bg-card border border-border shadow-2xs space-y-2 transition-all hover:border-indigo-500/30"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0 flex-1">
@@ -284,7 +284,7 @@ const WithdrawalCartPanel = ({
             value={purpose}
             onChange={(e) => setPurpose(e.target.value)}
             placeholder="เช่น ใช้สำหรับซ่อมบำรุงสถานีฐาน..."
-            className="h-9 text-xs rounded-xl bg-background border-border/60 focus:ring-2 focus:ring-indigo-500"
+            className="h-9 text-xs rounded-lg bg-background border-border focus:ring-2 focus:ring-indigo-500"
           />
 
           {/* Quick Purpose Tag Pills */}
@@ -317,7 +317,7 @@ const WithdrawalCartPanel = ({
               value={deliveryAddress}
               onChange={(e) => setDeliveryAddress(e.target.value)}
               placeholder="เลือกจากแท็กด้านล่าง หรือพิมพ์สถานที่จัดส่ง / ชื่อผู้รับ..."
-              className="h-9 pr-7 text-xs rounded-xl bg-background border-border/60 focus:ring-2 focus:ring-indigo-500"
+              className="h-9 pr-7 text-xs rounded-lg bg-background border-border focus:ring-2 focus:ring-indigo-500"
             />
             {deliveryAddress && (
               <button
@@ -359,7 +359,7 @@ const WithdrawalCartPanel = ({
         <Button
           type="submit"
           disabled={cart.length === 0 || !isValidProject || isSubmitting}
-          className="w-full h-12 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs shadow-lg shadow-indigo-500/25 flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+          className="w-full h-10 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-xs flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
         >
           {isSubmitting ? (
             <span>กำลังส่งคำขอเบิกจ่าย...</span>

@@ -33,12 +33,12 @@ const StockLocationBreakdownModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[560px] rounded-3xl glass p-6 border border-border/80 shadow-2xl">
+      <DialogContent className="sm:max-w-[560px] rounded-xl bg-card p-6 border border-border shadow-xl">
         <DialogHeader className="space-y-2 border-b border-border/40 pb-4">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 dark:bg-indigo-950/40 border border-indigo-500/20 flex items-center justify-center shrink-0">
+            <div className="w-12 h-12 rounded-lg bg-indigo-500/10 dark:bg-indigo-950/40 border border-indigo-500/20 flex items-center justify-center shrink-0">
               {item.image_url ? (
-                <img src={item.image_url} alt={item.name} className="w-10 h-10 object-contain rounded-xl" />
+                <img src={item.image_url} alt={item.name} className="w-10 h-10 object-contain rounded-md" />
               ) : (
                 <Package className="w-6 h-6 text-indigo-600 dark:text-indigo-400 stroke-[1.75]" />
               )}
@@ -69,7 +69,7 @@ const StockLocationBreakdownModal = ({
           </div>
 
           {itemBalances.length === 0 ? (
-            <div className="py-8 text-center text-muted-foreground text-xs bg-muted/20 rounded-2xl border border-dashed border-border/60">
+            <div className="py-8 text-center text-muted-foreground text-xs bg-muted/20 rounded-xl border border-dashed border-border/60">
               <Package className="w-8 h-8 mx-auto mb-2 opacity-40 stroke-1" />
               ไม่มีสินค้าในคลังใดเลย (ยอดคงเหลือ 0 {item.unit || 'ชิ้น'})
             </div>
@@ -80,7 +80,7 @@ const StockLocationBreakdownModal = ({
                 return (
                   <div
                     key={b.id || b.project_id}
-                    className={`p-3 rounded-2xl border transition-all flex items-center justify-between gap-3 ${
+                    className={`p-3 rounded-xl border transition-all flex items-center justify-between gap-3 ${
                       isCurrentSelected
                         ? 'bg-indigo-500/10 border-indigo-500/40 ring-1 ring-indigo-500/40 shadow-xs'
                         : 'bg-card/50 hover:bg-accent/40 border-border/60'
@@ -123,7 +123,7 @@ const StockLocationBreakdownModal = ({
                             onSelectProject(b.project_id);
                             onClose();
                           }}
-                          className="h-7 px-2.5 rounded-xl text-[11px] font-semibold bg-indigo-600 hover:bg-indigo-700 text-white gap-1 shadow-2xs cursor-pointer"
+                          className="h-7 px-2.5 rounded-lg text-[11px] font-semibold bg-indigo-600 hover:bg-indigo-700 text-white gap-1 shadow-2xs cursor-pointer"
                         >
                           <span>เลือกคลังนี้</span>
                           <ArrowRight className="w-3 h-3" />
@@ -142,7 +142,7 @@ const StockLocationBreakdownModal = ({
             type="button"
             variant="outline"
             onClick={onClose}
-            className="w-full sm:w-auto rounded-xl text-xs h-9"
+            className="w-full sm:w-auto rounded-lg text-xs h-9 px-4 font-semibold"
           >
             ปิดหน้าต่าง
           </Button>

@@ -536,7 +536,7 @@ const StockIn = () => {
             />
             <Button 
               variant="outline"
-              className="h-10 px-3.5 rounded-xl font-semibold text-xs border-emerald-500/30 hover:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 gap-1.5 cursor-pointer shadow-2xs"
+              className="h-9 px-3 rounded-lg font-semibold text-xs border-border hover:bg-muted text-foreground gap-1.5 cursor-pointer shadow-2xs"
               onClick={() => fileInputRef.current?.click()}
             >
               <Upload className="w-4 h-4" />
@@ -544,7 +544,7 @@ const StockIn = () => {
             </Button>
 
             <Button 
-              className="h-10 px-4 rounded-xl font-semibold text-xs bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white shadow-md hover:shadow-lg shadow-emerald-600/20 flex items-center gap-2 transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 shrink-0"
+              className="h-9 px-4 rounded-lg font-semibold text-xs bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs flex items-center gap-2 cursor-pointer shrink-0"
               onClick={handleOpenCreateDialog}
             >
               <Plus className="w-4 h-4 shrink-0" />
@@ -555,7 +555,7 @@ const StockIn = () => {
       </div>
 
       {/* Main Stock Receipts Table */}
-      <Card className="overflow-hidden rounded-3xl glass border border-border/80 shadow-md">
+      <Card className="overflow-hidden rounded-xl bg-card border border-border shadow-xs">
         <Table>
           <TableHeader className="bg-muted/50">
             <TableRow>
@@ -604,11 +604,11 @@ const StockIn = () => {
       {/* 1. INTERACTIVE DOPA+USO CSV IMPORT PREVIEW & WAREHOUSE FILTER MODAL */}
       {/* ========================================================================= */}
       <Dialog open={isImportPreviewOpen} onOpenChange={setIsImportPreviewOpen}>
-        <DialogContent className="max-w-6xl max-h-[92vh] overflow-hidden flex flex-col p-6 rounded-3xl glass shadow-2xl border-white/20 dark:border-slate-800">
+        <DialogContent className="max-w-6xl max-h-[92vh] overflow-hidden flex flex-col p-6 rounded-xl bg-card border border-border shadow-xl">
           <DialogHeader className="pb-3 border-b border-border/40 shrink-0">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                <div className="p-2.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                   <FileSpreadsheet className="w-5 h-5" />
                 </div>
                 <div>
@@ -641,7 +641,7 @@ const StockIn = () => {
 
           <div className="py-4 space-y-4 overflow-y-auto flex-1 pr-1">
             {/* Top Toolbar: Destination Project & Storage Location Selector */}
-            <div className="bg-muted/30 p-3.5 rounded-2xl border border-border/60 space-y-3">
+            <div className="bg-muted/30 p-3.5 rounded-xl border border-border space-y-3">
               <ProjectLocationSelector
                 projects={projects}
                 value={previewProjectId}
@@ -745,7 +745,7 @@ const StockIn = () => {
                   placeholder="ค้นหาชื่อ, Part No, รุ่น ในตารางพรีวิว..."
                   value={previewSearch}
                   onChange={(e) => setPreviewSearch(e.target.value)}
-                  className="pl-8 h-8 text-xs rounded-xl"
+                  className="pl-8 h-8 text-xs rounded-lg"
                 />
               </div>
 
@@ -755,7 +755,7 @@ const StockIn = () => {
             </div>
 
             {/* Preview Items Table */}
-            <div className="border border-border/80 rounded-2xl overflow-hidden shadow-sm max-h-[44vh] overflow-y-auto">
+            <div className="border border-border rounded-xl overflow-hidden shadow-xs max-h-[44vh] overflow-y-auto">
               <Table>
                 <TableHeader className="bg-muted/60 sticky top-0 z-10 backdrop-blur text-xs">
                   <TableRow className="border-b">
@@ -848,7 +848,7 @@ const StockIn = () => {
             <Button 
               type="button" 
               variant="outline" 
-              className="rounded-xl text-xs font-bold cursor-pointer"
+              className="rounded-lg h-9 px-4 text-xs font-semibold cursor-pointer"
               onClick={() => setIsImportPreviewOpen(false)}
             >
               ยกเลิก
@@ -859,7 +859,7 @@ const StockIn = () => {
                 type="button"
                 variant="outline"
                 onClick={handleApplyPreviewToForm}
-                className="rounded-xl h-10 px-4 text-xs font-bold gap-1.5 border-indigo-500/30 text-indigo-600 hover:bg-indigo-500/10 cursor-pointer"
+                className="rounded-lg h-9 px-4 text-xs font-semibold gap-1.5 border-border text-foreground hover:bg-muted cursor-pointer"
               >
                 <span>เปิดแก้ไขในแบบฟอร์ม</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -869,7 +869,7 @@ const StockIn = () => {
                 type="button"
                 disabled={isSubmitting || !previewProjectId || previewItems.length === 0}
                 onClick={handleDirectSubmitFromPreview}
-                className="rounded-xl h-10 px-5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold gap-2 shadow-md cursor-pointer disabled:opacity-50"
+                className="rounded-lg h-9 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold gap-2 shadow-xs cursor-pointer disabled:opacity-50"
               >
                 {isSubmitting ? (
                   <>
@@ -892,7 +892,7 @@ const StockIn = () => {
       {/* 2. DIRECT STOCK RECEIPT EDIT / MANUAL ENTRY MODAL */}
       {/* ========================================================================= */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto p-6 rounded-3xl glass shadow-2xl border-white/20 dark:border-slate-800">
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto p-6 rounded-xl bg-card border border-border shadow-xl">
           <form onSubmit={handleSubmitOrder}>
             <DialogHeader className="border-b border-border/40 pb-3">
               <DialogTitle className="text-xl font-bold flex items-center gap-2">
@@ -903,7 +903,7 @@ const StockIn = () => {
 
             <div className="space-y-6 py-4">
               {/* Destination Project & Storage Location Selection */}
-              <div className="bg-muted/40 p-4 rounded-2xl border neu-pressed space-y-3">
+              <div className="bg-muted/30 p-4 rounded-xl border border-border space-y-3">
                 <ProjectLocationSelector
                   projects={projects}
                   value={formData.project_id}
@@ -959,7 +959,7 @@ const StockIn = () => {
               </div>
 
               {/* CSV Tools Action Bar */}
-              <div className="flex flex-wrap items-center justify-between gap-3 bg-emerald-500/10 p-3.5 rounded-2xl border border-emerald-500/20">
+              <div className="flex flex-wrap items-center justify-between gap-3 bg-emerald-500/10 p-3 rounded-xl border border-emerald-500/20">
                 <div className="flex items-center gap-2 text-sm text-emerald-900 dark:text-emerald-200">
                   <Upload className="w-4 h-4 text-emerald-600" />
                   <span className="font-semibold">นำเข้าไฟล์ CSV โครงสร้าง Parent-Child หรือหลายคลังจัดเก็บ (UTF-8 BOM)</span>
@@ -997,7 +997,7 @@ const StockIn = () => {
                       type="button" 
                       variant="outline" 
                       size="sm"
-                      className="h-8 text-xs gap-1.5 px-3 rounded-xl text-emerald-700 dark:text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/10 font-bold shadow-2xs cursor-pointer"
+                      className="h-8 text-xs gap-1.5 px-3 rounded-lg text-emerald-700 dark:text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/10 font-bold shadow-2xs cursor-pointer"
                       onClick={() => handleAddLineItem('PARENT')}
                     >
                       <Plus className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
@@ -1007,7 +1007,7 @@ const StockIn = () => {
                       type="button" 
                       variant="outline" 
                       size="sm"
-                      className="h-8 text-xs gap-1.5 px-3 rounded-xl text-blue-700 dark:text-blue-300 border-blue-500/30 hover:bg-blue-500/10 font-bold shadow-2xs cursor-pointer"
+                      className="h-8 text-xs gap-1.5 px-3 rounded-lg text-blue-700 dark:text-blue-300 border-blue-500/30 hover:bg-blue-500/10 font-bold shadow-2xs cursor-pointer"
                       onClick={() => {
                         const lastParent = lineItems.slice().reverse().find(i => i.item_type === 'PARENT');
                         handleAddLineItem('CHILD', lastParent?.sku || '');
@@ -1019,7 +1019,7 @@ const StockIn = () => {
                   </div>
                 </div>
 
-                <div className="border border-border/80 rounded-2xl overflow-x-auto shadow-sm max-h-[44vh] overflow-y-auto">
+                <div className="border border-border rounded-xl overflow-x-auto shadow-xs max-h-[44vh] overflow-y-auto">
                   <Table>
                     <TableHeader className="bg-muted/40 sticky top-0 z-10 backdrop-blur">
                       <TableRow className="text-xs">
@@ -1158,7 +1158,7 @@ const StockIn = () => {
               </div>
 
               {/* Receipt Summary Calculation */}
-              <div className="flex items-center justify-between bg-muted/50 p-3 rounded-2xl border text-sm">
+              <div className="flex items-center justify-between bg-muted/30 p-3 rounded-xl border border-border text-sm">
                 <div className="flex gap-6 text-xs sm:text-sm font-medium flex-wrap">
                   <span>รวมรายการ: <strong className="text-foreground font-bold">{totalItemsCount}</strong> รายการ</span>
                   <span>รายการหลัก (PARENT): <strong className="text-green-600 font-bold">{lineItems.filter(i => i.item_type === 'PARENT').length}</strong></span>
@@ -1169,12 +1169,12 @@ const StockIn = () => {
             </div>
 
             <DialogFooter className="gap-2 sm:gap-0 border-t border-border/40 pt-4">
-              <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)} disabled={isSubmitting} className="rounded-xl">
+              <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)} disabled={isSubmitting} className="rounded-lg h-9 px-4 text-xs font-semibold">
                 ยกเลิก
               </Button>
               <Button 
                 type="submit" 
-                className="h-10 px-5 rounded-xl font-semibold text-sm bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white shadow-md shadow-emerald-600/20 flex items-center gap-2 transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed" 
+                className="h-9 px-4 rounded-lg font-semibold text-xs bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed" 
                 disabled={isSubmitting || !formData.project_id || lineItems.some(i => (!i.name && !i.sku))}
               >
                 {isSubmitting ? (
@@ -1198,11 +1198,11 @@ const StockIn = () => {
       {/* 3. ORDER DETAILS DIALOG */}
       {/* ========================================================================= */}
       <Dialog open={!!selectedOrder} onOpenChange={(open) => !open && setSelectedOrder(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col p-6 rounded-3xl glass shadow-2xl border-white/20 dark:border-slate-800">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col p-6 rounded-xl bg-card border border-border shadow-xl">
           <DialogHeader className="pb-3 border-b shrink-0">
             <div className="flex items-center justify-between">
               <DialogTitle className="text-xl font-bold flex items-center gap-2 text-foreground">
-                <div className="p-2 rounded-xl bg-green-500/10 text-green-600 dark:text-green-400">
+                <div className="p-2 rounded-lg bg-green-500/10 text-green-600 dark:text-green-400">
                   <ArrowDownToLine className="w-5 h-5" />
                 </div>
                 <span>รายละเอียดบิลรับเข้าสต็อก (Stock Receipt)</span>
@@ -1215,7 +1215,7 @@ const StockIn = () => {
 
           <div className="py-4 space-y-4 overflow-y-auto flex-1 pr-1">
             {/* Metadata Summary Banner */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs bg-muted/40 p-4 rounded-xl border neu-pressed">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs bg-muted/30 p-4 rounded-xl border border-border">
               <div className="space-y-1">
                 <span className="text-muted-foreground font-medium block">สถานที่จัดเก็บ (Location)</span>
                 <span className="font-bold text-sm text-foreground block">
@@ -1256,7 +1256,7 @@ const StockIn = () => {
             </div>
 
             {/* Scrollable Items Table */}
-            <div className="border border-border/80 rounded-2xl overflow-hidden shadow-sm max-h-[50vh] overflow-y-auto">
+            <div className="border border-border rounded-xl overflow-hidden shadow-xs max-h-[50vh] overflow-y-auto">
               <Table>
                 <TableHeader className="bg-muted/60 sticky top-0 z-10 backdrop-blur text-xs">
                   <TableRow className="border-b">
@@ -1357,7 +1357,7 @@ const StockIn = () => {
             <Button 
               type="button" 
               variant="outline" 
-              className="px-6 rounded-xl font-semibold hover:bg-muted cursor-pointer"
+              className="h-9 px-5 rounded-lg text-xs font-semibold hover:bg-muted cursor-pointer"
               onClick={() => setSelectedOrder(null)}
             >
               ปิด

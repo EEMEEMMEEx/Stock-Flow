@@ -137,11 +137,11 @@ const CheckoutReturnModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[660px] rounded-3xl glass p-6 border border-border/80 shadow-2xl">
+      <DialogContent className="sm:max-w-[660px] rounded-xl bg-card p-6 border border-border shadow-xl">
         <form onSubmit={handleReturnSubmit} className="space-y-4">
           <DialogHeader className="space-y-2 border-b border-border/40 pb-3">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 shrink-0">
+              <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 shrink-0">
                 <RotateCcw className="w-5 h-5" />
               </div>
               <div className="min-w-0 flex-1">
@@ -162,14 +162,14 @@ const CheckoutReturnModal = ({
           </DialogHeader>
 
           {/* Search & Quick Action Toolbar */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 bg-muted/20 p-2.5 rounded-2xl border border-border/40">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 bg-muted/20 p-2.5 rounded-xl border border-border/40">
             <div className="relative w-full sm:w-60">
               <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <Input
                 placeholder="ค้นหาชื่อ, S/N..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-8 h-8 text-xs rounded-xl"
+                className="pl-8 h-8 text-xs rounded-lg"
               />
             </div>
 
@@ -179,7 +179,7 @@ const CheckoutReturnModal = ({
                 variant="outline"
                 size="sm"
                 onClick={handleSelectAll}
-                className="h-8 px-2.5 text-xs font-bold gap-1 rounded-xl"
+                className="h-8 px-2.5 text-xs font-semibold gap-1 rounded-lg"
               >
                 <CheckSquare className="w-3.5 h-3.5 text-emerald-600" />
                 <span>คืนทั้งหมด ({totalRemainingInOrder})</span>
@@ -189,7 +189,7 @@ const CheckoutReturnModal = ({
                 variant="ghost"
                 size="sm"
                 onClick={handleClearAll}
-                className="h-8 px-2.5 text-xs text-muted-foreground hover:text-destructive rounded-xl"
+                className="h-8 px-2.5 text-xs text-muted-foreground hover:text-destructive rounded-lg"
               >
                 เคลียร์
               </Button>
@@ -210,7 +210,7 @@ const CheckoutReturnModal = ({
                 return (
                   <div 
                     key={item.checkout_item_id}
-                    className={`p-3.5 rounded-2xl border transition-all space-y-3 ${
+                    className={`p-3.5 rounded-xl border transition-all space-y-3 ${
                       isReturning 
                         ? 'bg-emerald-500/5 dark:bg-emerald-950/15 border-emerald-500/30' 
                         : 'bg-card/60 border-border/70'
@@ -339,7 +339,7 @@ const CheckoutReturnModal = ({
               type="button"
               variant="outline"
               onClick={onClose}
-              className="rounded-xl h-10 px-4 text-xs font-bold cursor-pointer"
+              className="rounded-lg h-9 px-4 text-xs font-semibold cursor-pointer"
             >
               ยกเลิก
             </Button>
@@ -347,7 +347,7 @@ const CheckoutReturnModal = ({
             <Button
               type="submit"
               disabled={submitting || totalUnitsToReturn === 0}
-              className="rounded-xl h-10 px-5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold gap-1.5 shadow-sm cursor-pointer"
+              className="rounded-lg h-9 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold gap-1.5 shadow-xs cursor-pointer"
             >
               <CheckCircle2 className="w-4 h-4" />
               <span>{submitting ? 'กำลังบันทึก...' : `ยืนยันรับคืน (${totalUnitsToReturn} ชิ้น)`}</span>
