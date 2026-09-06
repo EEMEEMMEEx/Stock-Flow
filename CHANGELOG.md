@@ -1,5 +1,36 @@
 # Changelog
 
+## [v1.4.62] [2026-09-06] แก้ไขข้อผิดพลาด GitHub Actions Deployment และเปิดใช้งาน GitHub Pages ผ่าน Workflow
+- **Modified files:**
+  - `.github/workflows/deploy-gh-pages.yml`:
+    - อัปเกรด Node.js runtime ใน GitHub Actions จาก `node-version: 20` เป็น `node-version: 22` (Active LTS) ปลดคำเตือน Deprecation ออกทั้งหมด
+    - อัปเกรด Action `actions/configure-pages` จาก `v4` เป็น `v5` (เวอร์ชันล่าสุดที่รองรับ API ใหม่)
+  - GitHub Pages Configuration:
+    - เปิดใช้งาน GitHub Pages สำหรับคลังโค้ด `EEMEEMMEEx/Stock-Flow` สำเร็จผ่าน GitHub REST API (`build_type: "workflow"`) แก้ปัญหา `Get Pages site failed (HttpError: Not Found)`
+  - `package.json`: ปรับเวอร์ชันระบบเป็น `1.4.62`
+  - `README.md`: ปรับปรุง Version Badge เป็น `v1.4.62`
+  - `SECURITY.md`: อัปเดตตัวอย่างเวอร์ชันระบบเป็น `v1.4.62`
+- **Verification:**
+  - ตรวจสอบสถานะ GitHub Pages API: `build_type: "workflow"`, `public: true`, `https_enforced: true` สำเร็จ
+  - ทดสอบ `npm ci` ในสภาพแวดล้อมจำลอง GitHub Actions — ผ่าน 100%
+  - ทดสอบ `npm run build` — ผ่าน 100%
+  - ทดสอบ `npm run test:email` — ผ่าน 5/5 tests
+
+## [v1.4.61] [2026-09-06] แก้ไขข้อผิดพลาด GitHub Secret Scanning (Leaked Google API Key) และขจัด Hardcoded Secrets ทั่วทั้งโปรเจกต์
+- **Modified files:**
+  - `src/lib/supabase.js`: ปลด Hardcoded Fallback URL และ Anon JWT Token ออกทั้งหมด กำหนดให้รับค่าผ่าน `import.meta.env.VITE_SUPABASE_URL` และ `import.meta.env.VITE_SUPABASE_ANON_KEY` เท่านั้น พร้อมระบบแจ้งเตือนกรณีขาดคอนฟิก
+  - `src/lib/firebase.js`: [NEW] สร้างโครงสร้าง Firebase Client Configuration แบบ Secure Environment-based ปราศจาก Hardcoded API Keys/Secrets ทุกกรณี รองรับการฉีดผ่าน `import.meta.env.VITE_FIREBASE_*`
+  - `.env.example`: เพิ่มแม่แบบตัวแปรแวดล้อมสำหรับ Firebase Configuration (`VITE_FIREBASE_*`)
+  - `.gitignore`: เพิ่มกฎป้องกันการ Commit ไฟล์ความลับและใบรับรอง (*.pem, *.key, *.cert, *.crt, *.pfx, *.p12, service-account*.json, firebase*.json, google-services*.json, *.credentials.json)
+  - `docs/secret-scanning-investigation-report.md`: [NEW] รายงานการสืบสวนสาเหตุการรั่วไหลของ Google API Key ใน Git History พร้อมคำแนะนำการ Revoke บน GCP และการปิด Alert
+  - `package.json`: ปรับเวอร์ชันระบบเป็น `1.4.61`
+  - `README.md`: ปรับปรุง Version Badge เป็น `v1.4.61`
+  - `SECURITY.md`: อัปเดตตัวอย่างเวอร์ชันระบบเป็น `v1.4.61`
+- **Verification:**
+  - ตรวจสอบ `src/` และ `api/` ยืนยันไม่มี Hardcoded API Keys, JWT Tokens หรือ Secrets ใดๆ หลงเหลืออยู่ในโค้ด
+  - รัน `npm run build` ผ่าน 100%
+  - รัน `npm run test:email` ผ่าน 5/5 tests
+
 ## [v1.4.60] [2026-09-06] แก้ไขช่องโหว่ความปลอดภัย Dependabot (47 Alerts Remediation) และกำจัด Unused Dependencies
 - **Modified files:**
   - `package.json`:
