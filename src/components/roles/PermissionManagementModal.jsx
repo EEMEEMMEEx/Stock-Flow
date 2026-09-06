@@ -122,10 +122,10 @@ const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = []
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto neu-flat border-0">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-card text-card-foreground rounded-xl border border-border shadow-xl">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold flex items-center gap-2 text-purple-600 dark:text-purple-400">
-            <ShieldCheck className="w-6 h-6" />
+          <DialogTitle className="text-xl font-bold flex items-center gap-2 text-foreground">
+            <ShieldCheck className="w-6 h-6 text-primary" />
             กำหนดสิทธิ์การใช้งาน (Permissions Configuration) — {role?.name} ({role?.code})
           </DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
@@ -134,7 +134,7 @@ const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = []
         </DialogHeader>
 
         {/* Status Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-xl neu-pressed-sm bg-white/40 dark:bg-black/20 text-xs">
+        <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-lg bg-muted/30 border border-border/50 text-xs">
           <div className="flex items-center gap-4">
             <span>สิทธิ์ที่เลือกทั้งหมด: <strong className="text-primary text-sm font-bold">{selectedIds.length}</strong> / {catalog.length} รายการ</span>
             {(addedCount > 0 || removedCount > 0) && (
@@ -151,7 +151,7 @@ const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = []
               variant="outline"
               size="sm"
               onClick={() => setSelectedIds(catalog.map(p => p.id))}
-              className="text-xs h-7 px-2.5 neu-button"
+              className="text-xs h-7 px-2.5 rounded-lg"
             >
               เลือกทั้งหมดในระบบ
             </Button>
@@ -160,7 +160,7 @@ const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = []
               variant="outline"
               size="sm"
               onClick={() => setSelectedIds([])}
-              className="text-xs h-7 px-2.5 neu-button"
+              className="text-xs h-7 px-2.5 rounded-lg"
             >
               ล้างทั้งหมด
             </Button>
@@ -177,17 +177,17 @@ const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = []
               const isAllCategorySelected = selectedCategoryCount === categoryItems.length;
 
               return (
-                <div key={categoryName} className="rounded-xl neu-flat-sm border border-white/20 overflow-hidden">
+                <div key={categoryName} className="rounded-lg border border-border bg-card overflow-hidden">
                   {/* Category Header */}
-                  <div className="p-3 bg-black/5 dark:bg-white/5 flex items-center justify-between gap-2">
+                  <div className="p-3 bg-muted/30 border-b border-border/50 flex items-center justify-between gap-2">
                     <button
                       type="button"
                       onClick={() => toggleCategoryCollapse(categoryName)}
-                      className="flex items-center gap-2 font-semibold text-sm hover:text-primary transition-colors"
+                      className="flex items-center gap-2 font-semibold text-sm hover:text-primary transition-colors cursor-pointer"
                     >
                       {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                       <span>{categoryName}</span>
-                      <span className="text-xs font-normal text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                      <span className="text-xs font-normal text-muted-foreground bg-muted px-2 py-0.5 rounded-full font-mono">
                         {selectedCategoryCount} / {categoryItems.length}
                       </span>
                     </button>
@@ -196,7 +196,7 @@ const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = []
                       <button
                         type="button"
                         onClick={() => isAllCategorySelected ? handleClearAllCategory(categoryItems) : handleSelectAllCategory(categoryItems)}
-                        className="text-primary hover:underline font-medium"
+                        className="text-primary hover:underline font-medium cursor-pointer"
                       >
                         {isAllCategorySelected ? 'ยกเลิกทั้งกลุ่ม' : 'เลือกทั้งหมดในกลุ่ม'}
                       </button>
@@ -213,8 +213,8 @@ const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = []
                             key={permission.id}
                             className={`flex items-start gap-3 p-2.5 rounded-lg border cursor-pointer transition-all ${
                               isChecked
-                                ? 'border-primary/50 bg-primary/10 font-medium'
-                                : 'border-transparent neu-pressed-sm hover:bg-black/5'
+                                ? 'border-primary bg-primary/10 font-medium shadow-xs'
+                                : 'border-border/60 bg-background hover:bg-muted/40'
                             }`}
                           >
                             <input
@@ -247,11 +247,18 @@ const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = []
           </div>
 
           <DialogFooter className="pt-3 border-t border-border">
-            <Button type="button" variant="ghost" onClick={onClose}>
+            <Button type="button" variant="ghost" onClick={onClose} className="h-9 px-4 rounded-lg text-xs">
               ยกเลิก
             </Button>
-            <Button type="submit" disabled={loading} className="neu-primary">
-              {loading ? 'กำลังบันทึก...' : `บันทึกการตั้งค่าสิทธิ์ (${selectedIds.length} สิทธิ์)`}
+            <Button type="submit" disabled={loading} className="h-9 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs shadow-xs cursor-pointer">
+              {loading ? (
+                <>
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  <span>กำลังบันทึก...</span>
+                </>
+              ) : (
+                `บันทึกการตั้งค่าสิทธิ์ (${selectedIds.length} สิทธิ์)`
+              )}
             </Button>
           </DialogFooter>
         </form>

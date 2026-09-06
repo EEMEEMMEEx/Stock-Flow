@@ -383,7 +383,7 @@ const Settings = () => {
           variant="outline" 
           onClick={fetchInitialSettings} 
           disabled={loading}
-          className="neu-button flex items-center gap-2 text-xs"
+          className="h-9 rounded-lg font-semibold flex items-center gap-2 text-xs cursor-pointer shadow-xs"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
           รีเฟรชค่าการตั้งค่า
@@ -399,10 +399,10 @@ const Settings = () => {
       )}
 
       {/* SECTION 1: Application & Footer Settings */}
-      <Card className="neu-flat border-0 overflow-hidden">
+      <Card className="rounded-xl bg-card border border-border shadow-xs overflow-hidden">
         <CardHeader 
           onClick={() => toggleSection('app')}
-          className="cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors flex flex-row items-center justify-between py-4"
+          className="cursor-pointer hover:bg-muted/40 transition-colors flex flex-row items-center justify-between py-4"
         >
           <div className="flex items-center gap-2.5">
             <AppWindow className="w-5 h-5 text-primary" />
@@ -426,7 +426,7 @@ const Settings = () => {
                     disabled={!canUpdate}
                     value={appForm.app_name}
                     onChange={(e) => setAppForm(prev => ({ ...prev, app_name: e.target.value }))}
-                    className="mt-1 neu-pressed bg-transparent text-sm"
+                    className="mt-1 h-9 text-xs rounded-lg bg-background border border-input"
                   />
                 </div>
 
@@ -438,7 +438,7 @@ const Settings = () => {
                     placeholder="เช่น Forth Co., Ltd. (ระบุหรือไม่ก็ได้)"
                     value={appForm.company_name}
                     onChange={(e) => setAppForm(prev => ({ ...prev, company_name: e.target.value }))}
-                    className="mt-1 neu-pressed bg-transparent text-sm"
+                    className="mt-1 h-9 text-xs rounded-lg bg-background border border-input"
                   />
                 </div>
               </div>
@@ -450,7 +450,7 @@ const Settings = () => {
                   disabled={!canUpdate}
                   value={appForm.app_subtitle}
                   onChange={(e) => setAppForm(prev => ({ ...prev, app_subtitle: e.target.value }))}
-                  className="mt-1 neu-pressed bg-transparent text-xs"
+                  className="mt-1 h-9 text-xs rounded-lg bg-background border border-input"
                 />
               </div>
 
@@ -461,7 +461,7 @@ const Settings = () => {
                   <Input
                     disabled
                     value={`v${APP_CONFIG.version}`}
-                    className="mt-1 neu-pressed bg-muted/40 text-muted-foreground font-mono text-xs cursor-not-allowed"
+                    className="mt-1 h-9 text-xs rounded-lg bg-muted/40 text-muted-foreground font-mono cursor-not-allowed border border-input"
                   />
                 </div>
 
@@ -470,13 +470,13 @@ const Settings = () => {
                   <Input
                     disabled
                     value={import.meta.env.MODE || 'production'}
-                    className="mt-1 neu-pressed bg-muted/40 text-muted-foreground font-mono text-xs uppercase cursor-not-allowed"
+                    className="mt-1 h-9 text-xs rounded-lg bg-muted/40 text-muted-foreground font-mono uppercase cursor-not-allowed border border-input"
                   />
                 </div>
               </div>
 
               {/* Live Preview Box */}
-              <div className="p-3.5 rounded-xl neu-pressed-sm bg-white/40 dark:bg-black/20 space-y-1.5">
+              <div className="p-3.5 rounded-lg bg-muted/30 border border-border/50 space-y-1.5">
                 <div className="flex items-center gap-1.5 text-xs font-semibold text-primary">
                   <Sparkles className="w-3.5 h-3.5" />
                   <span>ตัวอย่างการแสดงผลส่วนท้ายกระดาษจริง (Live Footer Preview):</span>
@@ -500,7 +500,7 @@ const Settings = () => {
 
               {canUpdate && (
                 <div className="flex justify-end pt-2">
-                  <Button type="submit" disabled={savingCategory === 'app'} className="neu-primary flex items-center gap-2 text-xs font-semibold">
+                  <Button type="submit" disabled={savingCategory === 'app'} className="h-9 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground flex items-center gap-2 text-xs font-semibold cursor-pointer shadow-xs">
                     <Save className="w-3.5 h-3.5" />
                     {savingCategory === 'app' ? 'กำลังบันทึก...' : 'บันทึกข้อมูลแอปและ Footer'}
                   </Button>
@@ -512,10 +512,10 @@ const Settings = () => {
       </Card>
 
       {/* SECTION 2: Inventory & Withdrawal Rules */}
-      <Card className="neu-flat border-0 overflow-hidden">
+      <Card className="rounded-xl bg-card border border-border shadow-xs overflow-hidden">
         <CardHeader 
           onClick={() => toggleSection('inventory')}
-          className="cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors flex flex-row items-center justify-between py-4"
+          className="cursor-pointer hover:bg-muted/40 transition-colors flex flex-row items-center justify-between py-4"
         >
           <div className="flex items-center gap-2.5">
             <Package className="w-5 h-5 text-amber-600" />
@@ -551,7 +551,7 @@ const Settings = () => {
                     disabled={!canUpdate}
                     value={inventoryForm.low_stock_threshold}
                     onChange={(e) => setInventoryForm(prev => ({ ...prev, low_stock_threshold: e.target.value }))}
-                    className="mt-1 neu-pressed bg-transparent text-sm"
+                    className="mt-1 h-9 text-xs rounded-lg bg-background border border-input"
                   />
                   <p className="text-[11px] text-muted-foreground mt-1">
                     * เมื่อจำนวนวัสดุเหลือต่ำกว่าเกณฑ์นี้ ระบบจะขึ้นป้ายเตือน &quot;สินค้าใกล้หมด&quot; ในหน้าคลัง
@@ -603,7 +603,7 @@ const Settings = () => {
                       />
                       <span>อนุญาตให้แก้ไขยอดสต็อกคงเหลือปัจจุบันในหน้า Master Items (Enable Current Stock Editing)</span>
                     </label>
-                    <div className="pl-6.5 text-[11px] text-amber-800 dark:text-amber-300 bg-amber-500/10 border border-amber-500/20 p-2 rounded-xl">
+                    <div className="pl-6.5 text-[11px] text-amber-800 dark:text-amber-300 bg-amber-500/10 border border-amber-500/20 p-2 rounded-lg">
                       <strong>คำแนะนำ/Warning:</strong> “Adjust the current stock before enabling Current Stock Editing.” (ปรับยอดสต็อกปัจจุบันก่อนเปิดใช้งานการแก้ไขสต็อกโดยตรง)
                     </div>
                   </div>
@@ -612,7 +612,7 @@ const Settings = () => {
 
               {canUpdate && (
                 <div className="flex justify-end pt-2">
-                  <Button type="submit" disabled={savingCategory === 'inventory'} className="neu-primary flex items-center gap-2 text-xs font-semibold">
+                  <Button type="submit" disabled={savingCategory === 'inventory'} className="h-9 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground flex items-center gap-2 text-xs font-semibold cursor-pointer shadow-xs">
                     <Save className="w-3.5 h-3.5" />
                     {savingCategory === 'inventory' ? 'กำลังบันทึก...' : 'บันทึกกฎการเบิกและสต็อก'}
                   </Button>
@@ -624,10 +624,10 @@ const Settings = () => {
       </Card>
 
       {/* SECTION 3: Notification & Email Settings */}
-      <Card className="neu-flat border-0 overflow-hidden">
+      <Card className="rounded-xl bg-card border border-border shadow-xs overflow-hidden">
         <CardHeader 
           onClick={() => toggleSection('notification')}
-          className="cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors flex flex-row items-center justify-between py-4"
+          className="cursor-pointer hover:bg-muted/40 transition-colors flex flex-row items-center justify-between py-4"
         >
           <div className="flex items-center gap-2.5">
             <Mail className="w-5 h-5 text-blue-600" />
@@ -651,7 +651,7 @@ const Settings = () => {
                     variant="outline"
                     size="sm"
                     onClick={() => setIsTestEmailOpen(true)}
-                    className="neu-button text-xs h-7 px-2.5 flex items-center gap-1 text-blue-600"
+                    className="h-8 px-2.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 text-blue-600 border-border hover:bg-accent cursor-pointer shadow-xs"
                   >
                     <Send className="w-3 h-3" />
                     ทดสอบส่งอีเมล (Test Email)
@@ -667,7 +667,7 @@ const Settings = () => {
                       placeholder="smtp.gmail.com"
                       value={smtpForm.host ?? ''}
                       onChange={(e) => setSmtpForm(prev => ({ ...prev, host: e.target.value }))}
-                      className="mt-1 neu-pressed bg-transparent text-xs"
+                      className="mt-1 h-9 text-xs rounded-lg bg-background border border-input"
                     />
                   </div>
 
@@ -688,7 +688,7 @@ const Settings = () => {
                           secure: numVal === 465 ? true : (numVal === 587 || numVal === 25 ? false : prev.secure)
                         }));
                       }}
-                      className="mt-1 neu-pressed bg-transparent text-xs"
+                      className="mt-1 h-9 text-xs rounded-lg bg-background border border-input"
                     />
                   </div>
 
@@ -701,7 +701,7 @@ const Settings = () => {
                       placeholder="user@example.com"
                       value={smtpForm.user ?? ''}
                       onChange={(e) => setSmtpForm(prev => ({ ...prev, user: e.target.value }))}
-                      className="mt-1 neu-pressed bg-transparent text-xs"
+                      className="mt-1 h-9 text-xs rounded-lg bg-background border border-input"
                     />
                   </div>
                 </div>
@@ -716,7 +716,7 @@ const Settings = () => {
                       placeholder="noreply@stockflow.com"
                       value={smtpForm.sender_email ?? ''}
                       onChange={(e) => setSmtpForm(prev => ({ ...prev, sender_email: e.target.value }))}
-                      className="mt-1 neu-pressed bg-transparent text-xs"
+                      className="mt-1 h-9 text-xs rounded-lg bg-background border border-input"
                     />
                   </div>
 
@@ -728,7 +728,7 @@ const Settings = () => {
                       disabled={!canUpdate}
                       value={smtpForm.sender_name ?? ''}
                       onChange={(e) => setSmtpForm(prev => ({ ...prev, sender_name: e.target.value }))}
-                      className="mt-1 neu-pressed bg-transparent text-xs"
+                      className="mt-1 h-9 text-xs rounded-lg bg-background border border-input"
                     />
                   </div>
 
@@ -744,13 +744,13 @@ const Settings = () => {
                       placeholder={smtpForm.password_set ? '•••••••• (ระบุใหม่เมื่อต้องการเปลี่ยน)' : 'ระบุรหัสผ่าน SMTP'}
                       value={smtpForm.new_password ?? ''}
                       onChange={(e) => setSmtpForm(prev => ({ ...prev, new_password: e.target.value }))}
-                      className="mt-1 neu-pressed bg-transparent text-xs"
+                      className="mt-1 h-9 text-xs rounded-lg bg-background border border-input"
                     />
                   </div>
                 </div>
 
                 {/* Security Protocol & Certificate Verification Section */}
-                <div className="p-3.5 rounded-xl neu-pressed bg-white/40 dark:bg-black/20 space-y-3">
+                <div className="p-3.5 rounded-lg bg-muted/30 border border-border/50 space-y-3">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="smtp_secure" className="text-[11px] font-semibold flex items-center gap-1.5 text-foreground">
@@ -762,7 +762,7 @@ const Settings = () => {
                         disabled={!canUpdate}
                         value={smtpForm.secure ? 'true' : 'false'}
                         onChange={(e) => setSmtpForm(prev => ({ ...prev, secure: e.target.value === 'true' }))}
-                        className="mt-1.5 w-full rounded-md border border-input bg-background/80 px-3 py-1.5 text-xs shadow-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                        className="mt-1.5 w-full rounded-lg border border-input bg-background px-3 py-1.5 text-xs shadow-xs focus:outline-none focus:ring-1 focus:ring-primary"
                       >
                         <option value="true">SSL/TLS แบบเข้ารหัสทันที (Port 465 — Implicit TLS)</option>
                         <option value="false">STARTTLS (Port 587 / 25 — อัปเกรดความปลอดภัยก่อนส่ง)</option>
@@ -852,7 +852,7 @@ const Settings = () => {
 
               {canUpdate && (
                 <div className="flex justify-end pt-2">
-                  <Button type="submit" disabled={savingCategory === 'notification'} className="neu-primary flex items-center gap-2 text-xs font-semibold">
+                  <Button type="submit" disabled={savingCategory === 'notification'} className="h-9 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground flex items-center gap-2 text-xs font-semibold cursor-pointer shadow-xs">
                     <Save className="w-3.5 h-3.5" />
                     {savingCategory === 'notification' ? 'กำลังบันทึก...' : 'บันทึกเซิร์ฟเวอร์ SMTP'}
                   </Button>
@@ -895,10 +895,10 @@ const Settings = () => {
 
 
       {/* SECTION 4: User & Security Policy */}
-      <Card className="neu-flat border-0 overflow-hidden">
+      <Card className="rounded-xl bg-card border border-border shadow-xs overflow-hidden">
         <CardHeader 
           onClick={() => toggleSection('security')}
-          className="cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors flex flex-row items-center justify-between py-4"
+          className="cursor-pointer hover:bg-muted/40 transition-colors flex flex-row items-center justify-between py-4"
         >
           <div className="flex items-center gap-2.5">
             <ShieldCheck className="w-5 h-5 text-purple-600" />
@@ -916,7 +916,7 @@ const Settings = () => {
             <DefaultPasswordManager canUpdate={canUpdate} />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-              <div className="p-3.5 rounded-xl neu-pressed-sm space-y-2 bg-white/40 dark:bg-black/20">
+              <div className="p-3.5 rounded-lg bg-muted/30 border border-border/50 space-y-2">
                 <span className="font-bold text-foreground block text-sm">นโยบายรหัสผ่านผู้ใช้งาน (Password Policy)</span>
                 <ul className="list-disc list-inside text-muted-foreground space-y-1">
                   <li>รหัสผ่านต้องมีความยาวอย่างน้อย 12 ตัวอักษร พิมพ์ใหญ่, พิมพ์เล็ก, ตัวเลข, อักขระพิเศษ</li>
@@ -925,7 +925,7 @@ const Settings = () => {
                 </ul>
               </div>
 
-              <div className="p-3.5 rounded-xl neu-pressed-sm space-y-2 bg-white/40 dark:bg-black/20">
+              <div className="p-3.5 rounded-lg bg-muted/30 border border-border/50 space-y-2">
                 <span className="font-bold text-foreground block text-sm">การคุ้มครองบัญชีผู้ใช้และการลบข้อมูล (User Account Lifecycle)</span>
                 <ul className="list-disc list-inside text-muted-foreground space-y-1">
                   <li><strong className="text-foreground font-semibold">แนะนำใช้วิธี Inactive:</strong> บัญชีที่มีประวัติเบิกจ่ายควรใช้วิธีเปลี่ยนสถานะเป็น Inactive แทนการลบ</li>
@@ -939,10 +939,10 @@ const Settings = () => {
       </Card>
 
       {/* SECTION 5: Storage Status */}
-      <Card className="neu-flat border-0 overflow-hidden">
+      <Card className="rounded-xl bg-card border border-border shadow-xs overflow-hidden">
         <CardHeader 
           onClick={() => toggleSection('storage')}
-          className="cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors flex flex-row items-center justify-between py-4"
+          className="cursor-pointer hover:bg-muted/40 transition-colors flex flex-row items-center justify-between py-4"
         >
           <div className="flex items-center gap-2.5">
             <Database className="w-5 h-5 text-cyan-600" />
@@ -957,17 +957,17 @@ const Settings = () => {
         {openSections.storage && (
           <CardContent className="pt-2 pb-6 border-t border-border/40 text-xs">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div className="p-3 rounded-xl neu-pressed-sm space-y-1">
+              <div className="p-3 rounded-lg bg-muted/30 border border-border/50 space-y-1">
                 <span className="text-muted-foreground text-[11px] block">Provider</span>
                 <span className="font-bold text-sm text-foreground">Cloudflare R2 (S3 API)</span>
               </div>
 
-              <div className="p-3 rounded-xl neu-pressed-sm space-y-1">
+              <div className="p-3 rounded-lg bg-muted/30 border border-border/50 space-y-1">
                 <span className="text-muted-foreground text-[11px] block">Bucket ชื่อ</span>
                 <span className="font-bold text-sm text-primary font-mono">stockflow-assets</span>
               </div>
 
-              <div className="p-3 rounded-xl neu-pressed-sm space-y-1">
+              <div className="p-3 rounded-lg bg-muted/30 border border-border/50 space-y-1">
                 <span className="text-muted-foreground text-[11px] block">ขนาดไฟล์สูงสุด</span>
                 <span className="font-bold text-sm text-emerald-600 dark:text-emerald-400">5 MB (JPG / PNG / WebP)</span>
               </div>
@@ -977,10 +977,10 @@ const Settings = () => {
       </Card>
 
       {/* SECTION 6: System Information */}
-      <Card className="neu-flat border-0 overflow-hidden">
+      <Card className="rounded-xl bg-card border border-border shadow-xs overflow-hidden">
         <CardHeader 
           onClick={() => toggleSection('system')}
-          className="cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors flex flex-row items-center justify-between py-4"
+          className="cursor-pointer hover:bg-muted/40 transition-colors flex flex-row items-center justify-between py-4"
         >
           <div className="flex items-center gap-2.5">
             <Server className="w-5 h-5 text-slate-600 dark:text-slate-300" />
@@ -996,32 +996,32 @@ const Settings = () => {
         {openSections.system && (
           <CardContent className="pt-2 pb-6 border-t border-border/40 text-xs space-y-4">
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 text-center">
-              <div className="p-3 rounded-xl neu-pressed-sm">
+              <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
                 <span className="text-[10px] text-muted-foreground block">เวอร์ชัน</span>
                 <span className="font-mono font-bold text-xs text-primary">v{APP_CONFIG.version}</span>
               </div>
 
-              <div className="p-3 rounded-xl neu-pressed-sm">
+              <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
                 <span className="text-[10px] text-muted-foreground block">สภาพแวดล้อม</span>
                 <span className="font-mono font-bold text-xs uppercase">{import.meta.env.MODE || 'production'}</span>
               </div>
 
-              <div className="p-3 rounded-xl neu-pressed-sm">
+              <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
                 <span className="text-[10px] text-muted-foreground block">ฐานข้อมูล</span>
                 <span className="font-bold text-xs text-emerald-600 dark:text-emerald-400">Connected</span>
               </div>
 
-              <div className="p-3 rounded-xl neu-pressed-sm">
+              <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
                 <span className="text-[10px] text-muted-foreground block">จำนวนโครงการ</span>
                 <span className="font-bold text-xs text-foreground">{systemStats.projects} โครงการ</span>
               </div>
 
-              <div className="p-3 rounded-xl neu-pressed-sm">
+              <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
                 <span className="text-[10px] text-muted-foreground block">จำนวนผู้ใช้</span>
                 <span className="font-bold text-xs text-foreground">{systemStats.users} บัญชี</span>
               </div>
 
-              <div className="p-3 rounded-xl neu-pressed-sm">
+              <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
                 <span className="text-[10px] text-muted-foreground block">จำนวนบทบาท</span>
                 <span className="font-bold text-xs text-purple-600 dark:text-purple-400">{systemStats.roles} บทบาท</span>
               </div>
@@ -1032,7 +1032,7 @@ const Settings = () => {
 
       {/* Test Email Modal */}
       <Dialog open={isTestEmailOpen} onOpenChange={setIsTestEmailOpen}>
-        <DialogContent className="max-w-md neu-flat border-0">
+        <DialogContent className="max-w-md bg-card text-card-foreground rounded-xl border border-border shadow-xl">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold flex items-center gap-2 text-blue-600">
               <Send className="w-5 h-5" />
@@ -1053,19 +1053,19 @@ const Settings = () => {
                 placeholder="target@company.com"
                 value={testEmailRecipient}
                 onChange={(e) => setTestEmailRecipient(e.target.value)}
-                className="mt-1 neu-pressed bg-transparent text-sm"
+                className="mt-1 h-9 text-xs rounded-lg bg-background border border-input"
               />
             </div>
           </div>
 
           <DialogFooter>
-            <Button variant="ghost" size="sm" onClick={() => setIsTestEmailOpen(false)}>
+            <Button variant="ghost" size="sm" onClick={() => setIsTestEmailOpen(false)} className="h-9 px-3 rounded-lg text-xs cursor-pointer">
               ยกเลิก
             </Button>
             <Button 
               disabled={sendingTestEmail || !testEmailRecipient} 
               onClick={handleSendTestEmail}
-              className="neu-primary text-xs font-semibold"
+              className="h-9 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold cursor-pointer shadow-xs"
             >
               {sendingTestEmail ? 'กำลังส่ง...' : 'ส่งอีเมลทดสอบ'}
             </Button>

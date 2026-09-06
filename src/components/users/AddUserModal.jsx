@@ -118,7 +118,7 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) { resetForm(); onClose(); } }}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto neu-flat border-0">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card text-card-foreground rounded-xl border border-border shadow-xl">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold flex items-center gap-2">
             <User className="w-5 h-5 text-primary" />
@@ -169,7 +169,7 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
                     placeholder="เช่น สมชาย ใจดี"
                     value={formData.full_name}
                     onChange={(e) => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
-                    className="mt-1 neu-pressed bg-transparent"
+                    className="mt-1 h-9 text-xs rounded-lg bg-background border border-input focus-visible:ring-1 focus-visible:ring-primary"
                   />
                 </div>
 
@@ -182,17 +182,17 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
                     placeholder="example@company.com"
                     value={formData.email}
                     onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                    className="mt-1 neu-pressed bg-transparent"
+                    className="mt-1 h-9 text-xs rounded-lg bg-background border border-input focus-visible:ring-1 focus-visible:ring-primary"
                   />
                 </div>
               </div>
 
               {/* Automatic Default Password Info Notice */}
-              <div className="p-3.5 rounded-xl border border-purple-500/30 bg-purple-500/10 text-purple-900 dark:text-purple-200 text-xs flex items-start gap-2.5">
-                <Shield className="w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0 mt-0.5" />
+              <div className="p-3.5 rounded-lg border border-primary/20 bg-primary/5 text-foreground text-xs flex items-start gap-2.5">
+                <Shield className="w-4 h-4 text-primary shrink-0 mt-0.5" />
                 <div>
                   <strong className="font-semibold block text-sm mb-0.5">รหัสผ่านเริ่มต้นอัตโนมัติ (Default Temporary Password)</strong>
-                  ระบบจะกำหนดรหัสผ่านชั่วคราวเริ่มต้นเป็น <code className="font-mono font-bold px-1.5 py-0.5 rounded bg-purple-200/50 dark:bg-purple-900/50 text-purple-950 dark:text-purple-100">F0rth2026@dtrs</code> ให้อัตโนมัติ โดยผู้ใช้จะต้องเปลี่ยนรหัสผ่านด้วยตนเองเมื่อเข้าสู่ระบบครั้งแรก (First-Time Login — Password Change Required)
+                  ระบบจะกำหนดรหัสผ่านชั่วคราวเริ่มต้นเป็น <code className="font-mono font-bold px-1.5 py-0.5 rounded bg-muted text-foreground border border-border">F0rth2026@dtrs</code> ให้อัตโนมัติ โดยผู้ใช้จะต้องเปลี่ยนรหัสผ่านด้วยตนเองเมื่อเข้าสู่ระบบครั้งแรก (First-Time Login — Password Change Required)
                 </div>
               </div>
 
@@ -205,7 +205,7 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
                     placeholder="081-234-5678"
                     value={formData.phone}
                     onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                    className="mt-1 neu-pressed bg-transparent"
+                    className="mt-1 h-9 text-xs rounded-lg bg-background border border-input focus-visible:ring-1 focus-visible:ring-primary"
                   />
                 </div>
 
@@ -216,14 +216,14 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
                     placeholder="เช่น Site Engineer / Store Keeper"
                     value={formData.position}
                     onChange={(e) => setFormData(prev => ({ ...prev, position: e.target.value }))}
-                    className="mt-1 neu-pressed bg-transparent"
+                    className="mt-1 h-9 text-xs rounded-lg bg-background border border-input focus-visible:ring-1 focus-visible:ring-primary"
                   />
                 </div>
               </div>
 
               <div>
                 <Label className="text-sm font-medium mb-1.5 block">รูปโปรไฟล์ (Profile Avatar)</Label>
-                <div className="mb-4 p-3 rounded-xl border border-primary/30 bg-primary/5"><label className="flex items-start gap-3 cursor-pointer"><input type="checkbox" checked={formData.send_invitation} onChange={(e) => setFormData(prev => ({ ...prev, send_invitation: e.target.checked }))} className="mt-1 rounded text-primary" /><span className="text-sm">ส่งอีเมลเชิญและแจ้งเตือนเปิดใช้งานบัญชี<span className="block text-xs text-muted-foreground mt-1">ส่งอีเมลแจ้งข้อมูลบัญชีผู้ใช้งานพร้อมลิงก์เข้าสู่ระบบครั้งแรก</span></span></label></div>
+                <div className="mb-4 p-3 rounded-lg border border-border bg-muted/30"><label className="flex items-start gap-3 cursor-pointer"><input type="checkbox" checked={formData.send_invitation} onChange={(e) => setFormData(prev => ({ ...prev, send_invitation: e.target.checked }))} className="mt-1 rounded text-primary" /><span className="text-sm">ส่งอีเมลเชิญและแจ้งเตือนเปิดใช้งานบัญชี<span className="block text-xs text-muted-foreground mt-1">ส่งอีเมลแจ้งข้อมูลบัญชีผู้ใช้งานพร้อมลิงก์เข้าสู่ระบบครั้งแรก</span></span></label></div>
                 <AvatarUpload
                   value={formData.avatar_url}
                   name={formData.full_name}
@@ -248,10 +248,10 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
                       <div
                         key={r.id || r.code}
                         onClick={() => setFormData(prev => ({ ...prev, role: roleCode }))}
-                        className={`p-3 rounded-xl border cursor-pointer transition-all ${
+                        className={`p-3 rounded-lg border cursor-pointer transition-all ${
                           isSelected
-                            ? 'border-primary bg-primary/10 neu-pressed'
-                            : 'border-border neu-flat-sm hover:bg-black/5'
+                            ? 'border-primary bg-primary/10 shadow-xs'
+                            : 'border-border bg-card hover:bg-muted/50'
                         }`}
                       >
                         <div className="flex items-center justify-between mb-1">
@@ -309,7 +309,7 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
               <div>
                 <Label className="text-sm font-medium mb-2 block">สิทธิ์การเข้าถึงโครงการ (Project Access) *</Label>
                 <div className="space-y-3">
-                  <label className="flex items-center gap-2 text-sm cursor-pointer p-2.5 rounded-lg neu-pressed-sm">
+                  <label className={`flex items-center gap-2 text-sm cursor-pointer p-2.5 rounded-lg border transition-colors ${formData.access_type === 'all' ? 'border-primary bg-primary/5' : 'border-border bg-card hover:bg-muted/30'}`}>
                     <input
                       type="radio"
                       name="access_type"
@@ -324,7 +324,7 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
                     </div>
                   </label>
 
-                  <label className="flex items-center gap-2 text-sm cursor-pointer p-2.5 rounded-lg neu-pressed-sm">
+                  <label className={`flex items-center gap-2 text-sm cursor-pointer p-2.5 rounded-lg border transition-colors ${formData.access_type === 'selected' ? 'border-primary bg-primary/5' : 'border-border bg-card hover:bg-muted/30'}`}>
                     <input
                       type="radio"
                       name="access_type"
@@ -342,12 +342,12 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
 
                 {/* Selected Projects List */}
                 {formData.access_type === 'selected' && (
-                  <div className="mt-3 p-3 rounded-xl bg-white/50 dark:bg-slate-900/50 border border-border space-y-2">
+                  <div className="mt-3 p-3 rounded-lg bg-muted/30 border border-border space-y-2">
                     <Input
                       placeholder="ค้นหาชื่อหรือรหัสโครงการ..."
                       value={projectSearch}
                       onChange={(e) => setProjectSearch(e.target.value)}
-                      className="text-xs neu-pressed bg-transparent h-8"
+                      className="text-xs bg-background border border-input h-8 rounded-lg"
                     />
 
                     <div className="max-h-40 overflow-y-auto space-y-1.5 pr-1">
@@ -360,7 +360,7 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
                             <label
                               key={p.id}
                               className={`flex items-center justify-between p-2 rounded-lg text-xs cursor-pointer transition-colors ${
-                                isChecked ? 'bg-primary/10 font-semibold' : 'hover:bg-black/5'
+                                isChecked ? 'bg-primary/10 font-semibold' : 'hover:bg-muted/50'
                               }`}
                             >
                               <div className="flex items-center gap-2">
@@ -372,7 +372,7 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
                                 />
                                 <span>{p.name}</span>
                               </div>
-                              <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                              <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded font-mono">
                                 {p.project_code || 'N/A'}
                               </span>
                             </label>
@@ -407,7 +407,7 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
               <Button 
                 type="submit" 
                 disabled={loading} 
-                className="neu-primary h-10 px-5 rounded-xl font-semibold text-sm flex items-center gap-2 transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="h-9 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs shadow-xs flex items-center gap-2 transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <>

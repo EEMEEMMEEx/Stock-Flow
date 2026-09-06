@@ -4,9 +4,9 @@
 
 **Blocked by:** 05: Operational Workflows — Dashboard & Items Inventory catalog, 06: Operational Workflows — Stock In, Withdrawals & Checkouts POS Terminals, 07: Administration & Account — Settings, RBAC Roles, Users, Profile & Manual
 
-**Status:** ready-for-agent
+**Status:** closed
 
-- [ ] Automated grep search confirms 0 occurrences of `neu-*` in application code
-- [ ] Automated grep search confirms 0 occurrences of `glass` in application code
-- [ ] Transitional compatibility shims removed from `src/App.css`
-- [ ] Application compiles cleanly without missing class warnings or broken layouts
+- [x] Automated grep search confirms 0 occurrences of `neu-*` in application code
+- [x] Automated grep search confirms 0 occurrences of `glass` in application code
+- [x] Transitional compatibility shims removed from `src/App.css`
+- [x] Application compiles cleanly without missing class warnings or broken layouts

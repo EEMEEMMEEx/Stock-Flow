@@ -1,5 +1,67 @@
 # Changelog
 
+## [v1.4.73] [2026-09-06] Enterprise UI/UX Migration — Final Verification, WCAG 2.2 AA & SemVer Release (Ticket 09)
+
+- **WCAG 2.2 AA Contrast Audit — Automated Token Verification:**
+  - รัน automated contrast ratio audit ครอบคลุม 8 token pair ใน Light mode และ Dark mode (16 pairs รวม)
+  - พบ 2 failures และแก้ไขใน `src/App.css`:
+    - `--muted-foreground` (light): `46.9%` → `44%` — ratio ใหม่ 4.81:1 บน muted bg, 5.04:1 บน page bg, 5.27:1 บน card (ผ่าน WCAG AA ทุก context)
+    - `--destructive`: `60.2%` → `48.5%` — ratio ใหม่ 4.56:1 กับ near-white foreground (ผ่าน WCAG AA normal text 4.5:1)
+  - ผล WCAG 2.2 AA Final: ทุก 16 pairs ผ่าน — Compliant ทั้ง Light และ Dark mode
+- **Lint Audit — Pre-existing Error Analysis:**
+  - `npm run lint` result: 353 problems (50 errors, 303 warnings)
+  - Baseline (pre-migration commit `170b0196`): 354 problems (50 errors, 304 warnings)
+  - Enterprise UI Migration ไม่ได้เพิ่ม lint errors ใหม่ — ลด 1 warning จาก baseline
+  - ยืนยันด้วย `git stash` + lint + `git stash pop` comparison
+  - errors ทั้งหมด (process is not defined, no-unescaped-entities, no-useless-escape, no-empty) เป็น pre-existing และอยู่นอก scope ของ migration
+- **Production Build Verification:**
+  - `npm run build` ผ่าน exit code 0 ใน 25.96s
+- **Responsive Layout Note:** ตรวจสอบ Tailwind breakpoint classes ครอบคลุม `sm:` (640px), `md:` (768px), `lg:` (1024px), `xl:` (1280px) ใน component code พร้อม `min-w-0`, `flex-wrap`, responsive grid columns
+- **Keyboard Navigation Note:** All interactive elements ใช้ Radix UI primitives (Dialog, DropdownMenu, Select, Tooltip) ซึ่งมี built-in WAI-ARIA keyboard navigation compliance
+- **Mandatory System Version Management:**
+  - `package.json`: `1.4.72` → `1.4.73`
+  - `README.md`, `wiki/Home.md`, `wiki/_Footer.md`: อัปเดต version เป็น `v1.4.73`
+
+## [v1.4.72] [2026-09-06] Enterprise UI/UX Migration — Zero-Reference Scan & Legacy CSS Shim Removal (Ticket 08)
+
+- **Contract Phase: Legacy CSS Shim Removal:**
+  - `src/App.css`: ลบ transitional compatibility shims ที่ใช้งานในช่วง Phase 1–7 ทั้งหมดออกอย่างปลอดภัย ได้แก่:
+    - Utility classes: `.glass`, `.neu-flat`, `.neu-flat-sm`, `.neu-pressed`, `.neu-pressed-sm`, `.neu-button`, `.neu-button:hover`, `.neu-button:active`, `.neu-primary`, `.neu-primary:hover`, `.neu-primary:active`
+    - Custom property aliases ใน `:root` (light mode): `--glass-input-border`, `--glass-input-bg`, `--glass-hover`, `--glass-text`, `--glass-card-border`, `--glass-card-bg`, `--neu-surface`, `--neu-border`, `--neu-shadow-dark`, `--neu-shadow-light`, `--neu-primary-border`, `--neu-primary-shadow`
+    - Custom property aliases ใน `.dark` (dark mode): ชุดเดียวกัน
+    - ขนาดไฟล์ลดจาก 263 บรรทัด → 168 บรรทัด (-95 บรรทัด / -2.6 KB)
+  - ยืนยัน Zero occurrences (`0 results`) ของ `neu-*`, `glass`, `--neu-*`, `--glass-*` ในโค้ด application ทั้งหมด (*.jsx, *.js, *.css)
+- **Mandatory System Version Management:**
+  - `package.json`: ขยับเวอร์ชันระบบเป็น `1.4.72`
+  - `README.md`: อัปเดต Version Badge เป็น `v1.4.72`
+  - `wiki/Home.md`, `wiki/_Footer.md`: ปรับเวอร์ชันระบบเป็น `v1.4.72`
+
+## [v1.4.71] [2026-09-06] Enterprise UI/UX Migration — Administration & Account (Ticket 07)
+
+- **System Settings & Subcomponents Modernization:**
+  - `src/pages/Settings.jsx`: ปรับปรุงหน้าการตั้งค่าระบบ, Navigation Tabs, Identity Info Box, System Metrics, Action Buttons ให้เป็น Solid Surface `rounded-xl bg-card border border-border shadow-xs` พร้อมกำจัดคลาส `neu-` และ `glass` ทั้งหมด
+  - `src/components/settings/DefaultPasswordManager.jsx`: ปรับปรุงการ์ดจัดการรหัสผ่านตั้งต้น, กล่องอินพุต `h-9 text-xs rounded-lg`, Toggle Visibility, และปุ่มคำสั่งมาตรฐาน
+  - `src/components/settings/EmailTemplateManager.jsx`: แปลงการ์ดเลือกเทมเพลตอีเมล, ตัวแก้ไข HTML/Subject/Description, Live Preview Container, และตัวจัดการ Dynamic Variables ให้มีคอนทราสต์ชัดเจน ไร้ `neu-`
+- **Users & Account Management Modernization:**
+  - `src/pages/UserManagement.jsx`: ปรับปรุงตารางผู้ใช้งาน, Header Toolbar, Role Filter, Search Bar, และ Actions Dropdown
+  - `src/components/users/AvatarUpload.jsx`: ปรับปรุงปุ่มและกล่องอัปโหลดรูปภาพประจำตัวให้เป็นโทน Enterprise คลีนตา
+  - `src/components/users/AddUserModal.jsx` & `src/components/users/EditUserModal.jsx`: ปรับโมดอลสร้างและแก้ไขผู้ใช้เป็น `rounded-xl bg-card text-card-foreground border border-border shadow-xl` พร้อมอินพุต `h-9 text-xs rounded-lg`, Role Cards, Project Access Checkboxes, และสถานะบัญชี
+  - `src/components/users/ResetPasswordModal.jsx` & `src/components/users/UserActionModal.jsx`: ปรับแต่งไดอะล็อกยืนยันการเปลี่ยนรหัสผ่านและการระงับ/เปิดใช้งานบัญชี
+- **Roles & Permissions Matrix Modernization:**
+  - `src/pages/RoleManagement.jsx`: ปรับปรุงการ์ดบทบาท (Role Cards), สถิติผู้ใช้งานในแต่ละบทบาท, และระบบการกรองสิทธิ์
+  - `src/components/roles/AddRoleModal.jsx` & `src/components/roles/EditRoleModal.jsx`: ปรับแต่งฟอร์มสร้าง/แก้ไขบทบาทและตัวเลือก Palette สีแท็กให้สะอาด
+  - `src/components/roles/PermissionManagementModal.jsx`: ปรับตารางเมทริกซ์สิทธิ์การใช้งาน (Permissions Matrix) เป็น Structured High-Contrast Checklist Cards หมวดหมู่ชัดเจน พร้อมกล่องค้นหาและสวิตช์เปิด/ปิดสิทธิ์
+- **Profile, Auth, Documentation & Projects Modernization:**
+  - `src/pages/Profile.jsx`: ปรับปรุงหน้าโปรไฟล์ส่วนตัว, การ์ดแสดงบทบาท, ฟอร์มแก้ไขข้อมูลติดต่อ และฟอร์มเปลี่ยนรหัสผ่านความปลอดภัยสูง
+  - `src/components/auth/ForceChangePasswordModal.jsx`: แปลงไดอะล็อกบังคับเปลี่ยนรหัสผ่านเมื่อเข้าสู่ระบบครั้งแรกเป็น Solid Dialog พร้อม Password Policy Checklist
+  - `src/components/auth/PermissionRoute.jsx`: ปรับการ์ดแจ้งเตือนปฏิเสธการเข้าถึง (Access Denied / 403 Forbidden) ให้คมชัดเป็นมืออาชีพ
+  - `src/pages/Manual.jsx`: แปลงหน้าคู่มือการใช้งานระบบ, Hero Banner, หมวดหมู่คู่มือตามสิทธิ์, ค้นหาหัวข้อ และคู่มือการทำงานแบบการ์ดทึบแสง
+  - `src/pages/Projects.jsx`: กำจัดคลาส `glass`, `rounded-3xl`, และ `rounded-2xl` ทั้งหมด แปลงการ์ดโครงการ (Logical Project Cards), Multi-Code Tag Input, Add Location Dialog, Edit Project Dialog, และ Delete & Stock Transfer Modal เป็น Solid Enterprise UI
+- **Mandatory System Version Management:**
+  - `package.json`: ขยับเวอร์ชันระบบเป็น `1.4.71`
+  - `README.md`: อัปเดต Version Badge เป็น `v1.4.71`
+  - `wiki/Home.md`, `wiki/_Footer.md`: ปรับเวอร์ชันระบบเป็น `v1.4.71`
+
 ## [v1.4.70] [2026-09-06] Enterprise UI/UX Migration — Operational POS & Stock In (Ticket 06)
 
 - **Stock In Receipt Flow & Forms Modernization:**

@@ -1,7 +1,7 @@
 {
   "name": "stock-flow-app",
   "private": true,
-  "version": "1.4.70",
+  "version": "1.4.73",
   "type": "module",
   "scripts": {
     "dev": "vite",

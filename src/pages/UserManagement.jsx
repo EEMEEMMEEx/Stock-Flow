@@ -536,7 +536,7 @@ const UserManagement = () => {
             variant="outline" 
             onClick={fetchInitialData} 
             disabled={loading}
-            className="neu-button flex items-center gap-2"
+            className="h-9 rounded-lg font-semibold flex items-center gap-2 cursor-pointer shadow-xs"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             รีเฟรช
@@ -546,7 +546,7 @@ const UserManagement = () => {
             onClick={() => setIsAddModalOpen(true)}
             disabled={!can('users.create')}
             title={!can('users.create') ? 'ไม่มีสิทธิ์เพิ่มผู้ใช้งานใหม่ (ต้องการสิทธิ์ users.create)' : 'เพิ่มผู้ใช้งานใหม่'}
-            className="neu-primary h-10 px-4 rounded-xl font-semibold text-sm flex items-center gap-2 transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 shrink-0 disabled:opacity-30 disabled:cursor-not-allowed"
+            className="h-9 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-sm flex items-center gap-2 cursor-pointer shadow-xs shrink-0 disabled:opacity-30 disabled:cursor-not-allowed"
           >
             <Plus className="w-4 h-4 shrink-0" />
             <span>เพิ่มผู้ใช้</span>
@@ -573,7 +573,7 @@ const UserManagement = () => {
 
 
       {/* Filter Toolbar Card */}
-      <Card className="neu-flat border-0">
+      <Card className="rounded-xl bg-card border border-border shadow-xs">
         <CardContent className="p-4 space-y-3 sm:space-y-0 sm:flex sm:items-center sm:gap-4">
           {/* Search Input */}
           <div className="relative flex-1">
@@ -582,7 +582,7 @@ const UserManagement = () => {
               placeholder="ค้นหาชื่อ, อีเมล, ตำแหน่ง..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 neu-pressed bg-transparent text-sm"
+              className="pl-9 h-9 text-xs rounded-lg bg-background border border-input"
             />
           </div>
 
@@ -591,7 +591,7 @@ const UserManagement = () => {
             <select
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value)}
-              className="w-full p-2 rounded-xl neu-pressed bg-background text-foreground text-sm border-0 focus:ring-2 focus:ring-primary"
+              className="w-full h-9 px-3 text-xs rounded-lg bg-background text-foreground border border-input focus:ring-1 focus:ring-primary focus:outline-none shadow-xs"
             >
               <option value="all">บทบาท: ทั้งหมด</option>
               {dbRoles.length > 0 ? (
@@ -616,7 +616,7 @@ const UserManagement = () => {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full p-2 rounded-xl neu-pressed bg-background text-foreground text-sm border-0 focus:ring-2 focus:ring-primary"
+              className="w-full h-9 px-3 text-xs rounded-lg bg-background text-foreground border border-input focus:ring-1 focus:ring-primary focus:outline-none shadow-xs"
             >
               <option value="all">สถานะ: ทั้งหมด</option>
               <option value="active">Active (เปิดใช้งาน)</option>
@@ -629,7 +629,7 @@ const UserManagement = () => {
             <select
               value={projectFilter}
               onChange={(e) => setProjectFilter(e.target.value)}
-              className="w-full p-2 rounded-xl neu-pressed bg-background text-foreground text-sm border-0 focus:ring-2 focus:ring-primary"
+              className="w-full h-9 px-3 text-xs rounded-lg bg-background text-foreground border border-input focus:ring-1 focus:ring-primary focus:outline-none shadow-xs"
             >
               <option value="all">โครงการ: ทั้งหมด</option>
               {projects.map(p => (
@@ -641,11 +641,11 @@ const UserManagement = () => {
       </Card>
 
       {/* Users Table Card */}
-      <Card className="neu-flat border-0 overflow-hidden">
+      <Card className="rounded-xl bg-card border border-border shadow-xs overflow-hidden">
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
-              <thead className="text-xs text-muted-foreground uppercase bg-black/5 dark:bg-white/5 border-b border-white/20">
+              <thead className="text-xs text-muted-foreground uppercase bg-muted/50 border-b border-border">
                 <tr>
                   <th className="px-6 py-3.5">ผู้ใช้งาน (User)</th>
                   <th className="px-4 py-3.5">บทบาท (Role)</th>
@@ -655,7 +655,7 @@ const UserManagement = () => {
                   <th className="px-6 py-3.5 text-right">การจัดการ (Actions)</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/20">
+              <tbody className="divide-y divide-border/40">
                 {loading ? (
                   <tr>
                     <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">

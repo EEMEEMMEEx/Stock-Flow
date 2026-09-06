@@ -94,11 +94,11 @@ const AvatarUpload = ({ value, name = '', onChange, onRemove }) => {
   const safePreviewSrc = sanitizeImageUrl(previewUrl);
 
   return (
-    <div className="flex items-center gap-4 p-3 rounded-xl neu-pressed-sm bg-white/40 dark:bg-black/20">
+    <div className="flex items-center gap-4 p-3 rounded-xl bg-muted/30 border border-border/50">
       {/* 56x56 Avatar Preview Container */}
       <div 
         onClick={() => fileInputRef.current?.click()}
-        className="relative w-[56px] h-[56px] min-w-[56px] min-h-[56px] rounded-full overflow-hidden neu-flat cursor-pointer group flex items-center justify-center bg-primary/10 border-2 border-primary/20 hover:border-primary transition-all shrink-0"
+        className="relative w-[56px] h-[56px] min-w-[56px] min-h-[56px] rounded-full overflow-hidden shadow-xs cursor-pointer group flex items-center justify-center bg-primary/10 border-2 border-primary/20 hover:border-primary transition-all shrink-0"
         title="คลิกเพื่ออัปโหลดรูปโปรไฟล์"
       >
         {safePreviewSrc ? (
@@ -128,7 +128,7 @@ const AvatarUpload = ({ value, name = '', onChange, onRemove }) => {
             variant="outline"
             size="sm"
             onClick={() => fileInputRef.current?.click()}
-            className="neu-button text-xs h-8 px-3 font-medium flex items-center gap-1.5 text-primary"
+            className="h-8 px-3 rounded-lg text-xs font-medium flex items-center gap-1.5 text-primary cursor-pointer border border-border shadow-xs hover:bg-accent"
           >
             <Upload className="w-3.5 h-3.5" />
             อัปโหลดรูปโปรไฟล์

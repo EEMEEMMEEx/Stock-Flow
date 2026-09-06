@@ -64,7 +64,7 @@ const ResetPasswordModal = ({ isOpen, onClose, onResetPassword, user }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) { setNewPassword(''); onClose(); } }}>
-      <DialogContent className="max-w-md neu-flat border-0">
+      <DialogContent className="max-w-md bg-card text-card-foreground rounded-xl border border-border shadow-xl">
         <DialogHeader>
           <DialogTitle className="text-lg font-bold flex items-center gap-2 text-purple-600 dark:text-purple-400">
             <KeyRound className="w-5 h-5" />
@@ -76,7 +76,7 @@ const ResetPasswordModal = ({ isOpen, onClose, onResetPassword, user }) => {
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="p-4 rounded-xl neu-pressed-sm bg-white/40 dark:bg-black/20 space-y-3">
+          <div className="p-4 rounded-lg bg-muted/30 border border-border/50 space-y-3">
             <div className="flex items-center justify-between gap-1 flex-wrap">
               <Label htmlFor="new_password" className="text-sm font-medium">รหัสผ่านใหม่ *</Label>
               <div className="flex items-center gap-1">
@@ -86,7 +86,7 @@ const ResetPasswordModal = ({ isOpen, onClose, onResetPassword, user }) => {
                   size="sm"
                   disabled={fetchingDefault}
                   onClick={handleUseDefaultPassword}
-                  className="text-[11px] text-purple-600 hover:text-purple-700 hover:underline flex items-center gap-1 h-7 px-2"
+                  className="text-[11px] text-purple-600 hover:text-purple-700 hover:underline flex items-center gap-1 h-7 px-2 cursor-pointer"
                 >
                   <ShieldCheck className="w-3 h-3" />
                   {fetchingDefault ? 'กำลังดึง...' : 'ดึง Default Reset Password'}
@@ -96,7 +96,7 @@ const ResetPasswordModal = ({ isOpen, onClose, onResetPassword, user }) => {
                   variant="ghost"
                   size="sm"
                   onClick={handleGenerateRandom}
-                  className="text-[11px] text-primary hover:underline flex items-center gap-1 h-7 px-2"
+                  className="text-[11px] text-primary hover:underline flex items-center gap-1 h-7 px-2 cursor-pointer"
                 >
                   <RefreshCw className="w-3 h-3" />
                   สุ่มรหัสผ่าน (Generate Password)
@@ -114,13 +114,13 @@ const ResetPasswordModal = ({ isOpen, onClose, onResetPassword, user }) => {
                 placeholder="ป้อนรหัสผ่านใหม่ (อย่างน้อย 6 ตัวอักษร)"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="pr-10 neu-pressed bg-transparent"
+                className="pr-10 h-9 text-xs rounded-lg bg-background border border-input"
               />
 
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -128,10 +128,10 @@ const ResetPasswordModal = ({ isOpen, onClose, onResetPassword, user }) => {
           </div>
 
           <DialogFooter className="pt-2">
-            <Button type="button" variant="ghost" onClick={onClose}>
+            <Button type="button" variant="ghost" onClick={onClose} className="h-9 px-3 rounded-lg text-xs cursor-pointer">
               ยกเลิก
             </Button>
-            <Button type="submit" disabled={loading} className="neu-primary">
+            <Button type="submit" disabled={loading} className="h-9 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs cursor-pointer shadow-xs">
               {loading ? 'กำลังบันทึก...' : 'บันทึกรหัสผ่านใหม่'}
             </Button>
           </DialogFooter>

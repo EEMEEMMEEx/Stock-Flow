@@ -298,7 +298,7 @@ const Manual = () => {
   return (
     <div className="space-y-8 pb-20 max-w-6xl mx-auto">
       {/* Hero Header Section */}
-      <div className="relative overflow-hidden p-6 sm:p-8 rounded-3xl neu-flat border-0 bg-gradient-to-br from-primary/10 via-background to-purple-500/10">
+      <div className="relative overflow-hidden p-6 sm:p-8 rounded-xl bg-card border border-border shadow-xs">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider">
@@ -323,13 +323,13 @@ const Manual = () => {
                 placeholder="ค้นหาฟังก์ชัน, สิทธิ์, ขั้นตอน..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 h-11 neu-pressed bg-background/80 backdrop-blur-xs text-sm rounded-xl"
+                className="pl-10 h-9 bg-background border border-input text-xs rounded-lg"
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
                 >
                   ล้างคำค้น
                 </button>
@@ -339,7 +339,7 @@ const Manual = () => {
         </div>
 
         {/* Quick Role Navigation Bar */}
-        <div className="mt-6 pt-5 border-t border-border/40 flex flex-wrap items-center gap-2">
+        <div className="mt-6 pt-5 border-t border-border flex flex-wrap items-center gap-2">
           <span className="text-xs font-semibold text-muted-foreground mr-1 flex items-center gap-1">
             <SlidersHorizontal className="w-3.5 h-3.5" /> กรองตามบทบาท:
           </span>
@@ -351,13 +351,13 @@ const Manual = () => {
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveRoleFilter(tab.id)}
-                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   isSelected
-                    ? 'neu-primary text-white shadow-md ring-2 ring-primary/30'
-                    : 'neu-button text-muted-foreground hover:text-foreground bg-background/60'
+                    ? 'bg-primary text-primary-foreground shadow-xs'
+                    : 'border border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground'
                 }`}
               >
-                <Icon className={`w-3.5 h-3.5 ${isSelected ? 'text-white' : tab.color || 'text-muted-foreground'}`} />
+                <Icon className={`w-3.5 h-3.5 ${isSelected ? 'text-primary-foreground' : tab.color || 'text-muted-foreground'}`} />
                 <span>{tab.label}</span>
               </button>
             );
@@ -368,7 +368,7 @@ const Manual = () => {
       {/* Role Responsibility Quick Summary Matrix */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Role 1: Staff */}
-        <div className="p-4 rounded-2xl neu-flat-sm border-l-4 border-l-blue-500 bg-card/60 space-y-2">
+        <div className="p-4 rounded-xl border border-border border-l-4 border-l-blue-500 bg-card shadow-xs space-y-2">
           <div className="flex items-center justify-between">
             <span className="font-bold text-sm text-foreground flex items-center gap-2">
               <User className="w-4 h-4 text-blue-500" /> ผู้ขอเบิก (STAFF)
@@ -387,7 +387,7 @@ const Manual = () => {
         </div>
 
         {/* Role 2: Supervisor */}
-        <div className="p-4 rounded-2xl neu-flat-sm border-l-4 border-l-emerald-500 bg-card/60 space-y-2">
+        <div className="p-4 rounded-xl border border-border border-l-4 border-l-emerald-500 bg-card shadow-xs space-y-2">
           <div className="flex items-center justify-between">
             <span className="font-bold text-sm text-foreground flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-emerald-500" /> ผู้อนุมัติ (SUPERVISOR)
@@ -406,7 +406,7 @@ const Manual = () => {
         </div>
 
         {/* Role 3: Admin */}
-        <div className="p-4 rounded-2xl neu-flat-sm border-l-4 border-l-purple-500 bg-card/60 space-y-2">
+        <div className="p-4 rounded-xl border border-border border-l-4 border-l-purple-500 bg-card shadow-xs space-y-2">
           <div className="flex items-center justify-between">
             <span className="font-bold text-sm text-foreground flex items-center gap-2">
               <Shield className="w-4 h-4 text-purple-500" /> ผู้ดูแลระบบ (ADMIN)
@@ -440,7 +440,7 @@ const Manual = () => {
       {/* Manual Content Cards List */}
       <div className="space-y-6">
         {filteredSections.length === 0 ? (
-          <div className="p-12 text-center rounded-2xl neu-flat border-0 space-y-3">
+          <div className="p-12 text-center rounded-xl bg-card border border-border shadow-xs space-y-3">
             <HelpCircle className="w-12 h-12 text-muted-foreground mx-auto opacity-50" />
             <h3 className="text-base font-bold text-foreground">ไม่พบข้อมูลคู่มือที่ตรงกับคำค้นหา</h3>
             <p className="text-xs text-muted-foreground max-w-md mx-auto">
@@ -451,7 +451,7 @@ const Manual = () => {
               variant="outline"
               size="sm"
               onClick={() => { setSearchQuery(''); setActiveRoleFilter('all'); }}
-              className="text-xs neu-button mt-2"
+              className="text-xs h-8 px-3 rounded-lg mt-2 cursor-pointer"
             >
               แสดงคู่มือทั้งหมด
             </Button>
@@ -463,12 +463,12 @@ const Manual = () => {
               <Card 
                 key={sec.id} 
                 id={sec.id}
-                className={`neu-flat border-0 border-l-4 ${sec.badgeColor} overflow-hidden transition-all duration-200 hover:shadow-lg`}
+                className={`rounded-xl bg-card border border-border shadow-xs border-l-4 ${sec.badgeColor} overflow-hidden transition-all duration-200 hover:shadow-md`}
               >
                 <CardHeader className="bg-muted/10 pb-4 border-b border-border/30">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-background flex items-center justify-center neu-pressed-sm shrink-0">
+                      <div className="w-9 h-9 rounded-lg bg-muted/40 border border-border/50 flex items-center justify-center shrink-0">
                         <Icon className={`w-5 h-5 ${sec.iconColor}`} />
                       </div>
                       <div>
@@ -488,7 +488,7 @@ const Manual = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => navigate(sec.path)}
-                        className="text-xs h-8 px-3 neu-button shrink-0 self-start sm:self-auto flex items-center gap-1.5"
+                        className="text-xs h-8 px-3 rounded-lg shrink-0 self-start sm:self-auto flex items-center gap-1.5 cursor-pointer"
                       >
                         <span>เปิดหน้าการทำงานจริง</span>
                         <ExternalLink className="w-3 h-3" />
@@ -499,7 +499,7 @@ const Manual = () => {
 
                 <CardContent className="p-5 sm:p-6 space-y-5 text-sm">
                   {/* 1. What it does & Who can use */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-xl neu-pressed-sm bg-white/40 dark:bg-black/20">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-lg bg-muted/30 border border-border/50">
                     <div className="md:col-span-2 space-y-1.5">
                       <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
                         <Info className="w-3.5 h-3.5 text-primary" /> ฟังก์ชันนี้ทำหน้าที่อะไร (What it does)
@@ -549,7 +549,7 @@ const Manual = () => {
                   {/* 3. Pro-Tips & Safety Warnings */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                     {sec.proTips && (
-                      <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-900 dark:text-emerald-200 text-xs space-y-1">
+                      <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-900 dark:text-emerald-200 text-xs space-y-1">
                         <span className="font-bold flex items-center gap-1.5 text-emerald-700 dark:text-emerald-300">
                           <BookmarkCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /> เคล็ดลับการใช้งาน (Pro-Tip)
                         </span>
@@ -558,7 +558,7 @@ const Manual = () => {
                     )}
 
                     {sec.warnings && (
-                      <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-900 dark:text-amber-200 text-xs space-y-1">
+                      <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-900 dark:text-amber-200 text-xs space-y-1">
                         <span className="font-bold flex items-center gap-1.5 text-amber-700 dark:text-amber-400">
                           <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" /> กฎความปลอดภัย / ข้อควรระวัง
                         </span>
@@ -574,7 +574,7 @@ const Manual = () => {
       </div>
 
       {/* Footer Support & System Info */}
-      <div className="p-6 rounded-2xl neu-pressed-sm bg-muted/20 border border-border/40 text-center space-y-2">
+      <div className="p-6 rounded-xl bg-muted/30 border border-border/50 text-center space-y-2">
         <h4 className="font-bold text-xs text-foreground flex items-center justify-center gap-1.5">
           <HelpCircle className="w-4 h-4 text-primary" /> ต้องการความช่วยเหลือเพิ่มเติมหรือแจ้งปัญหาการใช้งาน?
         </h4>

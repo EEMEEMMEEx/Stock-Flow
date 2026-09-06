@@ -11,7 +11,7 @@
 * 📂 **Source Repository:** [EEMEEMMEEx/Stock-Flow](https://github.com/EEMEEMMEEx/Stock-Flow)
 * 📋 **Project Management Board:** [Stock-Flow Development Board](https://github.com/users/EEMEEMMEEx/projects/1)
 * 🔒 **Security Advisories:** [Vulnerability Reporting](https://github.com/EEMEEMMEEx/Stock-Flow/security/advisories)
-* 🔖 **Current System Version:** `v1.4.70`
+* 🔖 **Current System Version:** `v1.4.73`
 
 ---
 

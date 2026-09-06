@@ -183,7 +183,7 @@ const UserActionModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg neu-flat border-0 p-0 overflow-hidden sm:rounded-2xl">
+      <DialogContent className="max-w-lg bg-card text-card-foreground border border-border shadow-xl p-0 overflow-hidden rounded-xl">
         {/* Modal Header */}
         <div className="px-6 pt-6 pb-4 border-b border-border/40 bg-muted/20">
           <DialogHeader>
@@ -201,7 +201,7 @@ const UserActionModal = ({
 
         <div className="p-6 space-y-5 max-h-[80vh] overflow-y-auto">
           {/* 1. Compact User Identity Card */}
-          <div className="p-4 rounded-xl neu-pressed bg-background/60 border border-border/40 flex items-start gap-4">
+          <div className="p-4 rounded-lg bg-muted/30 border border-border/50 flex items-start gap-4">
             {user.avatar_url ? (
               <img
                 src={user.avatar_url}
@@ -391,12 +391,12 @@ const UserActionModal = ({
                     value={confirmInput}
                     onChange={(e) => setConfirmInput(e.target.value)}
                     placeholder={`พิมพ์ ${user.email} หรือ DELETE`}
-                    className={`min-h-[44px] text-sm pr-9 neu-pressed ${
+                    className={`h-10 text-sm pr-9 rounded-lg bg-background border ${
                       confirmInput.length > 0
                         ? isConfirmMatched
                           ? 'border-emerald-500 ring-1 ring-emerald-500'
                           : 'border-red-500 ring-1 ring-red-500'
-                        : ''
+                        : 'border-input'
                     }`}
                     autoFocus
                   />
@@ -418,7 +418,7 @@ const UserActionModal = ({
                 variant="ghost"
                 onClick={() => setStep(1)}
                 disabled={isDeleting}
-                className="min-h-[44px] text-xs font-semibold"
+                className="h-10 text-xs font-semibold cursor-pointer"
               >
                 <ArrowLeft className="w-4 h-4 mr-1.5" />
                 ย้อนกลับ
@@ -429,7 +429,7 @@ const UserActionModal = ({
                 variant="destructive"
                 onClick={handleDeleteAction}
                 disabled={!isConfirmMatched || isDeleting}
-                className="min-h-[44px] px-5 rounded-xl font-semibold text-xs shadow-md bg-red-600 hover:bg-red-700 disabled:opacity-50"
+                className="h-10 px-5 rounded-lg font-semibold text-xs shadow-xs bg-red-600 hover:bg-red-700 disabled:opacity-50 cursor-pointer"
               >
                 {isDeleting ? (
                   <span className="flex items-center gap-2">
@@ -449,7 +449,7 @@ const UserActionModal = ({
               type="button"
               variant="ghost"
               onClick={onClose}
-              className="min-h-[44px] text-xs font-semibold ml-auto w-full sm:w-auto"
+              className="h-9 px-4 rounded-lg text-xs font-semibold ml-auto w-full sm:w-auto cursor-pointer"
             >
               ปิดหน้าต่าง (Cancel)
             </Button>

@@ -370,9 +370,9 @@ const EditUserModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent className="max-w-3xl max-h-[92vh] overflow-y-auto neu-flat border-0 p-0 sm:rounded-2xl">
+      <DialogContent className="max-w-3xl max-h-[92vh] overflow-y-auto bg-card text-card-foreground border border-border shadow-xl p-0 sm:rounded-xl">
         {/* Header Section with User Summary Badge */}
-        <div className="p-6 border-b border-border/40 bg-muted/20">
+        <div className="p-6 border-b border-border bg-muted/30">
           <DialogHeader>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-center gap-3">
@@ -380,11 +380,11 @@ const EditUserModal = ({
                   <img
                     src={formData.avatar_url}
                     alt={formData.full_name}
-                    className="w-12 h-12 rounded-full object-cover shadow-sm border border-white/40 shrink-0"
+                    className="w-12 h-12 rounded-full object-cover shadow-xs border border-border shrink-0"
                     onError={(e) => { e.target.onerror = null; e.target.src = ''; }}
                   />
                 ) : (
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-primary to-purple-600 flex items-center justify-center text-white font-bold text-base shadow-md shrink-0">
+                  <div className="w-12 h-12 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-primary font-bold text-base shadow-xs shrink-0">
                     {getInitials(formData.full_name || user?.full_name)}
                   </div>
                 )}
@@ -423,7 +423,7 @@ const EditUserModal = ({
           </DialogHeader>
 
           {/* Tab Navigation Selector */}
-          <div className="flex border-b border-border/40 mt-5 -mb-6">
+          <div className="flex border-b border-border mt-5 -mb-6">
             <button
               type="button"
               onClick={() => setActiveTab('profile')}
@@ -472,8 +472,8 @@ const EditUserModal = ({
             <div className="space-y-5">
               {/* Super Admin Security Protection Banner */}
               {isTargetSuper && !isSuperAdmin && (
-                <div className="p-3.5 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-900 dark:text-purple-200 text-xs flex items-start gap-2.5">
-                  <Lock className="w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0 mt-0.5" />
+                <div className="p-3.5 rounded-lg bg-blue-500/10 border border-blue-500/30 text-blue-900 dark:text-blue-200 text-xs flex items-start gap-2.5">
+                  <Lock className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
                   <div>
                     <strong className="font-semibold block text-xs">
                       คำเตือนความปลอดภัย: บัญชีผู้ดูแลระบบสูงสุด (Super Admin)
@@ -484,7 +484,7 @@ const EditUserModal = ({
               )}
 
               {/* Avatar Upload */}
-              <div className="p-4 rounded-xl neu-pressed-sm bg-white/40 dark:bg-black/20 space-y-2">
+              <div className="p-4 rounded-lg bg-muted/30 border border-border/50 space-y-2">
                 <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5 text-primary" /> รูปโปรไฟล์ (Profile Avatar)
                 </Label>
@@ -507,7 +507,7 @@ const EditUserModal = ({
                     type="email"
                     disabled
                     value={user?.email || formData.email}
-                    className="neu-pressed bg-muted/40 text-muted-foreground text-sm cursor-not-allowed border-dashed"
+                    className="h-9 text-xs rounded-lg bg-muted/40 text-muted-foreground cursor-not-allowed border-dashed border border-input"
                   />
                   <p className="text-[11px] text-muted-foreground">
                     บัญชีอีเมลเป็นตัวระบุสิทธิ์หลักใน Supabase Auth
@@ -524,7 +524,7 @@ const EditUserModal = ({
                     placeholder="เช่น สมชาย ใจดี"
                     value={formData.full_name}
                     onChange={(e) => setFormData((prev) => ({ ...prev, full_name: e.target.value }))}
-                    className="neu-pressed bg-transparent text-sm"
+                    className="h-9 text-xs rounded-lg bg-background border border-input focus-visible:ring-1 focus-visible:ring-primary"
                   />
                 </div>
               </div>
@@ -541,7 +541,7 @@ const EditUserModal = ({
                     placeholder="เช่น 0812345678"
                     value={formData.phone}
                     onChange={(e) => setFormData((prev) => ({ ...prev, phone: e.target.value }))}
-                    className="neu-pressed bg-transparent text-sm"
+                    className="h-9 text-xs rounded-lg bg-background border border-input focus-visible:ring-1 focus-visible:ring-primary"
                   />
                 </div>
 
@@ -554,7 +554,7 @@ const EditUserModal = ({
                     placeholder="เช่น วิศวกรรม, คลังสินค้า"
                     value={formData.department}
                     onChange={(e) => setFormData((prev) => ({ ...prev, department: e.target.value }))}
-                    className="neu-pressed bg-transparent text-sm"
+                    className="h-9 text-xs rounded-lg bg-background border border-input focus-visible:ring-1 focus-visible:ring-primary"
                   />
                 </div>
 
@@ -567,13 +567,13 @@ const EditUserModal = ({
                     placeholder="เช่น Site Engineer, Storekeeper"
                     value={formData.position}
                     onChange={(e) => setFormData((prev) => ({ ...prev, position: e.target.value }))}
-                    className="neu-pressed bg-transparent text-sm"
+                    className="h-9 text-xs rounded-lg bg-background border border-input focus-visible:ring-1 focus-visible:ring-primary"
                   />
                 </div>
               </div>
 
               {/* Security & Password Enforcement */}
-              <div className="p-4 rounded-xl border border-primary/20 bg-primary/5 space-y-2">
+              <div className="p-3.5 rounded-lg border border-border bg-muted/30 space-y-2">
                 <label className="flex items-start gap-3 cursor-pointer">
                   <input
                     type="checkbox"
@@ -600,8 +600,8 @@ const EditUserModal = ({
             <div className="space-y-5">
               {/* Super Admin Security Protection Banner */}
               {isTargetSuper && !isSuperAdmin && (
-                <div className="p-3.5 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-900 dark:text-purple-200 text-xs flex items-start gap-2.5">
-                  <Lock className="w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0 mt-0.5" />
+                <div className="p-3.5 rounded-lg bg-blue-500/10 border border-blue-500/30 text-blue-900 dark:text-blue-200 text-xs flex items-start gap-2.5">
+                  <Lock className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
                   <div>
                     <strong className="font-semibold block text-xs">
                       คำเตือนความปลอดภัย: บัญชีผู้ดูแลระบบสูงสุด (Super Admin)
@@ -613,7 +613,7 @@ const EditUserModal = ({
 
               {/* Last Active Admin Protection Banner */}
               {isLastActiveAdmin && !isTargetSuper && (
-                <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs flex items-start gap-2.5">
+                <div className="p-3.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs flex items-start gap-2.5">
                   <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                   <div>
                     <strong className="font-semibold block text-xs">
@@ -633,7 +633,7 @@ const EditUserModal = ({
                   <button
                     type="button"
                     onClick={() => { onClose(); navigate('/roles'); }}
-                    className="text-[11px] text-purple-600 hover:text-purple-700 dark:text-purple-400 hover:underline flex items-center gap-1"
+                    className="text-[11px] text-primary hover:underline flex items-center gap-1"
                   >
                     <span>จัดการบทบาทและสิทธิ์ที่ /roles</span>
                     <ExternalLink className="w-3 h-3" />
@@ -650,14 +650,14 @@ const EditUserModal = ({
                       <div
                         key={r.id || r.code}
                         onClick={() => !isRoleDisabled && handleRoleSelect(roleCode, r.id)}
-                        className={`p-3.5 rounded-xl border transition-all ${
+                        className={`p-3.5 rounded-lg border transition-all ${
                           isRoleDisabled
                             ? 'opacity-40 cursor-not-allowed border-border bg-muted/30'
                             : 'cursor-pointer'
                         } ${
                           isSelected
-                            ? 'border-primary bg-primary/10 neu-pressed ring-1 ring-primary'
-                            : 'border-border neu-flat-sm hover:bg-black/5'
+                            ? 'border-primary bg-primary/10 shadow-xs ring-1 ring-primary'
+                            : 'border-border bg-card hover:bg-muted/50'
                         }`}
                       >
                         <div className="flex items-center justify-between mb-1.5">
@@ -684,10 +684,10 @@ const EditUserModal = ({
               </div>
 
               {/* RBAC Permissions Breakdown: Exact Live Count & List from /roles */}
-              <div className="p-4 rounded-xl neu-pressed-sm bg-white/40 dark:bg-black/20 space-y-3">
+              <div className="p-4 rounded-lg bg-muted/30 border border-border/50 space-y-3">
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                    <ShieldCheck className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                    <ShieldCheck className="w-4 h-4 text-primary" />
                     สิทธิ์การใช้งานที่ได้รับตามบทบาท (Assigned RBAC Permissions)
                   </div>
                   <div className="flex items-center gap-2">
@@ -718,7 +718,7 @@ const EditUserModal = ({
                     กำลังตรวจสอบโครงสร้างสิทธิ์จริงจากฐานข้อมูล...
                   </div>
                 ) : rolePermissionsList.length === 0 ? (
-                  <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-200 text-xs text-center space-y-1">
+                  <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-200 text-xs text-center space-y-1">
                     <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 mx-auto mb-1" />
                     <p className="font-semibold">ยังไม่มีสิทธิ์เปิดใช้งานสำหรับบทบาทนี้ในระบบ /roles</p>
                     <p className="text-[11px] text-muted-foreground">
@@ -728,8 +728,8 @@ const EditUserModal = ({
                 ) : (
                   <div className="space-y-3">
                     {rolePermissionsList.length === totalCatalogCount && totalCatalogCount > 0 && (
-                      <div className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/30 text-purple-900 dark:text-purple-200 text-xs flex items-center gap-2">
-                        <Sparkles className="w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0" />
+                      <div className="p-3 rounded-lg bg-primary/10 border border-primary/20 text-primary text-xs flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-primary shrink-0" />
                         <span>บทบาทนี้ได้รับสิทธิ์สูงสุดเต็มรูปแบบ สามารถเข้าถึงและจัดการทุกฟังก์ชันในระบบทั้งหมด {rolePermissionsList.length} สิทธิ์</span>
                       </div>
                     )}
@@ -771,10 +771,10 @@ const EditUserModal = ({
                   {/* ACTIVE */}
                   <label
                     onClick={() => handleStatusChange('active')}
-                    className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                    className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
                       formData.status === 'active'
-                        ? 'border-emerald-500 bg-emerald-500/10 neu-pressed ring-1 ring-emerald-500'
-                        : 'border-border neu-flat-sm hover:bg-black/5'
+                        ? 'border-emerald-500 bg-emerald-500/10 shadow-xs ring-1 ring-emerald-500'
+                        : 'border-border bg-card hover:bg-muted/50'
                     }`}
                   >
                     <input
@@ -794,12 +794,12 @@ const EditUserModal = ({
                   {/* INACTIVE */}
                   <label
                     onClick={() => !isLastActiveAdmin && handleStatusChange('inactive')}
-                    className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
+                    className={`flex items-center gap-3 p-3 rounded-lg border transition-all ${
                       isLastActiveAdmin ? 'opacity-40 cursor-not-allowed bg-muted/30' : 'cursor-pointer'
                     } ${
                       formData.status === 'inactive'
-                        ? 'border-red-500 bg-red-500/10 neu-pressed ring-1 ring-red-500'
-                        : 'border-border neu-flat-sm hover:bg-black/5'
+                        ? 'border-red-500 bg-red-500/10 shadow-xs ring-1 ring-red-500'
+                        : 'border-border bg-card hover:bg-muted/50'
                     }`}
                   >
                     <input
@@ -820,12 +820,12 @@ const EditUserModal = ({
                   {/* SUSPENDED */}
                   <label
                     onClick={() => !isLastActiveAdmin && handleStatusChange('suspended')}
-                    className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
+                    className={`flex items-center gap-3 p-3 rounded-lg border transition-all ${
                       isLastActiveAdmin ? 'opacity-40 cursor-not-allowed bg-muted/30' : 'cursor-pointer'
                     } ${
                       formData.status === 'suspended'
-                        ? 'border-amber-500 bg-amber-500/10 neu-pressed ring-1 ring-amber-500'
-                        : 'border-border neu-flat-sm hover:bg-black/5'
+                        ? 'border-amber-500 bg-amber-500/10 shadow-xs ring-1 ring-amber-500'
+                        : 'border-border bg-card hover:bg-muted/50'
                     }`}
                   >
                     <input
@@ -858,10 +858,10 @@ const EditUserModal = ({
                 {/* Mode 1: All Projects */}
                 <label
                   onClick={() => setFormData((prev) => ({ ...prev, access_type: 'all' }))}
-                  className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
+                  className={`flex items-start gap-3 p-3.5 rounded-lg border cursor-pointer transition-all ${
                     formData.access_type === 'all'
-                      ? 'border-primary bg-primary/10 neu-pressed ring-1 ring-primary'
-                      : 'border-border neu-flat-sm hover:bg-black/5'
+                      ? 'border-primary bg-primary/10 shadow-xs ring-1 ring-primary'
+                      : 'border-border bg-card hover:bg-muted/50'
                   }`}
                 >
                   <input
@@ -885,10 +885,10 @@ const EditUserModal = ({
                 {/* Mode 2: Selected Projects */}
                 <label
                   onClick={() => setFormData((prev) => ({ ...prev, access_type: 'selected' }))}
-                  className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
+                  className={`flex items-start gap-3 p-3.5 rounded-lg border cursor-pointer transition-all ${
                     formData.access_type === 'selected'
-                      ? 'border-primary bg-primary/10 neu-pressed ring-1 ring-primary'
-                      : 'border-border neu-flat-sm hover:bg-black/5'
+                      ? 'border-primary bg-primary/10 shadow-xs ring-1 ring-primary'
+                      : 'border-border bg-card hover:bg-muted/50'
                   }`}
                 >
                   <input
@@ -912,7 +912,7 @@ const EditUserModal = ({
 
               {/* Selected Projects Sub-panel */}
               {formData.access_type === 'selected' && (
-                <div className="p-4 rounded-xl bg-white/50 dark:bg-slate-900/50 border border-border space-y-3">
+                <div className="p-4 rounded-lg bg-muted/30 border border-border space-y-3">
                   {/* Search and Action Bar */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div className="relative flex-1">
@@ -921,7 +921,7 @@ const EditUserModal = ({
                         placeholder="ค้นหาชื่อหรือรหัสโครงการ..."
                         value={projectSearch}
                         onChange={(e) => setProjectSearch(e.target.value)}
-                        className="pl-8 text-xs neu-pressed bg-transparent h-8"
+                        className="pl-8 text-xs bg-background border border-input h-8 rounded-lg"
                       />
                     </div>
 
@@ -931,7 +931,7 @@ const EditUserModal = ({
                         variant="outline"
                         size="sm"
                         onClick={handleSelectAllProjects}
-                        className="text-[11px] h-7 px-2.5 neu-button"
+                        className="text-[11px] h-7 px-2.5 rounded-lg"
                       >
                         เลือกทั้งหมด ({projects.length})
                       </Button>
@@ -940,7 +940,7 @@ const EditUserModal = ({
                         variant="outline"
                         size="sm"
                         onClick={handleDeselectAllProjects}
-                        className="text-[11px] h-7 px-2.5 neu-button"
+                        className="text-[11px] h-7 px-2.5 rounded-lg"
                       >
                         ล้างการเลือก
                       </Button>
@@ -962,7 +962,7 @@ const EditUserModal = ({
                             className={`flex items-center justify-between p-2.5 rounded-lg text-xs cursor-pointer transition-colors border ${
                               isChecked
                                 ? 'border-primary/50 bg-primary/10 font-semibold'
-                                : 'border-transparent hover:bg-black/5 dark:hover:bg-white/5'
+                                : 'border-transparent hover:bg-muted/50'
                             }`}
                           >
                             <div className="flex items-center gap-2.5">
@@ -1005,7 +1005,7 @@ const EditUserModal = ({
                   variant="outline"
                   size="sm"
                   onClick={() => setActiveTab('rbac')}
-                  className="text-xs h-9 px-3"
+                  className="text-xs h-9 px-3 rounded-lg"
                 >
                   ถัดไป (TAB 2: บทบาทและสิทธิ์) →
                 </Button>
@@ -1018,7 +1018,7 @@ const EditUserModal = ({
                     variant="outline"
                     size="sm"
                     onClick={() => setActiveTab('profile')}
-                    className="text-xs h-9 px-3"
+                    className="text-xs h-9 px-3 rounded-lg"
                   >
                     ← ย้อนกลับ (TAB 1)
                   </Button>
@@ -1027,7 +1027,7 @@ const EditUserModal = ({
                     variant="outline"
                     size="sm"
                     onClick={() => setActiveTab('projects')}
-                    className="text-xs h-9 px-3"
+                    className="text-xs h-9 px-3 rounded-lg"
                   >
                     ถัดไป (TAB 3: สิทธิ์โครงการ) →
                   </Button>
@@ -1040,7 +1040,7 @@ const EditUserModal = ({
                   variant="outline"
                   size="sm"
                   onClick={() => setActiveTab('rbac')}
-                  className="text-xs h-9 px-3"
+                  className="text-xs h-9 px-3 rounded-lg"
                 >
                   ← ย้อนกลับ (TAB 2)
                 </Button>
@@ -1048,14 +1048,14 @@ const EditUserModal = ({
             </div>
 
             <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-              <Button type="button" variant="ghost" onClick={onClose} className="text-xs h-9 px-4">
+              <Button type="button" variant="ghost" onClick={onClose} className="text-xs h-9 px-4 rounded-lg">
                 ยกเลิก
               </Button>
               <Button
                 type="submit"
                 disabled={loading || (isTargetSuper && !isSuperAdmin)}
                 title={isTargetSuper && !isSuperAdmin ? 'เฉพาะ Super Admin เท่านั้นที่สามารถแก้ไขบัญชีนี้ได้' : 'บันทึกการแก้ไข'}
-                className="neu-primary text-xs h-9 px-5 font-semibold flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="h-9 px-5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs shadow-xs flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
               >
                 {loading ? (
                   <>

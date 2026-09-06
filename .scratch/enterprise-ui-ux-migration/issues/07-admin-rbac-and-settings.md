@@ -4,9 +4,9 @@
 
 **Blocked by:** 04: Global App Shell & Navigation
 
-**Status:** ready-for-agent
+**Status:** closed
 
-- [ ] System settings page and subcomponents (email template manager, default password manager) use clean flat cards
-- [ ] User management table and modals (add, edit, reset password, action modal) render as clean, accessible dialogs
-- [ ] Role management and permission matrix modals converted to high-contrast structured checklists
-- [ ] User profile, password change modal, and manual documentation pages styled consistently
+- [x] System settings page and subcomponents (email template manager, default password manager) use clean flat cards
+- [x] User management table and modals (add, edit, reset password, action modal) render as clean, accessible dialogs
+- [x] Role management and permission matrix modals converted to high-contrast structured checklists
+- [x] User profile, password change modal, and manual documentation pages styled consistently
