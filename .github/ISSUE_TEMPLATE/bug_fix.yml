@@ -1,0 +1,74 @@
+name: Bug Fix
+description: Report an unexpected behavior, error, or defect in Stock-Flow.
+title: "[BUG]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ### 🐛 Bug Report
+        Help us track and resolve defects in Stock-Flow by providing clear reproduction steps.
+
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is.
+      placeholder: Describe what happened vs what was expected...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction-steps
+    attributes:
+      label: Steps to Reproduce
+      description: Detailed step-by-step instructions to trigger the defect.
+      value: |
+        1. Go to '...'
+        2. Click on '...'
+        3. Enter data '...'
+        4. See error '...'
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-vs-expected
+    attributes:
+      label: Expected vs Actual Behavior
+      description: What did you expect to happen, and what actually occurred?
+      placeholder: Expected behavior vs actual result...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity / Priority
+      options:
+        - "High - Broken functionality / blocking users"
+        - "Urgent - System down / data integrity risk"
+        - "Medium - Workaround available"
+        - "Low - Minor visual or non-blocking glitch"
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment Details
+      description: System version, browser, OS, user role, etc.
+      placeholder: |
+        - App Version: v1.4.59
+        - Browser / OS: Chrome 128 / Windows 11
+        - User Role: Super Admin / Warehouse Operator
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs-errors
+    attributes:
+      label: Logs / Error Messages
+      description: Copy paste exact browser console errors or network response payloads.
+      render: shell
+    validations:
+      required: false

@@ -1,0 +1,60 @@
+name: Refactoring Task
+description: Improve code readability, modularity, or eliminate technical debt without changing behavior.
+title: "[REFACTOR]: "
+labels: ["refactor"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ### 🧹 Code Refactoring & Technical Debt
+        Clean and structure existing code while strictly preserving observable system behavior.
+
+  - type: textarea
+    id: refactor-scope
+    attributes:
+      label: Target Modules & Files
+      description: Which files, functions, or abstractions will be refactored?
+      placeholder: e.g. src/pages/StockIn.jsx, src/lib/emailRenderer.js, custom hooks...
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem-and-motivation
+    attributes:
+      label: Current Pain Points / Code Smells
+      description: What makes the current code difficult to maintain, test, or navigate?
+      placeholder: Excessive nesting, duplicate logic, tightly coupled concerns, large file size...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-strategy
+    attributes:
+      label: Proposed Refactoring Strategy
+      description: How will the code be restructured? What design patterns or extractions will be applied?
+      placeholder: Extract helper module, apply guard clauses, unify types...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: risk-level
+    attributes:
+      label: Regression Risk Level
+      options:
+        - "Low - Isolated utility or helper function"
+        - "Medium - Component internal state / hook refactor"
+        - "High - Core transaction / approval / inventory calculation"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: behavior-preservation-checklist
+    attributes:
+      label: Behavior Preservation Checklist
+      options:
+        - label: "Observable behavior, public contracts, and APIs remain unchanged"
+          required: true
+        - label: "Regression tests run and pass without failures"
+          required: true
+        - label: "SemVer PATCH increment prepared"
+          required: true

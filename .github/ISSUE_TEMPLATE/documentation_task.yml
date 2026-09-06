@@ -1,0 +1,64 @@
+name: Documentation Task
+description: Create or update technical docs, runbooks, architecture diagrams, or user manuals.
+title: "[DOCS]: "
+labels: ["documentation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ### 📚 Documentation Task
+        Keep Stock-Flow architecture, API references, and user runbooks clear, accurate, and up-to-date.
+
+  - type: textarea
+    id: docs-target
+    attributes:
+      label: Target Documentation File / Section
+      description: Which document or guide requires creation or updates?
+      placeholder: e.g. README.md, SECURITY.md, CHANGELOG.md, docs/architecture.md, API endpoint docs...
+    validations:
+      required: true
+
+  - type: textarea
+    id: documentation-purpose
+    attributes:
+      label: Purpose & Motivation
+      description: Why is this documentation needed? What changed or was missing?
+      placeholder: Explain what new system behavior, deployment procedure, or configuration needs documenting...
+    validations:
+      required: true
+
+  - type: textarea
+    id: key-contents
+    attributes:
+      label: Outline / Key Content Points
+      description: Bullet points of the sections or details to be included.
+      placeholder: |
+        - Overview of feature X
+        - Environment configuration variables
+        - Step-by-step operator guide
+    validations:
+      required: true
+
+  - type: dropdown
+    id: target-audience
+    attributes:
+      label: Target Audience
+      options:
+        - "Warehouse Operators & End Users"
+        - "Developers & Engineers"
+        - "DevOps & Infrastructure Admins"
+        - "Auditors & Security Compliance"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Completion Checklist
+      options:
+        - label: "Thai language used for user guides / Walkthroughs as required by repo rules"
+          required: false
+        - label: "Code identifiers, APIs, and paths remain in native English"
+          required: false
+        - label: "Links and cross-references verified"
+          required: false

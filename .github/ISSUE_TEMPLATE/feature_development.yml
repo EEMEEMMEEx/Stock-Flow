@@ -1,0 +1,73 @@
+name: Feature Development
+description: Propose a new feature, capability, or user-facing functional enhancement.
+title: "[FEAT]: "
+labels: ["feature"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ### 🚀 Feature Development Request
+        Thank you for proposing a new feature for **Stock-Flow**. Please provide as much context as possible.
+
+  - type: textarea
+    id: problem-statement
+    attributes:
+      label: Problem / Motivation
+      description: What problem does this feature solve? What is the use case?
+      placeholder: Describe the current limitation or business requirement...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed Solution & Specifications
+      description: Detailed description of the proposed feature, user flow, or architectural approach.
+      placeholder: Outline how the feature should behave, inputs/outputs, and integration points...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How urgently is this feature needed?
+      options:
+        - "Medium - Normal schedule"
+        - "High - Critical for roadmap"
+        - "Urgent - Immediate blocker"
+        - "Low - Nice to have / backlog"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: affected-module
+    attributes:
+      label: Affected Module / Layer
+      description: Which area of Stock-Flow does this touch?
+      options:
+        - "Inventory & Stock-In / Stock-Out"
+        - "Approvals & Workflow Engine"
+        - "Dashboard & Analytics"
+        - "Cloudflare R2 Object Storage / S3"
+        - "Supabase Database & RPCs"
+        - "Authentication & RBAC"
+        - "Reports & PDF Generation"
+        - "Other"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: Conditions that must be satisfied for this feature to be marked as Done.
+      options:
+        - label: "Requirements and user flow verified"
+          required: false
+        - label: "Unit / integration tests implemented and passing"
+          required: false
+        - label: "Application builds without error (`npm run build`)"
+          required: false
+        - label: "Changelog and documentation updated"
+          required: false

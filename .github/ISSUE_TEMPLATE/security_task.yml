@@ -1,0 +1,62 @@
+name: Security Task
+description: Track security hardening, dependency vulnerability mitigation, RBAC audit, or secret governance.
+title: "[SEC]: "
+labels: ["security"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ### 🔒 Security Task & Hardening
+        Use this template for **non-sensitive** security engineering tasks, policy updates, or dependency remediation.
+        > **⚠️ Warning:** If this is an active exploitable 0-day vulnerability, please report it confidentially via [GitHub Private Vulnerability Reporting](https://github.com/EEMEEMMEEx/Stock-Flow/security/advisories) according to `SECURITY.md`.
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Security Area / Scope
+      description: Which boundary or security mechanism is being strengthened?
+      placeholder: e.g. Row Level Security (RLS), Cloudflare R2 Presigned URLs, JWT Expiration, Dependabot CVE, CSP headers...
+    validations:
+      required: true
+
+  - type: textarea
+    id: threat-model
+    attributes:
+      label: Risk Assessment / Threat Model
+      description: What risk or potential attack vector does this task address?
+      placeholder: Describe the potential exploit scenario or compliance requirement...
+    validations:
+      required: true
+
+  - type: textarea
+    id: hardening-plan
+    attributes:
+      label: Implementation / Hardening Plan
+      description: Proposed technical changes to remediate the issue or harden the system.
+      placeholder: Detail RPC changes, policy SQL, CORS restrictions, input sanitization...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority / CVSS Impact
+      options:
+        - "High - Must patch in upcoming release"
+        - "Urgent - Active critical vulnerability (Remediate immediately)"
+        - "Medium - Security hardening & proactive defense"
+        - "Low - Minor informational / policy cleanup"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: verification-checklist
+    attributes:
+      label: Security Verification Criteria
+      options:
+        - label: "No secrets or credentials exposed in code/logs"
+          required: true
+        - label: "RLS policies / Authorization checked in Supabase"
+          required: false
+        - label: "Automated regression tests run and passing"
+          required: false

@@ -1,0 +1,19 @@
+name: GitHub Project Board Automation
+
+on:
+  issues:
+    types: [opened, reopened, labeled]
+  pull_request:
+    types: [opened, reopened, ready_for_review]
+
+jobs:
+  add-to-project:
+    name: Add Issue / PR to Project Board
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add to Stock-Flow Project
+        uses: actions/add-to-project@v1.0.2
+        with:
+          project-url: https://github.com/users/EEMEEMMEEx/projects/1
+          github-token: ${{ secrets.PROJECT_TOKEN || secrets.GITHUB_TOKEN }}
+        continue-on-error: true

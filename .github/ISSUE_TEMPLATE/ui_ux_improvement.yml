@@ -1,0 +1,61 @@
+name: UI/UX Improvement
+description: Propose an interface redesign, accessibility fix, responsive layout or interaction refinement.
+title: "[UI/UX]: "
+labels: ["ui/ux"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ### 🎨 UI/UX Improvement
+        Propose visual, responsive, or ergonomic improvements to make Stock-Flow feel state of the art.
+
+  - type: textarea
+    id: overview
+    attributes:
+      label: Target Screen / Component
+      description: Which page or component needs visual/UX enhancement?
+      placeholder: e.g. StockIn Table, Approvals Modal, Dashboard Cards, Sidebar, Mobile Drawer...
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-experience
+    attributes:
+      label: Current Experience & Friction Points
+      description: What feels awkward, cluttered, slow, or inconsistent in the current layout?
+      placeholder: Describe the UX friction or visual flaw...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-design
+    attributes:
+      label: Proposed Visual / Interaction Design
+      description: How should the interface look and behave? Reference Tailwind, Lucide icons, or Framer Motion transitions.
+      placeholder: Specify layout structure, micro-animations, colors, responsive breakpoints...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: device-target
+    attributes:
+      label: Device Target
+      options:
+        - "All Screens (Responsive - Mobile, Tablet, Desktop)"
+        - "Desktop Only (1280px+)"
+        - "Mobile / PWA Viewport (< 768px)"
+        - "Tablet Viewport (768px - 1024px)"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: design-principles
+    attributes:
+      label: Design Quality Check
+      options:
+        - label: "Complies with UI Icon Policy (No emoji as UI icons, use Lucide/SVG)"
+          required: true
+        - label: "Maintains high contrast and responsive touch targets"
+          required: false
+        - label: "Preserves theme consistency (Dark / Light mode)"
+          required: false

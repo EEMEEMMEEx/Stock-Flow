@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 🔒 Security Vulnerability Reporting
+    url: https://github.com/EEMEEMMEEx/Stock-Flow/security/advisories
+    about: Privately report critical security vulnerabilities to the Stock-Flow maintainers.
+  - name: 💬 Discussions & Q&A
+    url: https://github.com/EEMEEMMEEx/Stock-Flow/discussions
+    about: Ask architectural questions, discuss ideas, or share community feedback.
