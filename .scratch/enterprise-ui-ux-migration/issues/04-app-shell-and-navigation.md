@@ -4,9 +4,9 @@
 
 **Blocked by:** 03: Core UI Primitives modernization
 
-**Status:** ready-for-agent
+**Status:** closed
 
-- [ ] Sidebar renders with solid background, crisp right border, and accessible active navigation indicators
-- [ ] Topbar renders with crisp bottom border, clean theme switcher, and streamlined profile dropdown
-- [ ] Interactive Notification Bell dropdown styled as solid popover with clear semantic event badges
-- [ ] Mobile navigation drawer opens and closes smoothly with accessible backdrop overlay
+- [x] Sidebar renders with solid background, crisp right border, and accessible active navigation indicators
+- [x] Topbar renders with crisp bottom border, clean theme switcher, and streamlined profile dropdown
+- [x] Interactive Notification Bell dropdown styled as solid popover with clear semantic event badges
+- [x] Mobile navigation drawer opens and closes smoothly with accessible backdrop overlay

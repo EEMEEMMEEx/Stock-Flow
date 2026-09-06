@@ -1,5 +1,32 @@
 # Changelog
 
+## [v1.4.68] [2026-09-06] Enterprise UI/UX Migration — Global App Shell & Navigation (Ticket 04)
+
+- **Application Shell & Navigation Architecture:**
+  - `src/components/layout/Sidebar.jsx`:
+    - ปรับพื้นผิวแถบเมนูด้านข้างจาก `glass` และ `backdrop-blur-xl` เป็น Solid Opaque Card `bg-card border-r border-border`
+    - ยกเครื่องสไตล์ Active Navigation Link จาก `neu-pressed` เป็น `bg-primary/10 text-primary font-semibold border-l-2 border-primary shadow-xs` พร้อม Inactive Hover เป็น `bg-muted`
+    - ปรับปุ่มยุบ/ขยายเมนู, ไอคอนแบรนด์, และลิงก์การตั้งค่าด้านล่างเป็นมาตรฐาน Enterprise Border Radius (`8px`)
+    - ปรับปรุง Backdrop Overlay ของ Mobile Navigation Drawer (`bg-black/50`)
+  - `src/components/layout/Topbar.jsx`:
+    - ปรับ Header Background จาก `glass` เป็น `bg-card/95 border-b border-border shadow-xs`
+    - ปรับ Trigger Button ของโปรไฟล์ผู้ใช้งานและ Theme Switcher ให้มีขนาดมาตรฐาน `h-9` พร้อมเส้นขอบ `border-input` และ Focus-visible Ring
+    - ยกเครื่อง Dropdown Menu เนื้อหาโปรไฟล์เป็น Solid Popover `bg-popover border border-border shadow-xl`
+  - `src/components/layout/NotificationBell.jsx`:
+    - ปรับ Control Button ให้มีความสูงมาตรฐาน `h-9`
+    - ปรับ Dropdown Panel เป็น Solid Popover `bg-popover border border-border shadow-xl`
+    - ตัดคลาส `neu-button` และ `active:scale-95` ออกจาก Quick Action Buttons ทั้งหมด (ปุ่มอนุมัติทันที, ดูบิล, ดูใบเบิก, รับคืนพัสดุ, ตรวจสต็อก)
+  - `src/components/layout/AppFooter.jsx`:
+    - ปรับพื้นหลังจาก `backdrop-blur-md` เป็น `bg-card/80 border-t border-border`
+- **Modified files:**
+  - `src/components/layout/Sidebar.jsx`, `Topbar.jsx`, `NotificationBell.jsx`, `AppFooter.jsx`
+  - `package.json`: ขยับเวอร์ชันระบบเป็น `1.4.68`
+  - `README.md`: อัปเดต Version Badge เป็น `v1.4.68`
+  - `wiki/Home.md`, `wiki/_Footer.md`: ปรับเวอร์ชันระบบเป็น `v1.4.68`
+- **Verification:**
+  - `npm run build` ผ่าน 100% (26.83s)
+  - `npm run test:email` ผ่าน 5/5 tests
+
 ## [v1.4.67] [2026-09-06] Enterprise UI/UX Migration — Core UI Primitives Modernization (Ticket 03)
 
 - **Shared UI Primitives Modernization:**

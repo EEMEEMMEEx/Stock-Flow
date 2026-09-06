@@ -12,9 +12,9 @@ import { cn } from '@/lib/utils';
 import NotificationBell from './NotificationBell';
 import RoleBadge, { getRoleLabel, getRoleTextColorClass } from '@/components/ui/RoleBadge';
 
-const controlClassName = 'h-11 w-11 shrink-0 rounded-xl border border-[var(--glass-input-border)] bg-[var(--glass-input-bg)] text-[var(--glass-text)] shadow-sm transition-all duration-200 hover:bg-[var(--glass-hover)] hover:text-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 dark:shadow-none';
-const menuContentClassName = 'z-50 w-[min(20rem,calc(100vw-1.5rem))] overflow-hidden rounded-2xl border border-[var(--glass-card-border)] bg-[var(--glass-card-bg)] p-1.5 text-popover-foreground shadow-xl backdrop-blur-xl outline-none data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0';
-const menuItemClassName = 'flex w-full cursor-pointer select-none items-center gap-3 rounded-xl px-3 py-2.5 text-sm outline-none transition-colors hover:bg-[var(--glass-hover)] focus:bg-[var(--glass-hover)] data-[disabled]:pointer-events-none data-[disabled]:opacity-50';
+const controlClassName = 'h-9 w-9 shrink-0 rounded-lg border border-input bg-background text-foreground shadow-xs transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 cursor-pointer';
+const menuContentClassName = 'z-50 w-[min(20rem,calc(100vw-1.5rem))] overflow-hidden rounded-xl border border-border bg-popover p-1.5 text-popover-foreground shadow-xl outline-none data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0';
+const menuItemClassName = 'flex w-full cursor-pointer select-none items-center gap-2.5 rounded-lg px-3 py-2 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50';
 
 const getInitial = (name, email) => (name || email || 'U').trim().charAt(0).toUpperCase() || 'U';
 
@@ -22,7 +22,7 @@ const Avatar = ({ profile, user, className = '' }) => profile?.avatar_url ? (
   <img
     src={profile.avatar_url}
     alt={profile.full_name || user?.email || 'ผู้ใช้งาน'}
-    className={cn('rounded-full border border-[var(--glass-card-border)] object-cover', className)}
+    className={cn('rounded-full border border-border object-cover', className)}
   />
 ) : (
   <span className={cn('inline-flex items-center justify-center rounded-full bg-primary/15 font-semibold text-primary', className)}>
@@ -48,7 +48,7 @@ const Topbar = ({ onMenuClick, menuButtonRef, isMobileMenuOpen }) => {
   };
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-[var(--glass-card-border)] bg-[var(--glass-card-bg)] px-3 shadow-sm backdrop-blur-xl transition-colors sm:px-4 md:px-6">
+    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-card/95 px-3 shadow-xs transition-colors sm:px-4 md:px-6">
       {/* Left side: Mobile Navigation Drawer Trigger (Visible ONLY on Mobile < md) */}
       <div className="flex items-center gap-2 md:hidden">
         <Button
@@ -90,9 +90,18 @@ const Topbar = ({ onMenuClick, menuButtonRef, isMobileMenuOpen }) => {
         {/* User Profile Dropdown */}
         <DropdownMenu.Root open={userMenuOpen} onOpenChange={setUserMenuOpen}>
           <DropdownMenu.Trigger asChild>
-            <button type="button" className="flex h-11 max-w-[13rem] items-center gap-2 rounded-xl border border-[var(--glass-input-border)] bg-[var(--glass-input-bg)] px-1.5 pr-2 text-left text-[var(--glass-text)] shadow-sm transition-all duration-200 hover:bg-[var(--glass-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 dark:shadow-none cursor-pointer" aria-label="เมนูผู้ใช้งาน" aria-haspopup="menu" aria-expanded={userMenuOpen}>
-              <Avatar profile={profile} user={user} className="h-8 w-8 shrink-0 text-sm" />
-              <span className="hidden min-w-0 flex-1 lg:block"><span className="block truncate text-xs font-semibold">{profile?.full_name || user?.email || 'ผู้ใช้งาน'}</span><span className={cn("mt-0.5 block truncate text-[10px] uppercase tracking-wide font-bold", roleColorClass)}>{roleLabel}</span></span>
+            <button
+              type="button"
+              className="flex h-9 max-w-[13rem] items-center gap-2 rounded-lg border border-input bg-background px-2 text-left text-foreground shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 cursor-pointer"
+              aria-label="เมนูผู้ใช้งาน"
+              aria-haspopup="menu"
+              aria-expanded={userMenuOpen}
+            >
+              <Avatar profile={profile} user={user} className="h-7 w-7 shrink-0 text-xs" />
+              <span className="hidden min-w-0 flex-1 lg:block">
+                <span className="block truncate text-xs font-semibold">{profile?.full_name || user?.email || 'ผู้ใช้งาน'}</span>
+                <span className={cn("mt-0.5 block truncate text-[10px] uppercase tracking-wide font-bold", roleColorClass)}>{roleLabel}</span>
+              </span>
               <ChevronDown className={cn('hidden h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 sm:block', userMenuOpen && 'rotate-180')} />
             </button>
           </DropdownMenu.Trigger>

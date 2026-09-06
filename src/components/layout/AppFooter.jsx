@@ -44,7 +44,7 @@ const AppFooter = () => {
   }, [canViewSettings]);
 
   return (
-    <footer className="relative z-10 w-full border-t border-border/40 bg-background/60 backdrop-blur-md transition-colors duration-200 mt-auto">
+    <footer className="relative z-10 w-full border-t border-border bg-card/80 transition-colors duration-200 mt-auto">
       <div className="mx-auto max-w-7xl px-4 md:px-6 lg:px-8 py-3 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
         
         {/* Left Section: Branding & Copyright */}

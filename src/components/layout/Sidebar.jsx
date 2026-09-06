@@ -98,11 +98,11 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
         to={item.path}
         onClick={onClose}
         className={cn(
-          "flex items-center gap-3 py-2.5 rounded-xl transition-all duration-200 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring overflow-hidden whitespace-nowrap shrink-0",
-          isDesktopCollapsed ? "justify-center px-0 w-11 h-11 mx-auto" : "px-3 w-full",
+          "flex items-center gap-3 py-2.5 rounded-lg transition-colors duration-150 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring overflow-hidden whitespace-nowrap shrink-0",
+          isDesktopCollapsed ? "justify-center px-0 w-10 h-10 mx-auto" : "px-3 w-full",
           isActive
-            ? "neu-pressed text-primary font-semibold shadow-sm border-l-2 border-primary"
-            : "text-muted-foreground hover:neu-flat-sm hover:text-foreground"
+            ? "bg-primary/10 text-primary font-semibold border-l-2 border-primary shadow-xs"
+            : "text-muted-foreground hover:bg-muted hover:text-foreground"
         )}
       >
         <item.icon className="w-5 h-5 shrink-0" />
@@ -140,7 +140,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
         <button
           type="button"
           aria-label="ปิดเมนูนำทาง"
-          className="fixed inset-0 z-40 bg-black/45 backdrop-blur-[1px] md:hidden"
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-[1px] md:hidden"
           onClick={onClose}
         />
       )}
@@ -150,7 +150,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
         id="stockflow-sidebar"
         aria-label="แถบเมนูหลัก"
         className={cn(
-          "fixed top-0 z-50 flex h-screen flex-shrink-0 flex-col border-r border-[var(--glass-card-border)] bg-[var(--glass-card-bg)] shadow-xl backdrop-blur-xl transition-[width,transform] duration-200 ease-out md:sticky md:z-20 md:translate-x-0 md:opacity-100 md:shadow-sm overflow-x-hidden",
+          "fixed top-0 z-50 flex h-screen flex-shrink-0 flex-col border-r border-border bg-card shadow-lg md:shadow-none transition-[width,transform] duration-200 ease-out md:sticky md:z-20 md:translate-x-0 md:opacity-100 overflow-x-hidden",
           isCollapsed ? "md:w-20" : "md:w-64",
           isOpen ? "w-64 translate-x-0 opacity-100" : "w-64 pointer-events-none -translate-x-full opacity-0 md:pointer-events-auto"
         )}
@@ -168,7 +168,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
                   title="Expand sidebar"
                   aria-expanded={false}
                   aria-controls="stockflow-sidebar"
-                  className="p-2.5 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring group"
+                  className="p-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring group cursor-pointer"
                 >
                   <Package className="w-5 h-5 group-hover:hidden" />
                   <PanelLeftOpen className="w-5 h-5 hidden group-hover:block" />
@@ -183,7 +183,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
           /* Expanded Header: Logo on left, collapse button on right */
           <div className="h-16 flex items-center justify-between px-5 border-b border-border/40 shrink-0">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="p-2 rounded-xl bg-primary/10 text-primary shrink-0 shadow-inner">
+              <div className="p-2 rounded-lg bg-primary/10 text-primary shrink-0">
                 <Package className="w-5 h-5" />
               </div>
               <span className="text-lg font-bold bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent truncate whitespace-nowrap">
@@ -198,7 +198,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
               aria-expanded={true}
               aria-controls="stockflow-sidebar"
               onClick={onToggleCollapse}
-              className="hidden md:flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground hover:bg-[var(--glass-hover)] hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0"
+              className="hidden md:flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0 cursor-pointer"
             >
               <PanelLeftClose className="w-5 h-5" />
             </button>
@@ -210,7 +210,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
               title="Close navigation"
               aria-expanded={isOpen}
               aria-controls="stockflow-sidebar"
-              className="flex md:hidden h-9 w-9 items-center justify-center rounded-xl text-muted-foreground hover:bg-[var(--glass-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0"
+              className="flex md:hidden h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0 cursor-pointer"
               onClick={onClose}
             >
               <X className="w-5 h-5" />
@@ -272,10 +272,10 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
                     to="/settings"
                     onClick={onClose}
                     className={cn(
-                      "flex items-center justify-center w-11 h-11 mx-auto rounded-xl transition-all duration-200 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring overflow-hidden whitespace-nowrap shrink-0",
+                      "flex items-center justify-center w-10 h-10 mx-auto rounded-lg transition-colors duration-150 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring overflow-hidden whitespace-nowrap shrink-0",
                       isSettingsActive
-                        ? "neu-pressed text-primary font-semibold shadow-sm border-l-2 border-primary"
-                        : "text-muted-foreground hover:neu-flat-sm hover:text-foreground"
+                        ? "bg-primary/10 text-primary font-semibold border-l-2 border-primary shadow-xs"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
                     )}
                   >
                     <Settings className="w-5 h-5 shrink-0" />
@@ -290,10 +290,10 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
                 to="/settings"
                 onClick={onClose}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring overflow-hidden whitespace-nowrap shrink-0",
+                  "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors duration-150 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring overflow-hidden whitespace-nowrap shrink-0",
                   isSettingsActive
-                    ? "neu-pressed text-primary font-semibold shadow-sm border-l-2 border-primary"
-                    : "text-muted-foreground hover:neu-flat-sm hover:text-foreground"
+                    ? "bg-primary/10 text-primary font-semibold border-l-2 border-primary shadow-xs"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}
               >
                 <Settings className="w-5 h-5 shrink-0" />
