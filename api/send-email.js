@@ -80,8 +80,18 @@ export default async function handler(req, res) {
     const senderEmail = smtpOverrides?.sender_email || dynamicSmtp.sender_email || process.env.SMTP_SENDER_EMAIL || process.env.EMAIL_FROM || user;
     const senderName = smtpOverrides?.sender_name || dynamicSmtp.sender_name || process.env.SMTP_SENDER_NAME || process.env.EMAIL_FROM_NAME || 'StockFlow Notification';
 
+    // Safely validate whether the SMTP host belongs to Google/Gmail
+    const isGmailSmtpHost = (rawHost) => {
+      if (!rawHost || typeof rawHost !== 'string') return false;
+      const cleanHost = rawHost.trim().toLowerCase().split(':')[0];
+      return cleanHost === 'gmail.com' ||
+             cleanHost === 'smtp.gmail.com' ||
+             cleanHost.endsWith('.gmail.com') ||
+             cleanHost.endsWith('.googlemail.com');
+    };
+
     // When using Gmail SMTP, Header From address must match authenticated user to pass SPF/DKIM/DMARC on Microsoft 365 / Corporate Inboxes
-    const fromAddress = host.toLowerCase().includes('gmail.com') ? user : senderEmail;
+    const fromAddress = isGmailSmtpHost(host) ? user : senderEmail;
 
     const transporter = nodemailer.createTransport({
       host,

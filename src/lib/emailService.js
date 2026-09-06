@@ -21,7 +21,10 @@ export async function sendStockFlowEmail({ to, cc, subject, html, text, smtpOver
 
   // Resolve active API endpoint: prefer dynamic origin on browser, fallback to custom domain
   const isBrowser = typeof window !== 'undefined';
-  const isGithubPages = isBrowser && window.location.hostname.includes('github.io');
+  const isGithubPages = isBrowser && (
+    window.location.hostname === 'github.io' || 
+    window.location.hostname.endsWith('.github.io')
+  );
   const dynamicOrigin = isBrowser && !isGithubPages && window.location.origin ? window.location.origin : 'https://stockflowth.online';
   const defaultEndpoint = `${dynamicOrigin}/api/send-email`;
   const endpoint = viteEnv.VITE_EMAIL_SERVICE_URL || defaultEndpoint;

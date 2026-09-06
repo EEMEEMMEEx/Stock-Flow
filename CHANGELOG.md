@@ -1,5 +1,34 @@
 # Changelog
 
+## [v1.4.65] [2026-09-06] แก้ไขข้อผิดพลาดความปลอดภัย GitHub CodeQL ทั้งหมด (XSS, String Sanitization, URL Substring Sanitization, Workflow Permissions)
+
+- **Security Fixes:**
+  - `src/components/users/AvatarUpload.jsx`:
+    - ป้องกันช่องโหว่ DOM XSS (`js/xss-through-dom` Alert 8) โดยเพิ่มฟังก์ชัน `sanitizeImageUrl` ตรวจสอบความถูกต้องของโปรโตคอล (`blob:`, `http:`, `https:`) และทำการแปลง URI Escape Meta-characters ด้วย `encodeURI`
+    - เพิ่มการจัดการ Revoke Object URL บน lifecycle cleanup เมื่อเปลี่ยนไฟล์หรือ unmount ป้องกัน Memory Leak
+  - `scripts/backup-full-database.mjs`:
+    - ป้องกันช่องโหว่ Incomplete Sanitization (`js/incomplete-sanitization` Alert 7) ในฟังก์ชัน `formatSqlValue` โดยทำการ escape backslash (`\`) ก่อน escape double quotes (`"`) ใน array elements
+  - `src/lib/r2Storage.js`:
+    - ป้องกันช่องโหว่ Incomplete URL Substring Sanitization (`js/incomplete-url-substring-sanitization` Alert 6) โดยเปลี่ยนจากการใช้ `.includes('github.io')` มาเป็นการตรวจสอบ hostname แบบ Exact match หรือลงท้ายด้วย `.github.io`
+  - `src/lib/emailService.js`:
+    - ป้องกันช่องโหว่ Incomplete URL Substring Sanitization (`js/incomplete-url-substring-sanitization` Alert 5) โดยปรับปรุงการตรวจสอบ hostname GitHub Pages อย่างรัดกุม
+  - `src/App.jsx`:
+    - ป้องกันช่องโหว่ Incomplete URL Substring Sanitization (`js/incomplete-url-substring-sanitization` Alert 4) ในฟังก์ชัน `isLandingSite`
+  - `src/components/InstallPrompt.jsx`:
+    - ป้องกันช่องโหว่ Incomplete URL Substring Sanitization (`js/incomplete-url-substring-sanitization` Alert 3) ในการตรวจจับ GitHub Pages และการเพิ่ม prefix จุด (`.${domain}`) สำหรับการตรวจสอบ Allowed domains
+  - `api/send-email.js`:
+    - ป้องกันช่องโหว่ Incomplete URL Substring Sanitization (`js/incomplete-url-substring-sanitization` Alert 2) โดยสร้างตัวตรวจจับ `isGmailSmtpHost` แยก hostname และตรวจสอบแบบ Exact match ป้องกันการ spoofing
+  - `.github/workflows/project-automation.yml`:
+    - แก้ไข `actions/missing-workflow-permissions` (Alert 1) โดยเพิ่มบล็อก `permissions: { issues: write, pull-requests: write, repository-projects: read }` ตามหลัก Least Privilege
+- **Modified files:**
+  - `package.json`: ปรับเวอร์ชันระบบเป็น `1.4.65`
+  - `README.md`: อัปเดต Version Badge เป็น `v1.4.65`
+  - `wiki/Home.md`, `wiki/_Footer.md`: ปรับเวอร์ชันระบบเป็น `v1.4.65`
+  - `docs/codeql-security-fixes-implementation-plan.md`: จัดทำแผนการแก้ไขและวิเคราะห์ช่องโหว่
+- **Verification:**
+  - ทดสอบรันคำสั่ง `npm run test:email` ผ่าน 5/5 tests
+  - ทดสอบรันคำสั่ง `npm run build` ผ่าน 100% ปราศจากข้อผิดพลาด
+
 ## [v1.4.64] [2026-09-06] จัดทำและกำหนดค่าคลังเอกสารระบบ GitHub Wiki สำหรับโครงการ Stock-Flow
 
 - **Added files:**

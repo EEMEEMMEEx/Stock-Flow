@@ -6,13 +6,39 @@ import toast from 'react-hot-toast';
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png'];
 
+/**
+ * Sanitize image URL to prevent DOM XSS and meta-character injection
+ * Strictly permits blob:, https:, and http: protocols and escapes meta-characters
+ */
+const sanitizeImageUrl = (url) => {
+  if (!url || typeof url !== 'string') return '';
+  const trimmed = url.trim();
+  // Strictly allow blob URLs created by the browser or safe http/https URLs
+  if (/^blob:http(s)?:\/\/[a-zA-Z0-9.\-_:]+\/[a-f0-9\-]+$/i.test(trimmed)) {
+    return encodeURI(trimmed);
+  }
+  if (/^https?:\/\/[a-zA-Z0-9\-._~:/?#[\]@!$&'()*+,;=]+$/i.test(trimmed)) {
+    return encodeURI(trimmed);
+  }
+  return '';
+};
+
 const AvatarUpload = ({ value, name = '', onChange, onRemove }) => {
   const fileInputRef = useRef(null);
-  const [previewUrl, setPreviewUrl] = useState(value || '');
+  const [previewUrl, setPreviewUrl] = useState(() => sanitizeImageUrl(value || ''));
 
   useEffect(() => {
-    setPreviewUrl(value || '');
+    setPreviewUrl(sanitizeImageUrl(value || ''));
   }, [value]);
+
+  // Clean up blob URL on unmount or URL replacement to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (previewUrl && previewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
 
   const getInitial = (str) => {
     if (!str) return 'U';
@@ -25,7 +51,8 @@ const AvatarUpload = ({ value, name = '', onChange, onRemove }) => {
     if (!file) return;
 
     // 1. Validate File Type
-    if (!ALLOWED_TYPES.includes(file.type.toLowerCase())) {
+    const lowerType = (file.type || '').toLowerCase();
+    if (!ALLOWED_TYPES.includes(lowerType)) {
       toast.error('รองรับเฉพาะไฟล์รูปภาพ JPG และ PNG เท่านั้น');
       e.target.value = '';
       return;
@@ -38,22 +65,33 @@ const AvatarUpload = ({ value, name = '', onChange, onRemove }) => {
       return;
     }
 
-    // 3. Create Immediate Local Preview URL
-    const localUrl = URL.createObjectURL(file);
-    setPreviewUrl(localUrl);
+    // 3. Revoke previous blob URL if any
+    if (previewUrl && previewUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(previewUrl);
+    }
 
-    // 4. Trigger Parent Callback
+    // 4. Create and Sanitize Immediate Local Preview URL
+    const rawLocalUrl = URL.createObjectURL(file);
+    const safeLocalUrl = sanitizeImageUrl(rawLocalUrl) || rawLocalUrl;
+    setPreviewUrl(safeLocalUrl);
+
+    // 5. Trigger Parent Callback
     if (onChange) {
-      onChange(file, localUrl);
+      onChange(file, safeLocalUrl);
     }
   };
 
   const handleRemove = (e) => {
     e.stopPropagation();
+    if (previewUrl && previewUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(previewUrl);
+    }
     setPreviewUrl('');
     if (fileInputRef.current) fileInputRef.current.value = '';
     if (onRemove) onRemove();
   };
+
+  const safePreviewSrc = sanitizeImageUrl(previewUrl);
 
   return (
     <div className="flex items-center gap-4 p-3 rounded-xl neu-pressed-sm bg-white/40 dark:bg-black/20">
@@ -63,9 +101,9 @@ const AvatarUpload = ({ value, name = '', onChange, onRemove }) => {
         className="relative w-[56px] h-[56px] min-w-[56px] min-h-[56px] rounded-full overflow-hidden neu-flat cursor-pointer group flex items-center justify-center bg-primary/10 border-2 border-primary/20 hover:border-primary transition-all shrink-0"
         title="คลิกเพื่ออัปโหลดรูปโปรไฟล์"
       >
-        {previewUrl ? (
+        {safePreviewSrc ? (
           <img
-            src={previewUrl}
+            src={safePreviewSrc}
             alt="Avatar preview"
             className="w-full h-full object-cover"
             onError={() => setPreviewUrl('')}

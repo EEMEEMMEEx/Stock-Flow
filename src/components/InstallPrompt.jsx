@@ -18,11 +18,14 @@ const InstallPrompt = () => {
   const [isIOS, setIsIOS] = useState(false);
 
   // Strict domain and landing page guard
-  const isGithubPages = typeof window !== 'undefined' && window.location.hostname.includes('github.io');
+  const isGithubPages = typeof window !== 'undefined' && (
+    window.location.hostname === 'github.io' || 
+    window.location.hostname.endsWith('.github.io')
+  );
   const isAllowedDomain = typeof window !== 'undefined' && !isGithubPages && (
     ALLOWED_APP_DOMAINS.some(domain => 
       window.location.hostname === domain || 
-      window.location.hostname.endsWith(domain)
+      window.location.hostname.endsWith(`.${domain}`)
     )
   );
 

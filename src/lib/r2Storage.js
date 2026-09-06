@@ -20,7 +20,10 @@ export async function uploadFileToR2(file, folder = 'uploads', customFileName = 
 
   // Determine API endpoint: prefer local /api endpoint on localhost / full-stack servers
   const isBrowser = typeof window !== 'undefined';
-  const isGithubPages = isBrowser && window.location.hostname.includes('github.io');
+  const isGithubPages = isBrowser && (
+    window.location.hostname === 'github.io' || 
+    window.location.hostname.endsWith('.github.io')
+  );
   const isLocalhost = isBrowser && (
     window.location.hostname === 'localhost' || 
     window.location.hostname === '127.0.0.1' ||

@@ -25,7 +25,10 @@ import { useAuth } from './contexts/AuthContext';
 
 // Check if running on the dedicated Landing Page site (e.g. GitHub Pages)
 export const isLandingSite = () => {
-  if (typeof window !== 'undefined' && window.location.hostname.includes('github.io')) {
+  if (typeof window !== 'undefined' && (
+    window.location.hostname === 'github.io' || 
+    window.location.hostname.endsWith('.github.io')
+  )) {
     return true;
   }
   if (import.meta.env.VITE_APP_MODE === 'landing') {

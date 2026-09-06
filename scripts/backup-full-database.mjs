@@ -1778,7 +1778,7 @@ function formatSqlValue(val) {
   if (typeof val === 'boolean') return val ? 'TRUE' : 'FALSE';
   if (Array.isArray(val)) {
     const arrayElements = val.map((elem) => {
-      if (typeof elem === 'string') return `"${elem.replace(/"/g, '\\"')}"`;
+      if (typeof elem === 'string') return `"${elem.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
       return String(elem);
     });
     return `'{${arrayElements.join(',')}}'`;
