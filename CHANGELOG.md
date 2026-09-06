@@ -1,5 +1,27 @@
 # Changelog
 
+## [v1.4.64] [2026-09-06] จัดทำและกำหนดค่าคลังเอกสารระบบ GitHub Wiki สำหรับโครงการ Stock-Flow
+
+- **Added files:**
+  - `wiki/Home.md`: เอกสารหน้าแรกของระบบ สรุปลิงก์สำคัญ แผนภาพสถาปัตยกรรมระดับสูง และสารบัญเอกสารทั้งหมด
+  - `wiki/Architecture.md`: รายละเอียดสถาปัตยกรรมระดับองค์กร (React 18 + Vite 5, Tailwind 4, Supabase PostgreSQL, Cloudflare R2, Vercel Functions, Enterprise SMTP)
+  - `wiki/Features.md`: รายละเอียดฟังก์ชันหลักทั้ง 9 โมดูล (POS Terminal, BOM Kits, Lending & Return, Multi-Tier Approval, Real-time Alerts, RBAC & Audit, Batch Import/Export, PDF Reports, R2 Asset Manager)
+  - `wiki/Setup-and-Installation.md`: คู่มือการติดตั้งและเตรียม Environment (Node.js 22+, npm, .env configuration, script commands)
+  - `wiki/Database-and-Storage.md`: โครงสร้างสกีมา ERD, Row-Level Security (RLS), Atomic Concurrency RPCs (`SELECT FOR UPDATE`), Cloudflare R2 S3 API
+  - `wiki/Security.md`: นโยบายความมั่นคงปลอดภัยสารสนเทศ, Secret Governance, RBAC Matrix, Dependabot Supply Chain Hygiene, SLA การรับมือช่องโหว่
+  - `wiki/Deployment-and-Operations.md`: สถาปัตยกรรม Dual Deployment (Vercel Production & GitHub Pages Landing), CI/CD Workflow, Backup Runbook, R2 Migration
+  - `wiki/Development-Workflow.md`: มาตรฐานการพัฒนาซอฟต์แวร์, Trunk-based Branching, กฎเหล็ก Rule 10 SemVer, Conventional Commits, Definition of Done
+  - `wiki/_Sidebar.md`: แถบนำทางด้านข้าง (Sidebar Navigation) ครอบคลุมทุกหัวข้อย่อยและลิงก์ด่วนภายนอก
+  - `wiki/_Footer.md`: ส่วนท้ายเอกสารแสดงข้อมูลลิขสิทธิ์และเลขเวอร์ชันระบบ
+  - `scripts/sync-wiki.ps1`: สคริปต์อัตโนมัติ PowerShell สำหรับซิงค์เอกสารจากโฟลเดอร์ `wiki/` สู่ GitHub Wiki Git Remote
+- **Modified files:**
+  - `package.json`: เพิ่มคำสั่ง `"wiki:sync"` และปรับเวอร์ชันระบบเป็น `1.4.64`
+  - `README.md`: อัปเดต Version Badge เป็น `v1.4.64` และเพิ่มลิงก์ Project Wiki
+  - `wiki/Home.md`, `wiki/_Footer.md`: ปรับเวอร์ชันระบบเป็น `v1.4.64`
+- **Verification:**
+  - ทดสอบรันคำสั่ง `npm run test:email` ผ่าน 5/5 tests
+  - ทดสอบรันคำสั่ง `npm run build` ผ่าน 100% ปราศจากข้อผิดพลาด
+
 ## [v1.4.63] [2026-09-06] รีแฟกเตอร์และจัดระเบียบรูปแบบเอกสาร Markdown ตามมาตรฐาน Markdownlint (MD009, MD012, MD022, MD024, MD029, MD031, MD032, MD037, MD038)
 
 - **Modified files:**

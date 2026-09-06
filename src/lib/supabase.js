@@ -8,7 +8,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 export const supabase = createClient(
-  supabaseUrl || 'https://fhzvrgyjarmqnacamkop.supabase.co',
-  supabaseAnonKey || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZoenZyZ3lqYXJtcW5hY2Fta29wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMDk5MTUsImV4cCI6MjA5MTg4NTkxNX0.bPC-m0bSIkWpKtQDkGipl8iVpqnvkDXkm5j4ti8956Y'
+  supabaseUrl,
+  supabaseAnonKey
 )
 

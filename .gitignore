@@ -16,6 +16,17 @@ build/
 .env.production.local
 .env.*
 !.env.example
+*.pem
+*.key
+*.cert
+*.crt
+*.pfx
+*.p12
+service-account*.json
+firebase*.json
+google-services*.json
+*.credentials.json
+
 
 # Logs & Diagnostics
 *.log
