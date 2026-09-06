@@ -4,28 +4,25 @@ import { cva } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-xl text-sm font-semibold ring-offset-background transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer select-none active:scale-[0.98]",
+  "inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 select-none cursor-pointer",
   {
     variants: {
       variant: {
-        default: "neu-primary font-bold text-white shadow-sm hover:brightness-105",
-        destructive:
-          "bg-red-600 text-white hover:bg-red-700 font-bold shadow-sm",
-        outline:
-          "neu-button border border-border/80 bg-card/60 text-foreground hover:bg-accent hover:text-foreground shadow-2xs",
-        secondary:
-          "neu-button bg-secondary/80 text-secondary-foreground hover:bg-secondary shadow-2xs",
-        ghost: "hover:bg-accent/70 hover:text-foreground transition-all",
+        default: "bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 font-medium",
+        destructive: "bg-destructive text-destructive-foreground shadow-xs hover:bg-destructive/90 font-medium",
+        outline: "border border-input bg-background shadow-xs hover:bg-accent hover:text-accent-foreground text-foreground",
+        secondary: "bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80",
+        ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline p-0 h-auto font-medium",
-        emerald: "bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-sm",
-        indigo: "bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-sm",
+        emerald: "bg-emerald-600 text-white shadow-xs hover:bg-emerald-700 font-medium",
+        indigo: "bg-indigo-600 text-white shadow-xs hover:bg-indigo-700 font-medium",
       },
       size: {
-        default: "h-10 px-4 py-2 text-sm gap-2",
-        sm: "h-8 px-3 text-xs gap-1.5",
-        lg: "h-11 px-6 text-base gap-2.5 font-bold",
-        icon: "h-9 w-9 p-0 rounded-xl",
-        "icon-sm": "h-8 w-8 p-0 rounded-xl",
+        default: "h-9 px-4 py-2 text-sm gap-2",
+        sm: "h-8 px-3 text-xs gap-1.5 rounded-md",
+        lg: "h-10 px-6 text-sm gap-2.5 font-semibold",
+        icon: "h-9 w-9 p-0 rounded-lg",
+        "icon-sm": "h-8 w-8 p-0 rounded-md",
       },
     },
     defaultVariants: {

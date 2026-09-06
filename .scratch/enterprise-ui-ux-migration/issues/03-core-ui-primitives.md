@@ -4,11 +4,11 @@
 
 **Blocked by:** 02: Expand Phase — Design tokens & transitional compatibility shims in App.css
 
-**Status:** ready-for-agent
+**Status:** closed
 
-- [ ] Button variants streamlined with crisp focus-visible rings and no bouncy scale transforms
-- [ ] Card surfaces standardized with solid opaque backgrounds and 1px subtle borders
-- [ ] Input fields standardized with consistent height, clean borders, and clear focus rings
-- [ ] Table headers and rows updated with muted header background and subtle row dividers
-- [ ] Dialogs and Modals updated to solid opaque surfaces with proper dark overlays
-- [ ] Role badges and status presets mapped to accessible semantic color pairs
+- [x] Button variants streamlined with crisp focus-visible rings and no bouncy scale transforms
+- [x] Card surfaces standardized with solid opaque backgrounds and 1px subtle borders
+- [x] Input fields standardized with consistent height, clean borders, and clear focus rings
+- [x] Table headers and rows updated with muted header background and subtle row dividers
+- [x] Dialogs and Modals updated to solid opaque surfaces with proper dark overlays
+- [x] Role badges and status presets mapped to accessible semantic color pairs (added success, warning, info)

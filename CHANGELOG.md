@@ -1,5 +1,37 @@
 # Changelog
 
+## [v1.4.67] [2026-09-06] Enterprise UI/UX Migration — Core UI Primitives Modernization (Ticket 03)
+
+- **Shared UI Primitives Modernization:**
+  - `src/components/ui/button.jsx`:
+    - ยกเครื่อง CVA variants เป็น Modern Flat Solid & Outline (`default`, `destructive`, `outline`, `secondary`, `ghost`, `link`, `emerald`, `indigo`)
+    - ลบคลาส Neumorphic (`neu-primary`, `neu-button`) และตัด bouncy `active:scale-[0.98]` ออกอย่างถาวร
+    - เพิ่ม Ring Offset Focus ชัดเจน รองรับการเข้าถึง Keyboard Accessibility
+  - `src/components/ui/card.jsx`:
+    - ตัด `neu-flat` ออกอย่างถาวร เปลี่ยนเป็น `rounded-xl border border-border bg-card shadow-xs`
+    - ปรับปรุง Header, Title, Description, Content, Footer ให้รองรับ Responsive Padding ที่เป็นระเบียบ
+  - `src/components/ui/input.jsx`:
+    - ตัด `neu-pressed` Inset Shadow ออก ปรับเป็น `rounded-lg border border-input bg-background shadow-xs`
+    - กำหนดความสูงมาตรฐาน `h-9` พร้อม Focus-visible Ring คมชัด
+  - `src/components/ui/table.jsx`:
+    - ปรับ `TableHeader` จาก `neu-flat-sm` เป็น `bg-muted/60 border-b border-border`
+    - ปรับ `TableRow` ให้มีเส้นขอบคั่น `border-b border-border/70 hover:bg-muted/50`
+  - `src/components/ui/dialog.jsx`:
+    - ตัด `glass` และ `backdrop-blur` ออกจาก `DialogContent` เป็น Solid Card Opaque Surface `bg-card border border-border shadow-xl rounded-xl`
+    - ปรับ `DialogOverlay` เป็น Dark Scrim ทันสมัย `bg-black/60`
+  - `src/components/ui/tooltip.jsx`:
+    - ตัด `glass` และ `backdrop-blur-xl` ออก เป็น Solid Popover `border-border bg-popover text-popover-foreground shadow-md`
+  - `src/components/ui/badge.jsx`:
+    - เพิ่ม Semantic Variants ที่ผ่านเกณฑ์คอนทราสต์: `success`, `warning`, `info` พร้อมเส้นขอบคมชัด
+- **Modified files:**
+  - `src/components/ui/button.jsx`, `card.jsx`, `input.jsx`, `table.jsx`, `dialog.jsx`, `tooltip.jsx`, `badge.jsx`
+  - `package.json`: ขยับเวอร์ชันระบบเป็น `1.4.67`
+  - `README.md`: อัปเดต Version Badge เป็น `v1.4.67`
+  - `wiki/Home.md`, `wiki/_Footer.md`: ปรับเวอร์ชันระบบเป็น `v1.4.67`
+- **Verification:**
+  - `npm run build` ผ่าน 100% (26.61s)
+  - `npm run test:email` ผ่าน 5/5 tests
+
 ## [v1.4.66] [2026-09-06] Enterprise UI/UX Migration — Design Tokens & Compatibility Shims (Tickets 01-02)
 
 - **UI/UX Architecture & Modernization:**
