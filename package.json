@@ -1,7 +1,7 @@
 {
   "name": "stock-flow-app",
   "private": true,
-  "version": "1.4.59",
+  "version": "1.4.60",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -32,16 +32,11 @@
     "@tanstack/react-table": "^8.20.1",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
-    "cors": "^2.8.5",
     "date-fns": "^3.6.0",
     "dotenv": "^16.4.5",
-    "express": "^4.19.2",
     "framer-motion": "^11.3.24",
-    "jspdf": "^2.5.1",
-    "jspdf-autotable": "^3.8.2",
     "lucide-react": "^0.428.0",
-    "multer": "^2.2.0",
-    "nodemailer": "^6.9.13",
+    "nodemailer": "^10.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hot-toast": "^2.4.1",
@@ -49,7 +44,7 @@
     "recharts": "^2.12.7",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
-    "xlsx": "^0.18.5"
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",

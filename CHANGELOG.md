@@ -1,5 +1,22 @@
 # Changelog
 
+## [v1.4.60] [2026-09-06] แก้ไขช่องโหว่ความปลอดภัย Dependabot (47 Alerts Remediation) และกำจัด Unused Dependencies
+- **Modified files:**
+  - `package.json`:
+    - ถอดแพ็กเกจที่ไม่ได้ใช้งานจริงและเป็นสาเหตุหลักของช่องโหว่ความปลอดภัยระดับ Critical/High ออกทั้งหมด: `jspdf`, `jspdf-autotable` (แก้ 12 jspdf alerts + 16 transitive dompurify alerts), `express`, `cors`, `multer` (แก้ 2 transitive qs alerts)
+    - อัปเดต `nodemailer` จาก `^6.9.13` สู่ `^10.0.0` เพื่อปิดช่องโหว่ความปลอดภัย 8 รายการ (SSRF, addressparser DoS, CRLF injection, command injection)
+    - เปลี่ยนแหล่งติดตั้ง `xlsx` จาก npm registry ที่ค้างอยู่ที่ `0.18.5` สู่ SheetJS official release tarball (`0.20.3`) เพื่อปิดช่องโหว่ Prototype Pollution และ ReDoS
+    - ปรับเวอร์ชันของระบบเป็น `1.4.60`
+  - `package-lock.json`: อัปเดต dependency graph และ lockfile ให้สอดคล้องกับแพ็กเกจที่ปลอดภัย
+  - `vite.config.js`: นำ `jspdf` และ `jspdf-autotable` ออกจาก `manualChunks.vendor-pdf` คงเหลือเฉพาะ `@react-pdf/renderer` ที่โปรเจกต์ใช้งานจริง
+  - `README.md`: ปรับปรุง Version Badge เป็น `v1.4.60`
+  - `SECURITY.md`: อัปเดตตัวอย่างเวอร์ชันระบบเป็น `v1.4.60`
+  - `docs/dependabot-vulnerability-remediation-report.md`: [NEW] รายงานการวิเคราะห์สาเหตุเชิงลึกและแผนการแก้ไขช่องโหว่ Dependabot ทั้ง 47 รายการ
+- **Verification:**
+  - รัน `npm run build` สำเร็จ 100% (Production bundle ขนาดลดลง ปราศจากข้อผิดพลาด)
+  - รัน `npm run test:email` ผ่าน 5/5 tests (Nodemailer 10.0.0 ทำงานเข้ากันได้สมบูรณ์)
+  - ช่องโหว่ความปลอดภัยระดับ Critical และ High ใน Direct Dependencies ถูกแก้ไขทั้งหมด
+
 ## [v1.4.59] [2026-09-06] สร้างและกำหนดค่า .github/dependabot.yml สำหรับจัดการอัปเดต Dependencies อัตโนมัติ
 - **Modified files:**
   - `.github/dependabot.yml`: [NEW] สร้างไฟล์กำหนดค่า GitHub Dependabot Version Updates ตรวจสอบและสร้าง Pull Requests สำหรับการอัปเดตความปลอดภัยและการบำรุงรักษาของ dependencies ในระบบรายสัปดาห์ (weekly) โดยระบุ package-ecosystem เป็น `npm` (ไดเรกทอรี `/` อิงจาก `package.json` และ `package-lock.json`) จำกัด open pull requests ไม่เกิน 10 รายการ พร้อมเพิ่มการดูแล `github-actions` workflows จำกัด PR ไม่เกิน 5 รายการ เพื่อลดสัญญาณรบกวน (PR noise)

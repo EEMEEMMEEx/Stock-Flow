@@ -116,7 +116,7 @@ export default defineConfig(({ mode }) => {
         output: {
           manualChunks: {
             'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-            'vendor-pdf': ['@react-pdf/renderer', 'jspdf', 'jspdf-autotable'],
+            'vendor-pdf': ['@react-pdf/renderer'],
             'vendor-charts': ['recharts'],
             'vendor-ui': ['lucide-react', 'framer-motion'],
             'vendor-utils': ['xlsx', 'date-fns']
