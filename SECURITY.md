@@ -49,7 +49,7 @@ To help us investigate, triage, and resolve the issue quickly, please provide as
 1. **Summary & Impact:** A clear description of the vulnerability, including the attack vector and the potential impact (e.g., unauthorized data access, privilege escalation, transaction tampering).
 2. **Affected Components:** The affected URL, endpoint, page, API route, or source file (e.g., `/api/r2-upload-url`, `src/pages/Withdrawals.jsx`, RPC function).
 3. **Reproducible Steps:** Detailed step-by-step instructions or a safe, non-destructive Proof of Concept (PoC) demonstrating the issue.
-4. **Environment & Version:** The specific application version (e.g., `v1.4.58`), browser version, and OS where the issue was reproduced.
+4. **Environment & Version:** The specific application version (e.g., `v1.4.59`), browser version, and OS where the issue was reproduced.
 5. **Mitigation Suggestion:** Any suggested fix, code modification, or architectural mitigation (optional).
 
 > **Safety Notice:** Do not include sensitive production data, actual API keys, real database credentials, or personally identifiable information (PII) in your report. Use sanitized mock data and test accounts only.

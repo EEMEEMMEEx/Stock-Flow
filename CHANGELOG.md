@@ -1,5 +1,17 @@
 # Changelog
 
+## [v1.4.59] [2026-09-06] สร้างและกำหนดค่า .github/dependabot.yml สำหรับจัดการอัปเดต Dependencies อัตโนมัติ
+- **Modified files:**
+  - `.github/dependabot.yml`: [NEW] สร้างไฟล์กำหนดค่า GitHub Dependabot Version Updates ตรวจสอบและสร้าง Pull Requests สำหรับการอัปเดตความปลอดภัยและการบำรุงรักษาของ dependencies ในระบบรายสัปดาห์ (weekly) โดยระบุ package-ecosystem เป็น `npm` (ไดเรกทอรี `/` อิงจาก `package.json` และ `package-lock.json`) จำกัด open pull requests ไม่เกิน 10 รายการ พร้อมเพิ่มการดูแล `github-actions` workflows จำกัด PR ไม่เกิน 5 รายการ เพื่อลดสัญญาณรบกวน (PR noise)
+  - `docs/dependabot-configuration-implementation-plan.md`: [NEW] จัดทำแผนการดำเนินงานสำหรับการกำหนดค่า Dependabot
+  - `package.json`: ปรับเวอร์ชันระบบเป็น `1.4.59`
+  - `README.md`: ปรับปรุง Version Badge เป็น `v1.4.59`
+  - `SECURITY.md`: อัปเดตตัวอย่างเวอร์ชันเป็น `v1.4.59`
+- **Verification:**
+  - ตรวจสอบไวยากรณ์และความถูกต้องของไฟล์ `.github/dependabot.yml`
+  - ตรวจสอบ Ecosystem และ Directory สอดคล้องกับสแตกของ Stock-Flow-app (`npm` ที่ root `/`)
+  - ตรวจสอบการเชื่อมโยงเวอร์ชัน `APP_CONFIG.version` และ `package.json` เป็น `1.4.59`
+
 ## [v1.4.58] [2026-09-04] จัดทำเอกสารนโยบายความปลอดภัย SECURITY.md และอัปเดตสถานะเวอร์ชันระบบ
 - **Modified files:**
   - `SECURITY.md`: [NEW] สร้างเอกสารนโยบายความปลอดภัยของโปรเจกต์ Stock-Flow ตามมาตรฐาน GitHub Security Policy ครอบคลุมตาราง Supported Versions อิงข้อมูลเวอร์ชันจริงของระบบ (`1.4.x` Supported, เวอร์ชันต่ำกว่า `1.4.0` เป็น End of Life), แนวทางการรายงานช่องโหว่ผ่าน GitHub Private Vulnerability Reporting อย่างปลอดภัย, รูปแบบข้อมูลที่จำเป็นต้องระบุ, ระยะเวลาและขั้นตอนการตอบรับ/แก้ไข (SLA), ข้อกำหนด Responsible / Coordinated Disclosure และขอบเขต In Scope / Out of Scope โดยไม่มีการเปิดเผยข้อมูล Credentials หรือ Secrets ใดๆ
