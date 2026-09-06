@@ -11,27 +11,27 @@ import { useAuth } from '@/contexts/AuthContext';
  */
 const TONE_CLASSES = {
   warning: {
-    iconBg: 'bg-amber-500/15 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30',
+    iconBg: 'bg-amber-500/10 dark:bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/20',
     valueText: 'text-amber-600 dark:text-amber-400',
   },
   info: {
-    iconBg: 'bg-blue-500/15 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 border-blue-500/30',
+    iconBg: 'bg-blue-500/10 dark:bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/20',
     valueText: 'text-blue-600 dark:text-blue-400',
   },
   indigo: {
-    iconBg: 'bg-purple-500/15 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 border-purple-500/30',
+    iconBg: 'bg-purple-500/10 dark:bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/20',
     valueText: 'text-purple-600 dark:text-purple-400',
   },
   success: {
-    iconBg: 'bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
+    iconBg: 'bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
     valueText: 'text-emerald-600 dark:text-emerald-400',
   },
   critical: {
-    iconBg: 'bg-red-500/15 dark:bg-red-500/20 text-red-600 dark:text-red-400 border-red-500/30',
+    iconBg: 'bg-red-500/10 dark:bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/20',
     valueText: 'text-red-600 dark:text-red-400',
   },
   default: {
-    iconBg: 'bg-muted text-muted-foreground border-border/40',
+    iconBg: 'bg-muted text-muted-foreground border-border/60',
     valueText: 'text-foreground',
   },
 };
@@ -60,7 +60,7 @@ const DashboardStatCard = ({
       <div className="flex items-center gap-3.5 min-w-0">
         {/* Status Icon Container */}
         {Icon && (
-          <div className={`p-3 rounded-2xl border shadow-sm shrink-0 ${style.iconBg} transition-transform group-hover:scale-105`}>
+          <div className={`p-2.5 rounded-xl border shadow-xs shrink-0 ${style.iconBg} transition-colors`}>
             <Icon className="w-5 h-5" strokeWidth={2.2} />
           </div>
         )}
@@ -93,9 +93,9 @@ const DashboardStatCard = ({
     </CardContent>
   );
 
-  const cardClassName = `neu-flat border border-border/40 overflow-hidden relative transition-all duration-200 ${
+  const cardClassName = `bg-card border border-border/80 shadow-xs overflow-hidden relative transition-all duration-150 ${
     isInteractive 
-      ? 'group cursor-pointer hover:shadow-md hover:border-primary/40 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary' 
+      ? 'group cursor-pointer hover:border-primary/50 hover:shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary' 
       : 'cursor-default'
   }`;
 

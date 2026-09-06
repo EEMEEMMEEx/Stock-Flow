@@ -451,7 +451,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map(i => (
-            <div key={i} className="h-48 rounded-3xl bg-muted/50 border border-border/60 animate-pulse" />
+            <div key={i} className="h-48 rounded-xl bg-muted/50 border border-border/60 animate-pulse" />
           ))}
         </div>
       </div>
@@ -499,7 +499,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
             <Card
               key={cat.category_id}
               onClick={() => setSelectedCategory(cat)}
-              className="group relative overflow-hidden rounded-3xl border border-border/70 bg-card/60 backdrop-blur-md shadow-xs hover:shadow-md hover:border-emerald-500/40 transition-all duration-300 cursor-pointer flex flex-col justify-between"
+              className="group relative overflow-hidden rounded-xl border border-border bg-card shadow-xs hover:border-emerald-500/50 hover:shadow-xs transition-all duration-150 cursor-pointer flex flex-col justify-between"
             >
               {/* Subtle top color gradient accent */}
               <div className={`absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r ${isReady ? 'from-emerald-500 to-teal-400' : 'from-rose-500 to-amber-500'}`} />
@@ -507,7 +507,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
               <CardHeader className="pb-2 pt-4 px-5">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <div className={`w-9 h-9 rounded-2xl flex items-center justify-center bg-gradient-to-br ${gradientCls} border shrink-0 group-hover:scale-105 transition-transform duration-300`}>
+                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center bg-gradient-to-br ${gradientCls} border shrink-0`}>
                       <Icon className="w-5 h-5" />
                     </div>
                     <div className="min-w-0">
@@ -545,7 +545,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
 
               <CardContent className="px-5 pb-4 pt-1 space-y-3 flex-1 flex flex-col justify-between">
                 {/* Bottleneck Summary Box */}
-                <div className="rounded-2xl p-2.5 bg-muted/40 border border-border/50 text-[11px] space-y-1.5 min-h-[58px]">
+                <div className="rounded-lg p-2.5 bg-muted/40 border border-border/50 text-[11px] space-y-1.5 min-h-[58px]">
                   <div className="flex items-center gap-1.5 font-semibold text-muted-foreground">
                     <AlertCircle className={`w-3.5 h-3.5 ${isReady ? 'text-amber-500' : 'text-rose-500'}`} />
                     <span>{isReady ? 'สต็อกจำกัดสำหรับชุดถัดไป:' : 'สต็อกจำกัด (ยังจัดชุดไม่ได้):'}</span>
@@ -582,11 +582,11 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
           setBomView('complete');
         }
       }}>
-        <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col rounded-3xl p-0 overflow-hidden border-border/80 shadow-2xl">
+        <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col rounded-xl p-0 overflow-hidden border-border bg-card shadow-lg">
           <DialogHeader className="p-6 pb-4 border-b border-border/60 bg-muted/20">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl flex items-center justify-center bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 shrink-0">
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 shrink-0">
                   {selectedCategory && (
                     React.createElement(CATEGORY_ICONS[selectedCategory.category_id] || Layers, { className: 'w-5 h-5' })
                   )}
@@ -625,7 +625,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                     size="sm"
                     variant="outline"
                     onClick={() => setIsEditing(true)}
-                    className="rounded-xl h-9 px-3 gap-1.5 text-xs font-bold border-blue-500/30 text-blue-700 dark:text-blue-300 hover:bg-blue-500/10 cursor-pointer shadow-2xs"
+                    className="rounded-lg h-9 px-3 gap-1.5 text-xs font-medium border-blue-500/30 text-blue-700 dark:text-blue-300 hover:bg-blue-500/10 cursor-pointer shadow-xs"
                   >
                     <PenLine className="w-3.5 h-3.5" />
                     <span>{bomView === 'spare' ? 'Edit Spare Equipment' : 'Edit BOM Specification'}</span>
@@ -639,7 +639,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                       variant="outline"
                       disabled={resetting || saving}
                       onClick={handleResetDefault}
-                      className="rounded-xl h-9 px-3 gap-1.5 text-xs font-bold text-muted-foreground hover:text-rose-600 border-border/80 hover:bg-rose-500/10 cursor-pointer"
+                      className="rounded-lg h-9 px-3 gap-1.5 text-xs font-medium text-muted-foreground hover:text-rose-600 border-border hover:bg-rose-500/10 cursor-pointer shadow-xs"
                     >
                       <RotateCcw className={`w-3.5 h-3.5 ${resetting ? 'animate-spin' : ''}`} />
                       <span>คืนค่าเริ่มต้น</span>
@@ -650,7 +650,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                       variant="ghost"
                       disabled={saving}
                       onClick={() => setIsEditing(false)}
-                      className="rounded-xl h-9 px-3 text-xs font-semibold text-muted-foreground hover:bg-muted cursor-pointer"
+                      className="rounded-lg h-9 px-3 text-xs font-medium text-muted-foreground hover:bg-muted cursor-pointer"
                     >
                       <span>ยกเลิก</span>
                     </Button>
@@ -659,7 +659,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                       size="sm"
                       disabled={saving}
                       onClick={handleSaveBom}
-                      className="rounded-xl h-9 px-4 gap-1.5 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer shadow-sm"
+                      className="rounded-lg h-9 px-4 gap-1.5 text-xs font-medium bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer shadow-xs"
                     >
                       <Save className={`w-3.5 h-3.5 ${saving ? 'animate-spin' : ''}`} />
                       <span>{saving ? 'กำลังบันทึก...' : 'บันทึกข้อมูล'}</span>
@@ -719,14 +719,14 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                * ADMIN EDITABLE COMPLETE SET BOM FORM VIEW
                * ======================================================= */
               <div className="space-y-3">
-                <div className="flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 rounded-2xl p-3 px-4 text-xs text-blue-800 dark:text-blue-300">
+                <div className="flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 px-4 text-xs text-blue-800 dark:text-blue-300">
                   <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
                   <span>
                     รายการวัสดุสำหรับชุดติดตั้งสมบูรณ์ (Complete Set) หากย้ายรายการใดไป Spare Equipment รายการนั้นจะถูกตัดออกจากชุดติดตั้งอัตโนมัติ
                   </span>
                 </div>
 
-                <div className="rounded-2xl border border-border/70 overflow-hidden shadow-2xs bg-card">
+                <div className="rounded-lg border border-border overflow-hidden shadow-xs bg-card">
                   <table className="w-full text-left text-xs border-collapse">
                     <thead className="bg-muted/70 text-muted-foreground font-bold border-b border-border/70">
                       <tr>
@@ -909,14 +909,14 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                * ADMIN EDITABLE SPARE EQUIPMENT FORM VIEW
                * ======================================================= */
               <div className="space-y-3">
-                <div className="flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 rounded-2xl p-3 px-4 text-xs text-blue-800 dark:text-blue-300">
+                <div className="flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 px-4 text-xs text-blue-800 dark:text-blue-300">
                   <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
                   <span>
                     รายการอุปกรณ์สำรอง (Spare Equipment) จะถูกแยกออกจาก Complete Set โดยอัตโนมัติ และไม่ถูกนำไปเป็นตัวจำกัดจำนวนชุดติดตั้ง
                   </span>
                 </div>
 
-                <div className="rounded-2xl border border-border/70 overflow-hidden shadow-2xs bg-card">
+                <div className="rounded-lg border border-border overflow-hidden shadow-xs bg-card">
                   <table className="w-full text-left text-xs border-collapse">
                     <thead className="bg-muted/70 text-muted-foreground font-bold border-b border-border/70">
                       <tr>
@@ -1116,7 +1116,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
               /* =======================================================
                * READ-ONLY COMPLETE SET BOM BREAKDOWN VIEW
                * ======================================================= */
-              <div className="rounded-2xl border border-border/70 overflow-hidden shadow-2xs">
+              <div className="rounded-lg border border-border overflow-hidden shadow-xs">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead className="bg-muted/70 text-muted-foreground font-bold border-b border-border/70">
                     <tr>
@@ -1198,7 +1198,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
               /* =======================================================
                * READ-ONLY SPARE EQUIPMENT VIEW
                * ======================================================= */
-              <div className="rounded-2xl border border-border/70 overflow-hidden shadow-2xs">
+              <div className="rounded-lg border border-border overflow-hidden shadow-xs">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead className="bg-muted/70 text-muted-foreground font-bold border-b border-border/70">
                     <tr>
@@ -1259,7 +1259,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
         open={catalogPickerTargetIndex !== null} 
         onOpenChange={(open) => !open && setCatalogPickerTargetIndex(null)}
       >
-        <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col rounded-3xl p-0 overflow-hidden border-border/80 shadow-2xl">
+        <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col rounded-xl p-0 overflow-hidden border-border bg-card shadow-lg">
           <DialogHeader className="p-5 pb-3 border-b border-border/60 bg-muted/20">
             <DialogTitle className="text-base font-bold flex items-center gap-2">
               <Package className="w-4 h-4 text-emerald-600" />
@@ -1275,7 +1275,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                 value={searchCatalogQuery}
                 onChange={(e) => setSearchCatalogQuery(e.target.value)}
                 placeholder="ค้นหาชื่อวัสดุ หรือ รหัส SKU..."
-                className="pl-9 h-9 text-xs rounded-xl bg-background"
+                className="pl-9 h-9 text-xs rounded-lg bg-background"
                 autoFocus
               />
             </div>
@@ -1295,7 +1295,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                 <div
                   key={item.id}
                   onClick={() => handleSelectMasterItem(item)}
-                  className="p-3 flex items-center justify-between gap-3 hover:bg-muted/40 transition-colors rounded-xl cursor-pointer group"
+                  className="p-3 flex items-center justify-between gap-3 hover:bg-muted/40 transition-colors rounded-lg cursor-pointer group"
                 >
                   <div className="min-w-0 space-y-0.5">
                     <div className="font-bold text-xs text-foreground group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate">
@@ -1314,7 +1314,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                       </div>
                       <div className="text-[10px] text-muted-foreground">คงเหลือในคลัง</div>
                     </div>
-                    <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-muted group-hover:bg-emerald-500 group-hover:text-white transition-colors">
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-muted group-hover:bg-emerald-500 group-hover:text-white transition-colors">
                       <Check className="w-4 h-4" />
                     </div>
                   </div>

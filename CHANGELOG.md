@@ -1,5 +1,44 @@
 # Changelog
 
+## [v1.4.69] [2026-09-06] Enterprise UI/UX Migration — Dashboard & Items Catalog (Ticket 05)
+
+- **Operational Dashboard Modernization:**
+  - `src/components/dashboard/DashboardStatCard.jsx`:
+    - ลบคลาส `neu-flat`, `-translate-y-0.5`, และ `hover:scale-105` ออกจาก Stat Card
+    - ปรับพื้นผิวเป็น Solid Card พร้อมเส้นขอบแบบ Enterprise `bg-card border border-border/80 shadow-xs hover:border-primary/50 hover:shadow-xs`
+    - ปรับปรุงคู่สี `TONE_CLASSES` ให้มี Contrast สูงและเป็นไปตามเกณฑ์ WCAG
+    - ปรับขนาดคอนเทนเนอร์ไอคอนเป็น `rounded-xl border shadow-xs`
+  - `src/pages/Dashboard.jsx`:
+    - ยกเครื่องสไตล์ Tooltip ของ Recharts จากเงา Neumorphic คู่และพื้นหลังเทาหม่น เป็น Solid Popover ขาว/เทาเข้มคมชัด (`#ffffff` Light / `#1e293b` Dark) พร้อมเส้นขอบ 1px และเงา Subtle Drop Shadow
+    - ปรับการ์ดสรุปยอดสต็อกตามโครงการ (BarChart) และการ์ดกิจกรรมล่าสุดจาก `rounded-3xl glass shadow-md` เป็น `rounded-xl bg-card border border-border shadow-xs`
+    - ปรับปุ่มสลับมุมมองกราฟ (ตามโครงการ / Top วัสดุ) และปุ่มรีเฟรชข้อมูลเป็นขนาดมาตรฐาน `h-9` / `h-7` พร้อมขอบมน `rounded-lg` / `rounded-md`
+  - `src/components/dashboard/SiteKitAvailabilityCards.jsx`:
+    - ตัด `rounded-3xl`, `backdrop-blur-md`, และ `group-hover:scale-105` ออกจากการ์ดความพร้อมชุดติดตั้งไซต์งาน (Site Installation Kits BOM)
+    - ปรับปรุง Dialog และแบบฟอร์มแก้ไข BOM ของ Admin เป็น Solid Opaque Card `bg-card border-border shadow-lg` พร้อมคอนโทรลขนาดมาตรฐาน
+- **Inventory Items Catalog Modernization:**
+  - `src/pages/Items.jsx`:
+    - ปรับการ์ด KPI สถิติสต็อกด้านบนเป็น Solid Card `rounded-xl bg-card border border-border shadow-xs`
+    - ปรับแถบเครื่องมือค้นหาและตัวกรอง (Toolbar) จาก `glass` เป็น `bg-card border border-border shadow-xs`
+    - ปรับ Search Input, Category Select, และ View Switcher ให้มีความสูงมาตรฐาน `h-9` ขอบมน `rounded-lg`
+    - ปรับตารางพัสดุ (Table View): คอนเทนเนอร์ตาราง `rounded-xl bg-card border border-border shadow-xs`, รูปภาพ Thumbnail `rounded-lg`, Badge สถานะสต็อกและหมวดหมู่เป็น `rounded-md`
+    - ปรับมุมมองการ์ด (Grid Bento View): ตัด `glass` เปลี่ยนเป็นการ์ด Solid Opaque `rounded-xl bg-card border border-border shadow-xs`
+    - ปรับแถบแบ่งหน้า Supabase-style Pagination Footer ให้ใช้พื้นผิว `bg-card rounded-xl border border-border shadow-xs` พร้อมช่องใส่เลขหน้า `h-8 rounded-lg shadow-xs`
+    - ปรับปรุง Modal: Edit Master Item, Delete Master Item, และ Stock Adjustment Audit History ให้เป็น Solid Surface `rounded-xl border-border bg-card shadow-lg`
+  - `src/components/items/TransferItemDialog.jsx`:
+    - ตัด `rounded-3xl` และ `backdrop-blur-xl` เปลี่ยนเป็น `rounded-xl border-border bg-card shadow-lg`
+    - ปรับฟอร์มระบุจำนวนโอนย้ายและหมายเหตุเป็นขนาดมาตรฐาน `h-9 rounded-lg`
+  - `src/components/common/ProjectLocationSelector.jsx`:
+    - ปรับขนาดและสไตล์ของ Select ควบคุมคลัง/โครงการเป็น `h-9 rounded-lg border-input shadow-xs`
+- **Modified files:**
+  - `src/components/dashboard/DashboardStatCard.jsx`, `src/pages/Dashboard.jsx`, `src/components/dashboard/SiteKitAvailabilityCards.jsx`
+  - `src/pages/Items.jsx`, `src/components/items/TransferItemDialog.jsx`, `src/components/common/ProjectLocationSelector.jsx`
+  - `package.json`: ขยับเวอร์ชันระบบเป็น `1.4.69`
+  - `README.md`: อัปเดต Version Badge เป็น `v1.4.69`
+  - `wiki/Home.md`, `wiki/_Footer.md`: ปรับเวอร์ชันระบบเป็น `v1.4.69`
+- **Verification:**
+  - `npm run build` ผ่าน 100% (25.88s)
+  - `npm run test:email` ผ่าน 5/5 tests
+
 ## [v1.4.68] [2026-09-06] Enterprise UI/UX Migration — Global App Shell & Navigation (Ticket 04)
 
 - **Application Shell & Navigation Architecture:**

@@ -4,9 +4,9 @@
 
 **Blocked by:** 04: Global App Shell & Navigation
 
-**Status:** ready-for-agent
+**Status:** closed
 
-- [ ] Dashboard KPI stat cards display high-contrast typography, clean icons, and subtle elevation
-- [ ] Recharts bar charts styled with clean grid lines and high-contrast tooltip popovers in light and dark mode
-- [ ] Items inventory catalog table renders with crisp borders, sticky headers, and clear stock status badges
-- [ ] Search, warehouse filter, and category filter bars refactored to standard form controls
+- [x] Dashboard KPI stat cards display high-contrast typography, clean icons, and subtle elevation
+- [x] Recharts bar charts styled with clean grid lines and high-contrast tooltip popovers in light and dark mode
+- [x] Items inventory catalog table renders with crisp borders, sticky headers, and clear stock status badges
+- [x] Search, warehouse filter, and category filter bars refactored to standard form controls

@@ -154,11 +154,11 @@ export const TransferItemDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl p-0 overflow-hidden rounded-3xl border border-border/80 shadow-2xl bg-background/95 backdrop-blur-xl">
+      <DialogContent className="max-w-xl p-0 overflow-hidden rounded-xl border border-border shadow-lg bg-card">
         {/* Header with Visual Icon */}
-        <div className="p-5 pb-4 bg-gradient-to-br from-indigo-500/10 via-background to-background border-b border-border/60">
+        <div className="p-5 pb-4 bg-muted/20 border-b border-border/60">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-2xl bg-indigo-500/15 border border-indigo-500/30 text-indigo-600 dark:text-indigo-400">
+            <div className="p-2 rounded-lg bg-primary/10 border border-primary/20 text-primary">
               <ArrowRightLeft className="w-5 h-5" />
             </div>
             <div>
@@ -174,16 +174,16 @@ export const TransferItemDialog = ({
 
         <form onSubmit={handleTransfer} className="p-5 space-y-5">
           {/* Item Preview Card */}
-          <div className="p-3.5 rounded-2xl bg-muted/40 border border-border/60 flex items-center gap-3.5">
+          <div className="p-3.5 rounded-lg bg-muted/40 border border-border/60 flex items-center gap-3.5">
             {item.image_url ? (
               <img
                 src={item.image_url}
                 alt={item.name}
-                className="w-14 h-14 object-cover rounded-xl border border-border/60 shadow-sm shrink-0"
+                className="w-14 h-14 object-cover rounded-lg border border-border shadow-xs shrink-0"
               />
             ) : (
-              <div className="w-14 h-14 bg-muted/80 rounded-xl flex items-center justify-center border border-border/40 text-muted-foreground/60 shrink-0">
-                <Package className="w-6 h-6 text-indigo-500/70" />
+              <div className="w-14 h-14 bg-muted/80 rounded-lg flex items-center justify-center border border-border/60 text-muted-foreground/60 shrink-0">
+                <Package className="w-6 h-6 text-primary/70" />
               </div>
             )}
 
@@ -193,7 +193,7 @@ export const TransferItemDialog = ({
                   {item.name}
                 </span>
                 {item.category_name && item.category_name !== '-' && (
-                  <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-[10px] font-medium text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                  <span className="px-2 py-0.5 rounded-md bg-muted text-[10px] font-medium text-muted-foreground border">
                     {item.category_name}
                   </span>
                 )}
@@ -209,9 +209,9 @@ export const TransferItemDialog = ({
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 relative">
               {/* 1. Source Warehouse Card (Locked) */}
-              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-border/70 space-y-1.5">
+              <div className="p-3.5 rounded-lg bg-muted/30 border border-border/70 space-y-1.5">
                 <span className="text-[11px] font-bold text-muted-foreground flex items-center gap-1">
-                  <Building2 className="w-3.5 h-3.5 text-slate-500" />
+                  <Building2 className="w-3.5 h-3.5 text-muted-foreground" />
                   <span>คลังต้นทาง (Source Location)</span>
                 </span>
                 <div className="font-bold text-xs text-foreground truncate">
@@ -225,14 +225,14 @@ export const TransferItemDialog = ({
                 )}
                 <div className="pt-2 border-t border-border/40 flex items-center justify-between text-xs">
                   <span className="text-muted-foreground font-medium">สต็อกที่มีอยู่:</span>
-                  <span className="px-2 py-0.5 rounded-lg bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 font-mono font-bold">
+                  <span className="px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 font-mono font-bold">
                     {maxBalance} {item.unit || 'ชิ้น'}
                   </span>
                 </div>
               </div>
 
               {/* 2. Destination Warehouse Selector */}
-              <div className="p-3.5 rounded-2xl bg-indigo-500/5 border border-indigo-500/20 space-y-2">
+              <div className="p-3.5 rounded-lg bg-primary/5 border border-primary/20 space-y-2">
                 <ProjectLocationSelector
                   projects={availableDestinations}
                   value={destinationProjectId}
@@ -245,7 +245,7 @@ export const TransferItemDialog = ({
                   showSummaryCard={false}
                 />
                 {!destinationProjectId && (
-                  <p className="text-[11px] text-indigo-600 dark:text-indigo-400 font-medium">
+                  <p className="text-[11px] text-primary font-medium">
                     * กรุณาเลือกสถานที่จัดเก็บปลายทาง
                   </p>
                 )}
@@ -253,16 +253,16 @@ export const TransferItemDialog = ({
             </div>
 
             {/* Quantity Input & Quick Max Button */}
-            <div className="p-3.5 rounded-2xl bg-muted/30 border border-border/60 space-y-2">
+            <div className="p-3.5 rounded-lg bg-muted/30 border border-border/60 space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="transfer-qty" className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                  <Layers className="w-3.5 h-3.5 text-indigo-500" />
+                  <Layers className="w-3.5 h-3.5 text-primary" />
                   <span>จำนวนที่ต้องการโอนย้าย ({item.unit || 'ชิ้น'}) *</span>
                 </Label>
                 <button
                   type="button"
                   onClick={handleSetMax}
-                  className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline px-2 py-0.5 rounded-md bg-indigo-500/10 hover:bg-indigo-500/20 transition-colors"
+                  className="text-[11px] font-bold text-primary hover:underline px-2 py-0.5 rounded-md bg-primary/10 hover:bg-primary/20 transition-colors cursor-pointer"
                 >
                   โอนทั้งหมด ({maxBalance} {item.unit || 'ชิ้น'})
                 </button>
@@ -276,7 +276,7 @@ export const TransferItemDialog = ({
                   max={maxBalance}
                   value={transferQuantity}
                   onChange={(e) => setTransferQuantity(e.target.value)}
-                  className="h-10 text-sm font-mono font-bold rounded-xl bg-background"
+                  className="h-9 text-xs font-mono font-bold rounded-lg bg-background"
                   placeholder="ระบุจำนวน..."
                   required
                 />
@@ -305,7 +305,7 @@ export const TransferItemDialog = ({
                 placeholder="เช่น โอนย้ายเพื่อสำรองใช้งานหน้างาน, ปรับสมดุลสต็อก, อ้างอิงเอกสาร..."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="h-10 text-xs rounded-xl bg-background"
+                className="h-9 text-xs rounded-lg bg-background"
               />
             </div>
           </div>
@@ -316,14 +316,14 @@ export const TransferItemDialog = ({
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={isSubmitting}
-              className="rounded-xl text-xs h-10 font-semibold"
+              className="rounded-lg text-xs h-9 font-medium"
             >
               ยกเลิก
             </Button>
             <Button
               type="submit"
               disabled={isSubmitting || !destinationProjectId || !isValidQuantity}
-              className="rounded-xl text-xs h-10 font-bold bg-indigo-600 hover:bg-indigo-700 text-white gap-1.5 shadow-sm shadow-indigo-500/20"
+              className="rounded-lg text-xs h-9 font-medium bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5 shadow-xs"
             >
               <ArrowRightLeft className={`w-3.5 h-3.5 ${isSubmitting ? 'animate-spin' : ''}`} />
               <span>{isSubmitting ? 'กำลังโอนย้าย...' : 'ยืนยันการโอนย้าย'}</span>

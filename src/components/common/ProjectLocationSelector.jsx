@@ -139,9 +139,7 @@ export const ProjectLocationSelector = ({
             <select
               value={allowAll && value === 'all' ? 'all' : (activeGroupKey || '')}
               onChange={(e) => handleGroupChange(e.target.value)}
-              className={`w-full rounded-xl border border-input bg-background px-3 text-xs font-bold text-foreground focus:ring-2 focus:ring-emerald-500 shadow-2xs cursor-pointer transition-all ${
-                isSmall ? 'h-9 text-xs' : 'h-10'
-              }`}
+              className="w-full h-9 rounded-lg border border-input bg-background px-3 text-xs font-medium text-foreground focus:ring-2 focus:ring-primary shadow-xs cursor-pointer transition-colors"
             >
               {allowAll && <option value="all">{allLabel}</option>}
               {!allowAll && !activeGroupKey && <option value="" disabled>-- กรุณาเลือกโครงการ --</option>}
@@ -164,9 +162,7 @@ export const ProjectLocationSelector = ({
               disabled={allowAll && value === 'all'}
               value={value || ''}
               onChange={(e) => handleLocationChange(e.target.value)}
-              className={`w-full rounded-xl border border-input bg-background px-3 text-xs font-bold text-emerald-700 dark:text-emerald-300 focus:ring-2 focus:ring-emerald-500 shadow-2xs cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
-                isSmall ? 'h-9 text-xs' : 'h-10'
-              }`}
+              className="w-full h-9 rounded-lg border border-input bg-background px-3 text-xs font-medium text-emerald-700 dark:text-emerald-300 focus:ring-2 focus:ring-primary shadow-xs cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {!value && <option value="" disabled>-- เลือกสถานที่จัดเก็บ / คลัง --</option>}
               {(activeGroup?.locations || []).map(loc => (
@@ -180,7 +176,7 @@ export const ProjectLocationSelector = ({
 
         {/* Selected Summary Card */}
         {showSummaryCard && selectedRecord && (
-          <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs flex items-center justify-between gap-3 animate-in fade-in-50">
+          <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs flex items-center justify-between gap-3 animate-in fade-in-50">
             <div className="space-y-0.5 min-w-0">
               <div className="font-bold text-foreground flex items-center gap-1.5 flex-wrap">
                 {selectedRecord.project_code && (
@@ -231,9 +227,7 @@ export const ProjectLocationSelector = ({
         required={required}
         value={value || ''}
         onChange={(e) => handleUnifiedChange(e.target.value)}
-        className={`w-full rounded-xl border border-input bg-background px-3 text-xs font-semibold focus:ring-2 focus:ring-emerald-500 shadow-2xs cursor-pointer transition-all ${
-          isSmall ? 'h-9 text-xs' : 'h-10'
-        }`}
+        className="w-full h-9 rounded-lg border border-input bg-background px-3 text-xs font-medium focus:ring-2 focus:ring-primary shadow-xs cursor-pointer transition-colors"
       >
         {allowAll && <option value="all">{allLabel}</option>}
         {!allowAll && !value && <option value="" disabled>-- เลือกโครงการและคลังจัดเก็บ --</option>}
@@ -253,7 +247,7 @@ export const ProjectLocationSelector = ({
 
       {/* Selected Summary Card */}
       {showSummaryCard && selectedRecord && (
-        <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs flex items-center justify-between gap-2">
+        <div className="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs flex items-center justify-between gap-2">
           <div className="font-semibold text-foreground truncate flex items-center gap-1.5">
             <span>{selectedRecord.project_code ? `[${selectedRecord.project_code}] ` : ''}{selectedRecord.name}</span>
             <ChevronRight className="w-3.5 h-3.5 text-muted-foreground shrink-0" />

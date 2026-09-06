@@ -322,22 +322,22 @@ const Dashboard = () => {
 
   const chartTheme = resolvedTheme === 'dark'
     ? {
-        grid: 'rgba(148, 163, 184, 0.22)',
-        tick: '#a8b4c7',
-        cursor: 'rgba(99, 102, 241, 0.16)',
-        tooltipBackground: '#20293a',
-        tooltipBorder: 'rgba(203, 213, 225, 0.16)',
-        tooltipText: '#f1f5f9',
-        tooltipShadow: '0 12px 28px rgba(0, 0, 0, 0.34)',
+        grid: '#334155',
+        tick: '#94a3b8',
+        cursor: 'rgba(99, 102, 241, 0.12)',
+        tooltipBackground: '#1e293b',
+        tooltipBorder: '#334155',
+        tooltipText: '#f8fafc',
+        tooltipShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.3)',
       }
     : {
-        grid: '#cbd5e1',
-        tick: '#52627a',
-        cursor: '#dbe4f0',
-        tooltipBackground: '#eef2f7',
-        tooltipBorder: 'rgba(148, 163, 184, 0.3)',
-        tooltipText: '#172033',
-        tooltipShadow: '4px 4px 10px rgba(0, 0, 0, 0.05), -4px -4px 10px rgba(255, 255, 255, 0.8)',
+        grid: '#f1f5f9',
+        tick: '#64748b',
+        cursor: 'rgba(241, 245, 249, 0.8)',
+        tooltipBackground: '#ffffff',
+        tooltipBorder: '#e2e8f0',
+        tooltipText: '#0f172a',
+        tooltipShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05)',
       };
 
   const currentChartData = chartViewMode === 'project' ? stockByProjects : topItemsStock;
@@ -350,11 +350,11 @@ const Dashboard = () => {
           <Skeleton className="h-4 w-[350px] mt-2" />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          {[1,2,3,4].map(i => <Skeleton key={i} className="h-24 w-full rounded-2xl" />)}
+          {[1,2,3,4].map(i => <Skeleton key={i} className="h-24 w-full rounded-xl" />)}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <Skeleton className="col-span-8 h-[450px] rounded-2xl" />
-          <Skeleton className="col-span-4 h-[450px] rounded-2xl" />
+          <Skeleton className="col-span-8 h-[450px] rounded-xl" />
+          <Skeleton className="col-span-4 h-[450px] rounded-xl" />
         </div>
       </div>
     );
@@ -383,7 +383,7 @@ const Dashboard = () => {
           size="sm"
           onClick={() => fetchDashboardData(false)}
           disabled={refreshing}
-          className="rounded-xl h-10 px-3.5 gap-2 text-xs font-bold border-border/80 hover:bg-accent cursor-pointer shadow-2xs"
+          className="rounded-lg h-9 px-3 gap-2 text-xs font-medium border-border hover:bg-accent cursor-pointer shadow-xs"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin text-emerald-600' : ''}`} />
           <span>{refreshing ? 'กำลังซิงค์...' : 'รีเฟรชข้อมูล'}</span>
@@ -415,7 +415,7 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* Left Column: Stock Balance Chart (8 columns wide) */}
-        <Card className="lg:col-span-8 flex flex-col rounded-3xl glass border border-border/80 shadow-md">
+        <Card className="lg:col-span-8 flex flex-col rounded-xl bg-card border border-border shadow-xs">
           <CardHeader className="border-b border-border/40 pb-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="space-y-0.5">
               <CardTitle className="text-sm font-bold tracking-wide uppercase text-foreground flex items-center gap-2">
@@ -434,14 +434,14 @@ const Dashboard = () => {
             </div>
 
             {/* View Mode Toggle */}
-            <div className="flex items-center bg-muted/60 p-1 rounded-xl border border-border/60 shrink-0 self-start sm:self-auto">
+            <div className="flex items-center bg-muted/50 p-0.5 rounded-lg border border-border shrink-0 self-start sm:self-auto">
               <Button
                 type="button"
                 variant={chartViewMode === 'project' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setChartViewMode('project')}
-                className={`h-7 px-2.5 rounded-lg text-xs gap-1.5 font-bold cursor-pointer transition-all ${
-                  chartViewMode === 'project' ? 'bg-emerald-600 text-white shadow-sm' : 'text-muted-foreground'
+                className={`h-7 px-2.5 rounded-md text-xs gap-1.5 font-medium cursor-pointer transition-all ${
+                  chartViewMode === 'project' ? 'bg-emerald-600 text-white shadow-xs' : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 <Building2 className="w-3 h-3" /> ตามโครงการ
@@ -451,8 +451,8 @@ const Dashboard = () => {
                 variant={chartViewMode === 'item' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setChartViewMode('item')}
-                className={`h-7 px-2.5 rounded-lg text-xs gap-1.5 font-bold cursor-pointer transition-all ${
-                  chartViewMode === 'item' ? 'bg-emerald-600 text-white shadow-sm' : 'text-muted-foreground'
+                className={`h-7 px-2.5 rounded-md text-xs gap-1.5 font-medium cursor-pointer transition-all ${
+                  chartViewMode === 'item' ? 'bg-emerald-600 text-white shadow-xs' : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 <Package className="w-3 h-3" /> Top วัสดุ
@@ -491,7 +491,7 @@ const Dashboard = () => {
                       contentStyle={{ 
                         backgroundColor: chartTheme.tooltipBackground, 
                         color: chartTheme.tooltipText, 
-                        borderRadius: '14px', 
+                        borderRadius: '8px', 
                         border: `1px solid ${chartTheme.tooltipBorder}`, 
                         boxShadow: chartTheme.tooltipShadow, 
                         fontSize: '12px',
@@ -525,7 +525,7 @@ const Dashboard = () => {
         </Card>
 
         {/* Right Column: Recent Activity (4 columns wide) */}
-        <Card className="lg:col-span-4 flex flex-col rounded-3xl glass border border-border/80 shadow-md">
+        <Card className="lg:col-span-4 flex flex-col rounded-xl bg-card border border-border shadow-xs">
           <CardHeader className="border-b border-border/40 pb-3">
             <CardTitle className="text-sm font-bold tracking-wide uppercase text-foreground flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
