@@ -1,5 +1,32 @@
 # Changelog
 
+## [v1.4.66] [2026-09-06] Enterprise UI/UX Migration — Design Tokens & Compatibility Shims (Tickets 01-02)
+
+- **UI/UX Architecture & Modernization:**
+  - `src/App.css`:
+    - ปรับโทนสี Light Mode จาก `#e0e5ec` (Neumorphic Muddy Grey) เป็น Clean Slate-50 (`#f8fafc`) และ Card พื้นผิวสีขาวบริสุทธิ์ (`#ffffff`)
+    - ฟื้นฟูเส้นขอบคมชัด 1px visible line (`#e2e8f0` Light / `#242e3d` Dark) สำหรับการ์ด ตาราง และ Input
+    - จัดระเบียบ Border Radius Scale: `8px` สำหรับ Controls/Inputs (`--radius-md`) และ `12px` สำหรับ Cards/Dialogs (`--radius-lg`)
+    - ติดตั้ง Transitional Compatibility Shims สำหรับ `.neu-flat`, `.neu-flat-sm`, `.neu-pressed`, `.neu-button`, `.neu-primary`, และ `.glass` ทำให้หน้าจอเดิมทั้งหมดแสดงผลในสไตล์ Modern Flat ทันทีโดยไม่มีหน้าจอพัง
+  - `.scratch/enterprise-ui-ux-migration/issues/`:
+    - แตกงานจากแผนแม่บทเป็น 9 Tracer-bullet tickets (01 ถึง 09) พร้อม Dependency blocking edges
+    - ดำเนินการเสร็จสิ้น Ticket 01 (Baseline & Branch setup) และ Ticket 02 (Tokens & Shims)
+- **Modified files:**
+  - `src/App.css`: อัปเดต Tokens และติดตั้ง Compatibility Shims
+  - `package.json`: ขยับเวอร์ชันระบบเป็น `1.4.66`
+  - `README.md`: อัปเดต Version Badge เป็น `v1.4.66`
+  - `wiki/Home.md`, `wiki/_Footer.md`: ปรับเวอร์ชันระบบเป็น `v1.4.66`
+- **Verification:**
+  - `npm run build` ผ่าน 100% (25.05s)
+  - `npm run test:email` ผ่าน 5/5 tests
+- **Reason:** ผู้ใช้ต้องการเอกสารแผนเพื่อ review ก่อน implementation
+
+## [2026-09-06]
+- **Files Modified:** UI-UX-Migration-Plan-Enterprise.md, CHANGELOG.md
+- **Changes:** สร้างแผน migration UI/UX จาก Neumorphism/Glassmorphism ไปสู่ Enterprise Design System โดยยังไม่แก้ source code
+- **Reason:** ผู้ใช้ต้องการเอกสารแผนเพื่อ review ก่อน implementation
+
+
 ## [v1.4.65] [2026-09-06] แก้ไขข้อผิดพลาดความปลอดภัย GitHub CodeQL ทั้งหมด (XSS, String Sanitization, URL Substring Sanitization, Workflow Permissions)
 
 - **Security Fixes:**
@@ -3658,3 +3685,6 @@
 - **Files Modified:** `src/lib/emailRenderer.js`, `src/lib/emailService.js`, `src/components/users/AddUserModal.jsx`, `src/pages/UserManagement.jsx`
 - **Changes:** เพิ่ม invitation email template, ตัวเลือกส่งอีเมลตอนสร้างผู้ใช้, การส่งอีเมลแบบไม่กระทบการสร้างบัญชี และปุ่ม `Resend Invitation`
 - **Reason:** รองรับ flow เชิญผู้ใช้ใหม่ผ่าน email infrastructure เดิมโดยไม่ส่งรหัสผ่านแบบ plain-text
+
+
+
