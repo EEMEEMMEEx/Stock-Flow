@@ -60,7 +60,7 @@ const AddRoleModal = ({ isOpen, onClose, onSave }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) { resetForm(); onClose(); } }}>
-      <DialogContent className="max-w-lg neu-flat border-0">
+      <DialogContent className="max-w-lg rounded-xl bg-card text-card-foreground border border-border shadow-xl">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold flex items-center gap-2">
             <Shield className="w-5 h-5 text-primary" />
@@ -80,7 +80,7 @@ const AddRoleModal = ({ isOpen, onClose, onSave }) => {
               placeholder="เช่น WAREHOUSE_MANAGER, SITE_ENGINEER"
               value={formData.code}
               onChange={handleCodeChange}
-              className="mt-1 neu-pressed bg-transparent font-mono uppercase"
+              className="mt-1 h-9 text-xs rounded-lg bg-background border border-input font-mono uppercase focus-visible:ring-1 focus-visible:ring-primary"
             />
             <p className="text-[11px] text-muted-foreground mt-1">
               * ต้องเป็นตัวอักษรภาษาอังกฤษตัวพิมพ์ใหญ่ ตัวเลข และตัวอักขระพิเศษ <code className="bg-muted px-1 rounded">_</code> เท่านั้น (ห้ามมีเว้นวรรค)
@@ -95,7 +95,7 @@ const AddRoleModal = ({ isOpen, onClose, onSave }) => {
               placeholder="เช่น ผู้จัดการคลังสินค้า, วิศวกรคุมงาน"
               value={formData.name}
               onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-              className="mt-1 neu-pressed bg-transparent"
+              className="mt-1 h-9 text-xs rounded-lg bg-background border border-input focus-visible:ring-1 focus-visible:ring-primary"
             />
           </div>
 
@@ -106,12 +106,12 @@ const AddRoleModal = ({ isOpen, onClose, onSave }) => {
               placeholder="อธิบายขอบเขตงานและความรับผิดชอบของบทบาทนี้"
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-              className="mt-1 neu-pressed bg-transparent text-xs"
+              className="mt-1 h-9 text-xs rounded-lg bg-background border border-input focus-visible:ring-1 focus-visible:ring-primary"
             />
           </div>
 
           {/* Color Palette Selector & Live Badge Preview */}
-          <div className="p-4 rounded-xl neu-pressed-sm space-y-3 bg-white/40 dark:bg-black/20">
+          <div className="p-3.5 rounded-lg bg-muted/30 border border-border/50 space-y-3">
             <div className="flex items-center justify-between">
               <Label className="text-sm font-medium">เลือกธีมสีป้าย (Badge Theme)</Label>
               <div className="flex items-center gap-1.5 text-xs">
@@ -136,8 +136,8 @@ const AddRoleModal = ({ isOpen, onClose, onSave }) => {
                       badge_background: preset.bg,
                       badge_text_color: preset.text
                     }))}
-                    className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${preset.bg} ${preset.text} ${
-                      isSelected ? 'ring-2 ring-primary ring-offset-2 scale-105 shadow-md' : 'opacity-70 hover:opacity-100'
+                    className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${preset.bg} ${preset.text} ${
+                      isSelected ? 'ring-2 ring-primary ring-offset-2 scale-105 shadow-xs' : 'opacity-70 hover:opacity-100'
                     }`}
                   >
                     {preset.name}
@@ -148,13 +148,13 @@ const AddRoleModal = ({ isOpen, onClose, onSave }) => {
           </div>
 
           <DialogFooter className="pt-2">
-            <Button type="button" variant="ghost" onClick={() => { resetForm(); onClose(); }}>
+            <Button type="button" variant="ghost" onClick={() => { resetForm(); onClose(); }} className="h-9 px-4 rounded-lg text-xs">
               ยกเลิก
             </Button>
             <Button 
               type="submit" 
               disabled={loading} 
-              className="neu-primary h-10 px-5 rounded-xl font-semibold text-sm flex items-center gap-2 transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="h-9 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs shadow-xs flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <>

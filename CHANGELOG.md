@@ -1,5 +1,249 @@
 # Changelog
 
+## [v1.4.73] [2026-09-06] Enterprise UI/UX Migration — Final Verification, WCAG 2.2 AA & SemVer Release (Ticket 09)
+
+- **WCAG 2.2 AA Contrast Audit — Automated Token Verification:**
+  - รัน automated contrast ratio audit ครอบคลุม 8 token pair ใน Light mode และ Dark mode (16 pairs รวม)
+  - พบ 2 failures และแก้ไขใน `src/App.css`:
+    - `--muted-foreground` (light): `46.9%` → `44%` — ratio ใหม่ 4.81:1 บน muted bg, 5.04:1 บน page bg, 5.27:1 บน card (ผ่าน WCAG AA ทุก context)
+    - `--destructive`: `60.2%` → `48.5%` — ratio ใหม่ 4.56:1 กับ near-white foreground (ผ่าน WCAG AA normal text 4.5:1)
+  - ผล WCAG 2.2 AA Final: ทุก 16 pairs ผ่าน — Compliant ทั้ง Light และ Dark mode
+- **Lint Audit — Pre-existing Error Analysis:**
+  - `npm run lint` result: 353 problems (50 errors, 303 warnings)
+  - Baseline (pre-migration commit `170b0196`): 354 problems (50 errors, 304 warnings)
+  - Enterprise UI Migration ไม่ได้เพิ่ม lint errors ใหม่ — ลด 1 warning จาก baseline
+  - ยืนยันด้วย `git stash` + lint + `git stash pop` comparison
+  - errors ทั้งหมด (process is not defined, no-unescaped-entities, no-useless-escape, no-empty) เป็น pre-existing และอยู่นอก scope ของ migration
+- **Production Build Verification:**
+  - `npm run build` ผ่าน exit code 0 ใน 25.96s
+- **Responsive Layout Note:** ตรวจสอบ Tailwind breakpoint classes ครอบคลุม `sm:` (640px), `md:` (768px), `lg:` (1024px), `xl:` (1280px) ใน component code พร้อม `min-w-0`, `flex-wrap`, responsive grid columns
+- **Keyboard Navigation Note:** All interactive elements ใช้ Radix UI primitives (Dialog, DropdownMenu, Select, Tooltip) ซึ่งมี built-in WAI-ARIA keyboard navigation compliance
+- **Mandatory System Version Management:**
+  - `package.json`: `1.4.72` → `1.4.73`
+  - `README.md`, `wiki/Home.md`, `wiki/_Footer.md`: อัปเดต version เป็น `v1.4.73`
+
+## [v1.4.72] [2026-09-06] Enterprise UI/UX Migration — Zero-Reference Scan & Legacy CSS Shim Removal (Ticket 08)
+
+- **Contract Phase: Legacy CSS Shim Removal:**
+  - `src/App.css`: ลบ transitional compatibility shims ที่ใช้งานในช่วง Phase 1–7 ทั้งหมดออกอย่างปลอดภัย ได้แก่:
+    - Utility classes: `.glass`, `.neu-flat`, `.neu-flat-sm`, `.neu-pressed`, `.neu-pressed-sm`, `.neu-button`, `.neu-button:hover`, `.neu-button:active`, `.neu-primary`, `.neu-primary:hover`, `.neu-primary:active`
+    - Custom property aliases ใน `:root` (light mode): `--glass-input-border`, `--glass-input-bg`, `--glass-hover`, `--glass-text`, `--glass-card-border`, `--glass-card-bg`, `--neu-surface`, `--neu-border`, `--neu-shadow-dark`, `--neu-shadow-light`, `--neu-primary-border`, `--neu-primary-shadow`
+    - Custom property aliases ใน `.dark` (dark mode): ชุดเดียวกัน
+    - ขนาดไฟล์ลดจาก 263 บรรทัด → 168 บรรทัด (-95 บรรทัด / -2.6 KB)
+  - ยืนยัน Zero occurrences (`0 results`) ของ `neu-*`, `glass`, `--neu-*`, `--glass-*` ในโค้ด application ทั้งหมด (*.jsx, *.js, *.css)
+- **Mandatory System Version Management:**
+  - `package.json`: ขยับเวอร์ชันระบบเป็น `1.4.72`
+  - `README.md`: อัปเดต Version Badge เป็น `v1.4.72`
+  - `wiki/Home.md`, `wiki/_Footer.md`: ปรับเวอร์ชันระบบเป็น `v1.4.72`
+
+## [v1.4.71] [2026-09-06] Enterprise UI/UX Migration — Administration & Account (Ticket 07)
+
+- **System Settings & Subcomponents Modernization:**
+  - `src/pages/Settings.jsx`: ปรับปรุงหน้าการตั้งค่าระบบ, Navigation Tabs, Identity Info Box, System Metrics, Action Buttons ให้เป็น Solid Surface `rounded-xl bg-card border border-border shadow-xs` พร้อมกำจัดคลาส `neu-` และ `glass` ทั้งหมด
+  - `src/components/settings/DefaultPasswordManager.jsx`: ปรับปรุงการ์ดจัดการรหัสผ่านตั้งต้น, กล่องอินพุต `h-9 text-xs rounded-lg`, Toggle Visibility, และปุ่มคำสั่งมาตรฐาน
+  - `src/components/settings/EmailTemplateManager.jsx`: แปลงการ์ดเลือกเทมเพลตอีเมล, ตัวแก้ไข HTML/Subject/Description, Live Preview Container, และตัวจัดการ Dynamic Variables ให้มีคอนทราสต์ชัดเจน ไร้ `neu-`
+- **Users & Account Management Modernization:**
+  - `src/pages/UserManagement.jsx`: ปรับปรุงตารางผู้ใช้งาน, Header Toolbar, Role Filter, Search Bar, และ Actions Dropdown
+  - `src/components/users/AvatarUpload.jsx`: ปรับปรุงปุ่มและกล่องอัปโหลดรูปภาพประจำตัวให้เป็นโทน Enterprise คลีนตา
+  - `src/components/users/AddUserModal.jsx` & `src/components/users/EditUserModal.jsx`: ปรับโมดอลสร้างและแก้ไขผู้ใช้เป็น `rounded-xl bg-card text-card-foreground border border-border shadow-xl` พร้อมอินพุต `h-9 text-xs rounded-lg`, Role Cards, Project Access Checkboxes, และสถานะบัญชี
+  - `src/components/users/ResetPasswordModal.jsx` & `src/components/users/UserActionModal.jsx`: ปรับแต่งไดอะล็อกยืนยันการเปลี่ยนรหัสผ่านและการระงับ/เปิดใช้งานบัญชี
+- **Roles & Permissions Matrix Modernization:**
+  - `src/pages/RoleManagement.jsx`: ปรับปรุงการ์ดบทบาท (Role Cards), สถิติผู้ใช้งานในแต่ละบทบาท, และระบบการกรองสิทธิ์
+  - `src/components/roles/AddRoleModal.jsx` & `src/components/roles/EditRoleModal.jsx`: ปรับแต่งฟอร์มสร้าง/แก้ไขบทบาทและตัวเลือก Palette สีแท็กให้สะอาด
+  - `src/components/roles/PermissionManagementModal.jsx`: ปรับตารางเมทริกซ์สิทธิ์การใช้งาน (Permissions Matrix) เป็น Structured High-Contrast Checklist Cards หมวดหมู่ชัดเจน พร้อมกล่องค้นหาและสวิตช์เปิด/ปิดสิทธิ์
+- **Profile, Auth, Documentation & Projects Modernization:**
+  - `src/pages/Profile.jsx`: ปรับปรุงหน้าโปรไฟล์ส่วนตัว, การ์ดแสดงบทบาท, ฟอร์มแก้ไขข้อมูลติดต่อ และฟอร์มเปลี่ยนรหัสผ่านความปลอดภัยสูง
+  - `src/components/auth/ForceChangePasswordModal.jsx`: แปลงไดอะล็อกบังคับเปลี่ยนรหัสผ่านเมื่อเข้าสู่ระบบครั้งแรกเป็น Solid Dialog พร้อม Password Policy Checklist
+  - `src/components/auth/PermissionRoute.jsx`: ปรับการ์ดแจ้งเตือนปฏิเสธการเข้าถึง (Access Denied / 403 Forbidden) ให้คมชัดเป็นมืออาชีพ
+  - `src/pages/Manual.jsx`: แปลงหน้าคู่มือการใช้งานระบบ, Hero Banner, หมวดหมู่คู่มือตามสิทธิ์, ค้นหาหัวข้อ และคู่มือการทำงานแบบการ์ดทึบแสง
+  - `src/pages/Projects.jsx`: กำจัดคลาส `glass`, `rounded-3xl`, และ `rounded-2xl` ทั้งหมด แปลงการ์ดโครงการ (Logical Project Cards), Multi-Code Tag Input, Add Location Dialog, Edit Project Dialog, และ Delete & Stock Transfer Modal เป็น Solid Enterprise UI
+- **Mandatory System Version Management:**
+  - `package.json`: ขยับเวอร์ชันระบบเป็น `1.4.71`
+  - `README.md`: อัปเดต Version Badge เป็น `v1.4.71`
+  - `wiki/Home.md`, `wiki/_Footer.md`: ปรับเวอร์ชันระบบเป็น `v1.4.71`
+
+## [v1.4.70] [2026-09-06] Enterprise UI/UX Migration — Operational POS & Stock In (Ticket 06)
+
+- **Stock In Receipt Flow & Forms Modernization:**
+  - `src/pages/StockIn.jsx`:
+    - ปรับปรุงตารางประวัติการรับเข้า (Stock In Receipts Table) จากสไตล์นูนเดิมเป็น Solid Card `rounded-xl bg-card border border-border shadow-xs`
+    - ปรับแต่ง CSV Batch Import Preview Modal และ Manual Entry Dialog ให้เป็น Solid Surface `rounded-xl bg-card border-border shadow-xl`
+    - กำจัดคลาส `neu-pressed` และปรับความสูงปุ่มคำสั่งหลักเป็นมาตรฐาน `h-9 rounded-lg`
+- **Withdrawal Workflows & POS Terminal Modernization:**
+  - `src/pages/Withdrawals.jsx`:
+    - ปรับคอนเทนเนอร์ Navigation Tabs เป็น `rounded-xl bg-card border border-border shadow-xs` พร้อมปุ่มแท็บ `rounded-lg font-semibold`
+  - `src/components/withdrawals/WithdrawalPosTerminal.jsx`:
+    - ปรับแต่ง Project & Location Selector Card, Search Toolbar, Skeleton Loaders, และมุมมอง Grid/Table เป็น Solid Opaque `rounded-xl bg-card border border-border shadow-xs`
+    - ปรับปรุง Desktop Sticky Cart Panel และ Mobile Cart Sheet ให้มีความคมชัดสูง พร้อมปุ่ม Checkout มาตรฐาน `h-10 rounded-lg`
+  - `src/components/withdrawals/WithdrawalItemCard.jsx`:
+    - แปลงการ์ดพัสดุจาก `rounded-2xl glass` เป็น `rounded-xl bg-card border border-border shadow-xs`
+    - ตัดแอนิเมชันกระตุก `group-hover:scale-105` และ `backdrop-blur-md` ออกเพื่อประสิทธิภาพการเรนเดอร์ระดับ Enterprise
+  - `src/components/withdrawals/WithdrawalCartPanel.jsx`:
+    - ปรับปรุงกล่องตะกร้าเบิกจ่าย, รายการแถวพัสดุ, ปุ่มเพิ่ม/ลดจำนวน, และปุ่มยืนยันส่งใบเบิก
+  - `src/components/withdrawals/WithdrawalOrdersList.jsx`:
+    - แปลง KPI Metric Cards สถิติใบเบิกเป็น Solid Card `rounded-xl bg-card border border-border shadow-xs`
+    - ปรับแถบเครื่องมือค้นหา/ตัวกรองสถานะใบเบิก และการ์ดแสดงตารางรายการคำขอเบิก
+  - `src/components/withdrawals/WithdrawalShortageModal.jsx`:
+    - ปรับปรุง Dialog แจ้งพัสดุขาดสต็อกเป็น Solid Card `rounded-xl bg-card border border-border shadow-xl` พร้อมคอนโทรล `h-9 rounded-lg`
+  - `src/components/withdrawals/WithdrawalRejectModal.jsx`:
+    - ปรับปรุง Dialog ปฏิเสธคำขอเบิก พร้อมช่องระบุเหตุผลและปุ่มยืนยัน
+  - `src/components/withdrawals/StockLocationBreakdownModal.jsx`:
+    - ปรับปรุง Modal แสดงยอดสต็อกแยกตามคลังย่อยและโครงการเป็น Solid Layout `rounded-xl`
+  - `src/components/withdrawals/WithdrawalDetailModal.jsx`:
+    - ปรับปรุง Dialog แสดงรายละเอียดใบเบิกและตารางรายการพัสดุ พร้อมปุ่มพิมพ์ PDF / อนุมัติ / ปฏิเสธ
+- **Checkouts & Equipment Loan Modernization:**
+  - `src/pages/Checkouts.jsx`:
+    - ปรับปรุง Header Toolbar, ปุ่มรีเฟรช และปุ่มสร้างรายการยืมใหม่เป็น `h-9 rounded-lg`
+    - ปรับแท็บสลับสถานะเป็น `p-1 bg-muted/50 rounded-lg border border-border` และตัด `active:scale-[0.98]`
+  - `src/components/checkouts/CheckoutActiveList.jsx`:
+    - แปลงการ์ด KPI สถิติอุปกรณ์ที่อยู่ระหว่างการยืม/เกินกำหนดส่งคืนเป็น `rounded-xl bg-card border border-border shadow-xs`
+    - ปรับตารางแสดงรายการยืมที่ยังไม่ส่งคืน พร้อมปุ่มดำเนินการ `h-9 rounded-lg font-semibold`
+  - `src/components/checkouts/CheckoutDetailModal.jsx`:
+    - ปรับปรุง Dialog รายละเอียดการยืม-คืนอุปกรณ์, ตารางพัสดุ และปุ่มพิมพ์ใบคืน/ขยายเวลา
+  - `src/components/checkouts/CheckoutExtendModal.jsx`:
+    - ปรับปรุง Dialog ขยายเวลาส่งคืนอุปกรณ์, ปฏิทินเลือกวันคืนใหม่ และ Quick Extension Pills
+  - `src/components/checkouts/CheckoutReturnModal.jsx`:
+    - ปรับปรุง Dialog รับคืนอุปกรณ์, แถบค้นหา และปุ่มยืนยันการรับคืน
+  - `src/components/checkouts/CheckoutHistoryList.jsx`:
+    - ปรับปรุงการ์ดประวัติการคืนอุปกรณ์ที่เสร็จสิ้นแล้วเป็น Solid Opaque `rounded-xl`
+  - `src/components/checkouts/CheckoutPosTerminal.jsx`:
+    - แปลงการ์ดแบบฟอร์มข้อมูลผู้ยืม (Borrower Info), ตะกร้ายืมพัสดุ และกล่องระบุ Serial Number (Single & Multi-SN Batch) ให้เป็น Solid Surface `rounded-xl bg-card border border-border shadow-xs`
+    - ปรับอินพุตทั้งหมดเป็นขนาดมาตรฐาน `h-9 rounded-lg bg-background border border-input` และปุ่ม Submit `h-10 rounded-lg`
+- **Modified files:**
+  - `src/pages/StockIn.jsx`, `src/pages/Withdrawals.jsx`, `src/pages/Checkouts.jsx`
+  - `src/components/withdrawals/*`, `src/components/checkouts/*`
+  - `package.json`: ขยับเวอร์ชันระบบเป็น `1.4.70`
+  - `README.md`: อัปเดต Version Badge เป็น `v1.4.70`
+  - `wiki/Home.md`, `wiki/_Footer.md`: ปรับเวอร์ชันระบบเป็น `v1.4.70`
+- **Verification:**
+  - `npm run build` ผ่าน 100% (24.13s)
+  - `npm run test:email` ผ่าน 5/5 tests
+
+## [v1.4.69] [2026-09-06] Enterprise UI/UX Migration — Dashboard & Items Catalog (Ticket 05)
+
+- **Operational Dashboard Modernization:**
+  - `src/components/dashboard/DashboardStatCard.jsx`:
+    - ลบคลาส `neu-flat`, `-translate-y-0.5`, และ `hover:scale-105` ออกจาก Stat Card
+    - ปรับพื้นผิวเป็น Solid Card พร้อมเส้นขอบแบบ Enterprise `bg-card border border-border/80 shadow-xs hover:border-primary/50 hover:shadow-xs`
+    - ปรับปรุงคู่สี `TONE_CLASSES` ให้มี Contrast สูงและเป็นไปตามเกณฑ์ WCAG
+    - ปรับขนาดคอนเทนเนอร์ไอคอนเป็น `rounded-xl border shadow-xs`
+  - `src/pages/Dashboard.jsx`:
+    - ยกเครื่องสไตล์ Tooltip ของ Recharts จากเงา Neumorphic คู่และพื้นหลังเทาหม่น เป็น Solid Popover ขาว/เทาเข้มคมชัด (`#ffffff` Light / `#1e293b` Dark) พร้อมเส้นขอบ 1px และเงา Subtle Drop Shadow
+    - ปรับการ์ดสรุปยอดสต็อกตามโครงการ (BarChart) และการ์ดกิจกรรมล่าสุดจาก `rounded-3xl glass shadow-md` เป็น `rounded-xl bg-card border border-border shadow-xs`
+    - ปรับปุ่มสลับมุมมองกราฟ (ตามโครงการ / Top วัสดุ) และปุ่มรีเฟรชข้อมูลเป็นขนาดมาตรฐาน `h-9` / `h-7` พร้อมขอบมน `rounded-lg` / `rounded-md`
+  - `src/components/dashboard/SiteKitAvailabilityCards.jsx`:
+    - ตัด `rounded-3xl`, `backdrop-blur-md`, และ `group-hover:scale-105` ออกจากการ์ดความพร้อมชุดติดตั้งไซต์งาน (Site Installation Kits BOM)
+    - ปรับปรุง Dialog และแบบฟอร์มแก้ไข BOM ของ Admin เป็น Solid Opaque Card `bg-card border-border shadow-lg` พร้อมคอนโทรลขนาดมาตรฐาน
+- **Inventory Items Catalog Modernization:**
+  - `src/pages/Items.jsx`:
+    - ปรับการ์ด KPI สถิติสต็อกด้านบนเป็น Solid Card `rounded-xl bg-card border border-border shadow-xs`
+    - ปรับแถบเครื่องมือค้นหาและตัวกรอง (Toolbar) จาก `glass` เป็น `bg-card border border-border shadow-xs`
+    - ปรับ Search Input, Category Select, และ View Switcher ให้มีความสูงมาตรฐาน `h-9` ขอบมน `rounded-lg`
+    - ปรับตารางพัสดุ (Table View): คอนเทนเนอร์ตาราง `rounded-xl bg-card border border-border shadow-xs`, รูปภาพ Thumbnail `rounded-lg`, Badge สถานะสต็อกและหมวดหมู่เป็น `rounded-md`
+    - ปรับมุมมองการ์ด (Grid Bento View): ตัด `glass` เปลี่ยนเป็นการ์ด Solid Opaque `rounded-xl bg-card border border-border shadow-xs`
+    - ปรับแถบแบ่งหน้า Supabase-style Pagination Footer ให้ใช้พื้นผิว `bg-card rounded-xl border border-border shadow-xs` พร้อมช่องใส่เลขหน้า `h-8 rounded-lg shadow-xs`
+    - ปรับปรุง Modal: Edit Master Item, Delete Master Item, และ Stock Adjustment Audit History ให้เป็น Solid Surface `rounded-xl border-border bg-card shadow-lg`
+  - `src/components/items/TransferItemDialog.jsx`:
+    - ตัด `rounded-3xl` และ `backdrop-blur-xl` เปลี่ยนเป็น `rounded-xl border-border bg-card shadow-lg`
+    - ปรับฟอร์มระบุจำนวนโอนย้ายและหมายเหตุเป็นขนาดมาตรฐาน `h-9 rounded-lg`
+  - `src/components/common/ProjectLocationSelector.jsx`:
+    - ปรับขนาดและสไตล์ของ Select ควบคุมคลัง/โครงการเป็น `h-9 rounded-lg border-input shadow-xs`
+- **Modified files:**
+  - `src/components/dashboard/DashboardStatCard.jsx`, `src/pages/Dashboard.jsx`, `src/components/dashboard/SiteKitAvailabilityCards.jsx`
+  - `src/pages/Items.jsx`, `src/components/items/TransferItemDialog.jsx`, `src/components/common/ProjectLocationSelector.jsx`
+  - `package.json`: ขยับเวอร์ชันระบบเป็น `1.4.69`
+  - `README.md`: อัปเดต Version Badge เป็น `v1.4.69`
+  - `wiki/Home.md`, `wiki/_Footer.md`: ปรับเวอร์ชันระบบเป็น `v1.4.69`
+- **Verification:**
+  - `npm run build` ผ่าน 100% (25.88s)
+  - `npm run test:email` ผ่าน 5/5 tests
+
+## [v1.4.68] [2026-09-06] Enterprise UI/UX Migration — Global App Shell & Navigation (Ticket 04)
+
+- **Application Shell & Navigation Architecture:**
+  - `src/components/layout/Sidebar.jsx`:
+    - ปรับพื้นผิวแถบเมนูด้านข้างจาก `glass` และ `backdrop-blur-xl` เป็น Solid Opaque Card `bg-card border-r border-border`
+    - ยกเครื่องสไตล์ Active Navigation Link จาก `neu-pressed` เป็น `bg-primary/10 text-primary font-semibold border-l-2 border-primary shadow-xs` พร้อม Inactive Hover เป็น `bg-muted`
+    - ปรับปุ่มยุบ/ขยายเมนู, ไอคอนแบรนด์, และลิงก์การตั้งค่าด้านล่างเป็นมาตรฐาน Enterprise Border Radius (`8px`)
+    - ปรับปรุง Backdrop Overlay ของ Mobile Navigation Drawer (`bg-black/50`)
+  - `src/components/layout/Topbar.jsx`:
+    - ปรับ Header Background จาก `glass` เป็น `bg-card/95 border-b border-border shadow-xs`
+    - ปรับ Trigger Button ของโปรไฟล์ผู้ใช้งานและ Theme Switcher ให้มีขนาดมาตรฐาน `h-9` พร้อมเส้นขอบ `border-input` และ Focus-visible Ring
+    - ยกเครื่อง Dropdown Menu เนื้อหาโปรไฟล์เป็น Solid Popover `bg-popover border border-border shadow-xl`
+  - `src/components/layout/NotificationBell.jsx`:
+    - ปรับ Control Button ให้มีความสูงมาตรฐาน `h-9`
+    - ปรับ Dropdown Panel เป็น Solid Popover `bg-popover border border-border shadow-xl`
+    - ตัดคลาส `neu-button` และ `active:scale-95` ออกจาก Quick Action Buttons ทั้งหมด (ปุ่มอนุมัติทันที, ดูบิล, ดูใบเบิก, รับคืนพัสดุ, ตรวจสต็อก)
+  - `src/components/layout/AppFooter.jsx`:
+    - ปรับพื้นหลังจาก `backdrop-blur-md` เป็น `bg-card/80 border-t border-border`
+- **Modified files:**
+  - `src/components/layout/Sidebar.jsx`, `Topbar.jsx`, `NotificationBell.jsx`, `AppFooter.jsx`
+  - `package.json`: ขยับเวอร์ชันระบบเป็น `1.4.68`
+  - `README.md`: อัปเดต Version Badge เป็น `v1.4.68`
+  - `wiki/Home.md`, `wiki/_Footer.md`: ปรับเวอร์ชันระบบเป็น `v1.4.68`
+- **Verification:**
+  - `npm run build` ผ่าน 100% (26.83s)
+  - `npm run test:email` ผ่าน 5/5 tests
+
+## [v1.4.67] [2026-09-06] Enterprise UI/UX Migration — Core UI Primitives Modernization (Ticket 03)
+
+- **Shared UI Primitives Modernization:**
+  - `src/components/ui/button.jsx`:
+    - ยกเครื่อง CVA variants เป็น Modern Flat Solid & Outline (`default`, `destructive`, `outline`, `secondary`, `ghost`, `link`, `emerald`, `indigo`)
+    - ลบคลาส Neumorphic (`neu-primary`, `neu-button`) และตัด bouncy `active:scale-[0.98]` ออกอย่างถาวร
+    - เพิ่ม Ring Offset Focus ชัดเจน รองรับการเข้าถึง Keyboard Accessibility
+  - `src/components/ui/card.jsx`:
+    - ตัด `neu-flat` ออกอย่างถาวร เปลี่ยนเป็น `rounded-xl border border-border bg-card shadow-xs`
+    - ปรับปรุง Header, Title, Description, Content, Footer ให้รองรับ Responsive Padding ที่เป็นระเบียบ
+  - `src/components/ui/input.jsx`:
+    - ตัด `neu-pressed` Inset Shadow ออก ปรับเป็น `rounded-lg border border-input bg-background shadow-xs`
+    - กำหนดความสูงมาตรฐาน `h-9` พร้อม Focus-visible Ring คมชัด
+  - `src/components/ui/table.jsx`:
+    - ปรับ `TableHeader` จาก `neu-flat-sm` เป็น `bg-muted/60 border-b border-border`
+    - ปรับ `TableRow` ให้มีเส้นขอบคั่น `border-b border-border/70 hover:bg-muted/50`
+  - `src/components/ui/dialog.jsx`:
+    - ตัด `glass` และ `backdrop-blur` ออกจาก `DialogContent` เป็น Solid Card Opaque Surface `bg-card border border-border shadow-xl rounded-xl`
+    - ปรับ `DialogOverlay` เป็น Dark Scrim ทันสมัย `bg-black/60`
+  - `src/components/ui/tooltip.jsx`:
+    - ตัด `glass` และ `backdrop-blur-xl` ออก เป็น Solid Popover `border-border bg-popover text-popover-foreground shadow-md`
+  - `src/components/ui/badge.jsx`:
+    - เพิ่ม Semantic Variants ที่ผ่านเกณฑ์คอนทราสต์: `success`, `warning`, `info` พร้อมเส้นขอบคมชัด
+- **Modified files:**
+  - `src/components/ui/button.jsx`, `card.jsx`, `input.jsx`, `table.jsx`, `dialog.jsx`, `tooltip.jsx`, `badge.jsx`
+  - `package.json`: ขยับเวอร์ชันระบบเป็น `1.4.67`
+  - `README.md`: อัปเดต Version Badge เป็น `v1.4.67`
+  - `wiki/Home.md`, `wiki/_Footer.md`: ปรับเวอร์ชันระบบเป็น `v1.4.67`
+- **Verification:**
+  - `npm run build` ผ่าน 100% (26.61s)
+  - `npm run test:email` ผ่าน 5/5 tests
+
+## [v1.4.66] [2026-09-06] Enterprise UI/UX Migration — Design Tokens & Compatibility Shims (Tickets 01-02)
+
+- **UI/UX Architecture & Modernization:**
+  - `src/App.css`:
+    - ปรับโทนสี Light Mode จาก `#e0e5ec` (Neumorphic Muddy Grey) เป็น Clean Slate-50 (`#f8fafc`) และ Card พื้นผิวสีขาวบริสุทธิ์ (`#ffffff`)
+    - ฟื้นฟูเส้นขอบคมชัด 1px visible line (`#e2e8f0` Light / `#242e3d` Dark) สำหรับการ์ด ตาราง และ Input
+    - จัดระเบียบ Border Radius Scale: `8px` สำหรับ Controls/Inputs (`--radius-md`) และ `12px` สำหรับ Cards/Dialogs (`--radius-lg`)
+    - ติดตั้ง Transitional Compatibility Shims สำหรับ `.neu-flat`, `.neu-flat-sm`, `.neu-pressed`, `.neu-button`, `.neu-primary`, และ `.glass` ทำให้หน้าจอเดิมทั้งหมดแสดงผลในสไตล์ Modern Flat ทันทีโดยไม่มีหน้าจอพัง
+  - `.scratch/enterprise-ui-ux-migration/issues/`:
+    - แตกงานจากแผนแม่บทเป็น 9 Tracer-bullet tickets (01 ถึง 09) พร้อม Dependency blocking edges
+    - ดำเนินการเสร็จสิ้น Ticket 01 (Baseline & Branch setup) และ Ticket 02 (Tokens & Shims)
+- **Modified files:**
+  - `src/App.css`: อัปเดต Tokens และติดตั้ง Compatibility Shims
+  - `package.json`: ขยับเวอร์ชันระบบเป็น `1.4.66`
+  - `README.md`: อัปเดต Version Badge เป็น `v1.4.66`
+  - `wiki/Home.md`, `wiki/_Footer.md`: ปรับเวอร์ชันระบบเป็น `v1.4.66`
+- **Verification:**
+  - `npm run build` ผ่าน 100% (25.05s)
+  - `npm run test:email` ผ่าน 5/5 tests
+- **Reason:** ผู้ใช้ต้องการเอกสารแผนเพื่อ review ก่อน implementation
+
+## [2026-09-06]
+- **Files Modified:** UI-UX-Migration-Plan-Enterprise.md, CHANGELOG.md
+- **Changes:** สร้างแผน migration UI/UX จาก Neumorphism/Glassmorphism ไปสู่ Enterprise Design System โดยยังไม่แก้ source code
+- **Reason:** ผู้ใช้ต้องการเอกสารแผนเพื่อ review ก่อน implementation
+
+
 ## [v1.4.65] [2026-09-06] แก้ไขข้อผิดพลาดความปลอดภัย GitHub CodeQL ทั้งหมด (XSS, String Sanitization, URL Substring Sanitization, Workflow Permissions)
 
 - **Security Fixes:**
@@ -3658,3 +3902,6 @@
 - **Files Modified:** `src/lib/emailRenderer.js`, `src/lib/emailService.js`, `src/components/users/AddUserModal.jsx`, `src/pages/UserManagement.jsx`
 - **Changes:** เพิ่ม invitation email template, ตัวเลือกส่งอีเมลตอนสร้างผู้ใช้, การส่งอีเมลแบบไม่กระทบการสร้างบัญชี และปุ่ม `Resend Invitation`
 - **Reason:** รองรับ flow เชิญผู้ใช้ใหม่ผ่าน email infrastructure เดิมโดยไม่ส่งรหัสผ่านแบบ plain-text
+
+
+

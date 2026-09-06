@@ -52,7 +52,7 @@ const EditRoleModal = ({ isOpen, onClose, onSave, role }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent className="max-w-lg neu-flat border-0">
+      <DialogContent className="max-w-lg rounded-xl bg-card text-card-foreground border border-border shadow-xl">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold flex items-center gap-2">
             <Shield className="w-5 h-5 text-primary" />
@@ -65,8 +65,8 @@ const EditRoleModal = ({ isOpen, onClose, onSave, role }) => {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {role?.is_system && (
-            <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-900 dark:text-purple-200 text-xs flex items-center gap-2">
-              <Lock className="w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0" />
+            <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-900 dark:text-blue-200 text-xs flex items-center gap-2">
+              <Lock className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
               <span>บทบาทของระบบ (System Role) — ป้องกันการลบหรือเปลี่ยนรหัสบทบาทเพื่อความเสถียรของระบบ</span>
             </div>
           )}
@@ -75,7 +75,7 @@ const EditRoleModal = ({ isOpen, onClose, onSave, role }) => {
             <Input
               disabled
               value={role?.code || ''}
-              className="mt-1 neu-pressed bg-muted/50 text-muted-foreground font-mono opacity-80 cursor-not-allowed"
+              className="mt-1 h-9 text-xs rounded-lg bg-muted/50 text-muted-foreground font-mono opacity-80 cursor-not-allowed border border-input"
             />
           </div>
 
@@ -86,7 +86,7 @@ const EditRoleModal = ({ isOpen, onClose, onSave, role }) => {
               required
               value={formData.name}
               onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-              className="mt-1 neu-pressed bg-transparent"
+              className="mt-1 h-9 text-xs rounded-lg bg-background border border-input focus-visible:ring-1 focus-visible:ring-primary"
             />
           </div>
 
@@ -96,12 +96,12 @@ const EditRoleModal = ({ isOpen, onClose, onSave, role }) => {
               id="edit_role_desc"
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-              className="mt-1 neu-pressed bg-transparent text-xs"
+              className="mt-1 h-9 text-xs rounded-lg bg-background border border-input focus-visible:ring-1 focus-visible:ring-primary"
             />
           </div>
 
           {/* Color Palette Selector & Live Badge Preview */}
-          <div className="p-4 rounded-xl neu-pressed-sm space-y-3 bg-white/40 dark:bg-black/20">
+          <div className="p-3.5 rounded-lg bg-muted/30 border border-border/50 space-y-3">
             <div className="flex items-center justify-between">
               <Label className="text-sm font-medium">เลือกธีมสีป้าย (Badge Theme)</Label>
               <div className="flex items-center gap-1.5 text-xs">
@@ -126,8 +126,8 @@ const EditRoleModal = ({ isOpen, onClose, onSave, role }) => {
                       badge_background: preset.bg,
                       badge_text_color: preset.text
                     }))}
-                    className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${preset.bg} ${preset.text} ${
-                      isSelected ? 'ring-2 ring-primary ring-offset-2 scale-105 shadow-md' : 'opacity-70 hover:opacity-100'
+                    className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${preset.bg} ${preset.text} ${
+                      isSelected ? 'ring-2 ring-primary ring-offset-2 scale-105 shadow-xs' : 'opacity-70 hover:opacity-100'
                     }`}
                   >
                     {preset.name}
@@ -138,10 +138,10 @@ const EditRoleModal = ({ isOpen, onClose, onSave, role }) => {
           </div>
 
           <DialogFooter className="pt-2">
-            <Button type="button" variant="ghost" onClick={onClose}>
+            <Button type="button" variant="ghost" onClick={onClose} className="h-9 px-4 rounded-lg text-xs">
               ยกเลิก
             </Button>
-            <Button type="submit" disabled={loading} className="neu-primary">
+            <Button type="submit" disabled={loading} className="h-9 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs shadow-xs cursor-pointer">
               {loading ? 'กำลังอัปเดต...' : 'บันทึกการแก้ไข'}
             </Button>
           </DialogFooter>

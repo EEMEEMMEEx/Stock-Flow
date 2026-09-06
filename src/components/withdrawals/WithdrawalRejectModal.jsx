@@ -26,11 +26,11 @@ const WithdrawalRejectModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[460px] rounded-3xl glass p-6 border border-border/80 shadow-2xl">
+      <DialogContent className="sm:max-w-[460px] rounded-xl bg-card p-6 border border-border shadow-xl">
         <form onSubmit={handleSubmit}>
           <DialogHeader className="space-y-2 border-b border-border/40 pb-3">
             <DialogTitle className="flex items-center gap-2.5 text-red-600 dark:text-red-400 text-base font-extrabold">
-              <div className="p-2 rounded-2xl bg-red-500/15 border border-red-500/30">
+              <div className="p-2 rounded-lg bg-red-500/15 border border-red-500/30">
                 <XCircle className="w-5 h-5" />
               </div>
               <span>ปฏิเสธคำขอเบิกจ่าย #{orderToReject?.id?.slice(0, 8)}</span>
@@ -45,7 +45,7 @@ const WithdrawalRejectModal = ({
               </label>
               <textarea
                 required
-                className="flex min-h-[90px] w-full rounded-2xl border border-input bg-background px-3 py-2 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 resize-none shadow-2xs"
+                className="flex min-h-[90px] w-full rounded-lg border border-input bg-background px-3 py-2 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 resize-none shadow-2xs"
                 placeholder="เช่น สินค้าในคลังโครงการไม่เพียงพอ หรือข้อมูลไม่ถูกต้อง..."
                 value={rejectReason}
                 onChange={(e) => onRejectReasonChange(e.target.value)}
@@ -75,7 +75,7 @@ const WithdrawalRejectModal = ({
               type="button"
               variant="outline"
               onClick={onClose}
-              className="rounded-xl text-xs h-10"
+              className="rounded-lg text-xs h-9 px-4 font-semibold"
             >
               ยกเลิก
             </Button>
@@ -83,7 +83,7 @@ const WithdrawalRejectModal = ({
               type="submit"
               variant="destructive"
               disabled={!rejectReason.trim() || isProcessing}
-              className="rounded-xl text-xs h-10 font-bold shadow-sm cursor-pointer"
+              className="rounded-lg text-xs h-9 px-4 font-semibold shadow-xs cursor-pointer"
             >
               {isProcessing ? 'กำลังปฏิเสธ...' : 'ยืนยันปฏิเสธคำขอ'}
             </Button>

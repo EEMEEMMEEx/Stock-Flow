@@ -273,7 +273,7 @@ const Profile = () => {
       </div>
 
       {/* 1. User Identity Header Card */}
-      <Card className="neu-flat border-0 overflow-hidden">
+      <Card className="rounded-xl bg-card border border-border shadow-xs overflow-hidden">
         <CardContent className="p-6">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
             {/* Avatar Container with Upload Overlay */}
@@ -282,14 +282,14 @@ const Profile = () => {
                 <img
                   src={avatarPreview}
                   alt={formData.full_name}
-                  className="w-24 h-24 rounded-full object-cover shadow-md border-2 border-white/60"
+                  className="w-24 h-24 rounded-full object-cover shadow-xs border border-border"
                   onError={(e) => {
                     e.target.onerror = null;
                     e.target.src = '';
                   }}
                 />
               ) : (
-                <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-primary to-purple-600 flex items-center justify-center text-white font-bold text-2xl shadow-md border-2 border-white/60">
+                <div className="w-24 h-24 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-primary font-bold text-2xl shadow-xs">
                   {getInitials(formData.full_name)}
                 </div>
               )}
@@ -299,7 +299,7 @@ const Profile = () => {
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 title="เปลี่ยนรูปโปรไฟล์"
-                className="absolute bottom-0 right-0 p-2 rounded-full bg-primary text-white shadow-lg hover:bg-primary/90 transition-transform active:scale-95 cursor-pointer"
+                className="absolute bottom-0 right-0 p-2 rounded-full bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 transition-transform active:scale-95 cursor-pointer"
               >
                 <Camera className="w-4 h-4" />
               </button>
@@ -320,7 +320,7 @@ const Profile = () => {
                   {formData.full_name || 'ผู้ใช้งาน StockFlow'}
                 </h2>
                 {formData.position && (
-                  <span className="inline-block text-xs font-medium text-muted-foreground bg-muted px-2.5 py-0.5 rounded-full">
+                  <span className="inline-block text-xs font-medium text-muted-foreground bg-muted px-2.5 py-0.5 rounded-full font-mono">
                     {formData.position}
                   </span>
                 )}
@@ -349,14 +349,14 @@ const Profile = () => {
       </Card>
 
       {/* 2. Navigation Tabs */}
-      <div className="flex items-center gap-2 border-b border-border/40 pb-2">
+      <div className="flex items-center gap-2 border-b border-border pb-2">
         <button
           type="button"
           onClick={() => setActiveTab('info')}
-          className={`px-4 py-2.5 rounded-xl font-semibold text-xs transition-all cursor-pointer flex items-center gap-2 ${
+          className={`px-3.5 py-2 rounded-lg font-semibold text-xs transition-all cursor-pointer flex items-center gap-2 ${
             activeTab === 'info'
-              ? 'neu-pressed text-primary'
-              : 'text-muted-foreground hover:neu-flat-sm hover:text-foreground'
+              ? 'bg-primary text-primary-foreground shadow-xs'
+              : 'text-muted-foreground hover:bg-muted hover:text-foreground'
           }`}
         >
           <User className="w-4 h-4" />
@@ -366,10 +366,10 @@ const Profile = () => {
         <button
           type="button"
           onClick={() => setActiveTab('password')}
-          className={`px-4 py-2.5 rounded-xl font-semibold text-xs transition-all cursor-pointer flex items-center gap-2 ${
+          className={`px-3.5 py-2 rounded-lg font-semibold text-xs transition-all cursor-pointer flex items-center gap-2 ${
             activeTab === 'password'
-              ? 'neu-pressed text-primary'
-              : 'text-muted-foreground hover:neu-flat-sm hover:text-foreground'
+              ? 'bg-primary text-primary-foreground shadow-xs'
+              : 'text-muted-foreground hover:bg-muted hover:text-foreground'
           }`}
         >
           <KeyRound className="w-4 h-4" />
@@ -380,16 +380,16 @@ const Profile = () => {
       {/* TAB 1: Personal Info Form */}
       {activeTab === 'info' && (
         <form onSubmit={handleSaveProfile}>
-          <Card className="neu-flat border-0">
+          <Card className="rounded-xl bg-card border border-border shadow-xs">
             <CardContent className="p-6 space-y-6">
-              <div className="font-bold text-sm text-foreground flex items-center gap-2 pb-2 border-b border-border/40">
+              <div className="font-bold text-sm text-foreground flex items-center gap-2 pb-2 border-b border-border">
                 <Sparkles className="w-4 h-4 text-primary" />
                 แก้ไขข้อมูลส่วนตัว (Self-Service Profile Edit)
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 {/* Full Name */}
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <Label htmlFor="full_name" className="text-xs font-semibold text-foreground">
                     ชื่อ-นามสกุล <span className="text-red-500">*</span>
                   </Label>
@@ -400,12 +400,12 @@ const Profile = () => {
                     value={formData.full_name}
                     onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
                     placeholder="เช่น นายวัชระ มานะดี"
-                    className="neu-pressed bg-transparent text-sm min-h-[44px]"
+                    className="h-9 text-xs rounded-lg bg-background border border-input focus-visible:ring-1 focus-visible:ring-primary"
                   />
                 </div>
 
                 {/* Email */}
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <Label htmlFor="email" className="text-xs font-semibold text-foreground">
                     อีเมลประจำตัว (Email)
                   </Label>
@@ -415,12 +415,12 @@ const Profile = () => {
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     placeholder="name@company.com"
-                    className="neu-pressed bg-transparent text-sm min-h-[44px]"
+                    className="h-9 text-xs rounded-lg bg-background border border-input focus-visible:ring-1 focus-visible:ring-primary"
                   />
                 </div>
 
                 {/* Phone Number */}
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <Label htmlFor="phone" className="text-xs font-semibold text-foreground">
                     เบอร์โทรศัพท์ติดต่อ (Phone Number)
                   </Label>
@@ -430,12 +430,12 @@ const Profile = () => {
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     placeholder="เช่น 0812345678"
-                    className="neu-pressed bg-transparent text-sm min-h-[44px]"
+                    className="h-9 text-xs rounded-lg bg-background border border-input focus-visible:ring-1 focus-visible:ring-primary"
                   />
                 </div>
 
                 {/* Position / Job Title */}
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <Label htmlFor="position" className="text-xs font-semibold text-foreground">
                     ตำแหน่งงาน (Position / Job Title)
                   </Label>
@@ -445,13 +445,13 @@ const Profile = () => {
                     value={formData.position}
                     onChange={(e) => setFormData({ ...formData, position: e.target.value })}
                     placeholder="เช่น วิศวกรโครงการ / เจ้าหน้าที่พัสดุ"
-                    className="neu-pressed bg-transparent text-sm min-h-[44px]"
+                    className="h-9 text-xs rounded-lg bg-background border border-input focus-visible:ring-1 focus-visible:ring-primary"
                   />
                 </div>
               </div>
 
               {/* READ-ONLY System Controlled Fields */}
-              <div className="pt-4 border-t border-border/40 space-y-4">
+              <div className="pt-4 border-t border-border space-y-4">
                 <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
                   <Lock className="w-3.5 h-3.5" /> ข้อมูลประจำตัวในระบบ (Read-Only Identity Fields)
                 </div>
@@ -466,7 +466,7 @@ const Profile = () => {
                       type="text"
                       disabled
                       value={user?.email || formData.email}
-                      className="bg-muted/50 text-muted-foreground text-sm min-h-[44px] cursor-not-allowed border-dashed"
+                      className="h-9 text-xs rounded-lg bg-muted/50 text-muted-foreground cursor-not-allowed border-dashed border border-input"
                     />
                     <p className="text-[11px] text-muted-foreground italic">
                       ชื่อผู้ใช้สำหรับเข้าสู่ระบบ ไม่สามารถแก้ไขได้
@@ -482,7 +482,7 @@ const Profile = () => {
                       type="text"
                       disabled
                       value={getRoleLabel(profile?.roles?.code || profile?.role || 'STAFF', profile?.roles?.name)}
-                      className="bg-muted/50 text-muted-foreground text-sm min-h-[44px] cursor-not-allowed border-dashed font-bold"
+                      className="h-9 text-xs rounded-lg bg-muted/50 text-muted-foreground cursor-not-allowed border-dashed border border-input font-bold"
                     />
                     <p className="text-[11px] text-muted-foreground italic">
                       บทบาทกำหนดโดยผู้ดูแลระบบ (Admin-Controlled)
@@ -495,7 +495,7 @@ const Profile = () => {
                   <Label className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
                     <FolderKanban className="w-3.5 h-3.5" /> โครงการที่ได้รับมอบหมาย (Assigned Projects)
                   </Label>
-                  <div className="p-3 rounded-xl bg-muted/40 text-xs text-foreground font-medium border border-border/40">
+                  <div className="p-3 rounded-lg bg-muted/30 text-xs text-foreground font-medium border border-border/50">
                     {assignedProjects}
                   </div>
                 </div>
@@ -506,7 +506,7 @@ const Profile = () => {
                 <Button
                   type="submit"
                   disabled={!isFormDirty || savingProfile || uploadingAvatar}
-                  className="neu-primary min-h-[44px] px-6 font-semibold text-xs flex items-center gap-2 disabled:opacity-50"
+                  className="h-9 px-5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs shadow-xs flex items-center gap-2 cursor-pointer disabled:opacity-50"
                 >
                   {savingProfile || uploadingAvatar ? (
                     <>
@@ -529,16 +529,16 @@ const Profile = () => {
       {/* TAB 2: Change Password Form */}
       {activeTab === 'password' && (
         <form onSubmit={handleUpdatePassword}>
-          <Card className="neu-flat border-0">
+          <Card className="rounded-xl bg-card border border-border shadow-xs">
             <CardContent className="p-6 space-y-6">
-              <div className="font-bold text-sm text-foreground flex items-center gap-2 pb-2 border-b border-border/40">
+              <div className="font-bold text-sm text-foreground flex items-center gap-2 pb-2 border-b border-border">
                 <Lock className="w-4 h-4 text-primary" />
                 เปลี่ยนรหัสผ่านสำหรับเข้าสู่ระบบ (Self-Service Password Change)
               </div>
 
               <div className="max-w-md space-y-4">
                 {/* New Password */}
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <Label htmlFor="newPassword" className="text-xs font-semibold text-foreground">
                     รหัสผ่านใหม่ (New Password) <span className="text-red-500">*</span>
                   </Label>
@@ -551,12 +551,12 @@ const Profile = () => {
                     value={passwordForm.newPassword}
                     onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
                     placeholder="อย่างน้อย 6 ตัวอักษร"
-                    className="neu-pressed bg-transparent text-sm min-h-[44px]"
+                    className="h-9 text-xs rounded-lg bg-background border border-input focus-visible:ring-1 focus-visible:ring-primary"
                   />
                 </div>
 
                 {/* Confirm Password */}
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <Label htmlFor="confirmPassword" className="text-xs font-semibold text-foreground">
                     ยืนยันรหัสผ่านใหม่ (Confirm Password) <span className="text-red-500">*</span>
                   </Label>
@@ -569,7 +569,7 @@ const Profile = () => {
                     value={passwordForm.confirmPassword}
                     onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
                     placeholder="กรอกรหัสผ่านใหม่อีกครั้ง"
-                    className="neu-pressed bg-transparent text-sm min-h-[44px]"
+                    className="h-9 text-xs rounded-lg bg-background border border-input focus-visible:ring-1 focus-visible:ring-primary"
                   />
                 </div>
               </div>
@@ -579,7 +579,7 @@ const Profile = () => {
                 <Button
                   type="submit"
                   disabled={updatingPassword || !passwordForm.newPassword}
-                  className="neu-primary min-h-[44px] px-6 font-semibold text-xs flex items-center gap-2 disabled:opacity-50"
+                  className="h-9 px-5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs shadow-xs flex items-center gap-2 cursor-pointer disabled:opacity-50"
                 >
                   {updatingPassword ? (
                     <>

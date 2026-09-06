@@ -34,10 +34,10 @@ const PermissionRoute = ({ permission, children }) => {
   if (!hasPermission) {
     return (
       <div className="min-h-[70vh] flex items-center justify-center p-4">
-        <Card className="max-w-md w-full neu-flat border-0 text-center overflow-hidden">
+        <Card className="max-w-md w-full rounded-xl bg-card border border-border shadow-xs text-center overflow-hidden">
           <CardContent className="p-8 space-y-6">
             {/* Lock / Shield Icon */}
-            <div className="w-16 h-16 mx-auto rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-600 dark:text-amber-400 shadow-sm">
+            <div className="w-16 h-16 mx-auto rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-600 dark:text-amber-400 shadow-xs">
               <ShieldAlert className="w-9 h-9" />
             </div>
 
@@ -57,7 +57,7 @@ const PermissionRoute = ({ permission, children }) => {
               <Button
                 variant="outline"
                 onClick={() => navigate(-1)}
-                className="w-full sm:w-auto min-h-[44px] text-xs font-semibold neu-button flex items-center justify-center gap-2"
+                className="w-full sm:w-auto h-9 px-4 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer"
               >
                 <ArrowLeft className="w-4 h-4" />
                 ย้อนกลับ
@@ -65,7 +65,7 @@ const PermissionRoute = ({ permission, children }) => {
 
               <Button
                 asChild
-                className="w-full sm:w-auto min-h-[44px] text-xs font-semibold neu-primary flex items-center justify-center gap-2"
+                className="w-full sm:w-auto h-9 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs shadow-xs flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Link to="/">
                   <Home className="w-4 h-4" />

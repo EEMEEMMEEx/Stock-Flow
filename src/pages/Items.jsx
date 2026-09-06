@@ -676,7 +676,7 @@ const Items = () => {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight flex items-center gap-3">
-            <div className="p-2.5 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400">
+            <div className="p-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400">
               <Package className="w-7 h-7" />
             </div>
             <span>รายการวัสดุ (Items Master)</span>
@@ -692,7 +692,7 @@ const Items = () => {
             size="sm"
             onClick={() => fetchItems(false)}
             disabled={loading || refreshing}
-            className="rounded-xl h-10 gap-1.5 border-input hover:bg-accent text-xs font-semibold cursor-pointer"
+            className="rounded-lg h-9 px-3 gap-1.5 border-input hover:bg-accent text-xs font-medium cursor-pointer shadow-xs"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${(loading || refreshing) ? 'animate-spin text-indigo-600' : ''}`} />
             <span>{refreshing ? 'กำลังซิงค์...' : 'รีเฟรชข้อมูล'}</span>
@@ -702,10 +702,10 @@ const Items = () => {
 
       {/* KPI Stats Bar */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-        <Card className="p-4 rounded-2xl bg-gradient-to-br from-indigo-500/5 via-background to-background border border-indigo-500/10 shadow-sm">
+        <Card className="p-4 rounded-xl bg-card border border-border shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-muted-foreground">รายการ Master ทั้งหมด</span>
-            <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+            <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
               <Box className="w-4 h-4" />
             </div>
           </div>
@@ -715,10 +715,10 @@ const Items = () => {
           </div>
         </Card>
 
-        <Card className="p-4 rounded-2xl bg-gradient-to-br from-emerald-500/5 via-background to-background border border-emerald-500/10 shadow-sm">
+        <Card className="p-4 rounded-xl bg-card border border-border shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-muted-foreground">รวมยอดคงเหลือสะสม</span>
-            <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+            <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
               <CheckCircle2 className="w-4 h-4" />
             </div>
           </div>
@@ -730,10 +730,10 @@ const Items = () => {
           </div>
         </Card>
 
-        <Card className="p-4 rounded-2xl bg-gradient-to-br from-blue-500/5 via-background to-background border border-blue-500/10 shadow-sm">
+        <Card className="p-4 rounded-xl bg-card border border-border shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-muted-foreground">พื้นที่จัดเก็บที่มีสต็อก</span>
-            <div className="p-2 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400">
+            <div className="p-2 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
               <Building2 className="w-4 h-4" />
             </div>
           </div>
@@ -743,10 +743,10 @@ const Items = () => {
           </div>
         </Card>
 
-        <Card className="p-4 rounded-2xl bg-gradient-to-br from-violet-500/5 via-background to-background border border-violet-500/10 shadow-sm">
+        <Card className="p-4 rounded-xl bg-card border border-border shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-muted-foreground">หมวดหมู่จัดกลุ่ม</span>
-            <div className="p-2 rounded-xl bg-violet-500/10 text-violet-600 dark:text-violet-400">
+            <div className="p-2 rounded-lg bg-violet-500/10 text-violet-600 dark:text-violet-400">
               <Tag className="w-4 h-4" />
             </div>
           </div>
@@ -758,7 +758,7 @@ const Items = () => {
       </div>
 
       {/* Filter, Search & Layout Control Toolbar */}
-      <Card className="p-4 rounded-2xl glass border border-border/60 shadow-sm space-y-3">
+      <Card className="p-4 rounded-xl bg-card border border-border shadow-xs space-y-3">
         <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
           {/* Search Box */}
           <div className="relative flex-1 min-w-[240px]">
@@ -766,7 +766,7 @@ const Items = () => {
             <Input
               type="search"
               placeholder="ค้นหาชื่อรายการ, รุ่น, รหัส SKU, โครงการ หรือรายละเอียด..."
-              className="pl-9 pr-4 h-10 rounded-xl text-xs bg-background/80 focus:bg-background transition-all shadow-sm"
+              className="pl-9 pr-4 h-9 rounded-lg text-xs bg-background border-input shadow-xs"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -778,7 +778,7 @@ const Items = () => {
             <div className="flex items-center gap-1.5 min-w-[150px]">
               <Tag className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
               <select
-                className="h-10 w-full rounded-xl border border-input bg-background/80 px-3 py-1 text-xs font-semibold focus:ring-2 focus:ring-indigo-500 transition-all cursor-pointer shadow-sm"
+                className="h-9 w-full rounded-lg border border-input bg-background px-3 py-1 text-xs font-medium focus:ring-2 focus:ring-primary transition-colors cursor-pointer shadow-xs"
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
               >
@@ -804,13 +804,13 @@ const Items = () => {
             </div>
 
             {/* View Mode Switcher */}
-            <div className="flex items-center bg-muted/60 p-1 rounded-xl border shrink-0">
+            <div className="flex items-center bg-muted/50 p-0.5 rounded-lg border border-border shrink-0">
               <Button
                 type="button"
                 variant={viewMode === 'table' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setViewMode('table')}
-                className={`h-8 px-2.5 rounded-lg text-xs gap-1 font-semibold ${viewMode === 'table' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground'}`}
+                className={`h-8 px-2.5 rounded-md text-xs gap-1 font-medium cursor-pointer ${viewMode === 'table' ? 'bg-background text-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground'}`}
               >
                 <List className="w-3.5 h-3.5" /> ตาราง
               </Button>
@@ -819,7 +819,7 @@ const Items = () => {
                 variant={viewMode === 'grid' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setViewMode('grid')}
-                className={`h-8 px-2.5 rounded-lg text-xs gap-1 font-semibold ${viewMode === 'grid' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground'}`}
+                className={`h-8 px-2.5 rounded-md text-xs gap-1 font-medium cursor-pointer ${viewMode === 'grid' ? 'bg-background text-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground'}`}
               >
                 <LayoutGrid className="w-3.5 h-3.5" /> การ์ด (Grid)
               </Button>
@@ -833,7 +833,7 @@ const Items = () => {
           {(searchQuery || categoryFilter !== 'all' || projectFilter !== 'all') && (
             <button
               onClick={() => { setSearchQuery(''); setCategoryFilter('all'); setProjectFilter('all'); }}
-              className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-semibold"
+              className="text-xs text-primary hover:underline font-semibold cursor-pointer"
             >
               ล้างตัวกรองทั้งหมด
             </button>
@@ -843,12 +843,12 @@ const Items = () => {
 
       {/* Main Content Area: Table View vs Grid View */}
       {loading ? (
-        <Card className="p-12 text-center rounded-2xl glass">
-          <RefreshCw className="w-8 h-8 text-indigo-500 animate-spin mx-auto mb-3" />
+        <Card className="p-12 text-center rounded-xl bg-card border border-border shadow-xs">
+          <RefreshCw className="w-8 h-8 text-primary animate-spin mx-auto mb-3" />
           <p className="text-sm text-muted-foreground font-medium">กำลังดึงข้อมูลรายการวัสดุMaster...</p>
         </Card>
       ) : filteredItems.length === 0 ? (
-        <Card className="p-12 text-center rounded-2xl glass space-y-3">
+        <Card className="p-12 text-center rounded-xl bg-card border border-border shadow-xs space-y-3">
           <AlertCircle className="w-10 h-10 text-muted-foreground/50 mx-auto" />
           <h3 className="font-bold text-lg text-foreground">ไม่พบรายการวัสดุที่ค้นหา</h3>
           <p className="text-xs text-muted-foreground max-w-md mx-auto">
@@ -857,7 +857,7 @@ const Items = () => {
         </Card>
       ) : viewMode === 'table' ? (
         /* Table View */
-        <Card className="overflow-hidden rounded-2xl border border-border/60 shadow-sm glass">
+        <Card className="overflow-hidden rounded-xl border border-border bg-card shadow-xs">
           <div className="overflow-x-auto">
             <Table>
               <TableHeader className="bg-muted/40">
@@ -887,9 +887,9 @@ const Items = () => {
                       {/* Image Thumbnail */}
                       <TableCell>
                         {item.image_url ? (
-                          <img src={item.image_url} alt={item.name} className="w-10 h-10 object-cover rounded-xl border border-border/60 shadow-sm" />
+                          <img src={item.image_url} alt={item.name} className="w-10 h-10 object-cover rounded-lg border border-border shadow-xs" />
                         ) : (
-                          <div className="w-10 h-10 bg-muted/60 rounded-xl flex items-center justify-center border border-border/40 text-muted-foreground/60">
+                          <div className="w-10 h-10 bg-muted/60 rounded-lg flex items-center justify-center border border-border/60 text-muted-foreground/60">
                             <ImageIcon className="w-4 h-4" />
                           </div>
                         )}
@@ -931,7 +931,7 @@ const Items = () => {
                       <TableCell>
                         {item.project_display !== '-' ? (
                           <div className="space-y-1">
-                            <span className="inline-flex items-center gap-1 font-semibold text-indigo-700 dark:text-indigo-300 text-xs">
+                            <span className="inline-flex items-center gap-1 font-semibold text-primary text-xs">
                               <Building2 className="w-3 h-3 shrink-0" />
                               {item.project_display}
                             </span>
@@ -949,7 +949,7 @@ const Items = () => {
 
                       {/* Category */}
                       <TableCell>
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-[11px] font-medium text-slate-700 dark:text-slate-300 border">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-muted text-[11px] font-medium text-muted-foreground border">
                           <Tag className="w-2.5 h-2.5 text-muted-foreground" />
                           {item.category_name}
                         </span>
@@ -957,10 +957,10 @@ const Items = () => {
 
                       {/* Balance Badge */}
                       <TableCell className="text-center">
-                        <span className={`inline-flex items-center justify-center px-2.5 py-1 rounded-xl text-xs font-extrabold font-mono shadow-2xs ${
+                        <span className={`inline-flex items-center justify-center px-2.5 py-1 rounded-md text-xs font-bold font-mono shadow-xs ${
                           item.balance > 0 
                             ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30' 
-                            : 'bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-700'
+                            : 'bg-muted text-muted-foreground border border-border'
                         }`}>
                           {item.balance}
                         </span>
@@ -1041,14 +1041,14 @@ const Items = () => {
             return (
               <Card 
                 key={item.recordKey} 
-                className={`p-4 rounded-2xl glass border border-border/60 shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-3 relative overflow-hidden ${
+                className={`p-4 rounded-xl bg-card border border-border shadow-xs hover:border-primary/50 hover:shadow-xs transition-all flex flex-col justify-between space-y-3 relative overflow-hidden ${
                   isChild ? "bg-blue-500/5 dark:bg-blue-950/20" : ""
                 }`}
               >
                 <div>
                   {/* Top Badge Row */}
                   <div className="flex items-center justify-between gap-2 mb-2">
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-[10px] font-medium text-slate-700 dark:text-slate-300 border">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-muted text-[10px] font-medium text-muted-foreground border">
                       <Tag className="w-2.5 h-2.5" />
                       {item.category_name}
                     </span>
@@ -1063,9 +1063,9 @@ const Items = () => {
                   {/* Image & Title Header */}
                   <div className="flex items-start gap-3">
                     {item.image_url ? (
-                      <img src={item.image_url} alt={item.name} className="w-12 h-12 object-cover rounded-xl border border-border/60 shadow-sm shrink-0" />
+                      <img src={item.image_url} alt={item.name} className="w-12 h-12 object-cover rounded-lg border border-border shadow-xs shrink-0" />
                     ) : (
-                      <div className="w-12 h-12 bg-muted/60 rounded-xl flex items-center justify-center border border-border/40 text-muted-foreground/60 shrink-0">
+                      <div className="w-12 h-12 bg-muted/60 rounded-lg flex items-center justify-center border border-border/60 text-muted-foreground/60 shrink-0">
                         <ImageIcon className="w-5 h-5" />
                       </div>
                     )}
@@ -1082,8 +1082,8 @@ const Items = () => {
                   </div>
 
                   {/* Project Location Pill */}
-                  <div className="mt-3 p-2.5 rounded-xl bg-muted/40 border border-border/40 text-xs space-y-0.5">
-                    <div className="font-semibold text-indigo-700 dark:text-indigo-300 flex items-center gap-1.5 truncate">
+                  <div className="mt-3 p-2.5 rounded-lg bg-muted/40 border border-border/60 text-xs space-y-0.5">
+                    <div className="font-semibold text-primary flex items-center gap-1.5 truncate">
                       <Building2 className="w-3.5 h-3.5 shrink-0" />
                       <span className="truncate">{item.project_display}</span>
                     </div>
@@ -1099,10 +1099,10 @@ const Items = () => {
                 <div className="pt-2 border-t border-border/40 flex items-center justify-between gap-2">
                   <div className="flex items-baseline gap-1.5">
                     <span className="text-xs text-muted-foreground">สต็อก:</span>
-                    <span className={`px-2 py-0.5 rounded-lg text-xs font-bold font-mono ${
+                    <span className={`px-2 py-0.5 rounded-md text-xs font-bold font-mono ${
                       item.balance > 0 
                         ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30' 
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
+                        : 'bg-muted text-muted-foreground border border-border'
                     }`}>
                       {item.balance} {item.unit}
                     </span>
@@ -1166,7 +1166,7 @@ const Items = () => {
 
       {/* Supabase-Style Compact Pagination Footer Bar */}
       {filteredItems.length > 0 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 bg-muted/40 rounded-2xl border border-border/60 glass shadow-2xs text-xs text-muted-foreground select-none">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 bg-card rounded-xl border border-border shadow-xs text-xs text-muted-foreground select-none">
           {/* Left Controls: Navigation & Page Input */}
           <div className="flex items-center gap-2">
             {/* Previous Page Button */}
@@ -1180,7 +1180,7 @@ const Items = () => {
                 setCurrentPage(p);
                 setPageInput(String(p));
               }}
-              className="h-8 w-8 rounded-lg border-border/80 text-foreground hover:bg-accent disabled:opacity-30 transition-all cursor-pointer shadow-2xs"
+              className="h-8 w-8 rounded-lg border-border text-foreground hover:bg-accent disabled:opacity-30 transition-colors cursor-pointer shadow-xs"
               aria-label="Previous Page"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -1197,7 +1197,7 @@ const Items = () => {
                 onChange={handlePageInputChange}
                 onBlur={handlePageInputBlur}
                 onKeyDown={(e) => { if (e.key === 'Enter') handlePageInputBlur(); }}
-                className="h-8 w-12 text-center font-mono text-xs font-bold rounded-lg border border-input bg-background focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all shadow-2xs"
+                className="h-8 w-12 text-center font-mono text-xs font-bold rounded-lg border border-input bg-background focus:ring-2 focus:ring-primary focus:outline-none transition-colors shadow-xs"
                 aria-label="Current Page Number"
               />
               <span>of</span>
@@ -1215,7 +1215,7 @@ const Items = () => {
                 setCurrentPage(p);
                 setPageInput(String(p));
               }}
-              className="h-8 w-8 rounded-lg border-border/80 text-foreground hover:bg-accent disabled:opacity-30 transition-all cursor-pointer shadow-2xs"
+              className="h-8 w-8 rounded-lg border-border text-foreground hover:bg-accent disabled:opacity-30 transition-colors cursor-pointer shadow-xs"
               aria-label="Next Page"
             >
               <ChevronRight className="w-4 h-4" />
@@ -1231,7 +1231,7 @@ const Items = () => {
                 onChange={(e) => {
                   setRowsPerPage(Number(e.target.value));
                 }}
-                className="h-8 rounded-lg border border-input bg-background px-2.5 text-xs font-semibold text-foreground focus:ring-2 focus:ring-indigo-500 cursor-pointer shadow-2xs transition-all"
+                className="h-8 rounded-lg border border-input bg-background px-2.5 text-xs font-medium text-foreground focus:ring-2 focus:ring-primary cursor-pointer shadow-xs transition-colors"
                 aria-label="Rows per page"
               >
                 <option value={25}>25 rows</option>
@@ -1242,7 +1242,7 @@ const Items = () => {
             </div>
 
             {/* Total Records Counter */}
-            <span className="font-mono text-xs text-muted-foreground font-semibold">
+            <span className="font-mono text-xs text-muted-foreground font-medium">
               {totalRecords.toLocaleString()} records
             </span>
           </div>
@@ -1251,11 +1251,11 @@ const Items = () => {
 
       {/* Edit Master Item Modal */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="sm:max-w-[480px] rounded-2xl glass">
+        <DialogContent className="sm:max-w-[480px] rounded-xl border-border bg-card shadow-lg">
           <form onSubmit={handleEditItem}>
             <DialogHeader>
               <DialogTitle className="text-xl font-bold flex items-center gap-2">
-                <Edit3 className="w-5 h-5 text-indigo-600" />
+                <Edit3 className="w-5 h-5 text-primary" />
                 <span>แก้ไขรายการวัสดุ Master</span>
               </DialogTitle>
             </DialogHeader>
@@ -1263,50 +1263,50 @@ const Items = () => {
             <div className="grid gap-4 py-4">
               <div className="space-y-1.5">
                 <Label htmlFor="edit-name" className="text-xs font-semibold">รายการวัสดุ (Item Name) <span className="text-destructive">*</span></Label>
-                <Input id="edit-name" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="rounded-xl font-medium" />
+                <Input id="edit-name" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="rounded-lg font-medium" />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label htmlFor="edit-model" className="text-xs font-semibold">รุ่น (Model) <span className="text-destructive">*</span></Label>
-                  <Input id="edit-model" value={formData.model} onChange={e => setFormData({...formData, model: e.target.value})} placeholder="ระบุรุ่น" className="rounded-xl" />
+                  <Input id="edit-model" value={formData.model} onChange={e => setFormData({...formData, model: e.target.value})} placeholder="ระบุรุ่น" className="rounded-lg" />
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="edit-sku" className="text-xs font-semibold">รหัส SKU / Code</Label>
-                  <Input id="edit-sku" value={formData.sku} onChange={e => setFormData({...formData, sku: e.target.value})} className="rounded-xl font-mono" />
+                  <Input id="edit-sku" value={formData.sku} onChange={e => setFormData({...formData, sku: e.target.value})} className="rounded-lg font-mono" />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label htmlFor="edit-category" className="text-xs font-semibold">หมวดหมู่จัดกลุ่ม</Label>
-                  <select id="edit-category" className="flex h-10 w-full rounded-xl border border-input bg-background px-3 py-2 text-xs font-semibold" value={formData.category_id} onChange={e => setFormData({...formData, category_id: e.target.value})}>
+                  <select id="edit-category" className="flex h-9 w-full rounded-lg border border-input bg-background px-3 py-1.5 text-xs font-medium" value={formData.category_id} onChange={e => setFormData({...formData, category_id: e.target.value})}>
                     <option value="">-- ไม่ระบุหมวดหมู่ --</option>
                     {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="edit-unit" className="text-xs font-semibold">หน่วยนับ <span className="text-destructive">*</span></Label>
-                  <Input id="edit-unit" required value={formData.unit} onChange={e => setFormData({...formData, unit: e.target.value})} className="rounded-xl" />
+                  <Input id="edit-unit" required value={formData.unit} onChange={e => setFormData({...formData, unit: e.target.value})} className="rounded-lg" />
                 </div>
               </div>
 
               <div className="space-y-1.5">
                 <Label htmlFor="edit-description" className="text-xs font-semibold">รายละเอียดเพิ่มเติม / หมายเหตุ</Label>
-                <Input id="edit-description" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="rounded-xl" />
+                <Input id="edit-description" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="rounded-lg" />
               </div>
 
               <div className="space-y-1.5">
                 <Label htmlFor="edit-image" className="text-xs font-semibold">รูปภาพวัสดุ</Label>
                 <div className="flex items-center gap-3">
                   {formData.image_url ? (
-                    <img src={formData.image_url} alt="Preview" className="w-14 h-14 object-cover rounded-xl border shadow-sm shrink-0" />
+                    <img src={formData.image_url} alt="Preview" className="w-14 h-14 object-cover rounded-lg border shadow-xs shrink-0" />
                   ) : (
-                    <div className="w-14 h-14 bg-muted rounded-xl flex items-center justify-center border text-muted-foreground shrink-0">
+                    <div className="w-14 h-14 bg-muted rounded-lg flex items-center justify-center border text-muted-foreground shrink-0">
                       <ImageIcon className="w-5 h-5" />
                     </div>
                   )}
-                  <Input id="edit-image" type="file" accept="image/*" onChange={handleImageUpload} disabled={uploadingImage} className="rounded-xl text-xs" />
+                  <Input id="edit-image" type="file" accept="image/*" onChange={handleImageUpload} disabled={uploadingImage} className="rounded-lg text-xs" />
                 </div>
               </div>
 
@@ -1314,7 +1314,7 @@ const Items = () => {
               <div className="pt-3 border-t border-border/40 space-y-3">
                 <div className="flex items-center justify-between">
                   <Label className="text-xs font-bold flex items-center gap-1.5 text-foreground">
-                    <SlidersHorizontal className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                    <SlidersHorizontal className="w-3.5 h-3.5 text-primary" />
                     <span>ปรับยอดสต็อกคงเหลือปัจจุบัน (Current Stock Adjustment)</span>
                   </Label>
 
@@ -1332,32 +1332,32 @@ const Items = () => {
                 </div>
 
                 {!allowDirectStockAdjustment ? (
-                  <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-800 dark:text-amber-300 flex items-start gap-2">
+                  <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-800 dark:text-amber-300 flex items-start gap-2">
                     <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                     <div>
                       การแก้ไขยอดสต็อกโดยตรงถูกปิดใช้งานในการตั้งค่าระบบ (คุณสามารถเปิดได้ที่ <strong>Settings &gt; กฎการเบิกและสต็อก</strong>)
                     </div>
                   </div>
                 ) : !canAdjustStock ? (
-                  <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-800 dark:text-amber-300 flex items-start gap-2">
+                  <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-800 dark:text-amber-300 flex items-start gap-2">
                     <Lock className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                     <div>
                       คุณไม่มีสิทธิ์ในการปรับปรุงยอดสต็อกสินค้า (ต้องการสิทธิ์ <code>items.adjust_stock</code> หรือ Admin)
                     </div>
                   </div>
                 ) : (
-                  <div className="space-y-3 p-3 rounded-xl bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-500/20">
+                  <div className="space-y-3 p-3 rounded-lg bg-primary/5 border border-primary/20">
                     {/* Project Selector for adjustment */}
                     <div className="space-y-1">
                       <Label htmlFor="adjust-project" className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
-                        <Building2 className="w-3 h-3 text-indigo-500" />
+                        <Building2 className="w-3 h-3 text-primary" />
                         <span>เลือกคลัง/โครงการที่ต้องการปรับปรุงยอด</span>
                       </Label>
                       <select
                         id="adjust-project"
                         value={adjustProjectId}
                         onChange={(e) => handleProjectChangeForAdjustment(e.target.value)}
-                        className="flex h-9 w-full rounded-xl border border-input bg-background px-3 py-1.5 text-xs font-semibold text-foreground focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+                        className="flex h-9 w-full rounded-lg border border-input bg-background px-3 py-1.5 text-xs font-semibold text-foreground focus:ring-2 focus:ring-primary cursor-pointer"
                       >
                         {projectsList.map(p => (
                           <option key={p.id} value={p.id}>
@@ -1371,7 +1371,7 @@ const Items = () => {
                     <div className="grid grid-cols-2 gap-3 items-end">
                       <div className="space-y-1">
                         <Label className="text-[11px] font-semibold text-muted-foreground">ยอดสต็อกเดิม (Current Stock)</Label>
-                        <div className="h-9 px-3 rounded-xl bg-background border border-border/80 flex items-center justify-between font-mono text-xs font-bold">
+                        <div className="h-9 px-3 rounded-lg bg-background border border-border/80 flex items-center justify-between font-mono text-xs font-bold">
                           <span className="text-foreground">{currentStockQty}</span>
                           <span className="text-muted-foreground text-[10px]">{formData.unit || 'ชิ้น'}</span>
                         </div>
@@ -1396,7 +1396,7 @@ const Items = () => {
                           min="0"
                           value={newStockQty}
                           onChange={(e) => setNewStockQty(e.target.value)}
-                          className="h-9 rounded-xl font-mono text-xs font-bold bg-background"
+                          className="h-9 rounded-lg font-mono text-xs font-bold bg-background"
                           placeholder="ระบุยอดคงเหลือใหม่"
                         />
                       </div>
@@ -1405,7 +1405,7 @@ const Items = () => {
                     {/* Mandatory reason when stock changes */}
                     {parseInt(newStockQty, 10) !== currentStockQty && !isNaN(parseInt(newStockQty, 10)) && (
                       <div className="space-y-1.5 pt-1 animate-in fade-in-50 duration-200">
-                        <Label htmlFor="adjust-reason" className="text-[11px] font-bold text-indigo-700 dark:text-indigo-300 flex items-center gap-1">
+                        <Label htmlFor="adjust-reason" className="text-[11px] font-bold text-primary flex items-center gap-1">
                           <Sparkles className="w-3 h-3 text-amber-500" />
                           <span>เหตุผลในการปรับปรุงยอดสต็อก (Adjustment Reason) <span className="text-destructive">*</span></span>
                         </Label>
@@ -1416,7 +1416,7 @@ const Items = () => {
                           value={stockAdjustReason}
                           onChange={(e) => setStockAdjustReason(e.target.value)}
                           placeholder="เช่น ตรวจนับสต็อกประจำปี, พบสินค้าชำรุดเสียหาย, ปรับปรุงยอดยกมาเริ่มต้น..."
-                          className="w-full rounded-xl border border-input bg-background px-3 py-2 text-xs shadow-2xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
+                          className="w-full rounded-lg border border-input bg-background px-3 py-2 text-xs shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
                         />
                       </div>
                     )}
@@ -1426,8 +1426,8 @@ const Items = () => {
             </div>
 
             <DialogFooter className="gap-2 sm:gap-0">
-              <Button type="button" variant="outline" className="rounded-xl" onClick={() => setIsEditOpen(false)}>ยกเลิก</Button>
-              <Button type="submit" disabled={isAdjustingStock} className="rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold">
+              <Button type="button" variant="outline" className="rounded-lg" onClick={() => setIsEditOpen(false)}>ยกเลิก</Button>
+              <Button type="submit" disabled={isAdjustingStock} className="rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-xs">
                 {isAdjustingStock ? 'กำลังบันทึก...' : 'อัปเดตวัสดุและสต็อก'}
               </Button>
             </DialogFooter>
@@ -1443,9 +1443,9 @@ const Items = () => {
           if (!open) setHasTransactionConflict(false);
         }}
       >
-        <DialogContent className="sm:max-w-[450px] rounded-2xl glass">
+        <DialogContent className="sm:max-w-[450px] rounded-xl border-border bg-card shadow-lg">
           <DialogHeader>
-            <DialogTitle className="text-red-600 font-bold text-lg flex items-center gap-2">
+            <DialogTitle className="text-destructive font-bold text-lg flex items-center gap-2">
               <AlertCircle className="w-5 h-5" />
               <span>{hasTransactionConflict ? 'พบประวัติธุรกรรมในระบบ' : 'ยืนยันการลบรายการวัสดุ'}</span>
             </DialogTitle>
@@ -1453,7 +1453,7 @@ const Items = () => {
               <div>
                 {hasTransactionConflict ? (
                   <div className="space-y-2">
-                    <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 text-xs">
+                    <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 text-xs">
                       รายการ <strong>{selectedItem?.name}</strong> (SKU: {selectedItem?.sku || '-'}) มีประวัติการรับเข้า/เบิกจ่าย หรือยอดคงเหลือผูกอยู่ในระบบ
                     </div>
                     <p className="text-xs text-muted-foreground">
@@ -1472,7 +1472,7 @@ const Items = () => {
             <Button 
               type="button" 
               variant="outline" 
-              className="rounded-xl" 
+              className="rounded-lg" 
               disabled={isDeleting}
               onClick={() => {
                 setIsDeleteOpen(false);
@@ -1485,7 +1485,7 @@ const Items = () => {
               <Button 
                 type="button" 
                 variant="destructive" 
-                className="rounded-xl font-semibold bg-red-600 hover:bg-red-700 text-white" 
+                className="rounded-lg font-medium bg-red-600 hover:bg-red-700 text-white shadow-xs" 
                 disabled={isDeleting}
                 onClick={() => handleDeleteItem(true)}
               >
@@ -1495,7 +1495,7 @@ const Items = () => {
               <Button 
                 type="button" 
                 variant="destructive" 
-                className="rounded-xl font-semibold" 
+                className="rounded-lg font-medium shadow-xs" 
                 disabled={isDeleting}
                 onClick={() => handleDeleteItem(false)}
               >
@@ -1518,7 +1518,7 @@ const Items = () => {
 
       {/* Stock Adjustment Audit History Dialog */}
       <Dialog open={isHistoryDialogOpen} onOpenChange={setIsHistoryDialogOpen}>
-        <DialogContent className="sm:max-w-[620px] rounded-2xl glass">
+        <DialogContent className="sm:max-w-[620px] rounded-xl border-border bg-card shadow-lg">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold flex items-center gap-2 text-foreground">
               <History className="w-5 h-5 text-amber-600 dark:text-amber-400" />
@@ -1536,7 +1536,7 @@ const Items = () => {
                 <span>กำลังโหลดประวัติการปรับปรุงสต็อก...</span>
               </div>
             ) : adjustmentHistoryLogs.length === 0 ? (
-              <div className="p-6 rounded-xl border border-dashed border-border/80 text-center text-xs text-muted-foreground">
+              <div className="p-6 rounded-lg border border-dashed border-border/80 text-center text-xs text-muted-foreground">
                 <History className="w-6 h-6 mx-auto mb-1 opacity-40" />
                 <span>ยังไม่มีประวัติการปรับปรุงยอดสต็อกสำหรับรายการนี้</span>
               </div>
@@ -1549,12 +1549,12 @@ const Items = () => {
                   return (
                     <div 
                       key={log.id} 
-                      className="p-3 rounded-xl bg-muted/40 border border-border/60 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 hover:bg-muted/60 transition-colors"
+                      className="p-3 rounded-lg bg-muted/40 border border-border/60 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 hover:bg-muted/60 transition-colors"
                     >
                       <div className="space-y-1">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-bold text-foreground flex items-center gap-1">
-                            <Building2 className="w-3 h-3 text-indigo-500" />
+                            <Building2 className="w-3 h-3 text-primary" />
                             {projName}
                           </span>
                           <span className="text-muted-foreground font-mono text-[11px]">
@@ -1594,7 +1594,7 @@ const Items = () => {
               variant="outline"
               size="sm"
               onClick={() => setIsHistoryDialogOpen(false)}
-              className="rounded-xl text-xs"
+              className="rounded-lg text-xs"
             >
               ปิดหน้าต่าง
             </Button>

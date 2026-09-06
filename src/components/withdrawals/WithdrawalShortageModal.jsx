@@ -15,10 +15,10 @@ const WithdrawalShortageModal = ({
 }) => {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-xl rounded-3xl glass p-6 border border-border/80 shadow-2xl">
+      <DialogContent className="max-w-xl rounded-xl bg-card p-6 border border-border shadow-xl">
         <DialogHeader className="space-y-2 border-b border-border/40 pb-3">
           <DialogTitle className="flex items-center gap-2.5 text-amber-600 dark:text-amber-400 text-base font-extrabold">
-            <div className="p-2 rounded-2xl bg-amber-500/15 border border-amber-500/30">
+            <div className="p-2 rounded-lg bg-amber-500/15 border border-amber-500/30">
               <AlertTriangle className="w-5 h-5" />
             </div>
             <span>อนุมัติคำขอเบิกจ่ายกรณีของไม่ครบ (Shortage Override)</span>
@@ -26,7 +26,7 @@ const WithdrawalShortageModal = ({
         </DialogHeader>
 
         <div className="space-y-4 py-2 text-xs">
-          <div className="bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 p-3.5 rounded-2xl leading-relaxed space-y-1">
+          <div className="bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 p-3.5 rounded-xl leading-relaxed space-y-1">
             <p className="font-bold flex items-center gap-1.5 text-xs">
               <ShieldAlert className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
               <span>ตรวจพบวัสดุในคลังโครงการไม่เพียงพอกับยอดที่ขอเบิก</span>
@@ -37,7 +37,7 @@ const WithdrawalShortageModal = ({
             </p>
           </div>
 
-          <div className="border border-border/60 rounded-2xl overflow-hidden glass shadow-2xs">
+          <div className="border border-border rounded-xl overflow-hidden shadow-xs">
             <Table>
               <TableHeader className="bg-muted/50 text-xs">
                 <TableRow>
@@ -74,7 +74,7 @@ const WithdrawalShortageModal = ({
               placeholder="เช่น เบิกของที่มีอยู่ในคลังไปใช้งานก่อน ส่วนที่เหลือจะรับเข้าเพิ่มในภายหลัง"
               value={overrideReason}
               onChange={(e) => onOverrideReasonChange(e.target.value)}
-              className="text-xs rounded-xl h-10 bg-background border-border/60"
+              className="text-xs rounded-lg h-9 bg-background border-border"
             />
           </div>
         </div>
@@ -84,13 +84,13 @@ const WithdrawalShortageModal = ({
             type="button"
             variant="outline"
             onClick={onClose}
-            className="rounded-xl text-xs h-10"
+            className="rounded-lg text-xs h-9 px-4 font-semibold"
           >
             ยกเลิก
           </Button>
           <Button
             type="button"
-            className="rounded-xl text-xs h-10 bg-amber-600 hover:bg-amber-700 text-white font-extrabold shadow-sm cursor-pointer"
+            className="rounded-lg text-xs h-9 px-4 bg-amber-600 hover:bg-amber-700 text-white font-semibold shadow-xs cursor-pointer"
             onClick={() => onConfirmApprove(shortageData.orderId, true, overrideReason)}
           >
             ยืนยันอนุมัติกรณีของไม่ครบ

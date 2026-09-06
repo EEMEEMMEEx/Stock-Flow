@@ -54,17 +54,17 @@ const ProjectCodeTagInput = ({
 
   return (
     <div className="space-y-1.5">
-      <div className="flex flex-wrap items-center gap-1.5 p-2 rounded-xl border border-input bg-background focus-within:ring-2 focus-within:ring-emerald-500 min-h-[44px]">
+      <div className="flex flex-wrap items-center gap-1.5 p-2 rounded-lg border border-input bg-background focus-within:ring-1 focus-within:ring-primary min-h-[38px]">
         {codes.map((code, idx) => (
           <span
             key={`${code}-${idx}`}
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 animate-in zoom-in-95"
+            className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-mono font-medium bg-muted text-foreground border border-border animate-in zoom-in-95"
           >
             <span>{code}</span>
             <button
               type="button"
               onClick={() => removeCode(idx)}
-              className="hover:text-red-500 p-0.5 rounded-full hover:bg-emerald-500/20 cursor-pointer"
+              className="hover:text-destructive p-0.5 rounded-full hover:bg-muted-foreground/10 cursor-pointer"
             >
               <X className="w-3 h-3" />
             </button>
@@ -86,7 +86,7 @@ const ProjectCodeTagInput = ({
       <p className="text-[11px] text-muted-foreground flex items-center justify-between">
         <span>พิมพ์รหัสแล้วกด <strong>Enter</strong> หรือ <strong>,</strong> เพื่อเพิ่มหลายรหัส</span>
         {codes.length > 0 && (
-          <span className="font-mono font-semibold text-emerald-600 dark:text-emerald-400">
+          <span className="font-mono font-semibold text-primary">
             {codes.length} รหัสที่ระบุ
           </span>
         )}
@@ -527,18 +527,18 @@ const Projects = () => {
   return (
     <div className="space-y-6 animate-in fade-in-50 duration-200">
       {/* Header Section */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-border">
         <div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight flex items-center gap-2.5 text-foreground">
-            <div className="p-2 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-              <Building2 className="w-6 h-6" />
+          <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2.5 text-foreground">
+            <div className="p-2 rounded-lg bg-primary/10 text-primary">
+              <Building2 className="w-5 h-5" />
             </div>
             <span>จัดการโครงการ (Projects)</span>
           </h2>
           <p className="text-muted-foreground mt-1 text-xs sm:text-sm flex items-center gap-2">
-            <span>โครงการหลักในระบบ: <strong className="text-foreground font-bold">{logicalProjects.length} โครงการ</strong></span>
+            <span>โครงการหลักในระบบ: <strong className="text-foreground font-semibold">{logicalProjects.length} โครงการ</strong></span>
             <span className="text-muted-foreground/60">•</span>
-            <span className="text-xs bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 px-2.5 py-0.5 rounded-full border border-emerald-500/20 font-semibold">
+            <span className="text-xs bg-muted text-muted-foreground px-2.5 py-0.5 rounded-full border border-border font-medium">
               รวม {totalLocationsCount} สถานที่ตั้ง
             </span>
           </p>
@@ -550,7 +550,7 @@ const Projects = () => {
             <Input
               type="search"
               placeholder="ค้นหาโครงการ หรือสถานที่..."
-              className="pl-9 bg-background/60 backdrop-blur-sm rounded-xl text-xs"
+              className="pl-9 h-9 text-xs rounded-lg bg-background border border-input focus-visible:ring-1 focus-visible:ring-primary"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -564,15 +564,15 @@ const Projects = () => {
               }
             }}>
               <DialogTrigger asChild>
-                <Button className="shrink-0 gap-2 rounded-2xl font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20 cursor-pointer h-11 px-4 text-xs">
+                <Button className="shrink-0 gap-2 rounded-lg font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs cursor-pointer h-9 px-4 text-xs">
                   <Plus className="h-4 w-4" /> สร้างโครงการใหม่
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[480px] rounded-3xl glass p-6 border border-border/80 shadow-2xl">
+              <DialogContent className="sm:max-w-[480px] rounded-xl bg-card text-card-foreground p-6 border border-border shadow-xl">
                 <form onSubmit={handleCreateProject}>
                   <DialogHeader>
                     <DialogTitle className="text-lg font-bold flex items-center gap-2 text-foreground">
-                      <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                      <div className="p-2 rounded-lg bg-primary/10 text-primary">
                         <Building2 className="w-5 h-5" />
                       </div>
                       <span>สร้างโครงการใหม่</span>
@@ -590,14 +590,14 @@ const Projects = () => {
                         placeholder="เช่น DTRS-DOPA" 
                         value={formData.name} 
                         onChange={e => setFormData({...formData, name: e.target.value})} 
-                        className="rounded-xl h-10 text-xs" 
+                        className="rounded-lg h-9 text-xs" 
                       />
                     </div>
 
                     {/* Multi-Code Tag Input */}
                     <div className="space-y-1.5">
                       <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                        <Layers className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                        <Layers className="w-3.5 h-3.5 text-primary" />
                         <span>รหัสโครงการ (Project IDs/Codes)</span>
                       </Label>
                       <ProjectCodeTagInput
@@ -614,7 +614,7 @@ const Projects = () => {
                         placeholder="เช่น FORTH" 
                         value={formData.location} 
                         onChange={e => setFormData({...formData, location: e.target.value})} 
-                        className="rounded-xl h-10 text-xs" 
+                        className="rounded-lg h-9 text-xs" 
                       />
                     </div>
                     <div className="space-y-1.5">
@@ -624,13 +624,13 @@ const Projects = () => {
                         placeholder="ระบุหมายเหตุหรือสถานที่ตั้งย่อย" 
                         value={formData.description} 
                         onChange={e => setFormData({...formData, description: e.target.value})} 
-                        className="rounded-xl h-10 text-xs" 
+                        className="rounded-lg h-9 text-xs" 
                       />
                     </div>
                   </div>
-                  <DialogFooter className="gap-2 sm:gap-0 border-t border-border/40 pt-3">
-                    <Button type="button" variant="outline" className="rounded-xl text-xs h-10" onClick={() => setIsCreateOpen(false)}>ยกเลิก</Button>
-                    <Button type="submit" className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs h-10 cursor-pointer shadow-sm">บันทึกโครงการ</Button>
+                  <DialogFooter className="gap-2 sm:gap-0 border-t border-border pt-3">
+                    <Button type="button" variant="outline" className="rounded-lg text-xs h-9" onClick={() => setIsCreateOpen(false)}>ยกเลิก</Button>
+                    <Button type="submit" className="rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs h-9 cursor-pointer shadow-xs">บันทึกโครงการ</Button>
                   </DialogFooter>
                 </form>
               </DialogContent>
@@ -642,7 +642,7 @@ const Projects = () => {
       {/* Logical Project Cards Grid */}
       {loading ? (
         <div className="flex justify-center p-16">
-          <div className="animate-spin rounded-full h-9 w-9 border-b-2 border-emerald-600"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-2">
@@ -658,16 +658,16 @@ const Projects = () => {
             return (
               <Card 
                 key={group.key} 
-                className="overflow-hidden rounded-3xl glass shadow-md hover:shadow-xl transition-all duration-300 border-white/20 dark:border-slate-800 flex flex-col justify-between"
+                className="overflow-hidden rounded-xl bg-card border border-border shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between"
               >
-                <CardHeader className="pb-3 bg-muted/30 border-b">
+                <CardHeader className="pb-3 bg-muted/20 border-b border-border">
                   <div className="flex items-start justify-between gap-3">
                     <div className="space-y-2 min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
                         <CardTitle className="text-xl font-bold tracking-tight text-foreground truncate">
                           {group.canonicalName}
                         </CardTitle>
-                        <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
+                        <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
                           {group.status.toUpperCase()}
                         </span>
                       </div>
@@ -678,9 +678,9 @@ const Projects = () => {
                           {projectCodesList.map((code, idx) => (
                             <div 
                               key={`${code}-${idx}`}
-                              className="inline-flex items-center gap-1 text-xs font-mono font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-lg border border-emerald-500/20"
+                              className="inline-flex items-center gap-1 text-xs font-mono font-medium text-foreground bg-muted px-2.5 py-0.5 rounded-md border border-border"
                             >
-                              <Layers className="w-3 h-3 shrink-0" />
+                              <Layers className="w-3 h-3 shrink-0 text-muted-foreground" />
                               <span>{code}</span>
                             </div>
                           ))}
@@ -694,10 +694,10 @@ const Projects = () => {
                         <Button 
                           variant="outline" 
                           size="sm" 
-                          className="h-8 text-xs gap-1.5 px-3 rounded-xl border-emerald-500/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/10 hover:border-emerald-500/50 font-bold cursor-pointer transition-all shadow-2xs"
+                          className="h-8 text-xs gap-1.5 px-3 rounded-lg border border-border hover:bg-muted font-medium cursor-pointer transition-colors shadow-xs"
                           onClick={() => openAddLocationDialog(group)}
                         >
-                          <Plus className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                          <Plus className="w-3.5 h-3.5 text-primary" />
                           <span>เพิ่มสถานที่ตั้ง</span>
                         </Button>
                       )}
@@ -706,7 +706,7 @@ const Projects = () => {
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          className="h-8 w-8 text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl cursor-pointer"
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg cursor-pointer"
                           title="ลบโครงการทั้งหมดนี้"
                           disabled={isCheckingStock}
                           onClick={() => startDeleteProcess('project', group.canonicalName, allGroupProjectIds)}
@@ -720,9 +720,9 @@ const Projects = () => {
 
                 <CardContent className="pt-4 space-y-4 flex-1">
                   {/* Locations Count & Toggle Header */}
-                  <div className="flex items-center justify-between text-xs pb-1 border-b">
+                  <div className="flex items-center justify-between text-xs pb-1 border-b border-border">
                     <span className="font-semibold text-muted-foreground flex items-center gap-1.5">
-                      <MapPin className="w-3.5 h-3.5 text-emerald-600" />
+                      <MapPin className="w-3.5 h-3.5 text-primary" />
                       <span>สถานที่ตั้ง ({group.records.length} แห่ง)</span>
                     </span>
                     <Button 
@@ -745,17 +745,17 @@ const Projects = () => {
                       {group.records.map((rec) => (
                         <div 
                           key={rec.id} 
-                          className="group/item flex items-start justify-between gap-3 p-3 rounded-2xl bg-background/60 hover:bg-background/90 border transition-all duration-200"
+                          className="group/item flex items-start justify-between gap-3 p-3 rounded-lg bg-muted/20 hover:bg-muted/40 border border-border transition-colors duration-150"
                         >
                           <div className="space-y-1 min-w-0">
                             <div className="flex items-center gap-2">
-                              <span className="font-semibold text-xs text-foreground flex items-center gap-1">
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                              <span className="font-semibold text-xs text-foreground flex items-center gap-1.5">
+                                <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
                                 {rec.location || 'คลังหลัก / ไม่ระบุสถานที่'}
                               </span>
                             </div>
                             {rec.description && (
-                              <p className="text-[11px] text-muted-foreground pl-2.5 border-l-2 border-muted-foreground/20 line-clamp-2">
+                              <p className="text-[11px] text-muted-foreground pl-2.5 border-l-2 border-border line-clamp-2">
                                 {rec.description}
                               </p>
                             )}
@@ -770,7 +770,7 @@ const Projects = () => {
                                 <Button 
                                   variant="ghost" 
                                   size="icon" 
-                                  className="h-7 w-7 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/20 rounded-lg cursor-pointer"
+                                  className="h-7 w-7 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-md cursor-pointer"
                                   title="แก้ไขข้อมูลสถานที่ตั้งนี้"
                                   onClick={() => openEditDialog(rec)}
                                 >
@@ -781,7 +781,7 @@ const Projects = () => {
                                 <Button 
                                   variant="ghost" 
                                   size="icon" 
-                                  className="h-7 w-7 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg cursor-pointer"
+                                  className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md cursor-pointer"
                                   title="ลบสถานที่ตั้งนี้"
                                   onClick={() => startDeleteProcess('location', `${group.canonicalName} (${rec.location || 'คลังหลัก'})`, [rec.id])}
                                 >
@@ -800,7 +800,7 @@ const Projects = () => {
           })}
 
           {filteredLogicalProjects.length === 0 && (
-            <div className="col-span-full py-16 text-center text-muted-foreground bg-card/30 rounded-3xl border border-dashed flex flex-col items-center gap-2">
+            <div className="col-span-full py-16 text-center text-muted-foreground bg-muted/10 rounded-xl border border-dashed border-border flex flex-col items-center gap-2">
               <Info className="w-8 h-8 text-muted-foreground/50" />
               <span>ไม่พบข้อมูลโครงการตามคำค้นหา &quot;{searchQuery}&quot;</span>
             </div>
@@ -810,11 +810,11 @@ const Projects = () => {
 
       {/* Add Location Modal */}
       <Dialog open={isAddLocationOpen} onOpenChange={setIsAddLocationOpen}>
-        <DialogContent className="sm:max-w-[450px] rounded-3xl glass p-6 border border-border/80 shadow-2xl">
+        <DialogContent className="sm:max-w-[450px] rounded-xl bg-card text-card-foreground p-6 border border-border shadow-xl">
           <form onSubmit={handleAddLocationToProject}>
             <DialogHeader>
               <DialogTitle className="text-lg font-bold flex items-center gap-2 text-foreground">
-                <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                <div className="p-2 rounded-lg bg-primary/10 text-primary">
                   <MapPin className="w-5 h-5" />
                 </div>
                 <span>เพิ่มสถานที่ตั้งโครงการ</span>
@@ -826,24 +826,24 @@ const Projects = () => {
             <div className="grid gap-3.5 py-4">
               <div className="space-y-1.5">
                 <Label className="text-xs font-bold text-foreground">ชื่อโครงการ</Label>
-                <Input disabled value={selectedLogicalProject?.canonicalName || ''} className="rounded-xl font-semibold bg-muted/50 text-xs h-10" />
+                <Input disabled value={selectedLogicalProject?.canonicalName || ''} className="rounded-lg font-semibold bg-muted/50 text-xs h-9" />
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs font-bold text-foreground">รหัสโครงการ (Project IDs)</Label>
-                <Input disabled value={selectedLogicalProject?.canonicalCode || '-'} className="rounded-xl font-mono bg-muted/50 text-xs h-10" />
+                <Input disabled value={selectedLogicalProject?.canonicalCode || '-'} className="rounded-lg font-mono bg-muted/50 text-xs h-9" />
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="add-location" className="text-xs font-bold text-foreground">ชื่อสถานที่ตั้ง / คลังย่อย <span className="text-destructive">*</span></Label>
-                <Input id="add-location" required placeholder="เช่น FORTH EMS2 (TAOBIN)" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} className="rounded-xl text-xs h-10" />
+                <Input id="add-location" required placeholder="เช่น FORTH EMS2 (TAOBIN)" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} className="rounded-lg text-xs h-9" />
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="add-description" className="text-xs font-bold text-foreground">รายละเอียดเพิ่มเติม</Label>
-                <Input id="add-description" placeholder="รายละเอียดคลังหรือโซนจัดเก็บ" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="rounded-xl text-xs h-10" />
+                <Input id="add-description" placeholder="รายละเอียดคลังหรือโซนจัดเก็บ" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="rounded-lg text-xs h-9" />
               </div>
             </div>
-            <DialogFooter className="gap-2 sm:gap-0 border-t border-border/40 pt-3">
-              <Button type="button" variant="outline" className="rounded-xl text-xs h-10" onClick={() => setIsAddLocationOpen(false)}>ยกเลิก</Button>
-              <Button type="submit" className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs h-10 cursor-pointer shadow-sm">ยืนยันเพิ่มสถานที่</Button>
+            <DialogFooter className="gap-2 sm:gap-0 border-t border-border pt-3">
+              <Button type="button" variant="outline" className="rounded-lg text-xs h-9" onClick={() => setIsAddLocationOpen(false)}>ยกเลิก</Button>
+              <Button type="submit" className="rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs h-9 cursor-pointer shadow-xs">ยืนยันเพิ่มสถานที่</Button>
             </DialogFooter>
           </form>
         </DialogContent>
@@ -851,11 +851,11 @@ const Projects = () => {
 
       {/* Edit Record Dialog */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="sm:max-w-[480px] rounded-3xl glass p-6 border border-border/80 shadow-2xl">
+        <DialogContent className="sm:max-w-[480px] rounded-xl bg-card text-card-foreground p-6 border border-border shadow-xl">
           <form onSubmit={handleEditRecord}>
             <DialogHeader>
               <DialogTitle className="text-lg font-bold flex items-center gap-2 text-foreground">
-                <div className="p-2 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                <div className="p-2 rounded-lg bg-primary/10 text-primary">
                   <Edit className="w-5 h-5" />
                 </div>
                 <span>แก้ไขข้อมูลโครงการ / สถานที่ตั้ง</span>
@@ -864,13 +864,13 @@ const Projects = () => {
             <div className="grid gap-3.5 py-4">
               <div className="space-y-1.5">
                 <Label htmlFor="edit-name" className="text-xs font-bold text-foreground">ชื่อโครงการ <span className="text-destructive">*</span></Label>
-                <Input id="edit-name" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="rounded-xl text-xs h-10" />
+                <Input id="edit-name" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="rounded-lg text-xs h-9" />
               </div>
 
               {/* Multi-Code Tag Input */}
               <div className="space-y-1.5">
                 <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                  <Layers className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                  <Layers className="w-3.5 h-3.5 text-primary" />
                   <span>รหัสโครงการ (Project IDs/Codes)</span>
                 </Label>
                 <ProjectCodeTagInput
@@ -882,17 +882,17 @@ const Projects = () => {
 
               <div className="space-y-1.5">
                 <Label htmlFor="edit-location" className="text-xs font-bold text-foreground">สถานที่ตั้ง</Label>
-                <Input id="edit-location" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} className="rounded-xl text-xs h-10" />
+                <Input id="edit-location" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} className="rounded-lg text-xs h-9" />
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="edit-description" className="text-xs font-bold text-foreground">รายละเอียดเพิ่มเติม</Label>
-                <Input id="edit-description" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="rounded-xl text-xs h-10" />
+                <Input id="edit-description" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="rounded-lg text-xs h-9" />
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="edit-status" className="text-xs font-bold text-foreground">สถานะโครงการ</Label>
                 <select
                   id="edit-status"
-                  className="flex h-10 w-full rounded-xl border border-input bg-background px-3 py-2 text-xs font-semibold focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                  className="flex h-9 w-full rounded-lg border border-input bg-background px-3 text-xs font-medium focus:ring-1 focus:ring-primary cursor-pointer"
                   value={formData.status || 'active'}
                   onChange={e => setFormData({ ...formData, status: e.target.value })}
                 >
@@ -902,9 +902,9 @@ const Projects = () => {
                 </select>
               </div>
             </div>
-            <DialogFooter className="gap-2 sm:gap-0 border-t border-border/40 pt-3">
-              <Button type="button" variant="outline" className="rounded-xl text-xs h-10" onClick={() => setIsEditOpen(false)}>ยกเลิก</Button>
-              <Button type="submit" className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs h-10 cursor-pointer shadow-sm">อัปเดตข้อมูล</Button>
+            <DialogFooter className="gap-2 sm:gap-0 border-t border-border pt-3">
+              <Button type="button" variant="outline" className="rounded-lg text-xs h-9" onClick={() => setIsEditOpen(false)}>ยกเลิก</Button>
+              <Button type="submit" className="rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs h-9 cursor-pointer shadow-xs">อัปเดตข้อมูล</Button>
             </DialogFooter>
           </form>
         </DialogContent>
@@ -912,10 +912,10 @@ const Projects = () => {
 
       {/* Delete & Stock Transfer Modal */}
       <Dialog open={isDeleteModalOpen} onOpenChange={(open) => !open && setIsDeleteModalOpen(false)}>
-        <DialogContent className="sm:max-w-[540px] rounded-3xl glass p-6 border border-border/80 shadow-2xl">
-          <DialogHeader className="space-y-2 border-b border-border/40 pb-3">
+        <DialogContent className="sm:max-w-[540px] rounded-xl bg-card text-card-foreground p-6 border border-border shadow-xl">
+          <DialogHeader className="space-y-2 border-b border-border pb-3">
             <DialogTitle className="text-lg font-bold flex items-center gap-2.5 text-foreground">
-              <div className={`p-2 rounded-2xl ${deleteTarget?.stockItems?.length > 0 ? 'bg-amber-500/15 text-amber-600' : 'bg-red-500/15 text-red-600'}`}>
+              <div className={`p-2 rounded-lg ${deleteTarget?.stockItems?.length > 0 ? 'bg-amber-500/15 text-amber-600' : 'bg-destructive/10 text-destructive'}`}>
                 {deleteTarget?.stockItems?.length > 0 ? <AlertTriangle className="w-5 h-5" /> : <Trash2 className="w-5 h-5" />}
               </div>
               <span>
@@ -934,7 +934,7 @@ const Projects = () => {
             {deleteTarget?.stockItems?.length > 0 ? (
               /* Case 1: Project has assigned stock -> Prompt for Transfer */
               <div className="space-y-3">
-                <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 space-y-1 leading-relaxed">
+                <div className="p-3.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 space-y-1 leading-relaxed">
                   <p className="font-bold flex items-center gap-1.5 text-xs">
                     <ShieldAlert className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
                     <span>พบวัสดุคงเหลืออยู่ในโครงการนี้รวม {deleteTarget.stockItems.length} รายการ ({deleteTarget.stockItems.reduce((s, i) => s + (Number(i.balance) || 0), 0)} ชิ้น)</span>
@@ -945,7 +945,7 @@ const Projects = () => {
                 </div>
 
                 {/* Stock Items Preview Table */}
-                <div className="border border-border/60 rounded-2xl overflow-hidden glass shadow-2xs max-h-[180px] overflow-y-auto">
+                <div className="border border-border rounded-lg overflow-hidden bg-card shadow-xs max-h-[180px] overflow-y-auto">
                   <Table>
                     <TableHeader className="bg-muted/50 text-[11px]">
                       <TableRow>
@@ -963,7 +963,7 @@ const Projects = () => {
                           <TableCell className="text-center text-muted-foreground text-[11px] py-2">
                             {item.project_name || '-'}
                           </TableCell>
-                          <TableCell className="text-right font-mono font-bold text-emerald-600 dark:text-emerald-400 py-2">
+                          <TableCell className="text-right font-mono font-semibold text-primary py-2">
                             {item.balance} {item.unit || 'ชิ้น'}
                           </TableCell>
                         </TableRow>
@@ -975,11 +975,11 @@ const Projects = () => {
                 {/* Destination Location Selector */}
                 <div className="space-y-1.5 pt-1">
                   <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                    <Building2 className="w-3.5 h-3.5 text-emerald-600" />
+                    <Building2 className="w-3.5 h-3.5 text-primary" />
                     <span>เลือกสถานที่จัดเก็บ (Location) ปลายทางที่จะรับโอนสต็อก <span className="text-destructive">*</span></span>
                   </Label>
                   <select
-                    className="flex h-11 w-full rounded-2xl border border-input bg-background px-3 py-2 text-xs font-bold text-foreground focus:ring-2 focus:ring-emerald-500 cursor-pointer shadow-2xs transition-all"
+                    className="flex h-9 w-full rounded-lg border border-input bg-background px-3 text-xs font-medium text-foreground focus:ring-1 focus:ring-primary cursor-pointer shadow-xs transition-all"
                     value={destinationProjectId}
                     onChange={(e) => setDestinationProjectId(e.target.value)}
                   >
@@ -994,7 +994,7 @@ const Projects = () => {
               </div>
             ) : (
               /* Case 2: Project has NO stock -> Simple confirmation */
-              <div className="p-4 rounded-2xl bg-muted/40 border border-border/60 space-y-2">
+              <div className="p-4 rounded-lg bg-muted/40 border border-border space-y-2">
                 <p className="font-semibold text-foreground">
                   โครงการนี้ <strong>ไม่มียอดสต็อกคงเหลือ</strong> (ยอดคงเหลือ 0 ชิ้น)
                 </p>
@@ -1005,11 +1005,11 @@ const Projects = () => {
             )}
           </div>
 
-          <DialogFooter className="gap-2 sm:gap-0 border-t border-border/40 pt-3">
+          <DialogFooter className="gap-2 sm:gap-0 border-t border-border pt-3">
             <Button
               type="button"
               variant="outline"
-              className="rounded-xl text-xs h-10"
+              className="rounded-lg text-xs h-9"
               disabled={isProcessingDelete}
               onClick={() => setIsDeleteModalOpen(false)}
             >
@@ -1019,10 +1019,10 @@ const Projects = () => {
               type="button"
               disabled={isProcessingDelete || (deleteTarget?.stockItems?.length > 0 && !destinationProjectId)}
               onClick={handleConfirmDeleteAndTransfer}
-              className={`rounded-xl text-xs h-10 font-bold shadow-sm cursor-pointer ${
+              className={`rounded-lg text-xs h-9 font-semibold shadow-xs cursor-pointer ${
                 deleteTarget?.stockItems?.length > 0
                   ? 'bg-amber-600 hover:bg-amber-700 text-white'
-                  : 'bg-red-600 hover:bg-red-700 text-white'
+                  : 'bg-destructive hover:bg-destructive/90 text-destructive-foreground'
               }`}
             >
               {isProcessingDelete

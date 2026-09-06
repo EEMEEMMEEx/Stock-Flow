@@ -107,7 +107,7 @@ const WithdrawalOrdersList = ({
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h2 className="text-2xl font-extrabold tracking-tight flex items-center gap-2.5 text-foreground">
-            <div className="p-2 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+            <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
               <FileText className="w-6 h-6" />
             </div>
             <span>รายการคำขอเบิกจ่าย (Requisitions Tracking)</span>
@@ -120,7 +120,7 @@ const WithdrawalOrdersList = ({
         <Button
           type="button"
           onClick={onOpenPosMode}
-          className="h-11 px-5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs shadow-lg shadow-indigo-500/25 gap-2 transition-all cursor-pointer"
+          className="h-9 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-xs gap-2 transition-all cursor-pointer"
         >
           <ArrowUpFromLine className="w-4 h-4" />
           <span>+ สร้างคำขอเบิกจ่าย (POS)</span>
@@ -129,7 +129,7 @@ const WithdrawalOrdersList = ({
 
       {/* Stats KPI Header Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-        <Card className="p-4 rounded-3xl glass border border-border/60 shadow-2xs space-y-1 hover:border-indigo-500/30 transition-colors">
+        <Card className="p-4 rounded-xl bg-card border border-border shadow-xs space-y-1 hover:border-indigo-500/30 transition-colors">
           <div className="flex items-center justify-between text-xs text-muted-foreground font-semibold">
             <span>คำขอทั้งหมด</span>
             <FileText className="w-4 h-4 text-indigo-500" />
@@ -137,7 +137,7 @@ const WithdrawalOrdersList = ({
           <p className="text-2xl font-extrabold font-mono text-foreground">{loading ? '-' : totalOrdersCount}</p>
         </Card>
 
-        <Card className="p-4 rounded-3xl glass border border-amber-500/30 bg-amber-500/5 shadow-2xs space-y-1">
+        <Card className="p-4 rounded-xl bg-card border border-amber-500/30 bg-amber-500/5 shadow-xs space-y-1">
           <div className="flex items-center justify-between text-xs text-amber-700 dark:text-amber-300 font-semibold">
             <span>รออนุมัติ</span>
             <Clock className="w-4 h-4 text-amber-500" />
@@ -145,7 +145,7 @@ const WithdrawalOrdersList = ({
           <p className="text-2xl font-extrabold font-mono text-amber-600 dark:text-amber-400">{loading ? '-' : pendingOrdersCount}</p>
         </Card>
 
-        <Card className="p-4 rounded-3xl glass border border-blue-500/30 bg-blue-500/5 shadow-2xs space-y-1">
+        <Card className="p-4 rounded-xl bg-card border border-blue-500/30 bg-blue-500/5 shadow-xs space-y-1">
           <div className="flex items-center justify-between text-xs text-blue-700 dark:text-blue-300 font-semibold">
             <span>อนุมัติแล้ว</span>
             <CheckCircle2 className="w-4 h-4 text-blue-500" />
@@ -153,7 +153,7 @@ const WithdrawalOrdersList = ({
           <p className="text-2xl font-extrabold font-mono text-blue-600 dark:text-blue-400">{loading ? '-' : approvedOrdersCount}</p>
         </Card>
 
-        <Card className="p-4 rounded-3xl glass border border-emerald-500/30 bg-emerald-500/5 shadow-2xs space-y-1">
+        <Card className="p-4 rounded-xl bg-card border border-emerald-500/30 bg-emerald-500/5 shadow-xs space-y-1">
           <div className="flex items-center justify-between text-xs text-emerald-700 dark:text-emerald-300 font-semibold">
             <span>รับของแล้ว</span>
             <CheckCircle2 className="w-4 h-4 text-emerald-500" />
@@ -163,13 +163,13 @@ const WithdrawalOrdersList = ({
       </div>
 
       {/* Search & Filter Toolbar */}
-      <div className="p-4 rounded-3xl glass border border-border/60 shadow-2xs space-y-3">
+      <div className="p-4 rounded-xl bg-card border border-border shadow-xs space-y-3">
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="ค้นหาบิล... (รหัสคำขอ, โครงการ, ชื่อผู้ขอ, วัตถุประสงค์)"
-              className="pl-9 h-11 rounded-2xl bg-background border-border/60 focus:ring-2 focus:ring-indigo-500 text-xs shadow-2xs"
+              className="pl-9 h-9 rounded-lg bg-background border-border text-xs shadow-2xs"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -182,10 +182,10 @@ const WithdrawalOrdersList = ({
               variant={statusFilter === 'all' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setStatusFilter('all')}
-              className={`h-9 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`h-8 px-2.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 statusFilter === 'all'
                   ? 'bg-slate-900 text-slate-50 dark:bg-slate-50 dark:text-slate-900'
-                  : 'border-border/60 text-muted-foreground hover:bg-accent'
+                  : 'border-border text-muted-foreground hover:bg-accent'
               }`}
             >
               ทั้งหมด ({orders.length})
@@ -196,9 +196,9 @@ const WithdrawalOrdersList = ({
               variant={statusFilter === 'pending' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setStatusFilter('pending')}
-              className={`h-9 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`h-8 px-2.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 statusFilter === 'pending'
-                  ? 'bg-amber-600 text-white shadow-2xs'
+                  ? 'bg-amber-600 text-white shadow-xs'
                   : 'border-amber-500/30 text-amber-700 dark:text-amber-300 hover:bg-amber-500/10'
               }`}
             >
@@ -210,9 +210,9 @@ const WithdrawalOrdersList = ({
               variant={statusFilter === 'approved' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setStatusFilter('approved')}
-              className={`h-9 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`h-8 px-2.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 statusFilter === 'approved'
-                  ? 'bg-blue-600 text-white shadow-2xs'
+                  ? 'bg-blue-600 text-white shadow-xs'
                   : 'border-blue-500/30 text-blue-700 dark:text-blue-300 hover:bg-blue-500/10'
               }`}
             >
@@ -224,9 +224,9 @@ const WithdrawalOrdersList = ({
               variant={statusFilter === 'completed' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setStatusFilter('completed')}
-              className={`h-9 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`h-8 px-2.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 statusFilter === 'completed'
-                  ? 'bg-emerald-600 text-white shadow-2xs'
+                  ? 'bg-emerald-600 text-white shadow-xs'
                   : 'border-emerald-500/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/10'
               }`}
             >
@@ -238,9 +238,9 @@ const WithdrawalOrdersList = ({
               variant={statusFilter === 'rejected' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setStatusFilter('rejected')}
-              className={`h-9 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`h-8 px-2.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 statusFilter === 'rejected'
-                  ? 'bg-red-600 text-white shadow-2xs'
+                  ? 'bg-red-600 text-white shadow-xs'
                   : 'border-red-500/30 text-red-700 dark:text-red-300 hover:bg-red-500/10'
               }`}
             >
@@ -256,7 +256,7 @@ const WithdrawalOrdersList = ({
                   setSearch('');
                   setStatusFilter('all');
                 }}
-                className="h-9 px-2 text-xs font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-xl shrink-0 gap-1 cursor-pointer"
+                className="h-8 px-2 text-xs font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg shrink-0 gap-1 cursor-pointer"
               >
                 <RotateCcw className="w-3.5 h-3.5" /> รีเซ็ต
               </Button>
@@ -266,7 +266,7 @@ const WithdrawalOrdersList = ({
       </div>
 
       {/* Orders Table Card */}
-      <Card className="overflow-hidden glass border border-border/60 rounded-3xl shadow-sm">
+      <Card className="overflow-hidden bg-card border border-border rounded-xl shadow-xs">
         <Table>
           <TableHeader className="bg-muted/50 text-xs">
             <TableRow>
@@ -380,7 +380,7 @@ const WithdrawalOrdersList = ({
                         size="xs"
                         title="พิมพ์/ดาวน์โหลด ใบเบิกของ (PDF)"
                         onClick={() => onDownloadPDF(order)}
-                        className="h-8 px-2.5 rounded-xl text-xs font-semibold text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 gap-1 cursor-pointer"
+                        className="h-8 px-2.5 rounded-lg text-xs font-semibold text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 gap-1 cursor-pointer"
                       >
                         <Download className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
                         <span>PDF</span>
@@ -392,7 +392,7 @@ const WithdrawalOrdersList = ({
                             <Button
                               type="button"
                               size="xs"
-                              className="h-8 px-2.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer shadow-2xs"
+                              className="h-8 px-2.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer shadow-2xs"
                               onClick={() => onApproveOrder(order.id)}
                             >
                               อนุมัติ
@@ -403,7 +403,7 @@ const WithdrawalOrdersList = ({
                               type="button"
                               variant="destructive"
                               size="xs"
-                              className="h-8 px-2.5 rounded-xl text-xs font-bold cursor-pointer"
+                              className="h-8 px-2.5 rounded-lg text-xs font-semibold cursor-pointer"
                               onClick={() => onOpenRejectModal(order)}
                             >
                               ปฏิเสธ
@@ -416,7 +416,7 @@ const WithdrawalOrdersList = ({
                         <Button
                           type="button"
                           size="xs"
-                          className="h-8 px-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer shadow-2xs"
+                          className="h-8 px-2.5 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer shadow-2xs"
                           onClick={() => onCompleteOrder(order.id)}
                         >
                           ยืนยันรับของ

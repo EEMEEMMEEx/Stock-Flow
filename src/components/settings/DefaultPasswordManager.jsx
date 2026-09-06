@@ -101,7 +101,7 @@ const DefaultPasswordManager = ({ canUpdate }) => {
   const reqNoSpace = passwordInput.length > 0 && passwordInput === passwordInput.trim();
 
   return (
-    <div className="p-4 rounded-2xl neu-pressed bg-white/40 dark:bg-black/20 space-y-4">
+    <div className="p-4 rounded-xl bg-card border border-border shadow-xs space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/20 pb-3">
         <div className="flex items-center gap-2">
           <KeyRound className="w-5 h-5 text-purple-600 dark:text-purple-400 shrink-0" />
@@ -146,7 +146,7 @@ const DefaultPasswordManager = ({ canUpdate }) => {
                 size="sm"
                 onClick={handleSetRandomPassword}
                 disabled={!canUpdate || saving}
-                className="text-[11px] text-purple-600 hover:text-purple-700 dark:text-purple-400 hover:underline h-6 px-2 flex items-center gap-1"
+                className="text-[11px] text-purple-600 hover:text-purple-700 dark:text-purple-400 hover:underline h-6 px-2 flex items-center gap-1 cursor-pointer"
               >
                 <RefreshCw className="w-3 h-3" />
                 สุ่มรหัสผ่านปลอดภัย (Generate Secure Default)
@@ -163,13 +163,13 @@ const DefaultPasswordManager = ({ canUpdate }) => {
                 placeholder={status.configured ? '•••••••••••• (ตั้งค่าไว้แล้ว - ระบุใหม่เมื่อต้องการเปลี่ยน)' : 'ระบุรหัสผ่านเริ่มต้นความยาวอย่างน้อย 12 ตัวอักษร'}
                 value={passwordInput}
                 onChange={(e) => setPasswordInput(e.target.value)}
-                className="pr-10 neu-pressed bg-transparent text-xs"
+                className="pr-10 h-9 text-xs rounded-lg bg-background border border-input"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 tabIndex={-1}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -180,7 +180,7 @@ const DefaultPasswordManager = ({ canUpdate }) => {
             <Button
               type="submit"
               disabled={!canUpdate || saving || !passwordInput || !validation.isValid}
-              className="w-full neu-primary flex items-center justify-center gap-2 text-xs font-semibold h-9"
+              className="w-full h-9 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground flex items-center justify-center gap-2 text-xs font-semibold cursor-pointer shadow-xs"
             >
               <Save className="w-3.5 h-3.5" />
               {saving ? 'กำลังบันทึก...' : 'บันทึกรหัสผ่านเริ่มต้น'}
@@ -190,7 +190,7 @@ const DefaultPasswordManager = ({ canUpdate }) => {
 
         {/* Live Password Policy Checklist */}
         {passwordInput && (
-          <div className="p-3 rounded-xl bg-background/60 border border-border/40 space-y-2 text-[11px]">
+          <div className="p-3 rounded-lg bg-muted/30 border border-border/50 space-y-2 text-[11px]">
             <span className="font-bold text-foreground block">ตรวจสอบนโยบายความปลอดภัยรหัสผ่าน (Live Validation):</span>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
               <span className={`flex items-center gap-1.5 ${reqMinLen ? 'text-emerald-600 font-semibold' : 'text-muted-foreground'}`}>

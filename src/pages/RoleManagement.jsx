@@ -404,7 +404,7 @@ const RoleManagement = () => {
             variant="outline" 
             onClick={fetchInitialData} 
             disabled={loading}
-            className="neu-button flex items-center gap-2"
+            className="h-9 px-3 text-xs rounded-lg flex items-center gap-2"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             รีเฟรช
@@ -413,7 +413,7 @@ const RoleManagement = () => {
           {can('roles.create') && (
             <Button 
               onClick={() => setIsAddModalOpen(true)}
-              className="neu-primary h-10 px-4 rounded-xl font-semibold text-sm flex items-center gap-2 transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 shrink-0"
+              className="h-9 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs shadow-xs flex items-center gap-2 transition-all duration-200 cursor-pointer shrink-0"
             >
               <Plus className="w-4 h-4 shrink-0" />
               <span>เพิ่มบทบาท</span>
@@ -424,7 +424,7 @@ const RoleManagement = () => {
 
       {/* Migration Notice Banner */}
       {rpcMissing && (
-        <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 flex items-start gap-3 text-xs sm:text-sm">
+        <div className="p-3.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 flex items-start gap-3 text-xs">
           <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
           <div className="space-y-1">
             <div className="font-semibold text-amber-800 dark:text-amber-300">
@@ -451,7 +451,7 @@ const RoleManagement = () => {
           </div>
         ) : (
           roles.map((roleObj) => (
-            <Card key={roleObj.id} className="neu-flat border-0 flex flex-col justify-between hover:shadow-xl transition-all duration-300">
+            <Card key={roleObj.id} className="rounded-xl bg-card border border-border shadow-xs flex flex-col justify-between hover:shadow-md transition-all duration-200">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between gap-2 mb-2">
                   {/* Badge with live theme colors */}
@@ -481,7 +481,7 @@ const RoleManagement = () => {
 
               <CardContent className="pt-0 space-y-4">
                 {/* User Count & Permission Count Indicators */}
-                <div className="grid grid-cols-2 gap-3 p-3 rounded-xl neu-pressed-sm bg-white/40 dark:bg-black/20 text-xs">
+                <div className="grid grid-cols-2 gap-3 p-3 rounded-lg bg-muted/30 border border-border/50 text-xs">
                   <div className="flex items-center gap-2">
                     <Users className="w-4 h-4 text-primary" />
                     <div>
@@ -491,7 +491,7 @@ const RoleManagement = () => {
                   </div>
 
                   <div className="flex items-center gap-2 border-l border-border pl-3">
-                    <Shield className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                    <Shield className="w-4 h-4 text-primary" />
                     <div>
                       <div className="text-[10px] text-muted-foreground">สิทธิ์ที่เปิดใช้งาน</div>
                       <div className="font-bold text-sm text-foreground">{roleObj.permission_count || 0} สิทธิ์</div>
@@ -508,10 +508,10 @@ const RoleManagement = () => {
                       disabled={roleObj.code === 'SUPER' && !isSuperAdmin}
                       title={roleObj.code === 'SUPER' && !isSuperAdmin ? 'เฉพาะ Super Admin เท่านั้นที่สามารถจัดการสิทธิ์ของ Super Admin ได้' : 'กำหนดสิทธิ์การใช้งาน (Permissions Configuration)'}
                       onClick={() => handleOpenPermissionModal(roleObj)}
-                      className={`neu-button text-xs font-semibold flex items-center gap-1.5 ${
+                      className={`h-8 px-2.5 text-xs font-semibold flex items-center gap-1.5 rounded-lg ${
                         roleObj.code === 'SUPER' && !isSuperAdmin 
                           ? 'opacity-40 cursor-not-allowed text-muted-foreground' 
-                          : 'text-purple-600 dark:text-purple-400'
+                          : 'text-primary hover:bg-primary/10'
                       }`}
                     >
                       {roleObj.code === 'SUPER' && !isSuperAdmin ? (
@@ -619,7 +619,7 @@ const RoleManagement = () => {
       {/* Confirm Delete Role Modal */}
       {selectedRoleForDelete && (
         <Dialog open={!!selectedRoleForDelete} onOpenChange={() => setSelectedRoleForDelete(null)}>
-          <DialogContent className="max-w-md neu-flat border-0">
+          <DialogContent className="max-w-md rounded-xl bg-card text-card-foreground border border-border shadow-xl">
             <DialogHeader>
               <DialogTitle className="text-lg font-bold flex items-center gap-2 text-red-600">
                 <AlertCircle className="w-5 h-5" />

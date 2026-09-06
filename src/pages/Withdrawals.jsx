@@ -617,15 +617,15 @@ const Withdrawals = () => {
   return (
     <div className="space-y-6 animate-in fade-in-50 duration-200">
       {/* Top Requisition Hub Navigation Tabs */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-2 sm:p-2.5 rounded-3xl glass border border-border/70 shadow-sm">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-2 sm:p-2.5 rounded-xl bg-card border border-border shadow-xs">
         <div className="flex items-center gap-2 w-full sm:w-auto">
           {/* Tab 1: POS Terminal */}
           <button
             type="button"
             onClick={() => setActiveTab('pos')}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl text-xs font-extrabold transition-all cursor-pointer flex-1 sm:flex-none justify-center ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer flex-1 sm:flex-none justify-center ${
               activeTab === 'pos'
-                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/25'
+                ? 'bg-indigo-600 text-white shadow-xs'
                 : 'text-muted-foreground hover:text-foreground hover:bg-accent/60'
             }`}
           >
@@ -644,9 +644,9 @@ const Withdrawals = () => {
           <button
             type="button"
             onClick={() => setActiveTab('orders')}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl text-xs font-extrabold transition-all cursor-pointer flex-1 sm:flex-none justify-center ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer flex-1 sm:flex-none justify-center ${
               activeTab === 'orders'
-                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/25'
+                ? 'bg-indigo-600 text-white shadow-xs'
                 : 'text-muted-foreground hover:text-foreground hover:bg-accent/60'
             }`}
           >

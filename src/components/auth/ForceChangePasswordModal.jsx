@@ -73,12 +73,12 @@ const ForceChangePasswordModal = ({ isOpen, onPasswordChanged }) => {
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
       <DialogContent 
-        className="max-w-md neu-flat border-0 p-6 [&>button]:hidden" 
+        className="max-w-md rounded-xl bg-card text-card-foreground border border-border shadow-xl p-6 [&>button]:hidden" 
         onPointerDownOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
         <DialogHeader className="space-y-2">
-          <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-1">
+          <div className="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-1">
             <ShieldAlert className="w-6 h-6" />
           </div>
           <DialogTitle className="text-xl font-bold text-foreground flex items-center gap-2">
@@ -104,13 +104,13 @@ const ForceChangePasswordModal = ({ isOpen, onPasswordChanged }) => {
                   placeholder="อย่างน้อย 12 ตัวอักษร (พิมพ์ใหญ่, เล็ก, ตัวเลข, สัญลักษณ์)"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="pr-10 neu-pressed bg-transparent text-xs"
+                  className="pr-10 h-9 text-xs rounded-lg bg-background border border-input focus-visible:ring-1 focus-visible:ring-primary"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   tabIndex={-1}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -129,14 +129,14 @@ const ForceChangePasswordModal = ({ isOpen, onPasswordChanged }) => {
                 placeholder="ป้อนรหัสผ่านใหม่อีกครั้งให้ตรงกัน"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="neu-pressed bg-transparent text-xs"
+                className="h-9 text-xs rounded-lg bg-background border border-input focus-visible:ring-1 focus-visible:ring-primary"
               />
             </div>
           </div>
 
           {/* Policy Checklist */}
           {newPassword && (
-            <div className="p-3 rounded-xl neu-pressed-sm bg-white/40 dark:bg-black/20 text-[11px] space-y-1">
+            <div className="p-3 rounded-lg bg-muted/30 border border-border/50 text-[11px] space-y-1">
               <div className="font-semibold text-muted-foreground mb-1">ความแข็งแกร่งรหัสผ่าน:</div>
               <div className={`flex items-center gap-1.5 ${newPassword.length >= 12 ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'}`}>
                 <CheckCircle2 className="w-3 h-3 shrink-0" /> ความยาวอย่างน้อย 12 ตัวอักษร
@@ -159,7 +159,7 @@ const ForceChangePasswordModal = ({ isOpen, onPasswordChanged }) => {
           <Button 
             type="submit" 
             disabled={loading || !validation.isValid} 
-            className="w-full neu-primary font-bold py-2.5 text-sm"
+            className="w-full h-9 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs shadow-xs cursor-pointer disabled:opacity-50"
           >
             {loading ? 'กำลังบันทึกรหัสผ่าน...' : 'บันทึกรหัสผ่านใหม่และเริ่มต้นใช้งาน'}
           </Button>

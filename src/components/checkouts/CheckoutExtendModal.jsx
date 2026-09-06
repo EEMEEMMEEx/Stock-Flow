@@ -206,10 +206,10 @@ const CheckoutExtendModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[540px] rounded-3xl glass p-6 border border-border/80 shadow-2xl">
+      <DialogContent className="sm:max-w-[540px] rounded-xl bg-card p-6 border border-border shadow-xl">
         <DialogHeader className="space-y-2 border-b border-border/40 pb-3">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 shrink-0">
+            <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 shrink-0">
               <CalendarClock className="w-5 h-5" />
             </div>
             <div>
@@ -228,7 +228,7 @@ const CheckoutExtendModal = ({
 
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           {/* Borrower & Current Due Date Card */}
-          <div className="p-3.5 rounded-2xl bg-muted/40 border border-border/60 space-y-2 text-xs">
+          <div className="p-3.5 rounded-xl bg-muted/30 border border-border space-y-2 text-xs">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 font-semibold text-foreground">
                 <User className="w-3.5 h-3.5 text-muted-foreground" />
@@ -276,7 +276,7 @@ const CheckoutExtendModal = ({
               min={minSelectableDate}
               value={newDueDate}
               onChange={(e) => setNewDueDate(e.target.value)}
-              className="h-10 text-xs rounded-xl font-mono"
+              className="h-9 text-xs rounded-lg font-mono"
               required
             />
 
@@ -306,7 +306,7 @@ const CheckoutExtendModal = ({
 
           {/* Extension Status Preview */}
           {previewData && (
-            <div className={`p-3 rounded-2xl border text-xs flex items-center justify-between transition-all ${
+            <div className={`p-3 rounded-xl border text-xs flex items-center justify-between transition-all ${
               previewData.isValid
                 ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-900 dark:text-emerald-300'
                 : 'bg-red-500/10 border-red-500/30 text-red-900 dark:text-red-300'
@@ -346,7 +346,7 @@ const CheckoutExtendModal = ({
               placeholder="เช่น งานติดตั้งไซต์งานยังไม่แล้วเสร็จ, อยู่ระหว่างรอทดสอบระบบ..."
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              className="w-full rounded-xl border border-input bg-transparent px-3 py-2 text-xs shadow-2xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 resize-none"
+              className="w-full rounded-lg border border-input bg-transparent px-3 py-2 text-xs shadow-2xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 resize-none"
             />
           </div>
 
@@ -357,7 +357,7 @@ const CheckoutExtendModal = ({
               size="sm"
               onClick={onClose}
               disabled={submitting}
-              className="rounded-xl h-9 text-xs font-semibold cursor-pointer"
+              className="rounded-lg h-9 text-xs font-semibold cursor-pointer"
             >
               ยกเลิก
             </Button>
@@ -366,7 +366,7 @@ const CheckoutExtendModal = ({
               type="submit"
               size="sm"
               disabled={submitting || !previewData?.isValid}
-              className="rounded-xl h-9 px-4 bg-amber-600 hover:bg-amber-700 text-white text-xs gap-1.5 font-bold shadow-sm cursor-pointer active:scale-[0.98] transition-all"
+              className="rounded-lg h-9 px-4 bg-amber-600 hover:bg-amber-700 text-white text-xs gap-1.5 font-semibold shadow-xs cursor-pointer transition-colors"
             >
               <CalendarClock className="w-3.5 h-3.5" />
               <span>{submitting ? 'กำลังบันทึก...' : 'ยืนยันขยายเวลาส่งคืน'}</span>

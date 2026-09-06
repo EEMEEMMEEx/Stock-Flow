@@ -298,7 +298,7 @@ const EmailTemplateManager = ({
   return (
     <div className="space-y-6">
       {/* Header & Global Email Branding Bar */}
-      <div className="p-4 rounded-2xl neu-pressed bg-white/40 dark:bg-black/20 space-y-4">
+      <div className="p-4 rounded-xl bg-card border border-border shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h3 className="text-sm font-bold flex items-center gap-2 text-foreground">
@@ -326,7 +326,7 @@ const EmailTemplateManager = ({
               value={branding.app_name}
               onChange={(e) => { setBranding(prev => ({ ...prev, app_name: e.target.value })); setIsDirty(true); }}
               placeholder="StockFlow"
-              className="mt-1 neu-pressed bg-transparent text-xs"
+              className="mt-1 h-9 text-xs rounded-lg bg-background border border-input"
             />
           </div>
 
@@ -337,7 +337,7 @@ const EmailTemplateManager = ({
               value={branding.logo_url}
               onChange={(e) => { setBranding(prev => ({ ...prev, logo_url: e.target.value })); setIsDirty(true); }}
               placeholder="https://domain.com/logo.png"
-              className="mt-1 neu-pressed bg-transparent text-xs"
+              className="mt-1 h-9 text-xs rounded-lg bg-background border border-input"
             />
           </div>
 
@@ -348,7 +348,7 @@ const EmailTemplateManager = ({
               value={branding.public_base_url}
               onChange={(e) => { setBranding(prev => ({ ...prev, public_base_url: e.target.value })); setIsDirty(true); }}
               placeholder="https://stockflowth.online"
-              className="mt-1 neu-pressed bg-transparent text-xs font-mono"
+              className="mt-1 h-9 text-xs rounded-lg bg-background border border-input font-mono"
             />
           </div>
 
@@ -360,13 +360,13 @@ const EmailTemplateManager = ({
                 disabled={!canUpdate}
                 value={branding.accent_color}
                 onChange={(e) => { setBranding(prev => ({ ...prev, accent_color: e.target.value })); setIsDirty(true); }}
-                className="h-8 w-10 rounded cursor-pointer border border-border"
+                className="h-9 w-10 rounded-lg cursor-pointer border border-border bg-transparent p-0.5"
               />
               <Input
                 disabled={!canUpdate}
                 value={branding.accent_color}
                 onChange={(e) => { setBranding(prev => ({ ...prev, accent_color: e.target.value })); setIsDirty(true); }}
-                className="neu-pressed bg-transparent text-xs font-mono"
+                className="h-9 text-xs rounded-lg bg-background border border-input font-mono"
               />
             </div>
           </div>
@@ -385,7 +385,7 @@ const EmailTemplateManager = ({
                 type="button"
                 disabled={!canUpdate}
                 onClick={handleResetAllEvents}
-                className="text-[10px] text-primary hover:underline font-medium"
+                className="text-[10px] text-primary hover:underline font-medium cursor-pointer"
                 title="คืนค่าแม่แบบทั้งหมดเป็นค่าเริ่มต้น"
               >
                 รีเซ็ตทั้งหมด
@@ -397,7 +397,7 @@ const EmailTemplateManager = ({
                 placeholder="ค้นหาแม่แบบ..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="text-[11px] h-7 pl-7 neu-pressed bg-transparent"
+                className="text-[11px] h-8 pl-7 rounded-lg bg-background border border-input"
               />
             </div>
           </div>
@@ -410,10 +410,10 @@ const EmailTemplateManager = ({
                 <div
                   key={key}
                   onClick={() => setSelectedEventKey(key)}
-                  className={`p-3.5 rounded-xl border transition-all cursor-pointer ${
+                  className={`p-3.5 rounded-xl border transition-colors cursor-pointer ${
                     isSelected 
-                      ? 'neu-pressed border-primary/50 bg-primary/5 shadow-sm' 
-                      : 'neu-flat hover:neu-pressed border-border/40 hover:border-primary/30'
+                      ? 'border-primary bg-primary/5 shadow-xs ring-1 ring-primary/40' 
+                      : 'bg-card hover:bg-muted/40 border-border hover:border-primary/30'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-1">
@@ -450,7 +450,7 @@ const EmailTemplateManager = ({
 
         {/* RIGHT COLUMN: Selected Event Editor & Live Preview (8 Cols) */}
         <div className="lg:col-span-8 space-y-4">
-          <Card className="neu-flat border-0 overflow-hidden">
+          <Card className="rounded-xl bg-card border border-border shadow-xs overflow-hidden">
             <CardHeader className="py-4 border-b border-border/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
@@ -561,7 +561,7 @@ const EmailTemplateManager = ({
                       disabled={!canUpdate}
                       value={selectedEvent.subject}
                       onChange={(e) => handleUpdateSelectedEvent('subject', e.target.value)}
-                      className="neu-pressed bg-transparent font-medium"
+                      className="h-9 text-xs rounded-lg bg-background border border-input font-medium"
                     />
 
                     {/* Variable Pills */}
@@ -572,7 +572,7 @@ const EmailTemplateManager = ({
                           type="button"
                           disabled={!canUpdate}
                           onClick={() => handleInsertVariable(v.code)}
-                          className="bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-md px-2 py-0.5 text-[10px] font-mono transition-colors flex items-center gap-1"
+                          className="bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-md px-2 py-0.5 text-[10px] font-mono transition-colors flex items-center gap-1 cursor-pointer"
                           title={v.desc}
                         >
                           <span>{v.code}</span>
@@ -590,7 +590,7 @@ const EmailTemplateManager = ({
                         disabled={!canUpdate}
                         value={selectedEvent.status_label}
                         onChange={(e) => handleUpdateSelectedEvent('status_label', e.target.value)}
-                        className="mt-1 neu-pressed bg-transparent"
+                        className="mt-1 h-9 text-xs rounded-lg bg-background border border-input"
                       />
                     </div>
 
@@ -600,7 +600,7 @@ const EmailTemplateManager = ({
                         disabled={!canUpdate}
                         value={selectedEvent.status_type}
                         onChange={(e) => handleUpdateSelectedEvent('status_type', e.target.value)}
-                        className="w-full mt-1 h-9 rounded-md border border-input bg-transparent px-3 py-1 text-xs shadow-sm neu-pressed focus-visible:outline-none"
+                        className="w-full mt-1 h-9 rounded-lg border border-input bg-background px-3 py-1 text-xs shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
                       >
                         <option value="warning">สีส้ม / รอดำเนินการ (Amber/Warning)</option>
                         <option value="approved">สีเขียว / สำเร็จ (Emerald/Approved)</option>
@@ -615,7 +615,7 @@ const EmailTemplateManager = ({
                         disabled={!canUpdate}
                         value={selectedEvent.heading}
                         onChange={(e) => handleUpdateSelectedEvent('heading', e.target.value)}
-                        className="mt-1 neu-pressed bg-transparent"
+                        className="mt-1 h-9 text-xs rounded-lg bg-background border border-input"
                       />
                     </div>
                   </div>
@@ -628,7 +628,7 @@ const EmailTemplateManager = ({
                       rows={2}
                       value={selectedEvent.intro}
                       onChange={(e) => handleUpdateSelectedEvent('intro', e.target.value)}
-                      className="w-full mt-1 rounded-md border border-input bg-transparent p-2 text-xs shadow-sm neu-pressed focus-visible:outline-none"
+                      className="w-full mt-1 rounded-lg border border-input bg-background p-2 text-xs shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
                     />
                   </div>
 
@@ -640,7 +640,7 @@ const EmailTemplateManager = ({
                         disabled={!canUpdate}
                         value={selectedEvent.cta_label}
                         onChange={(e) => handleUpdateSelectedEvent('cta_label', e.target.value)}
-                        className="mt-1 neu-pressed bg-transparent"
+                        className="mt-1 h-9 text-xs rounded-lg bg-background border border-input"
                       />
                     </div>
 
@@ -650,7 +650,7 @@ const EmailTemplateManager = ({
                         disabled={!canUpdate}
                         value={selectedEvent.cta_url}
                         onChange={(e) => handleUpdateSelectedEvent('cta_url', e.target.value)}
-                        className="mt-1 neu-pressed bg-transparent font-mono text-[11px]"
+                        className="mt-1 h-9 text-xs rounded-lg bg-background border border-input font-mono"
                       />
                     </div>
                   </div>
@@ -662,7 +662,7 @@ const EmailTemplateManager = ({
                       disabled={!canUpdate}
                       value={selectedEvent.footer_note}
                       onChange={(e) => handleUpdateSelectedEvent('footer_note', e.target.value)}
-                      className="mt-1 neu-pressed bg-transparent"
+                      className="mt-1 h-9 text-xs rounded-lg bg-background border border-input"
                     />
                   </div>
                 </div>
@@ -691,10 +691,10 @@ const EmailTemplateManager = ({
                           <div
                             key={r.code}
                             onClick={() => canUpdate && handleToggleRole(r.code)}
-                            className={`p-3 rounded-xl border flex items-center gap-2.5 cursor-pointer transition-all ${
+                            className={`p-3 rounded-xl border flex items-center gap-2.5 cursor-pointer transition-colors ${
                               isChecked 
-                                ? 'neu-pressed border-primary/50 bg-primary/10' 
-                                : 'neu-flat hover:neu-pressed border-border/50'
+                                ? 'border-primary bg-primary/10 shadow-xs' 
+                                : 'bg-card hover:bg-muted/40 border-border'
                             }`}
                           >
                             <div className={`w-4 h-4 rounded flex items-center justify-center border ${
@@ -718,7 +718,7 @@ const EmailTemplateManager = ({
                         placeholder="extra1@company.com, extra2@company.com"
                         value={selectedEvent.to_extra || ''}
                         onChange={(e) => handleUpdateSelectedEvent('to_extra', e.target.value)}
-                        className="mt-1 neu-pressed bg-transparent font-mono text-[11px]"
+                        className="mt-1 h-9 text-xs rounded-lg bg-background border border-input font-mono"
                       />
                       <span className="text-[10px] text-muted-foreground mt-0.5 block">คั่นหลายอีเมลด้วยเครื่องหมายจุลภาค (,)</span>
                     </div>
@@ -730,7 +730,7 @@ const EmailTemplateManager = ({
                         placeholder="manager@company.com, audit@company.com"
                         value={selectedEvent.cc_extra || ''}
                         onChange={(e) => handleUpdateSelectedEvent('cc_extra', e.target.value)}
-                        className="mt-1 neu-pressed bg-transparent font-mono text-[11px]"
+                        className="mt-1 h-9 text-xs rounded-lg bg-background border border-input font-mono"
                       />
                       <span className="text-[10px] text-muted-foreground mt-0.5 block">คั่นหลายอีเมลด้วยเครื่องหมายจุลภาค (,)</span>
                     </div>
@@ -742,7 +742,7 @@ const EmailTemplateManager = ({
               {activeTab === 'preview' && (
                 <div className="space-y-3">
                   {/* Viewport Toolbar */}
-                  <div className="flex items-center justify-between bg-muted/40 p-2 rounded-xl border border-border/40">
+                  <div className="flex items-center justify-between bg-muted/40 p-2 rounded-lg border border-border/40">
                     <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                       <Monitor className="w-3.5 h-3.5 text-primary" />
                       ตัวอย่างการแสดงผลอีเมลจริง (Live HTML Renderer)
@@ -752,8 +752,8 @@ const EmailTemplateManager = ({
                       <button
                         type="button"
                         onClick={() => setPreviewDevice('desktop')}
-                        className={`px-2.5 py-1 rounded-md transition-colors flex items-center gap-1 text-[11px] font-medium ${
-                          previewDevice === 'desktop' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground'
+                        className={`px-2.5 py-1 rounded-md transition-colors flex items-center gap-1 text-[11px] font-medium cursor-pointer ${
+                          previewDevice === 'desktop' ? 'bg-background text-foreground shadow-xs' : 'text-muted-foreground'
                         }`}
                       >
                         <Monitor className="w-3.5 h-3.5" />
@@ -762,8 +762,8 @@ const EmailTemplateManager = ({
                       <button
                         type="button"
                         onClick={() => setPreviewDevice('mobile')}
-                        className={`px-2.5 py-1 rounded-md transition-colors flex items-center gap-1 text-[11px] font-medium ${
-                          previewDevice === 'mobile' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground'
+                        className={`px-2.5 py-1 rounded-md transition-colors flex items-center gap-1 text-[11px] font-medium cursor-pointer ${
+                          previewDevice === 'mobile' ? 'bg-background text-foreground shadow-xs' : 'text-muted-foreground'
                         }`}
                       >
                         <Smartphone className="w-3.5 h-3.5" />
@@ -773,7 +773,7 @@ const EmailTemplateManager = ({
                   </div>
 
                   {/* HTML Email Render Viewport */}
-                  <div className="flex justify-center bg-slate-900/10 dark:bg-black/50 p-4 rounded-2xl border border-border/50 min-h-[420px] overflow-auto">
+                  <div className="flex justify-center bg-slate-900/10 dark:bg-black/50 p-4 rounded-xl border border-border/50 min-h-[420px] overflow-auto">
                     <div 
                       className="transition-all duration-300 bg-white rounded-xl shadow-xl overflow-hidden border border-slate-200"
                       style={{ width: previewDevice === 'mobile' ? '375px' : '620px' }}
@@ -791,7 +791,7 @@ const EmailTemplateManager = ({
               {/* TAB 4: Test Send */}
               {activeTab === 'test' && (
                 <div className="space-y-4 text-xs max-w-md mx-auto py-4">
-                  <div className="p-4 rounded-2xl neu-pressed text-center space-y-2 bg-blue-500/5 border border-blue-500/20">
+                  <div className="p-4 rounded-xl bg-blue-500/5 border border-blue-500/20 text-center space-y-2">
                     <Send className="w-8 h-8 text-blue-600 mx-auto" />
                     <h4 className="font-bold text-sm text-foreground">ทดสอบส่งอีเมลแม่แบบนี้ (Send Test Email)</h4>
                     <p className="text-xs text-muted-foreground">
@@ -808,7 +808,7 @@ const EmailTemplateManager = ({
                         placeholder="your-email@company.com"
                         value={testRecipient}
                         onChange={(e) => setTestRecipient(e.target.value)}
-                        className="mt-1 neu-pressed bg-transparent text-sm"
+                        className="mt-1 h-9 text-xs rounded-lg bg-background border border-input"
                       />
                     </div>
 
@@ -816,7 +816,7 @@ const EmailTemplateManager = ({
                       type="button"
                       disabled={sendingTest || !testRecipient}
                       onClick={handleSendTestEmail}
-                      className="w-full neu-primary font-semibold text-xs flex items-center justify-center gap-2 py-2.5"
+                      className="w-full h-9 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-xs"
                     >
                       <Send className="w-4 h-4" />
                       {sendingTest ? 'กำลังส่งอีเมลทดสอบ...' : 'ส่งอีเมลทดสอบทันที'}
@@ -834,7 +834,7 @@ const EmailTemplateManager = ({
                   <Button
                     type="button"
                     onClick={handleSaveAll}
-                    className="neu-primary flex items-center gap-2 text-xs font-bold"
+                    className="h-9 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground flex items-center gap-2 text-xs font-semibold cursor-pointer shadow-xs"
                   >
                     <Save className="w-4 h-4" />
                     บันทึกการตั้งค่าและแม่แบบอีเมล

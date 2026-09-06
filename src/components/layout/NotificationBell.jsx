@@ -12,8 +12,8 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import toast from 'react-hot-toast';
 
-const controlClassName = 'h-11 w-11 shrink-0 rounded-xl border border-[var(--glass-input-border)] bg-[var(--glass-input-bg)] text-[var(--glass-text)] shadow-sm transition-all duration-200 hover:bg-[var(--glass-hover)] hover:text-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 dark:shadow-none';
-const menuContentClassName = 'z-50 w-[min(26rem,calc(100vw-1.5rem))] overflow-hidden rounded-2xl border border-[var(--glass-card-border)] bg-[var(--glass-card-bg)] p-2 text-popover-foreground shadow-2xl backdrop-blur-2xl outline-none data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0';
+const controlClassName = 'h-9 w-9 shrink-0 rounded-lg border border-input bg-background text-foreground shadow-xs transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 cursor-pointer';
+const menuContentClassName = 'z-50 w-[min(26rem,calc(100vw-1.5rem))] overflow-hidden rounded-xl border border-border bg-popover p-2 text-popover-foreground shadow-xl outline-none data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0';
 
 const formatRelativeTime = (timestamp) => {
   if (!timestamp) return '';
@@ -324,7 +324,7 @@ const NotificationBell = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => void reload()}
-                  className="h-8 text-xs neu-button"
+                  className="h-8 text-xs"
                 >
                   <RefreshCw className="mr-1.5 h-3.5 w-3.5" /> ลองใหม่อีกครั้ง
                 </Button>
@@ -421,7 +421,7 @@ const NotificationBell = () => {
                               size="sm"
                               disabled={isApproving}
                               onClick={(e) => handleQuickApprove(e, notification)}
-                              className="h-7 px-2.5 text-[11px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg flex items-center gap-1 shadow-sm transition-transform active:scale-95"
+                              className="h-7 px-2.5 text-[11px] font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg flex items-center gap-1 shadow-xs"
                             >
                               {isApproving ? (
                                 <RefreshCw className="w-3 h-3 animate-spin" />
@@ -439,7 +439,7 @@ const NotificationBell = () => {
                                 e.stopPropagation();
                                 handleNotificationClick(notification);
                               }}
-                              className="h-7 px-2 text-[11px] font-medium rounded-lg text-muted-foreground hover:text-foreground neu-button"
+                              className="h-7 px-2 text-[11px] font-medium rounded-lg text-muted-foreground hover:text-foreground"
                             >
                               ดูบิล
                             </Button>
@@ -455,7 +455,7 @@ const NotificationBell = () => {
                               e.stopPropagation();
                               handleNotificationClick(notification);
                             }}
-                            className="h-7 px-2.5 text-[11px] font-semibold bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg flex items-center gap-1"
+                            className="h-7 px-2.5 text-[11px] font-semibold bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg flex items-center gap-1 shadow-xs"
                           >
                             <span>ดูใบเบิกของ</span>
                             <ArrowRight className="w-3 h-3" />
@@ -471,7 +471,7 @@ const NotificationBell = () => {
                               e.stopPropagation();
                               handleNotificationClick(notification);
                             }}
-                            className="h-7 px-2.5 text-[11px] font-semibold bg-rose-600 hover:bg-rose-700 text-white rounded-lg flex items-center gap-1"
+                            className="h-7 px-2.5 text-[11px] font-semibold bg-rose-600 hover:bg-rose-700 text-white rounded-lg flex items-center gap-1 shadow-xs"
                           >
                             <RotateCcw className="w-3 h-3" />
                             <span>รับคืนพัสดุ</span>
@@ -488,7 +488,7 @@ const NotificationBell = () => {
                               e.stopPropagation();
                               handleNotificationClick(notification);
                             }}
-                            className="h-7 px-2.5 text-[11px] font-medium neu-button flex items-center gap-1"
+                            className="h-7 px-2.5 text-[11px] font-medium flex items-center gap-1"
                           >
                             <Package className="w-3 h-3 text-orange-500" />
                             <span>ตรวจสต็อก</span>

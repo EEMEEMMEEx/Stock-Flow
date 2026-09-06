@@ -127,11 +127,11 @@ const CheckoutDetailModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[700px] rounded-3xl glass p-6 border border-border/80 shadow-2xl">
+      <DialogContent className="sm:max-w-[700px] rounded-xl bg-card p-6 border border-border shadow-xl">
         <DialogHeader className="space-y-2 border-b border-border/40 pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 shrink-0">
+              <div className="p-2 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 shrink-0">
                 <FileText className="w-5 h-5" />
               </div>
               <div>
@@ -169,7 +169,7 @@ const CheckoutDetailModal = ({
 
         <div className="space-y-4 max-h-[440px] overflow-y-auto pr-1">
           {/* Info Card */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 rounded-2xl bg-muted/30 border border-border/60 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 rounded-xl bg-muted/30 border border-border text-xs">
             <div className="space-y-1.5">
               <div className="flex items-center gap-2">
                 <User className="w-3.5 h-3.5 text-muted-foreground" />
@@ -209,7 +209,7 @@ const CheckoutDetailModal = ({
               <span>รายการอุปกรณ์ที่ยืม ({checkoutItems.length} รายการ)</span>
             </h4>
 
-            <div className="rounded-2xl border border-border/70 overflow-hidden divide-y divide-border/40">
+            <div className="rounded-lg border border-border overflow-hidden divide-y divide-border/40">
               <div className="bg-muted/50 p-2.5 grid grid-cols-12 text-[11px] font-bold text-muted-foreground">
                 <div className="col-span-6">รายการอุปกรณ์</div>
                 <div className="col-span-2 text-center">ยืมไป</div>
@@ -333,7 +333,7 @@ const CheckoutDetailModal = ({
               size="sm"
               disabled={generatingPdf}
               onClick={handleDownloadCheckoutPDF}
-              className="rounded-xl h-9 text-xs gap-1.5 font-bold shadow-2xs cursor-pointer"
+              className="rounded-lg h-9 text-xs gap-1.5 font-semibold shadow-2xs cursor-pointer"
             >
               <Download className="w-3.5 h-3.5" />
               <span>พิมพ์ใบยืมพัสดุ (PDF)</span>
@@ -346,7 +346,7 @@ const CheckoutDetailModal = ({
                 size="sm"
                 disabled={generatingPdf}
                 onClick={handleDownloadReturnPDF}
-                className="rounded-xl h-9 text-xs gap-1.5 font-bold text-emerald-700 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 shadow-2xs cursor-pointer"
+                className="rounded-lg h-9 text-xs gap-1.5 font-semibold text-emerald-700 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 shadow-2xs cursor-pointer"
               >
                 <Download className="w-3.5 h-3.5" />
                 <span>พิมพ์ใบรับคืน (PDF)</span>
@@ -364,7 +364,7 @@ const CheckoutDetailModal = ({
                   onClose();
                   onOpenExtendModal(order);
                 }}
-                className="rounded-xl h-9 border-amber-500/30 text-amber-700 dark:text-amber-400 hover:bg-amber-500/10 text-xs gap-1.5 font-bold shadow-2xs cursor-pointer"
+                className="rounded-lg h-9 border-amber-500/30 text-amber-700 dark:text-amber-400 hover:bg-amber-500/10 text-xs gap-1.5 font-semibold shadow-2xs cursor-pointer"
               >
                 <CalendarClock className="w-3.5 h-3.5" />
                 <span>ขยายเวลาส่งคืน</span>
@@ -379,7 +379,7 @@ const CheckoutDetailModal = ({
                   onClose();
                   onOpenReturnModal(order);
                 }}
-                className="rounded-xl h-9 bg-emerald-600 hover:bg-emerald-700 text-white text-xs gap-1.5 font-bold shadow-sm cursor-pointer"
+                className="rounded-lg h-9 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs gap-1.5 font-semibold shadow-xs cursor-pointer"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>รับคืนพัสดุ</span>
@@ -391,7 +391,7 @@ const CheckoutDetailModal = ({
               variant="ghost"
               size="sm"
               onClick={onClose}
-              className="rounded-xl h-9 text-xs font-semibold"
+              className="rounded-lg h-9 text-xs font-semibold"
             >
               ปิดหน้าต่าง
             </Button>
