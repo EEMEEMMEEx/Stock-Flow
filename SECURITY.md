@@ -84,6 +84,7 @@ We ask all security researchers and contributors to follow responsible disclosur
 ## Scope & Out-of-Scope Issues
 
 ### In Scope
+
 * Authentication bypass and privilege escalation (e.g., unauthorized Role-Based Access Control elevation).
 * Database security, Row Level Security (RLS) bypasses, or SQL/RPC injection.
 * Insecure Direct Object References (IDOR) affecting inventory, projects, or user accounts.
@@ -92,6 +93,7 @@ We ask all security researchers and contributors to follow responsible disclosur
 * Concurrency flaws or race conditions in atomic inventory deduction.
 
 ### Out of Scope
+
 * Volumetric Distributed Denial of Service (DDoS) attacks.
 * Spam, phishing, or social engineering targeting team members or users.
 * Automated vulnerability scanner outputs without a verified, reproducible proof-of-concept.

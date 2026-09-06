@@ -1,6 +1,7 @@
 # Changelog
 
 ## [v1.4.62] [2026-09-06] แก้ไขข้อผิดพลาด GitHub Actions Deployment และเปิดใช้งาน GitHub Pages ผ่าน Workflow
+
 - **Modified files:**
   - `.github/workflows/deploy-gh-pages.yml`:
     - อัปเกรด Node.js runtime ใน GitHub Actions จาก `node-version: 20` เป็น `node-version: 22` (Active LTS) ปลดคำเตือน Deprecation ออกทั้งหมด
@@ -17,11 +18,12 @@
   - ทดสอบ `npm run test:email` — ผ่าน 5/5 tests
 
 ## [v1.4.61] [2026-09-06] แก้ไขข้อผิดพลาด GitHub Secret Scanning (Leaked Google API Key) และขจัด Hardcoded Secrets ทั่วทั้งโปรเจกต์
+
 - **Modified files:**
   - `src/lib/supabase.js`: ปลด Hardcoded Fallback URL และ Anon JWT Token ออกทั้งหมด กำหนดให้รับค่าผ่าน `import.meta.env.VITE_SUPABASE_URL` และ `import.meta.env.VITE_SUPABASE_ANON_KEY` เท่านั้น พร้อมระบบแจ้งเตือนกรณีขาดคอนฟิก
   - `src/lib/firebase.js`: [NEW] สร้างโครงสร้าง Firebase Client Configuration แบบ Secure Environment-based ปราศจาก Hardcoded API Keys/Secrets ทุกกรณี รองรับการฉีดผ่าน `import.meta.env.VITE_FIREBASE_*`
   - `.env.example`: เพิ่มแม่แบบตัวแปรแวดล้อมสำหรับ Firebase Configuration (`VITE_FIREBASE_*`)
-  - `.gitignore`: เพิ่มกฎป้องกันการ Commit ไฟล์ความลับและใบรับรอง (*.pem, *.key, *.cert, *.crt, *.pfx, *.p12, service-account*.json, firebase*.json, google-services*.json, *.credentials.json)
+  - `.gitignore`: เพิ่มกฎป้องกันการ Commit ไฟล์ความลับและใบรับรอง (`*.pem`, `*.key`, `*.cert`, `*.crt`, `*.pfx`, `*.p12`, `service-account*.json`, `firebase*.json`, `google-services*.json`, `*.credentials.json`)
   - `docs/secret-scanning-investigation-report.md`: [NEW] รายงานการสืบสวนสาเหตุการรั่วไหลของ Google API Key ใน Git History พร้อมคำแนะนำการ Revoke บน GCP และการปิด Alert
   - `package.json`: ปรับเวอร์ชันระบบเป็น `1.4.61`
   - `README.md`: ปรับปรุง Version Badge เป็น `v1.4.61`
@@ -32,6 +34,7 @@
   - รัน `npm run test:email` ผ่าน 5/5 tests
 
 ## [v1.4.60] [2026-09-06] แก้ไขช่องโหว่ความปลอดภัย Dependabot (47 Alerts Remediation) และกำจัด Unused Dependencies
+
 - **Modified files:**
   - `package.json`:
     - ถอดแพ็กเกจที่ไม่ได้ใช้งานจริงและเป็นสาเหตุหลักของช่องโหว่ความปลอดภัยระดับ Critical/High ออกทั้งหมด: `jspdf`, `jspdf-autotable` (แก้ 12 jspdf alerts + 16 transitive dompurify alerts), `express`, `cors`, `multer` (แก้ 2 transitive qs alerts)
@@ -49,6 +52,7 @@
   - ช่องโหว่ความปลอดภัยระดับ Critical และ High ใน Direct Dependencies ถูกแก้ไขทั้งหมด
 
 ## [v1.4.59] [2026-09-06] สร้างและกำหนดค่า .github/dependabot.yml สำหรับจัดการอัปเดต Dependencies อัตโนมัติ
+
 - **Modified files:**
   - `.github/dependabot.yml`: [NEW] สร้างไฟล์กำหนดค่า GitHub Dependabot Version Updates ตรวจสอบและสร้าง Pull Requests สำหรับการอัปเดตความปลอดภัยและการบำรุงรักษาของ dependencies ในระบบรายสัปดาห์ (weekly) โดยระบุ package-ecosystem เป็น `npm` (ไดเรกทอรี `/` อิงจาก `package.json` และ `package-lock.json`) จำกัด open pull requests ไม่เกิน 10 รายการ พร้อมเพิ่มการดูแล `github-actions` workflows จำกัด PR ไม่เกิน 5 รายการ เพื่อลดสัญญาณรบกวน (PR noise)
   - `docs/dependabot-configuration-implementation-plan.md`: [NEW] จัดทำแผนการดำเนินงานสำหรับการกำหนดค่า Dependabot
@@ -61,6 +65,7 @@
   - ตรวจสอบการเชื่อมโยงเวอร์ชัน `APP_CONFIG.version` และ `package.json` เป็น `1.4.59`
 
 ## [v1.4.58] [2026-09-04] จัดทำเอกสารนโยบายความปลอดภัย SECURITY.md และอัปเดตสถานะเวอร์ชันระบบ
+
 - **Modified files:**
   - `SECURITY.md`: [NEW] สร้างเอกสารนโยบายความปลอดภัยของโปรเจกต์ Stock-Flow ตามมาตรฐาน GitHub Security Policy ครอบคลุมตาราง Supported Versions อิงข้อมูลเวอร์ชันจริงของระบบ (`1.4.x` Supported, เวอร์ชันต่ำกว่า `1.4.0` เป็น End of Life), แนวทางการรายงานช่องโหว่ผ่าน GitHub Private Vulnerability Reporting อย่างปลอดภัย, รูปแบบข้อมูลที่จำเป็นต้องระบุ, ระยะเวลาและขั้นตอนการตอบรับ/แก้ไข (SLA), ข้อกำหนด Responsible / Coordinated Disclosure และขอบเขต In Scope / Out of Scope โดยไม่มีการเปิดเผยข้อมูล Credentials หรือ Secrets ใดๆ
   - `docs/security-policy-implementation-plan.md`: [NEW] จัดทำแผนการดำเนินงานสำหรับการกำหนดค่า Security Policy
@@ -71,6 +76,7 @@
   - ตรวจสอบการเชื่อมโยงเวอร์ชัน `APP_CONFIG.version` และ `package.json` เป็น `1.4.58`
 
 ## [v1.4.57] [2026-09-04] แก้ไขข้อผิดพลาด Stock-In (lot_number schema mismatch, process_stock_in RPC และ content.js error)
+
 - **Modified files:**
   - `src/pages/StockIn.jsx`: ปรับปรุงฟังก์ชัน `executeStockInSubmission` ให้แมปฟิลด์รับเข้าตรงตาม Database Schema จริง พร้อมเพิ่มระบบ Direct Database Transaction Fallback รองรับกรณี RPC ฝั่งคลาวด์ยังไม่ได้รันไมเกรชันใหม่ เพื่อให้ผู้ใช้สามารถบันทึกรับเข้าพัสดุได้สำเร็จทันที 100% ไม่เกิดข้อผิดพลาด HTTP 400
   - `supabase/migrations/64_fix_process_stock_in_schema_alignment.sql`: [NEW] สร้างไมเกรชัน 64 ปรับปรุงฟังก์ชัน `process_stock_in` ให้สอดคล้องกับคอลัมน์จริงของตาราง `stock_in_items` (`delivery_to`, `serial_number`, `part_number`, `model`, `item_type`, `parent_id`, `parent_sku`, `seq_no`, `notes`), ถอดคอลัมน์ที่ไม่มีอยู่จริง (`lot_number`, `items.current_stock`, `items.part_number`, `stock_transactions.unit_price`) ออกทั้งหมด และแก้ไขการตรวจสอบสิทธิ์ให้ใช้ `stock_in.create` และ `is_super_admin`
@@ -85,24 +91,28 @@
   - รัน `npm run build` ผ่าน 100% ปราศจากข้อผิดพลาด
 
 ## [v1.4.56] [2026-09-02] อัปเดต .gitignore ข้ามการติดตามไฟล์ .pdf และ .xlsx ทั้งหมดทั่วทั้งโปรเจกต์
+
 - **Modified files:**
   - `.gitignore`: เปลี่ยนกฎจาก `/*.xlsx` และ `/*.pdf` เป็น `*.xlsx` และ `*.pdf` เพื่อละเว้นไฟล์เอกสารและรายงานตารางการทำงานในทุกโฟลเดอร์ของโปรเจกต์
   - `package.json`: อัปเดตเวอร์ชันเป็น `1.4.56`
 - **Verification:** `git status` ยืนยันว่าไฟล์ `.pdf` และ `.xlsx` ถูกข้ามการติดตามแล้ว และ `npm run build` ผ่านเรียบร้อย
 
 ## [v1.4.55] [2026-09-02] กำหนดให้ .gitignore ยกเลิกและข้ามการติดตามโฟลเดอร์ supabase/ ทั้งหมด
+
 - **Modified files:**
   - `.gitignore`: อัปเดตการละเว้นโฟลเดอร์ `supabase/` ทั้งหมดและไฟล์ย่อยภายใน เพื่อป้องกันไม่ให้โครงสร้างฐานข้อมูลและไฟล์คอนฟิกหลุดไปยัง Public Repository
   - `package.json`: อัปเดตเวอร์ชันเป็น `1.4.55`
 - **Verification:** `git status` ยืนยันว่าโฟลเดอร์ `supabase/` ถูก untrack และ ignore แล้ว และ `npm run build` ผ่านเรียบร้อย
 
 ## [v1.4.54] [2026-09-02] กำหนดให้ .gitignore ข้ามการติดตามไฟล์ memory.md และ CONTEXT.md
+
 - **Modified files:**
   - `.gitignore`: เพิ่มกฎข้ามการติดตามไฟล์ `memory.md` และ `CONTEXT.md` เพื่อป้องกันไม่ให้ข้อมูลบริบทและโน้ตภายในหลุดไปยัง Public Repository
   - `package.json`: อัปเดตเวอร์ชันเป็น `1.4.54`
 - **Verification:** `git status` ยืนยันว่าไฟล์ทั้งสองถูกละเว้นเรียบร้อยแล้ว และ `npm run build` ผ่านเรียบร้อย
 
 ## [v1.4.53] [2026-09-02] ซิงค์ Single Source of Truth สำหรับเวอร์ชันระบบ (APP_CONFIG.version) จาก package.json
+
 - **Modified files:**
   - `src/config/appConfig.js`: ปรับปรุงการกำหนดค่า `APP_CONFIG.version` ให้อ่านจาก `package.json` โดยตรง เพื่อให้การแสดงผลเวอร์ชันในทุกส่วนของแอปพลิเคชัน (Sidebar, Footer, Settings, LandingNavbar) เป็นแหล่งข้อมูลเดียวกันโดยตรง (Single Source of Truth)
   - `README.md`: อัปเดต Version Badge เป็น `v1.4.53`
@@ -110,6 +120,7 @@
 - **Verification:** `npm run build` ผ่านเรียบร้อย
 
 ## [v1.4.52] [2026-09-02] เปลี่ยนการอ้างอิง URL หน้า GitHub Pages จาก bearnannan.github.io/Stock-Flow เป็น eemeemmeex.github.io/Stock-Flow
+
 - **Modified files:**
   - `src/lib/emailService.js`: เปลี่ยน default `actionUrl` สำหรับการส่งอีเมลเชิญผู้ใช้จาก `bearnannan` เป็น `eemeemmeex.github.io/Stock-Flow`
   - `src/lib/emailRenderer.js`: อัปเดต fallback `actionUrl` ในการเรนเดอร์อีเมลเชิญผู้ใช้เป็น `eemeemmeex.github.io/Stock-Flow`
@@ -118,16 +129,19 @@
 - **Verification:** `npm run test:email` และ `npm run build` ผ่านเรียบร้อย
 
 ## [2026-09-02]
+
 - **Files Modified:** `package.json`
 - **Changes:** ปรับ version ของแอปเป็น `1.4.51` ตามขั้นตอน commit ของ repository
 - **Verification:** `git diff --check` ไม่พบข้อผิดพลาด
 
-## [2026-09-02]
+## [2026-09-02] - URL Configuration Update
+
 - **Files Modified:** `src/components/settings/EmailTemplateManager.jsx`, `src/lib/emailRenderer.js`, `src/lib/emailRenderer.test.js`, `src/lib/notificationDispatcher.js`
 - **Changes:** เปลี่ยน default public URL และ CTA URL ของ notification email จาก `stockflow.app` เป็น `stockflowth.online` พร้อมปรับ test ที่เกี่ยวข้อง
 - **Verification:** `npm.cmd run test:email` ผ่านครบ 5 tests และ `git diff --check` ไม่พบข้อผิดพลาด
 
 ## [v1.4.51] [2026-09-02] เปลี่ยนการอ้างอิง URL ทั้งหมดจาก stockflow.app เป็น stockflowth.online
+
 - **Modified files:**
   - `src/lib/notificationDispatcher.js`: เปลี่ยนการสร้าง `action_url` พื้นฐานจาก `stockflow.app` เป็น `stockflowth.online`
   - `src/lib/emailRenderer.js`: เปลี่ยน `action_url` ตัวอย่างและ fallback URL ในระบบเรนเดอร์อีเมลเป็น `stockflowth.online`
@@ -137,6 +151,7 @@
 - **Verification:** `npm run test:email` และ `npm run build` ผ่านเรียบร้อย
 
 ## [v1.4.50] [2026-09-02] ปรับเปลี่ยนเป้าหมายปลายทางปุ่มเชื่อมโยงใน Landing Page เป็น stockflowth.online
+
 - **Modified files:**
   - `src/landing/components/HeroSection.jsx`: อัปเดตลิงก์ปุ่ม "เปิดใช้งาน Stock-Flow App" (`launchCta`) และปุ่มการทำงานต่าง ๆ ให้ชี้ไปยัง `https://stockflowth.online` แทนเส้นทาง `/login` เดิม โดยคงรูปแบบ ดีไซน์ ออนิเมชัน และเลย์เอาต์ไว้เหมือนเดิม 100%
   - `src/landing/components/LandingNavbar.jsx`: อัปเดตลิงก์ปุ่ม "Launch App" ทั้งเดสก์ท็อปและโมบายล์ไปยัง `https://stockflowth.online`
@@ -147,12 +162,14 @@
 - **Verification:** `npm run build` ผ่านเรียบร้อย
 
 ## [v1.4.49] [2026-09-02] รองรับการจัดลำดับรายการอุปกรณ์และ Spare Equipment ด้วย Drag-and-Drop พร้อมบันทึกลำดับลงฐานข้อมูล
+
 - **Modified files:**
   - `src/components/dashboard/SiteKitAvailabilityCards.jsx`: เพิ่มฟังก์ชัน Drag-and-Drop Reordering ในโหมดแก้ไข ทั้งในแท็บ Complete Set (BOM Items) และแท็บ Spare Equipment แยกจากกันอย่างอิสระ พร้อม Drag Handle (`GripVertical`), visual indicator ขณะลาก, และบันทึก `po_seq` ลำดับใหม่ลงฐานข้อมูล Supabase อย่างถูกต้อง ทำให้ลำดับคงอยู่ถาวรเมื่อเปิดกลับมาดูใหม่
   - `package.json`: อัปเดตเวอร์ชันเป็น `1.4.49`
 - **Verification:** `npm run build` ผ่านเรียบร้อย
 
 ## [2026-09-02 22:46] เพิ่มไฟล์บริบทโครงการและไฟล์สำรอง Supabase
+
 - **Modified files:**
   - `memory.md`: เพิ่มไฟล์บันทึกบริบทและสถานะการดำเนินงานล่าสุดของโครงการ
   - `supabase/dump.sql`: เพิ่มไฟล์สำรองโครงสร้างฐานข้อมูล Supabase
@@ -161,18 +178,21 @@
 - **Verification:** ตรวจสอบสถานะไฟล์และ `git diff --check` ก่อน commit
 
 ## [v1.4.48] [2026-09-02] ลบปุ่ม Add ที่ซ้ำซ้อนในแบนเนอร์ข้อมูล คงเหลือเฉพาะแถว Action ด้านล่างของตาราง
+
 - **Modified files:**
   - `src/components/dashboard/SiteKitAvailabilityCards.jsx`: ลบปุ่ม `เพิ่มรายการ Complete Set` และ `เพิ่ม Spare Equipment` ที่อยู่ในกล่องข้อความข้อมูลด้านบนออกอย่างสมบูรณ์ เพื่อลดความซ้ำซ้อน โดยคงเหลือเฉพาะแถวปุ่ม Action ด้านล่างของตาราง (`+ เพิ่มรายการอุปกรณ์ใน Complete Set` พร้อมแสดงจำนวนรายการ และ `+ เพิ่มรายการ Spare Equipment` พร้อมแสดงจำนวนรายการ)
   - `package.json`: อัปเดตเวอร์ชันเป็น `1.4.48`
 - **Verification:** `npm run build` ผ่านเรียบร้อย
 
 ## [v1.4.47] [2026-09-02] ลบแถบ Action Bar ซ้ำซ้อนในแท็บ Spare Equipment คงไว้เฉพาะปุ่มหลักใน Header
+
 - **Modified files:**
   - `src/components/dashboard/SiteKitAvailabilityCards.jsx`: ลบแถบ Action Bar "รายการอุปกรณ์สำรอง (แยกจากชุดติดตั้ง Complete Set)" และปุ่ม duplicate ภายในแท็บ Spare Equipment ออก เพื่อ UI ที่สะอาดเรียบร้อย โดยใช้ปุ่ม `Edit Spare Equipment` หลักใน Header Modal เพียงจุดเดียวในการเข้าสู่โหมดแก้ไข ทั้งการแก้ไขรายการเดิมและการเพิ่มรายการใหม่
   - `package.json`: อัปเดตเวอร์ชันเป็น `1.4.47`
 - **Verification:** `npm run build` ผ่านเรียบร้อย
 
 ## [v1.4.46] [2026-09-02] แยกรายการ Complete Set และ Spare Equipment ให้ Mutual Exclusive ไม่ซ้ำซ้อนกัน
+
 - **Modified files:**
   - `src/components/dashboard/SiteKitAvailabilityCards.jsx`: บังคับใช้กฎ Mutual Exclusion อย่างเคร่งครัด หากเพิ่มหรือเลือกรายการเข้า "Spare Equipment" จะตัดหรือกรองออกจาก "Complete Set" โดยอัตโนมัติ และไม่มีรายการอุปกรณ์ชิ้นเดียวกันปรากฏทั้งสองแท็บพร้อมกัน ทั้งในมุมมอง Read-only, โหมดแก้ไข (Edit Mode), และตอนบันทึกลงฐานข้อมูล
   - `src/lib/siteKits.js`: ปรับปรุงฟังก์ชัน `fetchSiteKitsAvailability` และ `saveCategoryBom` ให้แยกการจัดเก็บและคำนวณ Complete Sets โดยไม่นำ Spare Equipment มาเป็นตัวจำกัดคอขวด
@@ -180,6 +200,7 @@
 - **Verification:** `npm run build` ผ่านเรียบร้อย
 
 ## [v1.4.45] [2026-09-02] รองรับการแก้ไข เพิ่ม และลบรายการในแท็บ Spare Equipment อย่างสมบูรณ์
+
 - **Modified files:**
   - `src/components/dashboard/SiteKitAvailabilityCards.jsx`: รองรับการแก้ไข เพิ่มรายการใหม่ เลือกลิงก์กับ Master Catalog และลบรายการในแท็บ Spare Equipment พร้อมแสดงยอดสต็อกและ Spare คงเหลือแบบเรียลไทม์ระหว่างแก้ไข และบันทึกข้อมูลลงฐานข้อมูลโดยคงการทำงานของ Complete Set ไว้อย่างถูกต้อง
   - `package.json`: อัปเดตเวอร์ชันเป็น `1.4.45`
@@ -187,6 +208,7 @@
 - **Verification:** `npm run build` ผ่านเรียบร้อย
 
 ## [v1.4.44] [2026-09-02] เพิ่มปุ่ม Edit BOM Specification และปรับปรุงการซิงค์ข้อมูล Spare Equipment
+
 - **Modified files:**
   - `src/components/dashboard/SiteKitAvailabilityCards.jsx`: เพิ่มปุ่ม `Edit BOM Specification` พร้อมไอคอน `PenLine` ใน Header Modal และ Empty State ของแท็บ Spare Equipment พร้อมปรับปรุงการคำนวณ optimistic state และ sync ให้สะท้อนข้อมูลอุปกรณ์และ Spare Equipment ทันทีหลังบันทึก
   - `package.json`: อัปเดตเวอร์ชันเป็น `1.4.44`
@@ -194,22 +216,26 @@
 - **Verification:** `npx eslint src/components/dashboard/SiteKitAvailabilityCards.jsx` และ `npm run build` ผ่านเรียบร้อย
 
 ## [v1.4.43] [2026-09-02] ลบปุ่ม เพิ่ม Spare Equipment ออกจากแท็บ Spare Equipment
+
 - **Modified files:**
   - `src/components/dashboard/SiteKitAvailabilityCards.jsx`: ลบปุ่มและแบนเนอร์ `เพิ่ม Spare Equipment` ออกจากแท็บ Spare Equipment เพื่อความเรียบร้อยและป้องกันความสับสน
   - `package.json`: อัปเดตเวอร์ชันเป็น `1.4.43`
 - **Verification:** `npx eslint src/components/dashboard/SiteKitAvailabilityCards.jsx` และ `npm run build` ผ่านเรียบร้อย
 
 ## [v1.4.42] [2026-09-01] ลบปุ่ม Edit Spare Equipment ที่ยังไม่พร้อมใช้งาน
+
 - **Modified files:**
   - `src/components/dashboard/SiteKitAvailabilityCards.jsx`: ลบปุ่มและไอคอน `PenLine` ออกจากแท็บ Spare Equipment โดยคงฟังก์ชัน ตารางข้อมูล การคำนวณ และสิทธิ์เดิมไว้
 - **Verification:** `npx eslint src/components/dashboard/SiteKitAvailabilityCards.jsx`, `npm run build` และ `git diff --check` ผ่านเรียบร้อย
 
 ## [v1.4.41] [2026-09-01] เพิ่มปุ่ม Edit Spare Equipment ในแท็บ Spare Equipment
+
 - **Modified files:**
   - `src/components/dashboard/SiteKitAvailabilityCards.jsx`: เพิ่มปุ่ม `Edit Spare Equipment` พร้อมไอคอน `PenLine` สำหรับผู้ใช้ที่มีสิทธิ์แก้ไข BOM โดยเรียกใช้ BOM editor flow เดิมและไม่เปลี่ยนพฤติกรรมของแท็บ Complete Set
 - **Verification:** `npx eslint src/components/dashboard/SiteKitAvailabilityCards.jsx` และ `npm run build` ผ่านเรียบร้อย
 
 ## [v1.4.40] [2026-09-01] แก้ไขการบันทึก Site Kit BOM ที่ถูกปฏิเสธจาก RLS
+
 - **Modified files:**
   - `supabase/migrations/63_fix_site_bom_rbac.sql`: ปรับ RLS และ `admin_save_category_bom` ให้ใช้ authorization model เดียวกับระบบ โดยอนุญาตเฉพาะผู้ใช้ที่ active และมีสิทธิ์ผู้ดูแลที่เกี่ยวข้อง พร้อมคง atomic replacement และ `SECURITY DEFINER`
   - `src/lib/siteKits.js`: ใช้ RPC ที่ตรวจสอบสิทธิ์เป็นเส้นทางบันทึกเดียว ตัด direct table fallback ที่ไม่ atomic ออก และให้การ reset BOM ใช้ RPC เดียวกัน
@@ -217,17 +243,20 @@
 - **Verification:** `npx eslint src/lib/siteKits.js`, `npm run build`, `node scripts/validate-rpc-signatures.mjs`, `node scripts/validate-sql-counts.mjs` ผ่าน; การทดสอบฐานข้อมูลจริงยังรอ Docker/local Supabase และสิทธิ์ CLI ที่พร้อมใช้งาน
 
 ## [v1.4.39] [2026-09-01] เพิ่มแท็บ Complete Set และ Spare Equipment ในรายละเอียด BOM
+
 - **Modified files:**
   - `src/components/dashboard/SiteKitAvailabilityCards.jsx`: เพิ่มแท็บสำหรับสลับระหว่างตาราง BOM เดิมและรายการอุปกรณ์สำรองที่คำนวณจากสต็อกจริง จำนวนชุดที่จัดได้ และจำนวนที่ต้องใช้ต่อไซต์
 - **Verification:** `npx eslint src/components/dashboard/SiteKitAvailabilityCards.jsx` และ `npm run build` ผ่านเรียบร้อย
 
 ## [v1.4.39] [2026-09-01 13:37] แก้ไขปัญหา PostgREST PGRST200 ในหน้า Projects โดยดึงข้อมูลและเชื่อมโยง Profile ผู้สร้างอย่างปลอดภัย
+
 - **Modified files:**
   - `src/pages/Projects.jsx`: ปรับปรุง `fetchProjects` ให้ดึงข้อมูลโครงการและเชื่อมโยงข้อมูล `profiles` ของผู้สร้าง (`created_by`) อย่างปลอดภัยโดยไม่พึ่งพา Foreign Key Hint `profiles!created_by` บน PostgREST Schema Cache ป้องกัน HTTP 400 Bad Request
   - `package.json`: ปรับเวอร์ชันเป็น `1.4.39`
 - **Verification:** ทดสอบเรียกใช้งาน Supabase REST API `GET /rest/v1/projects` และตรวจสอบการโหลดข้อมูลโครงการและชื่อผู้สร้างสำเร็จ 100% (200 OK)
 
 ## [v1.4.38] [2026-09-01 13:12] ปรับปรุงระบบ Send Invitation Email ให้ใช้ Shared Master Responsive Shell และภาษาทางการระดับองค์กร (EOP Filter Friendly)
+
 - **Modified files:**
   - `src/lib/emailRenderer.js`: ปรับปรุง `renderUserInvitationEmailHtml` และ `renderUserInvitationEmailText` ให้ใช้โครงสร้าง Master Responsive HTML เดียวกันกับระบบแจ้งเตือนหลัก (100% Shared Shell, 620px Centered Table, Brand Header, Preheader, Action Button) พร้อมปรับภาษาเป็น Clean Onboarding Notice ปราศจากคีย์เวิร์ดล่อแหลมด้านความปลอดภัย
   - `src/lib/emailService.js`: ปรับ Subject Line ของ `sendUserInvitationEmail` เป็น `[AppName] แจ้งเปิดสิทธิ์การใช้งานระบบ AppName — คุณ User` เพื่อป้องกันตัวกรอง Phishing Heuristics บน Microsoft 365 EOP
@@ -236,6 +265,7 @@
 - **Verification:** `npm run test:email` ผ่าน 5/5, Live Dispatch ไปยัง `watchara.m@forth.co.th` สำเร็จ 100% (SMTP 250 2.0.0 OK, Message-ID: `<20cfd9b0-a156-4029-b470-ce9f63d623c0@smtp.gmail.com>`)
 
 ## [v1.4.37] [2026-09-01 06:05] ปรับโครงสร้าง HTML เทมเพลต Invitation เป็น Clean Table ไร้ DOCTYPE Nested Tags ตามมาตรฐาน M365 Deliverability
+
 - **Modified files:**
   - `src/lib/emailRenderer.js`: ปรับโครงสร้าง `renderUserInvitationEmailHtml` ให้ใช้รูปแบบ Root Presentation Table ขนาด 600px พร้อมฟอนต์ `'Sarabun', 'Noto Sans Thai'` และภาษาทางการ Clean Administrative Notification โดยถอด DOCTYPE/HTML wrapper ซ้อน และถอดคำล่อแหลมออก เพื่อให้ผ่านตัวกรอง EOP/Microsoft Defender เข้า Outlook Inbox ของ `@forth.co.th` ได้อย่างสมบูรณ์
   - `src/lib/emailRenderer.test.js`: ปรับปรุง Test Assertion รองรับโครงสร้างใหม่
@@ -243,6 +273,7 @@
 - **Verification:** รัน `npm run test:email` (5/5 PASS) และทดสอบส่งจริงผ่าน `test-invitation-deliverability.mjs` (250 2.0.0 OK)
 
 ## [v1.4.36] [2026-09-01 05:58] ปรับปรุงกลไกการส่ง Invitation Email ให้ใช้มาตรฐานเดียวกันกับ Gmail SMTP Deliverability Diagnostic Test
+
 - **Modified files:**
   - `api/send-email.js`: เพิ่มการส่งกลับค่า `response` (SMTP Server 250 Response), `accepted` (รายชื่อผู้รับที่ยอมรับ), และ `rejected` ใน JSON payload เพื่อการตรวจสอบสถานะการส่งจริง
   - `src/lib/emailService.js`: ปรับรูปแบบ Subject Header ให้ใช้พรีฟิกซ์ `[AppName]` และคั่นด้วยเครื่องหมาย Hyphen มาตรฐาน ป้องกันการติดสแปมหรือปัญหาอักขระพิเศษบน Mail Gateways
@@ -251,6 +282,7 @@
 - **Verification:** ทดสอบส่งไปยัง `watchara.m@forth.co.th` สำเร็จ 100% (SMTP 250 2.0.0 OK, Accepted: `['watchara.m@forth.co.th']`, Rejected: `[]`)
 
 ## [v1.4.35] [2026-09-01 05:00] ยกระดับความปลอดภัยและมาตรฐาน Deliverability สำหรับระบบ Send/Resend Invitation Email (/gmail-smtp)
+
 - **Modified files:**
   - `src/lib/emailService.js`: ถอดรหัสผ่าน Hardcoded `tempPassword` ออก และกำหนด Fallback URL แบบไดนามิกตาม `window.location.origin`
   - `src/pages/UserManagement.jsx`: ปรับปรุงฟังก์ชัน `handleCreateUser` และ `handleResendInvitation` โดยส่งเป็น Clean Administrative Notification โดยไม่แนบ Plaintext Password ตามมาตรฐาน Anti-Phishing (ป้องกัน Microsoft 365 Defender SCL 9 Quarantine) และส่งลิงก์ URL อัตโนมัติตาม Environment ปัจจุบัน
@@ -259,6 +291,7 @@
 - **Verification:** รัน `npm run test:email` (5/5 PASS), ตรวจสอบโครงสร้าง HTML ตาราง Inline CSS 620px รองรับ Gmail/Outlook 100%
 
 ## [v1.4.34] [2026-09-01 04:40] ปรับปรุงชื่อ Parameter ของ RPC Functions ทั้ง 33 รายการให้ตรงกับ Frontend 100%
+
 - **Modified files:**
   - `supabase/migrations/62_align_all_rpc_parameter_signatures.sql`: สร้าง Migration 62 ปรับชื่อพารามิเตอร์ของ RPC ให้ตรงกับที่ Frontend ส่งมาอย่างสมบูรณ์ เช่น `admin_reset_user_password(p_target_id, p_new_password)`, `admin_toggle_user_status(p_target_id, p_status)`, `approve_inventory_request(p_request_id, p_allow_shortage, p_override_reason)`, `reject_inventory_request(p_request_id, p_reject_reason)` แก้ปัญหา PostgREST หา RPC ไม่พบ (HTTP 404 / PGRST202) เมื่อคลิก Reset Password หรือทำรายการเบิกจ่าย
   - `backups/04_all_system_rpcs_and_functions.sql`: ซิงค์ชุดคำสั่ง SQL Master RPC
@@ -268,6 +301,7 @@
 - **Verification:** ตรวจสอบผ่าน `validate-rpc-signatures.mjs` (0 mismatch), `supabase db push --dry-run` (PASS), `validate-sql-counts.mjs` (PASS ทุกไฟล์), `npm run test:email` (5/5 PASS)
 
 ## [v1.4.33] [2026-09-01 04:30] ปรับโครงสร้าง Migration 61 ให้ทำงานแบบ Clean Drop-Cascade ป้องกันข้อผิดพลาด SQLSTATE 42P13
+
 - **Modified files:**
   - `supabase/migrations/61_complete_all_system_rpcs.sql`: ปรับปรุงชุดคำสั่ง Migration 61 โดยแยกตัดฟังก์ชันที่ซ้ำซ้อนกับ Migration 52-60 ออก และใช้ `DROP FUNCTION IF EXISTS ... CASCADE;` ก่อนการสร้างฟังก์ชัน เพื่อแก้ปัญหา `ERROR: cannot remove parameter defaults from existing function (SQLSTATE 42P13)` และ `cannot change return type of existing function` เมื่อรัน `supabase db push`
   - `backups/04_all_system_rpcs_and_functions.sql`: ซิงค์ชุดคำสั่ง SQL Master RPC
@@ -276,6 +310,7 @@
 - **Verification:** ตรวจสอบผ่าน `supabase db push --dry-run` (PASS), `validate-sql-counts.mjs` (PASS ทุกไฟล์), `npm run test:email` (5/5 PASS)
 
 ## [v1.4.32] [2026-09-01 04:15] รวบรวมและสร้างชุด Master Database RPCs & Functions ครบทั้ง 33 รายการ
+
 - **Modified files:**
   - `backups/04_all_system_rpcs_and_functions.sql`: สร้างชุดคำสั่ง SQL Master RPC รวมครบทั้ง 33 ฟังก์ชันของระบบ (Dynamic RBAC, System Settings, Password Vault, Inventory Approvals, Stock Operations, BOM, POS/Checkout, Site Kits) แก้ปัญหาข้อผิดพลาด `404 (Not Found)` และ `PGRST202` บน Supabase PostgREST
   - `supabase/migrations/61_complete_all_system_rpcs.sql`: เพิ่ม migration 61 ให้ Supabase CLI (`supabase db push`) ซิงค์ชุดฟังก์ชันทั้งหมดขึ้น Remote Database ได้โดยอัตโนมัติ
@@ -286,6 +321,7 @@
 - **Verification:** ตรวจสอบครบทั้ง 33 RPC (Missing: 0), รัน `validate-sql-counts.mjs` (PASS ทุกไฟล์), `npm run test:email` (5/5 PASS) และ `npm run build` (PASS)
 
 ## [v1.4.31] [2026-09-01 04:00] อัปเกรดระบบเข้ารหัสรหัสผ่าน auth.users ด้วย extensions.crypt (pgcrypto)
+
 - **Modified files:**
   - `backups/fix_supabase_auth_500.sql`: เพิ่มคำสั่งอัปเดตรหัสผ่านสำหรับทุกบัญชีเป็น `F0rth2026@dtrs` ผ่าน `extensions.crypt('F0rth2026@dtrs', extensions.gen_salt('bf'))` เพื่อแก้ไขปัญหา `AuthApiError: Invalid login credentials` (HTTP 400)
   - `scripts/backup-full-database.mjs`: เปลี่ยนการสร้าง `encrypted_password` จาก placeholder dummy hash เป็น `extensions.crypt('F0rth2026@dtrs', extensions.gen_salt('bf'))`
@@ -295,6 +331,7 @@
 - **Verification:** ตรวจสอบความถูกต้องของคำสั่ง SQL, รัน `npm run test:email` (5/5 PASS) และ `npm run build` (PASS)
 
 ## [v1.4.30] [2026-09-01 03:45] แก้ไขข้อผิดพลาด Column/Value Count Mismatch ในคำสั่ง INSERT auth.identities
+
 - **Modified files:**
   - `backups/backup-2026-09-01T01-37-58-005Z/01_auth_schema_and_users.sql`: แก้ไขคำสั่ง `INSERT INTO auth.identities` ในบรรทัด 130, 139, 148, 157 ที่ระบุ 8 คอลัมน์แต่ใส่ค่าเพียง 7 ค่า (ขาด `created_at` timestamp) ให้ใส่ครบทั้ง 8 ค่าถูกต้องตรงตาม schema ป้องกันข้อผิดพลาด `ERROR: 42601: INSERT has more target columns than expressions`
   - `backups/backup-2026-09-01T01-37-58-005Z/03_supabase_full_disaster_recovery.sql`: ซิงค์ชุดคำสั่ง disaster recovery โดยแก้ไขคำสั่ง `auth.identities` ให้ครบ 8 ค่าในทุกรายการ
@@ -303,6 +340,7 @@
 - **Verification:** รัน `validate-sql-counts.mjs` ยืนยันผ่าน 100% ทุกไฟล์ SQL (0 mismatch), รัน `npm run test:email` (5/5 PASS) และ `npm run build` (PASS)
 
 ## [v1.4.29] [2026-09-01 03:30] แก้ไขปัญหา Generated Column confirmed_at บน Supabase PostgreSQL
+
 - **Modified files:**
   - `backups/fix_supabase_auth_500.sql`: ถอดคอลัมน์ `confirmed_at` ออกจากคำสั่ง `UPDATE auth.users` เนื่องจากในระบบ Supabase PostgreSQL รุ่นใหม่ คอลัมน์ `confirmed_at` เป็น Generated Column (`ERROR: 428C9: column "confirmed_at" can only be updated to DEFAULT`) โดยให้คำนวณผ่านการอัปเดต `email_confirmed_at` แทน
   - `scripts/backup-full-database.mjs`: ถอด `confirmed_at` ออกจากรายการคอลัมน์ `INSERT INTO auth.users` และ `ON CONFLICT DO UPDATE`
@@ -312,6 +350,7 @@
 - **Verification:** ตรวจสอบความถูกต้องของคำสั่ง SQL, รัน `npm run test:email` (5/5 PASS) และ `npm run build` (PASS)
 
 ## [v1.4.28] [2026-09-01 02:20] แก้ไขปัญหา Supabase Auth 500 (GoTrue Scan Token Columns Repair)
+
 - **Modified files:**
   - `backups/fix_supabase_auth_500.sql`: สร้าง SQL script เฉพาะกิจสำหรับรันใน Supabase SQL Editor เพื่อซ่อมแซมคอลัมน์ token ทั้งหมดของ `auth.users` (`confirmation_token`, `recovery_token`, `email_change_token_new`, `email_change_token_current`, `email_change`, `phone_change`, `phone_change_token`, `reauthentication_token`) และ boolean fields (`is_super_admin`, `is_sso_user`, `is_anonymous`) จาก `NULL` ให้เป็น empty string (`''`) และ `FALSE` พร้อมทั้งซิงค์ `auth.identities` ให้สมบูรณ์ แก้ปัญหา GoTrue service HTTP 500 (`Database error querying schema` / `Database error finding users`)
   - `scripts/backup-full-database.mjs`: ปรับปรุงฟังก์ชันสร้างคำสั่ง `INSERT INTO auth.users` ให้ใส่ข้อมูลครบทุกคอลัมน์ที่ GoTrue engine จำเป็นต้องใช้ ป้องกันปัญหา `NULL` scan error เมื่อนำไฟล์ backup ไปกู้คืนในอนาคต
@@ -327,12 +366,14 @@
 - **Verification:** ตรวจสอบความถูกต้องของคำสั่ง SQL และรูปแบบ JSONB Cast ทุกแถว
 
 ## [v1.4.26] [2026-09-01 01:45] ปรับปรุง Database Backup Engine ให้รองรับ Supabase SQL Editor โดยถอด DDL สิทธิ์ auth/extensions ออก
+
 - **Modified files:**
   - `scripts/backup-full-database.mjs`: ถอด `CREATE SCHEMA IF NOT EXISTS auth;`, `CREATE TABLE IF NOT EXISTS auth.users`, `CREATE TABLE IF NOT EXISTS auth.identities` และ `CREATE SCHEMA IF NOT EXISTS extensions` ออกจากการ generate script DDL เพื่อป้องกันปัญหา Permission Denied (`ERROR: 42501`) เมื่อนำ Master SQL ไปรันบน Supabase Cloud SQL Editor
   - `package.json`: ปรับเวอร์ชันเป็น `1.4.26`
 - **Verification:** Unit tests `npm run test:email` ผ่าน 5/5, Database Full Backup ทำงานสำเร็จ
 
 ## [v1.4.25] [2026-09-01 00:35] ปรับปรุง Email Template Manager ใน Webapp พร้อมปุ่ม Reset to Defaults และอัปเดตคำทางการ "ไม่ได้รับการอนุมัติ"
+
 - **Modified files:**
   - `src/components/settings/EmailTemplateManager.jsx`: เพิ่มฟังก์ชัน `handleResetCurrentEvent` และ `handleResetAllEvents` พร้อมปุ่ม "คืนค่าเริ่มต้น" สำหรับแต่ละแม่แบบและปุ่ม "รีเซ็ตทั้งหมด", ปรับปรุง `mergeEventsWithDefaults` เพื่ออัปเกรดคำเดิมที่เป็น Legacy ในฐานข้อมูล (เช่น 'ไม่อนุมัติ', 'เตือนภัย') ให้เปลี่ยนเป็นค่ามาตรฐานปัจจุบันโดยอัตโนมัติ
   - `src/lib/emailRenderer.js`: อัปเดตแม่แบบ `withdrawal_rejected` ให้ใช้คำว่า "ไม่ได้รับการอนุมัติ" ในทุกจุด (Heading, Badge, Preheader, Intro) และปรับการจัดวาง `low_stock_alert` ภายใต้ Shared Renderer
@@ -342,6 +383,7 @@
 - **Verification:** Unit tests `npm run test:email` ผ่าน 5/5, `npx vite build` ผ่านสมบูรณ์
 
 ## [v1.4.24] [2026-08-31 23:42] เพิ่ม Event Dispatcher และปรับปรุง Template สำหรับ Stock In และ Low Stock Alert
+
 - **Modified files:**
   - `src/lib/notificationDispatcher.js`: เพิ่มฟังก์ชัน `dispatchStockInNotification` และ `dispatchLowStockAlertNotification` สำหรับส่งอีเมลแจ้งเตือนการรับเข้าสต็อกและพัสดุคงเหลือต่ำกว่าเกณฑ์อัตโนมัติ พร้อมการดึง Role ผู้รับ (`ADMIN`, `SUPERVISOR`) และการทำ Deduplication Cache
   - `src/pages/StockIn.jsx`: เชื่อมต่อ `dispatchStockInNotification` เข้ากับการบันทึกรับเข้าพัสดุจริง
@@ -350,6 +392,7 @@
 - **Verification:** Unit tests `npm run test:email` ผ่าน 5/5, Live API Test สำหรับ `stock_in_created` และ `low_stock_alert` ผ่าน 100%, `npx vite build` ผ่านสมบูรณ์
 
 ## [v1.4.23] [2026-08-31 23:20] ปรับปรุง Vercel API / Web UI Connectivity Test Template ให้ตรงกับ RFC Diagnostic Format และสอดคล้องกับ Zero-Credential Policy
+
 - **Modified files:**
   - `src/lib/emailRenderer.js`: ปรับปรุง `renderTestEmailHtml` ในโหมด Connectivity Test (ปุ่มทดสอบส่งอีเมลจากหน้าการตั้งค่า) ให้ใช้โครงสร้าง Table การ์ด 2 แถว (`เวลาที่ส่ง`, `สถานะ: จัดส่งสำเร็จ`) ตามมาตรฐานเดียวกับ RFC Deliverability Diagnostic Test โดยไม่มีข้อมูลจำลองคำขอเบิกพัสดุติดไป และถอด plaintext password ออกจากแม่แบบเทียบเชิญผู้ใช้งาน
   - `src/lib/emailService.js`: ปรับปรุง `sendTestEmail` ให้รองรับทั้ง Connectivity Test และ Draft Event Template พร้อม dynamic Subject/Text fallback
@@ -472,7 +515,6 @@
   - **อัปเกรดเวอร์ชันระบบ (System Version Increment):** ปรับเพิ่มเวอร์ชันแอปพลิเคชันจาก `v1.4.17` เป็น `v1.4.18` (PATCH)
 - **Reason:** ให้ระบบจัดการสิทธิ์ RBAC ทำงานอย่างแม่นยำ ปลอดภัย และตรงตามสิทธิ์ที่ตั้งค่าในตารางแคตตาล็อกจริง 100%
 
-
 ## [2026-08-31 00:30] ปรับปรุงสีข้อความป้ายบทบาทในส่วนหัวของระบบ (v1.4.17)
 
 - **Modified / Created files:**
@@ -487,7 +529,6 @@
   - **อัปเกรดเวอร์ชันระบบ (System Version Increment):** ปรับเพิ่มเวอร์ชันแอปพลิเคชันจาก `v1.4.16` เป็น `v1.4.17` (PATCH)
 - **Reason:** เพิ่มความชัดเจนและสวยงามในการแยกแยะบทบาทผู้ใช้งานในเมนูส่วนหัว
 
-
 ## [2026-08-31 00:27] แก้ไขข้อผิดพลาด Sparkles is not defined ใน RoleManagement.jsx (v1.4.16)
 
 - **Modified / Created files:**
@@ -501,7 +542,6 @@
   - **อัปเกรดเวอร์ชันระบบ (System Version Increment):** ปรับเพิ่มเวอร์ชันแอปพลิเคชันจาก `v1.4.15` เป็น `v1.4.16` (PATCH)
 - **Reason:** แก้ไขข้อผิดพลาดการอ้างอิงตัวแปรไอคอนที่ไม่ได้ถูกนำเข้าเพื่อให้หน้าจัดการบทบาททำงานได้ปกติ
 
-
 ## [2026-08-31 00:20] เพิ่ม Super Gradient Theme ในระบบ Badge Presets และ Live Preview (v1.4.15)
 
 - **Modified / Created files:**
@@ -512,7 +552,7 @@
   - `src/config/appConfig.js` [VERSION BUMP v1.4.15]
   - `package.json` [VERSION BUMP v1.4.15]
 - **Details:**
-  - **เพิ่ม ธีมป้ายบทบาท "Super" Gradient:** 
+  - **เพิ่ม ธีมป้ายบทบาท "Super" Gradient:**
     - `badge_background`: `bg-gradient-to-r from-amber-500/15 via-purple-500/15 to-rose-500/15`
     - `badge_text_color`: `text-purple-900 dark:text-purple-200`
   - **เชื่อมโยงธีมสีกิจกรรมไปยังตัวเลือกธีมและ Live Preview:**
@@ -520,7 +560,6 @@
     - แสดง SVG ไอคอน `<Sparkles />` สำหรับธีม Super/Gradient และ `<Shield />` สำหรับธีมทั่วไป (ห้ามใช้อีโมจิ)
   - **อัปเกรดเวอร์ชันระบบ (System Version Increment):** ปรับเพิ่มเวอร์ชันแอปพลิเคชันจาก `v1.4.14` เป็น `v1.4.15` (PATCH)
 - **Reason:** ให้ระบบเลือกธีมสีป้ายบทบาทสวยงาม รองรับธีมไล่ระดับสี Super Gradient และแสดงผลตรงตามข้อกำหนดสม่ำเสมอทุกจุด
-
 
 ## [2026-08-31 00:11] กำหนดและตั้งค่า SUPER (Super Admin) ให้เป็น System Role สิทธิ์สูงสุด (v1.4.14)
 
@@ -540,7 +579,6 @@
   - **อัปเกรดเวอร์ชันระบบ (System Version Increment):** ปรับเพิ่มเวอร์ชันแอปพลิเคชันจาก `v1.4.13` เป็น `v1.4.14` (PATCH)
 - **Reason:** รองรับการทำงานของบทบาทสูงสุดในระบบ (Super Admin) ให้เป็น System Role ถูกต้องครบถ้วน 100%
 
-
 ## [2026-08-31 00:04] แก้ไขปุ่มลบบทบาทและปรับปรุงความชัดเจนของข้อความแจ้งเตือน RBAC (v1.4.13)
 
 - **Modified / Created files:**
@@ -555,7 +593,6 @@
     - คงการป้องกันความปลอดภัย (Safety Checks) ป้องกันการลบบทบาทที่มีผู้ใช้หรือบทบาทระบบทั้งใน Frontend และ Backend RPC
   - **อัปเกรดเวอร์ชันระบบ (System Version Increment):** ปรับเพิ่มเวอร์ชันแอปพลิเคชันจาก `v1.4.12` เป็น `v1.4.13` (PATCH)
 - **Reason:** ให้สิทธิ์ RBAC `roles.delete` ทำงานสอดคล้องกับ UI และให้ผู้ใช้งานเข้าใจสาเหตุที่ไม่สามารถลบบทบาทได้อย่างชัดเจน
-
 
 ## [2026-08-30 23:56] ปรับปรุงการแสดงผล Role Badges และ Role Labels ให้เป็นมาตรฐาน (v1.4.12)
 
@@ -579,7 +616,6 @@
   - **สร้าง RoleBadge Component กลาง:** จัดระดับสีและสไตล์ให้เห็นความแตกต่างชัดเจน (Admin สีม่วงเข้มพรีเมียม, Super Admin กราเดียนต์แอมเบอร์-ม่วง, Supervisor สีมรกต, Staff สีฟ้า)
   - **อัปเกรดเวอร์ชันระบบ (System Version Increment):** ปรับเพิ่มเวอร์ชันแอปพลิเคชันจาก `v1.4.11` เป็น `v1.4.12` (PATCH)
 - **Reason:** ปรับปรุง UI ให้ชื่อและตราสัญลักษณ์บทบาทผู้ใช้งาน (Role Badges) สวยงาม สม่ำเสมอ และตรงตามที่กำหนดทุกจุดในระบบ
-
 
 ## [2026-08-30 23:47] ปรับปรุงความเสถียรและ Fallback Baseline ของสิทธิ์ RBAC ใน Edit User Modal (v1.4.11)
 
@@ -1275,7 +1311,6 @@
     - ปรับปรุง Footer เอกสารแบบ Multi-Page แสดงชื่อระบบ, วันที่พิมพ์ และเลขหน้าแบบไดนามิก (`หน้า X จาก Y`)
 - **Reason:** ยกระดับความสวยงาม อ่านง่าย ชัดเจน ถูกต้องตามมาตรฐานเอกสารองค์กร และแก้ปัญหาการแสดงผลตัวอักษรตกหล่น/ถูกตัดขอบ
 
-
 ## [2026-08-27 09:35] แก้ไข TypeError ใน Notification Dispatcher (Fix RPC .catch Error)
 
 - **Modified files:**
@@ -1296,7 +1331,6 @@
   - ปรับปรุง `src/pages/Settings.jsx`: เพิ่มตัวเลือก Toggle Checkbox ในหมวดหมู่ "2. กฎการเบิกและสต็อก (Inventory & Withdrawal Rules)" พร้อมการบันทึกผ่าน RPC `admin_update_system_settings` และส่งสัญญาณ Event `stockflow:settings-updated`
   - ปรับปรุง `src/pages/Items.jsx`: ดึงค่าการตั้งค่า `allow_item_deletion` และฟังเหตุการณ์ Realtime เพื่อควบคุมการแสดง/ซ่อนปุ่มลบรายการวัสดุ (`Trash2`) ในทั้งมุมมอง Table View และ Bento Grid Card View รวมถึงเพิ่ม Guard ป้องกันในฟังก์ชัน `handleDeleteItem`
 - **Reason:** เพิ่มความยืดหยุ่นในการบริหารจัดการคลัง โดยให้ผู้ดูแลระบบสามารถเลือกเปิดหรือปิดปุ่มลบรายการวัสดุได้จากหน้า Settings เพื่อป้องกันการเผลอลบข้อมูล Master โดยไม่ตั้งใจ
-
 
 ## [2026-08-26 16:05] เพิ่มระบบโอนย้ายสถานที่จัดเก็บ/คลังสำหรับรายการวัสดุ Master (Item Warehouse Transfer)
 
@@ -1351,7 +1385,6 @@
     - ส่งพารามิเตอร์ `tempPassword: 'F0rth2026@dtrs'` สำหรับการสร้างผู้ใช้ใหม่และการกดส่งคำเชิญซ้ำ (Resend Invitation)
 - **Reason:** นำแม่แบบอีเมลคำเชิญผู้ใช้งานที่ได้รับการพิสูจน์แล้วว่าส่งเข้า Outlook `@forth.co.th` สำเร็จเมื่อวันที่ 17 ส.ค. กลับมาใช้งานอย่างสมบูรณ์
 
-
 - **Modified files:**
   - `src/lib/emailRenderer.js`
   - `src/lib/emailService.js`
@@ -1365,7 +1398,6 @@
     - คืนค่า Headers มาตรฐาน `X-Priority: 3` และ `X-Entity-Ref-ID` ตามที่เคยใช้งานได้สมบูรณ์ใน Commit วันที่ 17 ส.ค. (`160aa679c4a5ae6b99a47ac67f57ffdd4a2208b1`)
 - **Reason:** ปรับโครงสร้างแม่แบบอีเมลทุกส่วนในระบบให้ใช้ Engine เดียวกันกับ Test Email Modal เพื่อแก้ปัญหาอีเมลคำเชิญไม่เข้ากล่องจดหมาย
 
-
 - **Modified files:**
   - `src/lib/emailRenderer.js`
   - `src/lib/emailService.js`
@@ -1375,7 +1407,6 @@
   - `src/lib/emailService.js`:
     - ปรับหัวเรื่องอีเมลคำเชิญจาก `แจ้งข้อมูลบัญชีผู้ใช้งานระบบ...` เป็น `ข้อมูลการเข้าใช้งานระบบ...` เพื่อหลีกเลี่ยงการกระตุ้นตัวกรองคำเสี่ยงด้านความปลอดภัยของ Exchange Online Protection
 - **Reason:** แก้ไขปัญหาอีเมลคำเชิญผู้ใช้งานใหม่ถูกตัวกรอง Defender ของ `@forth.co.th` สกัดกั้น
-
 
 - **Modified files:**
   - `api/send-email.js`
@@ -1390,7 +1421,6 @@
     - เพิ่มระบบ Transactional Event Notification เต็มรูปแบบ ดึงข้อมูลคำขอเบิก, รายการวัสดุ, สิทธิ์ผู้รับ (`STAFF`, `ADMIN`, `SUPERVISOR`) และอีเมลเสริม (`to_extra`, `cc_extra`) พร้อมสร้างเทมเพลต HTML/Text และส่งอีเมลแจ้งเตือนอัตโนมัติเมื่อมีการส่งหรืออนุมัติคำขอเบิก
 - **Reason:** ถอดบทเรียนและเทียบเคียงสถาปัตยกรรมการส่งอีเมลจากโปรเจกต์ `D:\APP\life-countdown` เพื่อให้การส่งอีเมลเข้า `@forth.co.th` และระบบแจ้งเตือนของ StockFlow ทำงานได้อย่างเสถียรและแม่นยำ
 
-
 - **Modified files:**
   - `src/lib/emailService.js`
   - `api/send-email.js`
@@ -1403,7 +1433,6 @@
     - กำหนดค่า `Reply-To` ไปยัง `senderEmail` เพื่อให้ผู้รับสามารถตอบกลับได้ตามปกติ
 - **Reason:** แก้ไขปัญหาส่งอีเมลไม่เข้ากล่องข้อความโดเมนองค์กร `@forth.co.th` และ M365 Corporate Inboxes ตามมาตรฐานในคู่มือ `/gmail-smtp`
 
-
 - **Modified files:**
   - `src/pages/StockIn.jsx`
 - **Details:**
@@ -1411,7 +1440,6 @@
     - ปรับข้อความบนปุ่มนำเข้าไฟล์จาก `นำเข้าไฟล์ DOPA (.csv)` เป็น `นำเข้าไฟล์ (.csv)` ให้กระชับและเป็นสากล
     - ปรับข้อความส่วนหัวของ Dialog พรีวิวและแถบดาวน์โหลดเทมเพลตให้เป็นมาตรฐานทั่วไป
 - **Reason:** ปรับปรุงข้อความบนปุ่มให้เป็นสากลและตรงตามความต้องการของผู้ใช้งาน
-
 
 - **Modified files:**
   - `src/pages/StockIn.jsx`
@@ -1429,7 +1457,6 @@
   - ปรับปรุงการแสดงผลไอคอนในหน้า Items, Reports และ Checkouts ให้เป็น SVG ทั้งหมด
 - **Reason:** ยกระดับมาตรฐานการออกแบบ UI ให้เป็นแบบ Modern SVG Vector Icons ปราศจาก Emoji ดิบที่อาจแสดงผลผิดเพี้ยนตามระบบปฏิบัติการ
 
-
 - **Modified files:**
   - `src/pages/Items.jsx`
   - `src/pages/Reports.jsx`
@@ -1446,7 +1473,6 @@
     - แสดงป้ายสถานที่จัดเก็บ `🏢 Location` ประกอบชื่อโครงการในทุกรายการรายงาน
 - **Reason:** ทำให้ระบบสามารถแยกและกรองข้อมูลสต็อกคงเหลือตรงตามคลังจัดเก็บจริง (Storage Location / Warehouse) ในทุกหน้าจอ
 
-
 - **Modified files:**
   - `src/lib/stock-in-parser.js`
   - `src/pages/StockIn.jsx`
@@ -1460,7 +1486,6 @@
     - เพิ่มระบบ Auto-Aggregation ในหน้าต่างบันทึกรับเข้าโดยตรง (Direct Stock Receipt Modal) ปรับยอดและรายการอัตโนมัติตาม `storage_location_id` ที่เลือก
     - เพิ่มสวิตช์เปิด-ปิด "แสดงเฉพาะรายการที่มียอด > 0" เพื่อความสะดวกในการตรวจนับ
 - **Reason:** รองรับการแยกและกรองยอดสต็อกคงเหลือตามคลังจัดเก็บเฉพาะแห่งจากไฟล์ DOPA+USO ได้อย่างถูกต้องและตรงตามการทำงานจริง
-
 
 - **Modified files:**
   - `src/components/common/ProjectLocationSelector.jsx`
@@ -1481,7 +1506,6 @@
     - ผสาน `ProjectLocationSelector` ในขั้นตอนที่ 1 ของระบบยืม-คืนพัสดุ
 - **Reason:** แก้ไขความสับสนของผู้ใช้งานในการเลือกโครงการและคลังจัดเก็บให้มีความชัดเจน ใช้งานง่าย และไม่คลุมเครือ
 
-
 - **Modified files:**
   - `supabase/migrations/47_reset_stock_and_items_inventory.sql`
 - **Details:**
@@ -1491,7 +1515,6 @@
     - เพิ่ม RPC `public.admin_reset_inventory` พร้อมระบบความปลอดภัยตรวจสอบ Token ยืนยัน สำหรับการ Reset ข้อมูล
     - คงข้อมูลโครงการ/คลัง (`projects`), บัญชีผู้ใช้ (`profiles`), และบทบาทสิทธิ์ (`roles`, `permissions`) ไว้สมบูรณ์
 - **Reason:** เตรียมระบบและฐานข้อมูลให้พร้อมสำหรับการนำเข้าข้อมูลสต็อกรายการอุปกรณ์ DOPA+USO ชุดใหม่อย่างสะอาดและสมบูรณ์
-
 
 - **Modified files:**
   - `src/pages/StockIn.jsx`
@@ -1511,7 +1534,6 @@
   - `stock_in_canonical_template.csv`:
     - อัปเดตแม่แบบตัวอย่างให้ตรงตามโครงสร้าง DOPA+USO มาตรฐาน
 - **Reason:** ตอบสนองความต้องการใช้งานจริงของฝ่ายปฏิบัติการในการนำเข้าข้อมูลรายการอุปกรณ์ DOPA+USO เข้าสู่ระบบ Stock Receipt ได้อย่างสมบูรณ์แบบ
-
 
 - **Modified files:**
   - `src/components/checkouts/CheckoutPosTerminal.jsx`
@@ -1589,7 +1611,6 @@
     - เพิ่มคำสั่งอัปเดต Check Constraint และ View `stock_balance` โดยตรงเพื่อความสมบูรณ์สำหรับกรณีรัน Migration ตั้งแต่ต้น
 - **Reason:** แก้ไข Error 23514 (`check_violation: stock_transactions_transaction_type_check`) เมื่อเรียกใช้ Supabase RPC `process_checkout_order` และ `process_return_order`
 
-
 - **Modified files:**
   - `api/send-email.js`
   - `src/lib/emailRenderer.js`
@@ -1607,7 +1628,6 @@
     - ปรับหัวข้ออีเมลเป็น `แจ้งข้อมูลบัญชีผู้ใช้งานระบบ ${effectiveAppName} — คุณ ${userName}`
     - ลบการส่งตัวแปร `tempPassword` ที่ไม่จำเป็นออกจากฟังก์ชันเรียกส่งอีเมล
 - **Reason:** แก้ปัญหาอีเมลไม่เข้ากล่องจดหมาย Outlook ของโดเมนองค์กร `@forth.co.th` (เนื่องจากโดน EOP กรอง Phishing เพราะมี Plaintext Password และ Custom Bot Headers) และทำให้การแก้ไขการตั้งค่า SMTP จากหน้า UI บันทึกลง Supabase และนำมาใช้งานได้แบบ Real-time
-
 
 - **Modified files:**
   - `src/lib/emailService.js`
@@ -1656,13 +1676,12 @@
     - รองรับการใช้งาน `sender_email` (และ Environment Variable `SMTP_SENDER_EMAIL`) เพื่อนำมาใช้ใน Header `From: "${senderName}" <${senderEmail}>` ได้อย่างถูกต้อง แทนที่จะผูกติดกับบัญชี SMTP `user` เพียงอย่างเดียว
 - **Reason:** แก้ไขปัญหาการแก้ไขและบันทึกข้อมูล Sender Email (`#sender_email`) หรือการตั้งค่า SMTP อื่นๆ ไม่สะท้อนผลและไม่ถูกบันทึกลงในระบบ
 
-
 - **Modified files:**
   - `api/send-email.js`
   - `src/lib/emailRenderer.js`
   - `src/lib/emailService.js`
 - **Details:**
-  - `api/send-email.js`: 
+  - `api/send-email.js`:
     - ปรับปรุงการเชื่อมต่อ Gmail SMTP ไปใช้ **Port 465 (Implicit TLS, `secure: true`)** เป็นค่าเริ่มต้นตามมาตรฐานสูงสุดของ Gmail SMTP
     - กำหนดค่า `envelope: { from: user, to }` เพื่อให้ Envelope From และ Header From ตรงกัน 100% ทำให้ผ่านการตรวจสอบ SPF (`_spf.google.com`) และ Google DKIM Signature โดยสมบูรณ์
     - บังคับสร้างโครงสร้าง MIME แบบ `multipart/alternative` (RFC 2046) ที่มีทั้ง `text/plain` และ `text/html` เสมอ เพื่อลดคะแนน Spam Score จากระบบกรองสแปม
@@ -1689,7 +1708,6 @@
   - `src/components/users/AddUserModal.jsx`: ปรับปรุงข้อความชี้แจงในโมดอลสร้างผู้ใช้ใหม่ให้ระบุรหัสผ่านเริ่มต้นอัตโนมัติ `F0rth2026@dtrs` และข้อความกำกับ Checkbox การส่งอีเมลอย่างชัดเจน
   - `supabase/migrations/40_fix_admin_rpc_drop_and_recreate.sql`: ซิงค์ค่า Default Fallback Password ในฟังก์ชัน `admin_create_user` ให้เป็น `'F0rth2026@dtrs'`
 - **Reason:** รองรับข้อกำหนดของระบบในการแจ้งรหัสผ่านเริ่มต้นชั่วคราวและคำแนะนำการเปลี่ยนรหัสผ่านแก่ผู้ใช้งานใหม่ พร้อมนำทางไปยัง URL ทางการของ Stock-Flow บน GitHub Pages
-
 
 - **Modified files:**
   - `src/App.jsx`
@@ -1742,7 +1760,7 @@
 - **Details:**
   - **Interactive Notification Center (`NotificationBell.jsx`):** พัฒนาศูนย์แจ้งเตือนรูปแบบใหม่บน Header พร้อมแท็บตัวกรอง 3 หมวดหมู่ (**"ทั้งหมด (All)"**, **"ยังไม่อ่าน (Unread)"**, และ **"รอจัดการ (Action Required)"**)
   - **Instant Quick Approval Action:** เพิ่มปุ่ม **"อนุมัติทันที"** บนการ์ดแจ้งเตือนขอเบิกพัสดุ สำหรับผู้ดูแลระบบและหัวหน้างาน (`ADMIN`/`SUPERVISOR`) สามารถอนุมัติตัดสต็อกแบบ Atomic Transaction ได้ทันทีโดยไม่ต้องสลับหน้าจอ
-  - **Context-Aware Quick Actions:** 
+  - **Context-Aware Quick Actions:**
     - สำหรับรายการขอเบิกที่อนุมัติแล้ว: แสดงปุ่ม **"ดูใบเบิกของ"** สำหรับผู้ขอเบิก
     - สำหรับรายการยืมเกินกำหนด (`checkout.overdue`): แสดงปุ่ม **"รับคืนพัสดุ"**
     - สำหรับสต็อกวิกฤต (`stock.low_stock`): แสดงปุ่ม **"ตรวจสต็อก"**
@@ -1767,7 +1785,6 @@
     - 📊 **ระบบรายงานและ PWA (Reports & Mobile Experience):** สรุปกราฟสถิติ, ส่งออกไฟล์ Excel/PDF, และรองรับการติดตั้ง Progressive Web App (PWA)
 - **Reason:** ประกาศเปิดตัวระบบ StockFlow Version 1.0.0 สำหรับใช้งานจริงในองค์กรอย่างเป็นทางการ
 
-
 - **Files Modified:**
   - `src/pages/Settings.jsx`
   - `src/components/settings/MinIOOrphanManager.jsx` (Deleted)
@@ -1775,7 +1792,6 @@
   - **Remove Obsolete MinIO Section:** ถอดคอมโพเนนต์และการ์ดส่วนที่ 6 **"การจัดการไฟล์ขยะ MinIO/S3 (MinIO Orphan Files Management)"** ออกจากหน้า `Settings.jsx` เนื่องจากระบบปัจจุบันใช้ Supabase Storage แทน และไม่มีเซิร์ฟเวอร์ Express แบ็กเอนด์คอยประมวลผล `/api/minio/*`
   - **Clean Up & Renumber:** ลบไฟล์คอมโพเนนต์ที่ไม่ได้ใช้งาน `MinIOOrphanManager.jsx` และจัดลำดับหัวข้อการตั้งค่าในหน้า Settings ใหม่ให้เป็น 6 ส่วนหลัก (หมวดหมู่สุดท้ายเป็น "6. ข้อมูลระบบ (System Information)")
 - **Reason:** ถอดฟีเจอร์ค้างท่อ (Dead Code / Unused Legacy Section) ออกจากหน้าตั้งค่าระบบตามคำขอของผู้ใช้งาน
-
 
 - **Files Modified:**
   - `src/components/roles/PermissionManagementModal.jsx`
@@ -1788,7 +1804,6 @@
   - `src/contexts/AuthContext.jsx`: เพิ่มสิทธิ์หมวดหมู่ยืม-คืน (`checkouts.view`, `checkouts.create`, `checkouts.return`) เข้าสู่ชุดสิทธิ์ของ Admin Baseline
 - **Reason:** แก้ไขปัญหาหน้า `/roles` แสดงผล `Selected Permissions: 0 / 0 items` เนื่องจากตารางแคตตาล็อกสิทธิ์ในฐานข้อมูล Supabase ยังไม่มีข้อมูลเริ่มต้น
 
-
 - **Files Modified:** `src/pages/Checkouts.jsx`
 - **Details:**
   - แก้ไขการเรียกชื่อ View ในฐานข้อมูลจาก `stock_balances` (พหูพจน์) เป็น `stock_balance` (เอกพจน์) ให้ตรงกับ Database Schema ของระบบ เพื่อแก้ปัญหา `404 Not Found`
@@ -1797,7 +1812,7 @@
 
 ## [2026-08-16 15:44]
 
-- **Files Modified:** 
+- **Files Modified:**
   - `supabase/migrations/44_material_checkout_and_return_system.sql`
   - `src/pages/Checkouts.jsx`
   - `src/components/checkouts/CheckoutPosTerminal.jsx`
@@ -1836,7 +1851,7 @@
 - **Files Modified:** `src/pages/Projects.jsx`, `src/pages/StockIn.jsx`
 - **Details:**
   - `src/pages/Projects.jsx`: ปรับปรุงปุ่ม **"เพิ่มสถานที่ตั้ง"** บนการ์ดโครงการ โดยตัดเครื่องหมายบวกที่เป็นตัวอักษรซ้ำซ้อน (`+ + เพิ่มสถานที่ตั้ง`) ออก และจัดสไตล์ปุ่มด้วยไอคอน SVG `<Plus />` พร้อมข้อความที่ชัดเจน สวยงาม และเป็นระเบียบตามมาตรฐานดีไซน์
-  - `src/pages/StockIn.jsx`: ปรับปรุงปุ่ม **"เพิ่มรายการหลัก (PARENT)"** และ **"เพิ่มรายการย่อย (CHILD)"** โดยตัดข้อความ `+ ` ที่ซ้ำซ้อนกับไอคอน SVG ออกเช่นกัน
+  - `src/pages/StockIn.jsx`: ปรับปรุงปุ่ม **"เพิ่มรายการหลัก (PARENT)"** และ **"เพิ่มรายการย่อย (CHILD)"** โดยตัดข้อความ `+` ที่ซ้ำซ้อนกับไอคอน SVG ออกเช่นกัน
 - **Reason:** แก้ไขการแสดงผลเครื่องหมายบวกซ้ำซ้อนและปรับปรุงดีไซน์ปุ่มตามคำขอของผู้ใช้
 
 ## [2026-08-16 15:16]
@@ -1940,7 +1955,6 @@
   - `src/components/withdrawals/WithdrawalShortageModal.jsx` & `WithdrawalRejectModal.jsx`: โมดอลอนุมัติกรณีของไม่ครบ (Shortage Override) และโมดอลปฏิเสธคำขอพร้อมเหตุผลสำเร็จรูป
 - **Reason:** ออกแบบและยกเครื่องระบบ POS Terminal และการเบิกจ่ายสินค้า (/withdrawals) ใหม่ทั้งหมดตามคำขอของผู้ใช้เพื่อยกระดับ UI/UX, ความเร็วในการทำงาน, และความสวยงามระดับพรีเมียม
 
-
 ## [2026-08-11 10:48]
 
 - **Files Modified:** `src/pages/Withdrawals.jsx`, `supabase/migrations/42_add_missing_withdrawal_columns.sql`
@@ -2028,7 +2042,7 @@
 
 - **Files Modified:** `supabase/migrations/39_fix_auth_users_null_tokens_for_gotrue.sql` (New)
 - **Details:**
-  - `supabase/migrations/39_fix_auth_users_null_tokens_for_gotrue.sql`: วินิจฉัยพบ Root Cause ของข้อผิดพลาด HTTP 500 จากไฟล์ `supabase_logs.json` (`Scan error on column index 3, name "confirmation_token": converting NULL to string is unsupported`) 
+  - `supabase/migrations/39_fix_auth_users_null_tokens_for_gotrue.sql`: วินิจฉัยพบ Root Cause ของข้อผิดพลาด HTTP 500 จากไฟล์ `supabase_logs.json` (`Scan error on column index 3, name "confirmation_token": converting NULL to string is unsupported`)
   - สร้าง Migration 39 อัปเดตคอลัมน์ `confirmation_token`, `recovery_token`, `email_change_token_new`, `reauthentication_token`, `email_change` ใน `auth.users` จาก `NULL` เป็นสตริงว่าง `''` และปรับปรุง `admin_create_user` RPC เพื่อป้องกันปัญหา Go Scan Error บน Supabase GoTrue Auth
 - **Reason:** แก้ไขปัญหาส่งอีเมลเทียบเชิญและลิงก์กู้คืนรหัสผ่านล้มเหลว (HTTP 500 Error) บน Supabase Auth
 
@@ -2261,7 +2275,6 @@
 
 ## [2026-08-09 04:04]
 
-
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `supabase/migrations/29_authoritative_schema_sync_watchara_user.sql` [MODIFY]
 - **รายละเอียด:**
@@ -2271,7 +2284,6 @@
 
 ## [2026-08-09 04:03]
 
-
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `supabase/migrations/29_authoritative_schema_sync_watchara_user.sql` [MODIFY]
 - **รายละเอียด:**
@@ -2280,7 +2292,6 @@
 - **เหตุผล:** ขจัดปัญหา `ERROR: 428C9: cannot insert a non-DEFAULT value into column "confirmed_at"`
 
 ## [2026-08-09 04:02]
-
 
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `supabase/migrations/29_authoritative_schema_sync_watchara_user.sql` [NEW]
@@ -2292,7 +2303,6 @@
 
 ## [2026-08-09 03:58]
 
-
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `supabase/migrations/28_sync_exact_admin_password_hash.sql` [NEW]
 - **รายละเอียด:**
@@ -2302,7 +2312,6 @@
 
 ## [2026-08-09 03:54]
 
-
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `supabase/migrations/27_recreate_watchara_with_[REDACTED].sql` [NEW]
 - **รายละเอียด:**
@@ -2311,7 +2320,6 @@
 - **เหตุผล:** ป้องกันปัญหาการรันสคริปต์แยกส่วนที่อาจลืมสร้างผู้ใช้ใน `auth.users` ทำให้การเข้าสู่ระบบสำเร็จ 100%
 
 ## [2026-08-09 03:52]
-
 
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `supabase/migrations/26_set_watchara_password_[REDACTED].sql` [NEW]
@@ -2323,7 +2331,6 @@
 
 ## [2026-08-09 03:50]
 
-
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `supabase/migrations/25_clone_watchara_from_working_admin.sql` [MODIFY]
 - **รายละเอียด:**
@@ -2333,7 +2340,6 @@
 
 ## [2026-08-09 03:48]
 
-
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `supabase/migrations/25_clone_watchara_from_working_admin.sql` [MODIFY]
 - **รายละเอียด:**
@@ -2342,7 +2348,6 @@
 - **เหตุผล:** ขจัดปัญหา `ERROR: 42703: column "email" does not exist` เมื่อรันสคริปต์ใน Supabase SQL Editor
 
 ## [2026-08-09 03:46]
-
 
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `supabase/migrations/25_clone_watchara_from_working_admin.sql` [NEW]
@@ -2354,7 +2359,6 @@
 
 ## [2026-08-09 03:44]
 
-
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `supabase/migrations/24_fix_gotrue_null_booleans_and_complete_repair.sql` [NEW]
 - **รายละเอียด:**
@@ -2364,7 +2368,6 @@
 - **เหตุผล:** ปลดล็อกข้อผิดพลาด Scan Error ภายใน GoTrue Auth Engine ให้การล็อกอินของบัญชีผู้ใช้ใหม่สำเร็จ 100%
 
 ## [2026-08-09 03:40]
-
 
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `supabase/migrations/23_diagnostic_and_recreate_watchara_user.sql` [NEW]
@@ -2376,7 +2379,6 @@
 
 ## [2026-08-09 03:38]
 
-
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `supabase/migrations/22_fix_bcrypt_password_hash_format.sql` [NEW]
 - **รายละเอียด:**
@@ -2386,7 +2388,6 @@
 - **เหตุผล:** ขจัดปัญหาความไม่เข้ากันของโครงสร้างแฮชรหัสผ่าน pgcrypto ที่ทำให้เอนจิน Go's bcrypt ของ Supabase Auth พังและคืนค่า HTTP 500
 
 ## [2026-08-09 03:36]
-
 
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `supabase/migrations/21_fix_auth_identities_and_create_user_rpc.sql` [NEW]
@@ -2399,7 +2400,6 @@
 
 ## [2026-08-09 03:32]
 
-
 - **การตั้งค่าระบบและสภาพแวดล้อม (Supabase Dashboard Verification):**
   - **ยืนยันการตั้งค่าระบบยืนยันตัวตน (Supabase Authentication Settings):**
     - `Email Provider` ➔ เปิดใช้งานเรียบร้อยแล้ว (**Enabled**)
@@ -2408,7 +2408,6 @@
 - **เหตุผล:** ตรวจสอบและรับประกันความสมบูรณ์ในการเข้าสู่ระบบของผู้ใช้ทุกคนสำเร็จ 100%
 
 ## [2026-08-09 03:22]
-
 
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `src/pages/UserManagement.jsx` [MODIFY]
@@ -2420,7 +2419,6 @@
 
 ## [2026-08-09 03:20]
 
-
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `supabase/migrations/20_force_delete_watchara_and_universal_repair.sql` [NEW]
   - `src/pages/UserManagement.jsx` [MODIFY]
@@ -2429,7 +2427,6 @@
 - **เหตุผล:** ยืนยันผลลัพธ์การทำงานอย่างสมบูรณ์แบบ
 
 ## [2026-08-09 03:15]
-
 
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `supabase/migrations/20_force_delete_watchara_and_universal_repair.sql` [NEW]
@@ -2443,7 +2440,6 @@
 
 ## [2026-08-09 03:12]
 
-
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `supabase/migrations/19_universal_user_deletion_repair.sql` [MODIFY]
 - **รายละเอียด:**
@@ -2453,7 +2449,6 @@
 - **เหตุผล:** เพื่อรองรับการลบผู้ใช้โดยไม่ขัดต่อทริกเกอร์ป้องกันการลบไฟล์ของ Supabase Storage
 
 ## [2026-08-09 03:10]
-
 
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `supabase/migrations/19_universal_user_deletion_repair.sql` [NEW]
@@ -2466,7 +2461,6 @@
 
 ## [2026-08-09 03:06]
 
-
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `supabase/migrations/18_fix_user_deletion_cascade.sql` [NEW]
 - **รายละเอียด:**
@@ -2477,7 +2471,6 @@
 
 ## [2026-08-09 03:04]
 
-
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `src/components/users/AddUserModal.jsx` [MODIFY]
 - **รายละเอียด:**
@@ -2487,7 +2480,6 @@
 - **เหตุผล:** ขจัดปัญหาอ้างอิงฟังก์ชันที่ถูกลบออกไปจากการปรับปรุงระบบรหัสผ่านอัตโนมัติ
 
 ## [2026-08-09 03:02]
-
 
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `src/components/auth/PermissionRoute.jsx` [MODIFY]
@@ -2502,7 +2494,6 @@
 
 ## [2026-08-09 02:58]
 
-
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `src/pages/auth/Login.jsx` [MODIFY]
 - **รายละเอียด:**
@@ -2514,7 +2505,6 @@
 
 ## [2026-08-09 02:54]
 
-
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `supabase/migrations/17_fix_auth_triggers_and_hooks.sql` [MODIFY]
 - **รายละเอียด:**
@@ -2524,7 +2514,6 @@
 - **เหตุผล:** ป้องกันไม่ให้ระบบอีเมลยืนยันตัวตนและการจำกัดสิทธิ์ RLS ส่งผลให้ GoTrue Auth API ตอบกลับด้วยรหัส HTTP 500
 
 ## [2026-08-09 02:50]
-
 
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `supabase/migrations/17_fix_auth_triggers_and_hooks.sql` [NEW]
@@ -2536,7 +2525,6 @@
 
 ## [2026-08-09 02:46]
 
-
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `supabase/migrations/16_auto_default_password_and_force_change.sql` [MODIFY]
 - **รายละเอียด:**
@@ -2546,7 +2534,6 @@
 - **เหตุผล:** เพื่อรองรับการอัปเดตฟังก์ชันใน PostgreSQL ให้สามารถเพิ่มคอลัมน์ `must_change_password` ได้สำเร็จ
 
 ## [2026-08-09 02:44]
-
 
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `src/pages/auth/Login.jsx` [MODIFY]
@@ -2560,7 +2547,6 @@
 - **เหตุผล:** เพื่อให้ระบบรายงานข้อผิดพลาดอย่างเป็นมิตร ป้องกันปัญหาเซิร์ฟเวอร์แครช และอำนวยความสะดวกในการใช้งานผู้ใช้
 
 ## [2026-08-09 02:40]
-
 
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `supabase/migrations/16_auto_default_password_and_force_change.sql` [NEW]
@@ -2578,7 +2564,6 @@
 
 ## [2026-08-09 02:34]
 
-
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `supabase/migrations/15_fix_profiles_role_check.sql` [NEW]
   - `src/pages/auth/Login.jsx` [MODIFY]
@@ -2590,7 +2575,6 @@
 - **เหตุผล:** ป้องกันไม่ให้ข้อผิดพลาดระดับฐานข้อมูลขัดขวางการสร้าง Session เข้าสู่ระบบของผู้ใช้
 
 ## [2026-08-09 02:27]
-
 
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `src/components/users/AddUserModal.jsx` [MODIFY]
@@ -2605,7 +2589,6 @@
 
 ## [2026-08-09 02:18]
 
-
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `src/lib/emailRenderer.js` [MODIFY]
   - `src/lib/emailService.js` [MODIFY]
@@ -2618,7 +2601,6 @@
 
 ## [2026-08-09 02:11]
 
-
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `pdf-service/server.js` [MODIFY]
   - `pdf-service/.env` [NEW]
@@ -2627,7 +2609,6 @@
 - **เหตุผล:** แก้ไข Root Cause ที่แท้จริงของการดึงไฟล์สภาพแวดล้อมไม่เจอเนื่องจากตำแหน่งไดเรกทอรี CWD ที่แตกต่างกัน
 
 ## [2026-08-09 02:08]
-
 
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `pdf-service/server.js` [MODIFY]
@@ -2642,7 +2623,6 @@
 
 ## [2026-08-09 01:59]
 
-
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `.env` [MODIFY]
 - **รายละเอียด:**
@@ -2650,7 +2630,6 @@
 - **เหตุผล:** รองรับการยืนยันตัวตน Gmail SMTP แบบอัตโนมัติ ไม่ต้องกรอกรหัสผ่านใหม่ทุกครั้ง
 
 ## [2026-08-09 01:28]
-
 
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `supabase/migrations/14_smtp_password_vault.sql` [NEW]
@@ -2665,7 +2644,6 @@
     - **การรองรับทดสอบส่งอีเมลทันที (`Settings.jsx` & `emailService.js`):** ส่งผ่านรหัสผ่านที่ป้อนในฟอร์มไปยังเอนด์พอยต์ทดสอบทันทีโดยไม่หลุดหรือรั่วไหลไปยังสคริปต์หน้าบ้าน
 - **เหตุผล:** ป้องกันการปฏิเสธคำขอจาก Gmail SMTP Server การันตีว่าเซสชันผ่านการยืนยันตัวตนถูกต้อง 100%
 
-
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `vite.config.js` [MODIFY]
   - `pdf-service/server.js` [MODIFY]
@@ -2676,7 +2654,6 @@
     - **การกำหนดโครงสร้างตอบกลับ JSON มาตรฐาน (`pdf-service/server.js`):** บังคับใช้ส่วนหัว `Content-Type: application/json` และปรับรูปแบบตอบกลับความสำเร็จเป็น `{ success: true, data: { files, total } }` และข้อผิดพลาดเป็น `{ success: false, error: { code, message } }` ทุกกรณี
     - **ระบบตรวจสอบข้อผิดพลาดหน้าบ้าน (`MinIOOrphanManager.jsx`):** เพิ่มฟังก์ชัน `parseJsonResponse()` และ `safeFetchApi()` ตรวจสอบสถานะ HTTP และ `Content-Type` ก่อนทำการแปลงข้อมูล JSON ป้องกันข้อผิดพลาด `SyntaxError: Unexpected token '<'` พร้อมแสดงข้อความแจ้งเตือนภาษาไทยที่อ่านเข้าใจง่าย
 - **เหตุผล:** การันตีการเชื่อมต่อเอนด์พอยต์ระหว่างหน้าบ้านและแบ็กเอนด์ แม่นยำ ไร้ข้อผิดพลาดจากการแปลง HTML
-
 
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `supabase/migrations/13_minio_orphan_audit.sql` [NEW]
@@ -2690,7 +2667,6 @@
     - **การส่งออกรายงาน CSV (Export CSV):** เอนด์พอยต์ `POST /api/minio/export-csv` รองรับการดาวน์โหลดสรุปรายงานไฟล์ขยะพร้อม UTF-8 BOM สำหรับเปิดใน Microsoft Excel
     - **UI/UX แบบ Neumorphic / Glassmorphism:** เพิ่มส่วนที่ 6 ใน `/settings` พร้อมตารางแสดงรายการไฟล์ขยะ, ระบบเลือกรายไฟล์/เลือกทั้งหมด, แถบสรุปจำนวน/ขนาดไฟล์ขยะ และ Modal ยืนยันการลบแบบ Destructive Confirmation Dialog
 - **เหตุผล:** คืนพื้นที่จัดเก็บไฟล์ขยะใน MinIO/S3 Bucket เพิ่มความปลอดภัยของข้อมูล และไม่รั่วไหลข้อมูลประจำตัว MinIO Credentials ไปยัง Client
-
 
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `src/lib/passwordPolicy.js` [NEW]
@@ -2707,7 +2683,6 @@
     - **การดึงรหัสผ่านเริ่มต้นในการรีเซ็ต (Secure Reset Password Action):** เพิ่มปุ่ม "ดึงรหัสผ่านเริ่มต้นระบบ" ใน `ResetPasswordModal` เพื่อดึงรหัสผ่านฝั่งเซิร์ฟเวอร์เฉพาะกรณีแอดมินกดรีเซ็ตผู้ใช้จริงเท่านั้น
 - **เหตุผล:** ป้องกันการรั่วไหลของรหัสผ่านส่วนกลาง ยกระดับนโยบายรหัสผ่านให้ตรงตามมาตรฐาน OWASP/CISA และสอดคล้องกับมาตรฐานความปลอดภัยข้อมูลระดับองค์กร
 
-
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `pdf-service/server.js` [MODIFY]
 - **รายละเอียด:**
@@ -2717,7 +2692,6 @@
     - **ระบบบันทึกการวินิจฉัยความปลอดภัย (Non-Secret Diagnostic Logging):** บันทึกสถานะการเชื่อมต่อ `[SMTP Diagnostic] Connecting to host:port | Secure: boolean | AuthUser: string` ทางคอนโซลแบ็กเอนด์โดยไม่รั่วไหลรหัสผ่านหรือความลับ
     - **การจำแนกหมวดหมู่ข้อผิดพลาดภาษาไทย (Categorized Error Responses):** แยกข้อผิดพลาดออกเป็น 6 หมวดหมู่ชัดเจน ได้แก่ `CONNECTION_TIMEOUT`, `TLS_NEGOTIATION_FAILED`, `AUTHENTICATION_FAILED`, `RELAY_DENIED`, `RECIPIENT_REJECTED`, และ `RBL_IP_REJECTED`
 - **เหตุผล:** ป้องกันการสลับพอร์ตไม่คาดคิด ทำให้วิเคราะห์ปัญหาไอทีได้อย่างตรงจุด และไม่เปิดเผยรหัสผ่านใน Logs
-
 
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `src/pages/Settings.jsx` [MODIFY]
@@ -2731,7 +2705,6 @@
     - **การสรุปผลการตั้งค่าที่มีผล (Effective Config Summary):** เพิ่มการแสดงผลสรุปคอนฟิกย่อยใต้ฟอร์มการตั้งค่าก่อนบันทึกหรือทดสอบส่งอีเมล
 - **เหตุผล:** ป้องกันการตั้งค่าพอร์ตและโปรโตคอลความปลอดภัยผิดพลาด เพิ่มความเข้าใจแก่แอดมิน และสอดคล้องกับพฤติกรรมของ Nodemailer ฝั่งแบ็กเอนด์ 100%
 
-
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `pdf-service/server.js` [MODIFY]
 - **รายละเอียด:**
@@ -2739,7 +2712,6 @@
     - **การผสานข้อมูลรหัสผ่านฝั่งเซิร์ฟเวอร์ (`pdf-service/server.js`):** เพิ่มการตรวจสอบหากค่ารหัสผ่านในคำขอเป็นค่าว่าง (`""`) ให้ทำการอ่านรหัสผ่านสำรองจากสภาพแวดล้อมฝั่งเซิร์ฟเวอร์ (`process.env.SMTP_PASS`) โดยอัตโนมัติ เพื่อให้คำขอซ็อกเก็ตบนพอร์ต 587/465 ทำการส่งส่วนหัว `AUTH LOGIN` / `AUTH PLAIN` ไปยังเซิร์ฟเวอร์จดหมายเสมอ ป้องกันปัญหา `550 SMTP AUTH is required`
     - **การคัดกรองข้อยกเว้น RBL / DNSBL (550 JunkMail Rejected):** เพิ่มการจัดการข้อความปฏิเสธจากเซิร์ฟเวอร์จดหมาย กรณีไอพีของผู้ใช้ (`27.130.64.47`) ติดสถานะ Real-time Blackhole List บนเซิร์ฟเวอร์ ให้ระบบแจ้งเตือนแอดมินภาษาไทยเพื่อประสานงานกับผู้ดูแลระบบไอที (SMTP Admin) ในการยกเว้นไอพี (IP Whitelisting) หรือการสลับไปใช้งานผ่านเครือข่าย VPN องค์กร
 - **เหตุผล:** ป้องกันการส่งคำขอแบบ Unauthenticated และให้ข้อแนะนำการแก้ไขปัญหาโครงสร้างไอทีเครือข่ายได้อย่างแม่นยำ
-
 
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `pdf-service/server.js` [MODIFY]
@@ -2750,7 +2722,6 @@
     - **ระบบลองเชื่อมต่อสำรองอัตโนมัติ (Fallback Retry Mechanism):** หากการเชื่อมต่อพอร์ต 465 (Implicit SSL) เกิดการหมดเวลา (`ETIMEDOUT`) ระบบจะทำการลองเชื่อมต่อไปยังพอร์ตสำรอง 587/25 (STARTTLS, `secure: false`, `rejectUnauthorized: false`) โดยอัตโนมัติก่อนที่จะส่งข้อความแจ้งเตือนข้อผิดพลาดแก่ผู้ใช้
 - **เหตุผล:** การันตีว่าระบบส่งแจ้งเตือนสามารถเชื่อมต่อเซิร์ฟเวอร์ SMTP ภายในองค์กร Forth ได้อย่างราบรื่นไม่ว่าจะใช้พอร์ต 465, 587 หรือ 25
 
-
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `pdf-service/server.js` [MODIFY]
 - **รายละเอียด:**
@@ -2758,7 +2729,6 @@
     - **สาเหตุของปัญหา:** มิดเดิลแวร์ `app.use(express.json({ limit: '50mb' }))` สูญหายไปในระหว่างการตั้งค่า `multer` ส่งผลให้ Express ไม่ได้ทำการแปลงข้อความพายโหลด JSON ที่ถูกส่งมาจาก Frontend ให้กลายเป็น Object ใน `req.body`
     - **การแก้ไข:** ใส่ `app.use(express.json({ limit: '50mb' }))` และ `app.use(express.urlencoded({ extended: true, limit: '50mb' }))` กลับเข้ามาก่อนเอนด์พอยต์ `/api/send-email` พร้อมเพิ่มความปลอดภัยแบบป้องกัน `const body = req.body || {}`
 - **เหตุผล:** ขจัดข้อผิดพลาด HTTP 500 และทำให้แบ็กเอนด์แกะพารามิเตอร์ `to`, `subject`, `html`, `smtpConfig` จากคำขอหน้าบ้านได้สมบูรณ์
-
 
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `pdf-service/server.js` [MODIFY]
@@ -2770,7 +2740,6 @@
       - `puppeteer 22.x`: คงไว้ที่เวอร์ชัน 22 เพื่อหลีกเลี่ยง Breaking Changes กับ Chrome Headless Binary และการพิมพ์รายงาน PDF บนสภาพแวดล้อมสถาปัตยกรรมปัจจุบัน
 - **เหตุผล:** เพิ่มระดับความปลอดภัยในการประมวลผลไฟล์ในหน่วยความจำโดยไม่กระทบความเสถียรของระบบส่งอีเมลและสร้าง PDF
 
-
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `package.json` [MODIFY]
 - **รายละเอียด:**
@@ -2778,7 +2747,6 @@
     - **สาเหตุ:** `pdf-service` เป็น Sub-directory ในโปรเจกต์ที่มี `package.json` ของตนเอง แต่ใน `package.json` หลักยังไม่ได้ประกาศ `workspaces` ส่งผลให้ npm ไม่ได้เชื่อมต่อและทำการ Hoist dependencies ของ `pdf-service` มายัง `node_modules` ระดับสูง
     - **การแก้ไข:** ประกาศ `"workspaces": ["pdf-service"]` ใน `package.json` หลัก และปรับคำสั่ง `"service:backend": "npm --prefix pdf-service start"`
 - **เหตุผล:** รองรับโครงสร้าง Monorepo / Sub-service มาตรฐาน ทำให้ Node.js ค้นหาและค้นพบมอดูล `express` ได้อย่างสมบูรณ์
-
 
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `package.json` [MODIFY]
@@ -2790,7 +2758,6 @@
     - **การปรับปรุงการโหลดแบบไดนามิก (`pdf-service/server.js`):** ปรับแต่งแพ็กเกจเสริม PDF/S3 (`puppeteer` และ `@aws-sdk/client-s3`) ให้ใช้ Dynamic Imports (`await import(...)`) เฉพาะเมื่อมีการเรียกใช้งานเอนด์พอยต์ `/api/export-pdf` และ `/api/upload` ป้องกันไม่ให้เซิร์ฟเวอร์ส่งอีเมลหยุดทำงานเมื่อไม่มีแพ็กเกจเสริมดังกล่าว
 - **เหตุผล:** ทำให้การสั่งรัน `npm run service:backend` สามารถเปิดใช้งานบริการส่งอีเมลบนพอร์ต 3001 ได้ทันทีโดยไม่เกิดปัญหามอดูลสูญหาย
 
-
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `src/lib/emailService.js` [MODIFY]
   - `package.json` [MODIFY]
@@ -2800,7 +2767,6 @@
     - **การแก้ไขการจัดการข้อผิดพลาด (`emailService.js`):** เพิ่มการดักจับข้อผิดพลาดประเภท `TypeError` / `Failed to fetch` และแปลงเป็นข้อความภาษาไทยที่ชัดเจน: *"ไม่สามารถเชื่อมต่อบริการส่งอีเมลแบ็กเอนด์ที่พอร์ต 3001 ได้... กรุณาตรวจสอบว่าเซิร์ฟเวอร์ pdf-service (node pdf-service/server.js) กำลังทำงานอยู่"*
     - **การเพิ่มคำสั่งรันแบ็กเอนด์ (`package.json`):** เพิ่มสคริปต์ `"service:backend": "node pdf-service/server.js"` ให้ผู้ใช้สามารถเปิดใช้งานบริการส่งอีเมลและส่งออกเอกสาร PDF ควบคู่กับแอปพลิเคชันหลักได้อย่างสะดวก
 - **เหตุผล:** ขจัดข้อความผิดพลาดแบบคลุมเครือ `Failed to fetch` และสื่อสารสถานะการทำงานของบริการแบ็กเอนด์กับแอดมินได้อย่างชัดเจน
-
 
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `pdf-service/server.js` [MODIFY]
@@ -2816,7 +2782,6 @@
     - **โมดูลจัดส่งอีเมลหน้าบ้าน (`emailService.js`):** สร้างฟังก์ชัน `sendStockFlowEmail` และ `sendTestEmail` ทำหน้าที่เชื่อมประสานระหว่าง UI กับบริการส่งอีเมลแบ็กเอนด์ พร้อมการบันทึกประวัติความปลอดภัย (`EMAIL_SENT`)
 - **เหตุผล:** เชื่อมต่อวงจรการส่งอีเมลทดสอบเข้ากับเซิร์ฟเวอร์ SMTP จริง การันตีการจัดส่งอีเมลไปยังผู้รับปลายทางสำเร็จ 100%
 
-
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `src/pages/Settings.jsx` [MODIFY]
   - `src/components/settings/EmailTemplateManager.jsx` [MODIFY]
@@ -2827,7 +2792,6 @@
     - **ตรวจสอบระบบส่งอีเมลทดสอบ (Test Email End-to-End Validation):** เพิ่มการตรวจสอบรูปแบบอีเมล (`Regex Email Validation`) ก่อนส่ง และปรับปรุงการส่งสัญญาณสถานะผลลัพธ์
 - **เหตุผล:** ขจัดคำเตือนทางคอนโซลของเบราว์เซอร์ เพิ่มความเร็วในการตอบสนองของหน้าตั้งค่า และยืนยันความสมบูรณ์ของระบบส่งอีเมล
 
-
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `src/components/settings/EmailTemplateManager.jsx` [MODIFY]
 - **รายละเอียด:**
@@ -2835,7 +2799,6 @@
     - **สาเหตุ:** ข้อมูล `eventsConfig` ที่ถูกส่งมาจากหน้า `Settings.jsx` มีเพียงฟิลด์บางส่วน (เช่น `enabled` และ `roles`) โดยไม่มีฟิลด์ `title` หรือ `desc` ส่งผลให้เมื่อทำการคิวรีฟิลเตอร์ `item.title.toLowerCase()` เกิดข้อผิดพลาด `TypeError`
     - **การแก้ไข:** เพิ่มฟังก์ชัน `mergeEventsWithDefaults` เพื่อผสานข้อมูลตั้งค่าเริ่มต้น (`DEFAULT_EVENTS_CONFIG`) เข้ากับข้อมูลจากฐานข้อมูลเสมอ การันตีว่าฟิลด์ `title`, `desc`, `heading`, `intro` ฯลฯ มีค่าอยู่ครบถ้วน พร้อมเพิ่มการแปลงค่า `String(searchQuery || '').toLowerCase()` อย่างปลอดภัย
 - **เหตุผล:** ป้องกันอาการหน้าจอขาวและแก้ไขข้อผิดพลาด Runtime Exception ในการสืบค้นรายการแม่แบบอีเมล
-
 
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `src/lib/emailRenderer.js` [NEW]
@@ -2856,7 +2819,6 @@
         - `[ 🧪 ทดสอบส่งอีเมล ]`: ส่งอีเมลทดสอบด้วย HTML Renderer และข้อมูลจริงไปยังผู้รับที่ระบุ
 - **เหตุผล:** เปลี่ยนระบบจัดการแม่แบบอีเมลแบบฟอร์มยาวเดิมให้กลายเป็นแผงควบคุมระดับมืออาชีพ ใช้งานง่าย มีพรีวิวสดเสมือนจริง และคงความปลอดภัยตามมาตรฐาน StockFlow 100%
 
-
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `src/components/layout/AppFooter.jsx` [MODIFY]
   - `src/pages/Settings.jsx` [MODIFY]
@@ -2866,7 +2828,6 @@
     - **การแก้ไข 404:** เปลี่ยน `AppFooter.jsx` ให้เรียกใช้งานผ่าน `supabase.rpc('admin_get_system_settings')` พร้อมระบบ Safe Fallback หากตารางหรือ RPC ยังไม่ได้ถูกสร้างขึ้น ระบบจะดึงค่าจาก `APP_CONFIG` มาใช้งานแทนโดยไม่เกิด Error รบกวน
     - **การแก้ไข DOM Warning:** เพิ่มแอตทริบิวต์ `autoComplete="new-password"` ให้กับช่องกรอกรหัสผ่าน `id="smtp_pw"` เพื่อกำจัดคำเตือนเรื่อง Autocomplete ของเบราว์เซอร์
 - **เหตุผล:** ยกระดับความเสถียรและประสิทธิภาพของระบบ ขจัดข้อผิดพลาด 404 ใน Console และปฏิบัติตามมาตรฐานการรักษาความปลอดภัยของเบราว์เซอร์
-
 
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `supabase/migrations/11_system_settings.sql` [NEW]
@@ -2883,14 +2844,13 @@
       - เปลี่ยนปุ่ม Settings ใน Sidebar จากแบบจำลอง มาเป็น `NavLink` ใช้งานจริงไปยัง `/settings` ควบคุมการเปิดด้วย `can('settings.view')`
       - หากผู้ใช้ไม่มีสิทธิ์ `settings.update` ระบบจะปรับปุ่มและช่องกรอกทั้งหมดเป็นแบบอ่านอย่างเดียว (Read-only) พร้อมแสดงข้อความแจ้งเตือนสิทธิ์
     - **หมวดหมู่การตั้งค่า 6 ส่วนหลัก (6 Collapsible Card Sections):**
-      - 1. **ข้อมูลแอปและ Footer:** ชื่อแอป, ชื่อองค์กร, คำอธิบายระบบ, เวอร์ชัน (`v0.1.0` อ่านจาก Build Metadata ไม่เซฟลง DB) พร้อมกล่องพรีวิวสด (Live Footer Preview) ที่อัปเดตให้ Footer จริงทันทีโดยไม่ต้องรีโหลดหน้าเว็บ
-      - 2. **กฎการเบิกและสต็อก:** กำหนดเกณฑ์เตือนสต็อกต่ำเริ่มต้น (`low_stock_threshold`), บังคับระบุวัตถุประสงค์การเบิก, อนุญาตดูประวัติโครงการที่ปิดตัวลงแล้ว พร้อมกล่องเตือนนโยบาย `All-or-Nothing` ที่ป้องกันการแก้ไขฝั่ง Client เพื่อคงความสมบูรณ์ของคลังสินค้า
-      - 3. **การแจ้งเตือนและอีเมล:** ตั้งค่า SMTP Host, Port, Username, Sender Email, Sender Name และการซ่อนรหัสผ่าน SMTP ไม่ส่งรหัสผ่านจริงคืนสู่ Client พร้อมปุ่มทดสอบส่งอีเมล (Test Email) และเมทริกซ์การแจ้งเตือนตามเหตุการณ์แบบดึงบทบาทจากตาราง `roles` แบบไดนามิก
-      - 4. **ผู้ใช้และความปลอดภัย:** นโยบายรหัสผ่าน (ยกเลิกระบบรหัสผ่านส่วนกลางเพื่อความปลอดภัย), นโยบายการใช้สถานะ Inactive แทนการลบบัญชี, นโยบาย Last Admin Protection
-      - 5. **สถานะการจัดเก็บข้อมูล:** สรุปสถานะ Supabase Storage `avatars` bucket (2 MB limit, JPG/PNG, Public read)
-      - 6. **ข้อมูลระบบ:** สรุปเวอร์ชัน สภาพแวดล้อม สถานะ DB และยอดรวมจำนวนโครงการ ผู้ใช้ และบทบาทในระบบ
+      - **1. ข้อมูลแอปและ Footer:** ชื่อแอป, ชื่อองค์กร, คำอธิบายระบบ, เวอร์ชัน (`v0.1.0` อ่านจาก Build Metadata ไม่เซฟลง DB) พร้อมกล่องพรีวิวสด (Live Footer Preview) ที่อัปเดตให้ Footer จริงทันทีโดยไม่ต้องรีโหลดหน้าเว็บ
+      - **2. กฎการเบิกและสต็อก:** กำหนดเกณฑ์เตือนสต็อกต่ำเริ่มต้น (`low_stock_threshold`), บังคับระบุวัตถุประสงค์การเบิก, อนุญาตดูประวัติโครงการที่ปิดตัวลงแล้ว พร้อมกล่องเตือนนโยบาย `All-or-Nothing` ที่ป้องกันการแก้ไขฝั่ง Client เพื่อคงความสมบูรณ์ของคลังสินค้า
+      - **3. การแจ้งเตือนและอีเมล:** ตั้งค่า SMTP Host, Port, Username, Sender Email, Sender Name และการซ่อนรหัสผ่าน SMTP ไม่ส่งรหัสผ่านจริงคืนสู่ Client พร้อมปุ่มทดสอบส่งอีเมล (Test Email) และเมทริกซ์การแจ้งเตือนตามเหตุการณ์แบบดึงบทบาทจากตาราง `roles` แบบไดนามิก
+      - **4. ผู้ใช้และความปลอดภัย:** นโยบายรหัสผ่าน (ยกเลิกระบบรหัสผ่านส่วนกลางเพื่อความปลอดภัย), นโยบายการใช้สถานะ Inactive แทนการลบบัญชี, นโยบาย Last Admin Protection
+      - **5. สถานะการจัดเก็บข้อมูล:** สรุปสถานะ Supabase Storage `avatars` bucket (2 MB limit, JPG/PNG, Public read)
+      - **6. ข้อมูลระบบ:** สรุปเวอร์ชัน สภาพแวดล้อม สถานะ DB และยอดรวมจำนวนโครงการ ผู้ใช้ และบทบาทในระบบ
 - **เหตุผล:** ให้อำนาจผู้ดูแลระบบในการบริหารจัดการค่ากำหนดแอปพลิเคชันอย่างเป็นระบบ ยกระดับความปลอดภัยขั้นสูงสุด และคงสถาปัตยกรรมคลังสินค้าไว้อย่างมั่นคง
-
 
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `src/pages/Projects.jsx` [MODIFY]
@@ -2900,7 +2860,6 @@
     - **การแก้ไข:** เปลี่ยนจากการเช็ค `isAdmin` มาเป็นระบบสิทธิ์ไดนามิก `can('projects.update')` สำหรับแสดงปุ่มแก้ไขโครงการ และ `can('projects.delete')` สำหรับแสดงปุ่มลบโครงการ
     - **ความปลอดภัย:** เพิ่มการตรวจสอบสิทธิ์ `can('projects.update')` และ `can('projects.delete')` ภายในฟังก์ชัน `handleEditProject` และ `handleDeleteProject` เพื่อป้องกันการเรียกใช้งานคำสั่งลบ/แก้ไขโดยตรง
 - **เหตุผล:** เปลี่ยนระบบตรวจสอบสิทธิ์ให้สอดคล้องกับมาตรฐาน Permission-Based RBAC ของแอปพลิเคชัน และแก้ไขอาการ Crash ในหน้าโครงการ
-
 
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `src/components/layout/AppFooter.jsx` [NEW]
@@ -2915,7 +2874,6 @@
     - **โครงสร้างและการจัดวาง (Flex Layout & Auto Sticky Footer):** ผสาน Footer เข้าสู่ `PageWrapper.jsx` ให้แสดงผลที่ด้านล่างสุดของพื้นที่เนื้อหาหลักอย่างเป็นธรรมชาติ ไม่ลอยทับ Modals หรือสร้างพื้นที่ว่างเกินจำเป็น
 - **เหตุผล:** เติมเต็มโครงสร้างแอปพลิเคชันให้สมบูรณ์ แสดงลิขสิทธิ์ เวอร์ชันระบบ และเพิ่มความสะดวกในการเข้าถึงคู่มือการใช้งาน
 
-
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `src/pages/Manual.jsx` [MODIFY]
 - **รายละเอียด:**
@@ -2927,7 +2885,6 @@
     - **การจัดการบทบาทและสิทธิ์ (Dynamic RBAC & Role Management):** เพิ่มคำอธิบายความแตกต่างเชิงแนวคิดระหว่าง Role, Permission และ Project Access พร้อมคู่มือการใช้งานหน้า `/roles` การตั้งค่าสิทธิ์แยกหมวดหมู่ Permission Dependency Engine นโยบายความปลอดภัย System Role Protection และ Last Admin Safeguard
     - **ข้อควรระวังความปลอดภัยสำหรับ Admin (Admin Security Notes):** สรุปข้อควรระวังสำคัญสำหรับผู้ดูแลระบบในด้านการให้สิทธิ์เท่าที่จำเป็น (Least Privilege), การจัดการรหัสผ่าน และการตั้งค่าสิทธิ์โครงการ
 - **เหตุผล:** ปรับปรุงเอกสารคู่มือการใช้งานให้ถูกต้องและตรงกับฟีเจอร์ปัจจุบันของระบบ StockFlow 100%
-
 
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `supabase/migrations/10_avatars_storage_bucket.sql` [NEW]
@@ -2953,7 +2910,6 @@
       - ลำดับการสร้างผู้ใช้ใหม่: `สร้างผู้ใช้ใน Auth/Profile → ดึง UUID → อัปโหลดรูปโปรไฟล์สู่ Supabase Storage → บันทึก URL สู่ avatar_url`
       - สำหรับผู้ใช้เดิม: อัปโหลดทับไฟล์เดิม (`upsert: true`) ที่พาท `${userId}/avatar.png` เพื่อป้องกันการเกิดไฟล์ขยะ (Orphan Files)
 - **เหตุผล:** ยกระดับประสบการณ์ผู้ใช้งาน (UX) ป้องกันลิงก์รูปภาพภายนอกเสีย และสร้างระบบจัดเก็บรูปโปรไฟล์ที่มีความปลอดภัยสูง
-
 
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `supabase/migrations/09_dynamic_rbac_roles_permissions.sql` [NEW]
@@ -2987,7 +2943,6 @@
       - ปรับฟอร์มสร้าง/แก้ไขผู้ใช้ใน `UserManagement.jsx` ให้ดึงบทบาทจากตาราง `roles` ในฐานข้อมูลมาแสดงผลโดยอัตโนมัติ
 - **เหตุผล:** เปลี่ยนผ่านระบบตรวจสอบสิทธิ์สู่มาตรฐาน Permission-Based RBAC ยกระดับความปลอดภัยขั้นสูงสุด และให้อำนาจผู้ดูแลระบบในการปรับเปลี่ยนสิทธิ์ใช้งานได้อย่างอิสระ
 
-
 - **ไฟล์ที่สร้าง/แก้ไข:**
   - `supabase/migrations/08_rbac_and_user_management.sql` [NEW]
   - `src/pages/UserManagement.jsx` [NEW]
@@ -3014,7 +2969,6 @@
       - สร้าง `AddUserModal` แบ่ง 2 TAB (Account Info + Role & Project Access) พร้อมตัวสุ่มรหัสผ่านและตัววัดความแข็งแกร่งรหัสผ่าน
       - สร้าง `EditUserModal` และ `ResetPasswordModal` สำหรับแก้ไขข้อมูลและรีเซ็ตรหัสผ่าน พร้อมระบบป้องกันการปิดใช้งานบัญชี Admin คนสุดท้าย
 - **เหตุผล:** ยกระดับความปลอดภัยระบบ ป้องกันการยกระดับสิทธิ์ (Privilege Escalation) ควบคุมสิทธิ์เข้าถึงรายโครงการ และอำนวยความสะดวกให้ผู้ดูแลระบบในการบริหารจัดการผู้ใช้งาน
-
 
 - **ไฟล์ที่แก้ไข:**
   - `.gitignore` [MODIFY]
@@ -3129,7 +3083,7 @@
     - ยกเลิกตัวเลือกดรอปดาวน์ `-- เลือกวัสดุจากระบบ --` ในตาราง Modal รับเข้าสต็อก เปลี่ยนเป็นช่องกรอก **รหัสวัสดุ (SKU)** และ **ชื่อวัสดุ** โดยตรง
     - ปรับกระบวนการทำงานใหม่เป็น `CSV → Validate CSV Data → Preview → Project → process_stock_in` นำเข้าข้อมูลจากไฟล์ CSV โดยตรงโดยไม่ต้องขึ้นกับข้อมูลใน Items Master มาก่อน
     - อัปเดต `process_stock_in` RPC และระบบ Auto-resolution ฝั่งเซิร์ฟเวอร์ ให้ตรวจสอบและสร้างรายการวัสดุใหม่ลงใน `public.items` ให้อัตโนมัติเมื่อกดบันทึกรับเข้า
-    - คงการทำงานของ โครงการปลายทาง *, จำนวน *, Serial Number, Part Number, รองรับ CSV UTF-8 BOM, แถบสรุปยอดชิ้นรวม และ Supabase Atomic Transaction
+    - คงการทำงานของ โครงการปลายทาง (จำเป็น), จำนวน (จำเป็น), Serial Number, Part Number, รองรับ CSV UTF-8 BOM, แถบสรุปยอดชิ้นรวม และ Supabase Atomic Transaction
 - **เหตุผล:** รองรับการรับเข้าวัสดุรายการใหม่ๆ จากไฟล์ CSV โดยตรงโดยไม่ต้องบันทึกสร้าง Master Items ล่วงหน้า ช่วยลดขั้นตอนและป้องกันปัญหาการบล็อกผู้ใช้งานจากการคีย์ข้อมูล
 
 ## [2026-08-08 15:40]
@@ -3141,7 +3095,7 @@
     - ปรับปรุงกระบวนการ **CSV Stock In เป็น SKU-first Exact Matching**:
       - ใช้ **SKU เป็นคีย์หลักในการจับคู่วัสดุเท่านั้น** (`SKU → item_id`) หากไม่พบ SKU ในคลัง ระบบจะปฏิเสธการจับคู่และแจ้งเตือน `ไม่พบ SKU "..." ในระบบ` (ไม่ทำ Fuzzy Match จากชื่อวัสดุ)
       - รายการที่จับคู่ SKU สำเร็จจะแสดงชื่อวัสดุและ SKU ที่ค้นพบจากคลังโดยอัตโนมัติในรูปแบบ Badge ข้อมูลอ่านง่าย โดย **ไม่ต้องให้ผู้ใช้งานเลือกดรอปดาวน์ `-- เลือกวัสดุจากระบบ --` ซ้ำซ้อนอีก**
-    - คงการทำงานของ โครงการปลายทาง *, จำนวน *, Serial Number, Part Number, สรุปจำนวนชิ้นรวม และ Supabase Atomic RPC `process_stock_in`
+    - คงการทำงานของ โครงการปลายทาง (จำเป็น), จำนวน (จำเป็น), Serial Number, Part Number, สรุปจำนวนชิ้นรวม และ Supabase Atomic RPC `process_stock_in`
 - **เหตุผล:** ปรับปรุงขั้นตอนการนำเข้า CSV ให้กระชับ รวดเร็ว ลดการสับสนของผู้ใช้งาน และรับประกันความถูกต้องแม่นยำด้วยการจับคู่ SKU จากคลังสินค้าโดยตรง
 
 ## [2026-08-08 15:30]
@@ -3191,7 +3145,7 @@
 
 ## [2026-08-07 17:11]
 
-- **ไฟล์ที่สร้าง/แก้ไข:** 
+- **ไฟล์ที่สร้าง/แก้ไข:**
   - `supabase/migrations/05_stock_in_rpc.sql` [NEW]
   - `src/pages/StockIn.jsx` [MODIFY]
   - `src/pages/Withdrawals.jsx` [MODIFY]
@@ -3213,7 +3167,7 @@
 
 ## [2026-08-07 16:44]
 
-- **ไฟล์ที่สร้าง/แก้ไข:** 
+- **ไฟล์ที่สร้าง/แก้ไข:**
   - `stock-in-vs-items-workflow.html` [NEW]
 - **รายละเอียด:**
   - สร้างไฟล์ HTML สรุปผังกระบวนการทำงานและความแตกต่างระหว่าง **รับเข้าสต็อก (`/stock-in`)** และ **รายการวัสดุ Master (`/items`)** ในสไตล์ UI/UX Pro Max
@@ -3226,7 +3180,7 @@
 
 ## [2026-08-07 16:35]
 
-- **ไฟล์ที่สร้าง/แก้ไข:** 
+- **ไฟล์ที่สร้าง/แก้ไข:**
   - `src/pages/Items.jsx` [MODIFY]
   - `src/pages/StockIn.jsx` [MODIFY]
   - `src/components/ui/PosTerminal.jsx` [MODIFY]
@@ -3242,7 +3196,7 @@
 
 ## [2026-08-07 15:36]
 
-- **ไฟล์ที่สร้าง/แก้ไข:** 
+- **ไฟล์ที่สร้าง/แก้ไข:**
   - `supabase/migrations/04_atomic_inventory_approval_rpc.sql` [NEW]
   - `src/components/ui/PosTerminal.jsx` [MODIFY]
   - `src/pages/Withdrawals.jsx` [MODIFY]
@@ -3260,7 +3214,7 @@
 
 - **Files Modified:** `rbac-workflow.html`
 - **Changes:**
-  - แก้ไขจุดบกพร่องของ `QuerySelector` จากเดิม `containerSelector + ' svg'` เป็น `containerSelector + ' .mermaid svg'` เพื่อระบุเป้าหมายเป็นผัง Diagram แท้จริงของ Mermaid.js และป้องกันไม่ให้เลือกติดไอคอน SVG ประจำหัวข้อ (`<svg class="w-5 h-5">`) 
+  - แก้ไขจุดบกพร่องของ `QuerySelector` จากเดิม `containerSelector + ' svg'` เป็น `containerSelector + ' .mermaid svg'` เพื่อระบุเป้าหมายเป็นผัง Diagram แท้จริงของ Mermaid.js และป้องกันไม่ให้เลือกติดไอคอน SVG ประจำหัวข้อ (`<svg class="w-5 h-5">`)
   - สร้างสเปกตรัม `<style>` ด้วย `createElementNS` ภายใน SVG namespace เพื่อให้การบันทึกผังเป็น PNG และ SVG ดึงสี, ขอบ, ฟอนต์ และสัดส่วนของผังอันที่ 2 (Detailed Database Transaction & Approval Atomic Workflow) ออกมาได้อย่างสมบูรณ์แบบ
 - **Reason:** ผู้ใช้ส่งไฟล์ภาพที่ดาวน์โหลดมาให้ดู และพบว่าภาพที่ได้เป็นไอคอนหัวข้อขนาด 24x24 แทนที่จะเป็นผัง Diagram
 
@@ -3628,7 +3582,9 @@
   - สร้างหน้า StockIn (รับเข้า), Withdrawals (เบิกจ่าย) พร้อมระบบ Role-based access
   - สร้างหน้า History (ประวัติ) และ Reports (รายงาน Export Excel)
 - **Reason:** ดำเนินการสร้างระบบ Stock Flow ต่อจนครบทุกหน้าจอตามแผนงาน
+
 ## [2026-08-10]
+
 - **Files Modified:** `src/lib/emailRenderer.js`, `src/lib/emailService.js`, `src/components/users/AddUserModal.jsx`, `src/pages/UserManagement.jsx`
 - **Changes:** เพิ่ม invitation email template, ตัวเลือกส่งอีเมลตอนสร้างผู้ใช้, การส่งอีเมลแบบไม่กระทบการสร้างบัญชี และปุ่ม `Resend Invitation`
 - **Reason:** รองรับ flow เชิญผู้ใช้ใหม่ผ่าน email infrastructure เดิมโดยไม่ส่งรหัสผ่านแบบ plain-text

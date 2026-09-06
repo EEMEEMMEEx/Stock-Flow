@@ -18,46 +18,55 @@
 ## 🚀 Key Modules & Capabilities
 
 ### 1. Modern Animated Landing Page (Reactbits UI)
+
 * **High-Tech Aesthetic:** Built with Tailwind CSS v4, Framer Motion, and Reactbits animated components (`Squares`, `SpotlightCard`, `DecryptedText`, `ShinyText`, `Magnet`, `TiltedCard`).
 * **Strict SVG Iconography:** 100% vector SVG icons via `lucide-react` with zero unicode emojis for a clean enterprise feel.
 * **Automated CI/CD:** Continuous Deployment to GitHub Pages via GitHub Actions (`.github/workflows/deploy-gh-pages.yml`).
 
 ### 2. High-Speed Cloudflare R2 Object Storage & Zero Egress
+
 * **Direct Browser-to-R2 Upload:** High-performance direct file uploads via S3 Presigned URLs (`/api/r2-upload-url`), completely offloading media bandwidth from Supabase.
 * **Zero Egress Architecture:** Stores item images, avatar profile pictures, and delivery documents in Cloudflare R2 buckets with global CDN caching.
 * **Zero Data Loss Migration:** Built-in automated migration pipeline (`npm run migrate:r2`) for converting legacy Base64 records to binary CDN files.
 
 ### 3. POS-Style Rapid Material Withdrawal Terminal
+
 * **High-Speed Checkout:** Modern POS cart interface for scanning SKUs, barcodes, and serial numbers.
 * **Project Allocation:** Dynamic item assignment mapped directly to active project codes (e.g., DOPA, USO Phase 3).
 * **Double-Deduction Prevention:** Database-level 100% Atomic Transactions (`SELECT ... FOR UPDATE` via PostgreSQL RPC) preventing concurrent race conditions.
 
 ### 4. Site Installation Kits (BOM) & Real-Time Availability
+
 * **Standard BOM Templates:** Pre-configured Bill of Materials templates for standard site deployments (e.g., Microwave Towers, Base Stations).
 * **Instant Readiness Analysis:** Aggregates real-time project stock to calculate exact number of installable site kits and identifies component shortages dynamically.
 
 ### 5. Material Checkout & Borrow/Return Lifecycle
+
 * **Equipment Lending Tracking:** Full lifecycle management for borrowed tools and project equipment.
 * **Condition Inspection:** Status tracking upon checkout and return.
 * **Overdue Alerts:** Automated flagging and alerts for overdue borrowed items.
 
 ### 6. Interactive In-App Notification Center
+
 * **Smart Bell Hub (`NotificationBell.jsx`):** Multi-tab filter for *"All"*, *"Unread"*, and *"Action Required"*.
 * **One-Click Quick Approval:** Supervisors and Admins can approve withdrawal requests and deduct stock atomically directly from notification cards.
 * **Context-Aware Actions:** Instant links to view issued vouchers, inspect returned materials, or audit low-stock items.
 
 ### 7. Granular RBAC & Role Management
+
 * **Fine-Grained Permissions:** 12+ modular permission keys (Dashboard, Projects, Items, Stock-In, Withdrawals, Checkouts, History, Reports, Users, Roles, Settings).
 * **PermissionRoute Guards:** Protected client-side routing and database Row Level Security (RLS).
 * **Email Invitation Engine:** Integrated serverless email invitation service (`/api/send-email`) with branded HTML templates.
 * **Self-Service Profile:** User profile management with password change policies and forced reset enforcement.
 
 ### 8. Batch Stock-In & Canonical CSV/Excel Validation
+
 * **Batch Import Engine:** Import thousands of inventory records with automatic schema mapping and validation.
 * **Serial Number Tracking:** Individual serial registration with duplicate prevention.
 
 ### 9. Automated Issue Vouchers & Analytical Reporting
-* **Client-Side PDF Generation:** Instant generation of official Material Withdrawal Documents (ใบเบิกพัสดุ) with standard formatting, signatures, and document numbering via `@react-pdf/renderer` & `jspdf`.
+
+* **Client-Side PDF Generation:** Instant generation of official Material Withdrawal Documents (ใบเบิกพัสดุ) with standard formatting, signatures, and document numbering via `@react-pdf/renderer`.
 * **Visual Analytics:** Interactive Recharts dashboards for stock distribution, movement velocity, and inventory valuation.
 * **Data Export:** Multi-format exports to Excel (`.xlsx`) and PDF.
 
@@ -108,24 +117,30 @@ graph TD
 ## 💻 Getting Started Locally
 
 ### 1. Install Dependencies
+
 ```bash
 npm install
 ```
 
 ### 2. Start Development Server
+
 ```bash
 npm run dev
 ```
+
 The application will be accessible at `http://localhost:5173`.
+
 * View App / Dashboard: `http://localhost:5173/` (or `/login` if unauthenticated)
 * View Landing Page: `http://localhost:5173/landing`
 
 ### 3. Migrate Legacy Images to Cloudflare R2
+
 ```bash
 npm run migrate:r2
 ```
 
 ### 4. Build for Production
+
 ```bash
 npm run build
 ```
