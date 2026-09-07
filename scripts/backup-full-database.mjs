@@ -335,7 +335,8 @@ CREATE TABLE IF NOT EXISTS public.checkout_orders (
   borrower_phone TEXT,
   borrower_department TEXT,
   checkout_date TIMESTAMPTZ NOT NULL DEFAULT now(),
-  expected_return_date DATE NOT NULL,
+  expected_return_date DATE,
+  borrow_type TEXT NOT NULL DEFAULT 'standard' CHECK (borrow_type IN ('standard', 'indefinite')),
   actual_returned_date TIMESTAMPTZ,
   status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'partial_returned', 'completed', 'overdue', 'cancelled')),
   purpose TEXT,
@@ -467,6 +468,7 @@ CREATE INDEX IF NOT EXISTS idx_withdrawal_orders_status ON public.withdrawal_ord
 CREATE INDEX IF NOT EXISTS idx_checkout_orders_project ON public.checkout_orders (project_id);
 CREATE INDEX IF NOT EXISTS idx_checkout_orders_status ON public.checkout_orders (status);
 CREATE INDEX IF NOT EXISTS idx_checkout_orders_due ON public.checkout_orders (expected_return_date);
+CREATE INDEX IF NOT EXISTS idx_checkout_orders_borrow_type ON public.checkout_orders (borrow_type);
 CREATE INDEX IF NOT EXISTS idx_checkout_items_order ON public.checkout_items (checkout_order_id);
 CREATE INDEX IF NOT EXISTS idx_checkout_items_item ON public.checkout_items (item_id);
 CREATE INDEX IF NOT EXISTS idx_checkout_ext_order ON public.checkout_extension_logs (checkout_order_id);
@@ -1060,6 +1062,7 @@ DECLARE
   v_borrower_phone TEXT;
   v_borrower_department TEXT;
   v_borrower_id UUID;
+  v_borrow_type TEXT;
   v_expected_return_date DATE;
   v_purpose TEXT;
   v_notes TEXT;
@@ -1077,7 +1080,7 @@ BEGIN
   v_borrower_name := TRIM(p_payload->>'borrower_name');
   v_borrower_phone := p_payload->>'borrower_phone';
   v_borrower_department := p_payload->>'borrower_department';
-  v_expected_return_date := (p_payload->>'expected_return_date')::DATE;
+  v_borrow_type := COALESCE(p_payload->>'borrow_type', 'standard');
   v_purpose := p_payload->>'purpose';
   v_notes := p_payload->>'notes';
   v_created_by := NULLIF(p_payload->>'created_by', '')::UUID;
@@ -1087,8 +1090,15 @@ BEGIN
     RAISE EXCEPTION 'กรุณาระบุชื่อผู้ยืมพัสดุ';
   END IF;
 
-  IF v_expected_return_date IS NULL THEN
-    RAISE EXCEPTION 'กรุณาระบุกำหนดวันส่งคืน';
+  IF v_borrow_type = 'standard' THEN
+    v_expected_return_date := (p_payload->>'expected_return_date')::DATE;
+    IF v_expected_return_date IS NULL THEN
+      RAISE EXCEPTION 'กรุณาระบุกำหนดวันส่งคืนสำหรับการยืมแบบระบุวันส่งคืน';
+    END IF;
+  ELSIF v_borrow_type = 'indefinite' THEN
+    v_expected_return_date := NULL;
+  ELSE
+    RAISE EXCEPTION 'ประเภทการยืมไม่ถูกต้อง (ต้องเป็น standard หรือ indefinite)';
   END IF;
 
   IF v_items IS NULL OR jsonb_array_length(v_items) = 0 THEN
@@ -1099,11 +1109,11 @@ BEGIN
 
   INSERT INTO public.checkout_orders (
     order_number, project_id, borrower_id, borrower_name, borrower_phone,
-    borrower_department, checkout_date, expected_return_date, status,
+    borrower_department, checkout_date, expected_return_date, borrow_type, status,
     purpose, notes, created_by
   ) VALUES (
     v_order_number, v_project_id, v_borrower_id, v_borrower_name, v_borrower_phone,
-    v_borrower_department, now(), v_expected_return_date, 'active',
+    v_borrower_department, now(), v_expected_return_date, v_borrow_type, 'active',
     v_purpose, v_notes, v_created_by
   ) RETURNING id INTO v_order_id;
 
@@ -1246,9 +1256,10 @@ $$;
 
 CREATE OR REPLACE FUNCTION public.extend_checkout_due_date(
   p_order_id UUID,
-  p_new_due_date DATE,
+  p_new_due_date DATE DEFAULT NULL,
   p_reason TEXT DEFAULT NULL,
-  p_extended_by UUID DEFAULT NULL
+  p_extended_by UUID DEFAULT NULL,
+  p_is_indefinite BOOLEAN DEFAULT FALSE
 )
 RETURNS JSONB
 LANGUAGE plpgsql
@@ -1282,6 +1293,30 @@ BEGIN
   END IF;
 
   v_prev_due_date := v_order.expected_return_date;
+
+  IF p_is_indefinite THEN
+    v_new_status := CASE 
+      WHEN v_order.status = 'overdue' THEN 
+        CASE WHEN EXISTS (SELECT 1 FROM public.checkout_items WHERE checkout_order_id = p_order_id AND (quantity_returned > 0 OR quantity_damaged > 0 OR quantity_lost > 0)) THEN 'partial_returned' ELSE 'active' END
+      ELSE v_order.status 
+    END;
+
+    UPDATE public.checkout_orders SET borrow_type = 'indefinite', expected_return_date = NULL, status = v_new_status WHERE id = p_order_id;
+
+    INSERT INTO public.checkout_extension_logs (checkout_order_id, previous_due_date, new_due_date, extension_reason, extended_by, extended_at)
+    VALUES (p_order_id, v_prev_due_date, NULL, COALESCE(TRIM(p_reason), 'เปลี่ยนประเภทเป็นไม่มีกำหนดคืน (Indefinite Borrow)'), v_effective_user_id, now())
+    RETURNING id INTO v_log_id;
+
+    RETURN jsonb_build_object('success', true, 'order_id', p_order_id, 'order_number', v_order.order_number, 'previous_due_date', v_prev_due_date, 'new_due_date', NULL, 'new_status', v_new_status, 'borrow_type', 'indefinite', 'log_id', v_log_id);
+  END IF;
+
+  IF v_order.borrow_type = 'indefinite' OR v_order.expected_return_date IS NULL THEN
+    RAISE EXCEPTION 'Cannot extend return date for an indefinite borrow order.';
+  END IF;
+
+  IF p_new_due_date IS NULL THEN
+    RAISE EXCEPTION 'กรุณาระบุกำหนดส่งคืนใหม่';
+  END IF;
 
   IF p_new_due_date <= v_prev_due_date THEN
     RAISE EXCEPTION 'New return due date (%) must be later than the current due date (%).', p_new_due_date, v_prev_due_date;

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 
   Search, Clock, AlertTriangle, CheckCircle2, RotateCcw, 
-  Eye, User, Building2, Phone, Layers, CalendarClock
+  Eye, User, Building2, Phone, Layers, CalendarClock, Infinity as InfinityIcon
 } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 
@@ -25,12 +25,18 @@ const CheckoutActiveList = ({
     today.setHours(0, 0, 0, 0);
 
     return orders.map(order => {
-      const dueDate = new Date(order.expected_return_date);
-      dueDate.setHours(0, 0, 0, 0);
-      
-      const isOverdue = dueDate < today && order.status !== 'completed';
-      const daysDiff = differenceInDays(dueDate, today);
-      const isDueSoon = daysDiff >= 0 && daysDiff <= 2 && order.status !== 'completed';
+      const isIndefinite = order.borrow_type === 'indefinite' || !order.expected_return_date;
+      let isOverdue = false;
+      let isDueSoon = false;
+      let daysDiff = null;
+
+      if (!isIndefinite && order.expected_return_date) {
+        const dueDate = new Date(order.expected_return_date);
+        dueDate.setHours(0, 0, 0, 0);
+        isOverdue = dueDate < today && order.status !== 'completed';
+        daysDiff = differenceInDays(dueDate, today);
+        isDueSoon = daysDiff >= 0 && daysDiff <= 2 && order.status !== 'completed';
+      }
 
       const totalBorrowed = (order.checkout_items || []).reduce((sum, i) => sum + Number(i.quantity_borrowed || 0), 0);
       const totalReturned = (order.checkout_items || []).reduce((sum, i) => sum + Number(i.quantity_returned || 0) + Number(i.quantity_damaged || 0) + Number(i.quantity_lost || 0), 0);
@@ -38,6 +44,7 @@ const CheckoutActiveList = ({
 
       return {
         ...order,
+        isIndefinite,
         isOverdue,
         isDueSoon,
         daysDiff,
@@ -208,7 +215,12 @@ const CheckoutActiveList = ({
                         </span>
 
                         {/* Status Badges */}
-                        {order.isOverdue ? (
+                        {order.isIndefinite ? (
+                          <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-500/30 flex items-center gap-1">
+                            <InfinityIcon className="w-3 h-3 text-purple-600 dark:text-purple-400" />
+                            ไม่มีกำหนดคืน (Indefinite)
+                          </span>
+                        ) : order.isOverdue ? (
                           <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30 flex items-center gap-1 animate-pulse">
                             <AlertTriangle className="w-3 h-3" />
                             เกินกำหนดคืน {Math.abs(order.daysDiff)} วัน
@@ -262,10 +274,16 @@ const CheckoutActiveList = ({
                     <div className="flex items-center gap-2 shrink-0 self-end md:self-center">
                       <div className="text-right mr-2 hidden sm:block">
                         <div className="text-[11px] text-muted-foreground">
-                          ยืมเมื่อ: {format(new Date(order.checkout_date), 'dd/MM/yyyy')}
+                          ยืมเมื่อ: {order.checkout_date ? format(new Date(order.checkout_date), 'dd/MM/yyyy') : '-'}
                         </div>
-                        <div className={`text-xs font-bold ${order.isOverdue ? 'text-red-600 dark:text-red-400' : 'text-foreground'}`}>
-                          กำหนดคืน: {format(new Date(order.expected_return_date), 'dd/MM/yyyy')}
+                        <div className={`text-xs font-bold ${
+                          order.isOverdue 
+                            ? 'text-red-600 dark:text-red-400' 
+                            : order.isIndefinite 
+                            ? 'text-purple-600 dark:text-purple-400' 
+                            : 'text-foreground'
+                        }`}>
+                          กำหนดคืน: {order.isIndefinite ? 'ไม่มีกำหนดคืน' : (order.expected_return_date ? format(new Date(order.expected_return_date), 'dd/MM/yyyy') : '-')}
                         </div>
                       </div>
 
@@ -280,17 +298,24 @@ const CheckoutActiveList = ({
                         <span className="hidden sm:inline">ดูใบยืม</span>
                       </Button>
 
-                      {canExtend && onOpenExtendModal && order.status !== 'completed' && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => onOpenExtendModal(order)}
-                          className="rounded-lg h-9 text-xs gap-1.5 font-semibold border-amber-500/30 text-amber-700 dark:text-amber-400 hover:bg-amber-500/10 shadow-2xs cursor-pointer"
-                          title="ขยายกำหนดวันส่งคืนพัสดุ (Extend Due Date)"
-                        >
-                          <CalendarClock className="w-3.5 h-3.5" />
-                          <span>ขยายเวลา</span>
-                        </Button>
+                      {order.isIndefinite ? (
+                        <div className="inline-flex items-center gap-1 px-2.5 rounded-lg h-9 bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-500/30 text-xs font-semibold select-none" title="รายการยืมแบบไม่มีกำหนดคืน (Indefinite Borrow)">
+                          <InfinityIcon className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+                          <span className="hidden sm:inline">ไม่มีกำหนดคืน</span>
+                        </div>
+                      ) : (
+                        canExtend && onOpenExtendModal && order.status !== 'completed' && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => onOpenExtendModal(order)}
+                            className="rounded-lg h-9 text-xs gap-1.5 font-semibold border-amber-500/30 text-amber-700 dark:text-amber-400 hover:bg-amber-500/10 shadow-2xs cursor-pointer"
+                            title="ขยายกำหนดวันส่งคืนพัสดุ (Extend Due Date)"
+                          >
+                            <CalendarClock className="w-3.5 h-3.5" />
+                            <span>ขยายเวลา</span>
+                          </Button>
+                        )
                       )}
 
                       {canReturn && (

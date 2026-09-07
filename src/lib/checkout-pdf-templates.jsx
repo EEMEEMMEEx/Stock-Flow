@@ -192,9 +192,10 @@ export const MaterialCheckoutPDF = ({ order }) => {
     ? new Date(order.checkout_date).toLocaleDateString('th-TH')
     : new Date().toLocaleDateString('th-TH');
 
-  const expectedReturnDateStr = order?.expected_return_date
-    ? new Date(order.expected_return_date).toLocaleDateString('th-TH')
-    : '—';
+  const isIndefinite = order?.borrow_type === 'indefinite' || !order?.expected_return_date;
+  const expectedReturnDateStr = isIndefinite
+    ? 'ไม่มีกำหนดคืน (Indefinite)'
+    : (order?.expected_return_date ? new Date(order.expected_return_date).toLocaleDateString('th-TH') : '—');
 
   const warehouseName = order?.warehouse_name || order?.projects?.name || order?.projects?.location || '—';
 

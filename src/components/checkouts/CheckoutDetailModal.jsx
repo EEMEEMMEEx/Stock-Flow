@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { 
   FileText, Download, CheckCircle2, Clock, 
   User, Building2, Calendar, Phone, Layers, RotateCcw,
-  CalendarClock, ArrowRight
+  CalendarClock, ArrowRight, Infinity as InfinityIcon
 } from 'lucide-react';
 import { pdf } from '@react-pdf/renderer';
 import { MaterialCheckoutPDF, MaterialReturnPDF } from '@/lib/checkout-pdf-templates';
@@ -76,6 +76,7 @@ const CheckoutDetailModal = ({
 
   if (!order) return null;
 
+  const isIndefinite = order.borrow_type === 'indefinite' || !order.expected_return_date;
   const checkoutItems = order.checkout_items || [];
   const totalBorrowed = checkoutItems.reduce((s, i) => s + Number(i.quantity_borrowed || 0), 0);
   const totalReturned = checkoutItems.reduce((s, i) => s + Number(i.quantity_returned || 0), 0);
@@ -136,9 +137,15 @@ const CheckoutDetailModal = ({
                   <span className="font-mono text-xs font-bold text-indigo-600 bg-indigo-500/10 px-2 py-0.5 rounded-md">
                     {order.order_number}
                   </span>
+                  {isIndefinite && (
+                    <span className="text-[11px] font-bold text-purple-700 dark:text-purple-300 bg-purple-500/15 border border-purple-500/30 px-2 py-0.5 rounded-md flex items-center gap-1">
+                      <InfinityIcon className="w-3 h-3 text-purple-600 dark:text-purple-400" />
+                      ไม่มีกำหนดคืน
+                    </span>
+                  )}
                 </DialogTitle>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  ยืมเมื่อ: {format(new Date(order.checkout_date), 'dd/MM/yyyy HH:mm น.')}
+                  ยืมเมื่อ: {order.checkout_date ? format(new Date(order.checkout_date), 'dd/MM/yyyy HH:mm น.') : '-'}
                 </p>
               </div>
             </div>
@@ -188,9 +195,13 @@ const CheckoutDetailModal = ({
                 <span className="text-muted-foreground">คลังต้นทาง:</span>
                 <strong className="text-foreground">{order.projects?.name}</strong>
               </div>
-              <div className="flex items-center gap-2 pl-5.5 text-red-600 dark:text-red-400 font-semibold">
-                <Calendar className="w-3 h-3" />
-                <span>กำหนดส่งคืน: {format(new Date(order.expected_return_date), 'dd/MM/yyyy')}</span>
+              <div className={`flex items-center gap-2 pl-5.5 font-semibold ${
+                isIndefinite ? 'text-purple-600 dark:text-purple-400' : 'text-red-600 dark:text-red-400'
+              }`}>
+                {isIndefinite ? <InfinityIcon className="w-3 h-3" /> : <Calendar className="w-3 h-3" />}
+                <span>
+                  กำหนดส่งคืน: {isIndefinite ? 'ไม่มีกำหนดคืน (Indefinite)' : (order.expected_return_date ? format(new Date(order.expected_return_date), 'dd/MM/yyyy') : '-')}
+                </span>
               </div>
               {order.purpose && (
                 <div className="text-muted-foreground pl-5.5">งาน: {order.purpose}</div>
@@ -294,12 +305,19 @@ const CheckoutDetailModal = ({
                     <div>
                       <div className="font-semibold text-foreground flex items-center gap-1.5 flex-wrap">
                         <span className="text-muted-foreground line-through font-mono text-[11px]">
-                          {format(new Date(log.previous_due_date), 'dd/MM/yyyy')}
+                          {log.previous_due_date ? format(new Date(log.previous_due_date), 'dd/MM/yyyy') : 'ไม่มีกำหนดคืน'}
                         </span>
                         <ArrowRight className="w-3 h-3 text-amber-500" />
-                        <span className="font-bold text-amber-700 dark:text-amber-400 font-mono">
-                          {format(new Date(log.new_due_date), 'dd/MM/yyyy')}
-                        </span>
+                        {log.new_due_date ? (
+                          <span className="font-bold text-amber-700 dark:text-amber-400 font-mono">
+                            {format(new Date(log.new_due_date), 'dd/MM/yyyy')}
+                          </span>
+                        ) : (
+                          <span className="font-bold text-purple-600 dark:text-purple-400 font-mono inline-flex items-center gap-1">
+                            <InfinityIcon className="w-3 h-3" />
+                            ไม่มีกำหนดคืน
+                          </span>
+                        )}
                         {log.extension_reason && (
                           <span className="text-muted-foreground font-normal text-[11px]">
                             — &quot;{log.extension_reason}&quot;
@@ -350,21 +368,28 @@ const CheckoutDetailModal = ({
             )}
           </div>
 
-          <div className="flex items-center gap-2">
-            {remaining > 0 && order.status !== 'completed' && onOpenExtendModal && canExtend && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  onClose();
-                  onOpenExtendModal(order);
-                }}
-                className="rounded-lg h-9 border-amber-500/30 text-amber-700 dark:text-amber-400 hover:bg-amber-500/10 text-xs gap-1.5 font-semibold shadow-2xs cursor-pointer"
-              >
-                <CalendarClock className="w-3.5 h-3.5" />
-                <span>ขยายเวลาส่งคืน</span>
-              </Button>
+          <div className="flex items-center gap-2 flex-wrap">
+            {isIndefinite ? (
+              <div className="inline-flex items-center gap-1.5 px-3 rounded-lg h-9 bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-500/30 text-xs font-semibold select-none">
+                <InfinityIcon className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+                <span>ไม่มีกำหนดคืน (Indefinite Borrow)</span>
+              </div>
+            ) : (
+              remaining > 0 && order.status !== 'completed' && onOpenExtendModal && canExtend && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    onClose();
+                    onOpenExtendModal(order);
+                  }}
+                  className="rounded-lg h-9 border-amber-500/30 text-amber-700 dark:text-amber-400 hover:bg-amber-500/10 text-xs gap-1.5 font-semibold shadow-2xs cursor-pointer"
+                >
+                  <CalendarClock className="w-3.5 h-3.5" />
+                  <span>ขยายเวลาส่งคืน</span>
+                </Button>
+              )
             )}
 
             {remaining > 0 && onOpenReturnModal && canReturn && (

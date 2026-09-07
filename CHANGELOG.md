@@ -1,5 +1,23 @@
 # Changelog
 
+## [v1.4.79] [2026-09-07] Indefinite Borrow Workflow & Extend Due Date Conversion
+
+- **Indefinite Borrow Option in Extension Modal (`CheckoutExtendModal.jsx`):**
+  - เพิ่มปุ่มด่วน `ไม่มีกำหนดคืน (Indefinite)` ควบคู่กับปุ่มลัด (+3 วัน, +7 วัน, +14 วัน, +30 วัน) ในหน้าต่างขยายกำหนดวันส่งคืนพัสดุ
+  - เมื่อผู้ใช้เลือก "ไม่มีกำหนดคืน":
+    - สลับหน้าจอ input วันที่ เป็นกล่องแสดงสถานะสีม่วงแจ้งเตือน "ยืมแบบไม่มีกำหนดคืน (Indefinite Borrow)" พร้อมปุ่ม "กลับไประบุวันที่"
+    - อัปเดตกล่อง Extension Status Preview เป็น "ปกติ (ไม่มีกำหนดส่งคืน)"
+    - เปลี่ยนปุ่มบันทึกเป็น `ยืนยันเปลี่ยนเป็นไม่มีกำหนดคืน` พร้อมไอคอน `InfinityIcon`
+    - เมื่อ Submit จะอัปเดตคำสั่งยืมเป็น `borrow_type = 'indefinite'`, `expected_return_date = NULL`, และสถานะกลับมาเป็น `active` (หรือ `partial_returned`)
+    - บันทึกลงตารางประวัติการขยายเวลา `checkout_extension_logs`
+- **Database & RPC Enhancements (`66_indefinite_borrow_workflow.sql`, `backup-full-database.mjs`):**
+  - ปรับปรุง DDL ตาราง `public.checkout_extension_logs` ให้คอลัมน์ `new_due_date` และ `previous_due_date` เป็น Nullable (`DROP NOT NULL`) รองรับกรณีเปลี่ยนเป็นไม่มีกำหนดคืน
+  - ปรับปรุง PostgreSQL RPC `extend_checkout_due_date` ให้รองรับพารามิเตอร์ `p_is_indefinite BOOLEAN DEFAULT FALSE` และ `p_new_due_date DATE DEFAULT NULL` พร้อม Transaction atomicity
+- **UI Null-Safe Due Date Display (`CheckoutDetailModal.jsx`):**
+  - ปรับการแสดงผลประวัติการขยายเวลาใน Detail Modal ให้แสดง badge `ไม่มีกำหนดคืน` พร้อมไอคอน `InfinityIcon` ป้องกันการแสดงผล `01/01/1970`
+- **Mandatory System Version Management (Rule 10):**
+  - ขยับเวอร์ชันระบบเป็น `1.4.79` ใน `package.json`, `README.md`, `wiki/Home.md`, `wiki/_Footer.md`
+
 ## [v1.4.76] [2026-09-07] Zero ESLint Warnings & Clean Code Standard Alignment
 
 - **React Fast Refresh (`react-refresh/only-export-components` — 10 warnings resolved to 0):**

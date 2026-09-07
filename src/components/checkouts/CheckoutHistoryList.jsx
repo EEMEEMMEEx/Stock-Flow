@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 
   Search, History, CheckCircle2, Eye, User, 
-  Building2, FileText
+  Building2, FileText, Infinity as InfinityIcon
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -83,6 +83,12 @@ const CheckoutHistoryList = ({
                       <span className="font-mono text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 px-2.5 py-0.5 rounded-lg">
                         {order.order_number}
                       </span>
+                      {order.borrow_type === 'indefinite' && (
+                        <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-500/30 flex items-center gap-1">
+                          <InfinityIcon className="w-3 h-3 text-purple-600 dark:text-purple-400" />
+                          ไม่มีกำหนดคืน
+                        </span>
+                      )}
                       <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-emerald-500/15 text-emerald-600 border border-emerald-500/30 flex items-center gap-1">
                         <CheckCircle2 className="w-3 h-3" />
                         คืนครบแล้ว ({totalBorrowed} ชิ้น)
@@ -110,10 +116,10 @@ const CheckoutHistoryList = ({
                       </div>
                   </div>
 
-                  <div className="flex items-center gap-3 shrink-0 self-end md:self-center">
+                    <div className="flex items-center gap-3 shrink-0 self-end md:self-center">
                     <div className="text-right text-xs">
                       <div className="text-muted-foreground text-[11px]">
-                        ยืม: {format(new Date(order.checkout_date), 'dd/MM/yyyy')}
+                        ยืม: {order.checkout_date ? format(new Date(order.checkout_date), 'dd/MM/yyyy') : '-'}
                       </div>
                       <div className="font-bold text-emerald-600 dark:text-emerald-400">
                         คืน: {order.actual_returned_date ? format(new Date(order.actual_returned_date), 'dd/MM/yyyy') : '-'}

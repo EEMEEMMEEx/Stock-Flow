@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { 
   CalendarClock, Calendar, AlertTriangle, CheckCircle2, 
-  User, Building2, Sparkles, Plus
+  User, Building2, Sparkles, Plus, Infinity as InfinityIcon
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { format, addDays, differenceInDays, isAfter, parseISO } from 'date-fns';
@@ -21,6 +21,7 @@ const CheckoutExtendModal = ({
 }) => {
   const { user } = useAuth();
   const [newDueDate, setNewDueDate] = useState('');
+  const [isIndefiniteChoice, setIsIndefiniteChoice] = useState(false);
   const [reason, setReason] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -39,18 +40,37 @@ const CheckoutExtendModal = ({
 
   // Initialize dates when order changes
   useEffect(() => {
+    if (order && (order.borrow_type === 'indefinite' || !order.expected_return_date) && isOpen) {
+      toast.error('รายการยืมแบบไม่มีกำหนดคืน ไม่สามารถขยายเวลาส่งคืนได้');
+      onClose();
+      return;
+    }
+
     if (order && order.expected_return_date && isOpen) {
       const currentDue = parseISO(order.expected_return_date);
       // Default to +7 days from current expected return date
       const defaultNext = addDays(currentDue, 7);
       setNewDueDate(format(defaultNext, 'yyyy-MM-dd'));
+      setIsIndefiniteChoice(false);
       setReason('');
     }
-  }, [order, isOpen]);
+  }, [order, isOpen, onClose]);
 
   // Calculate extension preview metrics
   const previewData = useMemo(() => {
-    if (!newDueDate || !order) return null;
+    if (!order) return null;
+
+    if (isIndefiniteChoice) {
+      return {
+        isValid: true,
+        isIndefinite: true,
+        statusType: 'indefinite',
+        statusLabel: 'ปกติ (ไม่มีกำหนดส่งคืน)',
+        formattedNewDate: 'ไม่มีกำหนดส่งคืน'
+      };
+    }
+
+    if (!newDueDate) return null;
 
     try {
       const parsedNewDate = parseISO(newDueDate);
@@ -76,6 +96,7 @@ const CheckoutExtendModal = ({
 
       return {
         isValid,
+        isIndefinite: false,
         additionalDays,
         daysFromToday,
         statusType,
@@ -85,26 +106,37 @@ const CheckoutExtendModal = ({
     } catch {
       return null;
     }
-  }, [newDueDate, currentDueDate, order]);
+  }, [newDueDate, currentDueDate, order, isIndefiniteChoice]);
 
   if (!order) return null;
 
   // Quick preset adder
   const handleQuickAddDays = (days) => {
+    setIsIndefiniteChoice(false);
     const baseDate = isAfter(new Date(), currentDueDate) ? new Date() : currentDueDate;
     const target = addDays(baseDate, days);
     setNewDueDate(format(target, 'yyyy-MM-dd'));
   };
 
+  const handleSelectIndefinite = () => {
+    setIsIndefiniteChoice(true);
+    setNewDueDate('');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!newDueDate) {
-      toast.error('กรุณาระบุกำหนดส่งคืนใหม่');
+    if (order?.borrow_type === 'indefinite' && !isIndefiniteChoice) {
+      toast.error('รายการยืมแบบไม่มีกำหนดคืน ไม่สามารถขยายเวลาส่งคืนได้');
       return;
     }
 
-    if (!previewData?.isValid) {
+    if (!isIndefiniteChoice && !newDueDate) {
+      toast.error('กรุณาระบุกำหนดส่งคืนใหม่ หรือเลือกไม่มีกำหนดคืน');
+      return;
+    }
+
+    if (!isIndefiniteChoice && !previewData?.isValid) {
       toast.error(`กำหนดส่งคืนใหม่ต้องมากกว่าวันที่เดิม (${format(currentDueDate, 'dd/MM/yyyy')})`);
       return;
     }
@@ -117,9 +149,10 @@ const CheckoutExtendModal = ({
       try {
         const { data, error } = await supabase.rpc('extend_checkout_due_date', {
           p_order_id: order.id,
-          p_new_due_date: newDueDate,
+          p_new_due_date: isIndefiniteChoice ? null : newDueDate,
           p_reason: reason.trim() || null,
-          p_extended_by: user?.id || null
+          p_extended_by: user?.id || null,
+          p_is_indefinite: isIndefiniteChoice
         });
 
         if (!error && data?.success) {
@@ -133,19 +166,24 @@ const CheckoutExtendModal = ({
 
       // 2. Direct fallback if RPC not yet deployed
       if (!rpcSuccess) {
-        // Calculate new order status
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const parsedNew = parseISO(newDueDate);
-        const isStillOverdue = parsedNew < today;
-        
         let newStatus = order.status;
-        if (order.status === 'overdue') {
-          if (!isStillOverdue) {
-            const hasPartial = (order.checkout_items || []).some(
-              i => Number(i.quantity_returned || 0) > 0 || Number(i.quantity_damaged || 0) > 0 || Number(i.quantity_lost || 0) > 0
-            );
-            newStatus = hasPartial ? 'partial_returned' : 'active';
+        const hasPartial = (order.checkout_items || []).some(
+          i => Number(i.quantity_returned || 0) > 0 || Number(i.quantity_damaged || 0) > 0 || Number(i.quantity_lost || 0) > 0
+        );
+
+        if (isIndefiniteChoice) {
+          newStatus = hasPartial ? 'partial_returned' : 'active';
+        } else {
+          // Calculate new order status
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const parsedNew = parseISO(newDueDate);
+          const isStillOverdue = parsedNew < today;
+          
+          if (order.status === 'overdue') {
+            if (!isStillOverdue) {
+              newStatus = hasPartial ? 'partial_returned' : 'active';
+            }
           }
         }
 
@@ -153,7 +191,8 @@ const CheckoutExtendModal = ({
         const { error: updateErr } = await supabase
           .from('checkout_orders')
           .update({
-            expected_return_date: newDueDate,
+            borrow_type: isIndefiniteChoice ? 'indefinite' : (order.borrow_type || 'standard'),
+            expected_return_date: isIndefiniteChoice ? null : newDueDate,
             status: newStatus
           })
           .eq('id', order.id);
@@ -165,8 +204,10 @@ const CheckoutExtendModal = ({
           await supabase.from('checkout_extension_logs').insert({
             checkout_order_id: order.id,
             previous_due_date: order.expected_return_date,
-            new_due_date: newDueDate,
-            extension_reason: reason.trim() || null,
+            new_due_date: isIndefiniteChoice ? null : newDueDate,
+            extension_reason: isIndefiniteChoice
+              ? (reason.trim() ? `[เปลี่ยนเป็นไม่มีกำหนดคืน] ${reason.trim()}` : 'เปลี่ยนเป็นการยืมแบบไม่มีกำหนดคืน (Indefinite Borrow)')
+              : (reason.trim() || null),
             extended_by: user?.id || null,
             extended_at: new Date().toISOString()
           });
@@ -184,7 +225,8 @@ const CheckoutExtendModal = ({
             details: {
               order_number: order.order_number,
               previous_due_date: order.expected_return_date,
-              new_due_date: newDueDate,
+              new_due_date: isIndefiniteChoice ? null : newDueDate,
+              borrow_type: isIndefiniteChoice ? 'indefinite' : (order.borrow_type || 'standard'),
               reason: reason.trim() || null
             }
           });
@@ -193,12 +235,16 @@ const CheckoutExtendModal = ({
         }
       }
 
-      toast.success(`ขยายกำหนดวันส่งคืนของใบยืม ${order.order_number} สำเร็จ`);
+      if (isIndefiniteChoice) {
+        toast.success(`เปลี่ยนเป็นไม่มีกำหนดคืนสำหรับใบยืม ${order.order_number} สำเร็จ`);
+      } else {
+        toast.success(`ขยายกำหนดวันส่งคืนของใบยืม ${order.order_number} สำเร็จ`);
+      }
       if (onExtendSuccess) onExtendSuccess();
       onClose();
     } catch (err) {
       console.error('Extend Due Date Error:', err);
-      toast.error(err.message || 'เกิดข้อผิดพลาดในการขยายกำหนดวันส่งคืน');
+      toast.error(err.message || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล');
     } finally {
       setSubmitting(false);
     }
@@ -220,7 +266,7 @@ const CheckoutExtendModal = ({
                 </span>
               </DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-                ขยายระยะเวลาการยืมอุปกรณ์สำหรับรายการที่งานยังไม่เสร็จสิ้น หรือเลื่อนกำหนดงาน
+                ขยายระยะเวลาการยืมอุปกรณ์ หรือเปลี่ยนเป็นยืมแบบไม่มีกำหนดคืน (Indefinite Borrow)
               </DialogDescription>
             </div>
           </div>
@@ -265,20 +311,46 @@ const CheckoutExtendModal = ({
                 <Calendar className="w-3.5 h-3.5 text-indigo-500" />
                 <span>กำหนดส่งคืนใหม่ (New Return Due Date) *</span>
               </span>
-              <span className="text-[11px] text-muted-foreground font-normal">
-                ต้องหลังวันที่ {format(currentDueDate, 'dd/MM/yyyy')}
-              </span>
+              {!isIndefiniteChoice && (
+                <span className="text-[11px] text-muted-foreground font-normal">
+                  ต้องหลังวันที่ {format(currentDueDate, 'dd/MM/yyyy')}
+                </span>
+              )}
             </Label>
 
-            <Input
-              id="new-due-date"
-              type="date"
-              min={minSelectableDate}
-              value={newDueDate}
-              onChange={(e) => setNewDueDate(e.target.value)}
-              className="h-9 text-xs rounded-lg font-mono"
-              required
-            />
+            {isIndefiniteChoice ? (
+              <div className="p-3 rounded-lg border border-purple-500/30 bg-purple-500/10 text-purple-950 dark:text-purple-200 flex items-center justify-between transition-all">
+                <div className="flex items-center gap-2">
+                  <InfinityIcon className="w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0" />
+                  <div>
+                    <div className="font-bold text-xs">ยืมแบบไม่มีกำหนดคืน (Indefinite Borrow)</div>
+                    <div className="text-[11px] opacity-80">ไม่มีกำหนดวันส่งคืน และคำสั่งยืมจะไม่แสดงแจ้งเตือนเกินกำหนด</div>
+                  </div>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setIsIndefiniteChoice(false);
+                    handleQuickAddDays(7);
+                  }}
+                  className="h-7 px-2 text-[11px] font-medium border-purple-500/40 text-purple-700 dark:text-purple-300 hover:bg-purple-500/20 cursor-pointer"
+                >
+                  กลับไประบุวันที่
+                </Button>
+              </div>
+            ) : (
+              <Input
+                id="new-due-date"
+                type="date"
+                min={minSelectableDate}
+                value={newDueDate}
+                onChange={(e) => setNewDueDate(e.target.value)}
+                className="h-9 text-xs rounded-lg font-mono"
+                required={!isIndefiniteChoice}
+              />
+            )}
 
             {/* Quick Extension Shortcut Buttons */}
             <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
@@ -301,33 +373,52 @@ const CheckoutExtendModal = ({
                   {preset.label}
                 </Button>
               ))}
+
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleSelectIndefinite}
+                className={`h-7 px-2.5 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
+                  isIndefiniteChoice
+                    ? 'bg-purple-600 text-white border-purple-600 hover:bg-purple-700 hover:text-white shadow-xs'
+                    : 'border-purple-500/30 bg-purple-500/5 text-purple-700 dark:text-purple-300 hover:bg-purple-500/15 hover:border-purple-500/50'
+                }`}
+              >
+                <InfinityIcon className="w-3 h-3 mr-1" />
+                ไม่มีกำหนดคืน (Indefinite)
+              </Button>
             </div>
           </div>
 
           {/* Extension Status Preview */}
           {previewData && (
             <div className={`p-3 rounded-xl border text-xs flex items-center justify-between transition-all ${
-              previewData.isValid
-                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-900 dark:text-emerald-300'
-                : 'bg-red-500/10 border-red-500/30 text-red-900 dark:text-red-300'
+              isIndefiniteChoice
+                ? 'bg-purple-500/10 border-purple-500/30 text-purple-900 dark:text-purple-300'
+                : previewData.isValid
+                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-900 dark:text-emerald-300'
+                  : 'bg-red-500/10 border-red-500/30 text-red-900 dark:text-red-300'
             }`}>
               <div className="flex items-center gap-2">
-                {previewData.isValid ? (
+                {isIndefiniteChoice ? (
+                  <InfinityIcon className="w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0" />
+                ) : previewData.isValid ? (
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                 ) : (
                   <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
                 )}
                 <div>
                   <div className="font-bold">
-                    {previewData.isValid 
-                      ? `ขยายเพิ่ม +${previewData.additionalDays} วัน (${previewData.formattedNewDate})`
-                      : 'วันที่ไม่ถูกต้อง (ต้องมากกว่ากำหนดคืนเดิม)'}
+                    {isIndefiniteChoice
+                      ? 'เปลี่ยนสถานะ: ยืมแบบไม่มีกำหนดส่งคืน (Indefinite Borrow)'
+                      : previewData.isValid 
+                        ? `ขยายเพิ่ม +${previewData.additionalDays} วัน (${previewData.formattedNewDate})`
+                        : 'วันที่ไม่ถูกต้อง (ต้องมากกว่ากำหนดคืนเดิม)'}
                   </div>
-                  {previewData.isValid && (
-                    <div className="text-[11px] opacity-85">
-                      สถานะคำสั่งยืมใหม่: <strong>{previewData.statusLabel}</strong>
-                    </div>
-                  )}
+                  <div className="text-[11px] opacity-85">
+                    สถานะคำสั่งยืมใหม่: <strong>{previewData.statusLabel}</strong>
+                  </div>
                 </div>
               </div>
             </div>
@@ -362,15 +453,27 @@ const CheckoutExtendModal = ({
               ยกเลิก
             </Button>
 
-            <Button
-              type="submit"
-              size="sm"
-              disabled={submitting || !previewData?.isValid}
-              className="rounded-lg h-9 px-4 bg-amber-600 hover:bg-amber-700 text-white text-xs gap-1.5 font-semibold shadow-xs cursor-pointer transition-colors"
-            >
-              <CalendarClock className="w-3.5 h-3.5" />
-              <span>{submitting ? 'กำลังบันทึก...' : 'ยืนยันขยายเวลาส่งคืน'}</span>
-            </Button>
+            {isIndefiniteChoice ? (
+              <Button
+                type="submit"
+                size="sm"
+                disabled={submitting}
+                className="rounded-lg h-9 px-4 bg-purple-600 hover:bg-purple-700 text-white text-xs gap-1.5 font-semibold shadow-xs cursor-pointer transition-colors"
+              >
+                <InfinityIcon className="w-3.5 h-3.5" />
+                <span>{submitting ? 'กำลังบันทึก...' : 'ยืนยันเปลี่ยนเป็นไม่มีกำหนดคืน'}</span>
+              </Button>
+            ) : (
+              <Button
+                type="submit"
+                size="sm"
+                disabled={submitting || !previewData?.isValid}
+                className="rounded-lg h-9 px-4 bg-amber-600 hover:bg-amber-700 text-white text-xs gap-1.5 font-semibold shadow-xs cursor-pointer transition-colors"
+              >
+                <CalendarClock className="w-3.5 h-3.5" />
+                <span>{submitting ? 'กำลังบันทึก...' : 'ยืนยันขยายเวลาส่งคืน'}</span>
+              </Button>
+            )}
           </DialogFooter>
         </form>
       </DialogContent>

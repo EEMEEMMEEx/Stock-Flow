@@ -7,7 +7,7 @@ import {
   Package, Search, Building2, User, 
   Calendar, Layers, Plus, Minus, Trash2, CheckCircle2, 
   Send, Tag, Hash, 
-  ClipboardPaste, Barcode
+  ClipboardPaste, Barcode, Infinity as InfinityIcon, Clock
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { supabase } from '@/lib/supabase';
@@ -36,6 +36,7 @@ const CheckoutPosTerminal = ({
     d.setDate(d.getDate() + 7);
     return d.toISOString().split('T')[0];
   }, []);
+  const [borrowType, setBorrowType] = useState('standard'); // 'standard' | 'indefinite'
   const [expectedReturnDate, setExpectedReturnDate] = useState(defaultDueDate);
   const [purpose, setPurpose] = useState('');
   const [notes, setNotes] = useState('');
@@ -192,8 +193,8 @@ const CheckoutPosTerminal = ({
     if (!borrowerName.trim()) {
       return toast.error('กรุณาระบุชื่อผู้ยืมพัสดุ');
     }
-    if (!expectedReturnDate) {
-      return toast.error('กรุณาระบุกำหนดวันส่งคืน');
+    if (borrowType === 'standard' && !expectedReturnDate) {
+      return toast.error('กรุณาระบุกำหนดวันส่งคืนสำหรับการยืมแบบระบุวันส่งคืน');
     }
     if (cart.length === 0) {
       return toast.error('กรุณาเลือกรายการอุปกรณ์ที่ต้องการยืมอย่างน้อย 1 รายการ');
@@ -247,7 +248,8 @@ const CheckoutPosTerminal = ({
         borrower_name: borrowerName.trim(),
         borrower_phone: borrowerPhone.trim() || null,
         borrower_department: borrowerDepartment.trim() || null,
-        expected_return_date: expectedReturnDate,
+        borrow_type: borrowType,
+        expected_return_date: borrowType === 'standard' ? expectedReturnDate : null,
         purpose: purpose.trim() || null,
         notes: notes.trim() || null,
         created_by: profile?.id || null,
@@ -262,6 +264,8 @@ const CheckoutPosTerminal = ({
 
       toast.success(`สร้างคำสั่งยืม ${data.order_number || ''} สำเร็จเรียบร้อย`);
       setCart([]);
+      setBorrowType('standard');
+      setExpectedReturnDate(defaultDueDate);
       setBorrowerName('');
       setBorrowerPhone('');
       setBorrowerDepartment('');
@@ -442,6 +446,48 @@ const CheckoutPosTerminal = ({
                 </div>
               </div>
 
+              {/* Borrow Type Selector */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-foreground">ประเภทการยืมพัสดุ</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setBorrowType('standard')}
+                    className={`p-2.5 rounded-lg border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                      borrowType === 'standard'
+                        ? 'bg-indigo-500/10 border-indigo-600 dark:border-indigo-400 ring-1 ring-indigo-500/30 text-foreground'
+                        : 'bg-muted/30 hover:bg-muted/60 border-border/70 text-muted-foreground'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5 font-semibold text-xs text-foreground">
+                      <Clock className={`w-3.5 h-3.5 ${borrowType === 'standard' ? 'text-indigo-600 dark:text-indigo-400' : 'text-muted-foreground'}`} />
+                      <span>ยืมระบุวันส่งคืน</span>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground mt-1">
+                      Standard Borrow (มีกำหนดวันคืน)
+                    </p>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setBorrowType('indefinite')}
+                    className={`p-2.5 rounded-lg border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                      borrowType === 'indefinite'
+                        ? 'bg-purple-500/15 border-purple-600 dark:border-purple-400 ring-1 ring-purple-500/40 text-foreground'
+                        : 'bg-muted/30 hover:bg-muted/60 border-border/70 text-muted-foreground'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5 font-semibold text-xs text-purple-700 dark:text-purple-300">
+                      <InfinityIcon className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+                      <span>ยืมแบบไม่มีกำหนดคืน</span>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground mt-1">
+                      Indefinite Borrow (ใช้งานยาวนาน)
+                    </p>
+                  </button>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold text-foreground">แผนก / ทีมงาน</Label>
@@ -452,19 +498,34 @@ const CheckoutPosTerminal = ({
                     className="h-9 text-xs rounded-lg bg-background border border-input"
                   />
                 </div>
-                <div className="space-y-1">
-                  <Label className="text-xs font-semibold text-foreground flex items-center gap-1 text-red-600 dark:text-red-400">
-                    <Calendar className="w-3 h-3" />
-                    <span>กำหนดส่งคืน <span className="text-destructive">*</span></span>
-                  </Label>
-                  <Input
-                    type="date"
-                    required
-                    value={expectedReturnDate}
-                    onChange={(e) => setExpectedReturnDate(e.target.value)}
-                    className="h-9 text-xs rounded-lg font-semibold bg-background border border-input"
-                  />
-                </div>
+
+                {borrowType === 'standard' ? (
+                  <div className="space-y-1">
+                    <Label className="text-xs font-semibold text-foreground flex items-center gap-1 text-red-600 dark:text-red-400">
+                      <Calendar className="w-3 h-3" />
+                      <span>กำหนดส่งคืน <span className="text-destructive">*</span></span>
+                    </Label>
+                    <Input
+                      type="date"
+                      required
+                      value={expectedReturnDate}
+                      onChange={(e) => setExpectedReturnDate(e.target.value)}
+                      className="h-9 text-xs rounded-lg font-semibold bg-background border border-input"
+                    />
+                  </div>
+                ) : (
+                  <div className="p-2.5 rounded-lg bg-purple-500/10 dark:bg-purple-950/30 border border-purple-500/30 flex items-start gap-2">
+                    <InfinityIcon className="w-4 h-4 shrink-0 mt-0.5 text-purple-600 dark:text-purple-400" />
+                    <div className="space-y-0.5 min-w-0">
+                      <div className="text-xs font-semibold text-purple-700 dark:text-purple-300">
+                        ไม่มีกำหนดคืน (No Return Date)
+                      </div>
+                      <div className="text-[10px] text-muted-foreground leading-tight">
+                        ไม่จำกัดวันคืน ไม่นับเป็นรายการค้างส่ง และคืนพัสดุได้ทุกเมื่อ
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-1">

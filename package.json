@@ -1,7 +1,7 @@
 {
   "name": "stock-flow-app",
   "private": true,
-  "version": "1.4.76",
+  "version": "1.4.79",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,8 +12,8 @@
     "migrate:r2": "node scripts/migrate-legacy-images-to-r2.mjs",
     "db:backup": "node scripts/backup-full-database.mjs",
     "wiki:sync": "powershell -ExecutionPolicy Bypass -File scripts/sync-wiki.ps1",
-    "generate:agents": "python .agents/scripts/generate_manifest.py && python .agents/scripts/dependency_graph.py",
-    "check:agents": "python .agents/scripts/validate_kit.py",
+    "generate:agents": "python .agents/scripts/generate-manifest.py && python .agents/scripts/dependency-graph.py",
+    "check:agents": "python .agents/scripts/validate-kit.py",
     "check:antigravity": "node .agents/hooks/antigravity-doctor.mjs",
     "test:antigravity": "node --test .agents/hooks/tests/antigravity.test.mjs && python -m unittest discover -s .agents/scripts/tests -v",
     "build:antigravity-plugin": "node .agents/hooks/build-plugin.mjs"
