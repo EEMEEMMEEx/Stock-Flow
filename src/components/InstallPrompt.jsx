@@ -76,6 +76,29 @@ const InstallPrompt = () => {
     };
   }, [isAllowedDomain, isLandingPage]);
 
+  const handleInstall = async () => {
+    if (!deferredPrompt) return;
+    try {
+      deferredPrompt.prompt();
+      const choice = await deferredPrompt.userChoice;
+      if (choice?.outcome === 'accepted') {
+        setShowPrompt(false);
+        setDeferredPrompt(null);
+      }
+    } catch (e) {
+      console.warn('[InstallPrompt] Prompt error:', e);
+    }
+  };
+
+  const handleDismiss = () => {
+    try {
+      localStorage.setItem('pwa_prompt_dismissed', 'true');
+    } catch (e) {
+      console.warn('[PWA] Dismiss storage write failed:', e);
+    }
+    setShowPrompt(false);
+  };
+
   // Strictly block rendering if on GitHub Pages, Landing Page, or disallowed domain
   if (!isAllowedDomain || isLandingPage || !showPrompt) return null;
 
@@ -95,7 +118,7 @@ const InstallPrompt = () => {
             {isIOS ? (
               <div className="text-xs bg-muted p-2 rounded-md">
                 <strong>วิธีติดตั้งบน iOS:</strong> แตะปุ่ม Share (แชร์) ด้านล่าง แล้วเลือก <br/> 
-                <span className="font-semibold text-primary">"Add to Home Screen"</span>
+                <span className="font-semibold text-primary">&quot;Add to Home Screen&quot;</span>
               </div>
             ) : (
               <Button size="sm" className="w-full" onClick={handleInstall}>

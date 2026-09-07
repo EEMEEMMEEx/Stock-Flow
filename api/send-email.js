@@ -3,24 +3,61 @@ import crypto from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 
 export default async function handler(req, res) {
-  // Set CORS headers
-  res.setHeader('Access-Control-Allow-Credentials', true);
+  // Set CORS and Security headers
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
   res.setHeader(
     'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization, X-Internal-Secret'
   );
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
 
   if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Method Not Allowed' });
+    return res.status(405).json({ success: false, message: 'Method Not Allowed' });
   }
 
   try {
+    const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    // 1. Authenticate Caller via Supabase JWT Bearer Token or Internal Secret
+    const authHeader = req.headers.authorization || req.headers.Authorization || '';
+    const token = authHeader.startsWith('Bearer ') ? authHeader.substring(7).trim() : null;
+    const internalSecret = req.headers['x-internal-secret'];
+
+    let callerUser = null;
+    let isAuthorized = false;
+
+    if (internalSecret && process.env.INTERNAL_SERVICE_KEY && internalSecret === process.env.INTERNAL_SERVICE_KEY) {
+      isAuthorized = true;
+    } else if (token && supabaseUrl && serviceRoleKey) {
+      try {
+        const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
+          auth: { autoRefreshToken: false, persistSession: false }
+        });
+        const { data: { user: authUser }, error: authErr } = await supabaseAdmin.auth.getUser(token);
+        if (!authErr && authUser) {
+          callerUser = authUser;
+          isAuthorized = true;
+        }
+      } catch (authEx) {
+        console.warn('[Vercel API send-email] Token verification error:', authEx.message);
+      }
+    }
+
+    if (!isAuthorized) {
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized: Valid authentication token required to send emails.'
+      });
+    }
+
     const { to, cc, subject, html, text, smtpOverrides } = req.body || {};
 
     // Parse, trim and deduplicate recipients (to and cc)
@@ -28,17 +65,35 @@ export default async function handler(req, res) {
     const toList = [...new Set(rawTo)];
 
     if (!toList.length) {
-      return res.status(400).json({ message: 'Recipient email (to) is required and cannot be empty.' });
+      return res.status(400).json({ success: false, message: 'Recipient email (to) is required and cannot be empty.' });
     }
 
     const rawCc = cc ? (Array.isArray(cc) ? cc : String(cc).split(',').map(s => s.trim()).filter(Boolean)) : [];
     const ccList = [...new Set(rawCc)];
 
-    // 1. Resolve dynamic SMTP config from database (Supabase) if not explicitly overridden
+    // Check if caller has admin privileges before permitting custom smtpOverrides
+    let isCallerAdmin = false;
+    if (callerUser && supabaseUrl && serviceRoleKey) {
+      try {
+        const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
+        const { data: profile } = await supabaseAdmin
+          .from('profiles')
+          .select('role, roles(code)')
+          .eq('id', callerUser.id)
+          .maybeSingle();
+        const rCode = (profile?.roles?.code || profile?.role || '').toUpperCase();
+        isCallerAdmin = rCode === 'ADMIN' || rCode === 'SUPER' || callerUser.email?.toLowerCase() === 'admin@stockflow.com';
+      } catch {
+        isCallerAdmin = false;
+      }
+    }
+
+    // Only allow smtpOverrides if caller is verified admin (prevents SSRF and open relay abuse)
+    const effectiveSmtpOverrides = isCallerAdmin ? smtpOverrides : null;
+
+    // 2. Resolve dynamic SMTP config from database (Supabase) if not explicitly overridden
     let dynamicSmtp = {};
-    if (!smtpOverrides || !smtpOverrides.host) {
-      const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
-      const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!effectiveSmtpOverrides || !effectiveSmtpOverrides.host) {
       if (supabaseUrl && serviceRoleKey) {
         try {
           const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
@@ -69,16 +124,24 @@ export default async function handler(req, res) {
       }
     }
 
-    // 2. Priority: Request Overrides > Supabase DB Config > Environment Variables > Hardcoded Defaults
-    const host = smtpOverrides?.host || dynamicSmtp.host || process.env.SMTP_HOST || 'smtp.gmail.com';
-    const port = Number(smtpOverrides?.port || dynamicSmtp.port || process.env.SMTP_PORT || 465);
-    const isSecure = smtpOverrides?.secure !== undefined
-      ? Boolean(smtpOverrides.secure)
+    // 3. Priority: Verified Admin Overrides > Supabase DB Config > Environment Variables
+    const host = effectiveSmtpOverrides?.host || dynamicSmtp.host || process.env.SMTP_HOST || 'smtp.gmail.com';
+    const port = Number(effectiveSmtpOverrides?.port || dynamicSmtp.port || process.env.SMTP_PORT || 465);
+    const isSecure = effectiveSmtpOverrides?.secure !== undefined
+      ? Boolean(effectiveSmtpOverrides.secure)
       : (dynamicSmtp.secure !== undefined ? dynamicSmtp.secure : (port === 465));
-    const user = smtpOverrides?.user || dynamicSmtp.user || process.env.SMTP_USER || 'stockflow.noreply.app@gmail.com';
-    const pass = smtpOverrides?.pass || dynamicSmtp.pass || process.env.SMTP_PASS || 'yitosoxabxycxdij';
-    const senderEmail = smtpOverrides?.sender_email || dynamicSmtp.sender_email || process.env.SMTP_SENDER_EMAIL || process.env.EMAIL_FROM || user;
-    const senderName = smtpOverrides?.sender_name || dynamicSmtp.sender_name || process.env.SMTP_SENDER_NAME || process.env.EMAIL_FROM_NAME || 'StockFlow Notification';
+    const user = effectiveSmtpOverrides?.user || dynamicSmtp.user || process.env.SMTP_USER;
+    const pass = effectiveSmtpOverrides?.pass || dynamicSmtp.pass || process.env.SMTP_PASS;
+    const senderEmail = effectiveSmtpOverrides?.sender_email || dynamicSmtp.sender_email || process.env.SMTP_SENDER_EMAIL || process.env.EMAIL_FROM || user;
+    const senderName = effectiveSmtpOverrides?.sender_name || dynamicSmtp.sender_name || process.env.SMTP_SENDER_NAME || process.env.EMAIL_FROM_NAME || 'StockFlow Notification';
+
+    if (!user || !pass) {
+      console.error('[Vercel API send-email] SMTP credentials missing in environment and secrets vault');
+      return res.status(500).json({
+        success: false,
+        message: 'Server configuration error: SMTP credentials are not configured.'
+      });
+    }
 
     // Safely validate whether the SMTP host belongs to Google/Gmail
     const isGmailSmtpHost = (rawHost) => {
@@ -149,4 +212,5 @@ export default async function handler(req, res) {
     });
   }
 }
+
 

@@ -7,6 +7,7 @@ import {
   renderUserInvitationEmailText,
   resolveEmailVariables,
 } from './emailRenderer.js';
+import { supabase } from './supabase.js';
 
 const viteEnv = import.meta.env || {};
 
@@ -30,10 +31,21 @@ export async function sendStockFlowEmail({ to, cc, subject, html, text, smtpOver
   const endpoint = viteEnv.VITE_EMAIL_SERVICE_URL || defaultEndpoint;
 
   try {
+    const authHeaders = {};
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.access_token) {
+        authHeaders['Authorization'] = `Bearer ${session.access_token}`;
+      }
+    } catch (authErr) {
+      console.warn('[emailService] Could not retrieve session token:', authErr);
+    }
+
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        ...authHeaders,
       },
       body: JSON.stringify({
         to,

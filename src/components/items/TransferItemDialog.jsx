@@ -81,7 +81,7 @@ export const TransferItemDialog = ({
     const toastId = toast.loading('กำลังประมวลผลการโอนย้ายสต็อก...');
 
     try {
-      // 1. Try atomic Supabase RPC (Migration 49)
+      // Execute atomic Supabase RPC
       const { data: rpcData, error: rpcError } = await supabase.rpc('process_item_transfer', {
         p_source_project_id: item.project_id,
         p_dest_project_id: destinationProjectId,
@@ -91,51 +91,7 @@ export const TransferItemDialog = ({
         p_actor_id: currentProfile?.id || null
       });
 
-      if (rpcError) {
-        // Fallback to client-side transactions if RPC is not yet executed in database
-        console.warn('[Transfer] RPC process_item_transfer error, attempting client fallback:', rpcError);
-
-        const destProject = projectsList.find(p => p.id === destinationProjectId);
-        const destDisplayName = destProject 
-          ? `${destProject.name}${destProject.location ? ` (${destProject.location})` : ''}` 
-          : 'คลังปลายทาง';
-        const sourceDisplayName = item.project_display || 'คลังต้นทาง';
-
-        // 1. Record stock_out on source (stock_transactions has no notes column)
-        const { error: outError } = await supabase.from('stock_transactions').insert([{
-          project_id: item.project_id,
-          item_id: item.id,
-          quantity: currentQtyNum,
-          transaction_type: 'transfer_out',
-          created_by: currentProfile?.id || null
-        }]);
-
-        if (outError) throw outError;
-
-        // 2. Create stock_in_order on destination
-        const { data: inOrder, error: inOrderErr } = await supabase
-          .from('stock_in_orders')
-          .insert([{
-            project_id: destinationProjectId,
-            created_by: currentProfile?.id || null,
-            received_date: new Date().toISOString().split('T')[0],
-            notes: `รับโอนสต็อกมาจาก: ${sourceDisplayName}${notes.trim() ? ` | ${notes.trim()}` : ''}`
-          }])
-          .select()
-          .single();
-
-        if (inOrderErr) throw inOrderErr;
-
-        // 3. Insert stock_in_items
-        const { error: itemErr } = await supabase.from('stock_in_items').insert([{
-          order_id: inOrder.id,
-          item_id: item.id,
-          quantity: currentQtyNum,
-          notes: `รับโอนมาจาก ${sourceDisplayName}`
-        }]);
-
-        if (itemErr) throw itemErr;
-      }
+      if (rpcError) throw rpcError;
 
       toast.success(
         rpcData?.message || `โอนย้าย ${item.name} จำนวน ${currentQtyNum} ${item.unit || 'ชิ้น'} สำเร็จ`,

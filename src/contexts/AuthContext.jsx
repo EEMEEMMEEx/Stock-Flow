@@ -100,24 +100,28 @@ export const AuthProvider = ({ children }) => {
         console.error('Error selecting profile:', error);
       }
 
-      // Step B: Auto-create profile ONLY if genuinely missing from DB
+      // Step B: Auto-create profile ONLY if genuinely missing from DB (default to staff)
       if (!data) {
         const defaultName = userObj.email ? userObj.email.split('@')[0] : 'User';
-        const defaultRole = (userObj.email && userObj.email.toLowerCase() === 'admin@stockflow.com') ? 'admin' : 'staff';
         const { data: created, error: createError } = await supabase
           .from('profiles')
-          .upsert([{ id: userId, full_name: defaultName, role: defaultRole, status: 'active' }])
+          .upsert([{ id: userId, full_name: defaultName, role: 'staff', status: 'active' }])
           .select('*')
           .maybeSingle();
           
         if (!createError) data = created;
       }
 
-      // Check if user account is inactive
-      if (data && data.status === 'inactive') {
+      // Check if user account is inactive or suspended (immediately revoke and sign out)
+      if (data && (data.status === 'inactive' || data.status === 'suspended')) {
         setProfile(data);
         setPermissions([]);
         setLoading(false);
+        try {
+          await supabase.auth.signOut();
+        } catch (signOutErr) {
+          console.warn('[AuthContext] Forced sign-out error:', signOutErr);
+        }
         return;
       }
 
@@ -266,23 +270,11 @@ export const AuthProvider = ({ children }) => {
       console.warn('Direct role_permissions table query failed:', directErr);
     }
 
-    // Step 3: Minimal fallback permissions ONLY if database is completely offline/unreachable
-    const roleStr = (profileData?.role || 'staff').toLowerCase();
-    if (roleStr === 'supervisor') {
-      setPermissions([
-        'dashboard.view', 'projects.view', 'items.view', 'items.adjust_stock', 'stock_in.view',
-        'withdrawals.view', 'withdrawals.create', 'withdrawals.approve', 'withdrawals.reject', 'withdrawals.complete',
-        'checkouts.view', 'checkouts.create', 'checkouts.return', 'checkouts.extend',
-        'history.view', 'reports.view', 'reports.export'
-      ]);
-    } else {
-      setPermissions([
-        'dashboard.view', 'projects.view', 'items.view', 'stock_in.view',
-        'withdrawals.view', 'withdrawals.create', 'withdrawals.complete',
-        'checkouts.view', 'checkouts.create', 'checkouts.return',
-        'history.view'
-      ]);
-    }
+    // Step 3: Fail-Closed Authorization
+    // If database permission verification cannot be reached, DO NOT grant default permissions.
+    // Instead, fail securely by maintaining an empty permissions set.
+    console.warn('[AuthContext] Permissions could not be verified from database. Defaulting to Fail-Closed (empty permissions).');
+    setPermissions([]);
   };
 
   const signIn = (email, password) => supabase.auth.signInWithPassword({ email, password });
@@ -294,10 +286,10 @@ export const AuthProvider = ({ children }) => {
   const isAdmin = isSuperAdmin || roleCode === 'ADMIN' || (profile?.role || '').toLowerCase() === 'admin';
   const isActive = profile?.status === 'active';
 
-  // Strict Permission authorization helper
+  // Strict Permission authorization helper (Fail-Closed)
   const can = (permCode) => {
+    if (!profile || profile.status !== 'active') return false;
     if (!permCode) return true; // Public / unrestricted route for all logged-in active users
-    if (!profile || profile.status === 'inactive') return false;
     if (isSuperAdmin) return true; // Super Admin master bypass ONLY
     return permissions.includes(permCode);
   };

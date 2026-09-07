@@ -33,6 +33,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Run quality gates & verification
+        run: |
+          npm run test:email
+          npm run lint
+
       - name: Build production bundle
         run: |
           npm run build
@@ -40,6 +45,8 @@ jobs:
         env:
           VITE_BASE_PATH: '/Stock-Flow/'
           VITE_APP_MODE: 'landing'
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://placeholder-project.supabase.co' }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'placeholder-anon-key' }}
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

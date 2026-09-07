@@ -1781,7 +1781,7 @@ function formatSqlValue(val) {
       if (typeof elem === 'string') return `"${elem.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
       return String(elem);
     });
-    return `'{${arrayElements.join(',')}}'`;
+    return `'{${arrayElements.join(',').replace(/'/g, "''")}}'`;
   }
   if (typeof val === 'object') {
     return `'${JSON.stringify(val).replace(/'/g, "''")}'::jsonb`;
@@ -1854,8 +1854,9 @@ async function runCompleteBackup() {
         const uEmailConfirmed = formatSqlValue(u.email_confirmed_at || u.created_at || new Date().toISOString());
         const uPhone = (u.phone && String(u.phone).trim() !== '') ? formatSqlValue(u.phone) : 'NULL';
 
-        // Default bcrypt hash for 'F0rth2026@dtrs' via pgcrypto
-        const defaultHashExpr = `extensions.crypt('F0rth2026@dtrs', extensions.gen_salt('bf'))`;
+        // Use environment variable for default restore password hash via pgcrypto
+        const restorePassword = process.env.DEFAULT_RESTORE_PASSWORD || 'ChangeMeImmediately!';
+        const defaultHashExpr = `extensions.crypt('${restorePassword.replace(/'/g, "''")}', extensions.gen_salt('bf'))`;
 
         authInsertStatements.push(
           `INSERT INTO auth.users (` +
@@ -1959,12 +1960,28 @@ async function runCompleteBackup() {
         dataInsertStatements.push(`-- --------------------------------------------------------`);
 
         for (const row of data) {
-          const columns = Object.keys(row);
+          const sanitizedRow = { ...row };
+          if (table === 'system_secrets' && process.env.INCLUDE_SECRETS !== 'true') {
+            sanitizedRow.secret_value = '[REDACTED_SECRET]';
+          }
+          if (table === 'system_settings' && sanitizedRow.key === 'smtp_config' && sanitizedRow.value && process.env.INCLUDE_SECRETS !== 'true') {
+            try {
+              const smtpVal = typeof sanitizedRow.value === 'string' ? JSON.parse(sanitizedRow.value) : sanitizedRow.value;
+              if (smtpVal && smtpVal.password) {
+                smtpVal.password = '[REDACTED_SECRET]';
+                sanitizedRow.value = smtpVal;
+              }
+            } catch {
+              // ignore parse failure
+            }
+          }
+
+          const columns = Object.keys(sanitizedRow);
           const values = columns.map((col) => {
             if (table === 'system_settings' && col === 'value') {
-              return `'${JSON.stringify(row[col]).replace(/'/g, "''")}'::jsonb`;
+              return `'${JSON.stringify(sanitizedRow[col]).replace(/'/g, "''")}'::jsonb`;
             }
-            return formatSqlValue(row[col]);
+            return formatSqlValue(sanitizedRow[col]);
           });
 
           dataInsertStatements.push(

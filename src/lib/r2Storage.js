@@ -1,4 +1,5 @@
 import toast from 'react-hot-toast';
+import { supabase } from './supabase';
 
 /**
  * Upload any File or Blob directly to Cloudflare R2 via Presigned URL
@@ -39,11 +40,22 @@ export async function uploadFileToR2(file, folder = 'uploads', customFileName = 
   const targetEndpoint = customServiceUrl || (isLocalhost ? '/api/r2-upload-url' : productionEndpoint);
 
   try {
+    const authHeaders = {};
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.access_token) {
+        authHeaders['Authorization'] = `Bearer ${session.access_token}`;
+      }
+    } catch (authErr) {
+      console.warn('[r2Storage] Could not retrieve session token:', authErr);
+    }
+
     // 2. Request Presigned Upload URL from Serverless API
     const presignResponse = await fetch(targetEndpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        ...authHeaders,
       },
       body: JSON.stringify({
         fileName: sanitizedFileName,
@@ -60,7 +72,10 @@ export async function uploadFileToR2(file, folder = 'uploads', customFileName = 
         try {
           const fallbackRes = await fetch(productionEndpoint, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+              'Content-Type': 'application/json',
+              ...authHeaders,
+            },
             body: JSON.stringify({
               fileName: sanitizedFileName,
               contentType: file.type || 'application/octet-stream',

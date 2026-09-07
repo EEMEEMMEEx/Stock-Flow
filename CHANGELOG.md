@@ -1,5 +1,30 @@
 # Changelog
 
+## [v1.4.74] [2026-09-07] Security, Reliability & Database RPC Full Remediation
+
+- **API & Serverless Function Security (C1, C2, C3, M2, M6, M9):**
+  - `api/send-email.js`: ถอดรหัสผ่าน Gmail App Password (`yitosoxabxycxdij`) ที่ถูกฮาร์ดโค้ดออกอย่างสมบูรณ์ บังคับใช้ Supabase JWT Bearer token authentication + `x-internal-secret` ป้องกันบุคคลภายนอกยิงส่งอีเมลโดยตรง จำกัดสิทธิ์ `smtpOverrides` ให้เฉพาะผู้ดูแลระบบที่มีสิทธิ์ `settings.update` เท่านั้น พร้อมเพิ่ม Security Headers (`X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`)
+  - `api/r2-upload-url.js`: เพิ่มระบบตรวจสอบ Supabase JWT Authentication ป้องกัน Unauthenticated Uploads บังคับใช้ Folder Whitelist (`avatars`, `items`, `documents`, `receipts`, `attachments`, `uploads`), ป้องกัน Path Traversal (`..`, `/`, `\`), ตรวจสอบนามสกุลไฟล์, เข้ารหัสชื่อไฟล์ด้วย UUID namespace และเพิ่ม Security Headers
+  - `src/lib/emailService.js` & `src/lib/r2Storage.js`: เชื่อมต่อ Authorization Bearer token จาก Supabase Session เข้ากับคำขอ API ฝั่งไคลเอนต์ทั้งหมด
+- **Authentication, Authorization & Frontend Reliability (H1, H6, H7, M4, M5):**
+  - `src/contexts/AuthContext.jsx`: ปรับปรุง Fallback Permissions เป็นรูปแบบ Fail-Closed (`permissions = []`), เพิ่มการตรวจสอบสถานะผู้ใช้ `profile.status !== 'active'` ในฟังก์ชัน `can()` และตัดการเชื่อมต่อออกจากระบบอัตโนมัติหากบัญชีถูกระงับ (suspended), ตัดการกำหนดสิทธิ์ผู้ดูแลระบบฝั่งไคลเอนต์ตอนสร้างโปรไฟล์ออก
+  - `src/components/InstallPrompt.jsx`: เพิ่มฟังก์ชัน `handleInstall` และ `handleDismiss` แก้ปัญหา `ReferenceError` ที่ทำให้ PWA แครชตอนเรียกใช้งาน
+  - `src/lib/supabase.js`: เพิ่มค่าสำรองกรณีสภาพแวดล้อมยังไม่ได้ตั้งค่า `VITE_SUPABASE_URL` หรือ `VITE_SUPABASE_ANON_KEY` เพื่อป้องกันข้อผิดพลาดรุนแรง `Error: supabaseUrl is required.`
+- **Database Schema, RPCs & RLS Policies (C4, H2, H3, H4, H5, H9):**
+  - `supabase/migrations/65_security_and_reliability_remediation.sql` [NEW]:
+    - **RLS Policies Hardening (C4):** ลบนโยบายเปิด `Allow auth mutate *` ทั้งหมด กำหนดสิทธิ์ `profiles` ให้ผู้ใช้อัปเดตได้เฉพาะข้อมูลตนเอง พร้อมสร้าง Trigger `trg_check_profile_privilege_escalation` ป้องกันการเปลี่ยน `role`, `role_id`, หรือ `status` โดยไม่ได้รับอนุญาต, จำกัดการแก้ไข `stock_transactions` ให้เฉพาะ Admin ผ่าน RPC เท่านั้น
+    - **`process_checkout_order` (H2):** เขียน RPC สำหรับคำสั่งยืมใหม่ให้เชื่อมโยงกับตาราง `checkout_orders` และ `checkout_items` ตรวจสอบสิทธิ์ `checkouts.create` ล็อกแถววัสดุด้วย `FOR UPDATE` และตรวจสอบยอดคงเหลือจาก `stock_balance` ก่อนอนุมัติ ป้องกันสต็อกติดลบ
+    - **`process_return_order` (H3):** เขียน RPC รับคืนอุปกรณ์ใหม่เชื่อมโยง `checkout_orders`, `checkout_items`, `checkout_return_logs` ตรวจสอบสิทธิ์ `checkouts.return` ตรวจสอบยอดรับคืนไม่ให้เกินยอดที่ยืม และคืนสต็อกเข้าโครงการปลายทางอย่างถูกต้อง
+    - **`process_item_transfer` (H4, H9):** ปรับปรุง RPC ให้รองรับการโอนย้ายแบบพารามิเตอร์และ JSONB ล็อก `v_caller_id := auth.uid()` ป้องกัน Actor Spoofing ตรวจสอบสต็อกต้นทาง และบันทึก `stock_transactions` + `stock_in_items` ให้ตารางสรุป `stock_balance` อัปเดตทันที
+    - **`approve_inventory_request`, `reject_inventory_request`, `complete_inventory_request` (H5):** ปรับปรุงพารามิเตอร์ให้ตรงกับ `Withdrawals.jsx` (`p_request_id`, `p_allow_shortage`, `p_override_reason`) เพิ่มการล็อกแถวตามลำดับ ID ป้องกัน Deadlock และส่งข้อความ `SHORTAGE_DETECTED` สำหรับเปิด Modal จัดการกรณีสินค้าไม่พอ
+- **Backup Script & Data Sanitization (M1, M7):**
+  - `scripts/backup-full-database.mjs`: แก้ไข `formatSqlValue` ให้ Escape เครื่องหมาย single quote ใน Array literals, ถอดรหัสผ่านที่ฮาร์ดโค้ดออกแล้วแทนที่ด้วย `process.env.DEFAULT_RESTORE_PASSWORD`, เพิ่มการซ่อนค่าลับ (`[REDACTED_SECRET]`) ใน `system_secrets` และ `system_settings.smtp_config` ระหว่างการ Backup ข้อมูล
+- **CI/CD Quality Gates & Dependency Remediation (H10, H11, L3):**
+  - `.github/workflows/deploy-gh-pages.yml`: เพิ่ม Pre-deployment verification (`npm run test:email`, `npm run lint`) และเพิ่ม Supabase environment variable fallbacks
+  - `package.json`: แก้ไขช่องโหว่ `esbuild` ผ่าน NPM overrides (`"esbuild": "^0.25.0"`) แก้ปัญหา GHSA-67mh-4wv8-2f99
+- **Mandatory System Version Management (Rule 10):**
+  - ขยับเวอร์ชันระบบจาก `1.4.73` → `1.4.74` ใน `package.json`, `README.md`, `wiki/Home.md`, `wiki/_Footer.md`
+
 ## [v1.4.73] [2026-09-06] Enterprise UI/UX Migration — Final Verification, WCAG 2.2 AA & SemVer Release (Ticket 09)
 
 - **WCAG 2.2 AA Contrast Audit — Automated Token Verification:**
