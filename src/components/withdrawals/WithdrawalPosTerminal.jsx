@@ -1,13 +1,13 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { 
   Search, ShoppingCart, Plus, Minus, Package, 
   ChevronLeft, ChevronRight, RotateCcw, Tag,
-  LayoutGrid, List, Building2, X, Sparkles, Filter, Check
+  LayoutGrid, List, X, Filter
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import WithdrawalItemCard from './WithdrawalItemCard';
@@ -17,7 +17,7 @@ import { ProjectLocationSelector } from '@/components/common/ProjectLocationSele
 
 const WithdrawalPosTerminal = ({
   items = [],
-  rawItems = [],
+  rawItems: _rawItems = [],
   rawBalances = [],
   categories = [],
   projects = [],
@@ -145,16 +145,6 @@ const WithdrawalPosTerminal = ({
     setStockStatusFilter('all');
   };
 
-  // Grouped project list for selector
-  const groupedProjects = useMemo(() => {
-    const map = new Map();
-    projects.forEach(p => {
-      const key = `${(p.name || '').trim()}|||${(p.project_code || '').trim()}`;
-      if (!map.has(key)) map.set(key, { key, name: p.name, project_code: p.project_code, locations: [p] });
-      else map.get(key).locations.push(p);
-    });
-    return Array.from(map.values());
-  }, [projects]);
 
   const totalCartUnits = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
   const inStockCount = items.filter(i => (i.balance || 0) > 0).length;

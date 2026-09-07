@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { 
-  FileText, Download, Printer, CheckCircle2, Clock, 
-  AlertTriangle, User, Building2, Calendar, Phone, Layers, RotateCcw,
+  FileText, Download, CheckCircle2, Clock, 
+  User, Building2, Calendar, Phone, Layers, RotateCcw,
   CalendarClock, ArrowRight
 } from 'lucide-react';
 import { pdf } from '@react-pdf/renderer';
@@ -23,7 +23,6 @@ const CheckoutDetailModal = ({
 }) => {
   const [returnLogs, setReturnLogs] = useState([]);
   const [extensionLogs, setExtensionLogs] = useState([]);
-  const [loadingLogs, setLoadingLogs] = useState(false);
   const [generatingPdf, setGeneratingPdf] = useState(false);
 
   useEffect(() => {
@@ -54,7 +53,6 @@ const CheckoutDetailModal = ({
 
   const fetchReturnLogs = async (orderId) => {
     try {
-      setLoadingLogs(true);
       const { data, error } = await supabase
         .from('checkout_return_logs')
         .select(`
@@ -73,8 +71,6 @@ const CheckoutDetailModal = ({
       setReturnLogs(data || []);
     } catch (err) {
       console.error('Fetch return logs error:', err);
-    } finally {
-      setLoadingLogs(false);
     }
   };
 

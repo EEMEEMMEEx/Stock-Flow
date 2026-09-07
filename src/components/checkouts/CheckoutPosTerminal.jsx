@@ -1,13 +1,13 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { 
-  Package, Search, Building2, User, Phone, 
-  Calendar, Layers, Plus, Minus, Trash2, Clock, CheckCircle2, 
-  AlertCircle, Sparkles, Send, ArrowRight, Tag, Hash, 
-  ClipboardPaste, Barcode, ChevronDown, ChevronUp, RefreshCw
+  Package, Search, Building2, User, 
+  Calendar, Layers, Plus, Minus, Trash2, CheckCircle2, 
+  Send, Tag, Hash, 
+  ClipboardPaste, Barcode
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { supabase } from '@/lib/supabase';
@@ -49,19 +49,6 @@ const CheckoutPosTerminal = ({
   const [batchInputText, setBatchInputText] = useState({});
   const [showBatchInput, setShowBatchInput] = useState({});
 
-  // Group projects logically
-  const groupedProjects = useMemo(() => {
-    const map = new Map();
-    projects.forEach(p => {
-      const key = `${(p.name || '').trim()}|||${(p.project_code || '').trim()}`;
-      if (!map.has(key)) {
-        map.set(key, { key, name: p.name, project_code: p.project_code, locations: [p] });
-      } else {
-        map.get(key).locations.push(p);
-      }
-    });
-    return Array.from(map.values());
-  }, [projects]);
 
   // Available items in the selected project location
   const availableItems = useMemo(() => {
@@ -188,13 +175,6 @@ const CheckoutPosTerminal = ({
       };
     }));
     toast.success('ล้าง Serial Number เรียบร้อย');
-  };
-
-  const handleUpdateCartItem = (itemId, field, val) => {
-    setCart(prev => prev.map(item => {
-      if (item.item_id !== itemId) return item;
-      return { ...item, [field]: val };
-    }));
   };
 
   const handleRemoveFromCart = (itemId) => {

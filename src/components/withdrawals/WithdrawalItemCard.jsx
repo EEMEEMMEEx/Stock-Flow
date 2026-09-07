@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Package, Plus, Minus, Check, AlertCircle, Building2 } from 'lucide-react';
+import { Package, Plus, Minus, Check, Building2 } from 'lucide-react';
 
 const WithdrawalItemCard = React.memo(({
   item,

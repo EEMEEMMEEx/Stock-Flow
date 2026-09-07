@@ -3,10 +3,9 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Eye, RefreshCw, Shield, AlertCircle, User, Check } from 'lucide-react';
+import { RefreshCw, Shield, User, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 import AvatarUpload from '@/components/users/AvatarUpload';
-import RoleBadge from '@/components/ui/RoleBadge';
 import { getRoleLabel } from '@/lib/roleUtils';
 import { useAuth } from '@/contexts/AuthContext';
 

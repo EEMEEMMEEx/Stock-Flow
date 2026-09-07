@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,8 +7,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Label } from '@/components/ui/label';
 import { 
-  Plus, Search, MapPin, Calendar, Edit, Trash2, Building2, 
-  Layers, ChevronDown, ChevronUp, Info, X, AlertTriangle, ArrowRight, Package, ShieldAlert 
+  Plus, Search, MapPin, Edit, Trash2, Building2, 
+  Layers, ChevronDown, ChevronUp, Info, X, AlertTriangle, ShieldAlert 
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
@@ -383,7 +383,7 @@ const Projects = () => {
 
     try {
       // 1. Try atomic RPC
-      const { data: rpcData, error: rpcError } = await supabase.rpc('transfer_and_delete_project', {
+      const { error: rpcError } = await supabase.rpc('transfer_and_delete_project', {
         p_source_project_ids: deleteTarget.projectIds,
         p_dest_project_id: destinationProjectId || null,
         p_actor_id: profile?.id || null

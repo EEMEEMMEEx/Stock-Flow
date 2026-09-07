@@ -1,12 +1,12 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { 
   ArrowUpFromLine, CheckCircle2, XCircle, Clock, 
-  AlertTriangle, FileText, Search, Filter, Copy, 
-  Check, Eye, Download, Building2, User, ChevronRight, RotateCcw
+  AlertTriangle, FileText, Search, Copy, 
+  Check, Eye, Download, RotateCcw
 } from 'lucide-react';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
@@ -14,7 +14,7 @@ import toast from 'react-hot-toast';
 const WithdrawalOrdersList = ({
   orders = [],
   loading = false,
-  isAdmin = false,
+  isAdmin: _isAdmin = false,
   canApprove = false,
   canReject = false,
   canComplete = false,

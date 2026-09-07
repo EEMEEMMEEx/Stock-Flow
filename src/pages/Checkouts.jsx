@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import {
   RotateCcw, Plus, Clock, History, RefreshCw,
-  Layers, Package, CheckCircle2, AlertTriangle, Sparkles
+  
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { supabase } from '@/lib/supabase';
@@ -17,7 +16,7 @@ import CheckoutExtendModal from '@/components/checkouts/CheckoutExtendModal';
 import CheckoutHistoryList from '@/components/checkouts/CheckoutHistoryList';
 
 const Checkouts = () => {
-  const { can, user } = useAuth();
+  const { can } = useAuth();
 
   const canCreate = can('checkouts.create');
   const canReturn = can('checkouts.return');

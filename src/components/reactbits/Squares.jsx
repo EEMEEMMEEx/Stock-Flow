@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState } from 'react';
 
 export default function Squares({
   direction = 'right',
@@ -96,9 +96,6 @@ export default function Squares({
     const rect = canvas.getBoundingClientRect();
     const mouseX = event.clientX - rect.left;
     const mouseY = event.clientY - rect.top;
-
-    const startX = Math.floor(gridOffset.current.x / squareSize) * squareSize;
-    const startY = Math.floor(gridOffset.current.y / squareSize) * squareSize;
 
     const hoveredSquareX = Math.floor((mouseX + (gridOffset.current.x % squareSize)) / squareSize);
     const hoveredSquareY = Math.floor((mouseY + (gridOffset.current.y % squareSize)) / squareSize);

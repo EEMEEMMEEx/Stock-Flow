@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Play, 
@@ -20,14 +20,14 @@ export default function LiveSimulatorSection() {
   const [simSuccessMsg, setSimSuccessMsg] = useState('');
 
   // 1. POS Simulator State
-  const [posCart, setPosCart] = useState([
+  const [posCart] = useState([
     { id: '1', name: 'Ubiquiti UniFi 6 Pro Access Point', sku: 'NET-U6-PRO', qty: 2, stock: 18 },
     { id: '2', name: 'Cat6 UTP Cable Roll (305m)', sku: 'CAB-CAT6-305', qty: 1, stock: 9 }
   ]);
   const [selectedProject, setSelectedProject] = useState('USO Net Phase 3');
 
   // 2. Stock Adjustment Simulator State
-  const [stockItem, setStockItem] = useState({ name: 'MikroTik Cloud Router Switch 326', sku: 'NET-MT-326', current: 12 });
+  const [stockItem] = useState({ name: 'MikroTik Cloud Router Switch 326', sku: 'NET-MT-326', current: 12 });
   const [newTargetStock, setNewTargetStock] = useState('18');
   const [adjustReason, setAdjustReason] = useState('ตรวจนับสต็อกประจำไตรมาส Q3/2026');
 
@@ -175,7 +175,7 @@ export default function LiveSimulatorSection() {
                 {/* Items Table */}
                 <div className="space-y-2">
                   <span className="text-xs font-semibold text-zinc-300">รายการในตะกร้าเบิกจ่าย:</span>
-                  {posCart.map((item, idx) => (
+                  {posCart.map((item) => (
                     <div
                       key={item.id}
                       className="p-3 rounded-xl bg-zinc-900/60 border border-white/5 flex items-center justify-between gap-3 text-xs"

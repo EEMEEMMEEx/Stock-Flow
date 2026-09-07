@@ -1,10 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 
   Search, Clock, AlertTriangle, CheckCircle2, RotateCcw, 
-  FileText, Eye, User, Building2, Calendar, Phone, Layers, CalendarClock
+  Eye, User, Building2, Phone, Layers, CalendarClock
 } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 

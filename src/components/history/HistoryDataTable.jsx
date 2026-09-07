@@ -1,4 +1,3 @@
-import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -53,7 +52,7 @@ export const StatusBadge = ({ status, has_shortage, is_shortage_override }) => {
 const HistoryDataTable = ({
   data = [],
   sortField,
-  sortDirection,
+  sortDirection: _sortDirection,
   onSort,
   onViewDetails,
   onDownloadPDF

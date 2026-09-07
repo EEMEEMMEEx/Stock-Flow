@@ -1,4 +1,3 @@
-import React from 'react';
 import { motion } from 'framer-motion';
 import { Zap, ShieldCheck, Database, Lock } from 'lucide-react';
 import ShinyText from '@/components/reactbits/ShinyText';

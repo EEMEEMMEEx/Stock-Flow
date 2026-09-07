@@ -67,54 +67,6 @@ const Items = () => {
 
   const canAdjustStock = can('items.adjust_stock') && allowDirectStockAdjustment;
 
-  const triggerDebouncedFetch = () => {
-    if (realtimeTimeoutRef.current) {
-      clearTimeout(realtimeTimeoutRef.current);
-    }
-    realtimeTimeoutRef.current = setTimeout(() => {
-      fetchItems(false);
-    }, 300);
-  };
-
-  useEffect(() => {
-    fetchItems(true);
-    fetchCategories();
-    fetchSettings();
-
-    // Live Realtime synchronization on projects, items, transactions, and system_settings with debouncing
-    const channel = supabase
-      .channel('items-master-live-sync')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'projects' }, triggerDebouncedFetch)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'items' }, triggerDebouncedFetch)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'stock_in_orders' }, triggerDebouncedFetch)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'stock_in_items' }, triggerDebouncedFetch)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'stock_transactions' }, triggerDebouncedFetch)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'system_settings' }, () => {
-        fetchSettings();
-      })
-      .subscribe();
-
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        triggerDebouncedFetch();
-        fetchSettings();
-      }
-    };
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    const handleSettingsUpdated = () => void fetchSettings();
-    window.addEventListener('stockflow:settings-updated', handleSettingsUpdated);
-
-    return () => {
-      if (realtimeTimeoutRef.current) {
-        clearTimeout(realtimeTimeoutRef.current);
-      }
-      supabase.removeChannel(channel);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('stockflow:settings-updated', handleSettingsUpdated);
-    };
-  }, []);
-
   const fetchSettings = useCallback(async () => {
     try {
       const { data, error } = await supabase
@@ -277,6 +229,54 @@ const Items = () => {
       setRefreshing(false);
     }
   }, []);
+
+  const triggerDebouncedFetch = useCallback(() => {
+    if (realtimeTimeoutRef.current) {
+      clearTimeout(realtimeTimeoutRef.current);
+    }
+    realtimeTimeoutRef.current = setTimeout(() => {
+      fetchItems(false);
+    }, 300);
+  }, [fetchItems]);
+
+  useEffect(() => {
+    fetchItems(true);
+    fetchCategories();
+    fetchSettings();
+
+    // Live Realtime synchronization on projects, items, transactions, and system_settings with debouncing
+    const channel = supabase
+      .channel('items-master-live-sync')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'projects' }, triggerDebouncedFetch)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'items' }, triggerDebouncedFetch)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'stock_in_orders' }, triggerDebouncedFetch)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'stock_in_items' }, triggerDebouncedFetch)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'stock_transactions' }, triggerDebouncedFetch)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'system_settings' }, () => {
+        fetchSettings();
+      })
+      .subscribe();
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        triggerDebouncedFetch();
+        fetchSettings();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    const handleSettingsUpdated = () => void fetchSettings();
+    window.addEventListener('stockflow:settings-updated', handleSettingsUpdated);
+
+    return () => {
+      if (realtimeTimeoutRef.current) {
+        clearTimeout(realtimeTimeoutRef.current);
+      }
+      supabase.removeChannel(channel);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('stockflow:settings-updated', handleSettingsUpdated);
+    };
+  }, [fetchItems, fetchCategories, fetchSettings, triggerDebouncedFetch]);
 
   const handleImageUpload = async (e) => {
     const file = e.target.files?.[0];

@@ -7,7 +7,7 @@ import {
   Mail, Send, Sparkles, Check, Smartphone, Monitor, Code, 
   Users, ShieldCheck, Search, AlertCircle, Save, RotateCcw
 } from 'lucide-react';
-import { getSampleEmailData, renderEmailHtml } from '@/lib/emailRenderer';
+import { getSampleEmailData, renderEmailHtml, SUPPORTED_EVENT_VARIABLES } from '@/lib/emailRenderer';
 import { APP_CONFIG } from '@/config/appConfig';
 import toast from 'react-hot-toast';
 import { sendTestEmail } from '@/lib/emailService';
@@ -267,8 +267,7 @@ const EmailTemplateManager = ({
       setSendingTest(true);
       await sendTestEmail(trimmedEmail, { ...selectedEvent, event_type: selectedEventKey });
       toast.success(`ส่งอีเมลทดสอบไปยัง ${trimmedEmail} สำเร็จเรียบร้อยแล้ว`);
-      setIsTestEmailOpen(false);
-    } catch (e) {
+          } catch (e) {
       toast.error(e.message || 'เกิดข้อผิดพลาดในการส่งอีเมลทดสอบผ่านเซิร์ฟเวอร์ SMTP');
     } finally {
       setSendingTest(false);

@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase';
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
+  
   DialogTitle,
   DialogFooter,
   DialogDescription
@@ -13,15 +13,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
   Building2,
-  ArrowRight,
+  
   ArrowRightLeft,
   Package,
   Layers,
   MapPin,
   AlertCircle,
-  CheckCircle2,
+  
   Info,
-  ImageIcon
+  
 } from 'lucide-react';
 import { ProjectLocationSelector } from '@/components/common/ProjectLocationSelector';
 import toast from 'react-hot-toast';

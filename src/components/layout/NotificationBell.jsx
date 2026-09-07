@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -86,7 +86,7 @@ const notificationPresentation = (eventType) => {
 
 const NotificationBell = () => {
   const navigate = useNavigate();
-  const { user, profile, can, isAdmin } = useAuth();
+  const { user, profile, can } = useAuth();
   const {
     notifications, unreadCount, loading, error, reload, markAsRead, markAllAsRead,
     approveQuickWithdrawal, deleteNotification

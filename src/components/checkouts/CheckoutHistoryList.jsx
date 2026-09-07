@@ -1,10 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 
   Search, History, CheckCircle2, Eye, User, 
-  Building2, Calendar, Phone, Layers, FileText
+  Building2, FileText
 } from 'lucide-react';
 import { format } from 'date-fns';
 

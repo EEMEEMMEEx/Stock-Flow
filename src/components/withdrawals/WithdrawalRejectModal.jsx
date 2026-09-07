@@ -1,7 +1,6 @@
-import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { XCircle, AlertCircle } from 'lucide-react';
+import { XCircle } from 'lucide-react';
 
 const REJECT_PRESETS = [
   'วัสดุในคลังโครงการไม่เพียงพอ',

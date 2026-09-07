@@ -1,5 +1,42 @@
 # Changelog
 
+## [v1.4.76] [2026-09-07] Zero ESLint Warnings & Clean Code Standard Alignment
+
+- **React Fast Refresh (`react-refresh/only-export-components` — 10 warnings resolved to 0):**
+  - `src/App.jsx`: unexported `isLandingSite`
+  - `src/components/settings/EmailTemplateManager.jsx`: unexported `DEFAULT_EVENTS_CONFIG`
+  - `src/components/ui/badge.jsx` & `src/components/ui/button.jsx`: unexported unused variant helpers
+  - `src/lib/roleUtils.js` [NEW]: แยก pure helper functions `getRoleLabel`, `getRoleTextColorClass` ออกจาก component file
+  - `src/components/ui/RoleBadge.jsx`: ปรับให้ export เฉพาะ React Component
+  - `src/contexts/AuthProvider.jsx` [NEW] & `src/contexts/AuthContext.jsx`: แยก Provider ออกจาก Context definition และ Custom Hook
+  - `src/components/ThemeProvider.jsx` [NEW] & `src/components/theme-provider.jsx`: แยก ThemeProvider component ออกจาก useTheme hook
+  - `src/landing/context/LandingLanguageProvider.jsx` [NEW] & `src/landing/context/LandingLanguageContext.jsx`: แยก LandingLanguageProvider ออกจาก context และ hook
+  - ปรับการ import ใน `Topbar.jsx`, `AddUserModal.jsx`, `EditUserModal.jsx`, `Profile.jsx`, `UserManagement.jsx`, `LandingPage.jsx` ให้ตรงกับโมดูลใหม่
+- **React Hooks Dependency Integrity (`react-hooks/exhaustive-deps` — 14 warnings resolved to 0):**
+  - `src/components/dashboard/SiteKitAvailabilityCards.jsx`: จัดการ dependency array `[selectedCategory]` และ `[selectedCategoryId]` ป้องกัน infinite re-render loop
+  - `src/components/layout/Sidebar.jsx`: ปรับ auto-close effect ให้เรียก `onClose()` โดยตรงบน route change
+  - `src/components/reports/ReportSiteKits.jsx`: ครอบ `loadData` ด้วย `useCallback` พร้อมใส่ dependency `[selectedProjectId]` ครบถ้วน
+  - `src/components/settings/EmailTemplateManager.jsx`: ย้าย `DEFAULT_BRANDING` ออกสู่ module scope และครอบ `selectedEvent` ด้วย `useMemo`
+  - `src/components/users/EditUserModal.jsx`: ย้าย `DEFAULT_ROLES`, `resolveRoleId` เป็น module constants และครอบ `fetchLiveRolePermissions` ด้วย `useCallback`
+  - `src/components/users/UserActionModal.jsx`: ครอบ `runIntegrityCheck` ด้วย `useCallback` ก่อน `useEffect`
+  - `src/pages/Items.jsx`: ย้าย `fetchSettings`, `fetchCategories`, `fetchItems` และ `triggerDebouncedFetch` (useCallback) ไว้ก่อน `useEffect` พร้อมกำหนด deps ครบถ้วน
+  - `src/pages/Manual.jsx`: ย้าย `roleFilters` และครอบ `manualSections` ด้วย `useMemo` เพื่อป้องกัน object re-allocation ทุกการ re-render
+  - `src/pages/Reports.jsx`: นำ `activeTabRef`, `filtersRef`, `projectsRef` มาใช้กับ `fetchReportData` และครอบด้วย `useCallback` รักษา stable function identity
+  - `src/pages/RoleManagement.jsx`: ครอบ `fetchRoles`, `fetchCatalog`, `fetchInitialData` ด้วย `useCallback` และกำหนด dependencies ให้ถูกต้อง
+  - `src/pages/Settings.jsx`: ครอบ `fetchSettingsFromDb`, `fetchRolesCatalog`, `fetchStats`, `fetchInitialSettings` ด้วย `useCallback`
+  - `src/pages/Withdrawals.jsx`: ย้าย `mapItemsForProject` และครอบ `fetchData` ด้วย `useCallback`
+- **Unused React Imports & Variables (`no-unused-vars` — 277 warnings resolved to 0):**
+  - ลบ `import React from 'react'` ออกจาก 63 ไฟล์ที่ใช้ React 18 automatic JSX runtime
+  - ลบ unused imports (ไอคอน Lucide, Components, utils, helpers) ที่ไม่ได้ถูกเรียกใช้งาน
+  - แปลง unused parameters และ error catch blocks เป็น optional catch binding (`catch {}`) หรือ prefix `_`
+  - ปรับปรุง unused state และ logic ให้กระชับ ไม่กระทบต่อ runtime behavior เดิม
+- **Verification Results:**
+  - `npm run lint`: **0 errors, 0 warnings** (ลดลงจาก 300 warnings เหลือ 0 ครบถ้วนสมบูรณ์)
+  - `npm run test:email`: **5/5 tests PASS** (100% pass)
+  - `npm run build`: **PASS** (3936 modules transformed, zero build errors, PWA service worker generated)
+- **Mandatory System Version Management (Rule 10):**
+  - ขยับเวอร์ชันระบบจาก `1.4.75` → `1.4.76` ใน `package.json`, `README.md`, `wiki/Home.md`, `wiki/_Footer.md`
+
 ## [v1.4.75] [2026-09-07] Complete ESLint Error Remediation & CI Quality Gate Alignment
 
 - **Server-Side & Build Environments (`no-undef` — 26 errors resolved):**

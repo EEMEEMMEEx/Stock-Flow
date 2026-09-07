@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowUpRight, ShieldCheck, Layers, Cpu, Compass, Menu, X, Play } from 'lucide-react';
 import LanguageSwitcher from './LanguageSwitcher';
 import { useLandingLanguage } from '../context/LandingLanguageContext';

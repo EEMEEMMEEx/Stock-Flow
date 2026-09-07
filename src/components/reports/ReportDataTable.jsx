@@ -1,7 +1,5 @@
-import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { ArrowUpDown, ArrowUp, ArrowDown, AlertCircle, CheckCircle2, Clock, XCircle, Building2 } from 'lucide-react';
 import ReportEmptyState from './ReportEmptyState';
 import { Skeleton } from '@/components/ui/skeleton';

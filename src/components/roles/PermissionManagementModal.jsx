@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { ShieldCheck, ChevronDown, ChevronRight, CheckSquare, Square, RefreshCw, AlertCircle } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { ShieldCheck, ChevronDown, ChevronRight, RefreshCw } from 'lucide-react';
 
 const PERMISSION_DEPENDENCIES = {
   'projects.create': ['projects.view'],

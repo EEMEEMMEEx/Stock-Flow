@@ -1,10 +1,6 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Button } from '@/components/ui/button';
-import { 
-  ArrowUpFromLine, FileText, ShoppingCart, Clock, 
-  Sparkles, CheckCircle2, Building2, Zap, ClipboardList 
-} from 'lucide-react';
+import { Zap, ClipboardList } from 'lucide-react';
 import { pdf } from '@react-pdf/renderer';
 import { MaterialWithdrawalPDF } from '@/lib/pdf-templates';
 import { useAuth } from '@/contexts/AuthContext';
@@ -61,36 +57,6 @@ const Withdrawals = () => {
   const [orderToReject, setOrderToReject] = useState(null);
   const [rejectReason, setRejectReason] = useState('');
 
-  useEffect(() => {
-    fetchData();
-
-    // Live Realtime synchronization on projects and orders
-    const channel = supabase
-      .channel('withdrawals-live-sync')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'projects' }, () => {
-        fetchData();
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'withdrawal_orders' }, () => {
-        fetchData();
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'stock_transactions' }, () => {
-        fetchData();
-      })
-      .subscribe();
-
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        fetchData();
-      }
-    };
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    return () => {
-      supabase.removeChannel(channel);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [profile]);
-
   // Aggregate item balances based on selected project location
   const mapItemsForProject = (allItems, allBalances, projectId) => {
     if (!allItems) return [];
@@ -144,7 +110,7 @@ const Withdrawals = () => {
     }
   };
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!profile) return;
     try {
       setLoading(true);
@@ -216,7 +182,37 @@ const Withdrawals = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [profile, isAdmin, selectedProjectId]);
+
+  useEffect(() => {
+    fetchData();
+
+    // Live Realtime synchronization on projects and orders
+    const channel = supabase
+      .channel('withdrawals-live-sync')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'projects' }, () => {
+        fetchData();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'withdrawal_orders' }, () => {
+        fetchData();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'stock_transactions' }, () => {
+        fetchData();
+      })
+      .subscribe();
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchData();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      supabase.removeChannel(channel);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [fetchData]);
 
   // Cart Operations
   const handleAddToCart = (item) => {
@@ -456,7 +452,7 @@ const Withdrawals = () => {
           });
           setShortageOverrideReason('');
           setIsShortageModalOpen(true);
-        } catch (parseErr) {
+        } catch {
           toast.error('จำนวนวัสดุในโครงการไม่เพียงพอสำหรับอนุมัติ');
         }
       } else {
@@ -493,7 +489,7 @@ const Withdrawals = () => {
     setIsProcessing(true);
     const toastId = toast.loading('กำลังปฏิเสธคำขอ...');
     try {
-      const { data, error } = await supabase.rpc('reject_inventory_request', {
+      const { error } = await supabase.rpc('reject_inventory_request', {
         p_request_id: orderToReject.id,
         p_reject_reason: rejectReason.trim()
       });
@@ -533,7 +529,7 @@ const Withdrawals = () => {
     setIsProcessing(true);
     const toastId = toast.loading('กำลังยืนยันการรับมอบของ...');
     try {
-      const { data, error } = await supabase.rpc('complete_inventory_request', {
+      const { error } = await supabase.rpc('complete_inventory_request', {
         p_request_id: orderId
       });
       if (error) throw error;
@@ -571,7 +567,7 @@ const Withdrawals = () => {
       setOrderDetails(data || []);
       setSelectedOrder(order);
       setIsDetailsModalOpen(true);
-    } catch (error) {
+    } catch {
       toast.error('ไม่สามารถโหลดรายละเอียดบิลได้');
     }
   };

@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { 
   Router, Antenna, 
   AlertTriangle, CheckCircle2, Layers, 
-  ChevronRight, AlertCircle, Edit3, PenLine, Plus, 
+  ChevronRight, AlertCircle, PenLine, Plus, 
   Trash2, RotateCcw, Save, Search, 
   Package, ShieldCheck, Check, Info, GripVertical
 } from 'lucide-react';
@@ -1215,7 +1215,6 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                   <tbody className="divide-y divide-border/40">
                     {(selectedCategory?.items || []).filter(isSpareItem).map((item, idx) => {
                       const stock = Number(item.total_stock) || 0;
-                      const qtyPerSite = Number(item.qty_per_site) || 0;
                       const allocatedStock = 0;
                       const spareStock = stock;
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,7 +20,7 @@ import { sendTestEmail } from '@/lib/emailService';
 
 
 const Settings = () => {
-  const { can, profile } = useAuth();
+  const { can } = useAuth();
   const canUpdate = can('settings.update');
 
   const [loading, setLoading] = useState(true);
@@ -81,27 +81,11 @@ const Settings = () => {
   });
   const [emailBranding, setEmailBranding] = useState({});
 
-  useEffect(() => {
-    fetchInitialSettings();
-  }, []);
-
   const toggleSection = (sectionKey) => {
     setOpenSections(prev => ({ ...prev, [sectionKey]: !prev[sectionKey] }));
   };
 
-  const fetchInitialSettings = async () => {
-    try {
-      setLoading(true);
-      await Promise.all([fetchSettingsFromDb(), fetchRolesCatalog(), fetchStats()]);
-    } catch (error) {
-      console.error('Fetch Settings Error:', error);
-      toast.error('เกิดข้อผิดพลาดในการโหลดข้อมูลการตั้งค่า');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchSettingsFromDb = async () => {
+  const fetchSettingsFromDb = useCallback(async () => {
     try {
       const { data, error } = await supabase.rpc('admin_get_system_settings');
       if (error) {
@@ -153,9 +137,9 @@ const Settings = () => {
     } catch (e) {
       console.warn('Using fallback settings:', e);
     }
-  };
+  }, []);
 
-  const fetchRolesCatalog = async () => {
+  const fetchRolesCatalog = useCallback(async () => {
     try {
       const { data } = await supabase.from('roles').select('code, name').eq('is_active', true);
       setRoles(data || [
@@ -166,9 +150,9 @@ const Settings = () => {
     } catch (e) {
       console.warn('Failed to load roles catalog:', e);
     }
-  };
+  }, []);
 
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     try {
       const [{ count: pCount }, { count: uCount }, { count: rCount }] = await Promise.all([
         supabase.from('projects').select('*', { count: 'exact', head: true }).eq('status', 'active'),
@@ -183,7 +167,23 @@ const Settings = () => {
     } catch (e) {
       console.warn('Failed to load stats:', e);
     }
-  };
+  }, []);
+
+  const fetchInitialSettings = useCallback(async () => {
+    try {
+      setLoading(true);
+      await Promise.all([fetchSettingsFromDb(), fetchRolesCatalog(), fetchStats()]);
+    } catch (error) {
+      console.error('Fetch Settings Error:', error);
+      toast.error('เกิดข้อผิดพลาดในการโหลดข้อมูลการตั้งค่า');
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchSettingsFromDb, fetchRolesCatalog, fetchStats]);
+
+  useEffect(() => {
+    fetchInitialSettings();
+  }, [fetchInitialSettings]);
 
   const handleSaveAppSettings = async (e) => {
     e.preventDefault();
@@ -277,7 +277,7 @@ const Settings = () => {
         notification_events: notificationEvents
       };
 
-      const { data, error } = await supabase.rpc('admin_update_system_settings', {
+      const { error } = await supabase.rpc('admin_update_system_settings', {
         p_settings: payload,
         p_category: 'notifications'
       });
@@ -346,24 +346,6 @@ const Settings = () => {
   };
 
 
-
-  const toggleEventRole = (eventKey, roleCode) => {
-    setNotificationEvents(prev => {
-      const currentRoles = prev[eventKey]?.roles || [];
-      const exists = currentRoles.includes(roleCode);
-      const updatedRoles = exists
-        ? currentRoles.filter(r => r !== roleCode)
-        : [...currentRoles, roleCode];
-
-      return {
-        ...prev,
-        [eventKey]: {
-          ...prev[eventKey],
-          roles: updatedRoles
-        }
-      };
-    });
-  };
 
   return (
     <div className="space-y-6 pb-16 max-w-5xl mx-auto">

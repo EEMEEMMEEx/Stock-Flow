@@ -1,6 +1,6 @@
-import React, { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Camera, Upload, Trash2, User } from 'lucide-react';
+import { Camera, Upload, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB

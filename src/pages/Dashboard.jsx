@@ -1,10 +1,10 @@
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
   Package, FolderKanban, ArrowUpFromLine, AlertCircle, 
-  ArrowDownToLine, CheckCircle2, RefreshCw, BarChart3, 
-  Layers, Building2, TrendingUp 
+  CheckCircle2, RefreshCw, BarChart3, 
+  Building2 
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
@@ -115,12 +115,12 @@ const Dashboard = () => {
         .gte('requested_at', today);
 
       // 5. Fetch Stock Balance
-      const { data: balanceData, error: balanceErr } = await supabase
+      const { data: balanceData } = await supabase
         .from('stock_balance')
         .select('*');
 
       // 6. Fetch Recent Activity
-      const { data: activityData, error: actErr } = await supabase
+      const { data: activityData } = await supabase
         .from('withdrawal_orders')
         .select('*, projects(name), profiles!withdrawal_orders_requested_by_fkey(full_name), withdrawal_items(items(name))')
         .order('requested_at', { ascending: false })

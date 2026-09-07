@@ -1,4 +1,3 @@
-import React from 'react';
 import { Document, Page, Text, View, StyleSheet, Font, Image } from '@react-pdf/renderer';
 
 // Register Thai Font (THSarabunNew)
@@ -567,7 +566,7 @@ export const StockReportPDF = ({
   categoryName = '',
   startDate = '',
   endDate = '',
-  searchQuery = ''
+  searchQuery: _searchQuery = ''
 }) => {
   const printDateStr = new Date().toLocaleDateString('th-TH', {
     year: 'numeric',
@@ -578,13 +577,10 @@ export const StockReportPDF = ({
   });
 
   let reportTitle = 'รายงานสรุปยอดสินค้าคงเหลือ (Stock Balance Report)';
-  let reportCategoryLabel = 'สต็อกคงเหลือ';
   if (type === 'stock_in') {
     reportTitle = 'รายงานสรุปการรับเข้าวัสดุ (Stock In Report)';
-    reportCategoryLabel = 'รับเข้าพัสดุ';
   } else if (type === 'withdrawals') {
     reportTitle = 'รายงานสรุปการเบิกจ่ายวัสดุ (Withdrawal Orders Report)';
-    reportCategoryLabel = 'เบิกจ่ายพัสดุ';
   }
 
   // Calculate Metrics
@@ -911,7 +907,6 @@ export const SiteKitsReportPDF = ({
   let totalStockUnits = 0;
   let limitingCount = 0;
   let outOfStockCount = 0;
-  let readyCount = 0;
 
   items.forEach(item => {
     const stock = Number(item.total_stock || 0);
@@ -920,8 +915,6 @@ export const SiteKitsReportPDF = ({
       outOfStockCount++;
     } else if (item.isLimiting) {
       limitingCount++;
-    } else {
-      readyCount++;
     }
   });
 

@@ -7,7 +7,7 @@ import {
   renderEmailText,
   renderTestEmailHtml,
   renderUserInvitationEmailHtml,
-  renderUserInvitationEmailText,
+  
   resolveEmailVariables,
   SUPPORTED_EVENT_VARIABLES,
 } from './emailRenderer.js';

@@ -122,7 +122,7 @@ export const useNotifications = (userId) => {
     return { success: true };
   }, [loadNotifications, notifications, userId, tableExists]);
 
-  const approveQuickWithdrawal = useCallback(async (orderId, notificationId, approverName = 'Admin') => {
+  const approveQuickWithdrawal = useCallback(async (orderId, notificationId, _approverName = 'Admin') => {
     try {
       const { data, error } = await supabase.rpc('approve_inventory_request', {
         p_request_id: orderId,

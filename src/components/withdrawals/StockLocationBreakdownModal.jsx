@@ -1,7 +1,5 @@
-import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { Package, Building2, MapPin, CheckCircle2, ArrowRight } from 'lucide-react';
 
 const StockLocationBreakdownModal = ({

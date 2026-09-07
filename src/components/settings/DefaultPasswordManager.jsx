@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { KeyRound, ShieldCheck, Lock, Eye, EyeOff, Save, RefreshCw, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
+import { KeyRound, Eye, EyeOff, Save, RefreshCw, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
 import { validatePasswordPolicy, generateStrongPassword } from '@/lib/passwordPolicy';
 import toast from 'react-hot-toast';
 

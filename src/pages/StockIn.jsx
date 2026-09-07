@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useMemo } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,10 +7,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { 
   ArrowDownToLine, Download, Upload, Plus, Trash2, Check, 
-  RefreshCw, Package, Building2, Eye, FileSpreadsheet, Layers, 
-  Filter, CheckCircle2, AlertCircle, Search, HelpCircle, 
-  ArrowRight, X, ChevronDown, ChevronUp, Sparkles, Tag, CheckSquare,
-  MapPin, SlidersHorizontal, ToggleLeft, ToggleRight, BarChart3, CornerDownRight
+  RefreshCw, Package, Building2, FileSpreadsheet, Layers, 
+  Filter, CheckCircle2, Search, 
+  ArrowRight, 
+  MapPin, SlidersHorizontal, BarChart3, CornerDownRight
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
@@ -497,11 +497,6 @@ const StockIn = () => {
       (i.notes && i.notes.toLowerCase().includes(q))
     );
   }, [previewItems, previewSearch]);
-
-  // Selected Location object for active preview
-  const activePreviewProject = useMemo(() => {
-    return projects.find(p => p.id === previewProjectId) || null;
-  }, [projects, previewProjectId]);
 
   // Calculations
   const totalItemsCount = lineItems.length;

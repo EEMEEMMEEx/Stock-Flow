@@ -1,21 +1,19 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 
-  BookOpen, AlertTriangle, ShieldCheck, User, CheckCircle2, XCircle, 
-  Search, Users, Shield, KeyRound, FolderKanban, ArrowDownToLine, 
-  ArrowUpFromLine, History, FileText, Lock, Sparkles, ExternalLink,
-  Package, Clock, RefreshCw, Layers, CheckSquare, ChevronRight,
-  HelpCircle, SlidersHorizontal, ArrowLeftRight, Settings, Info,
-  FileSpreadsheet, AlertCircle, BookmarkCheck, Zap
+  BookOpen, AlertTriangle, ShieldCheck, User, CheckCircle2, 
+  Search, Users, Shield, FolderKanban, ArrowDownToLine, 
+  ArrowUpFromLine, FileText, Sparkles, ExternalLink,
+  Package, Clock, Layers,
+  HelpCircle, SlidersHorizontal, ArrowLeftRight, Info,
+  BookmarkCheck, Zap
 } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
 
 const Manual = () => {
   const navigate = useNavigate();
-  const { isAdmin, can, role } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeRoleFilter, setActiveRoleFilter] = useState('all'); // 'all' | 'staff' | 'supervisor' | 'admin' | 'checkouts' | 'inventory'
 
@@ -29,7 +27,7 @@ const Manual = () => {
   ];
 
   // Comprehensive documentation catalog
-  const manualSections = [
+  const manualSections = useMemo(() => [
     {
       id: 'sidebar-navigation',
       category: ['staff', 'supervisor', 'admin'],
@@ -275,7 +273,7 @@ const Manual = () => {
       proTips: 'สามารถตรวจสอบความโปร่งใสของการทำงานย้อนหลังได้ทุกขั้นตอนที่เมนู "ประวัติ (History)" ซึ่งบันทึก IP, เวลา, และรายละเอียดการเปลี่ยนแปลง',
       warnings: 'การส่งออกรายงานปริมาณข้อมูลขนาดใหญ่ควรเลือกช่วงเวลาที่เฉพาะเจาะจงเพื่อความรวดเร็วในการประมวลผล'
     }
-  ];
+  ], []);
 
   // Filter sections based on search query and active role filter
   const filteredSections = useMemo(() => {
@@ -293,7 +291,7 @@ const Manual = () => {
 
       return matchesFilter && (matchesTitle || matchesDesc || matchesSteps || matchesRoles || matchesPerms);
     });
-  }, [searchQuery, activeRoleFilter]);
+  }, [searchQuery, activeRoleFilter, manualSections]);
 
   return (
     <div className="space-y-8 pb-20 max-w-6xl mx-auto">

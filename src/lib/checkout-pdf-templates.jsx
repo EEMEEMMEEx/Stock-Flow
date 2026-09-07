@@ -1,4 +1,3 @@
-import React from 'react';
 import { Document, Page, Text, View, StyleSheet, Font, Image } from '@react-pdf/renderer';
 
 // Register Thai Font (THSarabunNew) - Identical to MaterialWithdrawalPDF
@@ -310,7 +309,7 @@ export const MaterialCheckoutPDF = ({ order }) => {
  * Material Return Receipt (ใบรับคืนพัสดุ / ใบรับคืนเครื่องมือ)
  * Strictly standardized to match MaterialWithdrawalPDF layout, typography, and styling
  */
-export const MaterialReturnPDF = ({ order, returnLogs = [] }) => {
+export const MaterialReturnPDF = ({ order, returnLogs: _returnLogs = [] }) => {
   if (!order) return null;
 
   const rawItems = order.checkout_items || [];

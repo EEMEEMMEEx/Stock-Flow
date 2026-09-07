@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { 
-  RotateCcw, Package, Building2, User, Calendar, 
-  CheckCircle2, AlertTriangle, XCircle, ArrowRight, Layers,
-  Tag, Search, CheckSquare, Square, Check, Plus
+  RotateCcw, 
+  CheckCircle2, 
+  Tag, Search, CheckSquare, Check, Plus
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { supabase } from '@/lib/supabase';
@@ -204,7 +204,6 @@ const CheckoutReturnModal = ({
               </div>
             ) : (
               filteredReturnItems.map(item => {
-                const isItemSerialized = Boolean(item.serial_number);
                 const isReturning = Number(item.returned_quantity) > 0;
 
                 return (

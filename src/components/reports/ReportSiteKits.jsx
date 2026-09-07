@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { 
-  FileSpreadsheet, FileText, Layers, Radio, TowerControl, 
+  FileSpreadsheet, FileText, Layers, 
   Router, Antenna, RefreshCw, Search 
 } from 'lucide-react';
 import MicrowaveAntennaIcon from '@/components/icons/MicrowaveAntennaIcon';

@@ -1,10 +1,9 @@
-import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { 
   FileText, CheckCircle2, Clock, XCircle, AlertTriangle, 
-  Building2, User, Calendar, MapPin, Package, ArrowRight, ShieldAlert 
+  Building2, User, MapPin, Package 
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -13,7 +12,7 @@ const WithdrawalDetailModal = ({
   orderDetails = [],
   isOpen,
   onClose,
-  isAdmin = false,
+  isAdmin: _isAdmin = false,
   canApprove = false,
   canReject = false,
   canComplete = false,

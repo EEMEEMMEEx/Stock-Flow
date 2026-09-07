@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -27,33 +27,15 @@ const RoleManagement = () => {
   const [currentRolePermissions, setCurrentRolePermissions] = useState([]);
   const [selectedRoleForDelete, setSelectedRoleForDelete] = useState(null);
 
-  useEffect(() => {
-    fetchInitialData();
-  }, []);
-
-  const fetchInitialData = async () => {
-    try {
-      setLoading(true);
-      await Promise.all([fetchRoles(), fetchCatalog()]);
-    } catch (error) {
-      console.error('Fetch Roles Error:', error);
-      toast.error('เกิดข้อผิดพลาดในการโหลดข้อมูลบทบาท');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchRoles = async () => {
+const fetchRoles = useCallback(async () => {
     try {
       // 1. Fetch roles, profiles, and role_permissions in parallel
       let rolesData = [];
-      let isRpcActive = false;
 
       try {
         const { data, error } = await supabase.rpc('admin_get_roles_with_stats');
         if (!error && Array.isArray(data) && data.length > 0) {
           rolesData = data;
-          isRpcActive = true;
         }
       } catch (err) {
         console.warn('RPC admin_get_roles_with_stats not found or error:', err);
@@ -132,9 +114,9 @@ const RoleManagement = () => {
       console.error('Error fetching and reconciling roles:', error);
       toast.error('เกิดข้อผิดพลาดในการโหลดข้อมูลบทบาท');
     }
-  };
+  }, []);
 
-  const fetchCatalog = async () => {
+  const fetchCatalog = useCallback(async () => {
     try {
       const { data, error } = await supabase.rpc('admin_get_permissions_catalog');
       if (!error && data) {
@@ -148,7 +130,24 @@ const RoleManagement = () => {
     // Fallback catalog query
     const { data: perms } = await supabase.from('permissions').select('*').order('category');
     setCatalog(perms || []);
-  };
+  }, []);
+
+  const fetchInitialData = useCallback(async () => {
+    try {
+      setLoading(true);
+      await Promise.all([fetchRoles(), fetchCatalog()]);
+    } catch (error) {
+      console.error('Fetch Roles Error:', error);
+      toast.error('เกิดข้อผิดพลาดในการโหลดข้อมูลบทบาท');
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchRoles, fetchCatalog]);
+
+  useEffect(() => {
+    fetchInitialData();
+  }, [fetchInitialData]);
+
 
   const handleOpenPermissionModal = async (roleObj) => {
     try {

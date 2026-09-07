@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ShieldAlert, KeyRound, Eye, EyeOff, CheckCircle2, AlertCircle } from 'lucide-react';
+import { ShieldAlert, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
 import { validatePasswordPolicy } from '@/lib/passwordPolicy';
 import toast from 'react-hot-toast';
 

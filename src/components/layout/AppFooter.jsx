@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { ShieldCheck, BookOpen } from 'lucide-react';
 import { APP_CONFIG } from '@/config/appConfig';

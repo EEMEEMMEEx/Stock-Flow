@@ -91,7 +91,7 @@ const UserManagement = () => {
           assignmentMap[a.user_id].push(a.project_id);
         });
       }
-    } catch (_e) {
+    } catch {
       // Table might not exist yet before migration
     }
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { utils, writeFile } from 'xlsx';
@@ -41,11 +41,16 @@ const Reports = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  useEffect(() => {
-    fetchFilterOptions();
-  }, []);
+  const activeTabRef = useRef(activeTab);
+  activeTabRef.current = activeTab;
 
-  const fetchFilterOptions = async () => {
+  const filtersRef = useRef(filters);
+  filtersRef.current = filters;
+
+  const projectsRef = useRef(projects);
+  projectsRef.current = projects;
+
+  const fetchFilterOptions = useCallback(async () => {
     try {
       const [projRes, catRes] = await Promise.all([
         supabase.from('projects').select('id, name, project_code, location, description').eq('status', 'active').order('name'),
@@ -56,35 +61,20 @@ const Reports = () => {
     } catch (error) {
       console.error('Error fetching filter options:', error);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    fetchReportData();
-  }, [activeTab]);
+    fetchFilterOptions();
+  }, [fetchFilterOptions]);
 
-  const handleFilterChange = (e) => {
-    const { name, value } = e.target;
-    setFilters((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleResetFilters = () => {
-    setFilters({
-      project_id: activeTab === 'balance' && projects.length > 0 ? projects[0].id : '',
-      start_date: '',
-      end_date: '',
-      search: '',
-      status: '',
-      category_id: ''
-    });
-    setSortConfig({ key: '', direction: 'asc' });
-    setCurrentPage(1);
-  };
-
-  const fetchReportData = async () => {
+  const fetchReportData = useCallback(async () => {
+    const currentTab = activeTabRef.current;
+    const currentFilters = filtersRef.current;
+    const currentProjects = projectsRef.current;
     setLoading(true);
     setCurrentPage(1);
     try {
-      if (activeTab === 'stock_in') {
+      if (currentTab === 'stock_in') {
         let query = supabase
           .from('stock_in_orders')
           .select(
@@ -99,11 +89,11 @@ const Reports = () => {
           )
           .order('received_date', { ascending: false });
 
-        if (filters.project_id) query = query.eq('project_id', filters.project_id);
-        if (filters.start_date) query = query.gte('received_date', filters.start_date);
-        if (filters.end_date) query = query.lte('received_date', filters.end_date);
-        if (filters.search) {
-          query = query.or(`supplier.ilike.%${filters.search}%,po_number.ilike.%${filters.search}%`);
+        if (currentFilters.project_id) query = query.eq('project_id', currentFilters.project_id);
+        if (currentFilters.start_date) query = query.gte('received_date', currentFilters.start_date);
+        if (currentFilters.end_date) query = query.lte('received_date', currentFilters.end_date);
+        if (currentFilters.search) {
+          query = query.or(`supplier.ilike.%${currentFilters.search}%,po_number.ilike.%${currentFilters.search}%`);
         }
 
         const { data, error } = await query;
@@ -126,7 +116,7 @@ const Reports = () => {
           });
         });
         setReportData(flatData);
-      } else if (activeTab === 'withdrawals') {
+      } else if (currentTab === 'withdrawals') {
         let query = supabase
           .from('withdrawal_orders')
           .select(
@@ -142,10 +132,10 @@ const Reports = () => {
           )
           .order('requested_at', { ascending: false });
 
-        if (filters.project_id) query = query.eq('project_id', filters.project_id);
-        if (filters.start_date) query = query.gte('requested_at', `${filters.start_date}T00:00:00`);
-        if (filters.end_date) query = query.lte('requested_at', `${filters.end_date}T23:59:59`);
-        if (filters.status) query = query.eq('status', filters.status);
+        if (currentFilters.project_id) query = query.eq('project_id', currentFilters.project_id);
+        if (currentFilters.start_date) query = query.gte('requested_at', `${currentFilters.start_date}T00:00:00`);
+        if (currentFilters.end_date) query = query.lte('requested_at', `${currentFilters.end_date}T23:59:59`);
+        if (currentFilters.status) query = query.eq('status', currentFilters.status);
 
         const { data, error } = await query;
         if (error && error.code !== '42P01') throw error;
@@ -173,9 +163,9 @@ const Reports = () => {
           });
         });
         setReportData(flatData);
-      } else if (activeTab === 'balance') {
-        if (!filters.project_id && projects.length > 0) {
-          setFilters((prev) => ({ ...prev, project_id: projects[0].id }));
+      } else if (currentTab === 'balance') {
+        if (!currentFilters.project_id && currentProjects.length > 0) {
+          setFilters((prev) => ({ ...prev, project_id: currentProjects[0].id }));
           setLoading(false);
           return;
         }
@@ -186,8 +176,8 @@ const Reports = () => {
             projects:project_id(name, project_code, location, description)
           `);
 
-        if (filters.project_id) query = query.eq('project_id', filters.project_id);
-        if (filters.category_id) query = query.eq('items.category_id', filters.category_id);
+        if (currentFilters.project_id) query = query.eq('project_id', currentFilters.project_id);
+        if (currentFilters.category_id) query = query.eq('items.category_id', currentFilters.category_id);
 
         const { data, error } = await query;
         if (error && error.code !== '42P01') throw error;
@@ -198,13 +188,35 @@ const Reports = () => {
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  useEffect(() => {
+    fetchReportData();
+  }, [activeTab, fetchReportData]);
+
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilters((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleResetFilters = () => {
+    setFilters({
+      project_id: activeTab === 'balance' && projects.length > 0 ? projects[0].id : '',
+      start_date: '',
+      end_date: '',
+      search: '',
+      status: '',
+      category_id: ''
+    });
+    setSortConfig({ key: '', direction: 'asc' });
+    setCurrentPage(1);
   };
 
   useEffect(() => {
     if (activeTab === 'balance' && filters.project_id) {
       fetchReportData();
     }
-  }, [filters.project_id, activeTab]);
+  }, [filters.project_id, activeTab, fetchReportData]);
 
   const handleTabChange = (tabId) => {
     setActiveTab(tabId);

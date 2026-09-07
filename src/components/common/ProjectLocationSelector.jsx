@@ -1,5 +1,5 @@
-import React, { useMemo, useState, useEffect } from 'react';
-import { Building2, MapPin, CheckCircle2, ChevronRight, Layers, Info } from 'lucide-react';
+import { useMemo, useState, useEffect } from 'react';
+import { Building2, MapPin, ChevronRight, Layers, Info } from 'lucide-react';
 
 /**
  * ProjectLocationSelector
@@ -15,10 +15,10 @@ export const ProjectLocationSelector = ({
   allLabel = '-- ทุกสถานที่จัดเก็บ (แสดงยอดรวมทั้งระบบ) --',
   mode = 'dual', // 'dual' (2 separate dropdowns) or 'unified' (single clear dropdown)
   label = 'โครงการและสถานที่จัดเก็บ (Project & Location)',
-  description = 'เลือกโครงการและคลังจัดเก็บปลายทาง',
+  description: _description = 'เลือกโครงการและคลังจัดเก็บปลายทาง',
   showSummaryCard = true,
   className = '',
-  size = 'default' // 'default' | 'sm' | 'lg'
+  size: _size = 'default' // 'default' | 'sm' | 'lg'
 }) => {
   // Group projects by unique Project Name + Project Code
   const groupedProjects = useMemo(() => {
@@ -110,7 +110,6 @@ export const ProjectLocationSelector = ({
     }
   };
 
-  const isSmall = size === 'sm';
 
   // Render Dual Mode (Two-stage distinct dropdowns)
   if (mode === 'dual') {
