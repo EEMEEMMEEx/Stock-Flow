@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Eye, EyeOff, RefreshCw, Check, Shield, User, FolderKanban, AlertCircle, Mail } from 'lucide-react';
+import { Eye, RefreshCw, Shield, AlertCircle, User, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 import AvatarUpload from '@/components/users/AvatarUpload';
-import RoleBadge, { getRoleLabel } from '@/components/ui/RoleBadge';
+import RoleBadge from '@/components/ui/RoleBadge';
+import { getRoleLabel } from '@/lib/roleUtils';
 import { useAuth } from '@/contexts/AuthContext';
 
 const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) => {

@@ -1,19 +1,26 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { 
-  Mail, Send, Sparkles, Check, X, Smartphone, Monitor, Code, 
-  Users, ShieldCheck, ChevronRight, Search, RefreshCw, AlertCircle, Save, Info, RotateCcw
+  Mail, Send, Sparkles, Check, Smartphone, Monitor, Code, 
+  Users, ShieldCheck, Search, AlertCircle, Save, RotateCcw
 } from 'lucide-react';
-import { getSampleEmailData, renderEmailHtml, SUPPORTED_EVENT_VARIABLES } from '@/lib/emailRenderer';
+import { getSampleEmailData, renderEmailHtml } from '@/lib/emailRenderer';
 import { APP_CONFIG } from '@/config/appConfig';
 import toast from 'react-hot-toast';
 import { sendTestEmail } from '@/lib/emailService';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
-export const DEFAULT_EVENTS_CONFIG = {
+const DEFAULT_BRANDING = {
+  app_name: APP_CONFIG.name,
+  logo_url: '',
+  public_base_url: typeof window !== 'undefined' ? window.location.origin : 'https://stockflowth.online',
+  accent_color: '#3b82f6',
+  footer_text: 'หากคุณไม่ได้ทำรายการนี้ กรุณาติดต่อผู้ดูแลระบบเพื่อความปลอดภัย'
+};
+
+const DEFAULT_EVENTS_CONFIG = {
   withdrawal_submitted: {
     enabled: true,
     title: '1. ส่งคำขอเบิกจ่ายใหม่ (Withdrawal Submitted)',
@@ -165,17 +172,9 @@ const EmailTemplateManager = ({
   const [isDirty, setIsDirty] = useState(false);
 
   // Global Email Branding State
-  const defaultBranding = {
-    app_name: APP_CONFIG.name,
-    logo_url: '',
-    public_base_url: typeof window !== 'undefined' ? window.location.origin : 'https://stockflowth.online',
-    accent_color: '#3b82f6',
-    footer_text: 'หากคุณไม่ได้ทำรายการนี้ กรุณาติดต่อผู้ดูแลระบบเพื่อความปลอดภัย'
-  };
-  const [branding, setBranding] = useState(() => ({ ...defaultBranding, ...brandingConfig }));
+  const [branding, setBranding] = useState(() => ({ ...DEFAULT_BRANDING, ...brandingConfig }));
 
-  // Test Email Modal
-  const [isTestEmailOpen, setIsTestEmailOpen] = useState(false);
+  // Test Email State
   const [testRecipient, setTestRecipient] = useState('');
   const [sendingTest, setSendingTest] = useState(false);
 
@@ -186,26 +185,28 @@ const EmailTemplateManager = ({
   }, [eventsConfig]);
 
   useEffect(() => {
-    setBranding({ ...defaultBranding, ...brandingConfig });
+    setBranding({ ...DEFAULT_BRANDING, ...brandingConfig });
   }, [brandingConfig]);
 
-  const selectedEvent = events[selectedEventKey] || DEFAULT_EVENTS_CONFIG[selectedEventKey] || {
-    enabled: true,
-    title: selectedEventKey,
-    desc: '',
-    primary_recipient: 'ผู้เกี่ยวข้อง',
-    subject: '',
-    status_label: '',
-    status_type: 'info',
-    heading: '',
-    intro: '',
-    cta_label: '',
-    cta_url: '',
-    footer_note: '',
-    roles: [],
-    to_extra: '',
-    cc_extra: ''
-  };
+  const selectedEvent = useMemo(() => {
+    return events[selectedEventKey] || DEFAULT_EVENTS_CONFIG[selectedEventKey] || {
+      enabled: true,
+      title: selectedEventKey,
+      desc: '',
+      primary_recipient: 'ผู้เกี่ยวข้อง',
+      subject: '',
+      status_label: '',
+      status_type: 'info',
+      heading: '',
+      intro: '',
+      cta_label: '',
+      cta_url: '',
+      footer_note: '',
+      roles: [],
+      to_extra: '',
+      cc_extra: ''
+    };
+  }, [events, selectedEventKey]);
 
   const handleUpdateSelectedEvent = (field, value) => {
     setEvents(prev => ({

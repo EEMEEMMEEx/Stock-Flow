@@ -138,7 +138,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
     });
   };
 
-  // Initialize draft when category is selected
+  // Initialize editable BOM draft when selected category changes or BOM modal opens
   useEffect(() => {
     if (selectedCategory) {
       const initialDraft = (selectedCategory.items || []).map((item, idx) => {
@@ -157,17 +157,19 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
       setBomDraft(initialDraft);
       setCatalogPickerTargetIndex(null);
     }
-  }, [selectedCategory?.category_id, selectedCategory?.total_items_in_bom]);
+  }, [selectedCategory]);
+
+  const selectedCategoryId = selectedCategory?.category_id;
 
   // Sync selectedCategory with fresh siteKits from parent onRefresh
   useEffect(() => {
-    if (selectedCategory && !isEditing) {
-      const updatedCat = siteKits.find(c => c.category_id === selectedCategory.category_id);
+    if (selectedCategoryId && !isEditing) {
+      const updatedCat = siteKits.find(c => c.category_id === selectedCategoryId);
       if (updatedCat) {
         setSelectedCategory(prev => prev ? { ...prev, ...updatedCat } : null);
       }
     }
-  }, [siteKits, isEditing]);
+  }, [siteKits, isEditing, selectedCategoryId]);
 
   // Load master catalog items when modal opens
   useEffect(() => {

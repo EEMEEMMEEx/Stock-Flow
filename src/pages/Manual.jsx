@@ -432,7 +432,7 @@ const Manual = () => {
         </span>
         {searchQuery && (
           <span>
-            ผลการค้นหาสำหรับ: "<span className="text-primary font-medium">{searchQuery}</span>"
+            ผลการค้นหาสำหรับ: &quot;<span className="text-primary font-medium">{searchQuery}</span>&quot;
           </span>
         )}
       </div>
@@ -444,7 +444,7 @@ const Manual = () => {
             <HelpCircle className="w-12 h-12 text-muted-foreground mx-auto opacity-50" />
             <h3 className="text-base font-bold text-foreground">ไม่พบข้อมูลคู่มือที่ตรงกับคำค้นหา</h3>
             <p className="text-xs text-muted-foreground max-w-md mx-auto">
-              ลองค้นหาด้วยคำอื่น เช่น "เบิกจ่าย", "ยืม", "อนุมัติ", "CSV", "สิทธิ์", หรือ "โครงการ"
+              ลองค้นหาด้วยคำอื่น เช่น &quot;เบิกจ่าย&quot;, &quot;ยืม&quot;, &quot;อนุมัติ&quot;, &quot;CSV&quot;, &quot;สิทธิ์&quot;, หรือ &quot;โครงการ&quot;
             </p>
             <Button
               type="button"

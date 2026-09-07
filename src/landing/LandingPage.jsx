@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import LandingNavbar from './components/LandingNavbar';
 import HeroSection from './components/HeroSection';
 import StatsSection from './components/StatsSection';
@@ -8,7 +8,7 @@ import WorkflowSection from './components/WorkflowSection';
 import TechStackSection from './components/TechStackSection';
 import CtaSection from './components/CtaSection';
 import LandingFooter from './components/LandingFooter';
-import { LandingLanguageProvider } from './context/LandingLanguageContext';
+import { LandingLanguageProvider } from './context/LandingLanguageProvider';
 
 export default function LandingPage() {
   useEffect(() => {

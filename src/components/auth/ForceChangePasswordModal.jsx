@@ -150,7 +150,7 @@ const ForceChangePasswordModal = ({ isOpen, onPasswordChanged }) => {
               <div className={`flex items-center gap-1.5 ${/[0-9]/.test(newPassword) ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'}`}>
                 <CheckCircle2 className="w-3 h-3 shrink-0" /> มีตัวเลข (0-9)
               </div>
-              <div className={`flex items-center gap-1.5 ${/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(newPassword) ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'}`}>
+              <div className={`flex items-center gap-1.5 ${/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(newPassword) ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'}`}>
                 <CheckCircle2 className="w-3 h-3 shrink-0" /> มีสัญลักษณ์พิเศษ (!@#$%...)
               </div>
             </div>

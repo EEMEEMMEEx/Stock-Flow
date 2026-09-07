@@ -1,5 +1,28 @@
 # Changelog
 
+## [v1.4.75] [2026-09-07] Complete ESLint Error Remediation & CI Quality Gate Alignment
+
+- **Server-Side & Build Environments (`no-undef` — 26 errors resolved):**
+  - `eslint.config.js`: เพิ่มการกำหนด Node.js environment globals (`globals.node`) ให้แก่ไฟล์ฝั่ง Serverless APIs (`api/**/*.js`), สคริปต์ (`scripts/**/*.mjs`), ไฟล์คอนฟิก (`vite.config.js`, `eslint.config.js`) และชุดทดสอบ (`*.test.js`) แก้ปัญหา `process` และ `__dirname` is not defined ทั้ง 26 จุดอย่างถูกต้องตามมาตรฐาน ESLint Flat Config
+- **Regex Syntax & Escapes (`no-useless-escape` — 7 errors resolved):**
+  - `src/components/auth/ForceChangePasswordModal.jsx`: ลบ escape ที่ไม่จำเป็น `\[` และ `\/` ออกจาก character class ใน regular expression
+  - `src/components/settings/DefaultPasswordManager.jsx`: ลบ escape ที่ไม่จำเป็น `\[` และ `\/` ออกจาก regular expression
+  - `src/components/users/AvatarUpload.jsx`: จัดวางเครื่องหมายขีดคั่น `-` ใน regex class สำหรับ blob URL validation โดยไม่ต้อง escape
+  - `src/lib/passwordPolicy.js`: ลบ escape ที่ไม่จำเป็น `\[` และ `\/` ใน regular expression ตรวจสอบอักขระพิเศษ
+- **JSX Unescaped Entities (`react/no-unescaped-entities` — 19 errors resolved):**
+  - `src/components/settings/DefaultPasswordManager.jsx`: แปลง raw apostrophe ใน `user's` เป็น `user&apos;s`
+  - `src/lib/pdf-templates.jsx`: ใช้ JavaScript template string `{`ค้นหา: "${searchTerm}"`}` สำหรับการแสดงเครื่องหมายคำพูดใน `<Text>` ของ PDF renderer
+  - `src/pages/Manual.jsx`: แปลงเครื่องหมายคำพูดคู่ `"` ในข้อความภาษาไทยเป็น HTML entity `&quot;` ทั้งหมด 14 จุด
+  - `src/pages/StockIn.jsx`: แปลงเครื่องหมายคำพูดคู่ `"` ในตารางเพิ่มรายการเป็น `&quot;`
+- **Error Handling & Block Statements (`no-empty` — 1 error resolved):**
+  - `src/pages/Profile.jsx`: เพิ่ม error logging ใน catch block ของฟังก์ชัน `fetchProjects` แทนที่ empty block
+- **Verification Results:**
+  - `npm run lint`: **0 errors**, 300 warnings (ลดลงจากเดิม 53 errors, 301 warnings)
+  - `npm run test:email`: **5/5 tests PASS**
+  - `npm run build`: **PASS** (3932 modules transformed, exit code 0)
+- **Mandatory System Version Management (Rule 10):**
+  - ขยับเวอร์ชันระบบจาก `1.4.74` → `1.4.75` ใน `package.json`, `README.md`, `wiki/Home.md`, `wiki/_Footer.md`
+
 ## [v1.4.74] [2026-09-07] Security, Reliability & Database RPC Full Remediation
 
 - **API & Serverless Function Security (C1, C2, C3, M2, M6, M9):**

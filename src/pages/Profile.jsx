@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
@@ -7,12 +7,13 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { 
-  User, Mail, Phone, Briefcase, Shield, KeyRound, Save, Camera, 
+  User, Mail, KeyRound, Save, Camera, 
   RefreshCw, CheckCircle2, Lock, FolderKanban, Sparkles
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { uploadAvatarImage } from '@/lib/avatarUpload';
-import RoleBadge, { getRoleLabel } from '@/components/ui/RoleBadge';
+import RoleBadge from '@/components/ui/RoleBadge';
+import { getRoleLabel } from '@/lib/roleUtils';
 
 const Profile = () => {
   const { user, profile, refreshProfile, assignedProjectIds, allProjectsAccess } = useAuth();
@@ -79,7 +80,9 @@ const Profile = () => {
     try {
       const { data } = await supabase.from('projects').select('id, name, project_code').eq('status', 'active');
       setProjectsList(data || []);
-    } catch (e) {}
+    } catch (e) {
+      console.warn('[Profile] Failed to fetch active projects:', e);
+    }
   };
 
   // Check if form is dirty (changed)

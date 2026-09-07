@@ -82,7 +82,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
 
   // Auto close mobile drawer on route change
   useEffect(() => {
-    if (isOpen) onClose();
+    onClose();
   }, [location.pathname, onClose]);
 
   const isSettingsActive = location.pathname.startsWith('/settings');

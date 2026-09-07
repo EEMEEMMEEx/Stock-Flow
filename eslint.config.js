@@ -37,4 +37,18 @@ export default [
       'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
     },
   },
+  {
+    files: [
+      'api/**/*.{js,mjs}',
+      'scripts/**/*.{js,mjs}',
+      'vite.config.js',
+      'eslint.config.js',
+      '**/*.test.{js,mjs}',
+    ],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+    },
+  },
 ];

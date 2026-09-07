@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -32,7 +32,7 @@ const ReportSiteKits = ({ projects = [] }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
 
-  const loadData = async (isInitial = false) => {
+  const loadData = useCallback(async (isInitial = false) => {
     try {
       if (isInitial) setLoading(true);
       else setRefreshing(true);
@@ -46,11 +46,11 @@ const ReportSiteKits = ({ projects = [] }) => {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [selectedProjectId]);
 
   useEffect(() => {
     loadData(true);
-  }, [selectedProjectId]);
+  }, [loadData]);
 
   const filteredItems = useMemo(() => {
     let list = [];

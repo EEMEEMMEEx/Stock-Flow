@@ -14,7 +14,7 @@ const sanitizeImageUrl = (url) => {
   if (!url || typeof url !== 'string') return '';
   const trimmed = url.trim();
   // Strictly allow blob URLs created by the browser or safe http/https URLs
-  if (/^blob:http(s)?:\/\/[a-zA-Z0-9.\-_:]+\/[a-f0-9\-]+$/i.test(trimmed)) {
+  if (/^blob:http(s)?:\/\/[a-zA-Z0-9._:-]+\/[a-f0-9-]+$/i.test(trimmed)) {
     return encodeURI(trimmed);
   }
   if (/^https?:\/\/[a-zA-Z0-9\-._~:/?#[\]@!$&'()*+,;=]+$/i.test(trimmed)) {

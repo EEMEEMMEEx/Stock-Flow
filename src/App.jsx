@@ -1,8 +1,7 @@
-import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import { AuthProvider } from './contexts/AuthContext';
-import { ThemeProvider } from './components/theme-provider';
+import { AuthProvider } from './contexts/AuthProvider';
+import { ThemeProvider } from './components/ThemeProvider';
 import PageWrapper from './components/layout/PageWrapper';
 import Login from './pages/auth/Login';
 import Dashboard from './pages/Dashboard';
@@ -24,7 +23,7 @@ import PermissionRoute from './components/auth/PermissionRoute';
 import { useAuth } from './contexts/AuthContext';
 
 // Check if running on the dedicated Landing Page site (e.g. GitHub Pages)
-export const isLandingSite = () => {
+const isLandingSite = () => {
   if (typeof window !== 'undefined' && (
     window.location.hostname === 'github.io' || 
     window.location.hostname.endsWith('.github.io')

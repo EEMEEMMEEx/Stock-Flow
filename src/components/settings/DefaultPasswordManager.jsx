@@ -97,7 +97,7 @@ const DefaultPasswordManager = ({ canUpdate }) => {
   const reqUpper = /[A-Z]/.test(passwordInput);
   const reqLower = /[a-z]/.test(passwordInput);
   const reqDigit = /[0-9]/.test(passwordInput);
-  const reqSymbol = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(passwordInput);
+  const reqSymbol = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(passwordInput);
   const reqNoSpace = passwordInput.length > 0 && passwordInput === passwordInput.trim();
 
   return (
@@ -110,7 +110,7 @@ const DefaultPasswordManager = ({ canUpdate }) => {
               รหัสผ่านเริ่มต้นสำหรับการรีเซ็ตรหัสผ่าน (Default Reset Password)
             </h4>
             <p className="text-[11px] text-muted-foreground">
-              Temporary password assigned when an administrator resets a user's password. รหัสผ่านที่ตั้งค่าจะถูกจัดเก็บอย่างปลอดภัยฝั่งเซิร์ฟเวอร์และไม่สามารถดูย้อนหลังได้
+              Temporary password assigned when an administrator resets a user&apos;s password. รหัสผ่านที่ตั้งค่าจะถูกจัดเก็บอย่างปลอดภัยฝั่งเซิร์ฟเวอร์และไม่สามารถดูย้อนหลังได้
             </p>
           </div>
         </div>

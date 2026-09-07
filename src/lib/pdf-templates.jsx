@@ -961,7 +961,7 @@ export const SiteKitsReportPDF = ({
             </View>
             {searchTerm ? (
               <View style={reportStyles.filterChip}>
-                <Text style={reportStyles.filterChipText}>ค้นหา: "{searchTerm}"</Text>
+                <Text style={reportStyles.filterChipText}>{`ค้นหา: "${searchTerm}"`}</Text>
               </View>
             ) : null}
           </View>

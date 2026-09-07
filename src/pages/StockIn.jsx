@@ -1039,7 +1039,7 @@ const StockIn = () => {
                       {lineItems.length === 0 ? (
                         <TableRow>
                           <TableCell colSpan={10} className="text-center py-6 text-muted-foreground text-sm">
-                            ยังไม่มีรายการวัสดุ กด "+ เพิ่มรายการหลัก" หรือนำเข้าไฟล์ CSV
+                            ยังไม่มีรายการวัสดุ กด &quot;+ เพิ่มรายการหลัก&quot; หรือนำเข้าไฟล์ CSV
                           </TableCell>
                         </TableRow>
                       ) : (

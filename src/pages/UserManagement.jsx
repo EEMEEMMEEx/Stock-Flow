@@ -1,15 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { 
-  UserCog, Plus, Search, RefreshCw, Edit, Shield, KeyRound, 
-  UserX, UserCheck, FolderKanban, Phone, Mail, Briefcase, Trash2, AlertCircle 
+  UserCog, Plus, Search, RefreshCw, Edit, KeyRound, 
+  UserX, UserCheck, FolderKanban, Phone, Mail, Trash2, AlertCircle 
 } from 'lucide-react';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 
@@ -17,12 +15,13 @@ import AddUserModal from '@/components/users/AddUserModal';
 import EditUserModal from '@/components/users/EditUserModal';
 import ResetPasswordModal from '@/components/users/ResetPasswordModal';
 import UserActionModal from '@/components/users/UserActionModal';
-import RoleBadge, { getRoleLabel } from '@/components/ui/RoleBadge';
+import RoleBadge from '@/components/ui/RoleBadge';
+import { getRoleLabel } from '@/lib/roleUtils';
 import { uploadAvatarImage } from '@/lib/avatarUpload';
 import { sendUserInvitationEmail } from '@/lib/emailService';
 
 const UserManagement = () => {
-  const { isAdmin, isSuperAdmin, user, can } = useAuth();
+  const { isSuperAdmin, user, can } = useAuth();
   const [users, setUsers] = useState([]);
   const [projects, setProjects] = useState([]);
   const [dbRoles, setDbRoles] = useState([]);
@@ -43,54 +42,7 @@ const UserManagement = () => {
   const [rpcMissing, setRpcMissing] = useState(false);
   const [resendingInvitationId, setResendingInvitationId] = useState(null);
 
-  useEffect(() => {
-    fetchInitialData();
-
-    // Subscribe to realtime updates on roles, role_permissions, and profiles
-    const channel = supabase
-      .channel('realtime_user_management_sync')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'roles' },
-        () => {
-          fetchDbRoles();
-          fetchUsers();
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'role_permissions' },
-        () => {
-          fetchDbRoles();
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'profiles' },
-        () => {
-          fetchUsers();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
-
-  const fetchInitialData = async () => {
-    try {
-      setLoading(true);
-      await Promise.all([fetchUsers(), fetchProjects(), fetchDbRoles()]);
-    } catch (error) {
-      console.error('Fetch Data Error:', error);
-      toast.error('เกิดข้อผิดพลาดในการโหลดข้อมูล');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchDbRoles = async () => {
+  const fetchDbRoles = useCallback(async () => {
     try {
       const { data } = await supabase
         .from('roles')
@@ -100,10 +52,9 @@ const UserManagement = () => {
     } catch (e) {
       console.warn('fetchDbRoles error:', e);
     }
-  };
+  }, []);
 
-
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       // 1. Try RPC first
       const { data, error } = await supabase.rpc('admin_get_users');
@@ -140,7 +91,7 @@ const UserManagement = () => {
           assignmentMap[a.user_id].push(a.project_id);
         });
       }
-    } catch (e) {
+    } catch (_e) {
       // Table might not exist yet before migration
     }
 
@@ -164,9 +115,9 @@ const UserManagement = () => {
 
     setUsers(formattedUsers);
     setRpcMissing(formattedUsers.length === 0);
-  };
+  }, [user]);
 
-  const fetchProjects = async () => {
+  const fetchProjects = useCallback(async () => {
     const { data, error } = await supabase
       .from('projects')
       .select('id, name, project_code')
@@ -174,7 +125,54 @@ const UserManagement = () => {
       .order('name');
     if (error) throw error;
     setProjects(data || []);
-  };
+  }, []);
+
+  const fetchInitialData = useCallback(async () => {
+    try {
+      setLoading(true);
+      await Promise.all([fetchUsers(), fetchProjects(), fetchDbRoles()]);
+    } catch (error) {
+      console.error('Fetch Data Error:', error);
+      toast.error('เกิดข้อผิดพลาดในการโหลดข้อมูล');
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchUsers, fetchProjects, fetchDbRoles]);
+
+  useEffect(() => {
+    fetchInitialData();
+
+    // Live real-time synchronization on roles and profiles
+    const channel = supabase
+      .channel('realtime_user_management_sync')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'roles' },
+        () => {
+          fetchDbRoles();
+          fetchUsers();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'role_permissions' },
+        () => {
+          fetchDbRoles();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'profiles' },
+        () => {
+          fetchUsers();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchInitialData, fetchDbRoles, fetchUsers]);
 
   // Actions
   const handleCreateUser = async (userPayload) => {
@@ -399,12 +397,6 @@ const UserManagement = () => {
     } catch (error) {
       toast.error(error.message || 'เกิดข้อผิดพลาดในการเปลี่ยนสถานะบัญชี');
     }
-  };
-
-  const confirmDeactivateUser = async () => {
-    if (!selectedUserForDelete) return;
-    await handleToggleStatus(selectedUserForDelete);
-    setSelectedUserForDelete(null);
   };
 
   const confirmDeleteUserPermanent = async () => {

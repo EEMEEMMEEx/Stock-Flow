@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
   DialogContent,
@@ -17,18 +16,12 @@ import {
   UserX,
   UserCheck,
   Trash2,
-  Shield,
   ShieldAlert,
   CheckCircle2,
   ArrowLeft,
   RefreshCw,
   Mail,
-  Briefcase,
-  Lock,
-  User,
 } from 'lucide-react';
-import RoleBadge from '@/components/ui/RoleBadge';
-import toast from 'react-hot-toast';
 
 const UserActionModal = ({
   isOpen,
@@ -56,16 +49,8 @@ const UserActionModal = ({
   const [isSuspending, setIsSuspending] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  useEffect(() => {
-    if (isOpen && user) {
-      setStep(1);
-      setConfirmInput('');
-      runIntegrityCheck();
-    }
-  }, [isOpen, user]);
-
   // Perform database integrity check before allowing hard delete
-  const runIntegrityCheck = async () => {
+  const runIntegrityCheck = useCallback(async () => {
     if (!user) return;
     setCheckingIntegrity(true);
     setIntegrityBlock({ isBlocked: false, reason: '' });
@@ -136,7 +121,15 @@ const UserActionModal = ({
     } finally {
       setCheckingIntegrity(false);
     }
-  };
+  }, [user, allUsers]);
+
+  useEffect(() => {
+    if (isOpen && user) {
+      setStep(1);
+      setConfirmInput('');
+      runIntegrityCheck();
+    }
+  }, [isOpen, user, runIntegrityCheck]);
 
   if (!user) return null;
 

@@ -1,19 +1,55 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { 
-  User, Shield, ShieldCheck, ShieldAlert, Check, FolderKanban, 
+  User, Shield, ShieldCheck, Check, FolderKanban, 
   Phone, Mail, Briefcase, Building2, Lock, AlertCircle, AlertTriangle, 
-  Search, RefreshCw, KeyRound, CheckSquare, Square, Sparkles, ExternalLink
+  Search, RefreshCw, KeyRound, Sparkles, ExternalLink
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import AvatarUpload from '@/components/users/AvatarUpload';
-import RoleBadge, { getRoleLabel } from '@/components/ui/RoleBadge';
+import RoleBadge from '@/components/ui/RoleBadge';
+import { getRoleLabel } from '@/lib/roleUtils';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
+
+// Helper to resolve role ID from code/aliases or existing ID
+const resolveRoleId = (roleCode, existingRoleId, roleList = []) => {
+  if (existingRoleId) {
+    const found = roleList.find((r) => r.id === existingRoleId);
+    if (found?.id) return found.id;
+  }
+  const normalized = (roleCode || '').toUpperCase().trim();
+  let match = roleList.find((r) => (r.code || '').toUpperCase().trim() === normalized);
+  if (match?.id) return match.id;
+  if (['STAFF', 'OPERATOR', 'REQUESTER'].includes(normalized)) {
+    match = roleList.find((r) => ['STAFF', 'OPERATOR', 'REQUESTER'].includes((r.code || '').toUpperCase().trim()));
+    if (match?.id) return match.id;
+  }
+  if (['SUPERVISOR', 'APPROVER', 'MANAGER'].includes(normalized)) {
+    match = roleList.find((r) => ['SUPERVISOR', 'APPROVER', 'MANAGER'].includes((r.code || '').toUpperCase().trim()));
+    if (match?.id) return match.id;
+  }
+  if (['ADMIN', 'ADMINISTRATOR'].includes(normalized)) {
+    match = roleList.find((r) => ['ADMIN', 'ADMINISTRATOR'].includes((r.code || '').toUpperCase().trim()));
+    if (match?.id) return match.id;
+  }
+  if (['SUPER', 'SUPERADMIN', 'SUPER_ADMIN'].includes(normalized)) {
+    match = roleList.find((r) => ['SUPER', 'SUPERADMIN', 'SUPER_ADMIN'].includes((r.code || '').toUpperCase().trim()));
+    if (match?.id) return match.id;
+  }
+  return null;
+};
+
+const DEFAULT_ROLES = [
+  { code: 'STAFF', name: 'STAFF / REQUESTER', description: 'ขอเบิกจ่ายวัสดุ และดูสต็อกเฉพาะโครงการที่ได้รับมอบหมาย' },
+  { code: 'SUPERVISOR', name: 'SUPERVISOR / APPROVER', description: 'อนุมัติการเบิกจ่าย และดูรายงานระดับโครงการ' },
+  { code: 'ADMIN', name: 'ADMINISTRATOR', description: 'สิทธิ์สูงสุด อนุมัติเบิกจ่าย จัดการโครงการ บทบาท และผู้ใช้' },
+  { code: 'SUPER', name: 'SUPER ADMIN', description: 'สิทธิ์สูงสุดระดับระบบ จัดการทุกอย่าง รวมถึง Admin, สิทธิ์, การตั้งค่าระบบ, Security, Integration' }
+];
 
 const EditUserModal = ({ 
   isOpen, 
@@ -26,7 +62,7 @@ const EditUserModal = ({
 }) => {
   const navigate = useNavigate();
   const { isSuperAdmin } = useAuth();
-  const [activeTab, setActiveTab] = useState('profile'); // 'profile' | 'rbac' | 'projects'
+  const [activeTab, setActiveTab] = useState('profile'); // 'profile' | 'security' | 'permissions'
   const [loading, setLoading] = useState(false);
   const [projectSearch, setProjectSearch] = useState('');
   
@@ -36,14 +72,7 @@ const EditUserModal = ({
   const [loadingPerms, setLoadingPerms] = useState(false);
   const [liveRoles, setLiveRoles] = useState(roles && roles.length > 0 ? roles : []);
 
-  const defaultRoles = [
-    { code: 'STAFF', name: 'STAFF / REQUESTER', description: 'ขอเบิกจ่ายวัสดุ และดูสต็อกเฉพาะโครงการที่ได้รับมอบหมาย' },
-    { code: 'SUPERVISOR', name: 'SUPERVISOR / APPROVER', description: 'อนุมัติการเบิกจ่าย และดูรายงานระดับโครงการ' },
-    { code: 'ADMIN', name: 'ADMINISTRATOR', description: 'สิทธิ์สูงสุด อนุมัติเบิกจ่าย จัดการโครงการ บทบาท และผู้ใช้' },
-    { code: 'SUPER', name: 'SUPER ADMIN', description: 'สิทธิ์สูงสุดระดับระบบ จัดการทุกอย่าง รวมถึง Admin, สิทธิ์, การตั้งค่าระบบ, Security, Integration' }
-  ];
-
-  const rawRoles = liveRoles.length > 0 ? liveRoles : (roles.length > 0 ? roles : defaultRoles);
+  const rawRoles = liveRoles.length > 0 ? liveRoles : (roles.length > 0 ? roles : DEFAULT_ROLES);
   const availableRoles = rawRoles.filter(r => {
     const code = (r.code || '').toUpperCase();
     if (code === 'SUPER' && !isSuperAdmin) return false;
@@ -75,34 +104,6 @@ const EditUserModal = ({
   const isLastActiveAdmin = isTargetAdmin && user?.status === 'active' && activeAdmins.length <= 1;
   const isTargetSuper = Boolean(user && ((user.role || '').toLowerCase() === 'super' || (user.roles?.code || '').toUpperCase() === 'SUPER' || (user.email || '').toLowerCase() === 'admin@stockflow.com'));
 
-  // Helper to resolve role ID from code/aliases or existing ID
-  const resolveRoleId = (roleCode, existingRoleId, roleList = availableRoles) => {
-    if (existingRoleId) {
-      const found = roleList.find((r) => r.id === existingRoleId);
-      if (found?.id) return found.id;
-    }
-    const normalized = (roleCode || '').toUpperCase().trim();
-    let match = roleList.find((r) => (r.code || '').toUpperCase().trim() === normalized);
-    if (match?.id) return match.id;
-    if (['STAFF', 'OPERATOR', 'REQUESTER'].includes(normalized)) {
-      match = roleList.find((r) => ['STAFF', 'OPERATOR', 'REQUESTER'].includes((r.code || '').toUpperCase().trim()));
-      if (match?.id) return match.id;
-    }
-    if (['SUPERVISOR', 'APPROVER', 'MANAGER'].includes(normalized)) {
-      match = roleList.find((r) => ['SUPERVISOR', 'APPROVER', 'MANAGER'].includes((r.code || '').toUpperCase().trim()));
-      if (match?.id) return match.id;
-    }
-    if (['ADMIN', 'ADMINISTRATOR'].includes(normalized)) {
-      match = roleList.find((r) => ['ADMIN', 'ADMINISTRATOR'].includes((r.code || '').toUpperCase().trim()));
-      if (match?.id) return match.id;
-    }
-    if (['SUPER', 'SUPERADMIN', 'SUPER_ADMIN'].includes(normalized)) {
-      match = roleList.find((r) => ['SUPER', 'SUPERADMIN', 'SUPER_ADMIN'].includes((r.code || '').toUpperCase().trim()));
-      if (match?.id) return match.id;
-    }
-    return null;
-  };
-
   useEffect(() => {
     if (user) {
       const userRoleCode = (user.role || 'staff').toLowerCase();
@@ -129,10 +130,10 @@ const EditUserModal = ({
 
       setActiveTab('profile');
     }
-  }, [user, isOpen]);
+  }, [user, isOpen, availableRoles]);
 
   // Load LIVE Roles and RBAC Permissions directly from Database for the selected role
-  const fetchLiveRolePermissions = async () => {
+  const fetchLiveRolePermissions = useCallback(async () => {
     if (!isOpen) return;
     setLoadingPerms(true);
     try {
@@ -144,7 +145,7 @@ const EditUserModal = ({
       ]);
 
       const dbRolesList = (rolesRes.data && rolesRes.data.length > 0) ? rolesRes.data : [];
-      const currentRoles = dbRolesList.length > 0 ? dbRolesList : (roles.length > 0 ? roles : defaultRoles);
+      const currentRoles = dbRolesList.length > 0 ? dbRolesList : (roles.length > 0 ? roles : DEFAULT_ROLES);
       setLiveRoles(currentRoles);
 
       const fullCatalog = (catRes.data && catRes.data.length > 0) ? catRes.data : [];
@@ -209,13 +210,13 @@ const EditUserModal = ({
     } finally {
       setLoadingPerms(false);
     }
-  };
+  }, [isOpen, roles, formData.role, formData.role_id, user?.role, user?.role_id]);
 
   useEffect(() => {
     if (isOpen) {
       fetchLiveRolePermissions();
     }
-  }, [formData.role, formData.role_id, isOpen]);
+  }, [isOpen, fetchLiveRolePermissions]);
 
   // Real-time synchronization when role_permissions or roles change in /roles
   useEffect(() => {
@@ -242,7 +243,7 @@ const EditUserModal = ({
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [isOpen, formData.role, formData.role_id]);
+  }, [isOpen, fetchLiveRolePermissions]);
 
   const handleRoleSelect = (roleCode, roleId) => {
     if (isLastActiveAdmin && roleCode.toLowerCase() !== 'admin') {
@@ -365,8 +366,6 @@ const EditUserModal = ({
     acc[cat].push(perm);
     return acc;
   }, {});
-
-  const isRoleAdmin = (formData.role || '').toLowerCase() === 'admin';
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>

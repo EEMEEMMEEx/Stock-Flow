@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,7 +20,7 @@ import { TransferItemDialog } from '@/components/items/TransferItemDialog';
 import { uploadFileToR2 } from '@/lib/r2Storage';
 
 const Items = () => {
-  const { can, profile, isAdmin } = useAuth();
+  const { can, profile } = useAuth();
   const [items, setItems] = useState([]);
   const [categories, setCategories] = useState([]);
   const [projectsList, setProjectsList] = useState([]);
@@ -115,7 +115,7 @@ const Items = () => {
     };
   }, []);
 
-  const fetchSettings = async () => {
+  const fetchSettings = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('system_settings')
@@ -134,9 +134,9 @@ const Items = () => {
     } catch (err) {
       console.warn('[Items] Failed to fetch system_settings:', err);
     }
-  };
+  }, []);
 
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     try {
       let { data, error } = await supabase.from('categories').select('id, name, description').order('name');
       if (error) throw error;
@@ -157,11 +157,11 @@ const Items = () => {
     } catch (error) {
       console.error("Fetch Categories Error:", error);
     }
-  };
+  }, []);
 
-  const fetchItems = async (isInitial = false) => {
+  const fetchItems = useCallback(async (isInitial = false) => {
     try {
-      if (isInitial || items.length === 0) {
+      if (isInitial) {
         setLoading(true);
       } else {
         setRefreshing(true);
@@ -276,7 +276,7 @@ const Items = () => {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, []);
 
   const handleImageUpload = async (e) => {
     const file = e.target.files?.[0];
