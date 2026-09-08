@@ -1,5 +1,13 @@
 # Changelog
 
+## [v1.4.83] [2026-09-08] Vercel Deployment & Vite Dependency Resolution Fix
+
+- **Resolve ERESOLVE Vite & Plugin React Peer Dependency Conflict (`package.json`, `package-lock.json`):**
+  - กำหนดเวอร์ชัน `vite` (`^5.4.21`) และ `@vitejs/plugin-react` (`^4.7.0`) ให้สอดคล้องกับ peer dependencies เพื่อป้องกัน npm บน Vercel build environment จากการพยายาม resolve Vite 8
+  - ปรับปรุง `package-lock.json` เพื่อรองรับการทำ deterministic deployment (`npm ci` / `npm install`)
+- **Mandatory System Version Management (Rule 10):**
+  - อัปเดตเวอร์ชันระบบเป็น `1.4.83` ใน `package.json`
+
 ## [v1.4.80] [2026-09-08] Hierarchical Items Data Table & Tree Grouping
 
 - **Hierarchical Parent-Child Inventory Display (`src/pages/Items.jsx`):**
@@ -154,7 +162,7 @@
     - Custom property aliases ใน `:root` (light mode): `--glass-input-border`, `--glass-input-bg`, `--glass-hover`, `--glass-text`, `--glass-card-border`, `--glass-card-bg`, `--neu-surface`, `--neu-border`, `--neu-shadow-dark`, `--neu-shadow-light`, `--neu-primary-border`, `--neu-primary-shadow`
     - Custom property aliases ใน `.dark` (dark mode): ชุดเดียวกัน
     - ขนาดไฟล์ลดจาก 263 บรรทัด → 168 บรรทัด (-95 บรรทัด / -2.6 KB)
-  - ยืนยัน Zero occurrences (`0 results`) ของ `neu-*`, `glass`, `--neu-*`, `--glass-*` ในโค้ด application ทั้งหมด (*.jsx, *.js, *.css)
+  - ยืนยัน Zero occurrences (`0 results`) ของ `neu-*`, `glass`, `--neu-*`, `--glass-*` ในโค้ด application ทั้งหมด (*.jsx,*.js, *.css)
 - **Mandatory System Version Management:**
   - `package.json`: ขยับเวอร์ชันระบบเป็น `1.4.72`
   - `README.md`: อัปเดต Version Badge เป็น `v1.4.72`
@@ -363,10 +371,10 @@
 - **Reason:** ผู้ใช้ต้องการเอกสารแผนเพื่อ review ก่อน implementation
 
 ## [2026-09-06]
+
 - **Files Modified:** UI-UX-Migration-Plan-Enterprise.md, CHANGELOG.md
 - **Changes:** สร้างแผน migration UI/UX จาก Neumorphism/Glassmorphism ไปสู่ Enterprise Design System โดยยังไม่แก้ source code
 - **Reason:** ผู้ใช้ต้องการเอกสารแผนเพื่อ review ก่อน implementation
-
 
 ## [v1.4.65] [2026-09-06] แก้ไขข้อผิดพลาดความปลอดภัย GitHub CodeQL ทั้งหมด (XSS, String Sanitization, URL Substring Sanitization, Workflow Permissions)
 
@@ -4026,6 +4034,3 @@
 - **Files Modified:** `src/lib/emailRenderer.js`, `src/lib/emailService.js`, `src/components/users/AddUserModal.jsx`, `src/pages/UserManagement.jsx`
 - **Changes:** เพิ่ม invitation email template, ตัวเลือกส่งอีเมลตอนสร้างผู้ใช้, การส่งอีเมลแบบไม่กระทบการสร้างบัญชี และปุ่ม `Resend Invitation`
 - **Reason:** รองรับ flow เชิญผู้ใช้ใหม่ผ่าน email infrastructure เดิมโดยไม่ส่งรหัสผ่านแบบ plain-text
-
-
-
