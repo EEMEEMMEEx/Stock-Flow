@@ -1,5 +1,26 @@
 # Changelog
 
+## [v1.4.80] [2026-09-08] Hierarchical Items Data Table & Tree Grouping
+
+- **Hierarchical Parent-Child Inventory Display (`src/pages/Items.jsx`):**
+  - รองรับการแสดงผลโครงสร้างวัสดุแบบลำดับชั้นระหว่าง รายการหลัก (PARENT) และ รายการย่อย/อุปกรณ์ควบ (CHILD)
+  - จัดกลุ่มรายการ CHILD ให้อยู่ใต้ PARENT ที่เกี่ยวข้องโดยตรง (จับคู่ผ่าน `parent_sku === parent.sku` หรือ `parent_id === parent.id`)
+  - แสดงตัวบ่งชี้ Tree Connector (`└─` ด้วยไอคอน `CornerDownRight`) พร้อมเส้นขอบซ้ายสีฟ้า (`border-l-4 border-l-blue-500`), พื้นหลังเฉดสีอ่อน, และระบุความสัมพันธ์ชัดเจน (`แม่: [ชื่อ/รหัสแม่]`)
+  - สำหรับแถวแม่ แสดงปุ่มเปิด/ปิด (`ChevronDown` / `ChevronRight`) และ Badge `PARENT (จำนวนลูก)`
+- **Hierarchy-Preserving Interactive Column Sorting (`src/pages/Items.jsx`):**
+  - เพิ่มการคลิกเรียงลำดับหัวตาราง (ชื่อ, รุ่น, SKU, สถานที่จัดเก็บ, หมวดหมู่, ยอดคงเหลือ)
+  - ทำการจัดเรียงที่ระดับ Parent Group ทำให้รายการลูกไม่หลุดออกจากแม่เด็ดขาด ไม่ว่าจะเรียง A-Z หรือยอดคงเหลือ
+- **Hierarchy-Aware Pagination Engine (`src/pages/Items.jsx`):**
+  - คำนวณแบ่งหน้าโดยอิงตามกลุ่มรายการหลัก (Parent Groups) ป้องกันการตัดแบ่งแถวแม่และลูกข้ามหน้า
+  - ปรับปรุงแถบข้อมูลท้ายตารางให้ระบุจำนวนกลุ่มหลักและจำนวนรายการทั้งหมดอย่างโปร่งใส
+- **Expand / Collapse All Controls (`src/pages/Items.jsx`):**
+  - เพิ่มปุ่ม "ขยายทั้งหมด (Expand All)" และ "ยุบทั้งหมด (Collapse All)" ใน Toolbar สำหรับจัดการข้อมูลขนาดใหญ่
+- **Context-Aware Search & Filter (`src/pages/Items.jsx`):**
+  - ค้นหาเจอแม่ จะแสดงลูกทั้งหมดของแม่นั้น
+  - ค้นหาเจอลูก จะคงแม่ไว้เป็นบริบท (Visual Context) ให้ผู้ใช้ทราบอุปกรณ์ต้นทาง
+- **Mandatory System Version Management (Rule 10):**
+  - ขยับเวอร์ชันระบบเป็น `1.4.80` ใน `package.json`, `README.md`, `wiki/Home.md`, `wiki/_Footer.md`
+
 ## [v1.4.79] [2026-09-07] Indefinite Borrow Workflow & Extend Due Date Conversion
 
 - **Indefinite Borrow Option in Extension Modal (`CheckoutExtendModal.jsx`):**

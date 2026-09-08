@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,7 +10,8 @@ import {
   Search, Package, Tag, Building2, Edit3, Trash2, 
   LayoutGrid, List, RefreshCw, ImageIcon, Box, 
   SlidersHorizontal, CheckCircle2, AlertCircle, ChevronLeft, ChevronRight,
-  ArrowRightLeft, Lock, Sparkles, History
+  ArrowRightLeft, Lock, Sparkles, History,
+  ChevronDown, ArrowUpDown, ArrowUp, ArrowDown, CornerDownRight, FolderTree
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import toast from 'react-hot-toast';
@@ -33,6 +34,10 @@ const Items = () => {
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [projectFilter, setProjectFilter] = useState('all');
   const [viewMode, setViewMode] = useState('table'); // 'table' | 'grid'
+
+  // Hierarchical & Sorting States
+  const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'asc' });
+  const [collapsedGroupKeys, setCollapsedGroupKeys] = useState(new Set());
 
   // Pagination States
   const [currentPage, setCurrentPage] = useState(1);
@@ -123,7 +128,7 @@ const Items = () => {
       const [itemsRes, stockRes, projectsRes] = await Promise.all([
         supabase
           .from('items')
-          .select('id, name, model, sku, item_type, parent_sku, unit, description, notes, image_url, category_id, categories(name)')
+          .select('id, name, model, sku, item_type, parent_sku, parent_id, seq_no, unit, description, notes, image_url, category_id, categories(name)')
           .order('name'),
         supabase
           .from('stock_balance')
@@ -177,6 +182,8 @@ const Items = () => {
           sku: item.sku || '-',
           item_type: item.item_type || 'PARENT',
           parent_sku: item.parent_sku || '',
+          parent_id: item.parent_id || null,
+          seq_no: item.seq_no || null,
           category_name: item.categories?.name || '-',
           category_id: item.category_id,
           project_code: projectCode,
@@ -203,6 +210,8 @@ const Items = () => {
             sku: item.sku || '-',
             item_type: item.item_type || 'PARENT',
             parent_sku: item.parent_sku || '',
+            parent_id: item.parent_id || null,
+            seq_no: item.seq_no || null,
             category_name: item.categories?.name || '-',
             category_id: item.category_id,
             project_code: '',
@@ -606,28 +615,263 @@ const Items = () => {
     setIsTransferOpen(true);
   };
 
-  // Filtered items logic
-  const filteredItems = items.filter(i => {
-    const matchesSearch = 
-      !searchQuery ||
-      (i.name && i.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (i.model && i.model.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (i.sku && i.sku.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (i.description && i.description.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (i.project_display && i.project_display.toLowerCase().includes(searchQuery.toLowerCase()));
+  // Interactive Column Sorting Handler
+  const handleSort = (key) => {
+    setSortConfig(prev => {
+      if (prev.key === key) {
+        return { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' };
+      }
+      return { key, direction: 'asc' };
+    });
+  };
 
-    const matchesCategory = categoryFilter === 'all' || i.category_id === categoryFilter;
-    const matchesProject = projectFilter === 'all' || (projectFilter === 'none' ? !i.project_id : i.project_id === projectFilter);
+  // Expand / Collapse group handlers
+  const toggleGroupCollapse = (groupKey) => {
+    setCollapsedGroupKeys(prev => {
+      const next = new Set(prev);
+      if (next.has(groupKey)) {
+        next.delete(groupKey);
+      } else {
+        next.add(groupKey);
+      }
+      return next;
+    });
+  };
 
-    return matchesSearch && matchesCategory && matchesProject;
-  });
+  // Build hierarchical groups
+  const hierarchicalGroups = useMemo(() => {
+    const childRecords = [];
+    const parentRecords = [];
 
-  // Pagination calculations
-  const totalRecords = filteredItems.length;
-  const totalPages = Math.max(1, Math.ceil(totalRecords / rowsPerPage));
+    items.forEach(r => {
+      const isChild = r.item_type === 'CHILD' || Boolean(r.parent_sku) || Boolean(r.parent_id);
+      if (isChild) {
+        childRecords.push(r);
+      } else {
+        parentRecords.push(r);
+      }
+    });
+
+    const parentMapBySku = new Map();
+    const parentMapById = new Map();
+
+    const groups = parentRecords.map(p => {
+      const group = {
+        key: p.recordKey,
+        parent: p,
+        children: []
+      };
+      if (p.sku && p.sku !== '-') {
+        const normSku = p.sku.trim().toLowerCase();
+        if (!parentMapBySku.has(normSku)) {
+          parentMapBySku.set(normSku, []);
+        }
+        parentMapBySku.get(normSku).push(group);
+      }
+      if (p.id) {
+        if (!parentMapById.has(p.id)) {
+          parentMapById.set(p.id, []);
+        }
+        parentMapById.get(p.id).push(group);
+      }
+      return group;
+    });
+
+    const orphanGroups = [];
+    childRecords.forEach(c => {
+      let matchedGroup = null;
+      const pSku = c.parent_sku ? c.parent_sku.trim().toLowerCase() : null;
+
+      if (pSku && parentMapBySku.has(pSku)) {
+        const candidates = parentMapBySku.get(pSku);
+        matchedGroup = candidates.find(g => g.parent.project_id === c.project_id) || candidates[0];
+      } else if (c.parent_id && parentMapById.has(c.parent_id)) {
+        const candidates = parentMapById.get(c.parent_id);
+        matchedGroup = candidates.find(g => g.parent.project_id === c.project_id) || candidates[0];
+      }
+
+      if (matchedGroup) {
+        // Prevent accidental duplicate child entries
+        if (!matchedGroup.children.some(existing => existing.recordKey === c.recordKey)) {
+          matchedGroup.children.push(c);
+        }
+      } else {
+        orphanGroups.push({
+          key: c.recordKey,
+          parent: { ...c, isOrphanChild: true },
+          children: []
+        });
+      }
+    });
+
+    return [...groups, ...orphanGroups];
+  }, [items]);
+
+  // Filter groups according to search, category, and project
+  const filteredGroups = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+
+    const matchesItemSearch = (item) => {
+      if (!q) return true;
+      return (
+        (item.name && item.name.toLowerCase().includes(q)) ||
+        (item.model && item.model.toLowerCase().includes(q)) ||
+        (item.sku && item.sku.toLowerCase().includes(q)) ||
+        (item.description && item.description.toLowerCase().includes(q)) ||
+        (item.project_display && item.project_display.toLowerCase().includes(q)) ||
+        (item.category_name && item.category_name.toLowerCase().includes(q))
+      );
+    };
+
+    const matchesItemCategory = (item) => {
+      return categoryFilter === 'all' || item.category_id === categoryFilter;
+    };
+
+    const matchesItemProject = (item) => {
+      if (projectFilter === 'all') return true;
+      if (projectFilter === 'none') return !item.project_id;
+      return item.project_id === projectFilter;
+    };
+
+    return hierarchicalGroups.reduce((acc, group) => {
+      const parentMatchesProj = matchesItemProject(group.parent);
+      const parentMatchesCat = matchesItemCategory(group.parent);
+      const parentMatchesSearch = matchesItemSearch(group.parent);
+
+      // Filter children by project and category
+      const validChildren = group.children.filter(c => {
+        return matchesItemProject(c) && (categoryFilter === 'all' || matchesItemCategory(c));
+      });
+
+      const hasChildMatchingSearch = validChildren.some(c => matchesItemSearch(c));
+
+      // Case 1: Parent matches project & category & search -> include parent and its valid children
+      if (parentMatchesProj && parentMatchesCat && parentMatchesSearch) {
+        acc.push({
+          ...group,
+          children: validChildren
+        });
+      }
+      // Case 2: Parent doesn't match search text directly, but a child does -> keep parent as context + matching children
+      else if ((parentMatchesProj || validChildren.length > 0) && hasChildMatchingSearch) {
+        acc.push({
+          ...group,
+          children: q ? validChildren.filter(c => matchesItemSearch(c)) : validChildren
+        });
+      }
+
+      return acc;
+    }, []);
+  }, [hierarchicalGroups, searchQuery, categoryFilter, projectFilter]);
+
+  // Sort groups (Preserves parent-child hierarchy by sorting at root/parent level)
+  const sortedGroups = useMemo(() => {
+    return [...filteredGroups].sort((groupA, groupB) => {
+      const pA = groupA.parent;
+      const pB = groupB.parent;
+      let valA, valB;
+
+      switch (sortConfig.key) {
+        case 'name':
+          valA = pA.name || '';
+          valB = pB.name || '';
+          break;
+        case 'model':
+          valA = pA.model || '';
+          valB = pB.model || '';
+          break;
+        case 'sku':
+          valA = pA.sku || '';
+          valB = pB.sku || '';
+          break;
+        case 'project_display':
+          valA = pA.project_display || '';
+          valB = pB.project_display || '';
+          break;
+        case 'category_name':
+          valA = pA.category_name || '';
+          valB = pB.category_name || '';
+          break;
+        case 'balance':
+          valA = Number(pA.balance) || 0;
+          valB = Number(pB.balance) || 0;
+          break;
+        default:
+          valA = pA.name || '';
+          valB = pB.name || '';
+      }
+
+      let comp = 0;
+      if (typeof valA === 'number' && typeof valB === 'number') {
+        comp = valA - valB;
+      } else {
+        comp = String(valA).localeCompare(String(valB), 'th', { numeric: true, sensitivity: 'base' });
+      }
+
+      return sortConfig.direction === 'asc' ? comp : -comp;
+    });
+  }, [filteredGroups, sortConfig]);
+
+  // Pagination calculations based on Parent Groups
+  const totalRootGroups = sortedGroups.length;
+  const totalFilteredRecords = useMemo(() => {
+    return sortedGroups.reduce((sum, g) => sum + 1 + g.children.length, 0);
+  }, [sortedGroups]);
+
+  const totalPages = Math.max(1, Math.ceil(totalRootGroups / rowsPerPage));
   const startIndex = (currentPage - 1) * rowsPerPage;
-  const endIndex = Math.min(startIndex + rowsPerPage, totalRecords);
-  const paginatedItems = filteredItems.slice(startIndex, endIndex);
+  const endIndex = Math.min(startIndex + rowsPerPage, totalRootGroups);
+  const paginatedGroups = sortedGroups.slice(startIndex, endIndex);
+
+  // Flatten active page groups into display rows for rendering
+  const paginatedItems = useMemo(() => {
+    const rows = [];
+    paginatedGroups.forEach(group => {
+      const isCollapsed = collapsedGroupKeys.has(group.key);
+      const hasChildren = group.children.length > 0;
+
+      // Add parent row
+      rows.push({
+        ...group.parent,
+        isParentRow: true,
+        isChildRow: false,
+        hasChildren: hasChildren,
+        childCount: group.children.length,
+        isCollapsed: isCollapsed,
+        groupKey: group.key,
+      });
+
+      // Add children if not collapsed
+      if (hasChildren && !isCollapsed) {
+        const sortedChildren = [...group.children].sort((cA, cB) => {
+          if (cA.seq_no && cB.seq_no && cA.seq_no !== cB.seq_no) {
+            return cA.seq_no - cB.seq_no;
+          }
+          return (cA.name || '').localeCompare(cB.name || '', 'th', { numeric: true });
+        });
+
+        sortedChildren.forEach((child, idx) => {
+          rows.push({
+            ...child,
+            isParentRow: false,
+            isChildRow: true,
+            parentName: group.parent.name,
+            parentSku: group.parent.sku,
+            parentModel: group.parent.model,
+            isLastChild: idx === sortedChildren.length - 1,
+            groupKey: group.key,
+          });
+        });
+      }
+    });
+    return rows;
+  }, [paginatedGroups, collapsedGroupKeys]);
+
+  const expandAllGroups = () => setCollapsedGroupKeys(new Set());
+  const collapseAllGroups = () => {
+    const allKeys = new Set(filteredGroups.filter(g => g.children.length > 0).map(g => g.key));
+    setCollapsedGroupKeys(allKeys);
+  };
 
   useEffect(() => {
     setCurrentPage(1);
@@ -666,9 +910,23 @@ const Items = () => {
 
   // Master KPI Summary Calculations
   const uniqueMasterItemsCount = new Set(items.map(i => i.id)).size;
+  const parentKitsCount = useMemo(() => new Set(items.filter(i => i.item_type !== 'CHILD' && !i.parent_sku).map(i => i.id)).size, [items]);
+  const childKitsCount = useMemo(() => new Set(items.filter(i => i.item_type === 'CHILD' || Boolean(i.parent_sku)).map(i => i.id)).size, [items]);
   const totalStockQuantity = items.reduce((acc, i) => acc + (parseInt(i.balance, 10) || 0), 0);
   const totalCategoriesCount = categories.length;
   const activeLocationsWithStockCount = new Set(items.filter(i => i.balance > 0 && i.project_id).map(i => i.project_id)).size;
+
+  // Sort Icon Renderer
+  const renderSortIcon = (key) => {
+    if (sortConfig.key !== key) {
+      return <ArrowUpDown className="w-3 h-3 text-muted-foreground/40 shrink-0" />;
+    }
+    return sortConfig.direction === 'asc' ? (
+      <ArrowUp className="w-3.5 h-3.5 text-primary shrink-0" />
+    ) : (
+      <ArrowDown className="w-3.5 h-3.5 text-primary shrink-0" />
+    );
+  };
 
   return (
     <div className="space-y-6 animate-in fade-in-50 duration-200">
@@ -712,6 +970,9 @@ const Items = () => {
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-2xl font-bold tracking-tight">{uniqueMasterItemsCount}</span>
             <span className="text-xs text-muted-foreground font-medium">รายการ</span>
+          </div>
+          <div className="mt-1 text-[11px] text-muted-foreground font-mono">
+            {parentKitsCount} แม่ • {childKitsCount} ชิ้นส่วนย่อย
           </div>
         </Card>
 
@@ -828,8 +1089,42 @@ const Items = () => {
         </div>
 
         {/* Status Count Summary Footer */}
-        <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/40">
-          <span>แสดงรายการที่กรอง: <strong className="text-foreground font-semibold">{filteredItems.length}</strong> จากทั้งหมด <strong className="text-foreground font-semibold">{items.length}</strong> รายการสต็อก</span>
+        <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground pt-2 border-t border-border/40">
+          <div className="flex items-center gap-3">
+            <span>
+              แสดงรายการที่กรอง: <strong className="text-foreground font-semibold">{totalRootGroups}</strong> กลุ่มหลัก 
+              (<strong className="text-foreground font-semibold">{totalFilteredRecords}</strong> รายการทั้งหมด)
+            </span>
+
+            {/* Expand / Collapse All Controls for Table Mode */}
+            {viewMode === 'table' && (
+              <div className="flex items-center gap-1 bg-muted/60 p-0.5 rounded-lg border border-border/60">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={expandAllGroups}
+                  className="h-6 px-2 text-[11px] font-medium text-foreground hover:bg-background rounded shadow-xs cursor-pointer"
+                  title="ขยายรายการลูกทั้งหมด (Expand All)"
+                >
+                  <ChevronDown className="w-3 h-3 mr-1 text-indigo-600 dark:text-indigo-400" />
+                  <span>ขยายทั้งหมด</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={collapseAllGroups}
+                  className="h-6 px-2 text-[11px] font-medium text-foreground hover:bg-background rounded shadow-xs cursor-pointer"
+                  title="ยุบรายการลูกทั้งหมด (Collapse All)"
+                >
+                  <ChevronRight className="w-3 h-3 mr-1 text-indigo-600 dark:text-indigo-400" />
+                  <span>ยุบทั้งหมด</span>
+                </Button>
+              </div>
+            )}
+          </div>
+
           {(searchQuery || categoryFilter !== 'all' || projectFilter !== 'all') && (
             <button
               onClick={() => { setSearchQuery(''); setCategoryFilter('all'); setProjectFilter('all'); }}
@@ -847,7 +1142,7 @@ const Items = () => {
           <RefreshCw className="w-8 h-8 text-primary animate-spin mx-auto mb-3" />
           <p className="text-sm text-muted-foreground font-medium">กำลังดึงข้อมูลรายการวัสดุMaster...</p>
         </Card>
-      ) : filteredItems.length === 0 ? (
+      ) : totalRootGroups === 0 ? (
         <Card className="p-12 text-center rounded-xl bg-card border border-border shadow-xs space-y-3">
           <AlertCircle className="w-10 h-10 text-muted-foreground/50 mx-auto" />
           <h3 className="font-bold text-lg text-foreground">ไม่พบรายการวัสดุที่ค้นหา</h3>
@@ -860,17 +1155,69 @@ const Items = () => {
         <Card className="overflow-hidden rounded-xl border border-border bg-card shadow-xs">
           <div className="overflow-x-auto">
             <Table>
-              <TableHeader className="bg-muted/40">
+              <TableHeader className="bg-muted/40 select-none">
                 <TableRow className="text-xs hover:bg-transparent">
-                  <TableHead className="w-14">รูปภาพ</TableHead>
-                  <TableHead className="min-w-[180px]">รายการวัสดุ (Item Name) *</TableHead>
-                  <TableHead className="min-w-[120px]">รุ่น (Model) *</TableHead>
-                  <TableHead className="min-w-[130px]">รหัส SKU / Code</TableHead>
-                  <TableHead className="min-w-[180px] font-bold text-indigo-600 dark:text-indigo-400">
-                    สถานที่จัดเก็บ (Location)
+                  <TableHead className="w-14 text-center">รูปภาพ</TableHead>
+                  <TableHead 
+                    className="min-w-[200px] cursor-pointer hover:text-foreground transition-colors"
+                    onClick={() => handleSort('name')}
+                    title="คลิกเพื่อเรียงลำดับตามชื่อวัสดุ"
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-bold">รายการวัสดุ (Item Name)</span>
+                      {renderSortIcon('name')}
+                    </div>
                   </TableHead>
-                  <TableHead className="min-w-[120px]">หมวดหมู่</TableHead>
-                  <TableHead className="text-center w-[100px] font-bold">สต็อกปัจจุบัน</TableHead>
+                  <TableHead 
+                    className="min-w-[120px] cursor-pointer hover:text-foreground transition-colors"
+                    onClick={() => handleSort('model')}
+                    title="คลิกเพื่อเรียงลำดับตามรุ่น"
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-bold">รุ่น (Model)</span>
+                      {renderSortIcon('model')}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="min-w-[130px] cursor-pointer hover:text-foreground transition-colors"
+                    onClick={() => handleSort('sku')}
+                    title="คลิกเพื่อเรียงลำดับตามรหัส SKU"
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-bold">รหัส SKU / Code</span>
+                      {renderSortIcon('sku')}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="min-w-[180px] cursor-pointer hover:text-foreground transition-colors"
+                    onClick={() => handleSort('project_display')}
+                    title="คลิกเพื่อเรียงลำดับตามสถานที่จัดเก็บ"
+                  >
+                    <div className="flex items-center gap-1.5 font-bold text-indigo-600 dark:text-indigo-400">
+                      <span>สถานที่จัดเก็บ (Location)</span>
+                      {renderSortIcon('project_display')}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="min-w-[120px] cursor-pointer hover:text-foreground transition-colors"
+                    onClick={() => handleSort('category_name')}
+                    title="คลิกเพื่อเรียงลำดับตามหมวดหมู่"
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-bold">หมวดหมู่</span>
+                      {renderSortIcon('category_name')}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="text-center w-[110px] cursor-pointer hover:text-foreground transition-colors"
+                    onClick={() => handleSort('balance')}
+                    title="คลิกเพื่อเรียงลำดับตามยอดสต็อกคงเหลือ"
+                  >
+                    <div className="flex items-center justify-center gap-1.5">
+                      <span className="font-bold">สต็อกปัจจุบัน</span>
+                      {renderSortIcon('balance')}
+                    </div>
+                  </TableHead>
                   <TableHead className="w-[70px]">หน่วย</TableHead>
                   <TableHead className="min-w-[160px] hidden lg:table-cell">รายละเอียด</TableHead>
                   <TableHead className="text-right w-[90px]">จัดการ</TableHead>
@@ -878,33 +1225,103 @@ const Items = () => {
               </TableHeader>
               <TableBody className="text-xs">
                 {paginatedItems.map((item) => {
-                  const isChild = item.item_type === 'CHILD';
+                  const isChild = item.isChildRow;
+
                   return (
                     <TableRow 
-                      key={item.recordKey} 
-                      className={`transition-colors hover:bg-muted/50 ${isChild ? "bg-blue-500/5 dark:bg-blue-950/20" : ""}`}
+                      key={`${item.recordKey}_${isChild ? 'child' : 'parent'}`} 
+                      className={`transition-colors ${
+                        isChild 
+                          ? "bg-blue-500/[0.03] dark:bg-blue-950/25 border-l-4 border-l-blue-500 hover:bg-blue-500/[0.07] dark:hover:bg-blue-950/40" 
+                          : item.hasChildren
+                            ? "hover:bg-muted/60 font-medium bg-card"
+                            : "hover:bg-muted/50 bg-card"
+                      }`}
                     >
                       {/* Image Thumbnail */}
-                      <TableCell>
+                      <TableCell className="w-14">
                         {item.image_url ? (
-                          <img src={item.image_url} alt={item.name} className="w-10 h-10 object-cover rounded-lg border border-border shadow-xs" />
+                          <img 
+                            src={item.image_url} 
+                            alt={item.name} 
+                            className={`object-cover rounded-lg border border-border shadow-xs ${
+                              isChild ? "w-8 h-8 ml-2" : "w-10 h-10"
+                            }`} 
+                          />
                         ) : (
-                          <div className="w-10 h-10 bg-muted/60 rounded-lg flex items-center justify-center border border-border/60 text-muted-foreground/60">
-                            <ImageIcon className="w-4 h-4" />
+                          <div className={`bg-muted/60 rounded-lg flex items-center justify-center border border-border/60 text-muted-foreground/60 ${
+                            isChild ? "w-8 h-8 ml-2" : "w-10 h-10"
+                          }`}>
+                            <ImageIcon className={isChild ? "w-3.5 h-3.5" : "w-4 h-4"} />
                           </div>
                         )}
                       </TableCell>
 
                       {/* Name & Parent/Child Badge */}
                       <TableCell className="font-semibold text-foreground">
-                        <div className="flex items-center gap-1.5">
-                          {isChild && (
-                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-500/10 text-blue-600 border border-blue-500/20 shrink-0">
-                              └─ CHILD
+                        {isChild ? (
+                          /* CHILD Row Layout with Tree Branch Guide */
+                          <div className="flex items-start gap-2 pl-2">
+                            <div className="flex items-center gap-1 mt-0.5 text-blue-600 dark:text-blue-400 shrink-0 font-mono font-bold select-none">
+                              <CornerDownRight className="w-4 h-4 stroke-[2.25]" />
+                              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono font-extrabold bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/30">
+                                CHILD
+                              </span>
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <span className="text-foreground/95 line-clamp-2">{item.name}</span>
+                              <div className="flex items-center gap-1.5 mt-0.5 text-[10px] text-muted-foreground font-mono">
+                                <span>แม่:</span>
+                                <span className="font-semibold text-foreground/80 truncate max-w-[200px]" title={item.parentName}>
+                                  {item.parentName || item.parentSku}
+                                </span>
+                                {item.parentSku && item.parentSku !== '-' && (
+                                  <span className="text-muted-foreground/60 font-mono">({item.parentSku})</span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          /* PARENT / Standard Row Layout */
+                          <div className="flex items-center gap-2">
+                            {item.hasChildren && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => toggleGroupCollapse(item.groupKey)}
+                                className="h-6 w-6 p-0 rounded hover:bg-muted text-muted-foreground hover:text-foreground shrink-0 cursor-pointer shadow-none"
+                                title={item.isCollapsed ? "ขยายรายการลูก (Expand Children)" : "ยุบรายการลูก (Collapse Children)"}
+                              >
+                                {item.isCollapsed ? (
+                                  <ChevronRight className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                                ) : (
+                                  <ChevronDown className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                                )}
+                              </Button>
+                            )}
+
+                            {item.hasChildren ? (
+                              <button
+                                type="button"
+                                onClick={() => toggleGroupCollapse(item.groupKey)}
+                                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/25 shrink-0 hover:bg-indigo-500/20 transition-colors cursor-pointer"
+                                title="คลิกเพื่อย่อ/ขยายรายการลูก"
+                              >
+                                <FolderTree className="w-3 h-3" />
+                                <span>PARENT ({item.childCount})</span>
+                              </button>
+                            ) : item.isOrphanChild ? (
+                              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/25 shrink-0">
+                                CHILD (เดี่ยว)
+                              </span>
+                            ) : null}
+
+                            <span className="line-clamp-2 text-sm font-bold text-foreground">
+                              {item.name}
                             </span>
-                          )}
-                          <span className="line-clamp-2">{item.name}</span>
-                        </div>
+                          </div>
+                        )}
                       </TableCell>
 
                       {/* Model */}
@@ -1037,7 +1454,7 @@ const Items = () => {
         /* Grid Bento Card View */
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {paginatedItems.map((item) => {
-            const isChild = item.item_type === 'CHILD';
+            const isChild = item.isChildRow;
             return (
               <Card 
                 key={item.recordKey} 
@@ -1053,11 +1470,17 @@ const Items = () => {
                       {item.category_name}
                     </span>
 
-                    {isChild && (
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-500/10 text-blue-600 border border-blue-500/20">
-                        └─ CHILD
+                    {isChild ? (
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-500/10 text-blue-600 border border-blue-500/20 flex items-center gap-1">
+                        <CornerDownRight className="w-3 h-3" />
+                        CHILD (แม่: {item.parentSku || item.parentName})
                       </span>
-                    )}
+                    ) : item.hasChildren ? (
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/25 flex items-center gap-1">
+                        <FolderTree className="w-3 h-3" />
+                        PARENT ({item.childCount} ลูก)
+                      </span>
+                    ) : null}
                   </div>
 
                   {/* Image & Title Header */}
@@ -1165,7 +1588,7 @@ const Items = () => {
       )}
 
       {/* Supabase-Style Compact Pagination Footer Bar */}
-      {filteredItems.length > 0 && (
+      {totalRootGroups > 0 && (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 bg-card rounded-xl border border-border shadow-xs text-xs text-muted-foreground select-none">
           {/* Left Controls: Navigation & Page Input */}
           <div className="flex items-center gap-2">
@@ -1234,16 +1657,16 @@ const Items = () => {
                 className="h-8 rounded-lg border border-input bg-background px-2.5 text-xs font-medium text-foreground focus:ring-2 focus:ring-primary cursor-pointer shadow-xs transition-colors"
                 aria-label="Rows per page"
               >
-                <option value={25}>25 rows</option>
-                <option value={50}>50 rows</option>
-                <option value={100}>100 rows</option>
-                <option value={200}>200 rows</option>
+                <option value={25}>25 กลุ่มหลัก</option>
+                <option value={50}>50 กลุ่มหลัก</option>
+                <option value={100}>100 กลุ่มหลัก</option>
+                <option value={200}>200 กลุ่มหลัก</option>
               </select>
             </div>
 
             {/* Total Records Counter */}
             <span className="font-mono text-xs text-muted-foreground font-medium">
-              {totalRecords.toLocaleString()} records
+              {totalRootGroups.toLocaleString()} กลุ่มหลัก ({totalFilteredRecords.toLocaleString()} รายการ)
             </span>
           </div>
         </div>
