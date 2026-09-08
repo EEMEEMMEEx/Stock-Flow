@@ -56,13 +56,13 @@ const DefaultPasswordManager = ({ canUpdate }) => {
     const strongPw = generateStrongPassword();
     setPasswordInput(strongPw);
     setShowPassword(true);
-    toast.success('สุ่มรหัสผ่านปลอดภัยตรงตามนโยบายเรียบร้อยแล้ว');
+    toast.success('Generated secure password matching policy successfully');
   };
 
   const handleSavePassword = async (e) => {
     e.preventDefault();
     if (!canUpdate) {
-      return toast.error('คุณไม่มีสิทธิ์ในการแก้ไขการตั้งค่า (Requires settings.update)');
+      return toast.error('You do not have permission to update settings (Requires settings.update)');
     }
 
     const policyCheck = validatePasswordPolicy(passwordInput);
@@ -79,14 +79,14 @@ const DefaultPasswordManager = ({ canUpdate }) => {
       if (error) throw error;
 
       if (data?.success) {
-        toast.success('บันทึกรหัสผ่านเริ่มต้นสำหรับการรีเซ็ตเรียบร้อยแล้ว');
+        toast.success('Default reset password saved successfully');
         setStatus({ configured: true, updated_at: data.updated_at || new Date().toISOString() });
         setPasswordInput('');
         setShowPassword(false);
       }
     } catch (err) {
       console.error('Save default password error:', err);
-      toast.error(err.message || 'เกิดข้อผิดพลาดในการบันทึกรหัสผ่านเริ่มต้น');
+      toast.error(err.message || 'An error occurred while saving default reset password');
     } finally {
       setSaving(false);
     }
@@ -107,10 +107,10 @@ const DefaultPasswordManager = ({ canUpdate }) => {
           <KeyRound className="w-5 h-5 text-purple-600 dark:text-purple-400 shrink-0" />
           <div>
             <h4 className="text-sm font-bold text-foreground">
-              รหัสผ่านเริ่มต้นสำหรับการรีเซ็ตรหัสผ่าน (Default Reset Password)
+              Default Reset Password
             </h4>
             <p className="text-[11px] text-muted-foreground">
-              Temporary password assigned when an administrator resets a user&apos;s password. รหัสผ่านที่ตั้งค่าจะถูกจัดเก็บอย่างปลอดภัยฝั่งเซิร์ฟเวอร์และไม่สามารถดูย้อนหลังได้
+              Temporary password assigned when an administrator resets a user&apos;s password. The configured password is encrypted securely on the server and cannot be viewed retrospectively.
             </p>
           </div>
         </div>
@@ -118,16 +118,16 @@ const DefaultPasswordManager = ({ canUpdate }) => {
         {/* Status Badge */}
         <div className="shrink-0">
           {loading ? (
-            <span className="text-[11px] text-muted-foreground animate-pulse">กำลังตรวจสอบ...</span>
+            <span className="text-[11px] text-muted-foreground animate-pulse">Checking status...</span>
           ) : status.configured ? (
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
               <CheckCircle2 className="w-3.5 h-3.5" />
-              Configured (ตั้งค่าแล้ว)
+              Configured
             </span>
           ) : (
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 border border-zinc-500/30">
               <XCircle className="w-3.5 h-3.5" />
-              Not Configured (ยังไม่ได้ตั้งค่า)
+              Not Configured
             </span>
           )}
         </div>
@@ -138,7 +138,7 @@ const DefaultPasswordManager = ({ canUpdate }) => {
           <div className="md:col-span-2 space-y-1.5">
             <div className="flex items-center justify-between">
               <Label htmlFor="default_reset_pw" className="text-xs font-semibold text-foreground">
-                รหัสผ่านเริ่มต้นใหม่สำหรับการรีเซ็ต (New Default Reset Password) *
+                New Default Reset Password *
               </Label>
               <Button
                 type="button"
@@ -149,7 +149,7 @@ const DefaultPasswordManager = ({ canUpdate }) => {
                 className="text-[11px] text-purple-600 hover:text-purple-700 dark:text-purple-400 hover:underline h-6 px-2 flex items-center gap-1 cursor-pointer"
               >
                 <RefreshCw className="w-3 h-3" />
-                สุ่มรหัสผ่านปลอดภัย (Generate Secure Default)
+                Generate Secure Default
               </Button>
             </div>
 
@@ -160,7 +160,7 @@ const DefaultPasswordManager = ({ canUpdate }) => {
                 type={showPassword ? 'text' : 'password'}
                 autoComplete="new-password"
                 disabled={!canUpdate || saving}
-                placeholder={status.configured ? '•••••••••••• (ตั้งค่าไว้แล้ว - ระบุใหม่เมื่อต้องการเปลี่ยน)' : 'ระบุรหัสผ่านเริ่มต้นความยาวอย่างน้อย 12 ตัวอักษร'}
+                placeholder={status.configured ? '•••••••••••• (Configured - enter new value to change)' : 'Enter default password (minimum 12 characters)'}
                 value={passwordInput}
                 onChange={(e) => setPasswordInput(e.target.value)}
                 className="pr-10 h-9 text-xs rounded-lg bg-background border border-input"
@@ -183,7 +183,7 @@ const DefaultPasswordManager = ({ canUpdate }) => {
               className="w-full h-9 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground flex items-center justify-center gap-2 text-xs font-semibold cursor-pointer shadow-xs"
             >
               <Save className="w-3.5 h-3.5" />
-              {saving ? 'กำลังบันทึก...' : 'บันทึกรหัสผ่านเริ่มต้น'}
+              {saving ? 'Saving...' : 'Save Default Password'}
             </Button>
           </div>
         </div>
@@ -191,31 +191,31 @@ const DefaultPasswordManager = ({ canUpdate }) => {
         {/* Live Password Policy Checklist */}
         {passwordInput && (
           <div className="p-3 rounded-lg bg-muted/30 border border-border/50 space-y-2 text-[11px]">
-            <span className="font-bold text-foreground block">ตรวจสอบนโยบายความปลอดภัยรหัสผ่าน (Live Validation):</span>
+            <span className="font-bold text-foreground block">Password Policy Checklist (Live Validation):</span>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
               <span className={`flex items-center gap-1.5 ${reqMinLen ? 'text-emerald-600 font-semibold' : 'text-muted-foreground'}`}>
                 {reqMinLen ? <CheckCircle2 className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
-                ความยาวอย่างน้อย 12 ตัวอักษร
+                Minimum 12 characters
               </span>
               <span className={`flex items-center gap-1.5 ${reqUpper ? 'text-emerald-600 font-semibold' : 'text-muted-foreground'}`}>
                 {reqUpper ? <CheckCircle2 className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
-                ตัวพิมพ์ใหญ่ (A-Z) อย่างน้อย 1 ตัว
+                At least 1 uppercase letter (A-Z)
               </span>
               <span className={`flex items-center gap-1.5 ${reqLower ? 'text-emerald-600 font-semibold' : 'text-muted-foreground'}`}>
                 {reqLower ? <CheckCircle2 className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
-                ตัวพิมพ์เล็ก (a-z) อย่างน้อย 1 ตัว
+                At least 1 lowercase letter (a-z)
               </span>
               <span className={`flex items-center gap-1.5 ${reqDigit ? 'text-emerald-600 font-semibold' : 'text-muted-foreground'}`}>
                 {reqDigit ? <CheckCircle2 className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
-                ตัวเลข (0-9) อย่างน้อย 1 ตัว
+                At least 1 number (0-9)
               </span>
               <span className={`flex items-center gap-1.5 ${reqSymbol ? 'text-emerald-600 font-semibold' : 'text-muted-foreground'}`}>
                 {reqSymbol ? <CheckCircle2 className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
-                อักขระพิเศษ (!@#$%^&*) อย่างน้อย 1 ตัว
+                At least 1 special character (!@#$%^&*)
               </span>
               <span className={`flex items-center gap-1.5 ${reqNoSpace ? 'text-emerald-600 font-semibold' : 'text-muted-foreground'}`}>
                 {reqNoSpace ? <CheckCircle2 className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
-                ไม่มีช่องว่างนำหน้า/ต่อท้าย
+                No leading or trailing spaces
               </span>
             </div>
 

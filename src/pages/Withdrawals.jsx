@@ -178,7 +178,7 @@ const Withdrawals = () => {
       }
     } catch (error) {
       console.error('FetchData Error:', error);
-      toast.error('ไม่สามารถโหลดข้อมูลการเบิกจ่ายได้');
+      toast.error('Failed to load withdrawal data');
     } finally {
       setLoading(false);
     }
@@ -222,10 +222,10 @@ const Withdrawals = () => {
     if (availableStock <= 0) {
       if (totalSys > 0) {
         toast.error(
-          `วัสดุนี้ไม่มีสต็อกในคลังที่เลือก แต่มีในคลังย่อยอื่นรวม ${totalSys} ${item.unit || 'ชิ้น'}\nกรุณาคลิก "ดูคลังอื่น" หรือเปลี่ยนโครงการเป้าหมาย`
+          `This item has no stock in selected location, but has ${totalSys} ${item.unit || 'ชิ้น'} across other locations.\nPlease select another location or project.`
         );
       } else {
-        toast.error('วัสดุนี้ไม่มีสินค้าในสต็อก');
+        toast.error('This item is out of stock');
       }
       return;
     }
@@ -234,7 +234,7 @@ const Withdrawals = () => {
       const existing = prev.find(i => i.id === item.id);
       if (existing) {
         if (existing.quantity >= availableStock) {
-          toast.error(`ไม่สามารถเบิกเกินสต็อกที่มีในคลังนี้ได้ (${availableStock} ${item.unit || 'ชิ้น'})`);
+          toast.error(`Cannot request more than available stock in this location (${availableStock} ${item.unit || 'ชิ้น'})`);
           return prev;
         }
         const newQ = existing.quantity + 1;
@@ -269,7 +269,7 @@ const Withdrawals = () => {
         }
 
         if (newQ > availableStock) {
-          toast.error(`จำกัดสูงสุดเท่าสต็อกคงเหลือ (${availableStock} ${item.unit || 'ชิ้น'})`);
+          toast.error(`Maximum quantity limited to available stock (${availableStock} ${item.unit || 'ชิ้น'})`);
           newQ = availableStock;
         }
 
@@ -295,7 +295,7 @@ const Withdrawals = () => {
         if (isNaN(num) || num < 1) num = 1;
 
         if (num > availableStock) {
-          toast.error(`จำกัดสูงสุดเท่าสต็อกคงเหลือ (${availableStock} ${item.unit || 'ชิ้น'})`);
+          toast.error(`Maximum quantity limited to available stock (${availableStock} ${item.unit || 'ชิ้น'})`);
           num = availableStock;
         }
 
@@ -339,13 +339,13 @@ const Withdrawals = () => {
     if (cart.length === 0) return;
 
     if (!projectId || projectId === 'all') {
-      toast.error('กรุณาเลือกสถานที่จัดเก็บ (Location) ที่จะนำไปใช้งาน');
+      toast.error('Please select a destination storage location');
       return;
     }
 
     try {
       setIsSubmitting(true);
-      const toastId = toast.loading('กำลังสร้างใบคำขอเบิกจ่าย...');
+      const toastId = toast.loading('Creating requisition request...');
 
       // 1. Create order with status = 'pending'
       const { data: orderData, error: orderError } = await supabase
@@ -375,7 +375,7 @@ const Withdrawals = () => {
       const { error: itemsError } = await supabase.from('withdrawal_items').insert(itemsToInsert);
       if (itemsError) throw itemsError;
 
-      toast.success('สร้างใบคำขอเบิกจ่ายสำเร็จ (สถานะ: รออนุมัติ)', { id: toastId });
+      toast.success('Requisition request created successfully (Status: Pending)', { id: toastId });
 
       // 3. Dispatch transactional notification email
       dispatchWithdrawalNotification({
@@ -394,7 +394,7 @@ const Withdrawals = () => {
       setActiveTab('orders');
     } catch (error) {
       console.error('Submit Requisition Error:', error);
-      toast.error('เกิดข้อผิดพลาดในการสร้างคำขอเบิกจ่าย');
+      toast.error('Failed to create requisition request');
     } finally {
       setIsSubmitting(false);
     }
@@ -404,7 +404,7 @@ const Withdrawals = () => {
   const handleApproveOrder = async (orderId, allowShortage = false, overrideReason = '') => {
     if (!canApprove || isProcessing) return;
     setIsProcessing(true);
-    const toastId = toast.loading('กำลังอนุมัติบิลและตัดสต็อกแบบ Atomic...');
+    const toastId = toast.loading('Approving requisition and updating stock...');
     try {
       const { data, error } = await supabase.rpc('approve_inventory_request', {
         p_request_id: orderId,
@@ -413,13 +413,13 @@ const Withdrawals = () => {
       });
       if (error) throw error;
 
-      toast.success(data?.message || 'อนุมัติคำขอเบิกจ่ายสำเร็จ', { id: toastId });
+      toast.success(data?.message || 'Requisition approved successfully', { id: toastId });
 
       // Dispatch notification email
       dispatchWithdrawalNotification({
         eventType: 'withdrawal_approved',
         orderId: orderId,
-        approverName: profile?.full_name || 'ผู้ดูแลระบบ (Admin)',
+        approverName: profile?.full_name || 'Admin',
         overrideReason: overrideReason
       }).catch(err => console.warn('[Notification Dispatch Warning]:', err));
 
@@ -453,14 +453,14 @@ const Withdrawals = () => {
           setShortageOverrideReason('');
           setIsShortageModalOpen(true);
         } catch {
-          toast.error('จำนวนวัสดุในโครงการไม่เพียงพอสำหรับอนุมัติ');
+          toast.error('Insufficient project inventory for approval');
         }
       } else {
-        let cleanErrMsg = rawMsg.replace(/.*(?:EXCEPTION|Error|P0001):\s*/i, '') || 'เกิดข้อผิดพลาดในการอนุมัติบิล';
+        let cleanErrMsg = rawMsg.replace(/.*(?:EXCEPTION|Error|P0001):\s*/i, '') || 'Failed to approve requisition';
         if (cleanErrMsg.includes('Insufficient stock for this project')) {
           cleanErrMsg = cleanErrMsg.replace(
             /Insufficient stock for this project:\s*Available\s*(\d+),\s*Requested\s*(\d+)/i,
-            'จำนวนวัสดุในโครงการนี้ไม่เพียงพอ: คงเหลือ $1 ชิ้น, ขอเบิก $2 ชิ้น'
+            'Insufficient inventory in this project: Available $1 pcs, Requested $2 pcs'
           );
         }
         toast.error(cleanErrMsg, { id: toastId, duration: 6000 });
@@ -482,12 +482,12 @@ const Withdrawals = () => {
     e.preventDefault();
     if (!canReject || !orderToReject || isProcessing) return;
     if (!rejectReason.trim()) {
-      toast.error('กรุณาระบุเหตุผลการปฏิเสธ');
+      toast.error('Please specify a rejection reason');
       return;
     }
 
     setIsProcessing(true);
-    const toastId = toast.loading('กำลังปฏิเสธคำขอ...');
+    const toastId = toast.loading('Rejecting requisition...');
     try {
       const { error } = await supabase.rpc('reject_inventory_request', {
         p_request_id: orderToReject.id,
@@ -495,7 +495,7 @@ const Withdrawals = () => {
       });
       if (error) throw error;
 
-      toast.success('ปฏิเสธคำขอเรียบร้อยแล้ว', { id: toastId });
+      toast.success('Requisition rejected successfully', { id: toastId });
 
       // Dispatch rejection notification
       dispatchWithdrawalNotification({
@@ -516,7 +516,7 @@ const Withdrawals = () => {
       console.error('Reject Error:', error);
       const cleanErrMsg = error.message
         ? error.message.replace(/.*(?:EXCEPTION|Error|P0001):\s*/i, '')
-        : 'เกิดข้อผิดพลาดในการปฏิเสธคำขอ';
+        : 'Failed to reject requisition';
       toast.error(cleanErrMsg, { id: toastId, duration: 6000 });
     } finally {
       setIsProcessing(false);
@@ -527,14 +527,14 @@ const Withdrawals = () => {
   const handleCompleteOrder = async (orderId) => {
     if (isProcessing) return;
     setIsProcessing(true);
-    const toastId = toast.loading('กำลังยืนยันการรับมอบของ...');
+    const toastId = toast.loading('Confirming receipt of items...');
     try {
       const { error } = await supabase.rpc('complete_inventory_request', {
         p_request_id: orderId
       });
       if (error) throw error;
 
-      toast.success('ยืนยันการรับของสำเร็จ (สถานะ: รับของแล้ว)', { id: toastId });
+      toast.success('Receipt confirmed successfully (Status: Received)', { id: toastId });
 
       dispatchWithdrawalNotification({
         eventType: 'withdrawal_completed',
@@ -549,7 +549,7 @@ const Withdrawals = () => {
       console.error('Complete Error:', error);
       const cleanErrMsg = error.message
         ? error.message.replace(/.*(?:EXCEPTION|Error|P0001):\s*/i, '')
-        : 'เกิดข้อผิดพลาดในการยืนยันการรับของ';
+        : 'Failed to confirm receipt of items';
       toast.error(cleanErrMsg, { id: toastId, duration: 6000 });
     } finally {
       setIsProcessing(false);
@@ -568,14 +568,14 @@ const Withdrawals = () => {
       setSelectedOrder(order);
       setIsDetailsModalOpen(true);
     } catch {
-      toast.error('ไม่สามารถโหลดรายละเอียดบิลได้');
+      toast.error('Failed to load requisition details');
     }
   };
 
   // Download PDF
   const handleDownloadPDF = async (order, existingItems = null) => {
     if (!order) return;
-    const toastId = toast.loading('กำลังสร้างเอกสาร PDF ใบเบิกของ...');
+    const toastId = toast.loading('Generating requisition PDF document...');
     try {
       let itemsList = existingItems;
       if (!itemsList || itemsList.length === 0) {
@@ -600,10 +600,10 @@ const Withdrawals = () => {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      toast.success('ดาวน์โหลดเอกสาร PDF ใบเบิกของสำเร็จ', { id: toastId });
+      toast.success('Requisition PDF downloaded successfully', { id: toastId });
     } catch (err) {
       console.error('PDF Download Error:', err);
-      toast.error('เกิดข้อผิดพลาดในการดาวน์โหลดเอกสาร PDF', { id: toastId });
+      toast.error('Failed to download PDF document', { id: toastId });
     }
   };
 
@@ -626,12 +626,12 @@ const Withdrawals = () => {
             }`}
           >
             <Zap className="w-3.5 h-3.5 text-amber-400 fill-amber-400/30" />
-            <span>POS Terminal (สร้างคำขอเบิกจ่าย)</span>
+            <span>POS Terminal</span>
             {cart.length > 0 && (
               <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-extrabold ${
                 activeTab === 'pos' ? 'bg-white/20 text-white' : 'bg-indigo-600 text-white'
               }`}>
-                {cart.length} รายการ ({totalCartUnits} ชิ้น)
+                {cart.length} items ({totalCartUnits} {totalCartUnits === 1 ? 'unit' : 'units'})
               </span>
             )}
           </button>
@@ -647,10 +647,10 @@ const Withdrawals = () => {
             }`}
           >
             <ClipboardList className="w-3.5 h-3.5 text-emerald-400" />
-            <span>รายการคำขอเบิกจ่าย (Requisitions)</span>
+            <span>Requisitions</span>
             {pendingOrdersCount > 0 && (
               <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-extrabold bg-amber-500 text-slate-950 animate-pulse">
-                {pendingOrdersCount} รออนุมัติ
+                {pendingOrdersCount} Pending
               </span>
             )}
           </button>
@@ -659,7 +659,7 @@ const Withdrawals = () => {
         {/* Status Indicator */}
         <div className="hidden md:flex items-center gap-2 text-xs font-semibold text-muted-foreground pr-3">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-          <span>ระบบเบิกจ่ายออนไลน์พร้อมใช้งาน</span>
+          <span>Requisition System Ready</span>
         </div>
       </div>
 

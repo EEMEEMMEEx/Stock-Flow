@@ -94,14 +94,14 @@ const CheckoutActiveList = ({
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground">รายการยืมคงค้าง</span>
+            <span className="text-xs font-semibold text-muted-foreground">Active Loans</span>
             <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
               <Clock className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-2xl font-bold tracking-tight text-foreground">{activeLoansCount}</span>
-            <span className="text-xs text-muted-foreground font-medium">คำสั่ง ({totalUnitsBorrowed} ชิ้น)</span>
+            <span className="text-xs text-muted-foreground font-medium">orders ({totalUnitsBorrowed} {totalUnitsBorrowed === 1 ? 'unit' : 'units'})</span>
           </div>
         </Card>
 
@@ -112,14 +112,14 @@ const CheckoutActiveList = ({
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground">ใกล้ครบกำหนด (≤ 2 วัน)</span>
+            <span className="text-xs font-semibold text-muted-foreground">Due Soon (≤ 2 days)</span>
             <div className="p-2 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
               <Clock className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400">{dueSoonCount}</span>
-            <span className="text-xs text-muted-foreground font-medium">คำสั่ง</span>
+            <span className="text-xs text-muted-foreground font-medium">orders</span>
           </div>
         </Card>
 
@@ -130,14 +130,14 @@ const CheckoutActiveList = ({
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-red-600 dark:text-red-400">เกินกำหนดส่งคืน (Overdue)</span>
+            <span className="text-xs font-semibold text-red-600 dark:text-red-400">Overdue</span>
             <div className="p-2 rounded-lg bg-red-500/10 text-red-600 dark:text-red-400">
               <AlertTriangle className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-2xl font-bold tracking-tight text-red-600 dark:text-red-400">{overdueCount}</span>
-            <span className="text-xs text-muted-foreground font-medium">คำสั่ง</span>
+            <span className="text-xs text-muted-foreground font-medium">orders</span>
           </div>
         </Card>
 
@@ -148,7 +148,7 @@ const CheckoutActiveList = ({
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground">สถานะปกติ</span>
+            <span className="text-xs font-semibold text-muted-foreground">On Schedule</span>
             <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
               <CheckCircle2 className="w-4 h-4" />
             </div>
@@ -157,7 +157,7 @@ const CheckoutActiveList = ({
             <span className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
               {activeLoansCount - overdueCount}
             </span>
-            <span className="text-xs text-muted-foreground font-medium">คำสั่ง</span>
+            <span className="text-xs text-muted-foreground font-medium">orders</span>
           </div>
         </Card>
       </div>
@@ -169,14 +169,14 @@ const CheckoutActiveList = ({
             <div className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
               <Layers className="w-4 h-4" />
             </div>
-            <span>รายการยืมที่ยังไม่ได้คืนครบ ({filteredOrders.length} รายการ)</span>
+            <span>Outstanding Loans ({filteredOrders.length} records)</span>
           </CardTitle>
 
           {/* Search Box */}
           <div className="relative w-full sm:w-72">
             <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="ค้นหาเลขที่, ผู้ยืม, แผนก, S/N..."
+              placeholder="Search order number, borrower, dept, S/N..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-8 h-9 text-xs rounded-lg"
@@ -187,13 +187,13 @@ const CheckoutActiveList = ({
         <CardContent className="p-0">
           {loading ? (
             <div className="py-16 text-center text-muted-foreground text-xs">
-              กำลังโหลดข้อมูลการยืมพัสดุ...
+              Loading checkout data...
             </div>
           ) : filteredOrders.length === 0 ? (
             <div className="py-16 text-center text-muted-foreground text-xs space-y-1">
               <CheckCircle2 className="w-8 h-8 mx-auto mb-2 text-emerald-500 opacity-60 stroke-1" />
-              <p className="font-semibold text-foreground">ไม่พบรายการยืมคงค้างตามเงื่อนไข</p>
-              <p className="text-[11px]">อุปกรณ์ทั้งหมดถูกส่งคืนครบถ้วน หรือไม่มีข้อมูลในตัวกรองนี้</p>
+              <p className="font-semibold text-foreground">No active loans match the criteria</p>
+              <p className="text-[11px]">All items returned or no orders found in this filter</p>
             </div>
           ) : (
             <div className="divide-y divide-border/40">
@@ -218,27 +218,27 @@ const CheckoutActiveList = ({
                         {order.isIndefinite ? (
                           <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-500/30 flex items-center gap-1">
                             <InfinityIcon className="w-3 h-3 text-purple-600 dark:text-purple-400" />
-                            ไม่มีกำหนดคืน (Indefinite)
+                            Indefinite
                           </span>
                         ) : order.isOverdue ? (
                           <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30 flex items-center gap-1 animate-pulse">
                             <AlertTriangle className="w-3 h-3" />
-                            เกินกำหนดคืน {Math.abs(order.daysDiff)} วัน
+                            {Math.abs(order.daysDiff)} {Math.abs(order.daysDiff) === 1 ? 'day' : 'days'} overdue
                           </span>
                         ) : order.isDueSoon ? (
                           <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 flex items-center gap-1">
                             <Clock className="w-3 h-3" />
-                            {order.daysDiff === 0 ? 'ครบกำหนดคืนวันนี้' : `ครบกำหนดใน ${order.daysDiff} วัน`}
+                            {order.daysDiff === 0 ? 'Due today' : `Due in ${order.daysDiff} ${order.daysDiff === 1 ? 'day' : 'days'}`}
                           </span>
                         ) : (
                           <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
-                            กำลังยืม
+                            Active
                           </span>
                         )}
 
                         {order.status === 'partial_returned' && (
                           <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-blue-500/10 text-blue-600 border border-blue-500/20">
-                            คืนแล้วบางส่วน ({order.totalReturned}/{order.totalBorrowed})
+                            Partially Returned ({order.totalReturned}/{order.totalBorrowed})
                           </span>
                         )}
                       </div>
@@ -263,7 +263,7 @@ const CheckoutActiveList = ({
                       <div className="text-[11px] text-muted-foreground pt-1 flex flex-wrap gap-1.5">
                         {order.checkout_items?.map((item, idx) => (
                           <span key={item.id || idx} className="bg-muted/60 px-2 py-0.5 rounded-md border border-border/40 font-mono text-[10px]">
-                            {item.items?.name || 'อุปกรณ์'} ×{item.quantity_borrowed - (item.quantity_returned + item.quantity_damaged + item.quantity_lost)} {item.items?.unit || 'ชิ้น'}
+                            {item.items?.name || 'Item'} ×{item.quantity_borrowed - (item.quantity_returned + item.quantity_damaged + item.quantity_lost)} {item.items?.unit || 'ชิ้น'}
                             {item.serial_number && <span className="text-indigo-600 dark:text-indigo-400"> (S/N: {item.serial_number})</span>}
                           </span>
                         ))}
@@ -274,7 +274,7 @@ const CheckoutActiveList = ({
                     <div className="flex items-center gap-2 shrink-0 self-end md:self-center">
                       <div className="text-right mr-2 hidden sm:block">
                         <div className="text-[11px] text-muted-foreground">
-                          ยืมเมื่อ: {order.checkout_date ? format(new Date(order.checkout_date), 'dd/MM/yyyy') : '-'}
+                          Borrowed: {order.checkout_date ? format(new Date(order.checkout_date), 'dd/MM/yyyy') : '-'}
                         </div>
                         <div className={`text-xs font-bold ${
                           order.isOverdue 
@@ -283,7 +283,7 @@ const CheckoutActiveList = ({
                             ? 'text-purple-600 dark:text-purple-400' 
                             : 'text-foreground'
                         }`}>
-                          กำหนดคืน: {order.isIndefinite ? 'ไม่มีกำหนดคืน' : (order.expected_return_date ? format(new Date(order.expected_return_date), 'dd/MM/yyyy') : '-')}
+                          Due Date: {order.isIndefinite ? 'Indefinite' : (order.expected_return_date ? format(new Date(order.expected_return_date), 'dd/MM/yyyy') : '-')}
                         </div>
                       </div>
 
@@ -292,16 +292,16 @@ const CheckoutActiveList = ({
                         size="sm"
                         onClick={() => onOpenDetailModal(order)}
                         className="rounded-lg h-9 text-xs gap-1.5 font-semibold shadow-2xs cursor-pointer"
-                        title="ดูรายละเอียดใบยืมและพิมพ์เอกสาร"
+                        title="View loan details and print"
                       >
                         <Eye className="w-3.5 h-3.5" />
-                        <span className="hidden sm:inline">ดูใบยืม</span>
+                        <span className="hidden sm:inline">View Order</span>
                       </Button>
 
                       {order.isIndefinite ? (
-                        <div className="inline-flex items-center gap-1 px-2.5 rounded-lg h-9 bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-500/30 text-xs font-semibold select-none" title="รายการยืมแบบไม่มีกำหนดคืน (Indefinite Borrow)">
+                        <div className="inline-flex items-center gap-1 px-2.5 rounded-lg h-9 bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-500/30 text-xs font-semibold select-none" title="Indefinite Loan">
                           <InfinityIcon className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
-                          <span className="hidden sm:inline">ไม่มีกำหนดคืน</span>
+                          <span className="hidden sm:inline">Indefinite</span>
                         </div>
                       ) : (
                         canExtend && onOpenExtendModal && order.status !== 'completed' && (
@@ -310,10 +310,10 @@ const CheckoutActiveList = ({
                             size="sm"
                             onClick={() => onOpenExtendModal(order)}
                             className="rounded-lg h-9 text-xs gap-1.5 font-semibold border-amber-500/30 text-amber-700 dark:text-amber-400 hover:bg-amber-500/10 shadow-2xs cursor-pointer"
-                            title="ขยายกำหนดวันส่งคืนพัสดุ (Extend Due Date)"
+                            title="Extend due date"
                           >
                             <CalendarClock className="w-3.5 h-3.5" />
-                            <span>ขยายเวลา</span>
+                            <span>Extend</span>
                           </Button>
                         )
                       )}
@@ -325,7 +325,7 @@ const CheckoutActiveList = ({
                           className="rounded-lg h-9 px-3.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs gap-1.5 font-semibold shadow-xs cursor-pointer"
                         >
                           <RotateCcw className="w-3.5 h-3.5" />
-                          <span>รับคืนพัสดุ</span>
+                          <span>Return Items</span>
                         </Button>
                       )}
                     </div>

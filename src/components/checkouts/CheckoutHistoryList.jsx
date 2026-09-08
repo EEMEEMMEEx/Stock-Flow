@@ -39,13 +39,13 @@ const CheckoutHistoryList = ({
           <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
             <History className="w-4 h-4" />
           </div>
-          <span>ประวัติรายการยืม-คืนที่เสร็จสมบูรณ์แล้ว ({filteredOrders.length} รายการ)</span>
+          <span>Completed Loan & Return History ({filteredOrders.length} {filteredOrders.length === 1 ? 'order' : 'orders'})</span>
         </CardTitle>
 
         <div className="relative w-full sm:w-72">
           <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="ค้นหาประวัติ, เลขที่, ผู้ยืม..."
+            placeholder="Search history, order #, borrower..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-8 h-9 text-xs rounded-lg"
@@ -56,13 +56,13 @@ const CheckoutHistoryList = ({
       <CardContent className="p-0">
         {loading ? (
           <div className="py-16 text-center text-muted-foreground text-xs">
-            กำลังโหลดประวัติการยืม-คืน...
+            Loading loan & return history...
           </div>
         ) : filteredOrders.length === 0 ? (
           <div className="py-16 text-center text-muted-foreground text-xs space-y-1">
             <FileText className="w-8 h-8 mx-auto mb-2 opacity-40 stroke-1" />
-            <p className="font-semibold text-foreground">ยังไม่มีประวัติรายการยืม-คืนที่เสร็จสิ้น</p>
-            <p className="text-[11px]">เมื่อรับคืนอุปกรณ์ครบถ้วน รายการจะแสดงที่นี่โดยอัตโนมัติ</p>
+            <p className="font-semibold text-foreground">No completed loan & return records yet</p>
+            <p className="text-[11px]">Completed returns will automatically appear here</p>
           </div>
         ) : (
           <div className="divide-y divide-border/40">
@@ -86,12 +86,12 @@ const CheckoutHistoryList = ({
                       {order.borrow_type === 'indefinite' && (
                         <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-500/30 flex items-center gap-1">
                           <InfinityIcon className="w-3 h-3 text-purple-600 dark:text-purple-400" />
-                          ไม่มีกำหนดคืน
+                          No Return Date
                         </span>
                       )}
                       <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-emerald-500/15 text-emerald-600 border border-emerald-500/30 flex items-center gap-1">
                         <CheckCircle2 className="w-3 h-3" />
-                        คืนครบแล้ว ({totalBorrowed} ชิ้น)
+                        Fully Returned ({totalBorrowed} {totalBorrowed === 1 ? 'unit' : 'units'})
                       </span>
                     </div>
 
@@ -109,7 +109,7 @@ const CheckoutHistoryList = ({
                       <div className="text-[11px] text-muted-foreground pt-1 flex flex-wrap gap-1.5">
                         {order.checkout_items?.map((item, idx) => (
                           <span key={item.id || idx} className="bg-muted/60 px-2 py-0.5 rounded-md border border-border/40 font-mono text-[10px]">
-                            {item.items?.name || 'อุปกรณ์'} ×{item.quantity_borrowed} {item.items?.unit || 'ชิ้น'}
+                            {item.items?.name || 'Item'} ×{item.quantity_borrowed} {item.items?.unit || 'ชิ้น'}
                             {item.serial_number && <span className="text-indigo-600 dark:text-indigo-400 font-semibold"> (S/N: {item.serial_number})</span>}
                           </span>
                         ))}
@@ -119,10 +119,10 @@ const CheckoutHistoryList = ({
                     <div className="flex items-center gap-3 shrink-0 self-end md:self-center">
                     <div className="text-right text-xs">
                       <div className="text-muted-foreground text-[11px]">
-                        ยืม: {order.checkout_date ? format(new Date(order.checkout_date), 'dd/MM/yyyy') : '-'}
+                        Borrowed: {order.checkout_date ? format(new Date(order.checkout_date), 'dd/MM/yyyy') : '-'}
                       </div>
                       <div className="font-bold text-emerald-600 dark:text-emerald-400">
-                        คืน: {order.actual_returned_date ? format(new Date(order.actual_returned_date), 'dd/MM/yyyy') : '-'}
+                        Returned: {order.actual_returned_date ? format(new Date(order.actual_returned_date), 'dd/MM/yyyy') : '-'}
                       </div>
                     </div>
 
@@ -133,7 +133,7 @@ const CheckoutHistoryList = ({
                       className="rounded-lg h-9 text-xs gap-1.5 font-semibold shadow-2xs cursor-pointer"
                     >
                       <Eye className="w-3.5 h-3.5" />
-                      <span>ดูเอกสาร / พิมพ์</span>
+                      <span>View Details / Print</span>
                     </Button>
                   </div>
                 </div>

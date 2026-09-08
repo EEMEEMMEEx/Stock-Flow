@@ -94,10 +94,10 @@ const CheckoutDetailModal = ({
       link.download = `Checkout_Slip_${order.order_number || 'DOC'}.pdf`;
       link.click();
       URL.revokeObjectURL(url);
-      toast.success('ดาวน์โหลดใบยืมเครื่องมือสำเร็จ');
+      toast.success('Checkout slip downloaded');
     } catch (err) {
       console.error('PDF Error:', err);
-      toast.error('ไม่สามารถสร้างไฟล์ PDF ใบยืมได้');
+      toast.error('Failed to generate checkout slip PDF');
     } finally {
       setGeneratingPdf(false);
     }
@@ -113,10 +113,10 @@ const CheckoutDetailModal = ({
       link.download = `Return_Receipt_${order.order_number || 'DOC'}.pdf`;
       link.click();
       URL.revokeObjectURL(url);
-      toast.success('ดาวน์โหลดใบรับคืนพัสดุสำเร็จ');
+      toast.success('Return receipt downloaded');
     } catch (err) {
       console.error('PDF Error:', err);
-      toast.error('ไม่สามารถสร้างไฟล์ PDF ใบรับคืนได้');
+      toast.error('Failed to generate return receipt PDF');
     } finally {
       setGeneratingPdf(false);
     }
@@ -133,19 +133,19 @@ const CheckoutDetailModal = ({
               </div>
               <div>
                 <DialogTitle className="text-lg font-extrabold text-foreground tracking-tight flex items-center gap-2">
-                  <span>รายละเอียดใบยืม-คืน</span>
+                  <span>Loan & Return Details</span>
                   <span className="font-mono text-xs font-bold text-indigo-600 bg-indigo-500/10 px-2 py-0.5 rounded-md">
                     {order.order_number}
                   </span>
                   {isIndefinite && (
                     <span className="text-[11px] font-bold text-purple-700 dark:text-purple-300 bg-purple-500/15 border border-purple-500/30 px-2 py-0.5 rounded-md flex items-center gap-1">
                       <InfinityIcon className="w-3 h-3 text-purple-600 dark:text-purple-400" />
-                      ไม่มีกำหนดคืน
+                      Indefinite
                     </span>
                   )}
                 </DialogTitle>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  ยืมเมื่อ: {order.checkout_date ? format(new Date(order.checkout_date), 'dd/MM/yyyy HH:mm น.') : '-'}
+                  Borrowed: {order.checkout_date ? format(new Date(order.checkout_date), 'dd/MM/yyyy HH:mm') : '-'}
                 </p>
               </div>
             </div>
@@ -154,17 +154,17 @@ const CheckoutDetailModal = ({
             {order.status === 'completed' ? (
               <span className="px-3 py-1 rounded-xl text-xs font-bold bg-emerald-500/15 text-emerald-600 border border-emerald-500/30 flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4" />
-                คืนครบแล้ว
+                Completed
               </span>
             ) : order.status === 'partial_returned' ? (
               <span className="px-3 py-1 rounded-xl text-xs font-bold bg-blue-500/15 text-blue-600 border border-blue-500/30 flex items-center gap-1.5">
                 <Clock className="w-4 h-4" />
-                คืนบางส่วน ({totalReturned}/{totalBorrowed})
+                Partially Returned ({totalReturned}/{totalBorrowed})
               </span>
             ) : (
               <span className="px-3 py-1 rounded-xl text-xs font-bold bg-amber-500/15 text-amber-700 border border-amber-500/30 flex items-center gap-1.5">
                 <Clock className="w-4 h-4" />
-                กำลังยืม
+                Active
               </span>
             )}
           </div>
@@ -176,11 +176,11 @@ const CheckoutDetailModal = ({
             <div className="space-y-1.5">
               <div className="flex items-center gap-2">
                 <User className="w-3.5 h-3.5 text-muted-foreground" />
-                <span className="text-muted-foreground">ผู้ขอยืม:</span>
+                <span className="text-muted-foreground">Borrower:</span>
                 <strong className="text-foreground">{order.borrower_name}</strong>
               </div>
               {order.borrower_department && (
-                <div className="text-muted-foreground pl-5.5">แผนก: {order.borrower_department}</div>
+                <div className="text-muted-foreground pl-5.5">Department: {order.borrower_department}</div>
               )}
               {order.borrower_phone && (
                 <div className="text-muted-foreground pl-5.5 flex items-center gap-1">
@@ -192,7 +192,7 @@ const CheckoutDetailModal = ({
             <div className="space-y-1.5">
               <div className="flex items-center gap-2">
                 <Building2 className="w-3.5 h-3.5 text-indigo-500" />
-                <span className="text-muted-foreground">คลังต้นทาง:</span>
+                <span className="text-muted-foreground">Source Project/Warehouse:</span>
                 <strong className="text-foreground">{order.projects?.name}</strong>
               </div>
               <div className={`flex items-center gap-2 pl-5.5 font-semibold ${
@@ -200,11 +200,11 @@ const CheckoutDetailModal = ({
               }`}>
                 {isIndefinite ? <InfinityIcon className="w-3 h-3" /> : <Calendar className="w-3 h-3" />}
                 <span>
-                  กำหนดส่งคืน: {isIndefinite ? 'ไม่มีกำหนดคืน (Indefinite)' : (order.expected_return_date ? format(new Date(order.expected_return_date), 'dd/MM/yyyy') : '-')}
+                  Due Date: {isIndefinite ? 'Indefinite' : (order.expected_return_date ? format(new Date(order.expected_return_date), 'dd/MM/yyyy') : '-')}
                 </span>
               </div>
               {order.purpose && (
-                <div className="text-muted-foreground pl-5.5">งาน: {order.purpose}</div>
+                <div className="text-muted-foreground pl-5.5">Purpose: {order.purpose}</div>
               )}
             </div>
           </div>
@@ -213,15 +213,15 @@ const CheckoutDetailModal = ({
           <div className="space-y-2">
             <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5">
               <Layers className="w-3.5 h-3.5 text-indigo-500" />
-              <span>รายการอุปกรณ์ที่ยืม ({checkoutItems.length} รายการ)</span>
+              <span>Borrowed Items ({checkoutItems.length} items)</span>
             </h4>
 
             <div className="rounded-lg border border-border overflow-hidden divide-y divide-border/40">
               <div className="bg-muted/50 p-2.5 grid grid-cols-12 text-[11px] font-bold text-muted-foreground">
-                <div className="col-span-6">รายการอุปกรณ์</div>
-                <div className="col-span-2 text-center">ยืมไป</div>
-                <div className="col-span-2 text-center">คืนแล้ว</div>
-                <div className="col-span-2 text-center">คงค้าง</div>
+                <div className="col-span-6">Item Name</div>
+                <div className="col-span-2 text-center">Borrowed</div>
+                <div className="col-span-2 text-center">Returned</div>
+                <div className="col-span-2 text-center">Remaining</div>
               </div>
 
               {checkoutItems.map((item, idx) => {
@@ -229,7 +229,7 @@ const CheckoutDetailModal = ({
                 return (
                   <div key={item.id || idx} className="p-2.5 grid grid-cols-12 text-xs items-center">
                     <div className="col-span-6 space-y-0.5">
-                      <p className="font-bold text-foreground line-clamp-1">{item.items?.name || 'อุปกรณ์'}</p>
+                      <p className="font-bold text-foreground line-clamp-1">{item.items?.name || 'Item'}</p>
                       {item.serial_number && (
                         <p className="text-[10px] text-indigo-600 dark:text-indigo-400 font-mono">S/N: {item.serial_number}</p>
                       )}
@@ -256,7 +256,7 @@ const CheckoutDetailModal = ({
             <div className="space-y-2 pt-2 border-t border-border/40">
               <h4 className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
                 <RotateCcw className="w-3.5 h-3.5" />
-                <span>ประวัติการรับคืน ({returnLogs.length} ครั้ง)</span>
+                <span>Return History ({returnLogs.length} records)</span>
               </h4>
 
               <div className="space-y-2">
@@ -264,21 +264,21 @@ const CheckoutDetailModal = ({
                   <div key={log.id} className="p-2.5 rounded-xl bg-muted/25 border border-border/40 text-xs flex items-center justify-between">
                     <div>
                       <div className="font-semibold text-foreground flex items-center gap-1.5 flex-wrap">
-                        <span>{log.checkout_items?.items?.name || 'อุปกรณ์'}</span>
+                        <span>{log.checkout_items?.items?.name || 'Item'}</span>
                         {log.checkout_items?.serial_number && (
                           <span className="font-mono text-[10px] text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 px-1.5 py-0.2 rounded font-bold">
                             S/N: {log.checkout_items.serial_number}
                           </span>
                         )}
-                        <span>— คืน {log.returned_quantity} {log.checkout_items?.items?.unit || 'ชิ้น'}</span>
+                        <span>— Returned {log.returned_quantity} {log.checkout_items?.items?.unit || 'ชิ้น'}</span>
                         <span className={`ml-1 px-1.5 py-0.5 rounded text-[10px] font-bold ${
                           log.item_condition === 'normal' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-red-500/10 text-red-600'
                         }`}>
-                          {log.item_condition === 'normal' ? 'ปกติ' : log.item_condition}
+                          {log.item_condition === 'normal' ? 'Normal' : log.item_condition}
                         </span>
                       </div>
                       <div className="text-[10px] text-muted-foreground mt-0.5">
-                        รับเข้าคลัง: {log.projects?.name} • โดย: {log.profiles?.full_name || 'เจ้าหน้าที่'}
+                        Received into: {log.projects?.name} • By: {log.profiles?.full_name || 'Staff'}
                       </div>
                     </div>
 
@@ -296,7 +296,7 @@ const CheckoutDetailModal = ({
             <div className="space-y-2 pt-2 border-t border-border/40">
               <h4 className="text-xs font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
                 <CalendarClock className="w-3.5 h-3.5" />
-                <span>ประวัติการขอขยายเวลาส่งคืน ({extensionLogs.length} ครั้ง)</span>
+                <span>Extension History ({extensionLogs.length} records)</span>
               </h4>
 
               <div className="space-y-2">
@@ -305,7 +305,7 @@ const CheckoutDetailModal = ({
                     <div>
                       <div className="font-semibold text-foreground flex items-center gap-1.5 flex-wrap">
                         <span className="text-muted-foreground line-through font-mono text-[11px]">
-                          {log.previous_due_date ? format(new Date(log.previous_due_date), 'dd/MM/yyyy') : 'ไม่มีกำหนดคืน'}
+                          {log.previous_due_date ? format(new Date(log.previous_due_date), 'dd/MM/yyyy') : 'Indefinite'}
                         </span>
                         <ArrowRight className="w-3 h-3 text-amber-500" />
                         {log.new_due_date ? (
@@ -315,7 +315,7 @@ const CheckoutDetailModal = ({
                         ) : (
                           <span className="font-bold text-purple-600 dark:text-purple-400 font-mono inline-flex items-center gap-1">
                             <InfinityIcon className="w-3 h-3" />
-                            ไม่มีกำหนดคืน
+                            Indefinite
                           </span>
                         )}
                         {log.extension_reason && (
@@ -325,12 +325,12 @@ const CheckoutDetailModal = ({
                         )}
                       </div>
                       <div className="text-[10px] text-muted-foreground mt-0.5">
-                        ขยายเวลาโดย: {log.profiles?.full_name || 'เจ้าหน้าที่'}
+                        Extended by: {log.profiles?.full_name || 'Staff'}
                       </div>
                     </div>
 
                     <div className="text-[11px] text-muted-foreground font-mono self-end sm:self-auto">
-                      {format(new Date(log.extended_at), 'dd/MM/yyyy HH:mm น.')}
+                      {format(new Date(log.extended_at), 'dd/MM/yyyy HH:mm')}
                     </div>
                   </div>
                 ))}
@@ -350,7 +350,7 @@ const CheckoutDetailModal = ({
               className="rounded-lg h-9 text-xs gap-1.5 font-semibold shadow-2xs cursor-pointer"
             >
               <Download className="w-3.5 h-3.5" />
-              <span>พิมพ์ใบยืมพัสดุ (PDF)</span>
+              <span>Print Loan Slip (PDF)</span>
             </Button>
 
             {returnLogs.length > 0 && (
@@ -363,7 +363,7 @@ const CheckoutDetailModal = ({
                 className="rounded-lg h-9 text-xs gap-1.5 font-semibold text-emerald-700 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 shadow-2xs cursor-pointer"
               >
                 <Download className="w-3.5 h-3.5" />
-                <span>พิมพ์ใบรับคืน (PDF)</span>
+                <span>Print Return Slip (PDF)</span>
               </Button>
             )}
           </div>
@@ -372,7 +372,7 @@ const CheckoutDetailModal = ({
             {isIndefinite ? (
               <div className="inline-flex items-center gap-1.5 px-3 rounded-lg h-9 bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-500/30 text-xs font-semibold select-none">
                 <InfinityIcon className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
-                <span>ไม่มีกำหนดคืน (Indefinite Borrow)</span>
+                <span>Indefinite Loan</span>
               </div>
             ) : (
               remaining > 0 && order.status !== 'completed' && onOpenExtendModal && canExtend && (
@@ -387,7 +387,7 @@ const CheckoutDetailModal = ({
                   className="rounded-lg h-9 border-amber-500/30 text-amber-700 dark:text-amber-400 hover:bg-amber-500/10 text-xs gap-1.5 font-semibold shadow-2xs cursor-pointer"
                 >
                   <CalendarClock className="w-3.5 h-3.5" />
-                  <span>ขยายเวลาส่งคืน</span>
+                  <span>Extend Due Date</span>
                 </Button>
               )
             )}
@@ -403,7 +403,7 @@ const CheckoutDetailModal = ({
                 className="rounded-lg h-9 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs gap-1.5 font-semibold shadow-xs cursor-pointer"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
-                <span>รับคืนพัสดุ</span>
+                <span>Return Items</span>
               </Button>
             )}
 
@@ -414,7 +414,7 @@ const CheckoutDetailModal = ({
               onClick={onClose}
               className="rounded-lg h-9 text-xs font-semibold"
             >
-              ปิดหน้าต่าง
+              Close
             </Button>
           </div>
         </DialogFooter>

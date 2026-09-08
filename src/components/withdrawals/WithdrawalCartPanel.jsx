@@ -8,18 +8,18 @@ import {
 import toast from 'react-hot-toast';
 
 const QUICK_PURPOSE_TAGS = [
-  'งานซ่อมบำรุง / PM',
-  'ติดตั้งโครงการใหม่',
-  'สำรองใช้งานฉุกเฉิน',
-  'ทดสอบระบบ / QC',
-  'เปลี่ยนอุปกรณ์ชำรุด'
+  'Maintenance / PM',
+  'New Project Installation',
+  'Emergency Backup',
+  'System Testing / QC',
+  'Replace Damaged Equipment'
 ];
 
 const QUICK_DELIVERY_TAGS = [
   'Forth (EMS)',
   'Forth (Office)',
-  'Site งาน / โครงการ',
-  'ขนส่งเอกชน (Kerry/Flash)'
+  'Job Site / Project',
+  'Private Courier (Kerry/Flash)'
 ];
 
 const WithdrawalCartPanel = ({
@@ -52,12 +52,12 @@ const WithdrawalCartPanel = ({
   const handleSubmit = (e) => {
     e.preventDefault();
     if (cart.length === 0) {
-      toast.error('กรุณาเลือกวัสดุในตะกร้าก่อนส่งคำขอ');
+      toast.error('Please select items before submitting');
       return;
     }
 
     if (!isValidProject) {
-      toast.error('กรุณาเลือกสถานที่จัดเก็บ (Location) ที่จะนำไปใช้งาน');
+      toast.error('Please select a destination storage location');
       return;
     }
 
@@ -82,10 +82,10 @@ const WithdrawalCartPanel = ({
           </div>
           <div>
             <h3 className="font-extrabold text-sm text-foreground tracking-tight">
-              ตะกร้าคำขอเบิกจ่าย
+              Requisition Cart
             </h3>
             <p className="text-[11px] text-muted-foreground">
-              {totalItemsCount} รายการ ({totalUnits} ชิ้น)
+              {totalItemsCount} items ({totalUnits} ชิ้น)
             </p>
           </div>
         </div>
@@ -99,7 +99,7 @@ const WithdrawalCartPanel = ({
             className="text-[11px] font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg px-2.5 h-7 gap-1"
           >
             <Trash2 className="w-3.5 h-3.5" />
-            <span>ล้างทั้งหมด</span>
+            <span>Clear All</span>
           </Button>
         )}
       </div>
@@ -114,8 +114,8 @@ const WithdrawalCartPanel = ({
           <Building2 className={`w-4 h-4 shrink-0 mt-0.5 ${isValidProject ? 'text-indigo-600 dark:text-indigo-400' : 'text-amber-600 dark:text-amber-400'}`} />
           <div className="min-w-0 flex-1">
             <div className="font-bold flex items-center justify-between">
-              <span>สถานที่จัดเก็บ (Location):</span>
-              {!isValidProject && <span className="text-[10px] text-amber-600 dark:text-amber-400 font-extrabold">* จำเป็นต้องเลือก</span>}
+              <span>Location:</span>
+              {!isValidProject && <span className="text-[10px] text-amber-600 dark:text-amber-400 font-extrabold">* Required</span>}
             </div>
             {isValidProject ? (
               <p className="font-semibold truncate text-foreground mt-0.5">
@@ -124,7 +124,7 @@ const WithdrawalCartPanel = ({
               </p>
             ) : (
               <p className="text-[11px] text-amber-700 dark:text-amber-300 mt-0.5">
-                กรุณาเลือกสถานที่จัดเก็บที่แถบด้านบน เพื่อตัดสต็อกให้ถูกต้อง
+                Please select a storage location above to deduct stock accurately.
               </p>
             )}
           </div>
@@ -136,9 +136,9 @@ const WithdrawalCartPanel = ({
         {cart.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-8 text-center text-muted-foreground/70 space-y-2 border-2 border-dashed border-border/60 rounded-xl bg-muted/10 my-4">
             <ShoppingCart className="w-10 h-10 opacity-30 stroke-1" />
-            <p className="text-xs font-bold text-foreground">ยังไม่มีรายการในตะกร้า</p>
+            <p className="text-xs font-bold text-foreground">Your cart is empty</p>
             <p className="text-[11px] text-muted-foreground max-w-[220px]">
-              คลิกปุ่ม &quot;+ เพิ่มในคำขอ&quot; บนการ์ดวัสดุด้านซ้ายเพื่อเริ่มสร้างรายการเบิก
+              Click &quot;+ Add to Request&quot; on an item card to start adding items.
             </p>
           </div>
         ) : (
@@ -163,7 +163,7 @@ const WithdrawalCartPanel = ({
                         <>
                           <span>•</span>
                           <span className={item.balance > 0 ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : 'text-red-500 font-semibold'}>
-                            คลังนี้: {item.balance}
+                            In this location: {item.balance}
                           </span>
                         </>
                       )}
@@ -214,7 +214,7 @@ const WithdrawalCartPanel = ({
                     size="icon"
                     className="h-7 w-7 text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg shrink-0 cursor-pointer"
                     onClick={() => onRemoveFromCart(item.id)}
-                    title="ลบรายการนี้"
+                    title="Remove item"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </Button>
@@ -231,7 +231,7 @@ const WithdrawalCartPanel = ({
                         : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
-                    <span>{hasDetails ? 'แก้ไข S/N / Part No. (ระบุแล้ว)' : '+ ระบุ S/N / Part Number (ถ้ามี)'}</span>
+                    <span>{hasDetails ? 'Edit S/N / Part No. (Specified)' : '+ Specify S/N / Part Number (Optional)'}</span>
                     {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                   </button>
 
@@ -241,7 +241,7 @@ const WithdrawalCartPanel = ({
                         <label className="text-[10px] font-bold text-muted-foreground uppercase">Part Number</label>
                         <Input
                           className="h-8 text-xs rounded-lg bg-background"
-                          placeholder="เช่น PN-990-AB"
+                          placeholder="e.g. PN-990-AB"
                           value={item.part_number || ''}
                           onChange={(e) => onUpdateItemDetails(item.id, 'part_number', e.target.value)}
                         />
@@ -249,7 +249,7 @@ const WithdrawalCartPanel = ({
 
                       <div className="space-y-1">
                         <label className="text-[10px] font-bold text-muted-foreground uppercase">
-                          Serial Number (คั่นด้วยเครื่องหมายจุลภาค ,)
+                          Serial Number (comma separated ,)
                         </label>
                         <textarea
                           className="flex min-h-[48px] w-full rounded-lg border border-input bg-background px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-indigo-500 resize-none font-mono"
@@ -274,15 +274,15 @@ const WithdrawalCartPanel = ({
           <div className="flex items-center justify-between">
             <label className="text-xs font-bold text-foreground flex items-center gap-1">
               <FileText className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-              <span>วัตถุประสงค์การขอเบิก</span>
+              <span>Requisition Purpose</span>
             </label>
-            <span className="text-[10px] text-muted-foreground">กดแท็กด่วนด้านล่างได้</span>
+            <span className="text-[10px] text-muted-foreground">Quick tags below</span>
           </div>
 
           <Input
             value={purpose}
             onChange={(e) => setPurpose(e.target.value)}
-            placeholder="เช่น ใช้สำหรับซ่อมบำรุงสถานีฐาน..."
+            placeholder="e.g. Base station maintenance..."
             className="h-9 text-xs rounded-lg bg-background border-border focus:ring-2 focus:ring-indigo-500"
           />
 
@@ -306,16 +306,16 @@ const WithdrawalCartPanel = ({
           <div className="flex items-center justify-between">
             <label className="text-xs font-bold text-foreground flex items-center gap-1">
               <MapPin className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-              <span>สถานที่จัดส่ง / จุดส่งมอบ (Delivery Destination)</span>
+              <span>Delivery Destination</span>
             </label>
-            <span className="text-[10px] text-muted-foreground">เลือกแท็กหรือพิมพ์เองได้</span>
+            <span className="text-[10px] text-muted-foreground">Select tag or enter custom</span>
           </div>
 
           <div className="relative">
             <Input
               value={deliveryAddress}
               onChange={(e) => setDeliveryAddress(e.target.value)}
-              placeholder="เลือกจากแท็กด้านล่าง หรือพิมพ์สถานที่จัดส่ง / ชื่อผู้รับ..."
+              placeholder="Select from tags below or enter destination / recipient..."
               className="h-9 pr-7 text-xs rounded-lg bg-background border-border focus:ring-2 focus:ring-indigo-500"
             />
             {deliveryAddress && (
@@ -323,7 +323,7 @@ const WithdrawalCartPanel = ({
                 type="button"
                 onClick={() => setDeliveryAddress('')}
                 className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5 rounded cursor-pointer"
-                title="ล้างค่า"
+                title="Clear"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -361,11 +361,11 @@ const WithdrawalCartPanel = ({
           className="w-full h-10 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-xs flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
         >
           {isSubmitting ? (
-            <span>กำลังส่งคำขอเบิกจ่าย...</span>
+            <span>Submitting requisition request...</span>
           ) : (
             <>
               <Send className="w-4 h-4" />
-              <span>ส่งคำขอเบิกจ่าย ({totalUnits} ชิ้น)</span>
+              <span>Submit Requisition ({totalUnits} ชิ้น)</span>
             </>
           )}
         </Button>

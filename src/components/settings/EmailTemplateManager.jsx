@@ -23,9 +23,9 @@ const DEFAULT_BRANDING = {
 const DEFAULT_EVENTS_CONFIG = {
   withdrawal_submitted: {
     enabled: true,
-    title: '1. ส่งคำขอเบิกจ่ายใหม่ (Withdrawal Submitted)',
-    desc: 'แจ้งเตือนไปยังผู้อนุมัติและผู้ดูแลระบบเมื่อมีคำขอเบิกใหม่',
-    primary_recipient: 'ผู้อนุมัติ / ผู้ดูแลระบบ',
+    title: '1. Withdrawal Submitted',
+    desc: 'Notify approvers and administrators when a new withdrawal request is submitted',
+    primary_recipient: 'Approver / Administrator',
     subject: '[StockFlow] คำขอเบิก {{request_no}} รอการอนุมัติ — {{project_name}}',
     status_label: 'รออนุมัติ / คำขอเบิกใหม่',
     status_type: 'warning',
@@ -40,9 +40,9 @@ const DEFAULT_EVENTS_CONFIG = {
   },
   withdrawal_approved: {
     enabled: true,
-    title: '2. อนุมัติคำขอเบิกจ่าย (Withdrawal Approved)',
-    desc: 'แจ้งเตือนไปยังผู้ขอเบิกและเจ้าหน้าที่คลังเมื่อคำขอได้รับการอนุมัติ',
-    primary_recipient: 'ผู้ขอเบิก (Requester)',
+    title: '2. Withdrawal Approved',
+    desc: 'Notify requester and warehouse staff when a request is approved',
+    primary_recipient: 'Requester',
     subject: '[StockFlow] คำขอเบิก {{request_no}} ได้รับการอนุมัติแล้ว — {{project_name}}',
     status_label: 'อนุมัติแล้ว',
     status_type: 'approved',
@@ -57,9 +57,9 @@ const DEFAULT_EVENTS_CONFIG = {
   },
   withdrawal_rejected: {
     enabled: true,
-    title: '3. ปฏิเสธคำขอเบิกจ่าย (Withdrawal Rejected)',
-    desc: 'แจ้งเตือนไปยังผู้ขอเบิกเมื่อคำขอไม่ได้รับการอนุมัติพร้อมระบุเหตุผล',
-    primary_recipient: 'ผู้ขอเบิก (Requester)',
+    title: '3. Withdrawal Rejected',
+    desc: 'Notify requester when a request is rejected with reason',
+    primary_recipient: 'Requester',
     subject: '[StockFlow] คำขอเบิก {{request_no}} ไม่ได้รับการอนุมัติ — {{project_name}}',
     status_label: 'ไม่ได้รับการอนุมัติ',
     status_type: 'rejected',
@@ -74,9 +74,9 @@ const DEFAULT_EVENTS_CONFIG = {
   },
   withdrawal_completed: {
     enabled: true,
-    title: '4. ส่งมอบและรับวัสดุสำเร็จ (Withdrawal Completed)',
-    desc: 'แจ้งเตือนเมื่อการเบิกจ่ายเสร็จสิ้นและตัดสต็อกสมบูรณ์',
-    primary_recipient: 'ผู้เบิก / ผู้ดูแลระบบ',
+    title: '4. Withdrawal Completed',
+    desc: 'Notify when materials have been issued and stock is deducted',
+    primary_recipient: 'Requester / Administrator',
     subject: '[StockFlow] จ่ายวัสดุ {{request_no}} เรียบร้อยแล้ว',
     status_label: 'จ่ายวัสดุแล้ว',
     status_type: 'approved',
@@ -91,9 +91,9 @@ const DEFAULT_EVENTS_CONFIG = {
   },
   stock_in_created: {
     enabled: true,
-    title: '5. บันทึกรับวัสดุเข้า Stock (Stock In Recorded)',
-    desc: 'แจ้งเตือนเมื่อมีการบันทึกรับเข้าวัสดุล็อตใหม่ในโครงการ',
-    primary_recipient: 'ผู้ดูแลคลัง / ผู้ดูแลระบบ',
+    title: '5. Stock In Recorded',
+    desc: 'Notify when new material stock-in lot is recorded in a project',
+    primary_recipient: 'Warehouse Staff / Administrator',
     subject: '[StockFlow] รับเข้า Stock {{stock_in_no}} — {{project_name}}',
     status_label: 'รับเข้า Stock',
     status_type: 'info',
@@ -108,9 +108,9 @@ const DEFAULT_EVENTS_CONFIG = {
   },
   low_stock_alert: {
     enabled: true,
-    title: '6. แจ้งเตือนพัสดุถึงจุดสั่งซื้อ (Low Stock Alert)',
-    desc: 'แจ้งเตือนอัตโนมัติเมื่อจำนวนพัสดุในคลังลดลงถึงเกณฑ์สั่งซื้อเติมสต็อก',
-    primary_recipient: 'ผู้ดูแลคลัง / ผู้อนุมัติ',
+    title: '6. Low Stock Alert',
+    desc: 'Automatically notify when project material stock reaches reorder point',
+    primary_recipient: 'Warehouse Staff / Approver',
     subject: '[StockFlow] แจ้งเตือนรายการพัสดุถึงจุดสั่งซื้อ — {{item_name}} ({{project_name}})',
     status_label: 'ต้องเติมสต็อก',
     status_type: 'warning',
@@ -193,7 +193,7 @@ const EmailTemplateManager = ({
       enabled: true,
       title: selectedEventKey,
       desc: '',
-      primary_recipient: 'ผู้เกี่ยวข้อง',
+      primary_recipient: 'Stakeholders',
       subject: '',
       status_label: '',
       status_type: 'info',
@@ -227,14 +227,14 @@ const EmailTemplateManager = ({
         [selectedEventKey]: { ...defaultEvt }
       }));
       setIsDirty(true);
-      toast.success(`รีเซ็ตแม่แบบ "${defaultEvt.title}" เป็นค่าเริ่มต้นเรียบร้อยแล้ว`);
+      toast.success(`Reset template "${defaultEvt.title}" to default successfully`);
     }
   };
 
   const handleResetAllEvents = () => {
     setEvents({ ...DEFAULT_EVENTS_CONFIG });
     setIsDirty(true);
-    toast.success('รีเซ็ตแม่แบบอีเมลทั้งหมดเป็นค่าเริ่มต้นของระบบเรียบร้อยแล้ว');
+    toast.success('Reset all email templates to system defaults successfully');
   };
 
   const handleInsertVariable = (varCode) => {
@@ -250,25 +250,25 @@ const EmailTemplateManager = ({
   };
 
   const handleSaveAll = () => {
-    if (!canUpdate) return toast.error('คุณไม่มีสิทธิ์ในการบันทึกแม่แบบอีเมล');
+    if (!canUpdate) return toast.error('You do not have permission to save email templates');
     onSave({ branding, events });
     setIsDirty(false);
-    toast.success('บันทึกการตั้งค่าและแม่แบบอีเมลเรียบร้อยแล้ว');
+    toast.success('Saved email settings and templates successfully');
   };
 
   const handleSendTestEmail = async () => {
     const trimmedEmail = String(testRecipient || '').trim();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!trimmedEmail || !emailRegex.test(trimmedEmail)) {
-      return toast.error('กรุณาระบุรูปแบบอีเมลผู้รับทดสอบให้ถูกต้อง (เช่น name@domain.com)');
+      return toast.error('Please enter a valid test recipient email (e.g. name@domain.com)');
     }
 
     try {
       setSendingTest(true);
       await sendTestEmail(trimmedEmail, { ...selectedEvent, event_type: selectedEventKey });
-      toast.success(`ส่งอีเมลทดสอบไปยัง ${trimmedEmail} สำเร็จเรียบร้อยแล้ว`);
-          } catch (e) {
-      toast.error(e.message || 'เกิดข้อผิดพลาดในการส่งอีเมลทดสอบผ่านเซิร์ฟเวอร์ SMTP');
+      toast.success(`Test email sent to ${trimmedEmail} successfully`);
+    } catch (e) {
+      toast.error(e.message || 'An error occurred while sending test email via SMTP server');
     } finally {
       setSendingTest(false);
     }
@@ -303,24 +303,24 @@ const EmailTemplateManager = ({
           <div>
             <h3 className="text-sm font-bold flex items-center gap-2 text-foreground">
               <Sparkles className="w-4 h-4 text-primary" />
-              การตั้งค่าแบรนด์อีเมลธุรกรรม (Global Email Branding)
+              Global Email Branding
             </h3>
             <p className="text-xs text-muted-foreground mt-0.5">
-              กำหนดโลโก้ สีประจำแบรนด์ และที่อยู่เว็บไซต์หลักสำหรับอีเมลแจ้งเตือนทุกฉบับ
+              Configure logo, accent color, and public base URL for all email notifications
             </p>
           </div>
 
           {isDirty && (
             <span className="text-xs text-amber-600 font-semibold bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 rounded-full animate-pulse flex items-center gap-1 w-fit">
               <AlertCircle className="w-3.5 h-3.5" />
-              มีการเปลี่ยนแปลงที่ยังไม่ได้บันทึก
+              Unsaved changes
             </span>
           )}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
           <div>
-            <Label className="text-[11px] font-semibold">ชื่อระบบที่แสดง (Sender Display Name)</Label>
+            <Label className="text-[11px] font-semibold">Sender Display Name</Label>
             <Input
               disabled={!canUpdate}
               value={branding.app_name}
@@ -331,7 +331,7 @@ const EmailTemplateManager = ({
           </div>
 
           <div>
-            <Label className="text-[11px] font-semibold">URL โลโก้องค์กร (Logo Image URL)</Label>
+            <Label className="text-[11px] font-semibold">Logo Image URL</Label>
             <Input
               disabled={!canUpdate}
               value={branding.logo_url}
@@ -342,7 +342,7 @@ const EmailTemplateManager = ({
           </div>
 
           <div>
-            <Label className="text-[11px] font-semibold">URL หน้าเว็บหลัก (Public Base URL)</Label>
+            <Label className="text-[11px] font-semibold">Public Base URL</Label>
             <Input
               disabled={!canUpdate}
               value={branding.public_base_url}
@@ -353,7 +353,7 @@ const EmailTemplateManager = ({
           </div>
 
           <div>
-            <Label className="text-[11px] font-semibold">สีประจำแบรนด์ (Accent Color)</Label>
+            <Label className="text-[11px] font-semibold">Accent Color</Label>
             <div className="flex items-center gap-2 mt-1">
               <input
                 type="color"
@@ -380,21 +380,21 @@ const EmailTemplateManager = ({
         <div className="lg:col-span-4 space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <h4 className="text-xs font-bold text-foreground">เหตุการณ์แจ้งเตือน ({filteredEventKeys.length})</h4>
+              <h4 className="text-xs font-bold text-foreground">Notification Events ({filteredEventKeys.length})</h4>
               <button
                 type="button"
                 disabled={!canUpdate}
                 onClick={handleResetAllEvents}
                 className="text-[10px] text-primary hover:underline font-medium cursor-pointer"
-                title="คืนค่าแม่แบบทั้งหมดเป็นค่าเริ่มต้น"
+                title="Reset all templates to default"
               >
-                รีเซ็ตทั้งหมด
+                Reset All
               </button>
             </div>
             <div className="relative w-36">
               <Search className="w-3 h-3 absolute left-2 top-2.5 text-muted-foreground" />
               <Input
-                placeholder="ค้นหาแม่แบบ..."
+                placeholder="Search templates..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="text-[11px] h-8 pl-7 rounded-lg bg-background border border-input"
@@ -425,7 +425,7 @@ const EmailTemplateManager = ({
                         ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30' 
                         : 'bg-muted text-muted-foreground border-border'
                     }`}>
-                      {evt.enabled ? 'เปิดใช้งาน' : 'ปิดอยู่'}
+                      {evt.enabled ? 'Enabled' : 'Disabled'}
                     </span>
                   </div>
 
@@ -436,10 +436,10 @@ const EmailTemplateManager = ({
                   <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-2 border-t border-border/40">
                     <span className="flex items-center gap-1">
                       <Users className="w-3 h-3 text-primary" />
-                      หลัก: {evt.primary_recipient}
+                      Primary: {evt.primary_recipient}
                     </span>
                     <span className="bg-muted/80 px-1.5 py-0.5 rounded text-[10px]">
-                      +{evt.roles?.length || 0} บทบาท
+                      +{evt.roles?.length || 0} {evt.roles?.length === 1 ? 'role' : 'roles'}
                     </span>
                   </div>
                 </div>
@@ -469,14 +469,14 @@ const EmailTemplateManager = ({
                   disabled={!canUpdate}
                   onClick={handleResetCurrentEvent}
                   className="text-xs h-8 px-2.5 flex items-center gap-1 text-muted-foreground hover:text-foreground border-border/60"
-                  title="คืนค่าแม่แบบนี้เป็นค่าเริ่มต้นของระบบ"
+                  title="Reset this template to system default"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
-                  คืนค่าเริ่มต้น
+                  Reset to Default
                 </Button>
 
                 <div className="flex items-center gap-2 bg-background p-1.5 rounded-xl border border-border/50">
-                  <span className="text-xs font-medium text-muted-foreground">สถานะ:</span>
+                  <span className="text-xs font-medium text-muted-foreground">Status:</span>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
                       type="checkbox"
@@ -488,7 +488,7 @@ const EmailTemplateManager = ({
                     <div className="w-9 h-5 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
                   </label>
                   <span className={`text-xs font-bold ${selectedEvent.enabled ? 'text-emerald-600' : 'text-muted-foreground'}`}>
-                    {selectedEvent.enabled ? 'เปิดใช้งาน' : 'ปิด'}
+                    {selectedEvent.enabled ? 'Enabled' : 'Disabled'}
                   </span>
                 </div>
               </div>
@@ -505,7 +505,7 @@ const EmailTemplateManager = ({
                 }`}
               >
                 <Code className="w-3.5 h-3.5" />
-                <span>ตั้งค่าเนื้อหา (Content)</span>
+                <span>Content</span>
               </button>
 
               <button
@@ -517,7 +517,7 @@ const EmailTemplateManager = ({
                 }`}
               >
                 <Users className="w-3.5 h-3.5" />
-                <span>ผู้รับ & บทบาท (Recipients)</span>
+                <span>Recipients</span>
               </button>
 
               <button
@@ -529,7 +529,7 @@ const EmailTemplateManager = ({
                 }`}
               >
                 <Monitor className="w-3.5 h-3.5" />
-                <span>ตัวอย่างพรีวิว (Live Preview)</span>
+                <span>Live Preview</span>
               </button>
 
               <button
@@ -541,7 +541,7 @@ const EmailTemplateManager = ({
                 }`}
               >
                 <Send className="w-3.5 h-3.5 text-blue-500" />
-                <span>ทดสอบส่งอีเมล (Test)</span>
+                <span>Test</span>
               </button>
             </div>
 
@@ -552,8 +552,8 @@ const EmailTemplateManager = ({
                   {/* Subject Line & Dynamic Variable Chips */}
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="tpl_subject" className="font-semibold text-xs">หัวข้ออีเมล (Subject Line)</Label>
-                      <span className="text-[10px] text-muted-foreground">คลิกตัวแปรเพื่อแทรกในหัวข้อ</span>
+                      <Label htmlFor="tpl_subject" className="font-semibold text-xs">Subject Line</Label>
+                      <span className="text-[10px] text-muted-foreground">Click variable chips to insert into subject</span>
                     </div>
 
                     <Input
@@ -585,7 +585,7 @@ const EmailTemplateManager = ({
                   {/* Status Badge & Heading */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
-                      <Label className="font-semibold text-xs">ข้อความบนป้ายสถานะ (Badge Label)</Label>
+                      <Label className="font-semibold text-xs">Badge Label</Label>
                       <Input
                         disabled={!canUpdate}
                         value={selectedEvent.status_label}
@@ -595,22 +595,22 @@ const EmailTemplateManager = ({
                     </div>
 
                     <div>
-                      <Label className="font-semibold text-xs">โทนสีสถานะ (Badge Color Theme)</Label>
+                      <Label className="font-semibold text-xs">Badge Color Theme</Label>
                       <select
                         disabled={!canUpdate}
                         value={selectedEvent.status_type}
                         onChange={(e) => handleUpdateSelectedEvent('status_type', e.target.value)}
                         className="w-full mt-1 h-9 rounded-lg border border-input bg-background px-3 py-1 text-xs shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
                       >
-                        <option value="warning">สีส้ม / รอดำเนินการ (Amber/Warning)</option>
-                        <option value="approved">สีเขียว / สำเร็จ (Emerald/Approved)</option>
-                        <option value="rejected">สีแดง / ไม่อนุมัติ (Rose/Rejected)</option>
-                        <option value="info">สีน้ำเงิน / ข้อมูล (Blue/Info)</option>
+                        <option value="warning">Amber / Pending (Warning)</option>
+                        <option value="approved">Emerald / Approved (Success)</option>
+                        <option value="rejected">Rose / Rejected (Error)</option>
+                        <option value="info">Blue / Info</option>
                       </select>
                     </div>
 
                     <div>
-                      <Label className="font-semibold text-xs">หัวข้อหลักของเนื้อหา (Heading)</Label>
+                      <Label className="font-semibold text-xs">Heading</Label>
                       <Input
                         disabled={!canUpdate}
                         value={selectedEvent.heading}
@@ -622,7 +622,7 @@ const EmailTemplateManager = ({
 
                   {/* Intro Message */}
                   <div>
-                    <Label className="font-semibold text-xs">ข้อความเกริ่นนำ (Intro Message)</Label>
+                    <Label className="font-semibold text-xs">Intro Message</Label>
                     <textarea
                       disabled={!canUpdate}
                       rows={2}
@@ -635,7 +635,7 @@ const EmailTemplateManager = ({
                   {/* CTA Button Label & Link */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <Label className="font-semibold text-xs">ข้อความบนปุ่มหลัก (CTA Label)</Label>
+                      <Label className="font-semibold text-xs">CTA Button Label</Label>
                       <Input
                         disabled={!canUpdate}
                         value={selectedEvent.cta_label}
@@ -645,7 +645,7 @@ const EmailTemplateManager = ({
                     </div>
 
                     <div>
-                      <Label className="font-semibold text-xs">ลิงก์ปลายทางของปุ่ม (CTA Target URL)</Label>
+                      <Label className="font-semibold text-xs">CTA Target URL</Label>
                       <Input
                         disabled={!canUpdate}
                         value={selectedEvent.cta_url}
@@ -657,7 +657,7 @@ const EmailTemplateManager = ({
 
                   {/* Footer Note */}
                   <div>
-                    <Label className="font-semibold text-xs">ข้อความหมายเหตุด้านล่าง (Footer Note)</Label>
+                    <Label className="font-semibold text-xs">Footer Note</Label>
                     <Input
                       disabled={!canUpdate}
                       value={selectedEvent.footer_note}
@@ -674,16 +674,16 @@ const EmailTemplateManager = ({
                   <div className="p-3.5 rounded-xl bg-primary/5 border border-primary/20 space-y-1">
                     <span className="font-bold text-foreground flex items-center gap-1.5">
                       <ShieldCheck className="w-4 h-4 text-primary" />
-                      ผู้รับอีเมลหลักตามบทบาท (Primary Target)
+                      Primary Recipient by Role
                     </span>
                     <p className="text-muted-foreground text-[11px]">
-                      ระบบจะส่งไปยัง <strong className="text-foreground">{selectedEvent.primary_recipient}</strong> ที่เกี่ยวข้องกับรายการโดยอัตโนมัติ
+                      The system will automatically send to <strong className="text-foreground">{selectedEvent.primary_recipient}</strong> associated with the request.
                     </p>
                   </div>
 
                   {/* Additional Role Checkboxes */}
                   <div className="space-y-2">
-                    <Label className="font-semibold text-xs">ส่งสำเนาแจ้งเตือนไปยังกลุ่มบทบาทเพิ่มเติม (CC by Roles):</Label>
+                    <Label className="font-semibold text-xs">CC Additional Roles:</Label>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                       {roles.map(r => {
                         const isChecked = (selectedEvent.roles || []).includes(r.code);
@@ -712,7 +712,7 @@ const EmailTemplateManager = ({
                   {/* Extra To / CC Emails */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                     <div>
-                      <Label className="font-semibold text-xs">อีเมลรับเพิ่มโดยตรง (To Extra)</Label>
+                      <Label className="font-semibold text-xs">Direct Extra Recipients (To)</Label>
                       <Input
                         disabled={!canUpdate}
                         placeholder="extra1@company.com, extra2@company.com"
@@ -720,11 +720,11 @@ const EmailTemplateManager = ({
                         onChange={(e) => handleUpdateSelectedEvent('to_extra', e.target.value)}
                         className="mt-1 h-9 text-xs rounded-lg bg-background border border-input font-mono"
                       />
-                      <span className="text-[10px] text-muted-foreground mt-0.5 block">คั่นหลายอีเมลด้วยเครื่องหมายจุลภาค (,)</span>
+                      <span className="text-[10px] text-muted-foreground mt-0.5 block">Separate multiple email addresses with commas (,)</span>
                     </div>
 
                     <div>
-                      <Label className="font-semibold text-xs">อีเมลสำเนาเพิ่มโดยตรง (CC Extra)</Label>
+                      <Label className="font-semibold text-xs">Direct Extra CC Recipients</Label>
                       <Input
                         disabled={!canUpdate}
                         placeholder="manager@company.com, audit@company.com"
@@ -732,7 +732,7 @@ const EmailTemplateManager = ({
                         onChange={(e) => handleUpdateSelectedEvent('cc_extra', e.target.value)}
                         className="mt-1 h-9 text-xs rounded-lg bg-background border border-input font-mono"
                       />
-                      <span className="text-[10px] text-muted-foreground mt-0.5 block">คั่นหลายอีเมลด้วยเครื่องหมายจุลภาค (,)</span>
+                      <span className="text-[10px] text-muted-foreground mt-0.5 block">Separate multiple email addresses with commas (,)</span>
                     </div>
                   </div>
                 </div>
@@ -745,7 +745,7 @@ const EmailTemplateManager = ({
                   <div className="flex items-center justify-between bg-muted/40 p-2 rounded-lg border border-border/40">
                     <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                       <Monitor className="w-3.5 h-3.5 text-primary" />
-                      ตัวอย่างการแสดงผลอีเมลจริง (Live HTML Renderer)
+                      Live HTML Renderer Preview
                     </span>
 
                     <div className="flex items-center gap-1 bg-muted p-0.5 rounded-lg border border-border/50">
@@ -793,15 +793,15 @@ const EmailTemplateManager = ({
                 <div className="space-y-4 text-xs max-w-md mx-auto py-4">
                   <div className="p-4 rounded-xl bg-blue-500/5 border border-blue-500/20 text-center space-y-2">
                     <Send className="w-8 h-8 text-blue-600 mx-auto" />
-                    <h4 className="font-bold text-sm text-foreground">ทดสอบส่งอีเมลแม่แบบนี้ (Send Test Email)</h4>
+                    <h4 className="font-bold text-sm text-foreground">Send Test Email</h4>
                     <p className="text-xs text-muted-foreground">
-                      ส่งอีเมลทดสอบด้วย HTML Renderer การเรนเดอร์ และข้อมูลตัวอย่างจริงไปยังอีเมลที่คุณระบุ
+                      Send a test email rendered with current branding and sample data to your email address.
                     </p>
                   </div>
 
                   <div className="space-y-3">
                     <div>
-                      <Label className="font-semibold text-xs">ระบุอีเมลผู้รับทดสอบ *</Label>
+                      <Label className="font-semibold text-xs">Test Recipient Email *</Label>
                       <Input
                         type="email"
                         required
@@ -819,7 +819,7 @@ const EmailTemplateManager = ({
                       className="w-full h-9 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-xs"
                     >
                       <Send className="w-4 h-4" />
-                      {sendingTest ? 'กำลังส่งอีเมลทดสอบ...' : 'ส่งอีเมลทดสอบทันที'}
+                      {sendingTest ? 'Sending test email...' : 'Send Test Email'}
                     </Button>
                   </div>
                 </div>
@@ -829,7 +829,7 @@ const EmailTemplateManager = ({
               {canUpdate && (
                 <div className="flex justify-between items-center pt-4 border-t border-border/40">
                   <span className="text-[11px] text-muted-foreground">
-                    * การบันทึกจะมีผลบังคับใช้กับระบบส่งแจ้งเตือนอีเมลทันที
+                    * Saved changes take effect immediately for outgoing notification emails
                   </span>
                   <Button
                     type="button"
@@ -837,7 +837,7 @@ const EmailTemplateManager = ({
                     className="h-9 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground flex items-center gap-2 text-xs font-semibold cursor-pointer shadow-xs"
                   >
                     <Save className="w-4 h-4" />
-                    บันทึกการตั้งค่าและแม่แบบอีเมล
+                    Save Settings & Templates
                   </Button>
                 </div>
               )}

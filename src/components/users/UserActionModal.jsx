@@ -66,7 +66,7 @@ const UserActionModal = ({
         if (activeAdmins.length <= 1) {
           setIntegrityBlock({
             isBlocked: true,
-            reason: 'ไม่สามารถลบหรือปิดใช้งานบัญชี Administrator คนสุดท้ายของระบบได้',
+            reason: 'Cannot delete or disable the last Administrator account in the system',
           });
           setCheckingIntegrity(false);
           return;
@@ -82,7 +82,7 @@ const UserActionModal = ({
       if (!txErr && txCount && txCount > 0) {
         setIntegrityBlock({
           isBlocked: true,
-          reason: `พบบันทึกธุรกรรมสต็อกย้อนหลังจำนวน ${txCount} รายการที่เชื่อมโยงกับผู้ใช้นี้`,
+          reason: `Found ${txCount} historical stock ${txCount === 1 ? 'transaction' : 'transactions'} linked to this user`,
         });
         setCheckingIntegrity(false);
         return;
@@ -97,7 +97,7 @@ const UserActionModal = ({
       if (!wdErr && withdrawalCount && withdrawalCount > 0) {
         setIntegrityBlock({
           isBlocked: true,
-          reason: `พบบันทึกการเบิกสินค้าในระบบจำนวน ${withdrawalCount} รายการที่เชื่อมโยงกับผู้ใช้นี้`,
+          reason: `Found ${withdrawalCount} material withdrawal ${withdrawalCount === 1 ? 'request' : 'requests'} linked to this user`,
         });
         setCheckingIntegrity(false);
         return;
@@ -112,7 +112,7 @@ const UserActionModal = ({
       if (!siErr && stockInCount && stockInCount > 0) {
         setIntegrityBlock({
           isBlocked: true,
-          reason: `พบบันทึกการรับเข้าสต็อกจำนวน ${stockInCount} รายการที่เชื่อมโยงกับผู้ใช้นี้`,
+          reason: `Found ${stockInCount} stock-in ${stockInCount === 1 ? 'order' : 'orders'} linked to this user`,
         });
         setCheckingIntegrity(false);
         return;
@@ -183,12 +183,12 @@ const UserActionModal = ({
           <DialogHeader>
             <DialogTitle className="text-xl font-bold flex items-center gap-2.5 text-foreground">
               <ShieldAlert className="w-5 h-5 text-amber-500 shrink-0" />
-              จัดการสิทธิ์และบัญชีผู้ใช้งาน (User Security Action)
+              User Security Actions
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground mt-1">
               {step === 1
-                ? 'เลือกระดับการดำเนินการเพื่อความปลอดภัยของข้อมูลระบบ'
-                : 'กรุณายืนยันการลบบัญชีผู้ใช้ถาวร (ถอนการติดตั้งบัญชีออกจากระบบ)'}
+                ? 'Choose security action for this user account'
+                : 'Please confirm permanent deletion of this user account'}
             </DialogDescription>
           </DialogHeader>
         </div>
@@ -268,13 +268,13 @@ const UserActionModal = ({
                   <div>
                     <h4 className="text-sm font-bold text-amber-900 dark:text-amber-200">
                       {isActive
-                        ? 'ระงับการใช้งานบัญชี (Suspend Access)'
-                        : 'คืนสิทธิ์การใช้งานบัญชี (Reactivate Account)'}
+                        ? 'Suspend Account'
+                        : 'Reactivate Account'}
                     </h4>
                     <p className="text-xs text-amber-800/80 dark:text-amber-300/80 mt-1 leading-relaxed">
                       {isActive
-                        ? 'ระงับสิทธิ์การเข้าสู่ระบบชั่วคราว ข้อมูลประวัติการเบิก-รับสินค้าย้อนหลังทั้งหมดจะยังคงอยู่และถูกรักษาไว้อย่างปลอดภัย สามารถเปิดใช้งานใหม่ได้ตลอดเวลา'
-                        : 'เปิดให้บัญชีนี้สามารถเข้าสู่ระบบและทำรายการในคลังสินค้าได้ตามปกติ'}
+                        ? 'Temporarily revoke sign-in access. All transaction history will be safely preserved and can be reactivated at any time.'
+                        : 'Allow this user account to sign in and perform inventory operations normally.'}
                     </p>
                   </div>
                 </div>
@@ -293,17 +293,17 @@ const UserActionModal = ({
                     {isSuspending ? (
                       <span className="flex items-center gap-2">
                         <RefreshCw className="w-4 h-4 animate-spin" />
-                        กำลังดำเนินการ...
+                        Processing...
                       </span>
                     ) : isActive ? (
                       <span className="flex items-center gap-2">
                         <UserX className="w-4 h-4" />
-                        ระงับการใช้งาน (Suspend)
+                        Suspend Account
                       </span>
                     ) : (
                       <span className="flex items-center gap-2">
                         <UserCheck className="w-4 h-4" />
-                        เปิดใช้งานอีกครั้ง (Reactivate)
+                        Reactivate Account
                       </span>
                     )}
                   </Button>
@@ -318,10 +318,10 @@ const UserActionModal = ({
                   </div>
                   <div className="space-y-1">
                     <h4 className="text-sm font-bold text-red-700 dark:text-red-300">
-                      พื้นที่อันตราย (Danger Zone — Permanent Delete)
+                      Danger Zone (Permanent Delete)
                     </h4>
                     <p className="text-xs text-muted-foreground leading-relaxed">
-                      การลบบัญชีเป็นกระบวนการถาวรที่ไม่สามารถกู้คืนได้ บัญชี Auth และโปรไฟล์จะถูกลบออกจากฐานข้อมูล
+                      Permanent deletion cannot be undone. The Auth account and profile will be deleted from the database.
                     </p>
                   </div>
                 </div>
@@ -330,17 +330,17 @@ const UserActionModal = ({
                 {checkingIntegrity ? (
                   <div className="p-3 rounded-lg bg-muted/40 text-xs text-muted-foreground flex items-center gap-2">
                     <RefreshCw className="w-3.5 h-3.5 animate-spin text-primary" />
-                    กำลังตรวจสอบประวัติธุรกรรมและความถูกต้องของข้อมูล...
+                    Checking transaction history and data integrity...
                   </div>
                 ) : integrityBlock.isBlocked ? (
                   /* Blocked Notice */
                   <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-700 dark:text-red-300 text-xs space-y-1.5">
                     <div className="font-bold flex items-center gap-1.5">
                       <AlertTriangle className="w-4 h-4 shrink-0 text-red-600 dark:text-red-400" />
-                      ไม่อนุญาตให้ลบบัญชีนี้แบบถาวร (Hard Delete Blocked)
+                      Permanent Deletion Blocked
                     </div>
                     <p className="text-[11px] leading-relaxed opacity-90">
-                      {integrityBlock.reason} เพื่อรักษาความถูกต้องของข้อมูล audit log และประวัติคลังสินค้า แนะนำให้ใช้การ <strong className="underline">&quot;ระงับการใช้งาน (Suspend)&quot;</strong> แทน
+                      {integrityBlock.reason}. To maintain audit trail and inventory history, please use <strong className="underline">&quot;Suspend Account&quot;</strong> instead.
                     </p>
                   </div>
                 ) : (
@@ -354,7 +354,7 @@ const UserActionModal = ({
                       className="min-h-[44px] px-4 rounded-xl font-semibold text-xs border-red-500/40 text-red-600 hover:bg-red-500/10 hover:text-red-700 dark:hover:bg-red-950/40 w-full sm:w-auto"
                     >
                       <Trash2 className="w-4 h-4 mr-2" />
-                      เริ่มขั้นตอนลบบัญชีถาวร...
+                      Proceed to Delete...
                     </Button>
                   </div>
                 )}
@@ -368,23 +368,23 @@ const UserActionModal = ({
               <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/40 space-y-2">
                 <div className="flex items-center gap-2 font-bold text-red-700 dark:text-red-300 text-sm">
                   <AlertCircle className="w-5 h-5 shrink-0 text-red-600 dark:text-red-400" />
-                  คำเตือน: การดำเนินการนี้ไม่สามารถยกเลิกได้
+                  Warning: This action cannot be undone.
                 </div>
                 <p className="text-xs text-red-800/90 dark:text-red-200/90 leading-relaxed">
-                  คุณกำลังจะลบบัญชีผู้ใช้ <strong>{user.full_name}</strong> ออกจากระบบอย่างสมบูรณ์
+                  You are about to permanently delete user <strong>{user.full_name}</strong> from the system.
                 </p>
               </div>
 
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-foreground block">
-                  กรุณาพิมพ์ <code className="bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-300 font-mono px-1.5 py-0.5 rounded border border-red-300 dark:border-red-800">{user.email}</code> หรือคำว่า <code className="bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-300 font-mono px-1.5 py-0.5 rounded border border-red-300 dark:border-red-800">DELETE</code> เพื่อยืนยัน:
+                  Please type <code className="bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-300 font-mono px-1.5 py-0.5 rounded border border-red-300 dark:border-red-800">{user.email}</code> or <code className="bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-300 font-mono px-1.5 py-0.5 rounded border border-red-300 dark:border-red-800">DELETE</code> to confirm:
                 </label>
                 <div className="relative">
                   <Input
                     type="text"
                     value={confirmInput}
                     onChange={(e) => setConfirmInput(e.target.value)}
-                    placeholder={`พิมพ์ ${user.email} หรือ DELETE`}
+                    placeholder={`Type ${user.email} or DELETE`}
                     className={`h-10 text-sm pr-9 rounded-lg bg-background border ${
                       confirmInput.length > 0
                         ? isConfirmMatched
@@ -415,7 +415,7 @@ const UserActionModal = ({
                 className="h-10 text-xs font-semibold cursor-pointer"
               >
                 <ArrowLeft className="w-4 h-4 mr-1.5" />
-                ย้อนกลับ
+                Back
               </Button>
 
               <Button
@@ -428,12 +428,12 @@ const UserActionModal = ({
                 {isDeleting ? (
                   <span className="flex items-center gap-2">
                     <RefreshCw className="w-4 h-4 animate-spin" />
-                    กำลังลบบัญชี...
+                    Deleting account...
                   </span>
                 ) : (
                   <span className="flex items-center gap-2">
                     <Trash2 className="w-4 h-4" />
-                    ยืนยันลบบัญชีถาวร
+                    Confirm Permanent Delete
                   </span>
                 )}
               </Button>
@@ -445,7 +445,7 @@ const UserActionModal = ({
               onClick={onClose}
               className="h-9 px-4 rounded-lg text-xs font-semibold ml-auto w-full sm:w-auto cursor-pointer"
             >
-              ปิดหน้าต่าง (Cancel)
+              Cancel
             </Button>
           )}
         </div>

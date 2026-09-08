@@ -32,7 +32,7 @@ const ReportKpiGrid = ({ activeTab, reportData = [], projects = [], selectedProj
     }
 
     const selectedProject = projects.find(p => p.id === selectedProjectId);
-    const projectName = selectedProject ? selectedProject.name : 'ทุกโครงการ';
+    const projectName = selectedProject ? selectedProject.name : 'All Projects';
 
     return {
       totalItems,
@@ -48,10 +48,10 @@ const ReportKpiGrid = ({ activeTab, reportData = [], projects = [], selectedProj
   const cards = [
     {
       id: 'total_records',
-      title: 'รายการทั้งหมดในรายงาน',
-      value: metrics.totalItems.toLocaleString('th-TH'),
-      unit: 'รายการ',
-      subtext: `ขอบเขต: ${metrics.projectName}`,
+      title: 'Total Report Records',
+      value: metrics.totalItems.toLocaleString(),
+      unit: metrics.totalItems === 1 ? 'record' : 'records',
+      subtext: `Scope: ${metrics.projectName}`,
       icon: Package,
       iconBg: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
       badge: 'Filtered',
@@ -59,10 +59,10 @@ const ReportKpiGrid = ({ activeTab, reportData = [], projects = [], selectedProj
     },
     {
       id: 'stock_in',
-      title: 'ปริมาณรับเข้ารวม (Stock In)',
-      value: activeTab === 'withdrawals' ? '-' : metrics.stockInTotal.toLocaleString('th-TH'),
-      unit: 'หน่วย',
-      subtext: activeTab === 'stock_in' ? 'รวมตามเงื่อนไขตัวกรอง' : 'ยอดรับเข้าสะสม',
+      title: 'Total Stock-In Qty',
+      value: activeTab === 'withdrawals' ? '-' : metrics.stockInTotal.toLocaleString(),
+      unit: activeTab === 'withdrawals' ? '' : (metrics.stockInTotal === 1 ? 'unit' : 'units'),
+      subtext: activeTab === 'stock_in' ? 'Filtered total' : 'Cumulative stock-in',
       icon: ArrowDownToLine,
       iconBg: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
       badge: activeTab === 'stock_in' ? '+Receiving' : 'Total In',
@@ -70,10 +70,10 @@ const ReportKpiGrid = ({ activeTab, reportData = [], projects = [], selectedProj
     },
     {
       id: 'stock_out',
-      title: 'ปริมาณเบิกจ่ายรวม (Stock Out)',
-      value: activeTab === 'stock_in' ? '-' : metrics.stockOutTotal.toLocaleString('th-TH'),
-      unit: 'หน่วย',
-      subtext: activeTab === 'withdrawals' ? 'ยอดตัดสต็อกจริง' : 'ยอดเบิกจ่ายสะสม',
+      title: 'Total Stock-Out Qty',
+      value: activeTab === 'stock_in' ? '-' : metrics.stockOutTotal.toLocaleString(),
+      unit: activeTab === 'stock_in' ? '' : (metrics.stockOutTotal === 1 ? 'unit' : 'units'),
+      subtext: activeTab === 'withdrawals' ? 'Actual stock deducted' : 'Cumulative dispatched',
       icon: ArrowUpFromLine,
       iconBg: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
       badge: activeTab === 'withdrawals' ? '-Dispatched' : 'Total Out',
@@ -81,10 +81,10 @@ const ReportKpiGrid = ({ activeTab, reportData = [], projects = [], selectedProj
     },
     {
       id: 'balance',
-      title: 'คงเหลือสุทธิ (Current Balance)',
-      value: activeTab === 'balance' ? metrics.balanceTotal.toLocaleString('th-TH') : 'ดูที่แท็บคงเหลือ',
-      unit: activeTab === 'balance' ? 'หน่วย' : '',
-      subtext: activeTab === 'balance' ? 'ยอดคงเหลือพร้อมใช้งาน' : 'เลือกแท็บ 3 เพื่อดูรายละเอียด',
+      title: 'Current Balance',
+      value: activeTab === 'balance' ? metrics.balanceTotal.toLocaleString() : 'See Balance tab',
+      unit: activeTab === 'balance' ? (metrics.balanceTotal === 1 ? 'unit' : 'units') : '',
+      subtext: activeTab === 'balance' ? 'Available inventory' : 'Select Tab 3 for details',
       icon: Layers,
       iconBg: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20',
       badge: 'Balance',
@@ -92,10 +92,10 @@ const ReportKpiGrid = ({ activeTab, reportData = [], projects = [], selectedProj
     },
     {
       id: 'shortage',
-      title: activeTab === 'withdrawals' ? 'รายการของไม่ครบ (Shortages)' : 'รายการต้องเฝ้าระวัง',
-      value: (activeTab === 'withdrawals' ? metrics.shortageCount : metrics.shortageCount).toLocaleString('th-TH'),
-      unit: 'รายการ',
-      subtext: activeTab === 'withdrawals' ? `รออนุมัติ: ${metrics.pendingCount} รายการ` : 'สินค้าคลังต่ำหรือเป็น 0',
+      title: activeTab === 'withdrawals' ? 'Shortages' : 'Low Stock Warnings',
+      value: metrics.shortageCount.toLocaleString(),
+      unit: metrics.shortageCount === 1 ? 'record' : 'records',
+      subtext: activeTab === 'withdrawals' ? `Pending: ${metrics.pendingCount} ${metrics.pendingCount === 1 ? 'record' : 'records'}` : 'Items zero or low stock',
       icon: AlertTriangle,
       iconBg: metrics.shortageCount > 0 ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20' : 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20',
       badge: metrics.shortageCount > 0 ? 'Attention' : 'Normal',
@@ -103,10 +103,10 @@ const ReportKpiGrid = ({ activeTab, reportData = [], projects = [], selectedProj
     },
     {
       id: 'scope',
-      title: 'โครงการที่กำลังดูข้อมูล',
+      title: 'Selected Project',
       value: metrics.projectName,
       unit: '',
-      subtext: `${projects.length} โครงการทั้งหมดในระบบ`,
+      subtext: `${projects.length} ${projects.length === 1 ? 'total project' : 'total projects'} in system`,
       icon: FolderKanban,
       iconBg: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20',
       badge: 'Project',

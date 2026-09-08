@@ -26,7 +26,7 @@ const AddRoleModal = ({ isOpen, onClose, onSave }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.code || !formData.name) {
-      toast.error('กรุณาระบุรหัสบทบาท (Role Code) และชื่อบทบาท (Role Name)');
+      toast.error('Please enter Role Code and Role Name');
       return;
     }
 
@@ -64,35 +64,35 @@ const AddRoleModal = ({ isOpen, onClose, onSave }) => {
         <DialogHeader>
           <DialogTitle className="text-xl font-bold flex items-center gap-2">
             <Shield className="w-5 h-5 text-primary" />
-            + เพิ่มบทบาทใหม่ (Add Custom Role)
+            Add Custom Role
           </DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
-            สร้างบทบาทใหม่ในระบบเพื่อกำหนดชุดสิทธิ์การใช้งาน (RBAC) ให้แก่ผู้ใช้งาน
+            Create a new role in the system to configure RBAC permissions for users
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="role_code" className="text-sm font-medium">รหัสบทบาท (Role Code) *</Label>
+            <Label htmlFor="role_code" className="text-sm font-medium">Role Code *</Label>
             <Input
               id="role_code"
               required
-              placeholder="เช่น WAREHOUSE_MANAGER, SITE_ENGINEER"
+              placeholder="e.g. WAREHOUSE_MANAGER, SITE_ENGINEER"
               value={formData.code}
               onChange={handleCodeChange}
               className="mt-1 h-9 text-xs rounded-lg bg-background border border-input font-mono uppercase focus-visible:ring-1 focus-visible:ring-primary"
             />
             <p className="text-[11px] text-muted-foreground mt-1">
-              * ต้องเป็นตัวอักษรภาษาอังกฤษตัวพิมพ์ใหญ่ ตัวเลข และตัวอักขระพิเศษ <code className="bg-muted px-1 rounded">_</code> เท่านั้น (ห้ามมีเว้นวรรค)
+              * Must contain uppercase letters, numbers, and underscore <code className="bg-muted px-1 rounded">_</code> only (no spaces)
             </p>
           </div>
 
           <div>
-            <Label htmlFor="role_name" className="text-sm font-medium">ชื่อบทบาท (Role Name) *</Label>
+            <Label htmlFor="role_name" className="text-sm font-medium">Role Name *</Label>
             <Input
               id="role_name"
               required
-              placeholder="เช่น ผู้จัดการคลังสินค้า, วิศวกรคุมงาน"
+              placeholder="e.g. Warehouse Manager, Site Engineer"
               value={formData.name}
               onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
               className="mt-1 h-9 text-xs rounded-lg bg-background border border-input focus-visible:ring-1 focus-visible:ring-primary"
@@ -100,10 +100,10 @@ const AddRoleModal = ({ isOpen, onClose, onSave }) => {
           </div>
 
           <div>
-            <Label htmlFor="role_desc" className="text-sm font-medium">คำอธิบายรายละเอียด (Description)</Label>
+            <Label htmlFor="role_desc" className="text-sm font-medium">Description</Label>
             <Input
               id="role_desc"
-              placeholder="อธิบายขอบเขตงานและความรับผิดชอบของบทบาทนี้"
+              placeholder="Describe the scope of work and responsibilities for this role"
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
               className="mt-1 h-9 text-xs rounded-lg bg-background border border-input focus-visible:ring-1 focus-visible:ring-primary"
@@ -113,10 +113,10 @@ const AddRoleModal = ({ isOpen, onClose, onSave }) => {
           {/* Color Palette Selector & Live Badge Preview */}
           <div className="p-3.5 rounded-lg bg-muted/30 border border-border/50 space-y-3">
             <div className="flex items-center justify-between">
-              <Label className="text-sm font-medium">เลือกธีมสีป้าย (Badge Theme)</Label>
+              <Label className="text-sm font-medium">Badge Theme</Label>
               <div className="flex items-center gap-1.5 text-xs">
                 <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                <span>ตัวอย่างสด:</span>
+                <span>Live Preview:</span>
                 <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold ${formData.badge_background} ${formData.badge_text_color}`}>
                   {formData.badge_background.includes('gradient') ? <Sparkles className="w-3 h-3 text-amber-500 shrink-0" /> : <Shield className="w-3 h-3 shrink-0" />}
                   {formData.code || 'ROLE_CODE'}
@@ -149,7 +149,7 @@ const AddRoleModal = ({ isOpen, onClose, onSave }) => {
 
           <DialogFooter className="pt-2">
             <Button type="button" variant="ghost" onClick={() => { resetForm(); onClose(); }} className="h-9 px-4 rounded-lg text-xs">
-              ยกเลิก
+              Cancel
             </Button>
             <Button 
               type="submit" 
@@ -159,12 +159,12 @@ const AddRoleModal = ({ isOpen, onClose, onSave }) => {
               {loading ? (
                 <>
                   <RefreshCw className="w-4 h-4 shrink-0 animate-spin" />
-                  <span>กำลังบันทึก...</span>
+                  <span>Saving...</span>
                 </>
               ) : (
                 <>
                   <Check className="w-4 h-4 shrink-0" />
-                  <span>บันทึกสร้างบทบาท</span>
+                  <span>Create Role</span>
                 </>
               )}
             </Button>

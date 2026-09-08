@@ -91,7 +91,7 @@ const Checkouts = () => {
       }
     } catch (err) {
       console.error('Error fetching checkout data:', err);
-      toast.error('ไม่สามารถโหลดข้อมูลการยืม-คืนได้');
+      toast.error('Failed to load checkout/return data');
     } finally {
       setLoading(false);
     }
@@ -143,7 +143,7 @@ const Checkouts = () => {
   // Modal triggers
   const handleOpenReturnModal = (order) => {
     if (!canReturn) {
-      toast.error('คุณไม่มีสิทธิ์ทำรายการรับคืนพัสดุ (ต้องการสิทธิ์ checkouts.return)');
+      toast.error('You do not have permission to return items (checkouts.return required)');
       return;
     }
     setSelectedOrderForReturn(order);
@@ -152,7 +152,7 @@ const Checkouts = () => {
 
   const handleOpenExtendModal = (order) => {
     if (!canExtend) {
-      toast.error('คุณไม่มีสิทธิ์ขยายกำหนดวันส่งคืนพัสดุ (ต้องการสิทธิ์ checkouts.extend)');
+      toast.error('You do not have permission to extend return due dates (checkouts.extend required)');
       return;
     }
     setSelectedOrderForExtend(order);
@@ -176,13 +176,10 @@ const Checkouts = () => {
             </div>
             <div>
               <h1 className="text-xl sm:text-2xl font-extrabold text-foreground tracking-tight flex items-center gap-2">
-                <span>ระบบยืม-คืนเครื่องมือและพัสดุ</span>
-                <span className="text-[10px] font-bold bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30 px-2 py-0.5 rounded-full">
-                  Checkout & Return
-                </span>
+                <span>Equipment & Tool Checkouts</span>
               </h1>
               <p className="text-xs text-muted-foreground">
-                ควบคุมการยืมเครื่องมือช่าง อุปกรณ์ราคาสูง ติดตามวันส่งคืน ขยายกำหนดส่งคืน และตรวจสอบสภาพความเสียหาย
+                Manage tool and equipment loans, track return due dates, extend loan durations, and log asset conditions
               </p>
             </div>
           </div>
@@ -197,7 +194,7 @@ const Checkouts = () => {
             className="rounded-lg h-9 px-3 gap-1.5 border-input hover:bg-accent text-xs font-semibold cursor-pointer shadow-2xs"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-            <span>รีเฟรชข้อมูล</span>
+            <span>Refresh</span>
           </Button>
 
           {activeTab !== 'pos' && canCreate && (
@@ -207,7 +204,7 @@ const Checkouts = () => {
               className="rounded-lg h-9 px-4 bg-indigo-600 hover:bg-indigo-700 text-white text-xs gap-1.5 font-semibold cursor-pointer shadow-xs transition-colors"
             >
               <Plus className="w-4 h-4" />
-              <span>สร้างรายการยืมใหม่</span>
+              <span>New Checkout</span>
             </Button>
           )}
         </div>
@@ -224,7 +221,7 @@ const Checkouts = () => {
             }`}
         >
           <Clock className="w-3.5 h-3.5" />
-          <span>รายการยืมคงค้าง (Active Loans)</span>
+          <span>Active Loans</span>
           {orders.filter(o => o.status !== 'completed').length > 0 && (
             <span className="px-1.5 py-0.2 rounded-md bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 text-[10px] font-mono font-bold">
               {orders.filter(o => o.status !== 'completed').length}
@@ -242,7 +239,7 @@ const Checkouts = () => {
               }`}
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>ขอยืมพัสดุ (Checkout POS)</span>
+            <span>Checkout (POS)</span>
           </button>
         )}
 
@@ -255,7 +252,7 @@ const Checkouts = () => {
             }`}
         >
           <History className="w-3.5 h-3.5" />
-          <span>ประวัติยืม-คืน (History)</span>
+          <span>History</span>
         </button>
       </div>
 

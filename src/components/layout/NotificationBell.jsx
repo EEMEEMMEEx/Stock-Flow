@@ -18,10 +18,17 @@ const menuContentClassName = 'z-50 w-[min(26rem,calc(100vw-1.5rem))] overflow-hi
 const formatRelativeTime = (timestamp) => {
   if (!timestamp) return '';
   const seconds = Math.max(0, Math.floor((Date.now() - new Date(timestamp).getTime()) / 1000));
-  if (seconds < 60) return 'เมื่อสักครู่';
-  if (seconds < 3600) return `${Math.floor(seconds / 60)} นาทีที่แล้ว`;
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)} ชั่วโมงที่แล้ว`;
-  return `${Math.floor(seconds / 86400)} วันที่แล้ว`;
+  if (seconds < 60) return 'Just now';
+  if (seconds < 3600) {
+    const mins = Math.floor(seconds / 60);
+    return `${mins} ${mins === 1 ? 'minute' : 'minutes'} ago`;
+  }
+  if (seconds < 86400) {
+    const hours = Math.floor(seconds / 3600);
+    return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`;
+  }
+  const days = Math.floor(seconds / 86400);
+  return `${days} ${days === 1 ? 'day' : 'days'} ago`;
 };
 
 const notificationPresentation = (eventType) => {
@@ -31,7 +38,7 @@ const notificationPresentation = (eventType) => {
       return { 
         icon: ClipboardPlus, 
         className: 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/20',
-        badge: 'ขอเบิกใหม่',
+        badge: 'New Withdrawal Request',
         badgeClass: 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300'
       };
     case 'withdrawal.approved':
@@ -39,7 +46,7 @@ const notificationPresentation = (eventType) => {
       return { 
         icon: ClipboardCheck, 
         className: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/20',
-        badge: 'อนุมัติแล้ว',
+        badge: 'Approved',
         badgeClass: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
       };
     case 'withdrawal.rejected':
@@ -47,7 +54,7 @@ const notificationPresentation = (eventType) => {
       return { 
         icon: CircleAlert, 
         className: 'bg-destructive/15 text-destructive border-destructive/20',
-        badge: 'ปฏิเสธคำขอ',
+        badge: 'Rejected',
         badgeClass: 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300'
       };
     case 'withdrawal.completed':
@@ -55,7 +62,7 @@ const notificationPresentation = (eventType) => {
       return { 
         icon: PackageCheck, 
         className: 'bg-primary/15 text-primary border-primary/20',
-        badge: 'รับของแล้ว',
+        badge: 'Received',
         badgeClass: 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
       };
     case 'checkout.overdue':
@@ -63,7 +70,7 @@ const notificationPresentation = (eventType) => {
       return { 
         icon: RotateCcw, 
         className: 'bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/20',
-        badge: 'เกินกำหนดคืน',
+        badge: 'Overdue',
         badgeClass: 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300'
       };
     case 'stock.low_stock':
@@ -71,14 +78,14 @@ const notificationPresentation = (eventType) => {
       return { 
         icon: AlertTriangle, 
         className: 'bg-orange-500/15 text-orange-700 dark:text-orange-300 border-orange-500/20',
-        badge: 'สต็อกวิกฤต',
+        badge: 'Critical Stock',
         badgeClass: 'bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-300'
       };
     default:
       return { 
         icon: FileClock, 
         className: 'bg-muted text-muted-foreground border-border/20',
-        badge: 'แจ้งเตือน',
+        badge: 'Alert',
         badgeClass: 'bg-muted text-muted-foreground'
       };
   }
@@ -154,7 +161,7 @@ const NotificationBell = () => {
 
     try {
       setApprovingId(notification.id);
-      const toastId = toast.loading('กำลังอนุมัติบิลและตัดสต็อก...');
+      const toastId = toast.loading('Approving requisition and deducting stock...');
 
       const result = await approveQuickWithdrawal(orderId, notification.id, profile?.full_name || 'Admin');
 
@@ -162,19 +169,19 @@ const NotificationBell = () => {
         toast.dismiss(toastId);
         const errorMsg = result.message || '';
         if (errorMsg.includes('SHORTAGE_DETECTED')) {
-          toast.error('พบวัสดุในสต็อกไม่เพียงพอ กรุณาตรวจสอบในหน้าจัดการคำขอเบิก');
+          toast.error('Insufficient stock found. Please check in the requisition management page.');
           setIsOpen(false);
           navigate('/withdrawals');
           return;
         }
-        toast.error(errorMsg || 'เกิดข้อผิดพลาดในการอนุมัติคำขอ');
+        toast.error(errorMsg || 'Failed to approve request');
         return;
       }
 
-      toast.success(result.message || 'อนุมัติคำขอเบิกจ่ายสำเร็จ เรียบร้อยแล้ว', { id: toastId });
+      toast.success(result.message || 'Withdrawal request approved successfully', { id: toastId });
     } catch (err) {
       console.error('Quick approve exception:', err);
-      toast.error('ไม่สามารถอนุมัติคำขอได้');
+      toast.error('Failed to approve request');
     } finally {
       setApprovingId(null);
     }
@@ -183,7 +190,7 @@ const NotificationBell = () => {
   const handleDelete = async (e, notificationId) => {
     e.stopPropagation();
     await deleteNotification(notificationId);
-    toast.success('ลบการแจ้งเตือนแล้ว');
+    toast.success('Notification removed');
   };
 
   return (
@@ -193,8 +200,8 @@ const NotificationBell = () => {
           variant="ghost"
           size="icon"
           type="button"
-          title="การแจ้งเตือน (Notifications)"
-          aria-label="การแจ้งเตือน"
+          title="Notifications"
+          aria-label="Notifications"
           aria-haspopup="menu"
           aria-expanded={isOpen}
           className={cn(controlClassName, 'relative cursor-pointer')}
@@ -209,7 +216,7 @@ const NotificationBell = () => {
             </span>
           )}
           {unreadCount > 0 && (
-            <span className="sr-only">มีการแจ้งเตือนที่ยังไม่ได้อ่าน {unreadCount} รายการ</span>
+            <span className="sr-only">You have {unreadCount} unread notification{unreadCount === 1 ? '' : 's'}</span>
           )}
         </Button>
       </DropdownMenu.Trigger>
@@ -219,7 +226,7 @@ const NotificationBell = () => {
           align="end"
           sideOffset={10}
           className={menuContentClassName}
-          aria-label="ศูนย์การแจ้งเตือน"
+          aria-label="Notification Center"
         >
           {/* Header */}
           <div className="flex items-center justify-between gap-3 px-3 pt-2 pb-2">
@@ -229,10 +236,10 @@ const NotificationBell = () => {
               </div>
               <div>
                 <DropdownMenu.Label className="p-0 text-sm font-bold text-foreground">
-                  การแจ้งเตือน (Notifications)
+                  Notifications
                 </DropdownMenu.Label>
                 <p className="text-[11px] text-muted-foreground">
-                  {unreadCount > 0 ? `ยังไม่อ่าน ${unreadCount} รายการ` : 'อ่านครบทั้งหมดแล้ว'}
+                  {unreadCount > 0 ? `${unreadCount} unread` : 'All caught up'}
                 </p>
               </div>
             </div>
@@ -246,7 +253,7 @@ const NotificationBell = () => {
                 className="h-8 rounded-lg px-2 text-xs text-primary hover:bg-primary/10 font-semibold flex items-center gap-1"
               >
                 <CheckCheck className="h-3.5 w-3.5" />
-                <span>อ่านทั้งหมด</span>
+                <span>Mark all as read</span>
               </Button>
             )}
           </div>
@@ -263,7 +270,7 @@ const NotificationBell = () => {
                   : 'text-muted-foreground hover:text-foreground'
               )}
             >
-              <span>ทั้งหมด</span>
+              <span>All</span>
               <span className="text-[10px] bg-muted px-1.5 py-0.2 rounded-full font-mono">
                 {notifications.length}
               </span>
@@ -279,7 +286,7 @@ const NotificationBell = () => {
                   : 'text-muted-foreground hover:text-foreground'
               )}
             >
-              <span>ยังไม่อ่าน</span>
+              <span>Unread</span>
               {unreadCount > 0 && (
                 <span className="text-[10px] bg-rose-500 text-white px-1.5 py-0.2 rounded-full font-mono">
                   {unreadCount}
@@ -297,7 +304,7 @@ const NotificationBell = () => {
                   : 'text-muted-foreground hover:text-foreground'
               )}
             >
-              <span>รอจัดการ</span>
+              <span>Action Needed</span>
               {pendingActionCount > 0 && (
                 <span className="text-[10px] bg-amber-500 text-white px-1.5 py-0.2 rounded-full font-mono animate-pulse">
                   {pendingActionCount}
@@ -313,20 +320,20 @@ const NotificationBell = () => {
             {loading && (
               <div className="py-10 text-center text-xs text-muted-foreground flex flex-col items-center gap-2">
                 <RefreshCw className="w-5 h-5 animate-spin text-primary" />
-                <span>กำลังโหลดการแจ้งเตือน...</span>
+                <span>Loading notifications...</span>
               </div>
             )}
 
             {!loading && error && (
               <div className="py-8 text-center px-4 space-y-2">
-                <p className="text-xs text-destructive font-medium">ไม่สามารถโหลดข้อมูลแจ้งเตือนได้</p>
+                <p className="text-xs text-destructive font-medium">Failed to load notifications</p>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => void reload()}
                   className="h-8 text-xs"
                 >
-                  <RefreshCw className="mr-1.5 h-3.5 w-3.5" /> ลองใหม่อีกครั้ง
+                  <RefreshCw className="mr-1.5 h-3.5 w-3.5" /> Try again
                 </Button>
               </div>
             )}
@@ -336,8 +343,8 @@ const NotificationBell = () => {
                 <div className="w-10 h-10 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
                   <ShieldCheck className="w-5 h-5" />
                 </div>
-                <div className="font-semibold text-foreground">ไม่มีรายการแจ้งเตือนในหมวดนี้</div>
-                <p className="text-[11px] text-muted-foreground">คุณจัดการทุกคำขอครบถ้วนเรียบร้อยแล้ว</p>
+                <div className="font-semibold text-foreground">No notifications in this tab</div>
+                <p className="text-[11px] text-muted-foreground">You are all caught up.</p>
               </div>
             )}
 
@@ -388,7 +395,7 @@ const NotificationBell = () => {
 
                           <button
                             type="button"
-                            title="ลบการแจ้งเตือน"
+                            title="Delete notification"
                             onClick={(e) => handleDelete(e, notification.id)}
                             className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive p-0.5 rounded transition-opacity"
                           >
@@ -428,7 +435,7 @@ const NotificationBell = () => {
                               ) : (
                                 <Check className="w-3 h-3" />
                               )}
-                              <span>{isApproving ? 'กำลังอนุมัติ...' : 'อนุมัติทันที'}</span>
+                              <span>{isApproving ? 'Approving...' : 'Quick Approve'}</span>
                             </Button>
 
                             <Button
@@ -441,7 +448,7 @@ const NotificationBell = () => {
                               }}
                               className="h-7 px-2 text-[11px] font-medium rounded-lg text-muted-foreground hover:text-foreground"
                             >
-                              ดูบิล
+                              View Requisition
                             </Button>
                           </>
                         )}
@@ -457,7 +464,7 @@ const NotificationBell = () => {
                             }}
                             className="h-7 px-2.5 text-[11px] font-semibold bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg flex items-center gap-1 shadow-xs"
                           >
-                            <span>ดูใบเบิกของ</span>
+                            <span>View Voucher</span>
                             <ArrowRight className="w-3 h-3" />
                           </Button>
                         )}
@@ -474,7 +481,7 @@ const NotificationBell = () => {
                             className="h-7 px-2.5 text-[11px] font-semibold bg-rose-600 hover:bg-rose-700 text-white rounded-lg flex items-center gap-1 shadow-xs"
                           >
                             <RotateCcw className="w-3 h-3" />
-                            <span>รับคืนพัสดุ</span>
+                            <span>Process Return</span>
                           </Button>
                         )}
 
@@ -491,7 +498,7 @@ const NotificationBell = () => {
                             className="h-7 px-2.5 text-[11px] font-medium flex items-center gap-1"
                           >
                             <Package className="w-3 h-3 text-orange-500" />
-                            <span>ตรวจสต็อก</span>
+                            <span>Check Stock</span>
                           </Button>
                         )}
                       </div>

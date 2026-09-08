@@ -19,9 +19,9 @@ export const HistoryErrorState = ({ error, onRetry }) => (
       <div className="p-4 rounded-full bg-rose-100 dark:bg-rose-950/60 ring-1 ring-rose-200 dark:ring-rose-800 text-rose-600 dark:text-rose-400">
         <AlertTriangle className="w-8 h-8 stroke-1.5" />
       </div>
-      <h3 className="text-lg font-bold text-foreground tracking-tight">เกิดข้อผิดพลาดในการโหลดประวัติการเบิกจ่าย</h3>
+      <h3 className="text-lg font-bold text-foreground tracking-tight">Failed to load withdrawal history</h3>
       <p className="text-xs sm:text-sm text-muted-foreground max-w-md mx-auto">
-        {error || 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตแล้วลองใหม่อีกครั้ง'}
+        {error || 'Unable to connect to database. Please check your internet connection and try again.'}
       </p>
 
       {onRetry && (
@@ -32,7 +32,7 @@ export const HistoryErrorState = ({ error, onRetry }) => (
           className="mt-2 rounded-xl text-xs font-semibold gap-1.5 border-rose-200 text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50 cursor-pointer"
         >
           <RefreshCw className="w-3.5 h-3.5" />
-          <span>ลองใหม่อีกครั้ง (Retry)</span>
+          <span>Retry</span>
         </Button>
       )}
     </CardContent>
@@ -46,9 +46,9 @@ const HistoryEmptyState = ({ onResetFilters }) => {
         <div className="p-4 rounded-full bg-muted/60 ring-1 ring-border text-muted-foreground">
           <FileQuestion className="w-8 h-8 stroke-1.5" />
         </div>
-        <h3 className="text-lg font-bold text-foreground tracking-tight">ไม่พบข้อมูลประวัติการเบิกจ่ายตามเงื่อนไขที่เลือก</h3>
+        <h3 className="text-lg font-bold text-foreground tracking-tight">No withdrawal history found matching criteria</h3>
         <p className="text-xs sm:text-sm text-muted-foreground max-w-md mx-auto">
-          ไม่พบข้อมูลที่ตรงกับตัวกรอง โครงการ สถานะ ผู้เบิก หรือช่วงวันที่ระบุ ลองปรับเปลี่ยนคำค้นหา หรือกดล้างตัวกรองเพื่อดูรายการทั้งหมด
+          No records match the selected project, status, requester, or date range. Try adjusting your search query or reset filters to view all records.
         </p>
 
         {onResetFilters && (
@@ -59,7 +59,7 @@ const HistoryEmptyState = ({ onResetFilters }) => {
             className="mt-2 rounded-xl text-xs font-semibold gap-1.5 border-border hover:bg-accent cursor-pointer"
           >
             <RotateCcw className="w-3.5 h-3.5" />
-            <span>ล้างตัวกรองทั้งหมด</span>
+            <span>Reset All Filters</span>
           </Button>
         )}
       </CardContent>

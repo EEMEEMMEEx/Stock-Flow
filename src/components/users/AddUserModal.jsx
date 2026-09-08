@@ -16,10 +16,10 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
   const [projectSearch, setProjectSearch] = useState('');
 
   const defaultRoles = [
-    { code: 'STAFF', name: 'STAFF / REQUESTER', description: 'เบิกจ่ายวัสดุ ดูสต็อกเฉพาะโครงการที่ได้รับมอบหมาย' },
-    { code: 'SUPERVISOR', name: 'SUPERVISOR / APPROVER', description: 'อนุมัติการเบิกจ่าย และดูรายงานระดับโครงการ' },
-    { code: 'ADMIN', name: 'ADMINISTRATOR', description: 'สิทธิ์สูงสุด อนุมัติเบิกจ่าย จัดการโครงการ และจัดการผู้ใช้' },
-    { code: 'SUPER', name: 'SUPER ADMIN', description: 'สิทธิ์สูงสุดระดับระบบ จัดการทุกอย่าง รวมถึง Admin, สิทธิ์, การตั้งค่าระบบ, Security, Integration' }
+    { code: 'STAFF', name: 'STAFF / REQUESTER', description: 'Withdraw items, view stock for assigned projects only' },
+    { code: 'SUPERVISOR', name: 'SUPERVISOR / APPROVER', description: 'Approve withdrawal requests and view project-level reports' },
+    { code: 'ADMIN', name: 'ADMINISTRATOR', description: 'Full permissions: approve withdrawals, manage projects and users' },
+    { code: 'SUPER', name: 'SUPER ADMIN', description: 'System-level access: manage everything including admins, permissions, system settings, security, integrations' }
   ];
 
   const rawRoles = roles.length > 0 ? roles : defaultRoles;
@@ -35,6 +35,7 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
     phone: '',
     position: '',
     avatar_url: '',
+    avatar_file: null,
     role: 'staff',
     status: 'active',
     access_type: 'all', // 'all' | 'selected'
@@ -59,12 +60,12 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.email || !formData.full_name) {
-      toast.error('กรุณากรอกข้อมูลที่จำเป็น (*)');
+      toast.error('Please fill in required fields (*)');
       return;
     }
 
     if (formData.access_type === 'selected' && formData.selected_projects.length === 0) {
-      toast.error('กรุณาเลือกอย่างน้อย 1 โครงการสำหรับสิทธิ์แบบเลือกเฉพาะโครงการ');
+      toast.error('Please select at least one project for selected projects access');
       return;
     }
 
@@ -76,12 +77,13 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
         full_name: formData.full_name.trim(),
         phone: formData.phone.trim() || null,
         position: formData.position.trim() || null,
-        avatar_url: formData.avatar_url.trim() || null,
+        avatar_url: formData.avatar_url || null,
+        avatar_file: formData.avatar_file || null,
         role: formData.role,
         role_id: matchedRole?.id || null,
         status: formData.status,
         all_projects: formData.access_type === 'all',
-        project_ids: formData.access_type === 'selected' ? formData.selected_projects : [],
+        project_ids: formData.access_type === 'all' ? [] : formData.selected_projects,
         send_invitation: formData.send_invitation
       });
       resetForm();
@@ -101,6 +103,7 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
       phone: '',
       position: '',
       avatar_url: '',
+      avatar_file: null,
       role: 'staff',
       status: 'active',
       access_type: 'all',
@@ -108,11 +111,12 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
       send_invitation: false
     });
     setActiveTab('account');
+    setProjectSearch('');
   };
 
   const filteredProjects = projects.filter(p => 
-    p.name?.toLowerCase().includes(projectSearch.toLowerCase()) ||
-    p.project_code?.toLowerCase().includes(projectSearch.toLowerCase())
+    (p.name || '').toLowerCase().includes(projectSearch.toLowerCase()) ||
+    (p.project_code || '').toLowerCase().includes(projectSearch.toLowerCase())
   );
 
 
@@ -122,10 +126,10 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
         <DialogHeader>
           <DialogTitle className="text-xl font-bold flex items-center gap-2">
             <User className="w-5 h-5 text-primary" />
-            + เพิ่มผู้ใช้งานใหม่ (Add User)
+            Add User
           </DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
-            สร้างผู้ใช้ใหม่ในระบบ Supabase Auth พร้อมกำหนดบทบาทและสิทธิ์การเข้าถึงโครงการ
+            Create a new user in Supabase Auth and configure roles and project access
           </DialogDescription>
         </DialogHeader>
 
@@ -141,7 +145,7 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
             }`}
           >
             <User className="w-4 h-4" />
-            TAB 1 — ข้อมูลบัญชีผู้ใช้
+            TAB 1 — Account Info
           </button>
           <button
             type="button"
@@ -153,7 +157,7 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
             }`}
           >
             <Shield className="w-4 h-4" />
-            TAB 2 — สิทธิ์และระดับการเข้าถึง
+            TAB 2 — Roles & Access
           </button>
         </div>
 
@@ -162,11 +166,11 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="full_name" className="text-sm font-medium">ชื่อ-นามสกุล *</Label>
+                  <Label htmlFor="full_name" className="text-sm font-medium">Full Name *</Label>
                   <Input
                     id="full_name"
                     required
-                    placeholder="เช่น สมชาย ใจดี"
+                    placeholder="e.g. John Doe"
                     value={formData.full_name}
                     onChange={(e) => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
                     className="mt-1 h-9 text-xs rounded-lg bg-background border border-input focus-visible:ring-1 focus-visible:ring-primary"
@@ -174,7 +178,7 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
                 </div>
 
                 <div>
-                  <Label htmlFor="email" className="text-sm font-medium">อีเมล (Email) *</Label>
+                  <Label htmlFor="email" className="text-sm font-medium">Email *</Label>
                   <Input
                     id="email"
                     type="email"
@@ -191,15 +195,15 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
               <div className="p-3.5 rounded-lg border border-primary/20 bg-primary/5 text-foreground text-xs flex items-start gap-2.5">
                 <Shield className="w-4 h-4 text-primary shrink-0 mt-0.5" />
                 <div>
-                  <strong className="font-semibold block text-sm mb-0.5">รหัสผ่านเริ่มต้นอัตโนมัติ (Default Temporary Password)</strong>
-                  ระบบจะกำหนดรหัสผ่านชั่วคราวเริ่มต้นเป็น <code className="font-mono font-bold px-1.5 py-0.5 rounded bg-muted text-foreground border border-border">F0rth2026@dtrs</code> ให้อัตโนมัติ โดยผู้ใช้จะต้องเปลี่ยนรหัสผ่านด้วยตนเองเมื่อเข้าสู่ระบบครั้งแรก (First-Time Login — Password Change Required)
+                  <strong className="font-semibold block text-sm mb-0.5">Default Temporary Password</strong>
+                  The system will automatically assign default temporary password <code className="font-mono font-bold px-1.5 py-0.5 rounded bg-muted text-foreground border border-border">F0rth2026@dtrs</code>. Users must change their password on first login (First-Time Login — Password Change Required).
                 </div>
               </div>
 
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="phone" className="text-sm font-medium">เบอร์โทรศัพท์ (Optional)</Label>
+                  <Label htmlFor="phone" className="text-sm font-medium">Phone (Optional)</Label>
                   <Input
                     id="phone"
                     placeholder="081-234-5678"
@@ -210,10 +214,10 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
                 </div>
 
                 <div>
-                  <Label htmlFor="position" className="text-sm font-medium">ตำแหน่ง / หน้าที่ (Optional)</Label>
+                  <Label htmlFor="position" className="text-sm font-medium">Position / Job Title (Optional)</Label>
                   <Input
                     id="position"
-                    placeholder="เช่น Site Engineer / Store Keeper"
+                    placeholder="e.g. Site Engineer / Storekeeper"
                     value={formData.position}
                     onChange={(e) => setFormData(prev => ({ ...prev, position: e.target.value }))}
                     className="mt-1 h-9 text-xs rounded-lg bg-background border border-input focus-visible:ring-1 focus-visible:ring-primary"
@@ -222,8 +226,8 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
               </div>
 
               <div>
-                <Label className="text-sm font-medium mb-1.5 block">รูปโปรไฟล์ (Profile Avatar)</Label>
-                <div className="mb-4 p-3 rounded-lg border border-border bg-muted/30"><label className="flex items-start gap-3 cursor-pointer"><input type="checkbox" checked={formData.send_invitation} onChange={(e) => setFormData(prev => ({ ...prev, send_invitation: e.target.checked }))} className="mt-1 rounded text-primary" /><span className="text-sm">ส่งอีเมลเชิญและแจ้งเตือนเปิดใช้งานบัญชี<span className="block text-xs text-muted-foreground mt-1">ส่งอีเมลแจ้งข้อมูลบัญชีผู้ใช้งานพร้อมลิงก์เข้าสู่ระบบครั้งแรก</span></span></label></div>
+                <Label className="text-sm font-medium mb-1.5 block">Profile Avatar</Label>
+                <div className="mb-4 p-3 rounded-lg border border-border bg-muted/30"><label className="flex items-start gap-3 cursor-pointer"><input type="checkbox" checked={formData.send_invitation} onChange={(e) => setFormData(prev => ({ ...prev, send_invitation: e.target.checked }))} className="mt-1 rounded text-primary" /><span className="text-sm">Send invitation and account activation email<span className="block text-xs text-muted-foreground mt-1">Send email notification with first-time login link</span></span></label></div>
                 <AvatarUpload
                   value={formData.avatar_url}
                   name={formData.full_name}
@@ -239,7 +243,7 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
             <div className="space-y-5">
               {/* Role Selection */}
               <div>
-                <Label className="text-sm font-medium mb-2 block">ระบุบทบาทการใช้งาน (Role) *</Label>
+                <Label className="text-sm font-medium mb-2 block">Assigned Role *</Label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-48 overflow-y-auto p-1">
                   {availableRoles.map((r) => {
                     const roleCode = (r.code || r.role || '').toLowerCase();
@@ -273,7 +277,7 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
 
               {/* Account Status */}
               <div>
-                <Label className="text-sm font-medium mb-2 block">สถานะบัญชี (Account Status) *</Label>
+                <Label className="text-sm font-medium mb-2 block">Account Status *</Label>
                 <div className="flex gap-4">
                   <label className="flex items-center gap-2 text-sm cursor-pointer">
                     <input
@@ -285,7 +289,7 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
                       className="text-primary focus:ring-primary"
                     />
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> ACTIVE (เปิดใช้งาน)
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> ACTIVE
                     </span>
                   </label>
 
@@ -299,7 +303,7 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
                       className="text-primary focus:ring-primary"
                     />
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300">
-                      <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span> INACTIVE (ระงับการใช้งาน)
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span> INACTIVE
                     </span>
                   </label>
                 </div>
@@ -307,7 +311,7 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
 
               {/* Project Authorization */}
               <div>
-                <Label className="text-sm font-medium mb-2 block">สิทธิ์การเข้าถึงโครงการ (Project Access) *</Label>
+                <Label className="text-sm font-medium mb-2 block">Project Access *</Label>
                 <div className="space-y-3">
                   <label className={`flex items-center gap-2 text-sm cursor-pointer p-2.5 rounded-lg border transition-colors ${formData.access_type === 'all' ? 'border-primary bg-primary/5' : 'border-border bg-card hover:bg-muted/30'}`}>
                     <input
@@ -319,8 +323,8 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
                       className="text-primary"
                     />
                     <div>
-                      <span className="font-semibold text-sm">เข้าถึงได้ทุกโครงการ (All Projects)</span>
-                      <p className="text-xs text-muted-foreground">ผู้ใช้จะเห็นและดำเนินการสต็อกได้ทุกโครงการในระบบ</p>
+                      <span className="font-semibold text-sm">All Projects</span>
+                      <p className="text-xs text-muted-foreground">User can view and operate stock in all projects in the system</p>
                     </div>
                   </label>
 
@@ -334,8 +338,8 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
                       className="text-primary"
                     />
                     <div>
-                      <span className="font-semibold text-sm">เลือกเฉพาะโครงการ (Selected Projects Only)</span>
-                      <p className="text-xs text-muted-foreground">จำกัดสิทธิ์เข้าถึงเฉพาะโครงการที่ถูกเช็คเลือกด้านล่างเท่านั้น</p>
+                      <span className="font-semibold text-sm">Selected Projects Only</span>
+                      <p className="text-xs text-muted-foreground">Restrict access to only the projects checked below</p>
                     </div>
                   </label>
                 </div>
@@ -344,7 +348,7 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
                 {formData.access_type === 'selected' && (
                   <div className="mt-3 p-3 rounded-lg bg-muted/30 border border-border space-y-2">
                     <Input
-                      placeholder="ค้นหาชื่อหรือรหัสโครงการ..."
+                      placeholder="Search by project name or code..."
                       value={projectSearch}
                       onChange={(e) => setProjectSearch(e.target.value)}
                       className="text-xs bg-background border border-input h-8 rounded-lg"
@@ -352,7 +356,7 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
 
                     <div className="max-h-40 overflow-y-auto space-y-1.5 pr-1">
                       {filteredProjects.length === 0 ? (
-                        <p className="text-xs text-muted-foreground p-2 text-center">ไม่พบโครงการ</p>
+                        <p className="text-xs text-muted-foreground p-2 text-center">No projects found</p>
                       ) : (
                         filteredProjects.map(p => {
                           const isChecked = formData.selected_projects.includes(p.id);
@@ -381,7 +385,7 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
                       )}
                     </div>
                     <div className="text-[11px] text-muted-foreground text-right">
-                      เลือกแล้ว: {formData.selected_projects.length} โครงการ
+                      Selected: {formData.selected_projects.length} {formData.selected_projects.length === 1 ? 'project' : 'projects'}
                     </div>
                   </div>
                 )}
@@ -392,17 +396,17 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
           <DialogFooter className="pt-4 border-t border-border flex justify-between items-center">
             {activeTab === 'account' ? (
               <Button type="button" variant="outline" onClick={() => setActiveTab('access')}>
-                ถัดไป (TAB 2: สิทธิ์การเข้าถึง) →
+                Next (TAB 2: Roles & Access) →
               </Button>
             ) : (
               <Button type="button" variant="outline" onClick={() => setActiveTab('account')}>
-                ← ย้อนกลับ (TAB 1)
+                ← Back (TAB 1)
               </Button>
             )}
 
             <div className="flex gap-2">
               <Button type="button" variant="ghost" onClick={() => { resetForm(); onClose(); }}>
-                ยกเลิก
+                Cancel
               </Button>
               <Button 
                 type="submit" 
@@ -412,12 +416,12 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
                 {loading ? (
                   <>
                     <RefreshCw className="w-4 h-4 shrink-0 animate-spin" />
-                    <span>กำลังบันทึก...</span>
+                    <span>Saving...</span>
                   </>
                 ) : (
                   <>
                     <Check className="w-4 h-4 shrink-0" />
-                    <span>บันทึกสร้างผู้ใช้</span>
+                    <span>Create User</span>
                   </>
                 )}
               </Button>

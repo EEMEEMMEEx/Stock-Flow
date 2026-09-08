@@ -52,7 +52,7 @@ const WithdrawalOrdersList = ({
     e.stopPropagation();
     navigator.clipboard.writeText(id);
     setCopiedId(id);
-    toast.success('คัดลอกรหัสคำขอเรียบร้อย');
+    toast.success('Request ID copied');
     setTimeout(() => setCopiedId(null), 2000);
   };
 
@@ -68,32 +68,32 @@ const WithdrawalOrdersList = ({
       case 'pending':
         return (
           <span className="inline-flex items-center gap-1.5 text-amber-600 dark:text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full text-xs font-bold border border-amber-500/30 animate-pulse">
-            <Clock className="w-3.5 h-3.5" /> รออนุมัติ
+            <Clock className="w-3.5 h-3.5" /> Pending Approval
           </span>
         );
       case 'approved':
         if (has_shortage || is_shortage_override) {
           return (
             <span className="inline-flex items-center gap-1.5 text-amber-600 dark:text-amber-400 bg-amber-500/15 px-3 py-1 rounded-full text-xs font-extrabold border border-amber-500/40">
-              <AlertTriangle className="w-3.5 h-3.5" /> อนุมัติแล้ว (ของไม่ครบ)
+              <AlertTriangle className="w-3.5 h-3.5" /> Approved (Shortage)
             </span>
           );
         }
         return (
           <span className="inline-flex items-center gap-1.5 text-blue-600 dark:text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full text-xs font-bold border border-blue-500/30">
-            <CheckCircle2 className="w-3.5 h-3.5" /> อนุมัติแล้ว
+            <CheckCircle2 className="w-3.5 h-3.5" /> Approved
           </span>
         );
       case 'completed':
         return (
           <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full text-xs font-bold border border-emerald-500/30">
-            <CheckCircle2 className="w-3.5 h-3.5" /> รับของแล้ว
+            <CheckCircle2 className="w-3.5 h-3.5" /> Completed
           </span>
         );
       case 'rejected':
         return (
           <span className="inline-flex items-center gap-1.5 text-red-600 dark:text-red-400 bg-red-500/10 px-3 py-1 rounded-full text-xs font-bold border border-red-500/30">
-            <XCircle className="w-3.5 h-3.5" /> ไม่อนุมัติ
+            <XCircle className="w-3.5 h-3.5" /> Rejected
           </span>
         );
       default:
@@ -110,10 +110,10 @@ const WithdrawalOrdersList = ({
             <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
               <FileText className="w-6 h-6" />
             </div>
-            <span>รายการคำขอเบิกจ่าย (Requisitions Tracking)</span>
+            <span>Requisitions Tracking</span>
           </h2>
           <p className="text-xs text-muted-foreground mt-1">
-            ติดตามสถานะคำขอเบิกจ่ายวัสดุ อนุมัติตัดสต็อก และพิมพ์เอกสารใบเบิกนำส่ง
+            Track requisition status, approve stock deductions, and print issue slips
           </p>
         </div>
 
@@ -123,7 +123,7 @@ const WithdrawalOrdersList = ({
           className="h-9 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-xs gap-2 transition-all cursor-pointer"
         >
           <ArrowUpFromLine className="w-4 h-4" />
-          <span>+ สร้างคำขอเบิกจ่าย (POS)</span>
+          <span>+ Create Request (POS)</span>
         </Button>
       </div>
 
@@ -131,7 +131,7 @@ const WithdrawalOrdersList = ({
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
         <Card className="p-4 rounded-xl bg-card border border-border shadow-xs space-y-1 hover:border-indigo-500/30 transition-colors">
           <div className="flex items-center justify-between text-xs text-muted-foreground font-semibold">
-            <span>คำขอทั้งหมด</span>
+            <span>Total Requests</span>
             <FileText className="w-4 h-4 text-indigo-500" />
           </div>
           <p className="text-2xl font-extrabold font-mono text-foreground">{loading ? '-' : totalOrdersCount}</p>
@@ -139,7 +139,7 @@ const WithdrawalOrdersList = ({
 
         <Card className="p-4 rounded-xl bg-card border border-amber-500/30 bg-amber-500/5 shadow-xs space-y-1">
           <div className="flex items-center justify-between text-xs text-amber-700 dark:text-amber-300 font-semibold">
-            <span>รออนุมัติ</span>
+            <span>Pending</span>
             <Clock className="w-4 h-4 text-amber-500" />
           </div>
           <p className="text-2xl font-extrabold font-mono text-amber-600 dark:text-amber-400">{loading ? '-' : pendingOrdersCount}</p>
@@ -147,7 +147,7 @@ const WithdrawalOrdersList = ({
 
         <Card className="p-4 rounded-xl bg-card border border-blue-500/30 bg-blue-500/5 shadow-xs space-y-1">
           <div className="flex items-center justify-between text-xs text-blue-700 dark:text-blue-300 font-semibold">
-            <span>อนุมัติแล้ว</span>
+            <span>Approved</span>
             <CheckCircle2 className="w-4 h-4 text-blue-500" />
           </div>
           <p className="text-2xl font-extrabold font-mono text-blue-600 dark:text-blue-400">{loading ? '-' : approvedOrdersCount}</p>
@@ -155,7 +155,7 @@ const WithdrawalOrdersList = ({
 
         <Card className="p-4 rounded-xl bg-card border border-emerald-500/30 bg-emerald-500/5 shadow-xs space-y-1">
           <div className="flex items-center justify-between text-xs text-emerald-700 dark:text-emerald-300 font-semibold">
-            <span>รับของแล้ว</span>
+            <span>Completed</span>
             <CheckCircle2 className="w-4 h-4 text-emerald-500" />
           </div>
           <p className="text-2xl font-extrabold font-mono text-emerald-600 dark:text-emerald-400">{loading ? '-' : completedOrdersCount}</p>
@@ -168,7 +168,7 @@ const WithdrawalOrdersList = ({
           <div className="relative flex-1">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="ค้นหาบิล... (รหัสคำขอ, โครงการ, ชื่อผู้ขอ, วัตถุประสงค์)"
+              placeholder="Search requests... (ID, Project, Requester, Purpose)"
               className="pl-9 h-9 rounded-lg bg-background border-border text-xs shadow-2xs"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -188,7 +188,7 @@ const WithdrawalOrdersList = ({
                   : 'border-border text-muted-foreground hover:bg-accent'
               }`}
             >
-              ทั้งหมด ({orders.length})
+              All ({orders.length})
             </Button>
 
             <Button
@@ -202,7 +202,7 @@ const WithdrawalOrdersList = ({
                   : 'border-amber-500/30 text-amber-700 dark:text-amber-300 hover:bg-amber-500/10'
               }`}
             >
-              รออนุมัติ ({pendingOrdersCount})
+              Pending ({pendingOrdersCount})
             </Button>
 
             <Button
@@ -216,7 +216,7 @@ const WithdrawalOrdersList = ({
                   : 'border-blue-500/30 text-blue-700 dark:text-blue-300 hover:bg-blue-500/10'
               }`}
             >
-              อนุมัติแล้ว ({approvedOrdersCount})
+              Approved ({approvedOrdersCount})
             </Button>
 
             <Button
@@ -230,7 +230,7 @@ const WithdrawalOrdersList = ({
                   : 'border-emerald-500/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/10'
               }`}
             >
-              รับของแล้ว ({completedOrdersCount})
+              Completed ({completedOrdersCount})
             </Button>
 
             <Button
@@ -244,7 +244,7 @@ const WithdrawalOrdersList = ({
                   : 'border-red-500/30 text-red-700 dark:text-red-300 hover:bg-red-500/10'
               }`}
             >
-              ไม่อนุมัติ ({rejectedOrdersCount})
+              Rejected ({rejectedOrdersCount})
             </Button>
 
             {(search || statusFilter !== 'all') && (
@@ -258,7 +258,7 @@ const WithdrawalOrdersList = ({
                 }}
                 className="h-8 px-2 text-xs font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg shrink-0 gap-1 cursor-pointer"
               >
-                <RotateCcw className="w-3.5 h-3.5" /> รีเซ็ต
+                <RotateCcw className="w-3.5 h-3.5" /> Reset
               </Button>
             )}
           </div>
@@ -270,19 +270,19 @@ const WithdrawalOrdersList = ({
         <Table>
           <TableHeader className="bg-muted/50 text-xs">
             <TableRow>
-              <TableHead className="w-32">วันที่ขอเบิก</TableHead>
-              <TableHead>รหัสคำขอ / โครงการ</TableHead>
-              <TableHead>ผู้ขอเบิก</TableHead>
-              <TableHead>วัตถุประสงค์</TableHead>
-              <TableHead className="text-center">สถานะ</TableHead>
-              <TableHead className="text-right">จัดการ</TableHead>
+              <TableHead className="w-32">Request Date</TableHead>
+              <TableHead>Request ID / Project</TableHead>
+              <TableHead>Requester</TableHead>
+              <TableHead>Purpose</TableHead>
+              <TableHead className="text-center">Status</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody className="text-xs">
             {loading ? (
               <TableRow>
                 <TableCell colSpan={6} className="text-center py-12 text-muted-foreground animate-pulse">
-                  กำลังโหลดข้อมูลคำขอเบิกจ่าย...
+                  Loading requisition requests...
                 </TableCell>
               </TableRow>
             ) : filteredOrders.length === 0 ? (
@@ -290,8 +290,8 @@ const WithdrawalOrdersList = ({
                 <TableCell colSpan={6} className="text-center py-16 text-muted-foreground">
                   <div className="flex flex-col items-center justify-center space-y-2">
                     <FileText className="w-10 h-10 opacity-30 stroke-1" />
-                    <p className="font-bold text-foreground">ไม่พบรายการคำขอเบิกจ่าย</p>
-                    <p className="text-xs text-muted-foreground">กดปุ่ม &quot;+ สร้างคำขอเบิกจ่าย (POS)&quot; ด้านบนเพื่อสร้างรายการใหม่</p>
+                    <p className="font-bold text-foreground">No requisition requests found</p>
+                    <p className="text-xs text-muted-foreground">Click &quot;+ Create Request (POS)&quot; above to create a new request</p>
                   </div>
                 </TableCell>
               </TableRow>
@@ -324,7 +324,7 @@ const WithdrawalOrdersList = ({
                       <button
                         type="button"
                         onClick={(e) => handleCopyOrderId(order.id, e)}
-                        title="คัดลอก Order ID"
+                        title="Copy Request ID"
                         className="hover:text-foreground p-0.5 rounded cursor-pointer"
                       >
                         {copiedId === order.id ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
@@ -338,7 +338,7 @@ const WithdrawalOrdersList = ({
                       <div className="w-6 h-6 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-bold flex items-center justify-center text-[10px]">
                         {order.profiles?.full_name?.charAt(0) || 'U'}
                       </div>
-                      <span className="font-semibold text-foreground">{order.profiles?.full_name || 'ผู้ใช้งาน'}</span>
+                      <span className="font-semibold text-foreground">{order.profiles?.full_name || 'User'}</span>
                     </div>
                   </TableCell>
 
@@ -346,7 +346,7 @@ const WithdrawalOrdersList = ({
                   <TableCell className="max-w-[200px]">
                     <p className="text-foreground truncate">{order.purpose || '-'}</p>
                     {order.delivery_address && (
-                      <p className="text-[10px] text-muted-foreground truncate">ส่ง: {order.delivery_address}</p>
+                      <p className="text-[10px] text-muted-foreground truncate">Deliver to: {order.delivery_address}</p>
                     )}
                   </TableCell>
 
@@ -368,17 +368,17 @@ const WithdrawalOrdersList = ({
                         size="xs"
                         onClick={() => onViewOrderDetails(order)}
                         className="h-8 px-2.5 rounded-xl text-xs font-semibold gap-1 hover:bg-accent cursor-pointer"
-                        title="ดูรายละเอียดคำขอ"
+                        title="View request details"
                       >
                         <Eye className="w-3.5 h-3.5" />
-                        <span>รายละเอียด</span>
+                        <span>Details</span>
                       </Button>
 
                       <Button
                         type="button"
                         variant="outline"
                         size="xs"
-                        title="พิมพ์/ดาวน์โหลด ใบเบิกของ (PDF)"
+                        title="Print / Download Issue Slip (PDF)"
                         onClick={() => onDownloadPDF(order)}
                         className="h-8 px-2.5 rounded-lg text-xs font-semibold text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 gap-1 cursor-pointer"
                       >
@@ -395,7 +395,7 @@ const WithdrawalOrdersList = ({
                               className="h-8 px-2.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer shadow-2xs"
                               onClick={() => onApproveOrder(order.id)}
                             >
-                              อนุมัติ
+                              Approve
                             </Button>
                           )}
                           {canReject && (
@@ -406,7 +406,7 @@ const WithdrawalOrdersList = ({
                               className="h-8 px-2.5 rounded-lg text-xs font-semibold cursor-pointer"
                               onClick={() => onOpenRejectModal(order)}
                             >
-                              ปฏิเสธ
+                              Reject
                             </Button>
                           )}
                         </>
@@ -419,7 +419,7 @@ const WithdrawalOrdersList = ({
                           className="h-8 px-2.5 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer shadow-2xs"
                           onClick={() => onCompleteOrder(order.id)}
                         >
-                          ยืนยันรับของ
+                          Confirm Receipt
                         </Button>
                       )}
                     </div>

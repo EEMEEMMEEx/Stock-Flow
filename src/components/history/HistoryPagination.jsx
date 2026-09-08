@@ -35,14 +35,14 @@ const HistoryPagination = ({
       {/* Items count summary */}
       <div className="flex items-center gap-3 text-muted-foreground font-medium">
         <span>
-          แสดง <strong className="text-foreground font-bold">{startItem}</strong> ถึง{' '}
-          <strong className="text-foreground font-bold">{endItem}</strong> จากทั้งหมด{' '}
-          <strong className="text-foreground font-bold">{totalItems.toLocaleString('th-TH')}</strong> รายการประวัติ
+          Showing <strong className="text-foreground font-bold">{startItem}</strong> to{' '}
+          <strong className="text-foreground font-bold">{endItem}</strong> of{' '}
+          <strong className="text-foreground font-bold">{totalItems.toLocaleString()}</strong> records
         </span>
 
         {/* Page size select */}
         <div className="flex items-center gap-1.5 ml-2 border-l border-border/60 pl-3">
-          <span className="text-[11px]">แสดงต่อหน้า:</span>
+          <span className="text-[11px]">Per page:</span>
           <select
             value={pageSize}
             onChange={(e) => onPageSizeChange(Number(e.target.value))}
@@ -64,7 +64,7 @@ const HistoryPagination = ({
           onClick={() => onPageChange(1)}
           disabled={currentPage === 1}
           className="h-8 w-8 p-0 rounded-lg cursor-pointer"
-          title="หน้าแรก"
+          title="First page"
         >
           <ChevronsLeft className="w-4 h-4" />
         </Button>
@@ -75,7 +75,7 @@ const HistoryPagination = ({
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
           className="h-8 w-8 p-0 rounded-lg cursor-pointer"
-          title="หน้าก่อนหน้า"
+          title="Previous page"
         >
           <ChevronLeft className="w-4 h-4" />
         </Button>
@@ -102,7 +102,7 @@ const HistoryPagination = ({
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
           className="h-8 w-8 p-0 rounded-lg cursor-pointer"
-          title="หน้าถัดไป"
+          title="Next page"
         >
           <ChevronRight className="w-4 h-4" />
         </Button>
@@ -113,7 +113,7 @@ const HistoryPagination = ({
           onClick={() => onPageChange(totalPages)}
           disabled={currentPage === totalPages}
           className="h-8 w-8 p-0 rounded-lg cursor-pointer"
-          title="หน้าสุดท้าย"
+          title="Last page"
         >
           <ChevronsRight className="w-4 h-4" />
         </Button>

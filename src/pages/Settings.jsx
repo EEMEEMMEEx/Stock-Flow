@@ -175,7 +175,7 @@ const Settings = () => {
       await Promise.all([fetchSettingsFromDb(), fetchRolesCatalog(), fetchStats()]);
     } catch (error) {
       console.error('Fetch Settings Error:', error);
-      toast.error('เกิดข้อผิดพลาดในการโหลดข้อมูลการตั้งค่า');
+      toast.error('Failed to load system settings');
     } finally {
       setLoading(false);
     }
@@ -187,7 +187,7 @@ const Settings = () => {
 
   const handleSaveAppSettings = async (e) => {
     e.preventDefault();
-    if (!canUpdate) return toast.error('คุณไม่มีสิทธิ์ในการแก้ไขการตั้งค่า (Requires settings.update)');
+    if (!canUpdate) return toast.error('Permission denied. Requires settings.update');
 
     try {
       setSavingCategory('app');
@@ -204,19 +204,19 @@ const Settings = () => {
 
       if (error) {
         if (error.code === 'PGRST202' || error.status === 404) {
-          toast.error('กรุณารัน Migration 11 ใน Supabase SQL Editor เพื่อใช้งานตารางการตั้งค่า');
+          toast.error('Please run Migration 11 in Supabase SQL Editor to enable settings table');
           return;
         }
         throw error;
       }
 
       if (data?.success) {
-        toast.success('บันทึกข้อมูลแอปและ Footer สำเร็จ');
+        toast.success('Application and footer settings saved successfully');
         window.dispatchEvent(new Event('stockflow:settings-updated'));
       }
     } catch (error) {
       console.error('Save App Settings Error:', error);
-      toast.error(error.message || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+      toast.error(error.message || 'Failed to save settings');
     } finally {
       setSavingCategory(null);
     }
@@ -224,7 +224,7 @@ const Settings = () => {
 
   const handleSaveInventorySettings = async (e) => {
     e.preventDefault();
-    if (!canUpdate) return toast.error('คุณไม่มีสิทธิ์ในการแก้ไขการตั้งค่า (Requires settings.update)');
+    if (!canUpdate) return toast.error('Permission denied. Requires settings.update');
 
     try {
       setSavingCategory('inventory');
@@ -243,12 +243,12 @@ const Settings = () => {
 
       if (error) throw error;
       if (data?.success) {
-        toast.success('บันทึกกฎการเบิกและสต็อกสำเร็จ');
+        toast.success('Inventory and withdrawal rules saved successfully');
         window.dispatchEvent(new Event('stockflow:settings-updated'));
       }
     } catch (error) {
       console.error('Save Inventory Settings Error:', error);
-      toast.error(error.message || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+      toast.error(error.message || 'Failed to save settings');
     } finally {
       setSavingCategory(null);
     }
@@ -256,7 +256,7 @@ const Settings = () => {
 
   const handleSaveNotificationSettings = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
-    if (!canUpdate) return toast.error('คุณไม่มีสิทธิ์ในการแก้ไขการตั้งค่า (Requires settings.update)');
+    if (!canUpdate) return toast.error('Permission denied. Requires settings.update');
 
     try {
       setSavingCategory('notification');
@@ -292,7 +292,7 @@ const Settings = () => {
         if (vaultErr) console.warn('[Settings] SMTP Password Vault Error:', vaultErr.message);
       }
 
-      toast.success('บันทึกการตั้งค่าการแจ้งเตือนสำเร็จ');
+      toast.success('Notification settings saved successfully');
       setSmtpForm(prev => ({
         ...prev,
         ...smtpPayload,
@@ -303,7 +303,7 @@ const Settings = () => {
       await fetchSettingsFromDb();
     } catch (error) {
       console.error('Save Notification Settings Error:', error);
-      toast.error(error.message || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+      toast.error(error.message || 'Failed to save settings');
     } finally {
       setSavingCategory(null);
     }
@@ -313,7 +313,7 @@ const Settings = () => {
     const trimmedEmail = String(testEmailRecipient || '').trim();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!trimmedEmail || !emailRegex.test(trimmedEmail)) {
-      toast.error('กรุณาระบุรูปแบบอีเมลผู้รับทดสอบให้ถูกต้อง (เช่น name@domain.com)');
+      toast.error('Please enter a valid recipient email (e.g., name@domain.com)');
       return;
     }
 
@@ -335,11 +335,11 @@ const Settings = () => {
       }
 
       await sendTestEmail(trimmedEmail, null, customSmtpOverrides);
-      toast.success(`ส่งอีเมลทดสอบไปยัง ${trimmedEmail} สำเร็จเรียบร้อยแล้ว`);
+      toast.success(`Test email sent to ${trimmedEmail} successfully`);
       setIsTestEmailOpen(false);
       setTestEmailRecipient('');
     } catch (e) {
-      toast.error(e.message || 'เกิดข้อผิดพลาดในการส่งอีเมลทดสอบ');
+      toast.error(e.message || 'Failed to send test email');
     } finally {
       setSendingTestEmail(false);
     }
@@ -354,10 +354,10 @@ const Settings = () => {
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
             <SettingsIcon className="w-7 h-7 text-primary" />
-            ตั้งค่าระบบ (System Settings)
+            System Settings
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            จัดการข้อมูลระบบ กฎการทำงาน การแจ้งเตือน และการตั้งค่าระดับแอปพลิเคชัน
+            Manage system information, operating rules, notifications, and application settings
           </p>
         </div>
 
@@ -368,7 +368,7 @@ const Settings = () => {
           className="h-9 rounded-lg font-semibold flex items-center gap-2 text-xs cursor-pointer shadow-xs"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-          รีเฟรชค่าการตั้งค่า
+          Refresh Settings
         </Button>
       </div>
 
@@ -376,7 +376,7 @@ const Settings = () => {
       {!canUpdate && (
         <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-300 flex items-center gap-2 text-xs">
           <Lock className="w-4 h-4 text-amber-600 shrink-0" />
-          <span>บัญชีของคุณมีสิทธิ์ดูข้อมูลการตั้งค่าเท่านั้น (Requires <code className="font-mono bg-amber-200/50 px-1 rounded">settings.update</code> to save changes)</span>
+          <span>Your account has read-only access to settings (Requires <code className="font-mono bg-amber-200/50 px-1 rounded">settings.update</code> to save changes)</span>
         </div>
       )}
 
@@ -389,8 +389,8 @@ const Settings = () => {
           <div className="flex items-center gap-2.5">
             <AppWindow className="w-5 h-5 text-primary" />
             <div>
-              <CardTitle className="text-base font-bold">1. ข้อมูลแอปและ Footer (Application & Footer)</CardTitle>
-              <CardDescription className="text-xs">ชื่อระบบ องค์กร คำอธิบาย และการแสดงผลส่วนท้ายกระดาษ</CardDescription>
+              <CardTitle className="text-base font-bold">1. Application & Footer</CardTitle>
+              <CardDescription className="text-xs">System name, organization, description, and footer display</CardDescription>
             </div>
           </div>
           {openSections.app ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
@@ -401,7 +401,7 @@ const Settings = () => {
             <form onSubmit={handleSaveAppSettings} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="app_name" className="text-xs font-semibold">ชื่อแอปพลิเคชัน (Application Name)</Label>
+                  <Label htmlFor="app_name" className="text-xs font-semibold">Application Name</Label>
                   <Input
                     id="app_name"
                     required
@@ -413,11 +413,11 @@ const Settings = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="company_name" className="text-xs font-semibold">ชื่อบริษัท / องค์กร (Company / Organization)</Label>
+                  <Label htmlFor="company_name" className="text-xs font-semibold">Company / Organization</Label>
                   <Input
                     id="company_name"
                     disabled={!canUpdate}
-                    placeholder="เช่น Forth Co., Ltd. (ระบุหรือไม่ก็ได้)"
+                    placeholder="e.g. Forth Co., Ltd. (optional)"
                     value={appForm.company_name}
                     onChange={(e) => setAppForm(prev => ({ ...prev, company_name: e.target.value }))}
                     className="mt-1 h-9 text-xs rounded-lg bg-background border border-input"
@@ -426,7 +426,7 @@ const Settings = () => {
               </div>
 
               <div>
-                <Label htmlFor="app_subtitle" className="text-xs font-semibold">คำอธิบายระบบส่วนย่อย (Application Subtitle)</Label>
+                <Label htmlFor="app_subtitle" className="text-xs font-semibold">Application Subtitle</Label>
                 <Input
                   id="app_subtitle"
                   disabled={!canUpdate}
@@ -439,7 +439,7 @@ const Settings = () => {
               {/* Version & Build Info (Read-only) */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-xs font-semibold text-muted-foreground">เวอร์ชันระบบ (Application Version - Build Metadata)</Label>
+                  <Label className="text-xs font-semibold text-muted-foreground">Application Version (Build Metadata)</Label>
                   <Input
                     disabled
                     value={`v${APP_CONFIG.version}`}
@@ -448,7 +448,7 @@ const Settings = () => {
                 </div>
 
                 <div>
-                  <Label className="text-xs font-semibold text-muted-foreground">สภาพแวดล้อม (Environment)</Label>
+                  <Label className="text-xs font-semibold text-muted-foreground">Environment</Label>
                   <Input
                     disabled
                     value={import.meta.env.MODE || 'production'}
@@ -461,7 +461,7 @@ const Settings = () => {
               <div className="p-3.5 rounded-lg bg-muted/30 border border-border/50 space-y-1.5">
                 <div className="flex items-center gap-1.5 text-xs font-semibold text-primary">
                   <Sparkles className="w-3.5 h-3.5" />
-                  <span>ตัวอย่างการแสดงผลส่วนท้ายกระดาษจริง (Live Footer Preview):</span>
+                  <span>Live Footer Preview:</span>
                 </div>
                 <div className="p-2.5 rounded-lg bg-background border border-border/50 text-xs text-muted-foreground flex flex-wrap items-center gap-2 justify-between">
                   <div className="flex items-center gap-2">
@@ -484,7 +484,7 @@ const Settings = () => {
                 <div className="flex justify-end pt-2">
                   <Button type="submit" disabled={savingCategory === 'app'} className="h-9 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground flex items-center gap-2 text-xs font-semibold cursor-pointer shadow-xs">
                     <Save className="w-3.5 h-3.5" />
-                    {savingCategory === 'app' ? 'กำลังบันทึก...' : 'บันทึกข้อมูลแอปและ Footer'}
+                    {savingCategory === 'app' ? 'Saving...' : 'Save App & Footer Settings'}
                   </Button>
                 </div>
               )}
@@ -502,8 +502,8 @@ const Settings = () => {
           <div className="flex items-center gap-2.5">
             <Package className="w-5 h-5 text-amber-600" />
             <div>
-              <CardTitle className="text-base font-bold">2. กฎการเบิกและสต็อก (Inventory & Withdrawal Rules)</CardTitle>
-              <CardDescription className="text-xs">กำหนดเกณฑ์เตือนสต็อกต่ำ วัตถุประสงค์การเบิก และนโยบายธุรกรรม</CardDescription>
+              <CardTitle className="text-base font-bold">2. Inventory & Withdrawal Rules</CardTitle>
+              <CardDescription className="text-xs">Configure low-stock threshold, withdrawal purpose requirements, and transaction policies</CardDescription>
             </div>
           </div>
           {openSections.inventory ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
@@ -516,16 +516,16 @@ const Settings = () => {
               <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs space-y-1">
                 <span className="font-bold flex items-center gap-1.5">
                   <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
-                  นโยบายการอนุมัติ: All-or-Nothing (บังคับใช้โดยระบบเพื่อป้องกันสต็อกติดลบ)
+                  Approval Policy: All-or-Nothing (Enforced by system to prevent negative stock)
                 </span>
                 <p className="text-[11px] leading-relaxed opacity-90 pl-5.5">
-                  ระบบ StockFlow บังคับใช้การอนุมัติแบบ Transaction เดียวกันทั้งบิล หากสินค้าชิ้นใดชิ้นหนึ่งในคำขอเบิกมีสต็อกไม่พอ ผู้อนุมัติจะไม่สามารถตัดสต็อกบางส่วนได้และต้องกดปฏิเสธทั้งบิล เพื่อความถูกต้องสมบูรณ์ของคลังสินค้า
+                  StockFlow enforces atomic all-or-nothing approvals. If any requested item lacks sufficient stock, approvers cannot partially fulfill the order and must reject the entire request to maintain inventory integrity.
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="low_stock_threshold" className="text-xs font-semibold">เกณฑ์สต็อกต่ำเริ่มต้น (Default Low Stock Threshold)</Label>
+                  <Label htmlFor="low_stock_threshold" className="text-xs font-semibold">Default Low Stock Threshold</Label>
                   <Input
                     id="low_stock_threshold"
                     type="number"
@@ -536,7 +536,7 @@ const Settings = () => {
                     className="mt-1 h-9 text-xs rounded-lg bg-background border border-input"
                   />
                   <p className="text-[11px] text-muted-foreground mt-1">
-                    * เมื่อจำนวนวัสดุเหลือต่ำกว่าเกณฑ์นี้ ระบบจะขึ้นป้ายเตือน &quot;สินค้าใกล้หมด&quot; ในหน้าคลัง
+                    * When inventory falls below this threshold, items display a &quot;Low Stock&quot; badge in inventory
                   </p>
                 </div>
 
@@ -549,7 +549,7 @@ const Settings = () => {
                       onChange={(e) => setInventoryForm(prev => ({ ...prev, require_withdrawal_purpose: e.target.checked }))}
                       className="rounded text-primary focus:ring-primary h-4 w-4"
                     />
-                    <span>บังคับระบุวัตถุประสงค์ในการขอเบิกจ่ายทุกครั้ง</span>
+                    <span>Require purpose for all withdrawal requests</span>
                   </label>
 
                   <label className="flex items-center gap-2.5 text-xs font-medium cursor-pointer">
@@ -560,7 +560,7 @@ const Settings = () => {
                       onChange={(e) => setInventoryForm(prev => ({ ...prev, allow_inactive_project_view: e.target.checked }))}
                       className="rounded text-primary focus:ring-primary h-4 w-4"
                     />
-                    <span>อนุญาตให้ผู้ใช้เข้าดูประวัติและยอดยกมาจากโครงการที่ปิดตัวลงแล้ว (Inactive Projects)</span>
+                    <span>Allow users to view history and balances from inactive projects</span>
                   </label>
 
                   <label className="flex items-center gap-2.5 text-xs font-medium cursor-pointer">
@@ -571,7 +571,7 @@ const Settings = () => {
                       onChange={(e) => setInventoryForm(prev => ({ ...prev, allow_item_deletion: e.target.checked }))}
                       className="rounded text-primary focus:ring-primary h-4 w-4"
                     />
-                    <span>อนุญาตให้แสดงปุ่มลบรายการวัสดุ (Enable Item Deletion Button)</span>
+                    <span>Enable Item Deletion Button</span>
                   </label>
 
                   <div className="space-y-1.5 pt-1 border-t border-border/40">
@@ -583,10 +583,10 @@ const Settings = () => {
                         onChange={(e) => setInventoryForm(prev => ({ ...prev, allow_direct_stock_adjustment: e.target.checked }))}
                         className="rounded text-primary focus:ring-primary h-4 w-4"
                       />
-                      <span>อนุญาตให้แก้ไขยอดสต็อกคงเหลือปัจจุบันในหน้า Master Items (Enable Current Stock Editing)</span>
+                      <span>Enable Current Stock Editing on Master Items</span>
                     </label>
                     <div className="pl-6.5 text-[11px] text-amber-800 dark:text-amber-300 bg-amber-500/10 border border-amber-500/20 p-2 rounded-lg">
-                      <strong>คำแนะนำ/Warning:</strong> “Adjust the current stock before enabling Current Stock Editing.” (ปรับยอดสต็อกปัจจุบันก่อนเปิดใช้งานการแก้ไขสต็อกโดยตรง)
+                      <strong>Warning:</strong> Adjust physical stock before enabling direct stock editing.
                     </div>
                   </div>
                 </div>
@@ -596,7 +596,7 @@ const Settings = () => {
                 <div className="flex justify-end pt-2">
                   <Button type="submit" disabled={savingCategory === 'inventory'} className="h-9 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground flex items-center gap-2 text-xs font-semibold cursor-pointer shadow-xs">
                     <Save className="w-3.5 h-3.5" />
-                    {savingCategory === 'inventory' ? 'กำลังบันทึก...' : 'บันทึกกฎการเบิกและสต็อก'}
+                    {savingCategory === 'inventory' ? 'Saving...' : 'Save Inventory Rules'}
                   </Button>
                 </div>
               )}
@@ -614,8 +614,8 @@ const Settings = () => {
           <div className="flex items-center gap-2.5">
             <Mail className="w-5 h-5 text-blue-600" />
             <div>
-              <CardTitle className="text-base font-bold">3. การแจ้งเตือนและอีเมล (Notification & Email Settings)</CardTitle>
-              <CardDescription className="text-xs">ตั้งค่าเซิร์ฟเวอร์ SMTP และบทบาทที่จะรับการแจ้งเตือนตามเหตุการณ์</CardDescription>
+              <CardTitle className="text-base font-bold">3. Notification & Email Settings</CardTitle>
+              <CardDescription className="text-xs">Configure SMTP server and recipient roles for event-based notifications</CardDescription>
             </div>
           </div>
           {openSections.notification ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
@@ -627,7 +627,7 @@ const Settings = () => {
               {/* SMTP Configuration */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-xs font-bold text-foreground">การตั้งค่าเซิร์ฟเวอร์ส่งอีเมล (SMTP Server Configuration)</h4>
+                  <h4 className="text-xs font-bold text-foreground">SMTP Server Configuration</h4>
                   <Button
                     type="button"
                     variant="outline"
@@ -636,7 +636,7 @@ const Settings = () => {
                     className="h-8 px-2.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 text-blue-600 border-border hover:bg-accent cursor-pointer shadow-xs"
                   >
                     <Send className="w-3 h-3" />
-                    ทดสอบส่งอีเมล (Test Email)
+                    Test Email
                   </Button>
                 </div>
 
@@ -690,7 +690,7 @@ const Settings = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div>
-                    <Label htmlFor="sender_email" className="text-[11px] font-semibold">อีเมลผู้ส่ง (Sender Email)</Label>
+                    <Label htmlFor="sender_email" className="text-[11px] font-semibold">Sender Email</Label>
                     <Input
                       id="sender_email"
                       autoComplete="email"
@@ -703,7 +703,7 @@ const Settings = () => {
                   </div>
 
                   <div>
-                    <Label htmlFor="sender_name" className="text-[11px] font-semibold">ชื่อผู้ส่ง (Sender Name)</Label>
+                    <Label htmlFor="sender_name" className="text-[11px] font-semibold">Sender Name</Label>
                     <Input
                       id="sender_name"
                       autoComplete="off"
@@ -716,14 +716,14 @@ const Settings = () => {
 
                   <div>
                     <Label htmlFor="smtp_pw" className="text-[11px] font-semibold">
-                      SMTP Password {smtpForm.password_set && <span className="text-emerald-600 font-bold ml-1">(ตั้งค่าไว้แล้ว)</span>}
+                      SMTP Password {smtpForm.password_set && <span className="text-emerald-600 font-bold ml-1">(Configured)</span>}
                     </Label>
                     <Input
                       id="smtp_pw"
                       type="password"
                       autoComplete="new-password"
                       disabled={!canUpdate}
-                      placeholder={smtpForm.password_set ? '•••••••• (ระบุใหม่เมื่อต้องการเปลี่ยน)' : 'ระบุรหัสผ่าน SMTP'}
+                      placeholder={smtpForm.password_set ? '•••••••• (Enter new to change)' : 'Enter SMTP password'}
                       value={smtpForm.new_password ?? ''}
                       onChange={(e) => setSmtpForm(prev => ({ ...prev, new_password: e.target.value }))}
                       className="mt-1 h-9 text-xs rounded-lg bg-background border border-input"
@@ -737,7 +737,7 @@ const Settings = () => {
                     <div>
                       <Label htmlFor="smtp_secure" className="text-[11px] font-semibold flex items-center gap-1.5 text-foreground">
                         <Lock className="w-3.5 h-3.5 text-primary" />
-                        การเชื่อมต่อความปลอดภัย (Security Protocol)
+                        Security Protocol
                       </Label>
                       <select
                         id="smtp_secure"
@@ -746,19 +746,19 @@ const Settings = () => {
                         onChange={(e) => setSmtpForm(prev => ({ ...prev, secure: e.target.value === 'true' }))}
                         className="mt-1.5 w-full rounded-lg border border-input bg-background px-3 py-1.5 text-xs shadow-xs focus:outline-none focus:ring-1 focus:ring-primary"
                       >
-                        <option value="true">SSL/TLS แบบเข้ารหัสทันที (Port 465 — Implicit TLS)</option>
-                        <option value="false">STARTTLS (Port 587 / 25 — อัปเกรดความปลอดภัยก่อนส่ง)</option>
+                        <option value="true">Implicit SSL/TLS (Port 465)</option>
+                        <option value="false">STARTTLS (Port 587 / 25)</option>
                       </select>
                       <p className="mt-1 text-[10px] text-muted-foreground flex items-center gap-1.5">
                         {smtpForm.secure ? (
                           <>
                             <Lock className="w-3 h-3 text-emerald-600 inline shrink-0" />
-                            <span>Implicit TLS: เข้ารหัสซ็อกเก็ตตั้งแต่เริ่มเปิดการเชื่อมต่อไปยัง SMTP Server (แนะนำสำหรับพอร์ต 465)</span>
+                            <span>Implicit TLS: Encrypts socket immediately upon connection to SMTP server (recommended for Port 465)</span>
                           </>
                         ) : (
                           <>
                             <Unlock className="w-3 h-3 text-amber-600 inline shrink-0" />
-                            <span>STARTTLS: เริ่มเชื่อมต่อแบบปกติแล้วอัปเกรดเป็น TLS ก่อนส่งข้อมูล (แนะนำสำหรับพอร์ต 587/25)</span>
+                            <span>STARTTLS: Connects normally then upgrades to TLS before sending data (recommended for Port 587/25)</span>
                           </>
                         )}
                       </p>
@@ -767,7 +767,7 @@ const Settings = () => {
                     <div className="space-y-1.5">
                       <Label className="text-[11px] font-semibold flex items-center gap-1.5 text-foreground">
                         <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                        การตรวจสอบใบรับรอง TLS (Verify TLS Certificate)
+                        Verify TLS Certificate
                       </Label>
                       <label className="flex items-center gap-2 pt-1 cursor-pointer select-none">
                         <input
@@ -778,10 +778,10 @@ const Settings = () => {
                           onChange={(e) => setSmtpForm(prev => ({ ...prev, reject_unauthorized: e.target.checked }))}
                           className="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4"
                         />
-                        <span className="text-xs font-medium">ตรวจสอบว่าใบรับรองออกโดย CA ที่เชื่อถือได้</span>
+                        <span className="text-xs font-medium">Verify certificate is issued by a trusted CA</span>
                       </label>
                       <p className="text-[10px] text-muted-foreground">
-                        แนะนำเปิดใช้งานเสมอ หากปิดจะอนุญาตใบรับรอง Self-Signed ภายในองค์กร
+                        Always recommended. Disabling allows internal self-signed certificates
                       </p>
                     </div>
                   </div>
@@ -790,28 +790,28 @@ const Settings = () => {
                   {Number(smtpForm.port) === 465 && !smtpForm.secure && (
                     <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-[11px] flex items-center gap-2">
                       <AlertTriangle className="w-4 h-4 shrink-0 text-amber-500" />
-                      <span>คำเตือน: พอร์ต 465 โดยทั่วไปต้องใช้ SSL/TLS แบบเข้ารหัสทันที (secure = true) การเลือก STARTTLS บนพอร์ต 465 อาจทำให้ซ็อกเก็ตหมดเวลา (ETIMEDOUT)</span>
+                      <span>Warning: Port 465 typically requires implicit SSL/TLS (secure = true). Selecting STARTTLS on port 465 may cause socket timeouts (ETIMEDOUT)</span>
                     </div>
                   )}
 
                   {Number(smtpForm.port) === 587 && smtpForm.secure && (
                     <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-[11px] flex items-center gap-2">
                       <AlertTriangle className="w-4 h-4 shrink-0 text-amber-500" />
-                      <span>คำเตือน: พอร์ต 587 โดยทั่วไปต้องใช้ STARTTLS (secure = false) การเลือก SSL/TLS แบบเข้ารหัสทันทีบนพอร์ต 587 อาจทำให้เกิดข้อผิดพลาด Greeting never received</span>
+                      <span>Warning: Port 587 typically requires STARTTLS (secure = false). Selecting implicit SSL/TLS on port 587 may cause &apos;Greeting never received&apos; errors</span>
                     </div>
                   )}
 
                   {smtpForm.reject_unauthorized === false && (
                     <div className="p-2.5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-700 dark:text-red-300 text-[11px] flex items-center gap-2">
                       <AlertTriangle className="w-4 h-4 shrink-0 text-red-500" />
-                      <span>คำเตือนความปลอดภัย: ปิดการตรวจสอบใบรับรอง TLS เฉพาะกรณีที่ SMTP Server ใช้ Self-Signed Certificate หรือ CA ภายในองค์กรที่เครื่องนี้ไม่รู้จักเท่านั้น</span>
+                      <span>Security Warning: Only disable TLS certificate verification if your SMTP server uses a self-signed certificate or custom internal CA</span>
                     </div>
                   )}
 
                   {/* Effective Configuration Summary */}
                   <div className="pt-2 border-t border-border/20 flex flex-wrap items-center justify-between text-[11px] text-muted-foreground gap-2">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-semibold text-foreground">คอนฟิกที่มีผล:</span>
+                      <span className="font-semibold text-foreground">Active Config:</span>
                       <span className="px-2 py-0.5 rounded bg-primary/10 text-primary font-mono text-[10px]">
                         {smtpForm.host || 'smtp.gmail.com'}:{smtpForm.port || 465}
                       </span>
@@ -836,7 +836,7 @@ const Settings = () => {
                 <div className="flex justify-end pt-2">
                   <Button type="submit" disabled={savingCategory === 'notification'} className="h-9 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground flex items-center gap-2 text-xs font-semibold cursor-pointer shadow-xs">
                     <Save className="w-3.5 h-3.5" />
-                    {savingCategory === 'notification' ? 'กำลังบันทึก...' : 'บันทึกเซิร์ฟเวอร์ SMTP'}
+                    {savingCategory === 'notification' ? 'Saving...' : 'Save SMTP Settings'}
                   </Button>
                 </div>
               )}
@@ -866,7 +866,7 @@ const Settings = () => {
                     }
                   } catch (err) {
                     console.error('Save Email Templates Error:', err);
-                    toast.error('เกิดข้อผิดพลาดในการบันทึกแม่แบบอีเมล');
+                    toast.error('Failed to save email templates');
                   }
                 }}
               />
@@ -885,8 +885,8 @@ const Settings = () => {
           <div className="flex items-center gap-2.5">
             <ShieldCheck className="w-5 h-5 text-purple-600" />
             <div>
-              <CardTitle className="text-base font-bold">4. ผู้ใช้และความปลอดภัย (User & Security Policy)</CardTitle>
-              <CardDescription className="text-xs">นโยบายรหัสผ่าน การจัดการบัญชี และความปลอดภัยระดับแอปพลิเคชัน</CardDescription>
+              <CardTitle className="text-base font-bold">4. User & Security Policy</CardTitle>
+              <CardDescription className="text-xs">Password policy, user account management, and application-level security</CardDescription>
             </div>
           </div>
           {openSections.security ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
@@ -899,19 +899,19 @@ const Settings = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
               <div className="p-3.5 rounded-lg bg-muted/30 border border-border/50 space-y-2">
-                <span className="font-bold text-foreground block text-sm">นโยบายรหัสผ่านผู้ใช้งาน (Password Policy)</span>
+                <span className="font-bold text-foreground block text-sm">Password Policy</span>
                 <ul className="list-disc list-inside text-muted-foreground space-y-1">
-                  <li>รหัสผ่านต้องมีความยาวอย่างน้อย 12 ตัวอักษร พิมพ์ใหญ่, พิมพ์เล็ก, ตัวเลข, อักขระพิเศษ</li>
-                  <li>มีระบบสุ่มรหัสผ่านปลอดภัยชั่วคราว (Set Random Default) ในหน้าตั้งค่า</li>
-                  <li><strong className="text-foreground">การจัดเก็บรหัสผ่านอย่างปลอดภัย (Secure Vault):</strong> รหัสผ่านถูกจัดเก็บฝั่งเซิร์ฟเวอร์แบบลับ และไม่ส่งคืนไปยัง Client หรือแสดงบนหน้าจอทุกกรณี</li>
+                  <li>Passwords must be at least 12 characters and include uppercase, lowercase, numbers, and special characters</li>
+                  <li>Support for generating secure temporary passwords (Set Random Default) in settings</li>
+                  <li><strong className="text-foreground">Secure Vault Storage:</strong> Passwords are encrypted and stored server-side. They are never returned to the client or displayed on screen under any circumstances.</li>
                 </ul>
               </div>
 
               <div className="p-3.5 rounded-lg bg-muted/30 border border-border/50 space-y-2">
-                <span className="font-bold text-foreground block text-sm">การคุ้มครองบัญชีผู้ใช้และการลบข้อมูล (User Account Lifecycle)</span>
+                <span className="font-bold text-foreground block text-sm">User Account Lifecycle & Protection</span>
                 <ul className="list-disc list-inside text-muted-foreground space-y-1">
-                  <li><strong className="text-foreground font-semibold">แนะนำใช้วิธี Inactive:</strong> บัญชีที่มีประวัติเบิกจ่ายควรใช้วิธีเปลี่ยนสถานะเป็น Inactive แทนการลบ</li>
-                  <li><strong className="text-purple-600 font-bold">Last Admin Protection:</strong> ป้องกันการลบ หรือปลดสิทธิ์ Admin คนสุดท้ายของระบบทั้งฝั่ง Client และ Database Triggers</li>
+                  <li><strong className="text-foreground font-semibold">Recommended: Inactive Status:</strong> Accounts with transaction history should be marked Inactive rather than permanently deleted.</li>
+                  <li><strong className="text-purple-600 font-bold">Last Admin Protection:</strong> Prevents deleting or demoting the last active administrator across both client UI and database triggers.</li>
                 </ul>
               </div>
             </div>
@@ -929,8 +929,8 @@ const Settings = () => {
           <div className="flex items-center gap-2.5">
             <Database className="w-5 h-5 text-cyan-600" />
             <div>
-              <CardTitle className="text-base font-bold">5. สถานะการจัดเก็บข้อมูล (Storage Status)</CardTitle>
-              <CardDescription className="text-xs">สถานะของ Cloudflare R2 Object Storage และนโยบายการจัดเก็บไฟล์ภาพ</CardDescription>
+              <CardTitle className="text-base font-bold">5. Storage Status</CardTitle>
+              <CardDescription className="text-xs">Status of Cloudflare R2 Object Storage and image asset policies</CardDescription>
             </div>
           </div>
           {openSections.storage ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
@@ -945,12 +945,12 @@ const Settings = () => {
               </div>
 
               <div className="p-3 rounded-lg bg-muted/30 border border-border/50 space-y-1">
-                <span className="text-muted-foreground text-[11px] block">Bucket ชื่อ</span>
+                <span className="text-muted-foreground text-[11px] block">Bucket Name</span>
                 <span className="font-bold text-sm text-primary font-mono">stockflow-assets</span>
               </div>
 
               <div className="p-3 rounded-lg bg-muted/30 border border-border/50 space-y-1">
-                <span className="text-muted-foreground text-[11px] block">ขนาดไฟล์สูงสุด</span>
+                <span className="text-muted-foreground text-[11px] block">Max File Size</span>
                 <span className="font-bold text-sm text-emerald-600 dark:text-emerald-400">5 MB (JPG / PNG / WebP)</span>
               </div>
             </div>
@@ -967,8 +967,8 @@ const Settings = () => {
           <div className="flex items-center gap-2.5">
             <Server className="w-5 h-5 text-slate-600 dark:text-slate-300" />
             <div>
-              <CardTitle className="text-base font-bold">6. ข้อมูลระบบ (System Information)</CardTitle>
-              <CardDescription className="text-xs">สรุปสถิติเวอร์ชัน สภาพแวดล้อม และสถานะการเชื่อมต่อฐานข้อมูล</CardDescription>
+              <CardTitle className="text-base font-bold">6. System Information</CardTitle>
+              <CardDescription className="text-xs">Summary of version metadata, environment, and database connectivity</CardDescription>
             </div>
           </div>
           {openSections.system ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
@@ -979,33 +979,33 @@ const Settings = () => {
           <CardContent className="pt-2 pb-6 border-t border-border/40 text-xs space-y-4">
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 text-center">
               <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
-                <span className="text-[10px] text-muted-foreground block">เวอร์ชัน</span>
+                <span className="text-[10px] text-muted-foreground block">Version</span>
                 <span className="font-mono font-bold text-xs text-primary">v{APP_CONFIG.version}</span>
               </div>
 
               <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
-                <span className="text-[10px] text-muted-foreground block">สภาพแวดล้อม</span>
+                <span className="text-[10px] text-muted-foreground block">Environment</span>
                 <span className="font-mono font-bold text-xs uppercase">{import.meta.env.MODE || 'production'}</span>
               </div>
 
               <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
-                <span className="text-[10px] text-muted-foreground block">ฐานข้อมูล</span>
+                <span className="text-[10px] text-muted-foreground block">Database</span>
                 <span className="font-bold text-xs text-emerald-600 dark:text-emerald-400">Connected</span>
               </div>
 
               <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
-                <span className="text-[10px] text-muted-foreground block">จำนวนโครงการ</span>
-                <span className="font-bold text-xs text-foreground">{systemStats.projects} โครงการ</span>
+                <span className="text-[10px] text-muted-foreground block">Projects</span>
+                <span className="font-bold text-xs text-foreground">{systemStats.projects} {systemStats.projects === 1 ? 'Project' : 'Projects'}</span>
               </div>
 
               <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
-                <span className="text-[10px] text-muted-foreground block">จำนวนผู้ใช้</span>
-                <span className="font-bold text-xs text-foreground">{systemStats.users} บัญชี</span>
+                <span className="text-[10px] text-muted-foreground block">Users</span>
+                <span className="font-bold text-xs text-foreground">{systemStats.users} {systemStats.users === 1 ? 'User' : 'Users'}</span>
               </div>
 
               <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
-                <span className="text-[10px] text-muted-foreground block">จำนวนบทบาท</span>
-                <span className="font-bold text-xs text-purple-600 dark:text-purple-400">{systemStats.roles} บทบาท</span>
+                <span className="text-[10px] text-muted-foreground block">Roles</span>
+                <span className="font-bold text-xs text-purple-600 dark:text-purple-400">{systemStats.roles} {systemStats.roles === 1 ? 'Role' : 'Roles'}</span>
               </div>
             </div>
           </CardContent>
@@ -1018,16 +1018,16 @@ const Settings = () => {
           <DialogHeader>
             <DialogTitle className="text-lg font-bold flex items-center gap-2 text-blue-600">
               <Send className="w-5 h-5" />
-              ทดสอบส่งอีเมล (Test Email Notification)
+              Test Email Notification
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground mt-1">
-              ทดสอบส่งข้อความแจ้งเตือนผ่านระบบการส่งอีเมล SMTP ของแอปพลิเคชัน
+              Send a test notification message through the application SMTP delivery system
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-3 my-2">
             <div>
-              <Label htmlFor="test_recipient" className="text-xs font-semibold">อีเมลผู้รับทดสอบ *</Label>
+              <Label htmlFor="test_recipient" className="text-xs font-semibold">Test Recipient Email *</Label>
               <Input
                 id="test_recipient"
                 type="email"
@@ -1042,14 +1042,14 @@ const Settings = () => {
 
           <DialogFooter>
             <Button variant="ghost" size="sm" onClick={() => setIsTestEmailOpen(false)} className="h-9 px-3 rounded-lg text-xs cursor-pointer">
-              ยกเลิก
+              Cancel
             </Button>
             <Button 
               disabled={sendingTestEmail || !testEmailRecipient} 
               onClick={handleSendTestEmail}
               className="h-9 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold cursor-pointer shadow-xs"
             >
-              {sendingTestEmail ? 'กำลังส่ง...' : 'ส่งอีเมลทดสอบ'}
+              {sendingTestEmail ? 'Sending...' : 'Send Test Email'}
             </Button>
           </DialogFooter>
         </DialogContent>

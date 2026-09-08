@@ -150,12 +150,12 @@ const StockIn = () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', 'บัญชีรายการอุปกรณ์_DOPA_USO_Template.csv');
+    link.setAttribute('download', 'DOPA_USO_Equipment_Template.csv');
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-    toast.success('ดาวน์โหลด DOPA+USO CSV Template (UTF-8 BOM) เรียบร้อย');
+    toast.success('DOPA+USO CSV template (UTF-8 BOM) downloaded successfully');
   };
 
   // Direct CSV File Parsing with Native DOPA+USO & Multi-Warehouse Detection
@@ -174,7 +174,7 @@ const StockIn = () => {
         const { items: parsed, detectedWarehouses } = parseDopaStockCsv(text);
         
         if (parsed.length === 0) {
-          toast.error('ไม่พบบรรทัดข้อมูลที่ถูกต้องในไฟล์ CSV');
+          toast.error('No valid data rows found in the CSV file');
           return;
         }
 
@@ -196,10 +196,10 @@ const StockIn = () => {
         setPreviewItems(aggregated);
         setPreviewSearch('');
         setIsImportPreviewOpen(true);
-        toast.success(`อ่านข้อมูลสำเร็จ ${parsed.length} รายการ (พบ ${detectedWarehouses.length} คลังจัดเก็บ)`);
+        toast.success(`Successfully loaded ${parsed.length} item(s) (found ${detectedWarehouses.length} storage location(s))`);
       } catch (err) {
         console.error('CSV Parsing error:', err);
-        toast.error('เกิดข้อผิดพลาดในการนำเข้า CSV: ' + err.message);
+        toast.error('Error importing CSV: ' + err.message);
       } finally {
         if (fileInputRef.current) fileInputRef.current.value = '';
       }
@@ -218,7 +218,7 @@ const StockIn = () => {
       setSelectedQtySource(matchedWh);
       const aggregated = filterAndAggregateWarehouseItems(rawParsedCsvItems, matchedWh, { filterZeroQty: onlyPositiveFilter });
       setPreviewItems(aggregated);
-      toast.success(`กรองข้อมูลตาม [${targetProj.location}] พบ ${aggregated.length} รายการ`);
+      toast.success(`Filtered by [${targetProj.location}]: ${aggregated.length} item(s) found`);
     }
   };
 
@@ -250,7 +250,7 @@ const StockIn = () => {
           const aggregated = filterAndAggregateWarehouseItems(rawParsedCsvItems, matchedWh, { filterZeroQty: true });
           if (aggregated.length > 0) {
             setLineItems(aggregated);
-            toast.success(`อัปเดตรายการตาม [${targetProj.location}] สำเร็จ ${aggregated.length} รายการ`);
+            toast.success(`Updated items for [${targetProj.location}]: ${aggregated.length} item(s)`);
           }
         }
       }
@@ -264,16 +264,16 @@ const StockIn = () => {
     setFormData(prev => ({ ...prev, project_id: previewProjectId || prev.project_id || projects[0]?.id || '' }));
     setIsImportPreviewOpen(false);
     setIsCreateDialogOpen(true);
-    toast.success(`โหลดข้อมูลเข้าฟอร์มสำเร็จ ${previewItems.length} รายการ`);
+    toast.success(`Loaded ${previewItems.length} item(s) into the form`);
   };
 
   // Direct Submit from Preview Dialog
   const handleDirectSubmitFromPreview = async () => {
     if (!previewProjectId) {
-      return toast.error('กรุณาเลือกสถานที่จัดเก็บ (Location) ก่อนบันทึกรับเข้า');
+      return toast.error('Please select a storage location before recording stock receipt');
     }
     if (previewItems.length === 0) {
-      return toast.error('ไม่มีรายการวัสดุสำหรับบันทึกรับเข้า');
+      return toast.error('No items available to record stock receipt');
     }
 
     setFormData(prev => ({ ...prev, project_id: previewProjectId }));
@@ -285,17 +285,17 @@ const StockIn = () => {
   // Execute Stock In Submission Core
   const executeStockInSubmission = async (projectId, itemsToSubmit) => {
     if (!projectId) {
-      return toast.error('กรุณาเลือกสถานที่จัดเก็บ (Location) ก่อนบันทึกรับเข้า');
+      return toast.error('Please select a storage location before recording stock receipt');
     }
 
     if (itemsToSubmit.length === 0) {
-      return toast.error('กรุณาเพิ่มรายการวัสดุรับเข้าอย่างน้อย 1 รายการ');
+      return toast.error('Please add at least 1 item for stock receipt');
     }
 
     // Validate rows (Name is required, quantity must be > 0, model is optional)
     const invalidRows = itemsToSubmit.filter(row => (!row.name && !row.sku) || !row.quantity || parseInt(row.quantity, 10) <= 0);
     if (invalidRows.length > 0) {
-      return toast.error('มีรายการวัสดุที่ไม่ได้ระบุชื่อ/SKU หรือระบุจำนวนไม่ถูกต้อง');
+      return toast.error('Some items are missing a Name/SKU or have an invalid quantity');
     }
 
     try {
@@ -320,7 +320,7 @@ const StockIn = () => {
           const { data: newItem, error: insertError } = await supabase
             .from('items')
             .insert({
-              name: row.name || row.sku || 'รายการรับเข้าใหม่',
+              name: row.name || row.sku || 'New Stock Item',
               sku: row.sku || null,
               model: row.model || null,
               unit: 'ชิ้น',
@@ -444,7 +444,7 @@ const StockIn = () => {
         if (txErr) console.warn('Warning inserting stock_transactions:', txErr);
       }
 
-      toast.success('บันทึกรับเข้าสต็อก (Stock Receipt) สำเร็จเรียบร้อย');
+      toast.success('Stock receipt recorded successfully');
 
       dispatchStockInNotification({
         orderId: orderId,
@@ -458,7 +458,7 @@ const StockIn = () => {
       fetchData();
     } catch (error) {
       console.error('StockIn Submit Error:', error);
-      toast.error('เกิดข้อผิดพลาดในการบันทึกรับเข้าสต็อก: ' + (error.message || ''));
+      toast.error('Failed to record stock receipt: ' + (error.message || ''));
     } finally {
       setIsSubmitting(false);
     }
@@ -481,7 +481,7 @@ const StockIn = () => {
       setSelectedOrder(order);
     } catch (error) {
       console.error('viewOrderDetails error:', error);
-      toast.error('ไม่สามารถโหลดรายละเอียดได้');
+      toast.error('Unable to load receipt details');
     }
   };
 
@@ -513,10 +513,10 @@ const StockIn = () => {
         <div>
           <h2 className="text-3xl font-bold tracking-tight flex items-center gap-2">
             <ArrowDownToLine className="w-8 h-8 text-green-500" />
-            รับเข้าสต็อก (Stock Receipt)
+            Stock Receipts
           </h2>
           <p className="text-muted-foreground mt-2">
-            ประวัติและใบบันทึกการรับเข้าวัสดุเข้าคลังโครงการ (รองรับการแยกยอดตามคลังจัดเก็บ & DOPA+USO)
+            History and records of incoming project materials (Supports warehouse breakdown & DOPA+USO)
           </p>
         </div>
         
@@ -535,7 +535,7 @@ const StockIn = () => {
               onClick={() => fileInputRef.current?.click()}
             >
               <Upload className="w-4 h-4" />
-              <span>นำเข้าไฟล์ (.csv)</span>
+              <span>Import CSV (.csv)</span>
             </Button>
 
             <Button 
@@ -543,7 +543,7 @@ const StockIn = () => {
               onClick={handleOpenCreateDialog}
             >
               <Plus className="w-4 h-4 shrink-0" />
-              <span>บันทึกรับเข้าสต็อก</span>
+              <span>Receive Stock</span>
             </Button>
           </div>
         )}
@@ -554,17 +554,17 @@ const StockIn = () => {
         <Table>
           <TableHeader className="bg-muted/50">
             <TableRow>
-              <TableHead>วันที่รับเข้า</TableHead>
-              <TableHead>สถานที่จัดเก็บ (Location)</TableHead>
-              <TableHead>ผู้บันทึก</TableHead>
-              <TableHead className="text-right">จัดการ</TableHead>
+              <TableHead>Receipt Date</TableHead>
+              <TableHead>Storage Location</TableHead>
+              <TableHead>Recorded By</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={4} className="text-center py-8">กำลังโหลดข้อมูล...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={4} className="text-center py-8">Loading data...</TableCell></TableRow>
             ) : orders.length === 0 ? (
-              <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">ไม่มีข้อมูลบิลรับเข้า</TableCell></TableRow>
+              <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">No stock receipt records found</TableCell></TableRow>
             ) : (
               orders.map((o) => (
                 <TableRow key={o.id} className="hover:bg-muted/20">
@@ -585,7 +585,7 @@ const StockIn = () => {
                   <TableCell>{o.profiles?.full_name || 'Admin User'}</TableCell>
                   <TableCell className="text-right">
                     <Button size="sm" variant="outline" className="rounded-xl h-8 text-xs font-semibold" onClick={() => viewOrderDetails(o)}>
-                      ดูรายละเอียด
+                      View Details
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -608,10 +608,10 @@ const StockIn = () => {
                 </div>
                 <div>
                   <DialogTitle className="text-lg font-bold flex items-center gap-2 text-foreground">
-                    <span>นำเข้าและตรวจสอบรายการรับเข้าสต็อก (Stock Receipt Preview)</span>
+                    <span>Stock Receipt Preview</span>
                   </DialogTitle>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    ไฟล์: <strong className="text-foreground">{importFileName || 'CSV Document'}</strong>
+                    File: <strong className="text-foreground">{importFileName || 'CSV Document'}</strong>
                   </p>
                 </div>
               </div>
@@ -619,7 +619,7 @@ const StockIn = () => {
               {/* Summary Badges */}
               <div className="flex items-center gap-1.5 flex-wrap">
                 <span className="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-emerald-500/15 text-emerald-600 border border-emerald-500/30 font-mono">
-                  รวม {previewItems.length} รายการ
+                  Total {previewItems.length} {previewItems.length === 1 ? 'item' : 'items'}
                 </span>
                 <span className="px-2 py-0.5 rounded-lg text-[11px] font-bold bg-indigo-500/15 text-indigo-600 border border-indigo-500/30">
                   PARENT: {previewParentCount}
@@ -628,7 +628,7 @@ const StockIn = () => {
                   CHILD: {previewChildCount}
                 </span>
                 <span className="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 font-mono">
-                  ยอดรวม {previewTotalQty.toLocaleString()} ชิ้น
+                  Total {previewTotalQty.toLocaleString()} pcs
                 </span>
               </div>
             </div>
@@ -644,7 +644,7 @@ const StockIn = () => {
                 required={true}
                 mode="dual"
                 size="sm"
-                label="1. เลือกโครงการและสถานที่จัดเก็บ (Project & Location)"
+                label="1. Select Project & Storage Location"
                 showSummaryCard={false}
               />
 
@@ -653,7 +653,7 @@ const StockIn = () => {
                 <div className="space-y-1">
                   <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
                     <Filter className="w-3.5 h-3.5 text-indigo-600" />
-                    <span>2. กรองและคำนวณยอดคงเหลือตามคลัง (Storage Location Balance):</span>
+                    <span>2. Filter by Warehouse Balance:</span>
                   </div>
                   
                   {/* Quick Warehouse Pills */}
@@ -670,7 +670,7 @@ const StockIn = () => {
                       }`}
                     >
                       <BarChart3 className="w-3.5 h-3.5" />
-                      <span>ยอดรวมคงเหลือ (Total)</span>
+                      <span>Total Balance</span>
                     </Button>
 
                     {csvDetectedWarehouses.map(wh => {
@@ -707,12 +707,12 @@ const StockIn = () => {
                   {onlyPositiveFilter ? (
                     <>
                       <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                      <span>แสดงเฉพาะรายการมียอด &gt; 0</span>
+                      <span>Show only balance &gt; 0</span>
                     </>
                   ) : (
                     <>
                       <Layers className="w-3.5 h-3.5 text-indigo-500" />
-                      <span>แสดงทุกรายการ (รวมยอด 0)</span>
+                      <span>Show all items (including 0 balance)</span>
                     </>
                   )}
                 </Button>
@@ -724,10 +724,10 @@ const StockIn = () => {
               <div className="p-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-xs flex items-center justify-between gap-2 animate-in fade-in-50">
                 <span className="flex items-center gap-1.5 font-medium text-foreground">
                   <MapPin className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                  <span>กำลังแสดงรายการและยอดสต็อกเฉพาะของคลัง: <strong className="text-indigo-600 dark:text-indigo-300">{selectedQtySource}</strong></span>
+                  <span>Showing items and stock balance for: <strong className="text-indigo-600 dark:text-indigo-300">{selectedQtySource}</strong></span>
                 </span>
                 <span className="font-mono font-bold text-indigo-700 dark:text-indigo-300">
-                  {previewItems.length} รายการ ({previewTotalQty.toLocaleString()} ชิ้น)
+                  {previewItems.length} {previewItems.length === 1 ? 'item' : 'items'} ({previewTotalQty.toLocaleString()} pcs)
                 </span>
               </div>
             )}
@@ -737,7 +737,7 @@ const StockIn = () => {
               <div className="relative w-full sm:w-72">
                 <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <Input
-                  placeholder="ค้นหาชื่อ, Part No, รุ่น ในตารางพรีวิว..."
+                  placeholder="Search name, part number, or model in preview..."
                   value={previewSearch}
                   onChange={(e) => setPreviewSearch(e.target.value)}
                   className="pl-8 h-8 text-xs rounded-lg"
@@ -745,7 +745,7 @@ const StockIn = () => {
               </div>
 
               <span className="text-xs text-muted-foreground">
-                แสดงผล {filteredPreviewItems.length} จาก {previewItems.length} รายการ
+                Showing {filteredPreviewItems.length} of {previewItems.length} items
               </span>
             </div>
 
@@ -754,14 +754,14 @@ const StockIn = () => {
               <Table>
                 <TableHeader className="bg-muted/60 sticky top-0 z-10 backdrop-blur text-xs">
                   <TableRow className="border-b">
-                    <TableHead className="w-[6%] text-center">ลำดับ</TableHead>
-                    <TableHead className="w-[8%]">ประเภท</TableHead>
+                    <TableHead className="w-[6%] text-center">#</TableHead>
+                    <TableHead className="w-[8%]">Type</TableHead>
                     <TableHead className="w-[14%]">Part No. / SKU</TableHead>
-                    <TableHead className="w-[32%]">รายการวัสดุ</TableHead>
-                    <TableHead className="w-[15%]">รุ่น/ยี่ห้อ</TableHead>
-                    <TableHead className="w-[10%] text-right">จำนวน ({selectedQtySource})</TableHead>
-                    <TableHead className="w-[12%]">หมายเหตุ</TableHead>
-                    <TableHead className="w-[3%] text-center">ลบ</TableHead>
+                    <TableHead className="w-[32%]">Material / Item Name</TableHead>
+                    <TableHead className="w-[15%]">Model / Brand</TableHead>
+                    <TableHead className="w-[10%] text-right">Quantity ({selectedQtySource === 'คงเหลือ' ? 'Total' : selectedQtySource})</TableHead>
+                    <TableHead className="w-[12%]">Notes</TableHead>
+                    <TableHead className="w-[3%] text-center">Remove</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody className="text-xs">
@@ -802,7 +802,7 @@ const StockIn = () => {
                             </div>
                             {item.parent_sku && isChild && (
                               <div className="text-[10px] text-muted-foreground font-mono pl-3">
-                                แม่: {item.parent_sku}
+                                Parent: {item.parent_sku}
                               </div>
                             )}
                           </div>
@@ -846,7 +846,7 @@ const StockIn = () => {
               className="rounded-lg h-9 px-4 text-xs font-semibold cursor-pointer"
               onClick={() => setIsImportPreviewOpen(false)}
             >
-              ยกเลิก
+              Cancel
             </Button>
 
             <div className="flex items-center gap-2">
@@ -856,7 +856,7 @@ const StockIn = () => {
                 onClick={handleApplyPreviewToForm}
                 className="rounded-lg h-9 px-4 text-xs font-semibold gap-1.5 border-border text-foreground hover:bg-muted cursor-pointer"
               >
-                <span>เปิดแก้ไขในแบบฟอร์ม</span>
+                <span>Edit in Form</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Button>
 
@@ -869,12 +869,12 @@ const StockIn = () => {
                 {isSubmitting ? (
                   <>
                     <RefreshCw className="w-4 h-4 animate-spin" />
-                    <span>กำลังบันทึกรับเข้า...</span>
+                    <span>Recording receipt...</span>
                   </>
                 ) : (
                   <>
                     <CheckCircle2 className="w-4 h-4" />
-                    <span>ยืนยันบันทึกรับเข้า ({previewItems.length} รายการ)</span>
+                    <span>Confirm Stock Receipt ({previewItems.length} {previewItems.length === 1 ? 'item' : 'items'})</span>
                   </>
                 )}
               </Button>
@@ -892,7 +892,7 @@ const StockIn = () => {
             <DialogHeader className="border-b border-border/40 pb-3">
               <DialogTitle className="text-xl font-bold flex items-center gap-2">
                 <ArrowDownToLine className="w-6 h-6 text-green-600" />
-                <span>บันทึกรับเข้าสต็อก (Direct Stock Receipt - Parent/Child Hierarchy)</span>
+                <span>Direct Stock Receipt (Parent/Child Hierarchy)</span>
               </DialogTitle>
             </DialogHeader>
 
@@ -905,7 +905,7 @@ const StockIn = () => {
                   onChange={handleDirectProjectChange}
                   required={true}
                   mode="dual"
-                  label="โครงการและสถานที่จัดเก็บ (Project & Location)"
+                  label="Project & Storage Location"
                   showSummaryCard={true}
                 />
 
@@ -914,7 +914,7 @@ const StockIn = () => {
                   <div className="pt-2 border-t border-border/40 flex items-center justify-between gap-2 flex-wrap text-xs">
                     <span className="font-bold text-muted-foreground flex items-center gap-1">
                       <SlidersHorizontal className="w-3.5 h-3.5 text-indigo-500" />
-                      <span>กรองยอดด่วนตามคลังในไฟล์:</span>
+                      <span>Quick filter by file warehouse:</span>
                     </span>
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <Button
@@ -924,12 +924,12 @@ const StockIn = () => {
                         onClick={() => {
                           const allAgg = filterAndAggregateWarehouseItems(rawParsedCsvItems, 'คงเหลือ', { filterZeroQty: false });
                           setLineItems(allAgg);
-                          toast.success('แสดงยอดรวมคงเหลือทุกคลัง');
+                          toast.success('Showing total balance across all warehouses');
                         }}
                         className="h-6 text-[10px] rounded-lg font-bold flex items-center gap-1"
                       >
                         <BarChart3 className="w-3 h-3 text-emerald-600" />
-                        <span>ยอดรวมทั้งหมด</span>
+                        <span>Total Balance</span>
                       </Button>
                       {csvDetectedWarehouses.map(wh => (
                         <Button
@@ -940,7 +940,7 @@ const StockIn = () => {
                           onClick={() => {
                             const whAgg = filterAndAggregateWarehouseItems(rawParsedCsvItems, wh, { filterZeroQty: true });
                             setLineItems(whAgg);
-                            toast.success(`กรองยอดเฉพาะ [${wh}] ${whAgg.length} รายการ`);
+                            toast.success(`Filtered for [${wh}]: ${whAgg.length} item(s)`);
                           }}
                           className="h-6 text-[10px] rounded-lg font-bold border-indigo-500/30 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-500/10 flex items-center gap-1"
                         >
@@ -957,7 +957,7 @@ const StockIn = () => {
               <div className="flex flex-wrap items-center justify-between gap-3 bg-emerald-500/10 p-3 rounded-xl border border-emerald-500/20">
                 <div className="flex items-center gap-2 text-sm text-emerald-900 dark:text-emerald-200">
                   <Upload className="w-4 h-4 text-emerald-600" />
-                  <span className="font-semibold">นำเข้าไฟล์ CSV โครงสร้าง Parent-Child หรือหลายคลังจัดเก็บ (UTF-8 BOM)</span>
+                  <span className="font-semibold">Import CSV with Parent-Child structure or multi-warehouse columns (UTF-8 BOM)</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Button 
@@ -967,7 +967,7 @@ const StockIn = () => {
                     className="h-8 text-xs gap-1 border-emerald-500/30 hover:bg-emerald-500/10 font-bold"
                     onClick={handleDownloadCsvTemplate}
                   >
-                    <Download className="w-3.5 h-3.5" /> ดาวน์โหลด CSV Template
+                    <Download className="w-3.5 h-3.5" /> Download CSV Template
                   </Button>
                   
                   <Button 
@@ -976,7 +976,7 @@ const StockIn = () => {
                     className="h-8 text-xs gap-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold cursor-pointer"
                     onClick={() => fileInputRef.current?.click()}
                   >
-                    <Upload className="w-3.5 h-3.5" /> นำเข้าไฟล์ .csv
+                    <Upload className="w-3.5 h-3.5" /> Import CSV File
                   </Button>
                 </div>
               </div>
@@ -985,7 +985,7 @@ const StockIn = () => {
               <div className="space-y-3">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                   <h3 className="font-semibold text-sm flex items-center gap-2">
-                    รายการวัสดุรับเข้า ({lineItems.length} รายการ)
+                    Incoming Material Items ({lineItems.length} {lineItems.length === 1 ? 'item' : 'items'})
                   </h3>
                   <div className="flex gap-2">
                     <Button 
@@ -996,7 +996,7 @@ const StockIn = () => {
                       onClick={() => handleAddLineItem('PARENT')}
                     >
                       <Plus className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                      <span>เพิ่มรายการหลัก (PARENT)</span>
+                      <span>Add Parent Item</span>
                     </Button>
                     <Button 
                       type="button" 
@@ -1009,7 +1009,7 @@ const StockIn = () => {
                       }}
                     >
                       <Plus className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-                      <span>เพิ่มรายการย่อย (CHILD)</span>
+                      <span>Add Child Item</span>
                     </Button>
                   </div>
                 </div>
@@ -1018,23 +1018,23 @@ const StockIn = () => {
                   <Table>
                     <TableHeader className="bg-muted/40 sticky top-0 z-10 backdrop-blur">
                       <TableRow className="text-xs">
-                        <TableHead className="w-[8%] min-w-[75px]">ประเภท</TableHead>
-                        <TableHead className="w-[10%] min-w-[100px]">รหัสวัสดุ (SKU)</TableHead>
+                        <TableHead className="w-[8%] min-w-[75px]">Type</TableHead>
+                        <TableHead className="w-[10%] min-w-[100px]">Item SKU</TableHead>
                         <TableHead className="w-[9%] min-w-[95px]">Parent SKU</TableHead>
-                        <TableHead className="w-[20%] min-w-[160px]">รายการ *</TableHead>
-                        <TableHead className="w-[12%] min-w-[110px]">รุ่น/ยี่ห้อ</TableHead>
-                        <TableHead className="w-[7%] min-w-[65px] text-center">จำนวน *</TableHead>
+                        <TableHead className="w-[20%] min-w-[160px]">Item Name *</TableHead>
+                        <TableHead className="w-[12%] min-w-[110px]">Model / Brand</TableHead>
+                        <TableHead className="w-[7%] min-w-[65px] text-center">Quantity *</TableHead>
                         <TableHead className="w-[10%] min-w-[95px]">S/N</TableHead>
                         <TableHead className="w-[10%] min-w-[95px]">Part No.</TableHead>
-                        <TableHead className="w-[10%] min-w-[110px]">หมายเหตุ</TableHead>
-                        <TableHead className="w-[4%] min-w-[45px] text-center">ลบ</TableHead>
+                        <TableHead className="w-[10%] min-w-[110px]">Notes</TableHead>
+                        <TableHead className="w-[4%] min-w-[45px] text-center">Remove</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {lineItems.length === 0 ? (
                         <TableRow>
                           <TableCell colSpan={10} className="text-center py-6 text-muted-foreground text-sm">
-                            ยังไม่มีรายการวัสดุ กด &quot;+ เพิ่มรายการหลัก&quot; หรือนำเข้าไฟล์ CSV
+                            No items added yet. Click &quot;+ Add Parent Item&quot; or import a CSV file
                           </TableCell>
                         </TableRow>
                       ) : (
@@ -1077,7 +1077,7 @@ const StockIn = () => {
                                   {isChild && <span className="text-blue-500 font-mono text-xs select-none">└─</span>}
                                   <Input 
                                     required
-                                    placeholder={isChild ? "ระบุรายการย่อย" : "ระบุรายการ"} 
+                                    placeholder={isChild ? "Enter child item name" : "Enter item name"} 
                                     value={row.name} 
                                     onChange={e => handleUpdateLineItem(row.tempId, 'name', e.target.value)} 
                                     className={`h-9 text-xs rounded-lg ${isChild ? 'font-medium text-blue-950 dark:text-blue-200' : 'font-semibold'}`}
@@ -1087,7 +1087,7 @@ const StockIn = () => {
 
                               <TableCell className="align-top">
                                 <Input 
-                                  placeholder="ระบุรุ่น (ถ้ามี)" 
+                                  placeholder="Model (optional)" 
                                   value={row.model} 
                                   onChange={e => handleUpdateLineItem(row.tempId, 'model', e.target.value)} 
                                   className="h-9 text-xs font-medium rounded-lg"
@@ -1107,7 +1107,7 @@ const StockIn = () => {
 
                               <TableCell className="align-top">
                                 <Input 
-                                  placeholder="S/N (ถ้ามี)" 
+                                  placeholder="S/N (optional)" 
                                   value={row.serial_number} 
                                   onChange={e => handleUpdateLineItem(row.tempId, 'serial_number', e.target.value)} 
                                   className="h-9 text-xs font-mono rounded-lg"
@@ -1125,7 +1125,7 @@ const StockIn = () => {
 
                               <TableCell className="align-top">
                                 <Input 
-                                  placeholder="หมายเหตุ" 
+                                  placeholder="Notes" 
                                   value={row.notes} 
                                   onChange={e => handleUpdateLineItem(row.tempId, 'notes', e.target.value)} 
                                   className="h-9 text-xs rounded-lg"
@@ -1155,17 +1155,17 @@ const StockIn = () => {
               {/* Receipt Summary Calculation */}
               <div className="flex items-center justify-between bg-muted/30 p-3 rounded-xl border border-border text-sm">
                 <div className="flex gap-6 text-xs sm:text-sm font-medium flex-wrap">
-                  <span>รวมรายการ: <strong className="text-foreground font-bold">{totalItemsCount}</strong> รายการ</span>
-                  <span>รายการหลัก (PARENT): <strong className="text-green-600 font-bold">{lineItems.filter(i => i.item_type === 'PARENT').length}</strong></span>
-                  <span>รายการย่อย (CHILD): <strong className="text-blue-600 font-bold">{lineItems.filter(i => i.item_type === 'CHILD').length}</strong></span>
-                  <span>รวมจำนวนวัสดุ: <strong className="text-emerald-600 font-bold">{totalQuantitySum}</strong> ชิ้น</span>
+                  <span>Total Items: <strong className="text-foreground font-bold">{totalItemsCount}</strong></span>
+                  <span>Parent Items: <strong className="text-green-600 font-bold">{lineItems.filter(i => i.item_type === 'PARENT').length}</strong></span>
+                  <span>Child Items: <strong className="text-blue-600 font-bold">{lineItems.filter(i => i.item_type === 'CHILD').length}</strong></span>
+                  <span>Total Quantity: <strong className="text-emerald-600 font-bold">{totalQuantitySum}</strong> pcs</span>
                 </div>
               </div>
             </div>
 
             <DialogFooter className="gap-2 sm:gap-0 border-t border-border/40 pt-4">
               <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)} disabled={isSubmitting} className="rounded-lg h-9 px-4 text-xs font-semibold">
-                ยกเลิก
+                Cancel
               </Button>
               <Button 
                 type="submit" 
@@ -1175,12 +1175,12 @@ const StockIn = () => {
                 {isSubmitting ? (
                   <>
                     <RefreshCw className="w-4 h-4 shrink-0 animate-spin" />
-                    <span>กำลังบันทึกรับเข้า...</span>
+                    <span>Recording receipt...</span>
                   </>
                 ) : (
                   <>
                     <Check className="w-4 h-4 shrink-0" />
-                    <span>ยืนยันบันทึกรับเข้าสต็อก</span>
+                    <span>Confirm Stock Receipt</span>
                   </>
                 )}
               </Button>
@@ -1200,7 +1200,7 @@ const StockIn = () => {
                 <div className="p-2 rounded-lg bg-green-500/10 text-green-600 dark:text-green-400">
                   <ArrowDownToLine className="w-5 h-5" />
                 </div>
-                <span>รายละเอียดบิลรับเข้าสต็อก (Stock Receipt)</span>
+                <span>Stock Receipt Details</span>
               </DialogTitle>
               <span className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
                 Parent/Child Hierarchy
@@ -1212,7 +1212,7 @@ const StockIn = () => {
             {/* Metadata Summary Banner */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs bg-muted/30 p-4 rounded-xl border border-border">
               <div className="space-y-1">
-                <span className="text-muted-foreground font-medium block">สถานที่จัดเก็บ (Location)</span>
+                <span className="text-muted-foreground font-medium block">Storage Location</span>
                 <span className="font-bold text-sm text-foreground block">
                   {selectedOrder?.projects?.project_code ? (
                     <span className="text-emerald-600 dark:text-emerald-400 font-mono mr-1">
@@ -1223,7 +1223,7 @@ const StockIn = () => {
                 </span>
               </div>
               <div className="space-y-1">
-                <span className="text-muted-foreground font-medium block">ผู้บันทึกรายการ</span>
+                <span className="text-muted-foreground font-medium block">Recorded By</span>
                 <span className="font-semibold text-foreground flex items-center gap-1.5">
                   <div className="w-5 h-5 rounded-full bg-emerald-600 text-white text-[10px] font-bold flex items-center justify-center">
                     {(selectedOrder?.profiles?.full_name || 'A')[0].toUpperCase()}
@@ -1232,7 +1232,7 @@ const StockIn = () => {
                 </span>
               </div>
               <div className="space-y-1">
-                <span className="text-muted-foreground font-medium block">วันที่รับเข้า</span>
+                <span className="text-muted-foreground font-medium block">Receipt Date</span>
                 <span className="font-semibold font-mono text-foreground block">
                   {selectedOrder && format(new Date(selectedOrder.created_at), 'dd/MM/yyyy HH:mm')}
                 </span>
@@ -1243,10 +1243,10 @@ const StockIn = () => {
             <div className="flex items-center justify-between pt-1">
               <h4 className="font-bold text-sm flex items-center gap-2 text-foreground">
                 <Package className="w-4 h-4 text-emerald-500" />
-                <span>รายการวัสดุในบิลนี้ ({orderDetails.length} รายการ)</span>
+                <span>Items in this Receipt ({orderDetails.length} {orderDetails.length === 1 ? 'item' : 'items'})</span>
               </h4>
               <span className="text-xs text-muted-foreground font-mono">
-                รวมจำนวน: {orderDetails.reduce((sum, item) => sum + (item.quantity || 0), 0)} ชิ้น
+                Total Quantity: {orderDetails.reduce((sum, item) => sum + (item.quantity || 0), 0)} pcs
               </span>
             </div>
 
@@ -1255,19 +1255,19 @@ const StockIn = () => {
               <Table>
                 <TableHeader className="bg-muted/60 sticky top-0 z-10 backdrop-blur text-xs">
                   <TableRow className="border-b">
-                    <TableHead className="w-[10%] font-bold">ประเภท</TableHead>
-                    <TableHead className="w-[38%] font-bold">SKU / รายการวัสดุ</TableHead>
-                    <TableHead className="w-[15%] font-bold">รุ่น</TableHead>
-                    <TableHead className="w-[10%] text-right font-bold">จำนวน</TableHead>
-                    <TableHead className="w-[8%] font-bold">หน่วย</TableHead>
-                    <TableHead className="w-[19%] font-bold">S/N & Part No. / หมายเหตุ</TableHead>
+                    <TableHead className="w-[10%] font-bold">Type</TableHead>
+                    <TableHead className="w-[38%] font-bold">SKU / Material Name</TableHead>
+                    <TableHead className="w-[15%] font-bold">Model</TableHead>
+                    <TableHead className="w-[10%] text-right font-bold">Quantity</TableHead>
+                    <TableHead className="w-[8%] font-bold">Unit</TableHead>
+                    <TableHead className="w-[19%] font-bold">S/N & Part No. / Notes</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody className="text-xs">
                   {orderDetails.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                        ไม่มีข้อมูลรายการวัสดุในบิลนี้
+                        No items found in this receipt
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -1355,7 +1355,7 @@ const StockIn = () => {
               className="h-9 px-5 rounded-lg text-xs font-semibold hover:bg-muted cursor-pointer"
               onClick={() => setSelectedOrder(null)}
             >
-              ปิด
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>

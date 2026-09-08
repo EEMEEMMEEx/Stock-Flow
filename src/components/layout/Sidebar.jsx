@@ -29,32 +29,32 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 const NAVIGATION_GROUPS = [
   {
     id: 'main',
-    title: 'การดำเนินงานหลัก',
+    title: 'Main Operations',
     items: [
       { id: 'dashboard', name: 'Dashboard', path: '/', icon: LayoutDashboard, permission: 'dashboard.view' },
-      { id: 'projects', name: 'โครงการ (Projects)', path: '/projects', icon: FolderKanban, permission: 'projects.view' },
-      { id: 'items', name: 'รายการวัสดุ (Items)', path: '/items', icon: Package, permission: 'items.view' },
-      { id: 'stock_in', name: 'รับเข้า Stock', path: '/stock-in', icon: ArrowDownToLine, permission: 'stock_in.view' },
-      { id: 'withdrawals', name: 'เบิกจ่าย (Withdrawals)', path: '/withdrawals', icon: ArrowUpFromLine, permission: 'withdrawals.view' },
-      { id: 'checkouts', name: 'ยืม-คืน (Checkouts)', path: '/checkouts', icon: RotateCcw, permission: 'checkouts.view' },
-      { id: 'history', name: 'ประวัติ (History)', path: '/history', icon: History, permission: 'history.view' },
-      { id: 'reports', name: 'รายงาน (Reports)', path: '/reports', icon: FileText, permission: 'reports.view' },
+      { id: 'projects', name: 'Projects', path: '/projects', icon: FolderKanban, permission: 'projects.view' },
+      { id: 'items', name: 'Items', path: '/items', icon: Package, permission: 'items.view' },
+      { id: 'stock_in', name: 'Stock In', path: '/stock-in', icon: ArrowDownToLine, permission: 'stock_in.view' },
+      { id: 'withdrawals', name: 'Withdrawals', path: '/withdrawals', icon: ArrowUpFromLine, permission: 'withdrawals.view' },
+      { id: 'checkouts', name: 'Checkouts', path: '/checkouts', icon: RotateCcw, permission: 'checkouts.view' },
+      { id: 'history', name: 'History', path: '/history', icon: History, permission: 'history.view' },
+      { id: 'reports', name: 'Reports', path: '/reports', icon: FileText, permission: 'reports.view' },
     ]
   },
   {
     id: 'admin',
-    title: 'ผู้ดูแลระบบ',
+    title: 'Administration',
     items: [
-      { id: 'users', name: 'จัดการผู้ใช้ (Users)', path: '/users', icon: UserCog, permission: 'users.view' },
-      { id: 'roles', name: 'จัดการบทบาทและสิทธิ์ (RBAC)', path: '/roles', icon: ShieldCheck, permission: 'roles.view' },
+      { id: 'users', name: 'Users', path: '/users', icon: UserCog, permission: 'users.view' },
+      { id: 'roles', name: 'Roles & Permissions', path: '/roles', icon: ShieldCheck, permission: 'roles.view' },
     ]
   },
   {
     id: 'account',
-    title: 'ส่วนตัวและช่วยเหลือ',
+    title: 'Account & Help',
     items: [
-      { id: 'profile', name: 'โปรไฟล์ส่วนตัว (Profile)', path: '/profile', icon: User, permission: null },
-      { id: 'manual', name: 'คู่มือการใช้งาน (Manual)', path: '/manual', icon: BookOpen, permission: null },
+      { id: 'profile', name: 'Profile', path: '/profile', icon: User, permission: null },
+      { id: 'manual', name: 'Manual', path: '/manual', icon: BookOpen, permission: null },
     ]
   }
 ];
@@ -139,7 +139,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
       {isOpen && (
         <button
           type="button"
-          aria-label="ปิดเมนูนำทาง"
+          aria-label="Close navigation"
           className="fixed inset-0 z-40 bg-black/50 backdrop-blur-[1px] md:hidden"
           onClick={onClose}
         />
@@ -148,7 +148,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
       {/* Sidebar Aside Element */}
       <aside 
         id="stockflow-sidebar"
-        aria-label="แถบเมนูหลัก"
+        aria-label="Main navigation"
         className={cn(
           "fixed top-0 z-50 flex h-screen flex-shrink-0 flex-col border-r border-border bg-card shadow-lg md:shadow-none transition-[width,transform] duration-200 ease-out md:sticky md:z-20 md:translate-x-0 md:opacity-100 overflow-x-hidden",
           isCollapsed ? "md:w-20" : "md:w-64",
@@ -282,7 +282,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
                   </NavLink>
                 </TooltipTrigger>
                 <TooltipContent side="right" sideOffset={12}>
-                  ตั้งค่าระบบ (Settings)
+                  Settings
                 </TooltipContent>
               </Tooltip>
             ) : (
@@ -297,7 +297,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
                 )}
               >
                 <Settings className="w-5 h-5 shrink-0" />
-                <span className="truncate whitespace-nowrap">ตั้งค่าระบบ (Settings)</span>
+                <span className="truncate whitespace-nowrap">Settings</span>
               </NavLink>
             )}
           </div>

@@ -9,9 +9,9 @@ const ReportEmptyState = ({ onResetFilters }) => {
         <div className="p-4 rounded-full bg-muted/60 ring-1 ring-border text-muted-foreground">
           <FileQuestion className="w-8 h-8 stroke-1.5" />
         </div>
-        <h3 className="text-lg font-bold text-foreground tracking-tight">ไม่พบข้อมูลรายงานตามเงื่อนไขที่เลือก</h3>
+        <h3 className="text-lg font-bold text-foreground tracking-tight">No report data found matching criteria</h3>
         <p className="text-xs sm:text-sm text-muted-foreground max-w-md mx-auto">
-          ไม่พบข้อมูลที่ตรงกับตัวกรอง โครงการ หรือช่วงวันที่ระบุ ลองปรับเปลี่ยนคำค้นหา หรือกดล้างตัวกรองเพื่อดูรายการทั้งหมด
+          No records match the selected project, date range, or filters. Try adjusting your query or reset filters to view all records.
         </p>
 
         {onResetFilters && (
@@ -22,7 +22,7 @@ const ReportEmptyState = ({ onResetFilters }) => {
             className="mt-2 rounded-xl text-xs font-semibold gap-1.5 border-border hover:bg-accent cursor-pointer"
           >
             <RotateCcw className="w-3.5 h-3.5" />
-            <span>ล้างตัวกรองทั้งหมด</span>
+            <span>Reset All Filters</span>
           </Button>
         )}
       </CardContent>

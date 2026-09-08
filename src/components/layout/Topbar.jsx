@@ -22,7 +22,7 @@ const getInitial = (name, email) => (name || email || 'U').trim().charAt(0).toUp
 const Avatar = ({ profile, user, className = '' }) => profile?.avatar_url ? (
   <img
     src={profile.avatar_url}
-    alt={profile.full_name || user?.email || 'ผู้ใช้งาน'}
+    alt={profile.full_name || user?.email || 'User'}
     className={cn('rounded-full border border-border object-cover', className)}
   />
 ) : (
@@ -38,7 +38,7 @@ const Topbar = ({ onMenuClick, menuButtonRef, isMobileMenuOpen }) => {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const roleLabel = getRoleLabel(profile?.roles?.code || profile?.role || 'STAFF', profile?.roles?.name);
   const roleColorClass = getRoleTextColorClass(profile?.roles?.code || profile?.role || 'STAFF', profile?.roles?.name);
-  const themeLabel = resolvedTheme === 'dark' ? 'สลับเป็นโหมดสว่าง' : 'สลับเป็นโหมดมืด';
+  const themeLabel = resolvedTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
 
   const toggleTheme = () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
 
@@ -69,7 +69,7 @@ const Topbar = ({ onMenuClick, menuButtonRef, isMobileMenuOpen }) => {
       </div>
 
       {/* Right side: Global Actions & User Profile Dropdown */}
-      <div className="flex items-center gap-2 ml-auto" aria-label="การควบคุมส่วนหัว">
+      <div className="flex items-center gap-2 ml-auto" aria-label="Header controls">
         {/* Dark/Light Theme Toggle */}
         <Button
           variant="ghost"
@@ -82,7 +82,7 @@ const Topbar = ({ onMenuClick, menuButtonRef, isMobileMenuOpen }) => {
           className={controlClassName}
         >
           {resolvedTheme === 'dark' ? <Sun className="h-[18px] w-[18px] transition-transform duration-200" /> : <Moon className="h-[18px] w-[18px] transition-transform duration-200" />}
-          <span className="sr-only">ธีมปัจจุบัน: {theme === 'system' ? 'ตามระบบ' : resolvedTheme === 'dark' ? 'มืด' : 'สว่าง'}</span>
+          <span className="sr-only">Current theme: {theme === 'system' ? 'System' : resolvedTheme === 'dark' ? 'Dark' : 'Light'}</span>
         </Button>
 
         {/* Interactive In-App Notification Bell */}
@@ -94,24 +94,24 @@ const Topbar = ({ onMenuClick, menuButtonRef, isMobileMenuOpen }) => {
             <button
               type="button"
               className="flex h-9 max-w-[13rem] items-center gap-2 rounded-lg border border-input bg-background px-2 text-left text-foreground shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 cursor-pointer"
-              aria-label="เมนูผู้ใช้งาน"
+              aria-label="User menu"
               aria-haspopup="menu"
               aria-expanded={userMenuOpen}
             >
               <Avatar profile={profile} user={user} className="h-7 w-7 shrink-0 text-xs" />
               <span className="hidden min-w-0 flex-1 lg:block">
-                <span className="block truncate text-xs font-semibold">{profile?.full_name || user?.email || 'ผู้ใช้งาน'}</span>
+                <span className="block truncate text-xs font-semibold">{profile?.full_name || user?.email || 'User'}</span>
                 <span className={cn("mt-0.5 block truncate text-[10px] uppercase tracking-wide font-bold", roleColorClass)}>{roleLabel}</span>
               </span>
               <ChevronDown className={cn('hidden h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 sm:block', userMenuOpen && 'rotate-180')} />
             </button>
           </DropdownMenu.Trigger>
           <DropdownMenu.Portal>
-            <DropdownMenu.Content align="end" sideOffset={10} className={menuContentClassName} aria-label="เมนูผู้ใช้งาน">
+            <DropdownMenu.Content align="end" sideOffset={10} className={menuContentClassName} aria-label="User menu">
               <div className="flex items-center gap-3 px-3 py-3">
                 <Avatar profile={profile} user={user} className="h-10 w-10 shrink-0 text-base" />
                 <div className="min-w-0">
-                  <DropdownMenu.Label className="truncate p-0 text-sm font-semibold">{profile?.full_name || user?.email || 'ผู้ใช้งาน'}</DropdownMenu.Label>
+                  <DropdownMenu.Label className="truncate p-0 text-sm font-semibold">{profile?.full_name || user?.email || 'User'}</DropdownMenu.Label>
                   <p className="mt-0.5 truncate text-xs text-muted-foreground">{user?.email || ''}</p>
                   <div className="mt-1">
                     <RoleBadge role={profile?.roles?.code || profile?.role || 'STAFF'} roleName={profile?.roles?.name} roleObj={profile?.roles} size="sm" />
@@ -119,12 +119,12 @@ const Topbar = ({ onMenuClick, menuButtonRef, isMobileMenuOpen }) => {
                 </div>
               </div>
               <DropdownMenu.Separator className="mx-1 my-1 h-px bg-border/70" />
-              <DropdownMenu.Item asChild className={menuItemClassName}><Link to="/profile"><UserRound className="h-4 w-4 text-primary" />โปรไฟล์</Link></DropdownMenu.Item>
-              <DropdownMenu.Item asChild className={menuItemClassName}><Link to="/profile?tab=password"><ShieldCheck className="h-4 w-4 text-primary" />ความปลอดภัยและรหัสผ่าน</Link></DropdownMenu.Item>
-              <DropdownMenu.Item asChild className={menuItemClassName}><Link to="/manual"><HelpCircle className="h-4 w-4 text-primary" />คู่มือการใช้งาน</Link></DropdownMenu.Item>
-              {can('settings.view') && <DropdownMenu.Item asChild className={menuItemClassName}><Link to="/settings"><Settings className="h-4 w-4 text-primary" />ตั้งค่าระบบ</Link></DropdownMenu.Item>}
+              <DropdownMenu.Item asChild className={menuItemClassName}><Link to="/profile"><UserRound className="h-4 w-4 text-primary" />Profile</Link></DropdownMenu.Item>
+              <DropdownMenu.Item asChild className={menuItemClassName}><Link to="/profile?tab=password"><ShieldCheck className="h-4 w-4 text-primary" />Security & Password</Link></DropdownMenu.Item>
+              <DropdownMenu.Item asChild className={menuItemClassName}><Link to="/manual"><HelpCircle className="h-4 w-4 text-primary" />Manual</Link></DropdownMenu.Item>
+              {can('settings.view') && <DropdownMenu.Item asChild className={menuItemClassName}><Link to="/settings"><Settings className="h-4 w-4 text-primary" />Settings</Link></DropdownMenu.Item>}
               <DropdownMenu.Separator className="mx-1 my-1 h-px bg-border/70" />
-              <DropdownMenu.Item className={cn(menuItemClassName, 'text-destructive focus:bg-destructive/10 focus:text-destructive')} onSelect={() => void handleSignOut()}><LogOut className="h-4 w-4" />ออกจากระบบ</DropdownMenu.Item>
+              <DropdownMenu.Item className={cn(menuItemClassName, 'text-destructive focus:bg-destructive/10 focus:text-destructive')} onSelect={() => void handleSignOut()}><LogOut className="h-4 w-4" />Sign Out</DropdownMenu.Item>
             </DropdownMenu.Content>
           </DropdownMenu.Portal>
         </DropdownMenu.Root>

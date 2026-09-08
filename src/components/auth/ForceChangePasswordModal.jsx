@@ -23,14 +23,14 @@ const ForceChangePasswordModal = ({ isOpen, onPasswordChanged }) => {
     }
   }, [newPassword]);
 
-  const handleSubmit = async (e) => {
+    const handleSubmit = async (e) => {
     e.preventDefault();
     if (!newPassword || !confirmPassword) {
-      return toast.error('กรุณากรอกรหัสผ่านใหม่และยืนยันรหัสผ่าน');
+      return toast.error('Please enter and confirm your new password');
     }
 
     if (newPassword !== confirmPassword) {
-      return toast.error('รหัสผ่านใหม่และยืนยันรหัสผ่านไม่ตรงกัน');
+      return toast.error('New password and confirmation do not match');
     }
 
     const policyCheck = validatePasswordPolicy(newPassword);
@@ -55,7 +55,7 @@ const ForceChangePasswordModal = ({ isOpen, onPasswordChanged }) => {
           .eq('id', (await supabase.auth.getUser())?.data?.user?.id);
       }
 
-      toast.success('เปลี่ยนรหัสผ่านสำเร็จ เริ่มต้นใช้งานระบบ StockFlow ได้ทันที');
+      toast.success('Password changed successfully. Welcome to StockFlow!');
       setNewPassword('');
       setConfirmPassword('');
       
@@ -64,7 +64,7 @@ const ForceChangePasswordModal = ({ isOpen, onPasswordChanged }) => {
       }
     } catch (err) {
       console.error('Force Change Password Error:', err);
-      toast.error(err.message || 'เกิดข้อผิดพลาดในการเปลี่ยนรหัสผ่าน');
+      toast.error(err.message || 'Failed to change password');
     } finally {
       setLoading(false);
     }
@@ -82,10 +82,10 @@ const ForceChangePasswordModal = ({ isOpen, onPasswordChanged }) => {
             <ShieldAlert className="w-6 h-6" />
           </div>
           <DialogTitle className="text-xl font-bold text-foreground flex items-center gap-2">
-            กำหนดรหัสผ่านใหม่ (First-Time Login)
+            Set New Password (First-Time Login)
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
-            ระบบตรวจพบว่าบัญชีของคุณถูกสร้างขึ้นใหม่ด้วยรหัสผ่านเริ่มต้นระบบ กรุณากำหนดรหัสผ่านใหม่ของคุณเองเพื่อความปลอดภัยก่อนเริ่มต้นใช้งาน (Password Change Required)
+            Your account was created with a temporary default password. Please set a secure password before proceeding.
           </DialogDescription>
         </DialogHeader>
 
@@ -93,7 +93,7 @@ const ForceChangePasswordModal = ({ isOpen, onPasswordChanged }) => {
           <div className="space-y-3">
             <div className="space-y-1">
               <Label htmlFor="force_new_password" className="text-xs font-semibold text-foreground">
-                รหัสผ่านใหม่ (New Password) *
+                New Password *
               </Label>
               <div className="relative">
                 <Input
@@ -101,7 +101,7 @@ const ForceChangePasswordModal = ({ isOpen, onPasswordChanged }) => {
                   type={showPassword ? 'text' : 'password'}
                   required
                   autoComplete="new-password"
-                  placeholder="อย่างน้อย 12 ตัวอักษร (พิมพ์ใหญ่, เล็ก, ตัวเลข, สัญลักษณ์)"
+                  placeholder="At least 12 characters (uppercase, lowercase, numbers, symbols)"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   className="pr-10 h-9 text-xs rounded-lg bg-background border border-input focus-visible:ring-1 focus-visible:ring-primary"
@@ -119,14 +119,14 @@ const ForceChangePasswordModal = ({ isOpen, onPasswordChanged }) => {
 
             <div className="space-y-1">
               <Label htmlFor="force_confirm_password" className="text-xs font-semibold text-foreground">
-                ยืนยันรหัสผ่านใหม่ (Confirm New Password) *
+                Confirm New Password *
               </Label>
               <Input
                 id="force_confirm_password"
                 type={showPassword ? 'text' : 'password'}
                 required
                 autoComplete="new-password"
-                placeholder="ป้อนรหัสผ่านใหม่อีกครั้งให้ตรงกัน"
+                placeholder="Re-enter your new password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className="h-9 text-xs rounded-lg bg-background border border-input focus-visible:ring-1 focus-visible:ring-primary"
@@ -137,21 +137,21 @@ const ForceChangePasswordModal = ({ isOpen, onPasswordChanged }) => {
           {/* Policy Checklist */}
           {newPassword && (
             <div className="p-3 rounded-lg bg-muted/30 border border-border/50 text-[11px] space-y-1">
-              <div className="font-semibold text-muted-foreground mb-1">ความแข็งแกร่งรหัสผ่าน:</div>
+              <div className="font-semibold text-muted-foreground mb-1">Password Requirements:</div>
               <div className={`flex items-center gap-1.5 ${newPassword.length >= 12 ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'}`}>
-                <CheckCircle2 className="w-3 h-3 shrink-0" /> ความยาวอย่างน้อย 12 ตัวอักษร
+                <CheckCircle2 className="w-3 h-3 shrink-0" /> At least 12 characters
               </div>
               <div className={`flex items-center gap-1.5 ${/[A-Z]/.test(newPassword) ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'}`}>
-                <CheckCircle2 className="w-3 h-3 shrink-0" /> มีตัวอักษรพิมพ์ใหญ่ (A-Z)
+                <CheckCircle2 className="w-3 h-3 shrink-0" /> Contains uppercase letter (A-Z)
               </div>
               <div className={`flex items-center gap-1.5 ${/[a-z]/.test(newPassword) ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'}`}>
-                <CheckCircle2 className="w-3 h-3 shrink-0" /> มีตัวอักษรพิมพ์เล็ก (a-z)
+                <CheckCircle2 className="w-3 h-3 shrink-0" /> Contains lowercase letter (a-z)
               </div>
               <div className={`flex items-center gap-1.5 ${/[0-9]/.test(newPassword) ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'}`}>
-                <CheckCircle2 className="w-3 h-3 shrink-0" /> มีตัวเลข (0-9)
+                <CheckCircle2 className="w-3 h-3 shrink-0" /> Contains number (0-9)
               </div>
               <div className={`flex items-center gap-1.5 ${/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(newPassword) ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'}`}>
-                <CheckCircle2 className="w-3 h-3 shrink-0" /> มีสัญลักษณ์พิเศษ (!@#$%...)
+                <CheckCircle2 className="w-3 h-3 shrink-0" /> Contains special character (!@#$%...)
               </div>
             </div>
           )}
@@ -161,7 +161,7 @@ const ForceChangePasswordModal = ({ isOpen, onPasswordChanged }) => {
             disabled={loading || !validation.isValid} 
             className="w-full h-9 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs shadow-xs cursor-pointer disabled:opacity-50"
           >
-            {loading ? 'กำลังบันทึกรหัสผ่าน...' : 'บันทึกรหัสผ่านใหม่และเริ่มต้นใช้งาน'}
+            {loading ? 'Saving password...' : 'Save Password & Get Started'}
           </Button>
         </form>
       </DialogContent>

@@ -21,10 +21,10 @@ const Login = () => {
       const { error } = await signIn(email, password);
       if (error) throw error;
       navigate('/');
-      toast.success('เข้าสู่ระบบสำเร็จ');
+      toast.success('Signed in successfully');
     } catch (error) {
       console.error('[Login Error]:', error);
-      let msg = error.message || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ';
+      let msg = error.message || 'An error occurred while signing in';
       if (
         error?.status === 500 || 
         String(error?.status) === '500' || 
@@ -34,9 +34,9 @@ const Login = () => {
       ) {
         msg = 'Supabase Authentication service is temporarily unavailable (HTTP 500). Please check the authentication service/database or try logging in again.';
       } else if (msg.includes('Email logins are disabled')) {
-        msg = 'การเข้าสู่ระบบด้วยอีเมลถูกปิดใช้งานใน Supabase (Email logins are disabled) กรุณาเปิดใช้งาน Email Provider ใน Supabase Dashboard';
+        msg = 'Email logins are disabled in Supabase. Please enable Email Provider in Supabase Dashboard.';
       } else if (msg.includes('Invalid login credentials')) {
-        msg = 'อีเมลหรือรหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบและลองใหม่อีกครั้ง';
+        msg = 'Invalid email or password. Please check your credentials and try again.';
       }
 
       toast.error(msg, { duration: 6000 });
@@ -60,7 +60,7 @@ const Login = () => {
           </div>
           <CardTitle className="text-3xl font-bold text-center">StockFlow</CardTitle>
           <CardDescription className="text-center text-base">
-            ลงชื่อเข้าใช้เพื่อจัดการ Stock โครงการ
+            Sign in to manage project inventory
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -98,7 +98,7 @@ const Login = () => {
               className="w-full h-12 text-base font-medium shadow-lg shadow-primary/20" 
               disabled={loading}
             >
-              {loading ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ'}
+              {loading ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>
         </CardContent>

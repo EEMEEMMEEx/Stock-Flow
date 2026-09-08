@@ -55,7 +55,7 @@ const ReportDataTable = ({
                     onClick={() => onSort('received_date')}
                     className="flex items-center gap-1.5 font-bold text-xs text-foreground group"
                   >
-                    <span>วันที่รับเข้า</span>
+                    <span>Received Date</span>
                     {renderSortIcon('received_date')}
                   </button>
                 </TableHead>
@@ -65,7 +65,7 @@ const ReportDataTable = ({
                     onClick={() => onSort('projects.name')}
                     className="flex items-center gap-1.5 font-bold text-xs text-foreground group"
                   >
-                    <span>โครงการ</span>
+                    <span>Project</span>
                     {renderSortIcon('projects.name')}
                   </button>
                 </TableHead>
@@ -75,20 +75,20 @@ const ReportDataTable = ({
                     onClick={() => onSort('items.name')}
                     className="flex items-center gap-1.5 font-bold text-xs text-foreground group"
                   >
-                    <span>รายการวัสดุ / รุ่น</span>
+                    <span>Item / Model</span>
                     {renderSortIcon('items.name')}
                   </button>
                 </TableHead>
 
                 <TableHead className="font-bold text-xs text-foreground">Supplier</TableHead>
-                <TableHead className="font-bold text-xs text-foreground">เลข PO</TableHead>
+                <TableHead className="font-bold text-xs text-foreground">PO #</TableHead>
 
                 <TableHead className="text-right w-[140px]">
                   <button
                     onClick={() => onSort('quantity')}
                     className="flex items-center justify-end gap-1.5 font-bold text-xs text-foreground group w-full"
                   >
-                    <span>จำนวนรับเข้า</span>
+                    <span>Stock In Qty</span>
                     {renderSortIcon('quantity')}
                   </button>
                 </TableHead>
@@ -102,7 +102,7 @@ const ReportDataTable = ({
                     onClick={() => onSort('requested_at')}
                     className="flex items-center gap-1.5 font-bold text-xs text-foreground group"
                   >
-                    <span>วันที่เบิก</span>
+                    <span>Requested Date</span>
                     {renderSortIcon('requested_at')}
                   </button>
                 </TableHead>
@@ -112,7 +112,7 @@ const ReportDataTable = ({
                     onClick={() => onSort('projects.name')}
                     className="flex items-center gap-1.5 font-bold text-xs text-foreground group"
                   >
-                    <span>โครงการ</span>
+                    <span>Project</span>
                     {renderSortIcon('projects.name')}
                   </button>
                 </TableHead>
@@ -122,27 +122,27 @@ const ReportDataTable = ({
                     onClick={() => onSort('items.name')}
                     className="flex items-center gap-1.5 font-bold text-xs text-foreground group"
                   >
-                    <span>รายการวัสดุ</span>
+                    <span>Item Name</span>
                     {renderSortIcon('items.name')}
                   </button>
                 </TableHead>
 
-                <TableHead className="font-bold text-xs text-foreground">ผู้เบิก</TableHead>
+                <TableHead className="font-bold text-xs text-foreground">Requester</TableHead>
 
                 <TableHead className="text-center font-bold text-xs text-foreground w-[150px]">
-                  สถานะ
+                  Status
                 </TableHead>
 
                 <TableHead className="text-center font-bold text-xs text-foreground">
-                  ขอเบิก
+                  Requested
                 </TableHead>
 
                 <TableHead className="text-center font-bold text-xs text-emerald-600 dark:text-emerald-400">
-                  ตัดสต็อกจริง
+                  Stock Deducted
                 </TableHead>
 
                 <TableHead className="text-center font-bold text-xs text-amber-600 dark:text-amber-400">
-                  ขาดส่ง (Shortage)
+                  Shortage
                 </TableHead>
               </TableRow>
             )}
@@ -154,7 +154,7 @@ const ReportDataTable = ({
                     onClick={() => onSort('project_name')}
                     className="flex items-center gap-1.5 font-bold text-xs text-foreground group"
                   >
-                    <span>โครงการ</span>
+                    <span>Project</span>
                     {renderSortIcon('project_name')}
                   </button>
                 </TableHead>
@@ -164,7 +164,7 @@ const ReportDataTable = ({
                     onClick={() => onSort('item_name')}
                     className="flex items-center gap-1.5 font-bold text-xs text-foreground group"
                   >
-                    <span>รายการวัสดุ</span>
+                    <span>Item Name</span>
                     {renderSortIcon('item_name')}
                   </button>
                 </TableHead>
@@ -174,7 +174,7 @@ const ReportDataTable = ({
                     onClick={() => onSort('total_in')}
                     className="flex items-center justify-end gap-1.5 font-bold text-xs text-emerald-600 dark:text-emerald-400 group w-full"
                   >
-                    <span>ยอดรับเข้า (In)</span>
+                    <span>Total In</span>
                     {renderSortIcon('total_in')}
                   </button>
                 </TableHead>
@@ -184,7 +184,7 @@ const ReportDataTable = ({
                     onClick={() => onSort('total_out')}
                     className="flex items-center justify-end gap-1.5 font-bold text-xs text-amber-600 dark:text-amber-400 group w-full"
                   >
-                    <span>ยอดเบิกจ่าย (Out)</span>
+                    <span>Total Out</span>
                     {renderSortIcon('total_out')}
                   </button>
                 </TableHead>
@@ -194,7 +194,7 @@ const ReportDataTable = ({
                     onClick={() => onSort('balance')}
                     className="flex items-center justify-end gap-1.5 font-bold text-xs text-foreground group w-full"
                   >
-                    <span>ยอดคงเหลือ (Balance)</span>
+                    <span>Current Balance</span>
                     {renderSortIcon('balance')}
                   </button>
                 </TableHead>
@@ -230,7 +230,7 @@ const ReportDataTable = ({
                     <TableCell>
                       <div className="font-medium text-foreground">{row.items?.name}</div>
                       {row.model && (
-                        <span className="text-[10px] text-muted-foreground">รุ่น: {row.model}</span>
+                        <span className="text-[10px] text-muted-foreground">Model: {row.model}</span>
                       )}
                     </TableCell>
 
@@ -238,7 +238,7 @@ const ReportDataTable = ({
                     <TableCell className="text-muted-foreground font-mono">{row.po_number || '-'}</TableCell>
 
                     <TableCell className="text-right font-bold text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
-                      +{row.quantity?.toLocaleString('th-TH')} {row.items?.unit}
+                      +{row.quantity?.toLocaleString()} {row.items?.unit}
                     </TableCell>
                   </>
                 )}
@@ -247,7 +247,7 @@ const ReportDataTable = ({
                 {activeTab === 'withdrawals' && (
                   <>
                     <TableCell className="font-medium text-foreground whitespace-nowrap">
-                      {new Date(row.requested_at).toLocaleDateString('th-TH')}
+                      {row.requested_at ? new Date(row.requested_at).toLocaleDateString() : '—'}
                     </TableCell>
 
                     <TableCell className="font-semibold text-foreground">
@@ -284,7 +284,7 @@ const ReportDataTable = ({
                         {row.has_shortage ? (
                           <>
                             <AlertCircle className="w-3 h-3 text-amber-600 shrink-0" />
-                            <span>{row.status} (ของไม่ครบ)</span>
+                            <span>{row.status} (Shortage)</span>
                           </>
                         ) : row.status === 'approved' || row.status === 'completed' ? (
                           <>
@@ -341,11 +341,11 @@ const ReportDataTable = ({
                     <TableCell className="font-medium text-foreground">{row.item_name}</TableCell>
 
                     <TableCell className="text-right font-semibold text-emerald-600 dark:text-emerald-400">
-                      +{row.total_in?.toLocaleString('th-TH')}
+                      +{row.total_in?.toLocaleString()}
                     </TableCell>
 
                     <TableCell className="text-right font-semibold text-amber-600 dark:text-amber-400">
-                      -{row.total_out?.toLocaleString('th-TH')}
+                      -{row.total_out?.toLocaleString()}
                     </TableCell>
 
                     <TableCell className="text-right font-bold text-foreground">
@@ -356,7 +356,7 @@ const ReportDataTable = ({
                             : 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 font-bold'
                         }`}
                       >
-                        {row.balance?.toLocaleString('th-TH')} {row.unit}
+                        {row.balance?.toLocaleString()} {row.unit}
                       </span>
                     </TableCell>
                   </>

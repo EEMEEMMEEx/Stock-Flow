@@ -30,7 +30,7 @@ const EditRoleModal = ({ isOpen, onClose, onSave, role }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.name) {
-      toast.error('กรุณาระบุชื่อบทบาท');
+      toast.error('Please enter role name');
       return;
     }
 
@@ -56,10 +56,10 @@ const EditRoleModal = ({ isOpen, onClose, onSave, role }) => {
         <DialogHeader>
           <DialogTitle className="text-xl font-bold flex items-center gap-2">
             <Shield className="w-5 h-5 text-primary" />
-            แก้ไขบทบาท (Edit Role) — {role?.code}
+            Edit Role — {role?.code}
           </DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
-            แก้ไขชื่อ คำอธิบาย และธีมสีป้ายสำหรับบทบาทนี้ (รหัสบทบาทเป็นค่าที่ไม่สามารถเปลี่ยนได้)
+            Edit name, description, and badge color theme for this role (Role code cannot be modified)
           </DialogDescription>
         </DialogHeader>
 
@@ -67,11 +67,11 @@ const EditRoleModal = ({ isOpen, onClose, onSave, role }) => {
           {role?.is_system && (
             <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-900 dark:text-blue-200 text-xs flex items-center gap-2">
               <Lock className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
-              <span>บทบาทของระบบ (System Role) — ป้องกันการลบหรือเปลี่ยนรหัสบทบาทเพื่อความเสถียรของระบบ</span>
+              <span>System Role — Cannot be deleted or have its role code changed for system stability</span>
             </div>
           )}
           <div>
-            <Label className="text-sm font-medium">รหัสบทบาท (Role Code)</Label>
+            <Label className="text-sm font-medium">Role Code</Label>
             <Input
               disabled
               value={role?.code || ''}
@@ -80,7 +80,7 @@ const EditRoleModal = ({ isOpen, onClose, onSave, role }) => {
           </div>
 
           <div>
-            <Label htmlFor="edit_role_name" className="text-sm font-medium">ชื่อบทบาท (Role Name) *</Label>
+            <Label htmlFor="edit_role_name" className="text-sm font-medium">Role Name *</Label>
             <Input
               id="edit_role_name"
               required
@@ -91,7 +91,7 @@ const EditRoleModal = ({ isOpen, onClose, onSave, role }) => {
           </div>
 
           <div>
-            <Label htmlFor="edit_role_desc" className="text-sm font-medium">คำอธิบายรายละเอียด</Label>
+            <Label htmlFor="edit_role_desc" className="text-sm font-medium">Description</Label>
             <Input
               id="edit_role_desc"
               value={formData.description}
@@ -103,10 +103,10 @@ const EditRoleModal = ({ isOpen, onClose, onSave, role }) => {
           {/* Color Palette Selector & Live Badge Preview */}
           <div className="p-3.5 rounded-lg bg-muted/30 border border-border/50 space-y-3">
             <div className="flex items-center justify-between">
-              <Label className="text-sm font-medium">เลือกธีมสีป้าย (Badge Theme)</Label>
+              <Label className="text-sm font-medium">Badge Theme</Label>
               <div className="flex items-center gap-1.5 text-xs">
                 <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                <span>ตัวอย่างสด:</span>
+                <span>Live Preview:</span>
                 <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold ${formData.badge_background} ${formData.badge_text_color}`}>
                   {formData.badge_background.includes('gradient') ? <Sparkles className="w-3 h-3 text-amber-500 shrink-0" /> : <Shield className="w-3 h-3 shrink-0" />}
                   {role?.code || 'ROLE'}
@@ -139,10 +139,10 @@ const EditRoleModal = ({ isOpen, onClose, onSave, role }) => {
 
           <DialogFooter className="pt-2">
             <Button type="button" variant="ghost" onClick={onClose} className="h-9 px-4 rounded-lg text-xs">
-              ยกเลิก
+              Cancel
             </Button>
             <Button type="submit" disabled={loading} className="h-9 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs shadow-xs cursor-pointer">
-              {loading ? 'กำลังอัปเดต...' : 'บันทึกการแก้ไข'}
+              {loading ? 'Updating...' : 'Save Changes'}
             </Button>
           </DialogFooter>
         </form>

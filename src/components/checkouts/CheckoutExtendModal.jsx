@@ -9,7 +9,6 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { format, addDays, differenceInDays, isAfter, parseISO } from 'date-fns';
-import { th } from 'date-fns/locale';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -41,7 +40,7 @@ const CheckoutExtendModal = ({
   // Initialize dates when order changes
   useEffect(() => {
     if (order && (order.borrow_type === 'indefinite' || !order.expected_return_date) && isOpen) {
-      toast.error('รายการยืมแบบไม่มีกำหนดคืน ไม่สามารถขยายเวลาส่งคืนได้');
+      toast.error('Indefinite loans cannot be extended');
       onClose();
       return;
     }
@@ -65,8 +64,8 @@ const CheckoutExtendModal = ({
         isValid: true,
         isIndefinite: true,
         statusType: 'indefinite',
-        statusLabel: 'ปกติ (ไม่มีกำหนดส่งคืน)',
-        formattedNewDate: 'ไม่มีกำหนดส่งคืน'
+        statusLabel: 'Active (Indefinite)',
+        formattedNewDate: 'Indefinite'
       };
     }
 
@@ -82,16 +81,16 @@ const CheckoutExtendModal = ({
       const daysFromToday = differenceInDays(parsedNewDate, today);
 
       let statusType = 'normal';
-      let statusLabel = 'สถานะปกติ';
+      let statusLabel = 'On Schedule';
       if (daysFromToday < 0) {
         statusType = 'overdue';
-        statusLabel = 'ยังคงเกินกำหนด';
+        statusLabel = 'Still Overdue';
       } else if (daysFromToday <= 2) {
         statusType = 'due_soon';
-        statusLabel = `ใกล้ครบกำหนด (อีก ${daysFromToday} วัน)`;
+        statusLabel = `Due soon (${daysFromToday} ${daysFromToday === 1 ? 'day' : 'days'} left)`;
       } else {
         statusType = 'normal';
-        statusLabel = `ปกติ (อีก ${daysFromToday} วัน)`;
+        statusLabel = `On schedule (${daysFromToday} ${daysFromToday === 1 ? 'day' : 'days'} left)`;
       }
 
       return {
@@ -101,7 +100,7 @@ const CheckoutExtendModal = ({
         daysFromToday,
         statusType,
         statusLabel,
-        formattedNewDate: format(parsedNewDate, 'dd MMMM yyyy', { locale: th })
+        formattedNewDate: format(parsedNewDate, 'dd MMMM yyyy')
       };
     } catch {
       return null;
@@ -127,17 +126,17 @@ const CheckoutExtendModal = ({
     e.preventDefault();
 
     if (order?.borrow_type === 'indefinite' && !isIndefiniteChoice) {
-      toast.error('รายการยืมแบบไม่มีกำหนดคืน ไม่สามารถขยายเวลาส่งคืนได้');
+      toast.error('Indefinite loans cannot be extended');
       return;
     }
 
     if (!isIndefiniteChoice && !newDueDate) {
-      toast.error('กรุณาระบุกำหนดส่งคืนใหม่ หรือเลือกไม่มีกำหนดคืน');
+      toast.error('Please specify a new return due date or select indefinite loan');
       return;
     }
 
     if (!isIndefiniteChoice && !previewData?.isValid) {
-      toast.error(`กำหนดส่งคืนใหม่ต้องมากกว่าวันที่เดิม (${format(currentDueDate, 'dd/MM/yyyy')})`);
+      toast.error(`New due date must be after current due date (${format(currentDueDate, 'dd/MM/yyyy')})`);
       return;
     }
 
@@ -206,7 +205,7 @@ const CheckoutExtendModal = ({
             previous_due_date: order.expected_return_date,
             new_due_date: isIndefiniteChoice ? null : newDueDate,
             extension_reason: isIndefiniteChoice
-              ? (reason.trim() ? `[เปลี่ยนเป็นไม่มีกำหนดคืน] ${reason.trim()}` : 'เปลี่ยนเป็นการยืมแบบไม่มีกำหนดคืน (Indefinite Borrow)')
+              ? (reason.trim() ? `[Changed to Indefinite] ${reason.trim()}` : 'Changed to Indefinite Loan')
               : (reason.trim() || null),
             extended_by: user?.id || null,
             extended_at: new Date().toISOString()
@@ -236,15 +235,15 @@ const CheckoutExtendModal = ({
       }
 
       if (isIndefiniteChoice) {
-        toast.success(`เปลี่ยนเป็นไม่มีกำหนดคืนสำหรับใบยืม ${order.order_number} สำเร็จ`);
+        toast.success(`Loan order ${order.order_number} set to Indefinite successfully`);
       } else {
-        toast.success(`ขยายกำหนดวันส่งคืนของใบยืม ${order.order_number} สำเร็จ`);
+        toast.success(`Return due date for ${order.order_number} extended successfully`);
       }
       if (onExtendSuccess) onExtendSuccess();
       onClose();
     } catch (err) {
       console.error('Extend Due Date Error:', err);
-      toast.error(err.message || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+      toast.error(err.message || 'Failed to save changes');
     } finally {
       setSubmitting(false);
     }
@@ -260,13 +259,13 @@ const CheckoutExtendModal = ({
             </div>
             <div>
               <DialogTitle className="text-lg font-extrabold text-foreground tracking-tight flex items-center gap-2">
-                <span>ขยายกำหนดวันส่งคืนพัสดุ</span>
+                <span>Extend Return Due Date</span>
                 <span className="font-mono text-xs font-bold text-indigo-600 bg-indigo-500/10 px-2 py-0.5 rounded-md">
                   {order.order_number}
                 </span>
               </DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-                ขยายระยะเวลาการยืมอุปกรณ์ หรือเปลี่ยนเป็นยืมแบบไม่มีกำหนดคืน (Indefinite Borrow)
+                Extend equipment loan duration or convert to an indefinite loan
               </DialogDescription>
             </div>
           </div>
@@ -290,14 +289,14 @@ const CheckoutExtendModal = ({
             </div>
 
             <div className="flex items-center justify-between pt-1 border-t border-border/40">
-              <span className="text-muted-foreground">กำหนดส่งคืนปัจจุบัน:</span>
+              <span className="text-muted-foreground">Current Due Date:</span>
               <div className="flex items-center gap-1.5">
                 <span className="font-bold text-foreground font-mono">
                   {format(currentDueDate, 'dd/MM/yyyy')}
                 </span>
                 {order.isOverdue && (
                   <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-500/15 text-red-600 border border-red-500/30">
-                    เกินกำหนด
+                    Overdue
                   </span>
                 )}
               </div>
@@ -309,11 +308,11 @@ const CheckoutExtendModal = ({
             <Label htmlFor="new-due-date" className="text-xs font-bold flex items-center justify-between">
               <span className="flex items-center gap-1.5">
                 <Calendar className="w-3.5 h-3.5 text-indigo-500" />
-                <span>กำหนดส่งคืนใหม่ (New Return Due Date) *</span>
+                <span>New Return Due Date *</span>
               </span>
               {!isIndefiniteChoice && (
                 <span className="text-[11px] text-muted-foreground font-normal">
-                  ต้องหลังวันที่ {format(currentDueDate, 'dd/MM/yyyy')}
+                  Must be after {format(currentDueDate, 'dd/MM/yyyy')}
                 </span>
               )}
             </Label>
@@ -323,8 +322,8 @@ const CheckoutExtendModal = ({
                 <div className="flex items-center gap-2">
                   <InfinityIcon className="w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0" />
                   <div>
-                    <div className="font-bold text-xs">ยืมแบบไม่มีกำหนดคืน (Indefinite Borrow)</div>
-                    <div className="text-[11px] opacity-80">ไม่มีกำหนดวันส่งคืน และคำสั่งยืมจะไม่แสดงแจ้งเตือนเกินกำหนด</div>
+                    <div className="font-bold text-xs">Indefinite Loan</div>
+                    <div className="text-[11px] opacity-80">No fixed due date and order will not trigger overdue alerts</div>
                   </div>
                 </div>
                 <Button
@@ -337,7 +336,7 @@ const CheckoutExtendModal = ({
                   }}
                   className="h-7 px-2 text-[11px] font-medium border-purple-500/40 text-purple-700 dark:text-purple-300 hover:bg-purple-500/20 cursor-pointer"
                 >
-                  กลับไประบุวันที่
+                  Specify Date
                 </Button>
               </div>
             ) : (
@@ -354,12 +353,12 @@ const CheckoutExtendModal = ({
 
             {/* Quick Extension Shortcut Buttons */}
             <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
-              <span className="text-[11px] text-muted-foreground mr-1">ขยายด่วน:</span>
+              <span className="text-[11px] text-muted-foreground mr-1">Quick presets:</span>
               {[
-                { label: '+3 วัน', days: 3 },
-                { label: '+7 วัน (1 สัปดาห์)', days: 7 },
-                { label: '+14 วัน (2 สัปดาห์)', days: 14 },
-                { label: '+30 วัน (1 เดือน)', days: 30 }
+                { label: '+3 Days', days: 3 },
+                { label: '+7 Days (1 Week)', days: 7 },
+                { label: '+14 Days (2 Weeks)', days: 14 },
+                { label: '+30 Days (1 Month)', days: 30 }
               ].map(preset => (
                 <Button
                   key={preset.days}
@@ -386,7 +385,7 @@ const CheckoutExtendModal = ({
                 }`}
               >
                 <InfinityIcon className="w-3 h-3 mr-1" />
-                ไม่มีกำหนดคืน (Indefinite)
+                Indefinite
               </Button>
             </div>
           </div>
@@ -411,13 +410,13 @@ const CheckoutExtendModal = ({
                 <div>
                   <div className="font-bold">
                     {isIndefiniteChoice
-                      ? 'เปลี่ยนสถานะ: ยืมแบบไม่มีกำหนดส่งคืน (Indefinite Borrow)'
+                      ? 'Status: Converted to Indefinite Loan'
                       : previewData.isValid 
-                        ? `ขยายเพิ่ม +${previewData.additionalDays} วัน (${previewData.formattedNewDate})`
-                        : 'วันที่ไม่ถูกต้อง (ต้องมากกว่ากำหนดคืนเดิม)'}
+                        ? `Extended +${previewData.additionalDays} ${previewData.additionalDays === 1 ? 'day' : 'days'} (${previewData.formattedNewDate})`
+                        : 'Invalid date (must be after current due date)'}
                   </div>
                   <div className="text-[11px] opacity-85">
-                    สถานะคำสั่งยืมใหม่: <strong>{previewData.statusLabel}</strong>
+                    New Loan Status: <strong>{previewData.statusLabel}</strong>
                   </div>
                 </div>
               </div>
@@ -428,13 +427,13 @@ const CheckoutExtendModal = ({
           <div className="space-y-1.5">
             <Label htmlFor="extend-reason" className="text-xs font-bold flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-              <span>เหตุผลในการขอขยายเวลา (Extension Reason)</span>
-              <span className="text-[11px] text-muted-foreground font-normal">(ระบุหรือไม่ก็ได้)</span>
+              <span>Extension Reason</span>
+              <span className="text-[11px] text-muted-foreground font-normal">(Optional)</span>
             </Label>
             <textarea
               id="extend-reason"
               rows={2}
-              placeholder="เช่น งานติดตั้งไซต์งานยังไม่แล้วเสร็จ, อยู่ระหว่างรอทดสอบระบบ..."
+              placeholder="e.g. On-site installation ongoing, awaiting final system tests..."
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               className="w-full rounded-lg border border-input bg-transparent px-3 py-2 text-xs shadow-2xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 resize-none"
@@ -450,7 +449,7 @@ const CheckoutExtendModal = ({
               disabled={submitting}
               className="rounded-lg h-9 text-xs font-semibold cursor-pointer"
             >
-              ยกเลิก
+              Cancel
             </Button>
 
             {isIndefiniteChoice ? (
@@ -461,7 +460,7 @@ const CheckoutExtendModal = ({
                 className="rounded-lg h-9 px-4 bg-purple-600 hover:bg-purple-700 text-white text-xs gap-1.5 font-semibold shadow-xs cursor-pointer transition-colors"
               >
                 <InfinityIcon className="w-3.5 h-3.5" />
-                <span>{submitting ? 'กำลังบันทึก...' : 'ยืนยันเปลี่ยนเป็นไม่มีกำหนดคืน'}</span>
+                <span>{submitting ? 'Saving...' : 'Confirm Indefinite Loan'}</span>
               </Button>
             ) : (
               <Button
@@ -471,7 +470,7 @@ const CheckoutExtendModal = ({
                 className="rounded-lg h-9 px-4 bg-amber-600 hover:bg-amber-700 text-white text-xs gap-1.5 font-semibold shadow-xs cursor-pointer transition-colors"
               >
                 <CalendarClock className="w-3.5 h-3.5" />
-                <span>{submitting ? 'กำลังบันทึก...' : 'ยืนยันขยายเวลาส่งคืน'}</span>
+                <span>{submitting ? 'Saving...' : 'Confirm Extension'}</span>
               </Button>
             )}
           </DialogFooter>

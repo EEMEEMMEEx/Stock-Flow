@@ -68,17 +68,17 @@ export const TransferItemDialog = ({
   const handleTransfer = async (e) => {
     e.preventDefault();
     if (!destinationProjectId) {
-      toast.error('กรุณาเลือกโครงการและคลังจัดเก็บปลายทาง');
+      toast.error('Please select destination project and location');
       return;
     }
 
     if (!isValidQuantity) {
-      toast.error(`จำนวนที่โอนต้องอยู่ระหว่าง 1 ถึง ${maxBalance} ${item.unit || 'ชิ้น'}`);
+      toast.error(`Transfer quantity must be between 1 and ${maxBalance} ${item.unit || 'ชิ้น'}`);
       return;
     }
 
     setIsSubmitting(true);
-    const toastId = toast.loading('กำลังประมวลผลการโอนย้ายสต็อก...');
+    const toastId = toast.loading('Processing stock transfer...');
 
     try {
       // Execute atomic Supabase RPC
@@ -94,7 +94,7 @@ export const TransferItemDialog = ({
       if (rpcError) throw rpcError;
 
       toast.success(
-        rpcData?.message || `โอนย้าย ${item.name} จำนวน ${currentQtyNum} ${item.unit || 'ชิ้น'} สำเร็จ`,
+        rpcData?.message || `Transferred ${item.name} (${currentQtyNum} ${item.unit || 'ชิ้น'}) successfully`,
         { id: toastId }
       );
 
@@ -102,7 +102,7 @@ export const TransferItemDialog = ({
       if (onSuccess) onSuccess();
     } catch (error) {
       console.error('[Transfer] Error executing transfer:', error);
-      toast.error('เกิดข้อผิดพลาดในการโอนย้าย: ' + (error.message || 'กรุณาลองใหม่อีกครั้ง'), { id: toastId });
+      toast.error('Failed to transfer item: ' + (error.message || 'Please try again'), { id: toastId });
     } finally {
       setIsSubmitting(false);
     }
@@ -119,10 +119,10 @@ export const TransferItemDialog = ({
             </div>
             <div>
               <DialogTitle className="text-lg font-bold text-foreground flex items-center gap-2">
-                <span>โอนย้ายสถานที่จัดเก็บ / คลังสินค้า</span>
+                <span>Transfer Storage Location / Warehouse</span>
               </DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-                ย้ายยอดคงเหลือของวัสดุอุปกรณ์ระหว่างคลังจัดเก็บและโครงการ
+                Move inventory balance between storage locations and projects
               </DialogDescription>
             </div>
           </div>
@@ -155,7 +155,7 @@ export const TransferItemDialog = ({
                 )}
               </div>
               <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground font-mono">
-                {item.model && item.model !== '-' && <span>รุ่น: <strong className="text-foreground">{item.model}</strong></span>}
+                {item.model && item.model !== '-' && <span>Model: <strong className="text-foreground">{item.model}</strong></span>}
                 {item.sku && item.sku !== '-' && <span>SKU: <strong className="text-foreground">{item.sku}</strong></span>}
               </div>
             </div>
@@ -168,7 +168,7 @@ export const TransferItemDialog = ({
               <div className="p-3.5 rounded-lg bg-muted/30 border border-border/70 space-y-1.5">
                 <span className="text-[11px] font-bold text-muted-foreground flex items-center gap-1">
                   <Building2 className="w-3.5 h-3.5 text-muted-foreground" />
-                  <span>คลังต้นทาง (Source Location)</span>
+                  <span>Source Location</span>
                 </span>
                 <div className="font-bold text-xs text-foreground truncate">
                   {item.project_display || '-'}
@@ -180,7 +180,7 @@ export const TransferItemDialog = ({
                   </div>
                 )}
                 <div className="pt-2 border-t border-border/40 flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground font-medium">สต็อกที่มีอยู่:</span>
+                  <span className="text-muted-foreground font-medium">Available Stock:</span>
                   <span className="px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 font-mono font-bold">
                     {maxBalance} {item.unit || 'ชิ้น'}
                   </span>
@@ -196,13 +196,13 @@ export const TransferItemDialog = ({
                   required={true}
                   mode="unified"
                   size="sm"
-                  label="คลังปลายทาง (Destination Location)"
-                  description="เลือกโครงการและคลังที่จะรับโอน"
+                  label="Destination Location"
+                  description="Select destination project and location"
                   showSummaryCard={false}
                 />
                 {!destinationProjectId && (
                   <p className="text-[11px] text-primary font-medium">
-                    * กรุณาเลือกสถานที่จัดเก็บปลายทาง
+                    * Please select destination location
                   </p>
                 )}
               </div>
@@ -213,14 +213,14 @@ export const TransferItemDialog = ({
               <div className="flex items-center justify-between">
                 <Label htmlFor="transfer-qty" className="text-xs font-bold text-foreground flex items-center gap-1.5">
                   <Layers className="w-3.5 h-3.5 text-primary" />
-                  <span>จำนวนที่ต้องการโอนย้าย ({item.unit || 'ชิ้น'}) *</span>
+                  <span>Transfer Quantity ({item.unit || 'ชิ้น'}) *</span>
                 </Label>
                 <button
                   type="button"
                   onClick={handleSetMax}
                   className="text-[11px] font-bold text-primary hover:underline px-2 py-0.5 rounded-md bg-primary/10 hover:bg-primary/20 transition-colors cursor-pointer"
                 >
-                  โอนทั้งหมด ({maxBalance} {item.unit || 'ชิ้น'})
+                  Transfer All ({maxBalance} {item.unit || 'ชิ้น'})
                 </button>
               </div>
 
@@ -233,7 +233,7 @@ export const TransferItemDialog = ({
                   value={transferQuantity}
                   onChange={(e) => setTransferQuantity(e.target.value)}
                   className="h-9 text-xs font-mono font-bold rounded-lg bg-background"
-                  placeholder="ระบุจำนวน..."
+                  placeholder="Enter quantity..."
                   required
                 />
                 <span className="text-xs font-semibold text-muted-foreground shrink-0 px-2">
@@ -244,7 +244,7 @@ export const TransferItemDialog = ({
               {currentQtyNum > maxBalance && (
                 <div className="flex items-center gap-1.5 text-destructive text-[11px] font-semibold">
                   <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                  <span>จำนวนที่โอนเกินกว่าสต็อกคงเหลือที่มีอยู่ ({maxBalance} {item.unit || 'ชิ้น'})</span>
+                  <span>Transfer quantity exceeds available stock ({maxBalance} {item.unit || 'ชิ้น'})</span>
                 </div>
               )}
             </div>
@@ -253,12 +253,12 @@ export const TransferItemDialog = ({
             <div className="space-y-1.5">
               <Label htmlFor="transfer-notes" className="text-xs font-bold text-foreground flex items-center gap-1.5">
                 <Info className="w-3.5 h-3.5 text-muted-foreground" />
-                <span>เหตุผล / หมายเหตุการโอนย้าย (Notes)</span>
+                <span>Notes / Transfer Reason</span>
               </Label>
               <Input
                 id="transfer-notes"
                 type="text"
-                placeholder="เช่น โอนย้ายเพื่อสำรองใช้งานหน้างาน, ปรับสมดุลสต็อก, อ้างอิงเอกสาร..."
+                placeholder="e.g. On-site backup reserve, stock rebalancing, document ref..."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 className="h-9 text-xs rounded-lg bg-background"
@@ -274,7 +274,7 @@ export const TransferItemDialog = ({
               disabled={isSubmitting}
               className="rounded-lg text-xs h-9 font-medium"
             >
-              ยกเลิก
+              Cancel
             </Button>
             <Button
               type="submit"
@@ -282,7 +282,7 @@ export const TransferItemDialog = ({
               className="rounded-lg text-xs h-9 font-medium bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5 shadow-xs"
             >
               <ArrowRightLeft className={`w-3.5 h-3.5 ${isSubmitting ? 'animate-spin' : ''}`} />
-              <span>{isSubmitting ? 'กำลังโอนย้าย...' : 'ยืนยันการโอนย้าย'}</span>
+              <span>{isSubmitting ? 'Transferring...' : 'Confirm Transfer'}</span>
             </Button>
           </DialogFooter>
         </form>

@@ -18,7 +18,7 @@ import toast from 'react-hot-toast';
 const ProjectCodeTagInput = ({
   codes = [],
   onChange,
-  placeholder = "พิมพ์รหัสโครงการ แล้วกด Enter หรือเครื่องหมายจุลภาค ,"
+  placeholder = "Enter project code, then press Enter or comma ,"
 }) => {
   const [inputValue, setInputValue] = useState('');
 
@@ -79,15 +79,15 @@ const ProjectCodeTagInput = ({
           onBlur={() => {
             if (inputValue.trim()) addCode(inputValue);
           }}
-          placeholder={codes.length === 0 ? placeholder : "เพิ่มอีก..."}
+          placeholder={codes.length === 0 ? placeholder : "Add more..."}
           className="flex-1 min-w-[140px] bg-transparent border-none text-xs font-mono focus:outline-none p-1 text-foreground placeholder:text-muted-foreground/70"
         />
       </div>
       <p className="text-[11px] text-muted-foreground flex items-center justify-between">
-        <span>พิมพ์รหัสแล้วกด <strong>Enter</strong> หรือ <strong>,</strong> เพื่อเพิ่มหลายรหัส</span>
+        <span>Press <strong>Enter</strong> or <strong>,</strong> to add multiple codes</span>
         {codes.length > 0 && (
           <span className="font-mono font-semibold text-primary">
-            {codes.length} รหัสที่ระบุ
+            {codes.length} {codes.length === 1 ? 'code' : 'codes'} entered
           </span>
         )}
       </p>
@@ -185,7 +185,7 @@ const Projects = () => {
       }
     } catch (error) {
       console.error('Fetch projects error:', error);
-      toast.error('ไม่สามารถโหลดข้อมูลโครงการได้');
+      toast.error('Failed to load projects');
     } finally {
       setLoading(false);
     }
@@ -244,7 +244,7 @@ const Projects = () => {
 
   const handleCreateProject = async (e) => {
     e.preventDefault();
-    if (!can('projects.create')) return toast.error('คุณไม่มีสิทธิ์ในการสร้างโครงการ (Requires projects.create)');
+    if (!can('projects.create')) return toast.error('Permission denied. Requires projects.create');
 
     const projectCodeString = Array.isArray(formData.project_codes) && formData.project_codes.length > 0
       ? formData.project_codes.map(c => c.trim()).filter(Boolean).join(', ')
@@ -263,19 +263,19 @@ const Projects = () => {
         }]);
 
       if (error) throw error;
-      toast.success('สร้างโครงการสำเร็จ');
+      toast.success('Project created successfully');
       setIsCreateOpen(false);
       setFormData({ name: '', project_code: '', project_codes: [], description: '', location: '', status: 'active' });
       fetchProjects();
     } catch (error) {
       console.error('Create Project Error:', error);
-      toast.error(error.message || 'เกิดข้อผิดพลาดในการสร้างโครงการ');
+      toast.error(error.message || 'Failed to create project');
     }
   };
 
   const handleAddLocationToProject = async (e) => {
     e.preventDefault();
-    if (!can('projects.create')) return toast.error('คุณไม่มีสิทธิ์ในการเพิ่มสถานที่ตั้งโครงการ');
+    if (!can('projects.create')) return toast.error('Permission denied. Requires projects.create');
 
     try {
       const { error } = await supabase
@@ -290,19 +290,19 @@ const Projects = () => {
         }]);
 
       if (error) throw error;
-      toast.success(`เพิ่มสถานที่ตั้งสำหรับ "${selectedLogicalProject.canonicalName}" สำเร็จ`);
+      toast.success(`Location added for "${selectedLogicalProject.canonicalName}" successfully`);
       setIsAddLocationOpen(false);
       setFormData({ name: '', project_code: '', project_codes: [], description: '', location: '', status: 'active' });
       fetchProjects();
     } catch (error) {
       console.error('Add Location Error:', error);
-      toast.error(error.message || 'เกิดข้อผิดพลาดในการเพิ่มสถานที่ตั้ง');
+      toast.error(error.message || 'Failed to add location');
     }
   };
 
   const handleEditRecord = async (e) => {
     e.preventDefault();
-    if (!can('projects.update')) return toast.error('คุณไม่มีสิทธิ์ในการแก้ไขโครงการ (Requires projects.update)');
+    if (!can('projects.update')) return toast.error('Permission denied. Requires projects.update');
 
     const projectCodeString = Array.isArray(formData.project_codes) && formData.project_codes.length > 0
       ? formData.project_codes.map(c => c.trim()).filter(Boolean).join(', ')
@@ -323,21 +323,21 @@ const Projects = () => {
         .eq('id', selectedRecord.id);
 
       if (error) throw error;
-      toast.success('อัปเดตข้อมูลโครงการสำเร็จ');
+      toast.success('Project updated successfully');
       setIsEditOpen(false);
       fetchProjects();
     } catch (error) {
       console.error('Edit Project Error:', error);
-      toast.error('เกิดข้อผิดพลาดในการอัปเดตโครงการ: ' + (error.message || error.details || 'Bad Request'));
+      toast.error('Failed to update project: ' + (error.message || error.details || 'Bad Request'));
     }
   };
 
   // Initiate Delete with Stock Verification
   const startDeleteProcess = async (type, name, projectIds) => {
-    if (!can('projects.delete')) return toast.error('คุณไม่มีสิทธิ์ในการลบโครงการ (Requires projects.delete)');
+    if (!can('projects.delete')) return toast.error('Permission denied. Requires projects.delete');
 
     setIsCheckingStock(true);
-    const toastId = toast.loading('กำลังตรวจสอบสต็อกคงเหลือในโครงการ...');
+    const toastId = toast.loading('Checking remaining stock in project...');
 
     try {
       // Query stock_balance for all project IDs being deleted
@@ -362,7 +362,7 @@ const Projects = () => {
       toast.dismiss(toastId);
     } catch (err) {
       console.error('Check Stock Error:', err);
-      toast.error('เกิดข้อผิดพลาดในการตรวจสอบสต็อก', { id: toastId });
+      toast.error('Failed to check stock', { id: toastId });
     } finally {
       setIsCheckingStock(false);
     }
@@ -374,12 +374,12 @@ const Projects = () => {
 
     const hasStock = deleteTarget.stockItems.length > 0;
     if (hasStock && !destinationProjectId) {
-      toast.error('กรุณาเลือกสถานที่จัดเก็บ (Location) ปลายทางที่จะรับโอนสต็อก');
+      toast.error('Please select destination storage location for stock transfer');
       return;
     }
 
     setIsProcessingDelete(true);
-    const toastId = toast.loading(hasStock ? 'กำลังโอนย้ายสต็อกและลบโครงการ...' : 'กำลังลบโครงการ...');
+    const toastId = toast.loading(hasStock ? 'Transferring stock and deleting project...' : 'Deleting project...');
 
     try {
       // 1. Try atomic RPC
@@ -401,7 +401,7 @@ const Projects = () => {
               project_id: destinationProjectId,
               created_by: profile?.id,
               received_date: new Date().toISOString().split('T')[0],
-              notes: `รับโอนสต็อกอัตโนมัติจากการลบโครงการ: ${deleteTarget.name}`
+              notes: `Automatic stock transfer from deleted project: ${deleteTarget.name}`
             }])
             .select()
             .single();
@@ -413,7 +413,7 @@ const Projects = () => {
             order_id: inOrder.id,
             item_id: item.item_id,
             quantity: item.balance,
-            notes: `โอนมาจากโครงการ: ${deleteTarget.name}`
+            notes: `Transferred from project: ${deleteTarget.name}`
           }));
           await supabase.from('stock_in_items').insert(inItems);
 
@@ -454,7 +454,7 @@ const Projects = () => {
             console.warn('Hard delete failed, setting status to inactive:', delErr);
             await supabase.from('projects').update({ 
               status: 'inactive', 
-              description: `[ลบโครงการแล้ว - โอนสต็อกแล้ว]` 
+              description: `[Project deleted - Stock transferred]` 
             }).eq('id', pid);
           }
         }
@@ -465,8 +465,8 @@ const Projects = () => {
 
       toast.success(
         hasStock 
-          ? `โอนย้ายสต็อก ${deleteTarget.stockItems.length} รายการ และลบโครงการสำเร็จ`
-          : 'ลบโครงการเรียบร้อยแล้ว',
+          ? `Transferred ${deleteTarget.stockItems.length} items and deleted project successfully`
+          : 'Project deleted successfully',
         { id: toastId }
       );
 
@@ -475,7 +475,7 @@ const Projects = () => {
       fetchProjects();
     } catch (err) {
       console.error('Delete & Transfer Error:', err);
-      toast.error('เกิดข้อผิดพลาดในการลบโครงการ: ' + (err.message || 'Error'), { id: toastId });
+      toast.error('Failed to delete project: ' + (err.message || 'Error'), { id: toastId });
     } finally {
       setIsProcessingDelete(false);
     }
@@ -533,13 +533,13 @@ const Projects = () => {
             <div className="p-2 rounded-lg bg-primary/10 text-primary">
               <Building2 className="w-5 h-5" />
             </div>
-            <span>จัดการโครงการ (Projects)</span>
+            <span>Projects</span>
           </h2>
           <p className="text-muted-foreground mt-1 text-xs sm:text-sm flex items-center gap-2">
-            <span>โครงการหลักในระบบ: <strong className="text-foreground font-semibold">{logicalProjects.length} โครงการ</strong></span>
+            <span>Main Projects: <strong className="text-foreground font-semibold">{logicalProjects.length} {logicalProjects.length === 1 ? 'project' : 'projects'}</strong></span>
             <span className="text-muted-foreground/60">•</span>
             <span className="text-xs bg-muted text-muted-foreground px-2.5 py-0.5 rounded-full border border-border font-medium">
-              รวม {totalLocationsCount} สถานที่ตั้ง
+              {totalLocationsCount} {totalLocationsCount === 1 ? 'location' : 'locations'} total
             </span>
           </p>
         </div>
@@ -549,7 +549,7 @@ const Projects = () => {
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="ค้นหาโครงการ หรือสถานที่..."
+              placeholder="Search projects or locations..."
               className="pl-9 h-9 text-xs rounded-lg bg-background border border-input focus-visible:ring-1 focus-visible:ring-primary"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -565,7 +565,7 @@ const Projects = () => {
             }}>
               <DialogTrigger asChild>
                 <Button className="shrink-0 gap-2 rounded-lg font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs cursor-pointer h-9 px-4 text-xs">
-                  <Plus className="h-4 w-4" /> สร้างโครงการใหม่
+                  <Plus className="h-4 w-4" /> New Project
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[480px] rounded-xl bg-card text-card-foreground p-6 border border-border shadow-xl">
@@ -575,19 +575,19 @@ const Projects = () => {
                       <div className="p-2 rounded-lg bg-primary/10 text-primary">
                         <Building2 className="w-5 h-5" />
                       </div>
-                      <span>สร้างโครงการใหม่</span>
+                      <span>Create New Project</span>
                     </DialogTitle>
                     <DialogDescription className="text-xs text-muted-foreground">
-                      ระบุรายละเอียดชื่อโครงการและรหัสโครงการ (รองรับหลายรหัส) เพื่อใช้สำหรับคลังและเบิกจ่ายวัสดุ
+                      Enter project name and project code(s) for inventory and material withdrawals
                     </DialogDescription>
                   </DialogHeader>
                   <div className="grid gap-3.5 py-4">
                     <div className="space-y-1.5">
-                      <Label htmlFor="name" className="text-xs font-bold text-foreground">ชื่อโครงการ <span className="text-destructive">*</span></Label>
+                      <Label htmlFor="name" className="text-xs font-bold text-foreground">Project Name <span className="text-destructive">*</span></Label>
                       <Input 
                         id="name" 
                         required 
-                        placeholder="เช่น DTRS-DOPA" 
+                        placeholder="e.g. DTRS-DOPA" 
                         value={formData.name} 
                         onChange={e => setFormData({...formData, name: e.target.value})} 
                         className="rounded-lg h-9 text-xs" 
@@ -598,30 +598,30 @@ const Projects = () => {
                     <div className="space-y-1.5">
                       <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
                         <Layers className="w-3.5 h-3.5 text-primary" />
-                        <span>รหัสโครงการ (Project IDs/Codes)</span>
+                        <span>Project Codes</span>
                       </Label>
                       <ProjectCodeTagInput
                         codes={formData.project_codes || []}
                         onChange={(newCodes) => setFormData({ ...formData, project_codes: newCodes })}
-                        placeholder="เช่น 20317-9999 (พิมพ์แล้วกด Enter เพื่อเพิ่มหลายรหัส)"
+                        placeholder="e.g. 20317-9999 (press Enter to add multiple codes)"
                       />
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label htmlFor="location" className="text-xs font-bold text-foreground">สถานที่ตั้ง / คลังตั้งต้น</Label>
+                      <Label htmlFor="location" className="text-xs font-bold text-foreground">Location / Default Warehouse</Label>
                       <Input 
                         id="location" 
-                        placeholder="เช่น FORTH" 
+                        placeholder="e.g. FORTH HQ" 
                         value={formData.location} 
                         onChange={e => setFormData({...formData, location: e.target.value})} 
                         className="rounded-lg h-9 text-xs" 
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label htmlFor="description" className="text-xs font-bold text-foreground">รายละเอียดเพิ่มเติม</Label>
+                      <Label htmlFor="description" className="text-xs font-bold text-foreground">Description / Notes</Label>
                       <Input 
                         id="description" 
-                        placeholder="ระบุหมายเหตุหรือสถานที่ตั้งย่อย" 
+                        placeholder="Enter notes or sub-location details" 
                         value={formData.description} 
                         onChange={e => setFormData({...formData, description: e.target.value})} 
                         className="rounded-lg h-9 text-xs" 
@@ -629,8 +629,8 @@ const Projects = () => {
                     </div>
                   </div>
                   <DialogFooter className="gap-2 sm:gap-0 border-t border-border pt-3">
-                    <Button type="button" variant="outline" className="rounded-lg text-xs h-9" onClick={() => setIsCreateOpen(false)}>ยกเลิก</Button>
-                    <Button type="submit" className="rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs h-9 cursor-pointer shadow-xs">บันทึกโครงการ</Button>
+                    <Button type="button" variant="outline" className="rounded-lg text-xs h-9" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
+                    <Button type="submit" className="rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs h-9 cursor-pointer shadow-xs">Save Project</Button>
                   </DialogFooter>
                 </form>
               </DialogContent>
@@ -698,7 +698,7 @@ const Projects = () => {
                           onClick={() => openAddLocationDialog(group)}
                         >
                           <Plus className="w-3.5 h-3.5 text-primary" />
-                          <span>เพิ่มสถานที่ตั้ง</span>
+                          <span>Add Location</span>
                         </Button>
                       )}
 
@@ -707,7 +707,7 @@ const Projects = () => {
                           variant="ghost" 
                           size="icon" 
                           className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg cursor-pointer"
-                          title="ลบโครงการทั้งหมดนี้"
+                          title="Delete entire project"
                           disabled={isCheckingStock}
                           onClick={() => startDeleteProcess('project', group.canonicalName, allGroupProjectIds)}
                         >
@@ -723,7 +723,7 @@ const Projects = () => {
                   <div className="flex items-center justify-between text-xs pb-1 border-b border-border">
                     <span className="font-semibold text-muted-foreground flex items-center gap-1.5">
                       <MapPin className="w-3.5 h-3.5 text-primary" />
-                      <span>สถานที่ตั้ง ({group.records.length} แห่ง)</span>
+                      <span>Locations ({group.records.length})</span>
                     </span>
                     <Button 
                       variant="ghost" 
@@ -732,9 +732,9 @@ const Projects = () => {
                       onClick={() => toggleExpand(group.key)}
                     >
                       {isExpanded ? (
-                        <><span>ย่อรายการ</span> <ChevronUp className="w-3 h-3" /></>
+                        <><span>Collapse</span> <ChevronUp className="w-3 h-3" /></>
                       ) : (
-                        <><span>ขยายดูทั้งหมด ({group.records.length})</span> <ChevronDown className="w-3 h-3" /></>
+                        <><span>Expand all ({group.records.length})</span> <ChevronDown className="w-3 h-3" /></>
                       )}
                     </Button>
                   </div>
@@ -751,7 +751,7 @@ const Projects = () => {
                             <div className="flex items-center gap-2">
                               <span className="font-semibold text-xs text-foreground flex items-center gap-1.5">
                                 <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
-                                {rec.location || 'คลังหลัก / ไม่ระบุสถานที่'}
+                                {rec.location || 'Main Warehouse / Unspecified'}
                               </span>
                             </div>
                             {rec.description && (
@@ -760,7 +760,7 @@ const Projects = () => {
                               </p>
                             )}
                             <div className="text-[10px] text-muted-foreground/80 pl-2.5 font-mono">
-                              เพิ่มเมื่อ: {format(new Date(rec.created_at), 'dd/MM/yyyy HH:mm')}
+                              Created: {format(new Date(rec.created_at), 'dd/MM/yyyy HH:mm')}
                             </div>
                           </div>
 
@@ -771,7 +771,7 @@ const Projects = () => {
                                   variant="ghost" 
                                   size="icon" 
                                   className="h-7 w-7 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-md cursor-pointer"
-                                  title="แก้ไขข้อมูลสถานที่ตั้งนี้"
+                                  title="Edit this location"
                                   onClick={() => openEditDialog(rec)}
                                 >
                                   <Edit className="h-3.5 w-3.5" />
@@ -782,8 +782,8 @@ const Projects = () => {
                                   variant="ghost" 
                                   size="icon" 
                                   className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md cursor-pointer"
-                                  title="ลบสถานที่ตั้งนี้"
-                                  onClick={() => startDeleteProcess('location', `${group.canonicalName} (${rec.location || 'คลังหลัก'})`, [rec.id])}
+                                  title="Delete this location"
+                                  onClick={() => startDeleteProcess('location', `${group.canonicalName} (${rec.location || 'Main Warehouse'})`, [rec.id])}
                                 >
                                   <Trash2 className="h-3.5 w-3.5" />
                                 </Button>
@@ -802,7 +802,7 @@ const Projects = () => {
           {filteredLogicalProjects.length === 0 && (
             <div className="col-span-full py-16 text-center text-muted-foreground bg-muted/10 rounded-xl border border-dashed border-border flex flex-col items-center gap-2">
               <Info className="w-8 h-8 text-muted-foreground/50" />
-              <span>ไม่พบข้อมูลโครงการตามคำค้นหา &quot;{searchQuery}&quot;</span>
+              <span>No projects found matching &quot;{searchQuery}&quot;</span>
             </div>
           )}
         </div>
@@ -817,33 +817,33 @@ const Projects = () => {
                 <div className="p-2 rounded-lg bg-primary/10 text-primary">
                   <MapPin className="w-5 h-5" />
                 </div>
-                <span>เพิ่มสถานที่ตั้งโครงการ</span>
+                <span>Add Project Location</span>
               </DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground">
-                เพิ่มสถานที่ตั้งใหม่ภายใต้โครงการ <strong>{selectedLogicalProject?.canonicalName}</strong>
+                Add a new location under project <strong>{selectedLogicalProject?.canonicalName}</strong>
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-3.5 py-4">
               <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-foreground">ชื่อโครงการ</Label>
+                <Label className="text-xs font-bold text-foreground">Project Name</Label>
                 <Input disabled value={selectedLogicalProject?.canonicalName || ''} className="rounded-lg font-semibold bg-muted/50 text-xs h-9" />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-foreground">รหัสโครงการ (Project IDs)</Label>
+                <Label className="text-xs font-bold text-foreground">Project Codes</Label>
                 <Input disabled value={selectedLogicalProject?.canonicalCode || '-'} className="rounded-lg font-mono bg-muted/50 text-xs h-9" />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="add-location" className="text-xs font-bold text-foreground">ชื่อสถานที่ตั้ง / คลังย่อย <span className="text-destructive">*</span></Label>
-                <Input id="add-location" required placeholder="เช่น FORTH EMS2 (TAOBIN)" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} className="rounded-lg text-xs h-9" />
+                <Label htmlFor="add-location" className="text-xs font-bold text-foreground">Location / Sub-warehouse Name <span className="text-destructive">*</span></Label>
+                <Input id="add-location" required placeholder="e.g. FORTH EMS2 (TAOBIN)" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} className="rounded-lg text-xs h-9" />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="add-description" className="text-xs font-bold text-foreground">รายละเอียดเพิ่มเติม</Label>
-                <Input id="add-description" placeholder="รายละเอียดคลังหรือโซนจัดเก็บ" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="rounded-lg text-xs h-9" />
+                <Label htmlFor="add-description" className="text-xs font-bold text-foreground">Description / Notes</Label>
+                <Input id="add-description" placeholder="Warehouse details or storage zone" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="rounded-lg text-xs h-9" />
               </div>
             </div>
             <DialogFooter className="gap-2 sm:gap-0 border-t border-border pt-3">
-              <Button type="button" variant="outline" className="rounded-lg text-xs h-9" onClick={() => setIsAddLocationOpen(false)}>ยกเลิก</Button>
-              <Button type="submit" className="rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs h-9 cursor-pointer shadow-xs">ยืนยันเพิ่มสถานที่</Button>
+              <Button type="button" variant="outline" className="rounded-lg text-xs h-9" onClick={() => setIsAddLocationOpen(false)}>Cancel</Button>
+              <Button type="submit" className="rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs h-9 cursor-pointer shadow-xs">Confirm Add Location</Button>
             </DialogFooter>
           </form>
         </DialogContent>
@@ -858,12 +858,12 @@ const Projects = () => {
                 <div className="p-2 rounded-lg bg-primary/10 text-primary">
                   <Edit className="w-5 h-5" />
                 </div>
-                <span>แก้ไขข้อมูลโครงการ / สถานที่ตั้ง</span>
+                <span>Edit Project / Location</span>
               </DialogTitle>
             </DialogHeader>
             <div className="grid gap-3.5 py-4">
               <div className="space-y-1.5">
-                <Label htmlFor="edit-name" className="text-xs font-bold text-foreground">ชื่อโครงการ <span className="text-destructive">*</span></Label>
+                <Label htmlFor="edit-name" className="text-xs font-bold text-foreground">Project Name <span className="text-destructive">*</span></Label>
                 <Input id="edit-name" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="rounded-lg text-xs h-9" />
               </div>
 
@@ -871,40 +871,40 @@ const Projects = () => {
               <div className="space-y-1.5">
                 <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
                   <Layers className="w-3.5 h-3.5 text-primary" />
-                  <span>รหัสโครงการ (Project IDs/Codes)</span>
+                  <span>Project Codes</span>
                 </Label>
                 <ProjectCodeTagInput
                   codes={formData.project_codes || []}
                   onChange={(newCodes) => setFormData({ ...formData, project_codes: newCodes })}
-                  placeholder="เช่น 20317-9999 (พิมพ์แล้วกด Enter เพื่อเพิ่มหลายรหัส)"
+                  placeholder="e.g. 20317-9999 (press Enter to add multiple codes)"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="edit-location" className="text-xs font-bold text-foreground">สถานที่ตั้ง</Label>
+                <Label htmlFor="edit-location" className="text-xs font-bold text-foreground">Location</Label>
                 <Input id="edit-location" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} className="rounded-lg text-xs h-9" />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="edit-description" className="text-xs font-bold text-foreground">รายละเอียดเพิ่มเติม</Label>
+                <Label htmlFor="edit-description" className="text-xs font-bold text-foreground">Description / Notes</Label>
                 <Input id="edit-description" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="rounded-lg text-xs h-9" />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="edit-status" className="text-xs font-bold text-foreground">สถานะโครงการ</Label>
+                <Label htmlFor="edit-status" className="text-xs font-bold text-foreground">Project Status</Label>
                 <select
                   id="edit-status"
                   className="flex h-9 w-full rounded-lg border border-input bg-background px-3 text-xs font-medium focus:ring-1 focus:ring-primary cursor-pointer"
                   value={formData.status || 'active'}
                   onChange={e => setFormData({ ...formData, status: e.target.value })}
                 >
-                  <option value="active">ACTIVE (กำลังดำเนินงาน)</option>
-                  <option value="completed">COMPLETED (เสร็จสิ้นโครงการ)</option>
-                  <option value="inactive">INACTIVE (ปิดการใช้งาน)</option>
+                  <option value="active">ACTIVE (In Progress)</option>
+                  <option value="completed">COMPLETED</option>
+                  <option value="inactive">INACTIVE</option>
                 </select>
               </div>
             </div>
             <DialogFooter className="gap-2 sm:gap-0 border-t border-border pt-3">
-              <Button type="button" variant="outline" className="rounded-lg text-xs h-9" onClick={() => setIsEditOpen(false)}>ยกเลิก</Button>
-              <Button type="submit" className="rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs h-9 cursor-pointer shadow-xs">อัปเดตข้อมูล</Button>
+              <Button type="button" variant="outline" className="rounded-lg text-xs h-9" onClick={() => setIsEditOpen(false)}>Cancel</Button>
+              <Button type="submit" className="rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs h-9 cursor-pointer shadow-xs">Update Project</Button>
             </DialogFooter>
           </form>
         </DialogContent>
@@ -920,12 +920,12 @@ const Projects = () => {
               </div>
               <span>
                 {deleteTarget?.stockItems?.length > 0 
-                  ? 'โอนย้ายสต็อกก่อนลบโครงการ'
-                  : 'ยืนยันการลบโครงการ'}
+                  ? 'Transfer Stock Before Deleting Project'
+                  : 'Confirm Project Deletion'}
               </span>
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
-              {deleteTarget?.type === 'project' ? 'กำลังดำเนินการลบโครงการ:' : 'กำลังดำเนินการลบสถานที่ตั้ง:'}{' '}
+              {deleteTarget?.type === 'project' ? 'Deleting project:' : 'Deleting location:'}{' '}
               <strong className="text-foreground">{deleteTarget?.name}</strong>
             </DialogDescription>
           </DialogHeader>
@@ -937,10 +937,10 @@ const Projects = () => {
                 <div className="p-3.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 space-y-1 leading-relaxed">
                   <p className="font-bold flex items-center gap-1.5 text-xs">
                     <ShieldAlert className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
-                    <span>พบวัสดุคงเหลืออยู่ในโครงการนี้รวม {deleteTarget.stockItems.length} รายการ ({deleteTarget.stockItems.reduce((s, i) => s + (Number(i.balance) || 0), 0)} ชิ้น)</span>
+                    <span>Found {deleteTarget.stockItems.length} remaining item(s) in this project (Total: {deleteTarget.stockItems.reduce((s, i) => s + (Number(i.balance) || 0), 0)} units)</span>
                   </p>
                   <p className="text-[11px] pl-5 opacity-90">
-                    เพื่อความถูกต้องของระบบสต็อก กรุณาเลือกสถานที่จัดเก็บ (Location) ปลายทางที่จะรับโอนวัสดุทั้งหมดก่อนทำการลบ
+                    To maintain inventory integrity, please select a destination location to receive all transferred items before deleting.
                   </p>
                 </div>
 
@@ -949,9 +949,9 @@ const Projects = () => {
                   <Table>
                     <TableHeader className="bg-muted/50 text-[11px]">
                       <TableRow>
-                        <TableHead>รายการวัสดุ</TableHead>
-                        <TableHead className="text-center">คลังย่อย</TableHead>
-                        <TableHead className="text-right">ยอดคงเหลือ</TableHead>
+                        <TableHead>Item Name</TableHead>
+                        <TableHead className="text-center">Location</TableHead>
+                        <TableHead className="text-right">Remaining Balance</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody className="text-xs">
@@ -976,17 +976,17 @@ const Projects = () => {
                 <div className="space-y-1.5 pt-1">
                   <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
                     <Building2 className="w-3.5 h-3.5 text-primary" />
-                    <span>เลือกสถานที่จัดเก็บ (Location) ปลายทางที่จะรับโอนสต็อก <span className="text-destructive">*</span></span>
+                    <span>Select Destination Location for Stock Transfer <span className="text-destructive">*</span></span>
                   </Label>
                   <select
                     className="flex h-9 w-full rounded-lg border border-input bg-background px-3 text-xs font-medium text-foreground focus:ring-1 focus:ring-primary cursor-pointer shadow-xs transition-all"
                     value={destinationProjectId}
                     onChange={(e) => setDestinationProjectId(e.target.value)}
                   >
-                    <option value="" disabled>-- เลือกสถานที่จัดเก็บ (Location) ที่เปิดใช้งานอยู่ --</option>
+                    <option value="" disabled>-- Select an active destination location --</option>
                     {availableDestinationProjects.map(proj => (
                       <option key={proj.id} value={proj.id}>
-                        {proj.project_code ? `[${proj.project_code}] ` : ''}{proj.name} ({proj.location || 'คลังหลัก'})
+                        {proj.project_code ? `[${proj.project_code}] ` : ''}{proj.name} ({proj.location || 'Main Warehouse'})
                       </option>
                     ))}
                   </select>
@@ -996,10 +996,10 @@ const Projects = () => {
               /* Case 2: Project has NO stock -> Simple confirmation */
               <div className="p-4 rounded-lg bg-muted/40 border border-border space-y-2">
                 <p className="font-semibold text-foreground">
-                  โครงการนี้ <strong>ไม่มียอดสต็อกคงเหลือ</strong> (ยอดคงเหลือ 0 ชิ้น)
+                  This project has <strong>no remaining stock</strong> (0 balance).
                 </p>
                 <p className="text-muted-foreground text-[11px]">
-                  คุณแน่ใจหรือไม่ว่าต้องการลบรายการนี้ออกจากระบบ? ข้อมูลการจัดเก็บจะถูกลบหรือปิดการใช้งานอย่างปลอดภัย
+                  Are you sure you want to delete this from the system? The record will be safely removed or deactivated.
                 </p>
               </div>
             )}
@@ -1013,7 +1013,7 @@ const Projects = () => {
               disabled={isProcessingDelete}
               onClick={() => setIsDeleteModalOpen(false)}
             >
-              ยกเลิก
+              Cancel
             </Button>
             <Button
               type="button"
@@ -1026,10 +1026,10 @@ const Projects = () => {
               }`}
             >
               {isProcessingDelete
-                ? 'กำลังดำเนินการ...'
+                ? 'Processing...'
                 : deleteTarget?.stockItems?.length > 0
-                  ? 'โอนย้ายสต็อกและลบโครงการ'
-                  : 'ยืนยันการลบ'}
+                  ? 'Transfer Stock & Delete'
+                  : 'Confirm Delete'}
             </Button>
           </DialogFooter>
         </DialogContent>

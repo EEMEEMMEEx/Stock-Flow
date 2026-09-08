@@ -16,28 +16,28 @@ const ReportHeader = ({
   const tabs = [
     {
       id: 'stock_in',
-      label: '1. รายงานรับเข้า (Stock-In)',
+      label: '1. Stock-In Report',
       icon: ArrowDownToLine,
       color: 'emerald',
       activeClass: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
     },
     {
       id: 'withdrawals',
-      label: '2. รายงานเบิกจ่าย (Withdrawals)',
+      label: '2. Withdrawals Report',
       icon: ArrowUpFromLine,
       color: 'amber',
       activeClass: 'bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border-amber-200 dark:border-amber-800'
     },
     {
       id: 'balance',
-      label: '3. รายงานยอดคงเหลือ (Stock Balance)',
+      label: '3. Stock Balance Report',
       icon: Scale,
       color: 'blue',
       activeClass: 'bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border-blue-200 dark:border-blue-800'
     },
     {
       id: 'site_kits',
-      label: '4. ความพร้อมชุดไซต์ (Site Kits BOM)',
+      label: '4. Site Kits BOM',
       icon: Layers,
       color: 'teal',
       activeClass: 'bg-teal-50 text-teal-700 dark:bg-teal-950/60 dark:text-teal-300 border-teal-200 dark:border-teal-800'
@@ -55,13 +55,13 @@ const ReportHeader = ({
             </div>
             <div>
               <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                รายงานและวิเคราะห์คลังสินค้า
+                Reports & Inventory Analytics
                 <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
                   <Sparkles className="w-3 h-3" /> Live Analytics
                 </span>
               </h1>
               <p className="text-xs sm:text-sm text-muted-foreground">
-                สรุปประวัติการรับเข้า เบิกจ่าย ยอดคงเหลือคลังสินค้า พร้อมรายงานเชิงลึก
+                Comprehensive history of stock-in, withdrawals, balances, and operational insights
               </p>
             </div>
           </div>
@@ -75,10 +75,10 @@ const ReportHeader = ({
             variant="outline"
             size="sm"
             className="h-9 px-3 rounded-xl border-border hover:bg-accent text-xs font-medium gap-1.5 transition-all"
-            title="รีเฟรชข้อมูล"
+            title="Refresh Data"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-            <span className="hidden sm:inline">รีเฟรช</span>
+            <span className="hidden sm:inline">Refresh</span>
           </Button>
 
           {canExport && (
@@ -91,7 +91,7 @@ const ReportHeader = ({
                 className="h-9 px-3.5 rounded-xl font-semibold text-xs border-rose-200 dark:border-rose-900/60 text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
               >
                 <FileText className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
-                <span>{pdfLoading ? 'กำลังสร้าง PDF...' : 'Export PDF'}</span>
+                <span>{pdfLoading ? 'Generating PDF...' : 'Export PDF'}</span>
               </Button>
 
               <Button
@@ -107,9 +107,9 @@ const ReportHeader = ({
           )}
 
           <Badge variant="outline" className="h-9 px-3 rounded-xl bg-background border-border text-muted-foreground text-xs font-medium flex items-center gap-1.5 ml-auto sm:ml-0">
-            <span>ทั้งหมด:</span>
-            <span className="font-bold text-foreground">{totalItemsCount.toLocaleString('th-TH')}</span>
-            <span>รายการ</span>
+            <span>Total:</span>
+            <span className="font-bold text-foreground">{totalItemsCount.toLocaleString()}</span>
+            <span>{totalItemsCount === 1 ? 'record' : 'records'}</span>
           </Badge>
         </div>
       </div>

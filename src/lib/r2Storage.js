@@ -12,7 +12,7 @@ import { supabase } from './supabase';
  */
 export async function uploadFileToR2(file, folder = 'uploads', customFileName = null, silent = false) {
   if (!file) {
-    throw new Error('ไม่พบไฟล์ที่ต้องการอัปโหลด');
+    throw new Error('No file provided for upload');
   }
 
   // 1. Generate clean file name
@@ -90,14 +90,14 @@ export async function uploadFileToR2(file, folder = 'uploads', customFileName = 
           // Ignore secondary fallback network error and throw original error
         }
       }
-      throw new Error(presignData.message || 'ไม่สามารถขอ Upload URL จากเซิร์ฟเวอร์ได้');
+      throw new Error(presignData.message || 'Failed to obtain upload URL from server');
     }
 
     return await executeDirectPutUpload(file, presignData.uploadUrl, presignData.publicUrl);
   } catch (error) {
     console.error('[r2Storage] Upload error:', error);
     if (!silent) {
-      toast.error('อัปโหลดไฟล์ไปยัง Cloudflare R2 ไม่สำเร็จ: ' + (error.message || 'เกิดข้อผิดพลาด'));
+      toast.error('Failed to upload file to Cloudflare R2: ' + (error.message || 'An error occurred'));
     }
     return null;
   }
@@ -116,7 +116,7 @@ async function executeDirectPutUpload(file, uploadUrl, publicUrl) {
   });
 
   if (!putResponse.ok) {
-    throw new Error(`Cloudflare R2 ตอบกลับรหัสสถานะ ${putResponse.status} ${putResponse.statusText}`);
+    throw new Error(`Cloudflare R2 returned status ${putResponse.status} ${putResponse.statusText}`);
   }
 
   // Append timestamp to bypass browser cache on immediate reload

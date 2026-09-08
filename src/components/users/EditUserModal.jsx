@@ -45,10 +45,10 @@ const resolveRoleId = (roleCode, existingRoleId, roleList = []) => {
 };
 
 const DEFAULT_ROLES = [
-  { code: 'STAFF', name: 'STAFF / REQUESTER', description: 'ขอเบิกจ่ายวัสดุ และดูสต็อกเฉพาะโครงการที่ได้รับมอบหมาย' },
-  { code: 'SUPERVISOR', name: 'SUPERVISOR / APPROVER', description: 'อนุมัติการเบิกจ่าย และดูรายงานระดับโครงการ' },
-  { code: 'ADMIN', name: 'ADMINISTRATOR', description: 'สิทธิ์สูงสุด อนุมัติเบิกจ่าย จัดการโครงการ บทบาท และผู้ใช้' },
-  { code: 'SUPER', name: 'SUPER ADMIN', description: 'สิทธิ์สูงสุดระดับระบบ จัดการทุกอย่าง รวมถึง Admin, สิทธิ์, การตั้งค่าระบบ, Security, Integration' }
+  { code: 'STAFF', name: 'STAFF / REQUESTER', description: 'Request materials and view stock for assigned projects only' },
+  { code: 'SUPERVISOR', name: 'SUPERVISOR / APPROVER', description: 'Approve withdrawals and view project-level reports' },
+  { code: 'ADMIN', name: 'ADMINISTRATOR', description: 'Full access: approve withdrawals, manage projects, roles, and users' },
+  { code: 'SUPER', name: 'SUPER ADMIN', description: 'System-level access: manage everything including admins, permissions, system settings, security, integrations' }
 ];
 
 const EditUserModal = ({ 
@@ -247,7 +247,7 @@ const EditUserModal = ({
 
   const handleRoleSelect = (roleCode, roleId) => {
     if (isLastActiveAdmin && roleCode.toLowerCase() !== 'admin') {
-      toast.error('ไม่สามารถลดระดับบทบาทของ Administrator คนสุดท้ายของระบบได้');
+      toast.error('Cannot demote the last active Administrator in the system');
       return;
     }
 
@@ -261,7 +261,7 @@ const EditUserModal = ({
 
   const handleStatusChange = (newStatus) => {
     if (isLastActiveAdmin && newStatus !== 'active') {
-      toast.error('ไม่สามารถระงับหรือปิดใช้งานบัญชี Administrator คนสุดท้ายของระบบได้');
+      toast.error('Cannot suspend or deactivate the last active Administrator in the system');
       return;
     }
     setFormData((prev) => ({ ...prev, status: newStatus }));
@@ -297,24 +297,24 @@ const EditUserModal = ({
     e.preventDefault();
 
     if (!formData.full_name.trim()) {
-      toast.error('กรุณาระบุชื่อ-นามสกุล');
+      toast.error('Please enter full name');
       setActiveTab('profile');
       return;
     }
 
     if (formData.access_type === 'selected' && formData.selected_projects.length === 0) {
-      toast.error('กรุณาเลือกอย่างน้อย 1 โครงการสำหรับสิทธิ์แบบเลือกเฉพาะโครงการ');
+      toast.error('Please select at least 1 project for selected projects access');
       setActiveTab('projects');
       return;
     }
 
     if (isTargetSuper && !isSuperAdmin) {
-      toast.error('ความปลอดภัยของระบบ: เฉพาะผู้ดูแลระบบสูงสุด (Super Admin) เท่านั้นที่สามารถแก้ไขหรือบันทึกข้อมูลของบัญชีนี้ได้');
+      toast.error('System Security: Only Super Admin can edit this account');
       return;
     }
 
     if (isLastActiveAdmin && (formData.role !== 'admin' || formData.status !== 'active')) {
-      toast.error('ความปลอดภัยของระบบ: ไม่สามารถลดระดับหรือปิดใช้งานบัญชี Administrator คนสุดท้ายได้');
+      toast.error('System Security: Cannot demote or deactivate the last active Administrator');
       return;
     }
 
@@ -361,7 +361,7 @@ const EditUserModal = ({
 
   // Group real-time permissions by category
   const groupedPermissions = rolePermissionsList.reduce((acc, perm) => {
-    const cat = perm.category || perm.module || 'ทั่วไป (General)';
+    const cat = perm.category || perm.module || 'General';
     if (!acc[cat]) acc[cat] = [];
     acc[cat].push(perm);
     return acc;
@@ -389,7 +389,7 @@ const EditUserModal = ({
                 )}
                 <div>
                   <DialogTitle className="text-xl font-bold flex items-center gap-2 text-foreground">
-                    แก้ไขข้อมูลและสิทธิ์ผู้ใช้งาน (Edit User & RBAC)
+                    Edit User & RBAC Permissions
                   </DialogTitle>
                   <DialogDescription className="text-xs text-muted-foreground flex items-center gap-2 mt-0.5">
                     <Mail className="w-3.5 h-3.5" />
@@ -433,7 +433,7 @@ const EditUserModal = ({
               }`}
             >
               <User className="w-4 h-4" />
-              TAB 1: ข้อมูลผู้ใช้งานและโปรไฟล์
+              TAB 1: User Profile
             </button>
 
             <button
@@ -446,7 +446,7 @@ const EditUserModal = ({
               }`}
             >
               <ShieldCheck className="w-4 h-4" />
-              TAB 2: บทบาทและสิทธิ์ (RBAC)
+              TAB 2: Roles & Permissions (RBAC)
             </button>
 
             <button
@@ -459,7 +459,7 @@ const EditUserModal = ({
               }`}
             >
               <FolderKanban className="w-4 h-4" />
-              TAB 3: การเข้าถึงโครงการ
+              TAB 3: Project Access
             </button>
           </div>
         </div>
@@ -475,9 +475,9 @@ const EditUserModal = ({
                   <Lock className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
                   <div>
                     <strong className="font-semibold block text-xs">
-                      คำเตือนความปลอดภัย: บัญชีผู้ดูแลระบบสูงสุด (Super Admin)
+                      Security Notice: Super Admin Account
                     </strong>
-                    บัญชีนี้เป็น Super Admin ของระบบ เฉพาะผู้ดูแลระบบสูงสุด (Super Admin) เท่านั้นที่สามารถแก้ไขหรือบันทึกข้อมูลของบัญชีนี้ได้
+                    This account is a system Super Admin. Only Super Admin can modify or save this account.
                   </div>
                 </div>
               )}
@@ -485,7 +485,7 @@ const EditUserModal = ({
               {/* Avatar Upload */}
               <div className="p-4 rounded-lg bg-muted/30 border border-border/50 space-y-2">
                 <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-primary" /> รูปโปรไฟล์ (Profile Avatar)
+                  <Sparkles className="w-3.5 h-3.5 text-primary" /> Profile Avatar
                 </Label>
                 <AvatarUpload
                   value={formData.avatar_url}
@@ -499,7 +499,7 @@ const EditUserModal = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label htmlFor="edit_email" className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
-                    <Lock className="w-3.5 h-3.5" /> บัญชีอีเมลเข้าสู่ระบบ (Login Email)
+                    <Lock className="w-3.5 h-3.5" /> Login Email
                   </Label>
                   <Input
                     id="edit_email"
@@ -509,18 +509,18 @@ const EditUserModal = ({
                     className="h-9 text-xs rounded-lg bg-muted/40 text-muted-foreground cursor-not-allowed border-dashed border border-input"
                   />
                   <p className="text-[11px] text-muted-foreground">
-                    บัญชีอีเมลเป็นตัวระบุสิทธิ์หลักใน Supabase Auth
+                    Login email is the primary identity in Supabase Auth
                   </p>
                 </div>
 
                 <div className="space-y-1.5">
                   <Label htmlFor="edit_full_name" className="text-xs font-semibold text-foreground flex items-center gap-1">
-                    <User className="w-3.5 h-3.5 text-primary" /> ชื่อ-นามสกุล <span className="text-red-500">*</span>
+                    <User className="w-3.5 h-3.5 text-primary" /> Full Name <span className="text-red-500">*</span>
                   </Label>
                   <Input
                     id="edit_full_name"
                     required
-                    placeholder="เช่น สมชาย ใจดี"
+                    placeholder="e.g. John Doe"
                     value={formData.full_name}
                     onChange={(e) => setFormData((prev) => ({ ...prev, full_name: e.target.value }))}
                     className="h-9 text-xs rounded-lg bg-background border border-input focus-visible:ring-1 focus-visible:ring-primary"
@@ -532,12 +532,12 @@ const EditUserModal = ({
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="space-y-1.5">
                   <Label htmlFor="edit_phone" className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                    <Phone className="w-3.5 h-3.5 text-muted-foreground" /> เบอร์โทรศัพท์ (Phone)
+                    <Phone className="w-3.5 h-3.5 text-muted-foreground" /> Phone Number
                   </Label>
                   <Input
                     id="edit_phone"
                     type="tel"
-                    placeholder="เช่น 0812345678"
+                    placeholder="e.g. 0812345678"
                     value={formData.phone}
                     onChange={(e) => setFormData((prev) => ({ ...prev, phone: e.target.value }))}
                     className="h-9 text-xs rounded-lg bg-background border border-input focus-visible:ring-1 focus-visible:ring-primary"
@@ -546,11 +546,11 @@ const EditUserModal = ({
 
                 <div className="space-y-1.5">
                   <Label htmlFor="edit_department" className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                    <Building2 className="w-3.5 h-3.5 text-muted-foreground" /> แผนก / ฝ่าย (Department)
+                    <Building2 className="w-3.5 h-3.5 text-muted-foreground" /> Department
                   </Label>
                   <Input
                     id="edit_department"
-                    placeholder="เช่น วิศวกรรม, คลังสินค้า"
+                    placeholder="e.g. Engineering, Warehouse"
                     value={formData.department}
                     onChange={(e) => setFormData((prev) => ({ ...prev, department: e.target.value }))}
                     className="h-9 text-xs rounded-lg bg-background border border-input focus-visible:ring-1 focus-visible:ring-primary"
@@ -559,11 +559,11 @@ const EditUserModal = ({
 
                 <div className="space-y-1.5">
                   <Label htmlFor="edit_position" className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                    <Briefcase className="w-3.5 h-3.5 text-muted-foreground" /> ตำแหน่ง / หน้าที่ (Position)
+                    <Briefcase className="w-3.5 h-3.5 text-muted-foreground" /> Position
                   </Label>
                   <Input
                     id="edit_position"
-                    placeholder="เช่น Site Engineer, Storekeeper"
+                    placeholder="e.g. Site Engineer, Storekeeper"
                     value={formData.position}
                     onChange={(e) => setFormData((prev) => ({ ...prev, position: e.target.value }))}
                     className="h-9 text-xs rounded-lg bg-background border border-input focus-visible:ring-1 focus-visible:ring-primary"
@@ -583,10 +583,10 @@ const EditUserModal = ({
                   <div>
                     <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
                       <KeyRound className="w-3.5 h-3.5 text-primary" />
-                      บังคับให้เปลี่ยนรหัสผ่านเมื่อเข้าสู่ระบบครั้งถัดไป (Must Change Password on Next Login)
+                      Must change password on next login
                     </span>
                     <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
-                      เมื่อเปิดใช้งาน ผู้ใช้จะได้รับการแจ้งเตือนและจำเป็นต้องกำหนดรหัสผ่านใหม่ก่อนเข้าใช้งานส่วนอื่นๆ ของระบบ
+                      When enabled, the user must set a new password before accessing the system.
                     </p>
                   </div>
                 </label>
@@ -603,9 +603,9 @@ const EditUserModal = ({
                   <Lock className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
                   <div>
                     <strong className="font-semibold block text-xs">
-                      คำเตือนความปลอดภัย: บัญชีผู้ดูแลระบบสูงสุด (Super Admin)
+                      Security Notice: Super Admin Account
                     </strong>
-                    บัญชีนี้เป็น Super Admin ของระบบ เฉพาะผู้ดูแลระบบสูงสุด (Super Admin) เท่านั้นที่สามารถเปลี่ยนบทบาทหรือแก้ไขสิทธิ์ของบัญชีนี้ได้
+                    This account is a system Super Admin. Only Super Admin can change the role or permissions of this account.
                   </div>
                 </div>
               )}
@@ -616,9 +616,9 @@ const EditUserModal = ({
                   <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                   <div>
                     <strong className="font-semibold block text-xs">
-                      คำเตือนความปลอดภัย: บัญชี Administrator คนสุดท้ายของระบบ
+                      Security Notice: Last Active Administrator
                     </strong>
-                    บัญชีนี้เป็นผู้ดูแลระบบที่เปิดใช้งานอยู่เพียงคนเดียว ระบบจะไม่อนุญาตให้ลดระดับบทบาทหรือระงับการใช้งานเพื่อป้องกันการถูกตัดสิทธิ์จากระบบ
+                    This account is the only active Administrator. Demoting or suspending this account is not allowed to prevent system lockout.
                   </div>
                 </div>
               )}
@@ -627,14 +627,14 @@ const EditUserModal = ({
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label className="text-xs font-semibold text-foreground block">
-                    กำหนดบทบาทการใช้งาน (Assigned Role) <span className="text-red-500">*</span>
+                    Assigned Role <span className="text-red-500">*</span>
                   </Label>
                   <button
                     type="button"
                     onClick={() => { onClose(); navigate('/roles'); }}
                     className="text-[11px] text-primary hover:underline flex items-center gap-1"
                   >
-                    <span>จัดการบทบาทและสิทธิ์ที่ /roles</span>
+                    <span>Manage roles and permissions at /roles</span>
                     <ExternalLink className="w-3 h-3" />
                   </button>
                 </div>
@@ -687,23 +687,23 @@ const EditUserModal = ({
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
                     <ShieldCheck className="w-4 h-4 text-primary" />
-                    สิทธิ์การใช้งานที่ได้รับตามบทบาท (Assigned RBAC Permissions)
+                    Assigned RBAC Permissions
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-[11px] font-semibold text-primary bg-primary/10 px-2.5 py-0.5 rounded-full">
                       {loadingPerms ? (
-                        'กำลังโหลดข้อมูลสิทธิ์...'
+                        'Loading permissions...'
                       ) : rolePermissionsList.length === totalCatalogCount && totalCatalogCount > 0 ? (
-                        `เปิดใช้งานครบทุกสิทธิ์ (${rolePermissionsList.length} / ${totalCatalogCount} สิทธิ์)`
+                        `All permissions enabled (${rolePermissionsList.length} / ${totalCatalogCount})`
                       ) : (
-                        `สิทธิ์ที่เปิดใช้งาน: ${rolePermissionsList.length} / ${totalCatalogCount || rolePermissionsList.length} สิทธิ์`
+                        `Enabled: ${rolePermissionsList.length} / ${totalCatalogCount || rolePermissionsList.length}`
                       )}
                     </span>
                     <button
                       type="button"
                       onClick={() => fetchLiveRolePermissions()}
                       disabled={loadingPerms}
-                      title="รีเฟรชสิทธิ์จากฐานข้อมูล"
+                      title="Refresh permissions from database"
                       className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50"
                     >
                       <RefreshCw className={`w-3.5 h-3.5 ${loadingPerms ? 'animate-spin' : ''}`} />
@@ -714,14 +714,14 @@ const EditUserModal = ({
                 {loadingPerms ? (
                   <div className="py-6 text-center text-xs text-muted-foreground flex items-center justify-center gap-2">
                     <RefreshCw className="w-4 h-4 animate-spin text-primary" />
-                    กำลังตรวจสอบโครงสร้างสิทธิ์จริงจากฐานข้อมูล...
+                    Loading live permission schema from database...
                   </div>
                 ) : rolePermissionsList.length === 0 ? (
                   <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-200 text-xs text-center space-y-1">
                     <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 mx-auto mb-1" />
-                    <p className="font-semibold">ยังไม่มีสิทธิ์เปิดใช้งานสำหรับบทบาทนี้ในระบบ /roles</p>
+                    <p className="font-semibold">No permissions currently enabled for this role in /roles</p>
                     <p className="text-[11px] text-muted-foreground">
-                      สามารถกำหนดสิทธิ์เพิ่มเติมให้บทบาทนี้ได้โดยตรงที่หน้า <button type="button" onClick={() => { onClose(); navigate('/roles'); }} className="text-primary underline">จัดการบทบาท (Role Management)</button>
+                      You can configure additional permissions directly in <button type="button" onClick={() => { onClose(); navigate('/roles'); }} className="text-primary underline">Role Management</button>
                     </p>
                   </div>
                 ) : (
@@ -729,7 +729,7 @@ const EditUserModal = ({
                     {rolePermissionsList.length === totalCatalogCount && totalCatalogCount > 0 && (
                       <div className="p-3 rounded-lg bg-primary/10 border border-primary/20 text-primary text-xs flex items-center gap-2">
                         <Sparkles className="w-4 h-4 text-primary shrink-0" />
-                        <span>บทบาทนี้ได้รับสิทธิ์สูงสุดเต็มรูปแบบ สามารถเข้าถึงและจัดการทุกฟังก์ชันในระบบทั้งหมด {rolePermissionsList.length} สิทธิ์</span>
+                        <span>This role has full system privileges, with access to all {rolePermissionsList.length} system permissions.</span>
                       </div>
                     )}
 
@@ -739,7 +739,7 @@ const EditUserModal = ({
                           <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center justify-between">
                             <span>{category}</span>
                             <span className="text-[10px] font-normal text-muted-foreground">
-                              {groupedPermissions[category].length} สิทธิ์
+                              {groupedPermissions[category].length} {groupedPermissions[category].length === 1 ? 'permission' : 'permissions'}
                             </span>
                           </div>
                           <div className="flex flex-wrap gap-1.5">
@@ -764,7 +764,7 @@ const EditUserModal = ({
               {/* Account Status Radio Cards */}
               <div className="space-y-2">
                 <Label className="text-xs font-semibold text-foreground block">
-                  สถานะบัญชีการใช้งาน (Account Status) <span className="text-red-500">*</span>
+                  Account Status <span className="text-red-500">*</span>
                 </Label>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {/* ACTIVE */}
@@ -785,8 +785,8 @@ const EditUserModal = ({
                       className="text-emerald-600 focus:ring-emerald-500"
                     />
                     <div>
-                      <span className="text-xs font-bold text-foreground block">ACTIVE (เปิดใช้งาน)</span>
-                      <span className="text-[10px] text-muted-foreground">เข้าสู่ระบบและทำรายการได้ปกติ</span>
+                      <span className="text-xs font-bold text-foreground block">Active</span>
+                      <span className="text-[10px] text-muted-foreground">Normal login and operations</span>
                     </div>
                   </label>
 
@@ -811,8 +811,8 @@ const EditUserModal = ({
                       className="text-red-600 focus:ring-red-500"
                     />
                     <div>
-                      <span className="text-xs font-bold text-foreground block">INACTIVE (ระงับชั่วคราว)</span>
-                      <span className="text-[10px] text-muted-foreground">ปิดกั้นการเข้าสู่ระบบ</span>
+                      <span className="text-xs font-bold text-foreground block">Inactive</span>
+                      <span className="text-[10px] text-muted-foreground">Block login access</span>
                     </div>
                   </label>
 
@@ -837,8 +837,8 @@ const EditUserModal = ({
                       className="text-amber-600 focus:ring-amber-500"
                     />
                     <div>
-                      <span className="text-xs font-bold text-foreground block">SUSPENDED (พักบัญชี)</span>
-                      <span className="text-[10px] text-muted-foreground">พักสิทธิ์การเข้าใช้งาน</span>
+                      <span className="text-xs font-bold text-foreground block">Suspended</span>
+                      <span className="text-[10px] text-muted-foreground">Temporarily suspended</span>
                     </div>
                   </label>
                 </div>
@@ -851,7 +851,7 @@ const EditUserModal = ({
             <div className="space-y-4">
               <div className="space-y-3">
                 <Label className="text-xs font-semibold text-foreground block">
-                  สิทธิ์การเข้าถึงข้อมูลโครงการ (Project Access Control) <span className="text-red-500">*</span>
+                  Project Access Control <span className="text-red-500">*</span>
                 </Label>
 
                 {/* Mode 1: All Projects */}
@@ -873,10 +873,10 @@ const EditUserModal = ({
                   />
                   <div>
                     <span className="text-xs font-bold text-foreground block">
-                      เข้าถึงได้ทุกโครงการ (All Projects Access)
+                      All Projects Access
                     </span>
                     <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
-                      ผู้ใช้จะได้รับสิทธิ์ในการดูสต็อก เบิกจ่าย และรับเข้าวัสดุในทุกโครงการของระบบโดยอัตโนมัติ
+                      The user will automatically have access to view stock, withdraw, and receive items across all projects.
                     </p>
                   </div>
                 </label>
@@ -900,10 +900,10 @@ const EditUserModal = ({
                   />
                   <div>
                     <span className="text-xs font-bold text-foreground block">
-                      เลือกเฉพาะโครงการที่ได้รับมอบหมาย (Selected Projects Only)
+                      Selected Projects Only
                     </span>
                     <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
-                      จำกัดสิทธิ์ให้เห็นและดำเนินการได้เฉพาะโครงการที่ระบุไว้ในรายการด้านล่างเท่านั้น
+                      Restrict access to view and perform actions only within the selected projects listed below.
                     </p>
                   </div>
                 </label>
@@ -917,7 +917,7 @@ const EditUserModal = ({
                     <div className="relative flex-1">
                       <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                       <Input
-                        placeholder="ค้นหาชื่อหรือรหัสโครงการ..."
+                        placeholder="Search project name or code..."
                         value={projectSearch}
                         onChange={(e) => setProjectSearch(e.target.value)}
                         className="pl-8 text-xs bg-background border border-input h-8 rounded-lg"
@@ -932,7 +932,7 @@ const EditUserModal = ({
                         onClick={handleSelectAllProjects}
                         className="text-[11px] h-7 px-2.5 rounded-lg"
                       >
-                        เลือกทั้งหมด ({projects.length})
+                        Select All ({projects.length})
                       </Button>
                       <Button
                         type="button"
@@ -941,7 +941,7 @@ const EditUserModal = ({
                         onClick={handleDeselectAllProjects}
                         className="text-[11px] h-7 px-2.5 rounded-lg"
                       >
-                        ล้างการเลือก
+                        Clear Selection
                       </Button>
                     </div>
                   </div>
@@ -950,7 +950,7 @@ const EditUserModal = ({
                   <div className="max-h-52 overflow-y-auto space-y-1.5 pr-1">
                     {filteredProjects.length === 0 ? (
                       <p className="text-xs text-muted-foreground p-3 text-center">
-                        ไม่พบโครงการที่ตรงกับคำค้นหา
+                        No matching projects found
                       </p>
                     ) : (
                       filteredProjects.map((p) => {
@@ -984,10 +984,10 @@ const EditUserModal = ({
 
                   <div className="text-[11px] text-muted-foreground flex items-center justify-between pt-1 border-t border-border/40">
                     <span>
-                      จำเป็นต้องเลือกอย่างน้อย 1 โครงการสำหรับสิทธิ์ประเภทนี้
+                      At least 1 project is required for this access type
                     </span>
                     <span className="font-semibold text-foreground">
-                      เลือกแล้ว: {formData.selected_projects.length} / {projects.length} โครงการ
+                      Selected: {formData.selected_projects.length} / {projects.length} {projects.length === 1 ? 'project' : 'projects'}
                     </span>
                   </div>
                 </div>
@@ -1006,7 +1006,7 @@ const EditUserModal = ({
                   onClick={() => setActiveTab('rbac')}
                   className="text-xs h-9 px-3 rounded-lg"
                 >
-                  ถัดไป (TAB 2: บทบาทและสิทธิ์) →
+                  Next (TAB 2: Roles & Permissions) →
                 </Button>
               )}
 
@@ -1019,7 +1019,7 @@ const EditUserModal = ({
                     onClick={() => setActiveTab('profile')}
                     className="text-xs h-9 px-3 rounded-lg"
                   >
-                    ← ย้อนกลับ (TAB 1)
+                    ← Back (TAB 1)
                   </Button>
                   <Button
                     type="button"
@@ -1028,7 +1028,7 @@ const EditUserModal = ({
                     onClick={() => setActiveTab('projects')}
                     className="text-xs h-9 px-3 rounded-lg"
                   >
-                    ถัดไป (TAB 3: สิทธิ์โครงการ) →
+                    Next (TAB 3: Project Access) →
                   </Button>
                 </>
               )}
@@ -1041,30 +1041,30 @@ const EditUserModal = ({
                   onClick={() => setActiveTab('rbac')}
                   className="text-xs h-9 px-3 rounded-lg"
                 >
-                  ← ย้อนกลับ (TAB 2)
+                  ← Back (TAB 2)
                 </Button>
               )}
             </div>
 
             <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
               <Button type="button" variant="ghost" onClick={onClose} className="text-xs h-9 px-4 rounded-lg">
-                ยกเลิก
+                Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={loading || (isTargetSuper && !isSuperAdmin)}
-                title={isTargetSuper && !isSuperAdmin ? 'เฉพาะ Super Admin เท่านั้นที่สามารถแก้ไขบัญชีนี้ได้' : 'บันทึกการแก้ไข'}
+                title={isTargetSuper && !isSuperAdmin ? 'Only Super Admin can edit this account' : 'Save changes'}
                 className="h-9 px-5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs shadow-xs flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
               >
                 {loading ? (
                   <>
                     <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    กำลังบันทึก...
+                    Saving...
                   </>
                 ) : (
                   <>
                     <Check className="w-3.5 h-3.5" />
-                    บันทึกการแก้ไข
+                    Save Changes
                   </>
                 )}
               </Button>

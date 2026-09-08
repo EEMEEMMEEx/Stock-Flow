@@ -12,10 +12,10 @@ export const ProjectLocationSelector = ({
   onChange,
   required = false,
   allowAll = false,
-  allLabel = '-- ทุกสถานที่จัดเก็บ (แสดงยอดรวมทั้งระบบ) --',
+  allLabel = '-- All Locations (Total System Balance) --',
   mode = 'dual', // 'dual' (2 separate dropdowns) or 'unified' (single clear dropdown)
-  label = 'โครงการและสถานที่จัดเก็บ (Project & Location)',
-  description: _description = 'เลือกโครงการและคลังจัดเก็บปลายทาง',
+  label = 'Project & Location',
+  description: _description = 'Select destination project and storage location',
   showSummaryCard = true,
   className = '',
   size: _size = 'default' // 'default' | 'sm' | 'lg'
@@ -31,7 +31,7 @@ export const ProjectLocationSelector = ({
       if (!map.has(key)) {
         map.set(key, {
           key,
-          name: p.name || 'โครงการทั่วไป',
+          name: p.name || 'General Project',
           project_code: p.project_code || '',
           locations: [p]
         });
@@ -123,7 +123,7 @@ export const ProjectLocationSelector = ({
             {required && <span className="text-destructive font-bold">*</span>}
           </label>
           <span className="text-[11px] text-muted-foreground font-normal">
-            {groupedProjects.length} โครงการ ({projects.length} คลังจัดเก็บ)
+            {groupedProjects.length} Projects ({projects.length} Locations)
           </span>
         </div>
 
@@ -133,7 +133,7 @@ export const ProjectLocationSelector = ({
           <div className="space-y-1">
             <span className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
               <Layers className="w-3 h-3 text-indigo-500" />
-              <span>1. เลือกโครงการ (Project)</span>
+              <span>1. Select Project</span>
             </span>
             <select
               value={allowAll && value === 'all' ? 'all' : (activeGroupKey || '')}
@@ -141,10 +141,10 @@ export const ProjectLocationSelector = ({
               className="w-full h-9 rounded-lg border border-input bg-background px-3 text-xs font-medium text-foreground focus:ring-2 focus:ring-primary shadow-xs cursor-pointer transition-colors"
             >
               {allowAll && <option value="all">{allLabel}</option>}
-              {!allowAll && !activeGroupKey && <option value="" disabled>-- กรุณาเลือกโครงการ --</option>}
+              {!allowAll && !activeGroupKey && <option value="" disabled>-- Please select project --</option>}
               {groupedProjects.map(group => (
                 <option key={group.key} value={group.key}>
-                  {group.project_code ? `[${group.project_code}] ` : ''}{group.name} ({group.locations.length} คลัง)
+                  {group.project_code ? `[${group.project_code}] ` : ''}{group.name} ({group.locations.length} Locations)
                 </option>
               ))}
             </select>
@@ -154,7 +154,7 @@ export const ProjectLocationSelector = ({
           <div className="space-y-1">
             <span className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
               <MapPin className="w-3 h-3 text-emerald-500" />
-              <span>2. เลือกคลัง / สถานที่จัดเก็บ (Storage Location)</span>
+              <span>2. Select Storage Location</span>
             </span>
             <select
               required={required}
@@ -163,10 +163,10 @@ export const ProjectLocationSelector = ({
               onChange={(e) => handleLocationChange(e.target.value)}
               className="w-full h-9 rounded-lg border border-input bg-background px-3 text-xs font-medium text-emerald-700 dark:text-emerald-300 focus:ring-2 focus:ring-primary shadow-xs cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {!value && <option value="" disabled>-- เลือกสถานที่จัดเก็บ / คลัง --</option>}
+              {!value && <option value="" disabled>-- Select Storage Location --</option>}
               {(activeGroup?.locations || []).map(loc => (
                 <option key={loc.id} value={loc.id}>
-                  {loc.location || 'คลังหลัก / ไม่ระบุสถานที่'} {loc.description ? `— (${loc.description})` : ''}
+                  {loc.location || 'Main Storage / Unspecified'} {loc.description ? `— (${loc.description})` : ''}
                 </option>
               ))}
             </select>
@@ -183,11 +183,11 @@ export const ProjectLocationSelector = ({
                     [{selectedRecord.project_code}]
                   </span>
                 )}
-                <span>โครงการ: {selectedRecord.name}</span>
+                <span>Project: {selectedRecord.name}</span>
                 <ChevronRight className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
                 <span className="text-emerald-700 dark:text-emerald-300 font-bold flex items-center gap-1">
                   <Building2 className="w-3.5 h-3.5 shrink-0 inline" />
-                  <span>คลัง: {selectedRecord.location || 'คลังหลัก'}</span>
+                  <span>Location: {selectedRecord.location || 'Main Storage'}</span>
                 </span>
               </div>
               {selectedRecord.description && (
@@ -218,7 +218,7 @@ export const ProjectLocationSelector = ({
           {required && <span className="text-destructive font-bold">*</span>}
         </label>
         <span className="text-[11px] text-muted-foreground font-normal">
-          {projects.length} สถานที่จัดเก็บ
+          {projects.length} Locations
         </span>
       </div>
 
@@ -229,15 +229,15 @@ export const ProjectLocationSelector = ({
         className="w-full h-9 rounded-lg border border-input bg-background px-3 text-xs font-medium focus:ring-2 focus:ring-primary shadow-xs cursor-pointer transition-colors"
       >
         {allowAll && <option value="all">{allLabel}</option>}
-        {!allowAll && !value && <option value="" disabled>-- เลือกโครงการและคลังจัดเก็บ --</option>}
+        {!allowAll && !value && <option value="" disabled>-- Select Project & Location --</option>}
         {groupedProjects.map(group => (
           <optgroup
             key={group.key}
-            label={`โครงการ: ${group.project_code ? `[${group.project_code}] ` : ''}${group.name}`}
+            label={`Project: ${group.project_code ? `[${group.project_code}] ` : ''}${group.name}`}
           >
             {group.locations.map(loc => (
               <option key={loc.id} value={loc.id}>
-                {loc.location || 'คลังหลัก'} {loc.description ? `(${loc.description})` : ''}
+                {loc.location || 'Main Storage'} {loc.description ? `(${loc.description})` : ''}
               </option>
             ))}
           </optgroup>
@@ -252,7 +252,7 @@ export const ProjectLocationSelector = ({
             <ChevronRight className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
             <span className="text-emerald-700 dark:text-emerald-300 font-bold flex items-center gap-1">
               <Building2 className="w-3.5 h-3.5 inline" />
-              <span>{selectedRecord.location || 'คลังหลัก'}</span>
+              <span>{selectedRecord.location || 'Main Storage'}</span>
             </span>
           </div>
 

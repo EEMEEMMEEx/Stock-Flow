@@ -112,7 +112,7 @@ const fetchRoles = useCallback(async () => {
       }
     } catch (error) {
       console.error('Error fetching and reconciling roles:', error);
-      toast.error('เกิดข้อผิดพลาดในการโหลดข้อมูลบทบาท');
+      toast.error('Failed to load roles data');
     }
   }, []);
 
@@ -138,7 +138,7 @@ const fetchRoles = useCallback(async () => {
       await Promise.all([fetchRoles(), fetchCatalog()]);
     } catch (error) {
       console.error('Fetch Roles Error:', error);
-      toast.error('เกิดข้อผิดพลาดในการโหลดข้อมูลบทบาท');
+      toast.error('Failed to load roles data');
     } finally {
       setLoading(false);
     }
@@ -172,7 +172,7 @@ const fetchRoles = useCallback(async () => {
   const handleSaveRolePermissions = async (roleId, permissionIds) => {
     try {
       if (selectedRoleForPerms?.code === 'SUPER' && !isSuperAdmin) {
-        toast.error('เฉพาะผู้ดูแลระบบสูงสุด (Super Admin) เท่านั้นที่สามารถจัดการสิทธิ์ของ Super Admin ได้');
+        toast.error('Only Super Admins can manage Super Admin permissions');
         return;
       }
 
@@ -213,12 +213,12 @@ const fetchRoles = useCallback(async () => {
         }
       }
 
-      toast.success('บันทึกการกำหนดสิทธิ์เรียบร้อยแล้ว');
+      toast.success('Permissions updated successfully');
       await fetchRoles();
       await refreshProfile();
     } catch (error) {
       console.error('Save Role Permissions Error:', error);
-      toast.error(error.message || 'เกิดข้อผิดพลาดในการบันทึกสิทธิ์');
+      toast.error(error.message || 'Failed to update permissions');
       throw error;
     }
   };
@@ -257,11 +257,11 @@ const fetchRoles = useCallback(async () => {
         if (insertErr) throw insertErr;
       }
 
-      toast.success('สร้างบทบาทใหม่สำเร็จ');
+      toast.success('Role created successfully');
       await fetchRoles();
     } catch (error) {
       console.error('Create Role Error:', error);
-      toast.error(error.message || 'เกิดข้อผิดพลาดในการสร้างบทบาท');
+      toast.error(error.message || 'Failed to create role');
       throw error;
     }
   };
@@ -269,7 +269,7 @@ const fetchRoles = useCallback(async () => {
   const handleUpdateRole = async (roleId, rolePayload) => {
     try {
       if (selectedRoleForEdit?.code === 'SUPER' && !isSuperAdmin) {
-        toast.error('เฉพาะผู้ดูแลระบบสูงสุด (Super Admin) เท่านั้นที่สามารถแก้ไขบทบาท Super Admin ได้');
+        toast.error('Only Super Admins can edit Super Admin role');
         return;
       }
 
@@ -304,24 +304,24 @@ const fetchRoles = useCallback(async () => {
         if (updateErr) throw updateErr;
       }
 
-      toast.success('อัปเดตข้อมูลบทบาทสำเร็จ');
+      toast.success('Role updated successfully');
       await fetchRoles();
     } catch (error) {
       console.error('Update Role Error:', error);
-      toast.error(error.message || 'เกิดข้อผิดพลาดในการอัปเดตบทบาท');
+      toast.error(error.message || 'Failed to update role');
       throw error;
     }
   };
 
   const handleDeleteRole = async (roleObj) => {
     if (roleObj.code === 'SUPER' || roleObj.is_system) {
-      toast.error(`ไม่สามารถลบบทบาทของระบบ (System Role: ${roleObj.name || roleObj.code}) ได้ เพื่อรักษาเสถียรภาพของระบบ`);
+      toast.error(`Cannot delete system role (${roleObj.name || roleObj.code}) to maintain system stability`);
       return;
     }
 
     if (roleObj.user_count > 0) {
       toast.error(
-        `ไม่สามารถลบบทบาท "${roleObj.name || roleObj.code}" ได้ เนื่องจากยังมีผู้ใช้งานจำนวน ${roleObj.user_count} คน กำหนดบทบาทนี้อยู่ กรุณาย้ายผู้ใช้งานไปยังบทบาทอื่นในระบบก่อนลบ`,
+        `Cannot delete role "${roleObj.name || roleObj.code}" because ${roleObj.user_count} ${roleObj.user_count === 1 ? 'user is' : 'users are'} currently assigned to it. Please reassign users before deleting.`,
         { duration: 5000 }
       );
       return;
@@ -334,13 +334,13 @@ const fetchRoles = useCallback(async () => {
     if (!selectedRoleForDelete) return;
 
     if (selectedRoleForDelete.is_system) {
-      toast.error('ไม่สามารถลบบทบาทของระบบ (System Role) ได้');
+      toast.error('Cannot delete system role');
       setSelectedRoleForDelete(null);
       return;
     }
 
     if (selectedRoleForDelete.user_count > 0) {
-      toast.error(`ไม่สามารถลบบทบาทได้ เนื่องจากมีผู้ใช้งาน ${selectedRoleForDelete.user_count} คน กำหนดบทบาทนี้อยู่`);
+      toast.error(`Cannot delete role because ${selectedRoleForDelete.user_count} ${selectedRoleForDelete.user_count === 1 ? 'user is' : 'users are'} assigned to it`);
       setSelectedRoleForDelete(null);
       return;
     }
@@ -374,11 +374,11 @@ const fetchRoles = useCallback(async () => {
         if (deleteRoleErr) throw deleteRoleErr;
       }
 
-      toast.success(`ลบบทบาท ${selectedRoleForDelete.name} เรียบร้อยแล้ว`);
+      toast.success(`Role "${selectedRoleForDelete.name}" deleted successfully`);
       await fetchRoles();
     } catch (error) {
       console.error('Delete Role error:', error);
-      toast.error(error.message || 'เกิดข้อผิดพลาดในการลบบทบาท');
+      toast.error(error.message || 'Failed to delete role');
     } finally {
       setSelectedRoleForDelete(null);
     }
@@ -391,10 +391,10 @@ const fetchRoles = useCallback(async () => {
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
             <ShieldCheck className="w-7 h-7 text-primary" />
-            จัดการบทบาทและสิทธิ์ (Role & Permission Management - RBAC)
+            Role & Permission Management (RBAC)
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            สร้าง/แก้ไขบทบาท และกำหนดสิทธิ์การใช้งาน (RBAC) ให้แต่ละบทบาท
+            Create/edit roles and configure permissions (RBAC) for each role
           </p>
         </div>
 
@@ -406,7 +406,7 @@ const fetchRoles = useCallback(async () => {
             className="h-9 px-3 text-xs rounded-lg flex items-center gap-2"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            รีเฟรช
+            Refresh
           </Button>
 
           {can('roles.create') && (
@@ -415,7 +415,7 @@ const fetchRoles = useCallback(async () => {
               className="h-9 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs shadow-xs flex items-center gap-2 transition-all duration-200 cursor-pointer shrink-0"
             >
               <Plus className="w-4 h-4 shrink-0" />
-              <span>เพิ่มบทบาท</span>
+              <span>Add Role</span>
             </Button>
           )}
         </div>
@@ -427,11 +427,11 @@ const fetchRoles = useCallback(async () => {
           <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
           <div className="space-y-1">
             <div className="font-semibold text-amber-800 dark:text-amber-300">
-              แจ้งเตือน: ยังไม่ได้เปิดใช้งาน Supabase Migration 09 บนฐานข้อมูล Cloud
+              Notice: Supabase Migration 09 is not applied on Cloud database
             </div>
             <p className="text-muted-foreground">
-              หากต้องการใช้ระบบ RBAC แบบไดนามิกเต็มรูปแบบ (สร้างบทบาทใหม่, กำหนดสิทธิ์แบบเปิด-ปิด, และเชื่อมโยงแคตตาล็อกสิทธิ์) 
-              กรุณานำโค้ดในไฟล์ <code className="bg-amber-200/50 dark:bg-amber-950/60 px-1 py-0.5 rounded font-mono">supabase/migrations/09_dynamic_rbac_roles_permissions.sql</code> ไปวางและกด Run ใน <strong>Supabase Dashboard → SQL Editor</strong>
+              To enable full dynamic RBAC (create custom roles, toggle permissions, and link catalog), 
+              please run the SQL migration in <code className="bg-amber-200/50 dark:bg-amber-950/60 px-1 py-0.5 rounded font-mono">supabase/migrations/09_dynamic_rbac_roles_permissions.sql</code> in <strong>Supabase Dashboard → SQL Editor</strong>
             </p>
           </div>
         </div>
@@ -442,11 +442,11 @@ const fetchRoles = useCallback(async () => {
         {loading ? (
           <div className="col-span-full py-16 text-center text-muted-foreground">
             <RefreshCw className="w-6 h-6 animate-spin text-primary mx-auto mb-2" />
-            กำลังโหลดรายชื่อบทบาทและสิทธิ์...
+            Loading roles and permissions...
           </div>
         ) : roles.length === 0 ? (
           <div className="col-span-full py-16 text-center text-muted-foreground">
-            ไม่พบบทบาทในระบบ
+            No roles found in system
           </div>
         ) : (
           roles.map((roleObj) => (
@@ -474,7 +474,7 @@ const fetchRoles = useCallback(async () => {
                   {roleObj.name}
                 </CardTitle>
                 <CardDescription className="text-xs text-muted-foreground line-clamp-2 min-h-[2.5rem]">
-                  {roleObj.description || 'ไม่มีคำอธิบายรายละเอียด'}
+                  {roleObj.description || 'No description provided'}
                 </CardDescription>
               </CardHeader>
 
@@ -484,16 +484,16 @@ const fetchRoles = useCallback(async () => {
                   <div className="flex items-center gap-2">
                     <Users className="w-4 h-4 text-primary" />
                     <div>
-                      <div className="text-[10px] text-muted-foreground">จำนวนผู้ใช้</div>
-                      <div className="font-bold text-sm text-foreground">{roleObj.user_count || 0} คน</div>
+                      <div className="text-[10px] text-muted-foreground">Users</div>
+                      <div className="font-bold text-sm text-foreground">{roleObj.user_count || 0} {roleObj.user_count === 1 ? 'user' : 'users'}</div>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2 border-l border-border pl-3">
                     <Shield className="w-4 h-4 text-primary" />
                     <div>
-                      <div className="text-[10px] text-muted-foreground">สิทธิ์ที่เปิดใช้งาน</div>
-                      <div className="font-bold text-sm text-foreground">{roleObj.permission_count || 0} สิทธิ์</div>
+                      <div className="text-[10px] text-muted-foreground">Active Permissions</div>
+                      <div className="font-bold text-sm text-foreground">{roleObj.permission_count || 0} {roleObj.permission_count === 1 ? 'perm' : 'perms'}</div>
                     </div>
                   </div>
                 </div>
@@ -505,7 +505,7 @@ const fetchRoles = useCallback(async () => {
                       variant="outline"
                       size="sm"
                       disabled={roleObj.code === 'SUPER' && !isSuperAdmin}
-                      title={roleObj.code === 'SUPER' && !isSuperAdmin ? 'เฉพาะ Super Admin เท่านั้นที่สามารถจัดการสิทธิ์ของ Super Admin ได้' : 'กำหนดสิทธิ์การใช้งาน (Permissions Configuration)'}
+                      title={roleObj.code === 'SUPER' && !isSuperAdmin ? 'Only Super Admins can manage Super Admin permissions' : 'Permissions Configuration'}
                       onClick={() => handleOpenPermissionModal(roleObj)}
                       className={`h-8 px-2.5 text-xs font-semibold flex items-center gap-1.5 rounded-lg ${
                         roleObj.code === 'SUPER' && !isSuperAdmin 
@@ -518,7 +518,7 @@ const fetchRoles = useCallback(async () => {
                       ) : (
                         <ShieldCheck className="w-4 h-4" />
                       )}
-                      กำหนดสิทธิ์
+                      Permissions
                     </Button>
                   ) : (
                     <div></div>
@@ -533,8 +533,8 @@ const fetchRoles = useCallback(async () => {
                         disabled={roleObj.code === 'SUPER' && !isSuperAdmin}
                         title={
                           roleObj.code === 'SUPER' && !isSuperAdmin 
-                            ? 'เฉพาะ Super Admin เท่านั้นที่สามารถแก้ไขบทบาท Super Admin ได้' 
-                            : 'แก้ไขบทบาท (Edit Role)'
+                            ? 'Only Super Admins can edit Super Admin role' 
+                            : 'Edit Role'
                         }
                         onClick={() => setSelectedRoleForEdit(roleObj)}
                         className={`h-8 w-8 transition-colors ${
@@ -559,12 +559,12 @@ const fetchRoles = useCallback(async () => {
                         disabled={roleObj.code === 'SUPER'}
                         title={
                           roleObj.code === 'SUPER'
-                            ? 'ไม่สามารถลบบทบาท Super Admin ได้'
+                            ? 'Cannot delete Super Admin role'
                             : roleObj.is_system
-                            ? 'ไม่สามารถลบบทบาทของระบบได้ (System Role)'
+                            ? 'Cannot delete system role'
                             : roleObj.user_count > 0
-                            ? `มีผู้ใช้ประจำอยู่ ${roleObj.user_count} คน (คลิกเพื่อดูรายละเอียด)`
-                            : 'ลบบทบาท (Delete Role)'
+                            ? `Assigned to ${roleObj.user_count} ${roleObj.user_count === 1 ? 'user' : 'users'} (Click to view details)`
+                            : 'Delete Role'
                         }
                         onClick={() => handleDeleteRole(roleObj)}
                         className={`h-8 w-8 transition-colors ${
@@ -622,22 +622,22 @@ const fetchRoles = useCallback(async () => {
             <DialogHeader>
               <DialogTitle className="text-lg font-bold flex items-center gap-2 text-red-600">
                 <AlertCircle className="w-5 h-5" />
-                ยืนยันการลบบทบาท (Delete Role)
+                Delete Role
               </DialogTitle>
               <DialogDescription className="text-sm text-muted-foreground mt-2">
-                คุณแน่ใจหรือไม่ที่จะลบบทบาท <strong>{selectedRoleForDelete.name}</strong> ({selectedRoleForDelete.code}) ?
+                Are you sure you want to delete role <strong>{selectedRoleForDelete.name}</strong> ({selectedRoleForDelete.code})?
                 <br />
                 <span className="text-xs text-red-500 font-medium mt-1 block">
-                  * การดำเนินการนี้ไม่สามารถย้อนกลับได้
+                  * This action cannot be undone.
                 </span>
               </DialogDescription>
             </DialogHeader>
             <DialogFooter className="mt-4">
               <Button variant="ghost" onClick={() => setSelectedRoleForDelete(null)}>
-                ยกเลิก
+                Cancel
               </Button>
               <Button variant="destructive" onClick={confirmDeleteRole}>
-                ยืนยันลบบทบาท
+                Confirm Delete
               </Button>
             </DialogFooter>
           </DialogContent>

@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { History as HistoryIcon, RefreshCw, Sparkles } from 'lucide-react';
+import { History as HistoryIcon, RefreshCw } from 'lucide-react';
 
 const HistoryHeader = ({
   totalCount = 0,
@@ -17,13 +17,10 @@ const HistoryHeader = ({
           </div>
           <div>
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-              ประวัติการเบิกจ่าย
-              <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
-                <Sparkles className="w-3 h-3" /> Withdrawal History
-              </span>
+              Withdrawal History
             </h1>
             <p className="text-xs sm:text-sm text-muted-foreground">
-              ประวัติบิลการขอเบิกจ่ายที่ดำเนินการแล้ว — อนุมัติ / รับของแล้ว / ปฏิเสธ
+              Processed withdrawal requests — Approved / Completed / Rejected
             </p>
           </div>
         </div>
@@ -37,19 +34,19 @@ const HistoryHeader = ({
           variant="outline"
           size="sm"
           className="h-9 px-3 rounded-xl border-border hover:bg-accent text-xs font-medium gap-1.5 transition-all"
-          title="รีเฟรชข้อมูล"
+          title="Refresh Data"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-          <span className="hidden sm:inline">รีเฟรช</span>
+          <span className="hidden sm:inline">Refresh</span>
         </Button>
 
         <Badge
           variant="outline"
           className="h-9 px-3 rounded-xl bg-background border-border text-muted-foreground text-xs font-medium flex items-center gap-1.5 ml-auto sm:ml-0"
         >
-          <span>ทั้งหมด:</span>
-          <span className="font-bold text-foreground">{totalCount.toLocaleString('th-TH')}</span>
-          <span>รายการ</span>
+          <span>Total:</span>
+          <span className="font-bold text-foreground">{totalCount.toLocaleString()}</span>
+          <span>{totalCount === 1 ? 'record' : 'records'}</span>
         </Badge>
       </div>
     </div>

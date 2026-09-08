@@ -1,10 +1,11 @@
 {
   "name": "stock-flow-app",
   "private": true,
-  "version": "1.4.92",
+  "version": "1.4.94",
   "type": "module",
   "scripts": {
     "dev": "vite --host",
+    "tunnel": "cloudflared tunnel --url http://localhost:5173",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",

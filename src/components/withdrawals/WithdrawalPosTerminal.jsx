@@ -160,8 +160,8 @@ const WithdrawalPosTerminal = ({
             value={selectedProjectId}
             onChange={(id) => onSelectProject(id)}
             allowAll={true}
-            allLabel="-- ทุกโครงการ & ทุกคลังจัดเก็บ (แสดงยอดรวมทั้งระบบ) --"
-            label="โครงการเป้าหมาย & สถานที่จัดเก็บ (Target Project & Storage Location)"
+            allLabel="-- All Projects & Locations (System-wide Total) --"
+            label="Target Project & Storage Location"
             mode="dual"
             showSummaryCard={selectedProjectId !== 'all'}
           />
@@ -175,7 +175,7 @@ const WithdrawalPosTerminal = ({
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 ref={searchInputRef}
-                placeholder="ค้นหาวัสดุ... (ชื่อรายการ, รหัส SKU, รุ่น Model) กด / เพื่อค้นหาทันที"
+                placeholder="Search items... (Name, SKU, Model) Press / to focus"
                 className="pl-9 pr-8 h-9 rounded-lg bg-background border-border text-xs shadow-2xs"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -203,10 +203,10 @@ const WithdrawalPosTerminal = ({
                     ? 'bg-background text-foreground shadow-xs border border-border/60'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
-                title="มุมมองแบบการ์ด (Grid View)"
+                title="Grid View"
               >
                 <LayoutGrid className="w-4 h-4" />
-                <span>การ์ด</span>
+                <span>Grid</span>
               </Button>
               <Button
                 type="button"
@@ -218,10 +218,10 @@ const WithdrawalPosTerminal = ({
                     ? 'bg-background text-foreground shadow-xs border border-border/60'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
-                title="มุมมองแบบตาราง (List/Table View)"
+                title="Table View"
               >
                 <List className="w-4 h-4" />
-                <span>ตาราง</span>
+                <span>Table</span>
               </Button>
             </div>
           </div>
@@ -229,7 +229,7 @@ const WithdrawalPosTerminal = ({
           {/* Stock Availability Filter Tabs */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-thin">
             <span className="text-[11px] font-bold text-muted-foreground shrink-0 mr-1 flex items-center gap-1">
-              <Filter className="w-3 h-3" /> สถานะสต็อก:
+              <Filter className="w-3 h-3" /> Stock Status:
             </span>
 
             <Button
@@ -243,7 +243,7 @@ const WithdrawalPosTerminal = ({
                   : 'border-border/60 text-muted-foreground hover:bg-accent'
               }`}
             >
-              ทั้งหมด ({items.length})
+              All ({items.length})
             </Button>
 
             <Button
@@ -257,7 +257,7 @@ const WithdrawalPosTerminal = ({
                   : 'border-emerald-500/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/10'
               }`}
             >
-              พร้อมเบิก ({inStockCount})
+              In Stock ({inStockCount})
             </Button>
 
             <Button
@@ -271,7 +271,7 @@ const WithdrawalPosTerminal = ({
                   : 'border-amber-500/30 text-amber-700 dark:text-amber-300 hover:bg-amber-500/10'
               }`}
             >
-              สต็อกใกล้หมด (≤ 5)
+              Low Stock (≤ 5)
             </Button>
 
             <Button
@@ -285,7 +285,7 @@ const WithdrawalPosTerminal = ({
                   : 'border-blue-500/30 text-blue-700 dark:text-blue-300 hover:bg-blue-500/10'
               }`}
             >
-              มีในคลังอื่น
+              Other Locations
             </Button>
 
             <Button
@@ -299,7 +299,7 @@ const WithdrawalPosTerminal = ({
                   : 'border-slate-300 text-slate-600 dark:text-slate-400 hover:bg-slate-100'
               }`}
             >
-              ของหมด
+              Out of Stock
             </Button>
           </div>
 
@@ -307,7 +307,7 @@ const WithdrawalPosTerminal = ({
           <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/30">
             <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-thin">
               <span className="text-[11px] font-bold text-muted-foreground shrink-0 mr-1 flex items-center gap-1">
-                <Tag className="w-3 h-3" /> หมวดหมู่:
+                <Tag className="w-3 h-3" /> Category:
               </span>
               <Button
                 type="button"
@@ -320,7 +320,7 @@ const WithdrawalPosTerminal = ({
                     : 'border-border/60 hover:bg-accent text-muted-foreground'
                 }`}
               >
-                ทั้งหมด
+                All
               </Button>
               {categories.map(cat => (
                 <Button
@@ -348,7 +348,7 @@ const WithdrawalPosTerminal = ({
                 onClick={handleResetFilters}
                 className="h-7 px-2 text-[11px] font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-xl shrink-0 gap-1 cursor-pointer"
               >
-                <RotateCcw className="w-3 h-3" /> รีเซ็ต
+                <RotateCcw className="w-3 h-3" /> Reset
               </Button>
             )}
           </div>
@@ -370,9 +370,9 @@ const WithdrawalPosTerminal = ({
           ) : filteredItems.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-12 text-muted-foreground bg-card rounded-xl border border-border space-y-2">
               <Package className="w-12 h-12 text-muted-foreground/30 stroke-1" />
-              <p className="font-bold text-sm text-foreground">ไม่พบรายการวัสดุที่ตรงกับเงื่อนไข</p>
+              <p className="font-bold text-sm text-foreground">No matching items found</p>
               <p className="text-xs text-muted-foreground max-w-sm text-center">
-                ลองพิมพ์คำค้นหาใหม่ หรือกดปุ่มรีเซ็ตตัวกรองด้านบนเพื่อแสดงสินค้าทั้งหมด
+                Try a different search term or click reset filters above.
               </p>
               <Button
                 type="button"
@@ -381,7 +381,7 @@ const WithdrawalPosTerminal = ({
                 onClick={handleResetFilters}
                 className="rounded-lg text-xs mt-2"
               >
-                รีเซ็ตตัวกรองทั้งหมด
+                Reset All Filters
               </Button>
             </div>
           ) : viewMode === 'table' ? (
@@ -391,10 +391,10 @@ const WithdrawalPosTerminal = ({
                 <TableHeader className="bg-muted/50 text-xs">
                   <TableRow>
                     <TableHead className="w-12 text-center">#</TableHead>
-                    <TableHead>ชื่อวัสดุ / รายละเอียด</TableHead>
+                    <TableHead>Item / Details</TableHead>
                     <TableHead>SKU / Model</TableHead>
-                    <TableHead className="text-center">สต็อกคงเหลือ</TableHead>
-                    <TableHead className="text-right">เพิ่มในคำขอ</TableHead>
+                    <TableHead className="text-center">Current Stock</TableHead>
+                    <TableHead className="text-right">Add to Request</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody className="text-xs">
@@ -428,11 +428,11 @@ const WithdrawalPosTerminal = ({
                             <span>{item.name}</span>
                             {isInCart && (
                               <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-indigo-600 text-white shadow-2xs">
-                                {cartItem.quantity} ในคำขอ
+                                {cartItem.quantity} in cart
                               </span>
                             )}
                           </div>
-                          <span className="text-[10px] text-muted-foreground">หน่วย: {item.unit || 'ชิ้น'}</span>
+                          <span className="text-[10px] text-muted-foreground">Unit: {item.unit || 'ชิ้น'}</span>
                         </TableCell>
                         <TableCell className="font-mono text-[11px]">
                           <div>{item.sku || '-'}</div>
@@ -461,8 +461,8 @@ const WithdrawalPosTerminal = ({
                             {availableStock > 0
                               ? `${availableStock} ${item.unit || ''}`
                               : hasStockInOtherWarehouse
-                                ? `มีคลังอื่น (${totalSys})`
-                                : 'ของหมด'}
+                                ? `Other (${totalSys})`
+                                : 'Out of stock'}
                           </button>
                         </TableCell>
                         <TableCell className="text-right">
@@ -513,7 +513,7 @@ const WithdrawalPosTerminal = ({
                               }`}
                             >
                               <Plus className="w-3.5 h-3.5" />
-                              <span>{isOutOfStock && hasStockInOtherWarehouse ? 'ดูคลังอื่น' : 'เพิ่มในคำขอ'}</span>
+                              <span>{isOutOfStock && hasStockInOtherWarehouse ? 'Other Locations' : 'Add to Request'}</span>
                             </Button>
                           )}
                         </TableCell>
@@ -561,7 +561,7 @@ const WithdrawalPosTerminal = ({
               </Button>
 
               <div className="flex items-center gap-1.5 font-medium text-foreground">
-                <span>หน้า</span>
+                <span>Page</span>
                 <input
                   type="number"
                   min={1}
@@ -572,7 +572,7 @@ const WithdrawalPosTerminal = ({
                   onKeyDown={(e) => { if (e.key === 'Enter') handlePageInputBlur(); }}
                   className="h-8 w-12 text-center font-mono text-xs font-bold rounded-lg border border-input bg-background focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all shadow-2xs"
                 />
-                <span>จาก</span>
+                <span>of</span>
                 <span className="font-mono font-bold text-foreground">{totalPages}</span>
               </div>
 
@@ -599,13 +599,13 @@ const WithdrawalPosTerminal = ({
                 onChange={(e) => setRowsPerPage(Number(e.target.value))}
                 className="h-8 rounded-lg border border-input bg-background px-2.5 text-xs font-bold text-foreground focus:ring-2 focus:ring-indigo-500 cursor-pointer shadow-2xs transition-all"
               >
-                <option value={24}>24 รายการ/หน้า</option>
-                <option value={48}>48 รายการ/หน้า</option>
-                <option value={96}>96 รายการ/หน้า</option>
+                <option value={24}>24 items/page</option>
+                <option value={48}>48 items/page</option>
+                <option value={96}>96 items/page</option>
               </select>
 
               <span className="font-mono text-xs text-muted-foreground font-semibold">
-                รวม {totalRecords.toLocaleString()} รายการ
+                Total {totalRecords.toLocaleString()} items
               </span>
             </div>
           </div>
@@ -643,12 +643,12 @@ const WithdrawalPosTerminal = ({
                 <ShoppingCart className="w-5 h-5" />
               </div>
               <div className="text-left">
-                <p className="text-xs font-extrabold uppercase tracking-wide">ตะกร้าคำขอเบิกจ่าย</p>
-                <p className="text-[11px] font-mono opacity-90">{cart.length} รายการ ({totalCartUnits} ชิ้น)</p>
+                <p className="text-xs font-extrabold uppercase tracking-wide">Requisition Cart</p>
+                <p className="text-[11px] font-mono opacity-90">{cart.length} items ({totalCartUnits} ชิ้น)</p>
               </div>
             </div>
             <span className="text-xs font-extrabold bg-white/20 px-3 py-1 rounded-lg">
-              ดูตะกร้า & ส่งคำขอ →
+              View Cart & Submit →
             </span>
           </Button>
         </div>
@@ -688,7 +688,7 @@ const WithdrawalPosTerminal = ({
         onSelectProject={(projId) => {
           onSelectProject(projId);
           setBreakdownModalItem(null);
-          toast.success('เปลี่ยนโครงการเป้าหมายเรียบร้อยแล้ว');
+          toast.success('Target project changed successfully');
         }}
       />
     </div>

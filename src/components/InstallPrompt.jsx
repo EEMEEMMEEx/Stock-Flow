@@ -110,19 +110,19 @@ const InstallPrompt = () => {
             <Download className="w-6 h-6" />
           </div>
           <div className="flex-1">
-            <h3 className="font-semibold text-sm">ติดตั้งแอปลงเครื่อง</h3>
+            <h3 className="font-semibold text-sm">Install App</h3>
             <p className="text-xs text-muted-foreground mt-1 mb-3">
-              ติดตั้งแอปเพื่อความรวดเร็วในการใช้งาน และสามารถเข้าถึงผ่านหน้าจอมือถือได้ทันที
+              Install the app for faster access and a smoother mobile experience.
             </p>
             
             {isIOS ? (
               <div className="text-xs bg-muted p-2 rounded-md">
-                <strong>วิธีติดตั้งบน iOS:</strong> แตะปุ่ม Share (แชร์) ด้านล่าง แล้วเลือก <br/> 
+                <strong>iOS Installation:</strong> Tap the Share button below and select <br/> 
                 <span className="font-semibold text-primary">&quot;Add to Home Screen&quot;</span>
               </div>
             ) : (
               <Button size="sm" className="w-full" onClick={handleInstall}>
-                ติดตั้งแอปทันที
+                Install Now
               </Button>
             )}
           </div>

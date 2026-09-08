@@ -9,39 +9,39 @@ export const StatusBadge = ({ status, has_shortage, is_shortage_override }) => {
     case 'pending':
       return (
         <span className="inline-flex items-center gap-1 text-amber-600 bg-amber-500/10 px-2.5 py-1 rounded-full text-xs font-semibold border border-amber-500/20">
-          <Clock className="w-3.5 h-3.5" /> รออนุมัติ
+          <Clock className="w-3.5 h-3.5" /> Pending
         </span>
       );
     case 'approved':
       if (has_shortage || is_shortage_override) {
         return (
           <span className="inline-flex items-center gap-1 text-amber-700 dark:text-amber-300 bg-amber-500/15 px-2.5 py-1 rounded-full text-xs font-bold border border-amber-500/30">
-            <AlertTriangle className="w-3.5 h-3.5" /> อนุมัติแล้ว (ของไม่ครบ)
+            <AlertTriangle className="w-3.5 h-3.5" /> Approved (Shortage)
           </span>
         );
       }
       return (
         <span className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded-full text-xs font-semibold border border-blue-500/20">
-          <CheckCircle2 className="w-3.5 h-3.5" /> อนุมัติแล้ว
+          <CheckCircle2 className="w-3.5 h-3.5" /> Approved
         </span>
       );
     case 'completed':
       if (has_shortage || is_shortage_override) {
         return (
           <span className="inline-flex items-center gap-1 text-amber-700 dark:text-amber-300 bg-amber-500/15 px-2.5 py-1 rounded-full text-xs font-bold border border-amber-500/30">
-            <AlertTriangle className="w-3.5 h-3.5" /> รับของแล้ว (มีค้างส่ง)
+            <AlertTriangle className="w-3.5 h-3.5" /> Completed (Shortage)
           </span>
         );
       }
       return (
         <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full text-xs font-semibold border border-emerald-500/20">
-          <CheckCircle2 className="w-3.5 h-3.5" /> รับของแล้ว
+          <CheckCircle2 className="w-3.5 h-3.5" /> Completed
         </span>
       );
     case 'rejected':
       return (
         <span className="inline-flex items-center gap-1 text-rose-600 dark:text-rose-400 bg-rose-500/10 px-2.5 py-1 rounded-full text-xs font-semibold border border-rose-500/20">
-          <XCircle className="w-3.5 h-3.5" /> ไม่อนุมัติ
+          <XCircle className="w-3.5 h-3.5" /> Rejected
         </span>
       );
     default:
@@ -77,22 +77,22 @@ const HistoryDataTable = ({
         <Table>
           <TableHeader className="bg-muted/40 backdrop-blur border-b border-border/50">
             <TableRow>
-              <TableHead className="w-[110px] font-bold text-xs">เลขที่บิล</TableHead>
+              <TableHead className="w-[110px] font-bold text-xs">Order #</TableHead>
               <TableHead className="w-[140px] text-xs">
-                {renderSortHeader('วันที่ / เวลา', 'requested_at')}
+                {renderSortHeader('Date / Time', 'requested_at')}
               </TableHead>
               <TableHead className="min-w-[180px] text-xs">
-                {renderSortHeader('โครงการ', 'project')}
+                {renderSortHeader('Project', 'project')}
               </TableHead>
               <TableHead className="min-w-[130px] text-xs">
-                {renderSortHeader('ผู้ขอเบิก', 'requester')}
+                {renderSortHeader('Requester', 'requester')}
               </TableHead>
-              <TableHead className="min-w-[200px] text-xs">รายการวัสดุ</TableHead>
-              <TableHead className="w-[100px] text-center text-xs">จำนวนรวม</TableHead>
+              <TableHead className="min-w-[200px] text-xs">Items</TableHead>
+              <TableHead className="w-[100px] text-center text-xs">Total Qty</TableHead>
               <TableHead className="w-[170px] text-center text-xs">
-                {renderSortHeader('สถานะ', 'status')}
+                {renderSortHeader('Status', 'status')}
               </TableHead>
-              <TableHead className="w-[140px] text-right text-xs font-bold">จัดการ</TableHead>
+              <TableHead className="w-[140px] text-right text-xs font-bold">Actions</TableHead>
             </TableRow>
           </TableHeader>
 
@@ -141,19 +141,19 @@ const HistoryDataTable = ({
                     {firstItem ? (
                       <div className="space-y-1">
                         <div className="font-medium text-foreground line-clamp-1">
-                          {firstItem.items?.name || 'วัสดุ'}
+                          {firstItem.items?.name || 'Item'}
                         </div>
                         <div className="text-[11px] text-muted-foreground flex items-center gap-2">
-                          <span>ขอเบิก: {firstItem.quantity} {firstItem.items?.unit || ''}</span>
+                          <span>Requested: {firstItem.quantity} {firstItem.items?.unit || ''}</span>
                           {firstItem.shortage_quantity > 0 && (
                             <span className="text-amber-600 dark:text-amber-400 font-bold">
-                              (ขาดส่ง {firstItem.shortage_quantity})
+                              (Shortage: {firstItem.shortage_quantity})
                             </span>
                           )}
                         </div>
                         {totalItemsCount > 1 && (
                           <span className="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
-                            +{totalItemsCount - 1} รายการเพิ่มเติม
+                            +{totalItemsCount - 1} more {totalItemsCount - 1 === 1 ? 'item' : 'items'}
                           </span>
                         )}
                       </div>
@@ -164,7 +164,7 @@ const HistoryDataTable = ({
 
                   {/* Total Quantity */}
                   <TableCell className="text-center font-bold text-xs text-foreground">
-                    {totalQuantitySum.toLocaleString('th-TH')}
+                    {totalQuantitySum.toLocaleString()}
                   </TableCell>
 
                   {/* Status Badge */}
@@ -184,10 +184,10 @@ const HistoryDataTable = ({
                         variant="outline"
                         onClick={() => onViewDetails(order)}
                         className="h-8 px-2.5 rounded-lg text-xs font-semibold hover:bg-accent border-border cursor-pointer gap-1"
-                        title="ดูรายละเอียดบิลคำขอเบิก"
+                        title="View withdrawal order details"
                       >
                         <Eye className="w-3.5 h-3.5 text-muted-foreground" />
-                        <span className="hidden xl:inline">รายละเอียด</span>
+                        <span className="hidden xl:inline">Details</span>
                       </Button>
 
                       <Button
@@ -195,7 +195,7 @@ const HistoryDataTable = ({
                         variant="outline"
                         onClick={() => onDownloadPDF(order)}
                         className="h-8 px-2.5 rounded-lg text-xs font-semibold text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-900/60 hover:bg-purple-50 dark:hover:bg-purple-950/40 cursor-pointer gap-1"
-                        title="พิมพ์ / ดาวน์โหลด ใบเบิกของ (PDF)"
+                        title="Print / Download PDF"
                       >
                         <FileText className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
                         <span>PDF</span>

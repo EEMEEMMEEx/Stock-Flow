@@ -18,7 +18,7 @@ const ResetPasswordModal = ({ isOpen, onClose, onResetPassword, user }) => {
     const randPw = generateStrongPassword();
     setNewPassword(randPw);
     setShowPassword(true);
-    toast.success('สุ่มรหัสผ่านปลอดภัยเรียบร้อยแล้ว');
+    toast.success('Generated strong password successfully');
   };
 
   const handleUseDefaultPassword = async () => {
@@ -30,13 +30,13 @@ const ResetPasswordModal = ({ isOpen, onClose, onResetPassword, user }) => {
       if (data) {
         setNewPassword(data);
         setShowPassword(true);
-        toast.success('โหลดรหัสผ่านเริ่มต้นระบบสำหรับรีเซ็ตเรียบร้อยแล้ว');
+        toast.success('Default reset password loaded successfully');
       } else {
-        toast.error('ยังไม่ได้ตั้งค่ารหัสผ่านเริ่มต้นในระบบ สามารถสุ่มรหัสผ่านใหม่หรือตั้งค่าในหน้า /settings');
+        toast.error('Default reset password is not configured. Generate a password or configure it in /settings');
       }
     } catch (err) {
       console.error('Fetch default reset password error:', err);
-      toast.error('เกิดข้อผิดพลาดในการโหลดรหัสผ่านเริ่มต้นระบบ');
+      toast.error('Failed to load default reset password');
     } finally {
       setFetchingDefault(false);
     }
@@ -68,17 +68,17 @@ const ResetPasswordModal = ({ isOpen, onClose, onResetPassword, user }) => {
         <DialogHeader>
           <DialogTitle className="text-lg font-bold flex items-center gap-2 text-purple-600 dark:text-purple-400">
             <KeyRound className="w-5 h-5" />
-            รีเซ็ตรหัสผ่าน (Reset Password)
+            Reset Password
           </DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
-            กำหนดรหัสผ่านใหม่สำหรับผู้ใช้: <strong className="text-foreground">{user?.full_name}</strong> ({user?.email})
+            Set a new password for user: <strong className="text-foreground">{user?.full_name}</strong> ({user?.email})
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="p-4 rounded-lg bg-muted/30 border border-border/50 space-y-3">
             <div className="flex items-center justify-between gap-1 flex-wrap">
-              <Label htmlFor="new_password" className="text-sm font-medium">รหัสผ่านใหม่ *</Label>
+              <Label htmlFor="new_password" className="text-sm font-medium">New Password *</Label>
               <div className="flex items-center gap-1">
                 <Button
                   type="button"
@@ -89,7 +89,7 @@ const ResetPasswordModal = ({ isOpen, onClose, onResetPassword, user }) => {
                   className="text-[11px] text-purple-600 hover:text-purple-700 hover:underline flex items-center gap-1 h-7 px-2 cursor-pointer"
                 >
                   <ShieldCheck className="w-3 h-3" />
-                  {fetchingDefault ? 'กำลังดึง...' : 'ดึง Default Reset Password'}
+                  {fetchingDefault ? 'Fetching...' : 'Use Default Password'}
                 </Button>
                 <Button
                   type="button"
@@ -99,7 +99,7 @@ const ResetPasswordModal = ({ isOpen, onClose, onResetPassword, user }) => {
                   className="text-[11px] text-primary hover:underline flex items-center gap-1 h-7 px-2 cursor-pointer"
                 >
                   <RefreshCw className="w-3 h-3" />
-                  สุ่มรหัสผ่าน (Generate Password)
+                  Generate Password
                 </Button>
               </div>
             </div>
@@ -111,7 +111,7 @@ const ResetPasswordModal = ({ isOpen, onClose, onResetPassword, user }) => {
                 type={showPassword ? 'text' : 'password'}
                 required
                 autoComplete="new-password"
-                placeholder="ป้อนรหัสผ่านใหม่ (อย่างน้อย 6 ตัวอักษร)"
+                placeholder="Enter new password (at least 6 characters)"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 className="pr-10 h-9 text-xs rounded-lg bg-background border border-input"
@@ -129,10 +129,10 @@ const ResetPasswordModal = ({ isOpen, onClose, onResetPassword, user }) => {
 
           <DialogFooter className="pt-2">
             <Button type="button" variant="ghost" onClick={onClose} className="h-9 px-3 rounded-lg text-xs cursor-pointer">
-              ยกเลิก
+              Cancel
             </Button>
             <Button type="submit" disabled={loading} className="h-9 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs cursor-pointer shadow-xs">
-              {loading ? 'กำลังบันทึก...' : 'บันทึกรหัสผ่านใหม่'}
+              {loading ? 'Saving...' : 'Save New Password'}
             </Button>
           </DialogFooter>
         </form>

@@ -305,7 +305,7 @@ const Reports = () => {
 
   const handleExportExcel = async () => {
     if (!canExport) {
-      toast.error('คุณไม่มีสิทธิ์ดาวน์โหลดรายงาน Excel (ต้องการสิทธิ์ reports.export)');
+      toast.error('You do not have permission to export Excel reports (reports.export required)');
       return;
     }
     try {
@@ -315,37 +315,37 @@ const Reports = () => {
       if (activeTab === 'stock_in') {
         sheetName = 'Stock_In';
         exportData = processedData.map((r) => ({
-          'วันที่รับเข้า': r.received_date,
-          'โครงการ': r.projects?.name,
-          'รายการวัสดุ': r.items?.name,
-          'จำนวน': r.quantity,
-          'หน่วย': r.items?.unit,
+          'Received Date': r.received_date,
+          'Project': r.projects?.name,
+          'Item Name': r.items?.name,
+          'Quantity': r.quantity,
+          'Unit': r.items?.unit,
           'Supplier': r.supplier || '-',
-          'เลข PO': r.po_number || '-'
+          'PO Number': r.po_number || '-'
         }));
       } else if (activeTab === 'withdrawals') {
         sheetName = 'Withdrawals';
         exportData = processedData.map((r) => ({
-          'วันที่เบิก': new Date(r.requested_at).toLocaleDateString('th-TH'),
-          'โครงการ': r.projects?.name,
-          'รายการวัสดุ': r.items?.name,
-          'ขอเบิก': r.quantity,
-          'ตัดสต็อกจริง': r.deducted_quantity,
-          'ขาดส่ง (Shortage)': r.shortage_quantity,
-          'หน่วย': r.items?.unit,
-          'ผู้เบิก': r.profiles?.full_name,
-          'สถานะ': r.has_shortage ? `${r.status} (ของไม่ครบ)` : r.status,
-          'เหตุผลอนุมัติของไม่ครบ': r.override_reason || '-'
+          'Requested Date': r.requested_at ? new Date(r.requested_at).toLocaleDateString() : '—',
+          'Project': r.projects?.name,
+          'Item Name': r.items?.name,
+          'Requested Qty': r.quantity,
+          'Stock Deducted': r.deducted_quantity,
+          'Shortage': r.shortage_quantity,
+          'Unit': r.items?.unit,
+          'Requester': r.profiles?.full_name,
+          'Status': r.has_shortage ? `${r.status} (Shortage)` : r.status,
+          'Shortage Override Reason': r.override_reason || '-'
         }));
       } else if (activeTab === 'balance') {
         sheetName = 'Stock_Balance';
         exportData = processedData.map((r) => ({
-          'โครงการ': r.project_name,
-          'รายการวัสดุ': r.item_name,
-          'รับเข้าทั้งหมด': r.total_in,
-          'เบิกออกทั้งหมด': r.total_out,
-          'คงเหลือ': r.balance,
-          'หน่วย': r.unit
+          'Project': r.project_name,
+          'Item Name': r.item_name,
+          'Total In': r.total_in,
+          'Total Out': r.total_out,
+          'Balance': r.balance,
+          'Unit': r.unit
         }));
       } else if (activeTab === 'site_kits') {
         const { fetchSiteKitsAvailability } = await import('@/lib/siteKits');
@@ -365,25 +365,25 @@ const Reports = () => {
         });
         sheetName = 'Site_Kits_BOM';
         exportData = itemsList.map((item, index) => ({
-          'ลำดับ': index + 1,
-          'หมวดหมู่อุปกรณ์': item.category_name,
+          'No.': index + 1,
+          'Equipment Category': item.category_name,
           'Part Number': item.part_number || '-',
-          'รายการอุปกรณ์ตาม BOM': item.bom_name,
-          'สเปกจำนวนใช้ต่อไซต์': item.qty_per_site,
-          'หน่วย': item.unit || 'ชิ้น',
-          'ยอดคงเหลือจริงในสต็อก': item.total_stock,
-          'จำนวนชุดที่จัดได้': item.sets_possible,
-          'ขาดสำหรับชุดถัดไป': item.missing_for_next_set || 0,
-          'สถานะ': item.total_stock === 0 
-            ? 'หมดสต็อก' 
+          'BOM Item Name': item.bom_name,
+          'Qty Per Site': item.qty_per_site,
+          'Unit': item.unit || 'ชิ้น',
+          'Current Stock': item.total_stock,
+          'Kits Possible': item.sets_possible,
+          'Missing For Next Set': item.missing_for_next_set || 0,
+          'Status': item.total_stock === 0 
+            ? 'Out of Stock' 
             : item.isLimiting 
-            ? 'สต็อกจำกัด (Limiting)' 
-            : 'พร้อมจัดชุด'
+            ? 'Limiting Stock' 
+            : 'Ready'
         }));
       }
 
       if (exportData.length === 0) {
-        toast.error('ไม่มีข้อมูลให้ Export');
+        toast.error('No data to export');
         return;
       }
 
@@ -391,21 +391,21 @@ const Reports = () => {
       const wb = utils.book_new();
       utils.book_append_sheet(wb, ws, sheetName);
       writeFile(wb, `${sheetName}_Report_${new Date().toISOString().split('T')[0]}.xlsx`);
-      toast.success('Export Excel สำเร็จ');
+      toast.success('Excel report exported successfully');
     } catch (error) {
       console.error(error);
-      toast.error('Export Excel ผิดพลาด');
+      toast.error('Failed to export Excel report');
     }
   };
 
   const handleExportPDF = async () => {
     if (!canExport) {
-      toast.error('คุณไม่มีสิทธิ์ดาวน์โหลดรายงาน PDF (ต้องการสิทธิ์ reports.export)');
+      toast.error('You do not have permission to export PDF reports (reports.export required)');
       return;
     }
     try {
       setPdfLoading(true);
-      const toastId = toast.loading('กำลังสร้างไฟล์ PDF...');
+      const toastId = toast.loading('Generating PDF report...');
 
       const { StockReportPDF, SiteKitsReportPDF } = await import('@/lib/pdf-templates.jsx');
       const { pdf } = await import('@react-pdf/renderer');
@@ -430,17 +430,17 @@ const Reports = () => {
           });
         });
         const selectedProj = projects.find(p => p.id === filters.project_id);
-        const projectName = selectedProj ? (selectedProj.location ? `${selectedProj.name} (${selectedProj.location})` : selectedProj.name) : 'ทุกสถานที่จัดเก็บ (รวมทุกคลัง)';
+        const projectName = selectedProj ? (selectedProj.location ? `${selectedProj.name} (${selectedProj.location})` : selectedProj.name) : 'All Storage Locations';
 
         doc = (
           <SiteKitsReportPDF
             items={itemsList}
             siteKits={siteKitsData || []}
             projectName={projectName}
-            categoryName="ทั้งหมด 4 หมวด"
+            categoryName="All 4 Categories"
           />
         );
-        downloadFileName = `รายงานความพร้อมชุดติดตั้งไซต์_BOM_${new Date().toISOString().split('T')[0]}.pdf`;
+        downloadFileName = `Site_Kits_BOM_Availability_Report_${new Date().toISOString().split('T')[0]}.pdf`;
       } else {
         doc = <StockReportPDF data={processedData} type={activeTab} />;
       }
@@ -455,10 +455,10 @@ const Reports = () => {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
 
-      toast.success('Export PDF สำเร็จ', { id: toastId });
+      toast.success('PDF report exported successfully', { id: toastId });
     } catch (error) {
       console.error(error);
-      toast.error('ไม่สามารถสร้าง PDF ได้');
+      toast.error('Failed to generate PDF report');
     } finally {
       setPdfLoading(false);
     }

@@ -83,7 +83,7 @@ const DashboardStatCard = ({
         {loading ? (
           <Skeleton className="h-8 w-14 rounded-lg" />
         ) : error ? (
-          <span className="text-xl font-bold text-muted-foreground/60" title="ไม่สามารถโหลดข้อมูลได้">—</span>
+          <span className="text-xl font-bold text-muted-foreground/60" title="Unable to load data">—</span>
         ) : (
           <span className={`text-2xl sm:text-3xl font-bold tracking-tight ${style.valueText}`}>
             {typeof value === 'number' ? value.toLocaleString('th-TH') : (value ?? 0)}

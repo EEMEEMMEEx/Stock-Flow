@@ -269,8 +269,8 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
 
       toast.info(
         willBeSpare
-          ? `ย้าย "${current.item_name || 'รายการ'}" ไปยัง Spare Equipment แล้ว`
-          : `ย้าย "${current.item_name || 'รายการ'}" ไปยัง Complete Set แล้ว`
+          ? `Moved "${current.item_name || 'Item'}" to Spare Equipment`
+          : `Moved "${current.item_name || 'Item'}" to Complete Set`
       );
 
       return updated;
@@ -324,28 +324,28 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
     setSearchCatalogQuery('');
     toast.success(
       bomView === 'spare'
-        ? `เลือก "${item.name}" เป็น Spare Equipment (ตัดออกจาก Complete Set อัตโนมัติ)`
-        : `เลือก "${item.name}" เป็น Complete Set (ตัดออกจาก Spare Equipment อัตโนมัติ)`
+        ? `Selected "${item.name}" as Spare Equipment (auto-removed from Complete Set)`
+        : `Selected "${item.name}" as Complete Set (auto-removed from Spare Equipment)`
     );
   };
 
   const handleSaveBom = async () => {
     if (!selectedCategory) return;
     if (!canEditBom) {
-      toast.error('เฉพาะผู้ดูแลระบบ (Admin) เท่านั้นที่สามารถแก้ไขสเปก BOM ได้');
+      toast.error('Only administrators (Admin) can edit BOM specifications');
       return;
     }
 
     // Validation
     const invalidItems = bomDraft.filter(i => !i.item_name || !i.item_name.trim());
     if (invalidItems.length > 0) {
-      toast.error('กรุณาระบุชื่อรายการอุปกรณ์ให้ครบทุกแถว หรือลบแถวที่ว่างออก');
+      toast.error('Please specify equipment name for all rows or remove empty rows');
       return;
     }
 
     const invalidQty = bomDraft.filter(i => i.qty_per_site === undefined || i.qty_per_site === null || Number(i.qty_per_site) < 0);
     if (invalidQty.length > 0) {
-      toast.error('จำนวนที่ใช้ต่อไซต์ต้องไม่ติดลบ (>= 0)');
+      toast.error('Quantity per site cannot be negative (>= 0)');
       return;
     }
 
@@ -367,7 +367,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
     try {
       setSaving(true);
       await saveCategoryBom(selectedCategory.category_id, cleanBomDraft);
-      toast.success(`บันทึกสเปก BOM สำหรับ ${selectedCategory.category_name} เรียบร้อยแล้ว`);
+      toast.success(`BOM specification for ${selectedCategory.category_name} saved successfully`);
       setIsEditing(false);
 
       // Keep the dialog in sync so the new BOM items and Spare Equipment are visible immediately.
@@ -422,7 +422,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
       }
     } catch (error) {
       console.error('Error saving BOM:', error);
-      toast.error(error.message || 'เกิดข้อผิดพลาดในการบันทึก BOM');
+      toast.error(error.message || 'Failed to save BOM specification');
     } finally {
       setSaving(false);
     }
@@ -430,14 +430,14 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
 
   const handleResetDefault = async () => {
     if (!selectedCategory) return;
-    if (!window.confirm(`คุณแน่ใจหรือไม่ว่าต้องการคืนค่าสเปก BOM ของ "${selectedCategory.category_name}" กลับเป็นค่ามาตรฐานจากโรงงาน?`)) {
+    if (!window.confirm(`Are you sure you want to reset the BOM specification for "${selectedCategory.category_name}" to factory default?`)) {
       return;
     }
 
     try {
       setResetting(true);
       await resetCategoryBomToDefault(selectedCategory.category_id);
-      toast.success(`คืนค่าเริ่มต้นสำหรับ ${selectedCategory.category_name} สำเร็จ`);
+      toast.success(`Reset default BOM specification for ${selectedCategory.category_name} successfully`);
       setIsEditing(false);
 
       if (onRefresh) {
@@ -446,7 +446,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
       setSelectedCategory(null);
     } catch (error) {
       console.error('Error resetting BOM to default:', error);
-      toast.error(error.message || 'เกิดข้อผิดพลาดในการคืนค่าเริ่มต้น');
+      toast.error(error.message || 'Failed to reset default BOM specification');
     } finally {
       setResetting(false);
     }
@@ -480,7 +480,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
           <div className="flex items-center gap-2">
             <Layers className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
             <h3 className="text-base font-bold tracking-tight text-foreground">
-              ความพร้อมชุดติดตั้งสถานี (Site Installation Kits BOM)
+              Site Installation Kits BOM Availability
             </h3>
             <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 text-[10px] font-semibold">
               Real-time BOM
@@ -493,7 +493,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
             )}
           </div>
           <p className="text-xs text-muted-foreground">
-            คำนวณจำนวนชุดที่จัดได้สมบูรณ์ตามสเปก BOM ของแต่ละไซต์งาน และแจ้งเตือนรายการที่มีสต็อกจำกัด {canEditBom ? '(ผู้ดูแลระบบสามารถคลิกเพื่อแก้ไขสเปก BOM ได้)' : ''}
+            Calculates completely assembled kits according to the BOM specification of each site, and alerts when components have limited stock {canEditBom ? '(Admin can click to edit BOM specifications)' : ''}
           </p>
         </div>
       </div>
@@ -536,22 +536,22 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                     </DialogTitle>
                     {isEditing ? (
                       <Badge className="bg-blue-600 text-white text-[11px] font-bold px-2 py-0.5 rounded-md">
-                        {bomView === 'spare' ? 'โหมดแก้ไข Spare Equipment (Admin)' : 'โหมดแก้ไข BOM (Admin)'}
+                        {bomView === 'spare' ? 'Edit Spare Equipment (Admin)' : 'Edit BOM Mode (Admin)'}
                       </Badge>
                     ) : (
                       <Badge variant="outline" className="text-[11px] font-semibold border-emerald-500/40 text-emerald-700 dark:text-emerald-300">
-                        จัดได้ {selectedCategory?.complete_sets} ชุดสมบูรณ์
+                        {selectedCategory?.complete_sets} {selectedCategory?.complete_sets === 1 ? 'complete set' : 'complete sets'} assembled
                       </Badge>
                     )}
                   </div>
                   <DialogDescription className="text-xs text-muted-foreground mt-0.5">
                     {isEditing 
                       ? (bomView === 'spare' 
-                          ? 'ปรับแต่งรายการอุปกรณ์สำรอง เพิ่มรายการใหม่ และเงื่อนไขการจัดสรร' 
-                          : 'ปรับแต่งรายการวัสดุที่ใช้ในชุดติดตั้ง สเปกจำนวน และเงื่อนไขความจำเป็นต่อชุด')
+                          ? 'Customize spare equipment items, add new items, and configure allocation.' 
+                          : 'Customize items used in the installation kit, quantity specs, and mandatory requirements per kit.')
                       : (bomView === 'spare'
-                          ? 'รายการอุปกรณ์และสต็อกสำรองคงเหลือที่จัดชุดแล้ว'
-                          : 'เทียบยอดคงเหลือสต็อกจริงกับจำนวนที่ต้องใช้ต่อ 1 ไซต์งาน')}
+                          ? 'Spare equipment items and remaining spare stock after kit assembly.'
+                          : 'Compare actual available stock against requirements per 1 installation site.')}
                   </DialogDescription>
                 </div>
               </div>
@@ -580,7 +580,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                       className="rounded-lg h-9 px-3 gap-1.5 text-xs font-medium text-muted-foreground hover:text-rose-600 border-border hover:bg-rose-500/10 cursor-pointer shadow-xs"
                     >
                       <RotateCcw className={`w-3.5 h-3.5 ${resetting ? 'animate-spin' : ''}`} />
-                      <span>คืนค่าเริ่มต้น</span>
+                      <span>Reset to Default</span>
                     </Button>
 
                     <Button
@@ -590,7 +590,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                       onClick={() => setIsEditing(false)}
                       className="rounded-lg h-9 px-3 text-xs font-medium text-muted-foreground hover:bg-muted cursor-pointer"
                     >
-                      <span>ยกเลิก</span>
+                      <span>Cancel</span>
                     </Button>
 
                     <Button
@@ -600,7 +600,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                       className="rounded-lg h-9 px-4 gap-1.5 text-xs font-medium bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer shadow-xs"
                     >
                       <Save className={`w-3.5 h-3.5 ${saving ? 'animate-spin' : ''}`} />
-                      <span>{saving ? 'กำลังบันทึก...' : 'บันทึกข้อมูล'}</span>
+                      <span>{saving ? 'Saving...' : 'Save Changes'}</span>
                     </Button>
                   </div>
                 )}
@@ -660,7 +660,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                 <div className="flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 px-4 text-xs text-blue-800 dark:text-blue-300">
                   <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
                   <span>
-                    รายการวัสดุสำหรับชุดติดตั้งสมบูรณ์ (Complete Set) หากย้ายรายการใดไป Spare Equipment รายการนั้นจะถูกตัดออกจากชุดติดตั้งอัตโนมัติ
+                    Items required for a complete installation set. Moving any item to Spare Equipment will automatically remove it from the Complete Set.
                   </span>
                 </div>
 
@@ -668,12 +668,12 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                   <table className="w-full text-left text-xs border-collapse">
                     <thead className="bg-muted/70 text-muted-foreground font-bold border-b border-border/70">
                       <tr>
-                        <th className="py-2.5 px-2 w-16 text-center">ลำดับ</th>
-                        <th className="py-2.5 px-3 min-w-[200px]">รายการอุปกรณ์ใน Complete Set / Part Number</th>
-                        <th className="py-2.5 px-3 text-center w-28">ใช้ต่อไซต์</th>
-                        <th className="py-2.5 px-3 text-center w-28">หน่วยนับ</th>
-                        <th className="py-2.5 px-3 text-center w-32">หมวดหมู่ชุด</th>
-                        <th className="py-2.5 px-3 text-center w-14">ลบ</th>
+                        <th className="py-2.5 px-2 w-16 text-center">#</th>
+                        <th className="py-2.5 px-3 min-w-[200px]">Item in Complete Set / Part Number</th>
+                        <th className="py-2.5 px-3 text-center w-28">Qty / Site</th>
+                        <th className="py-2.5 px-3 text-center w-28">Unit</th>
+                        <th className="py-2.5 px-3 text-center w-32">Kit Category</th>
+                        <th className="py-2.5 px-3 text-center w-14">Action</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border/40">
@@ -705,7 +705,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                                 <div className="flex items-center justify-center gap-1">
                                   <span
                                     className="cursor-grab active:cursor-grabbing p-1 -ml-1 rounded hover:bg-muted text-muted-foreground/60 hover:text-foreground transition-colors inline-flex items-center justify-center"
-                                    title="ลากเพื่อจัดลำดับรายการ (Drag to reorder)"
+                                    title="Drag to reorder"
                                   >
                                     <GripVertical className="w-3.5 h-3.5" />
                                   </span>
@@ -719,7 +719,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                                   <Input
                                     value={item.item_name}
                                     onChange={(e) => handleFieldChange(originalIndex, 'item_name', e.target.value)}
-                                    placeholder="ระบุชื่ออุปกรณ์ หรือเลือกจากคลัง..."
+                                    placeholder="Enter item name or select from catalog..."
                                     className="h-8 text-xs font-semibold rounded-lg bg-background"
                                     draggable={false}
                                     onDragStart={(e) => e.stopPropagation()}
@@ -732,13 +732,13 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                                       setCatalogPickerTargetIndex(originalIndex);
                                       setSearchCatalogQuery(item.item_name || '');
                                     }}
-                                    title="เลือกจากรายการวัสดุในคลัง (Master Catalog)"
+                                    title="Select from Master Catalog"
                                     className="h-8 px-2.5 gap-1 text-[11px] font-bold rounded-lg border-blue-500/40 text-blue-700 dark:text-blue-300 hover:bg-blue-500/10 shrink-0 cursor-pointer"
                                     draggable={false}
                                     onDragStart={(e) => e.stopPropagation()}
                                   >
                                     <Package className="w-3.5 h-3.5" />
-                                    <span>เลือกจากคลัง</span>
+                                    <span>From Catalog</span>
                                   </Button>
                                 </div>
                                 <div className="flex items-center gap-2">
@@ -746,7 +746,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                                   <Input
                                     value={item.part_number}
                                     onChange={(e) => handleFieldChange(originalIndex, 'part_number', e.target.value)}
-                                    placeholder="เช่น 30207-0024-XXXXX"
+                                    placeholder="e.g. 30207-0024-XXXXX"
                                     className="h-6 text-[11px] font-mono rounded-md bg-muted/30"
                                     draggable={false}
                                     onDragStart={(e) => e.stopPropagation()}
@@ -773,7 +773,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                                 <Input
                                   value={item.unit}
                                   onChange={(e) => handleFieldChange(originalIndex, 'unit', e.target.value)}
-                                  placeholder="ชิ้น"
+                                  placeholder="unit"
                                   list={`unit-list-${originalIndex}`}
                                   className="h-8 text-xs text-center font-medium rounded-lg w-20 mx-auto bg-background"
                                   draggable={false}
@@ -791,7 +791,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                                 <button
                                   type="button"
                                   onClick={() => handleToggleSection(originalIndex)}
-                                  title="คลิกเพื่อย้ายไปแท็บ Spare Equipment (ตัดออกจาก Complete Set)"
+                                  title="Click to move to Spare Equipment (removes from Complete Set)"
                                   className="px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-colors cursor-pointer bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/40 hover:bg-sky-500/20 hover:text-sky-700"
                                   draggable={false}
                                   onDragStart={(e) => e.stopPropagation()}
@@ -805,7 +805,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                                 <button
                                   type="button"
                                   onClick={() => handleRemoveRow(originalIndex)}
-                                  title="ลบรายการนี้"
+                                  title="Remove item"
                                   className="p-1.5 rounded-lg text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 transition-colors cursor-pointer"
                                   draggable={false}
                                   onDragStart={(e) => e.stopPropagation()}
@@ -820,7 +820,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                   </table>
                   {bomDraft.filter(isCompleteSetItem).length === 0 && (
                     <div className="p-8 text-center text-xs text-muted-foreground">
-                      ยังไม่มีรายการใน Complete Set
+                      No items in Complete Set yet
                     </div>
                   )}
                 </div>
@@ -834,11 +834,11 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                     className="rounded-xl h-8 px-3 gap-1.5 text-xs font-bold border-dashed border-border/80 hover:border-emerald-500/60 text-muted-foreground hover:text-foreground cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" />
-                    <span>เพิ่มรายการอุปกรณ์ใน Complete Set</span>
+                    <span>Add Item to Complete Set</span>
                   </Button>
 
                   <span className="text-xs text-muted-foreground">
-                    Complete Set มีทั้งหมด {bomDraft.filter(isCompleteSetItem).length} รายการ
+                    Complete Set has {bomDraft.filter(isCompleteSetItem).length} {bomDraft.filter(isCompleteSetItem).length === 1 ? 'item' : 'items'} in total
                   </span>
                 </div>
               </div>
@@ -850,7 +850,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                 <div className="flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 px-4 text-xs text-blue-800 dark:text-blue-300">
                   <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
                   <span>
-                    รายการอุปกรณ์สำรอง (Spare Equipment) จะถูกแยกออกจาก Complete Set โดยอัตโนมัติ และไม่ถูกนำไปเป็นตัวจำกัดจำนวนชุดติดตั้ง
+                    Spare Equipment items are automatically separated from Complete Sets and do not limit the complete set count.
                   </span>
                 </div>
 
@@ -858,13 +858,13 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                   <table className="w-full text-left text-xs border-collapse">
                     <thead className="bg-muted/70 text-muted-foreground font-bold border-b border-border/70">
                       <tr>
-                        <th className="py-2.5 px-2 w-16 text-center">ลำดับ</th>
-                        <th className="py-2.5 px-3 min-w-[200px]">รายการอุปกรณ์ใน Spare / Part Number</th>
-                        <th className="py-2.5 px-3 text-center w-24">สเปกต่อไซต์</th>
-                        <th className="py-2.5 px-3 text-center w-24">หน่วยนับ</th>
-                        <th className="py-2.5 px-3 text-center w-32">หมวดหมู่ชุด</th>
-                        <th className="py-2.5 px-3 text-center w-28">สต็อก / Spare</th>
-                        <th className="py-2.5 px-3 text-center w-12">ลบ</th>
+                        <th className="py-2.5 px-2 w-16 text-center">#</th>
+                        <th className="py-2.5 px-3 min-w-[200px]">Item in Spare / Part Number</th>
+                        <th className="py-2.5 px-3 text-center w-24">Qty / Site</th>
+                        <th className="py-2.5 px-3 text-center w-24">Unit</th>
+                        <th className="py-2.5 px-3 text-center w-32">Kit Category</th>
+                        <th className="py-2.5 px-3 text-center w-28">Stock / Spare</th>
+                        <th className="py-2.5 px-3 text-center w-12">Action</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border/40">
@@ -897,7 +897,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                                 <div className="flex items-center justify-center gap-1">
                                   <span
                                     className="cursor-grab active:cursor-grabbing p-1 -ml-1 rounded hover:bg-muted text-muted-foreground/60 hover:text-foreground transition-colors inline-flex items-center justify-center"
-                                    title="ลากเพื่อจัดลำดับรายการ (Drag to reorder)"
+                                    title="Drag to reorder"
                                   >
                                     <GripVertical className="w-3.5 h-3.5" />
                                   </span>
@@ -911,7 +911,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                                   <Input
                                     value={item.item_name}
                                     onChange={(e) => handleFieldChange(originalIndex, 'item_name', e.target.value)}
-                                    placeholder="ระบุชื่ออุปกรณ์ หรือเลือกจากคลัง..."
+                                    placeholder="Enter item name or select from catalog..."
                                     className="h-8 text-xs font-semibold rounded-lg bg-background"
                                     draggable={false}
                                     onDragStart={(e) => e.stopPropagation()}
@@ -924,13 +924,13 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                                       setCatalogPickerTargetIndex(originalIndex);
                                       setSearchCatalogQuery(item.item_name || '');
                                     }}
-                                    title="เลือกจากรายการวัสดุในคลัง (Master Catalog)"
+                                    title="Select from Master Catalog"
                                     className="h-8 px-2.5 gap-1 text-[11px] font-bold rounded-lg border-blue-500/40 text-blue-700 dark:text-blue-300 hover:bg-blue-500/10 shrink-0 cursor-pointer"
                                     draggable={false}
                                     onDragStart={(e) => e.stopPropagation()}
                                   >
                                     <Package className="w-3.5 h-3.5" />
-                                    <span>เลือกจากคลัง</span>
+                                    <span>From Catalog</span>
                                   </Button>
                                 </div>
                                 <div className="flex items-center gap-2">
@@ -938,7 +938,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                                   <Input
                                     value={item.part_number}
                                     onChange={(e) => handleFieldChange(originalIndex, 'part_number', e.target.value)}
-                                    placeholder="เช่น 30207-0024-XXXXX"
+                                    placeholder="e.g. 30207-0024-XXXXX"
                                     className="h-6 text-[11px] font-mono rounded-md bg-muted/30"
                                     draggable={false}
                                     onDragStart={(e) => e.stopPropagation()}
@@ -965,7 +965,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                                 <Input
                                   value={item.unit}
                                   onChange={(e) => handleFieldChange(originalIndex, 'unit', e.target.value)}
-                                  placeholder="ชิ้น"
+                                  placeholder="unit"
                                   list={`unit-list-spare-${originalIndex}`}
                                   className="h-8 text-xs text-center font-medium rounded-lg w-20 mx-auto bg-background"
                                   draggable={false}
@@ -983,7 +983,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                                 <button
                                   type="button"
                                   onClick={() => handleToggleSection(originalIndex)}
-                                  title="คลิกเพื่อย้ายไปแท็บ Complete Set (นำเข้าเป็นอุปกรณ์ชุดสมบูรณ์)"
+                                  title="Click to move to Complete Set"
                                   className="px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-colors cursor-pointer bg-sky-500/15 text-sky-700 dark:text-sky-300 border-sky-500/40 hover:bg-emerald-500/20 hover:text-emerald-700"
                                   draggable={false}
                                   onDragStart={(e) => e.stopPropagation()}
@@ -996,7 +996,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                               <td className="py-2 px-3 text-center">
                                 <div className="space-y-0.5">
                                   <div className="text-[11px] font-semibold text-foreground">
-                                    สต็อก: {stock.toLocaleString()}
+                                    Stock: {stock.toLocaleString()}
                                   </div>
                                   <span className={`inline-block text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
                                     spareStock > 0 
@@ -1013,7 +1013,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                                 <button
                                   type="button"
                                   onClick={() => handleRemoveRow(originalIndex)}
-                                  title="ลบรายการนี้"
+                                  title="Remove item"
                                   className="p-1.5 rounded-lg text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 transition-colors cursor-pointer"
                                   draggable={false}
                                   onDragStart={(e) => e.stopPropagation()}
@@ -1028,7 +1028,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                   </table>
                   {bomDraft.filter(isSpareItem).length === 0 && (
                     <div className="p-8 text-center text-xs text-muted-foreground">
-                      ยังไม่มีรายการใน Spare Equipment
+                      No items in Spare Equipment yet
                     </div>
                   )}
                 </div>
@@ -1042,11 +1042,11 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                     className="rounded-xl h-8 px-3 gap-1.5 text-xs font-bold border-dashed border-border/80 hover:border-emerald-500/60 text-muted-foreground hover:text-foreground cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" />
-                    <span>เพิ่มรายการ Spare Equipment</span>
+                    <span>Add Spare Equipment Item</span>
                   </Button>
 
                   <span className="text-xs text-muted-foreground">
-                    Spare Equipment มีทั้งหมด {bomDraft.filter(isSpareItem).length} รายการ
+                    Spare Equipment has {bomDraft.filter(isSpareItem).length} {bomDraft.filter(isSpareItem).length === 1 ? 'item' : 'items'} in total
                   </span>
                 </div>
               </div>
@@ -1058,12 +1058,12 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                 <table className="w-full text-left text-xs border-collapse">
                   <thead className="bg-muted/70 text-muted-foreground font-bold border-b border-border/70">
                     <tr>
-                      <th className="py-2.5 px-3 w-12 text-center">ลำดับ</th>
-                      <th className="py-2.5 px-3">รายการอุปกรณ์ตาม Complete Set</th>
-                      <th className="py-2.5 px-3 text-center w-24">ใช้ต่อไซต์</th>
-                      <th className="py-2.5 px-3 text-center w-24">สต็อกจริง</th>
-                      <th className="py-2.5 px-3 text-center w-24">จัดได้ (ชุด)</th>
-                      <th className="py-2.5 px-3 text-center w-24">สถานะ</th>
+                      <th className="py-2.5 px-3 w-12 text-center">#</th>
+                      <th className="py-2.5 px-3">Item in Complete Set</th>
+                      <th className="py-2.5 px-3 text-center w-24">Qty / Site</th>
+                      <th className="py-2.5 px-3 text-center w-24">Actual Stock</th>
+                      <th className="py-2.5 px-3 text-center w-24">Sets Possible</th>
+                      <th className="py-2.5 px-3 text-center w-24">Status</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/40">
@@ -1103,21 +1103,21 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                                 ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300'
                                 : 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
                             }`}>
-                              {item.sets_possible} ชุด
+                              {item.sets_possible} {item.sets_possible === 1 ? 'set' : 'sets'}
                             </span>
                           </td>
                           <td className="py-2.5 px-3 text-center">
                             {item.total_stock === 0 ? (
                               <Badge variant="outline" className="bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/30 text-[10px]">
-                                หมดสต็อก
+                                Out of Stock
                               </Badge>
                             ) : isLimiting ? (
                               <Badge variant="outline" className="bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30 text-[10px]">
-                                สต็อกจำกัด
+                                Limited Stock
                               </Badge>
                             ) : (
                               <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 text-[10px]">
-                                พร้อม
+                                Ready
                               </Badge>
                             )}
                           </td>
@@ -1128,7 +1128,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                 </table>
                 {completeSetItems.length === 0 && (
                   <div className="p-8 text-center text-xs text-muted-foreground">
-                    ยังไม่มีรายการใน Complete Set
+                    No items in Complete Set
                   </div>
                 )}
               </div>
@@ -1182,7 +1182,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                 </table>
                 {(selectedCategory?.items || []).filter(isSpareItem).length === 0 && (
                   <div className="p-8 text-center text-xs text-muted-foreground">
-                    ยังไม่มีรายการใน Spare Equipment สำหรับหมวดหมู่นี้
+                    No items in Spare Equipment for this category
                   </div>
                 )}
               </div>
@@ -1200,10 +1200,10 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
           <DialogHeader className="p-5 pb-3 border-b border-border/60 bg-muted/20">
             <DialogTitle className="text-base font-bold flex items-center gap-2">
               <Package className="w-4 h-4 text-emerald-600" />
-              <span>เลือกวัสดุจาก Master Catalog เพื่อนำเข้าสเปก BOM</span>
+              <span>Select Material from Master Catalog for BOM</span>
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
-              ค้นหาจากชื่อรายการ รหัส SKU หรือรายละเอียดวัสดุในคลัง
+              Search by item name, SKU, or warehouse specifications
             </DialogDescription>
 
             <div className="relative mt-2">
@@ -1211,7 +1211,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
               <Input
                 value={searchCatalogQuery}
                 onChange={(e) => setSearchCatalogQuery(e.target.value)}
-                placeholder="ค้นหาชื่อวัสดุ หรือ รหัส SKU..."
+                placeholder="Search item name or SKU..."
                 className="pl-9 h-9 text-xs rounded-lg bg-background"
                 autoFocus
               />
@@ -1221,11 +1221,11 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
           <div className="flex-1 overflow-y-auto p-4 divide-y divide-border/40">
             {loadingMaster ? (
               <div className="p-8 text-center text-xs text-muted-foreground animate-pulse">
-                กำลังโหลดรายการวัสดุจากฐานข้อมูล...
+                Loading items from database...
               </div>
             ) : filteredCatalogItems.length === 0 ? (
               <div className="p-8 text-center text-xs text-muted-foreground">
-                ไม่พบรายการวัสดุที่ตรงกับคำค้นหา
+                No matching items found
               </div>
             ) : (
               filteredCatalogItems.map((item) => (
@@ -1240,7 +1240,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                     </div>
                     <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                       {item.sku && <span className="font-mono">SKU: {item.sku}</span>}
-                      <span>• หน่วย: {item.unit || 'ชิ้น'}</span>
+                      <span>• Unit: {item.unit || 'ชิ้น'}</span>
                     </div>
                   </div>
 
@@ -1249,7 +1249,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                       <div className="font-bold text-foreground">
                         {item.total_stock?.toLocaleString() || 0}
                       </div>
-                      <div className="text-[10px] text-muted-foreground">คงเหลือในคลัง</div>
+                      <div className="text-[10px] text-muted-foreground">In Stock</div>
                     </div>
                     <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-muted group-hover:bg-emerald-500 group-hover:text-white transition-colors">
                       <Check className="w-4 h-4" />

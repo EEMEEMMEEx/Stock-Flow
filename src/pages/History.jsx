@@ -107,7 +107,7 @@ const History = () => {
       setHistory(data || []);
     } catch (err) {
       console.error('Fetch History Error:', err);
-      setError(err.message || 'ไม่สามารถโหลดข้อมูลประวัติการเบิกจ่ายได้');
+      setError(err.message || 'Failed to load withdrawal history');
     } finally {
       setLoading(false);
     }
@@ -246,7 +246,7 @@ const History = () => {
   // PDF Export Handler
   const handleDownloadPDF = async (order) => {
     if (!order) return;
-    const toastId = toast.loading('กำลังสร้างเอกสาร PDF ใบเบิกของ...');
+    const toastId = toast.loading('Generating withdrawal PDF document...');
     try {
       const itemsList = order.withdrawal_items || [];
       const docBlob = await pdf(
@@ -262,10 +262,10 @@ const History = () => {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      toast.success('ดาวน์โหลดเอกสาร PDF ใบเบิกของสำเร็จ', { id: toastId });
+      toast.success('Withdrawal PDF downloaded successfully', { id: toastId });
     } catch (err) {
       console.error('PDF Download Error:', err);
-      toast.error('เกิดข้อผิดพลาดในการดาวน์โหลดเอกสาร PDF', { id: toastId });
+      toast.error('Failed to download withdrawal PDF', { id: toastId });
     }
   };
 
@@ -330,7 +330,7 @@ const History = () => {
             <DialogTitle className="flex items-center justify-between gap-2 border-b border-border/50 pb-3">
               <div className="flex items-center gap-2">
                 <span className="font-bold text-base sm:text-lg">
-                  รายละเอียดบิลคำขอเบิกจ่าย #{selectedOrder?.id?.slice(0, 8)}
+                  Withdrawal Request Details #{selectedOrder?.id?.slice(0, 8)}
                 </span>
               </div>
               {selectedOrder && (
@@ -349,7 +349,7 @@ const History = () => {
               <div className="flex items-center gap-2">
                 <Building2 className="w-4 h-4 text-indigo-500 shrink-0" />
                 <div>
-                  <span className="text-muted-foreground block">โครงการ (Project):</span>
+                  <span className="text-muted-foreground block">Project:</span>
                   <span className="font-bold text-indigo-600 dark:text-indigo-300">
                     {selectedOrder?.projects?.project_code ? `[${selectedOrder.projects.project_code}] ` : ''}
                     {selectedOrder?.projects?.name || '—'}
@@ -360,7 +360,7 @@ const History = () => {
               <div className="flex items-center gap-2">
                 <User className="w-4 h-4 text-indigo-500 shrink-0" />
                 <div>
-                  <span className="text-muted-foreground block">ผู้ขอเบิก (Requester):</span>
+                  <span className="text-muted-foreground block">Requester:</span>
                   <span className="font-semibold text-foreground">{selectedOrder?.profiles?.full_name || '—'}</span>
                 </div>
               </div>
@@ -368,7 +368,7 @@ const History = () => {
               <div className="flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-indigo-500 shrink-0" />
                 <div>
-                  <span className="text-muted-foreground block">สถานที่จัดส่ง:</span>
+                  <span className="text-muted-foreground block">Delivery Location:</span>
                   <span className="font-medium text-foreground">{selectedOrder?.delivery_address || '—'}</span>
                 </div>
               </div>
@@ -376,7 +376,7 @@ const History = () => {
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-indigo-500 shrink-0" />
                 <div>
-                  <span className="text-muted-foreground block">วันที่อัพเดทล่าสุด:</span>
+                  <span className="text-muted-foreground block">Last Updated:</span>
                   <span className="font-medium text-foreground">
                     {selectedOrder && format(new Date(selectedOrder.completed_at || selectedOrder.approved_at || selectedOrder.requested_at), 'dd/MM/yy HH:mm')}
                   </span>
@@ -387,7 +387,7 @@ const History = () => {
                 <div className="col-span-1 sm:col-span-2 pt-2 border-t border-border/40 flex items-start gap-2">
                   <Target className="w-4 h-4 text-indigo-500 shrink-0 mt-0.5" />
                   <div>
-                    <span className="text-muted-foreground block">วัตถุประสงค์การใช้:</span>
+                    <span className="text-muted-foreground block">Purpose:</span>
                     <span className="font-medium text-foreground">{selectedOrder.purpose}</span>
                   </div>
                 </div>
@@ -396,15 +396,15 @@ const History = () => {
               {(selectedOrder?.is_shortage_override || selectedOrder?.override_reason) && (
                 <div className="col-span-1 sm:col-span-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 p-3 rounded-lg text-amber-800 dark:text-amber-300">
                   <p className="font-bold flex items-center gap-1.5 text-xs">
-                    หมายเหตุอนุมัติกรณีของไม่ครบ (Shortage Override):
+                    Shortage Override Note:
                   </p>
-                  <p className="mt-1 text-xs">{selectedOrder.override_reason || 'อนุมัติกรณีของไม่ครบตามการตัดสินใจของแอดมิน'}</p>
+                  <p className="mt-1 text-xs">{selectedOrder.override_reason || 'Approved with shortage per administrator decision'}</p>
                 </div>
               )}
 
               {selectedOrder?.reject_reason && (
                 <div className="col-span-1 sm:col-span-2 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 p-3 rounded-lg text-rose-800 dark:text-rose-300">
-                  <p className="font-bold text-xs">เหตุผลที่ปฏิเสธ (Reject Reason):</p>
+                  <p className="font-bold text-xs">Reject Reason:</p>
                   <p className="mt-1 text-xs">{selectedOrder.reject_reason}</p>
                 </div>
               )}
@@ -413,17 +413,17 @@ const History = () => {
             {/* Items Table */}
             <div>
               <h4 className="font-bold text-xs sm:text-sm mb-2 text-foreground flex items-center justify-between">
-                <span>รายการวัสดุในบิล ({selectedOrder?.withdrawal_items?.length || 0} รายการ)</span>
+                <span>Items in Order ({selectedOrder?.withdrawal_items?.length || 0} {selectedOrder?.withdrawal_items?.length === 1 ? 'item' : 'items'})</span>
               </h4>
 
               <div className="border border-border/60 rounded-xl overflow-hidden max-h-[40vh] overflow-y-auto">
                 <Table>
                   <TableHeader className="bg-muted/50 sticky top-0 backdrop-blur z-10">
                     <TableRow className="text-xs">
-                      <TableHead className="font-bold">ชื่อวัสดุ</TableHead>
-                      <TableHead className="text-center font-bold">ขอเบิก</TableHead>
-                      <TableHead className="text-center text-emerald-600 dark:text-emerald-400 font-bold">ตัดสต็อกจริง</TableHead>
-                      <TableHead className="text-center text-amber-600 dark:text-amber-400 font-bold">ขาดส่ง (Shortage)</TableHead>
+                      <TableHead className="font-bold">Item Name</TableHead>
+                      <TableHead className="text-center font-bold">Requested</TableHead>
+                      <TableHead className="text-center text-emerald-600 dark:text-emerald-400 font-bold">Stock Deducted</TableHead>
+                      <TableHead className="text-center text-amber-600 dark:text-amber-400 font-bold">Shortage</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody className="text-xs">
@@ -450,7 +450,7 @@ const History = () => {
                           </TableCell>
                           <TableCell className="text-center">
                             {isPending ? (
-                              <span className="text-muted-foreground italic font-normal">- (รออนุมัติ)</span>
+                              <span className="text-muted-foreground italic font-normal">- (Pending)</span>
                             ) : isApprovedOrCompleted ? (
                               <span className="font-bold text-emerald-600 dark:text-emerald-400">{deducted} {item.items?.unit || ''}</span>
                             ) : (
@@ -479,7 +479,7 @@ const History = () => {
               className="text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-900/60 hover:bg-purple-50 dark:hover:bg-purple-950/40 font-semibold cursor-pointer gap-1.5"
             >
               <FileText className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-              <span>พิมพ์/ดาวน์โหลด ใบเบิกของ (PDF)</span>
+              <span>Print / Download PDF</span>
             </Button>
             <Button
               variant="outline"
@@ -487,7 +487,7 @@ const History = () => {
               onClick={() => setSelectedOrder(null)}
               className="rounded-xl cursor-pointer"
             >
-              ปิด
+              Close
             </Button>
           </div>
         </DialogContent>

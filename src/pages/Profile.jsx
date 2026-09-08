@@ -107,12 +107,12 @@ const Profile = () => {
 
     // Validate type
     if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-      return toast.error('รองรับเฉพาะไฟล์รูปภาพ JPG, PNG หรือ WebP เท่านั้น');
+      return toast.error('Only JPG, PNG, or WebP images are supported');
     }
 
     // Validate size (3MB)
     if (file.size > 3 * 1024 * 1024) {
-      return toast.error('ขนาดไฟล์รูปภาพต้องไม่เกิน 3MB');
+      return toast.error('Image file size must not exceed 3MB');
     }
 
     setAvatarFile(file);
@@ -128,7 +128,7 @@ const Profile = () => {
 
     const trimmedName = formData.full_name.trim();
     if (!trimmedName) {
-      return toast.error('กรุณากรอกชื่อ-นามสกุล');
+      return toast.error('Please enter your full name');
     }
 
     try {
@@ -169,15 +169,15 @@ const Profile = () => {
           if (emailAuthErr.status === 429 || emailAuthErr.message?.includes('42 seconds') || emailAuthErr.message?.includes('security purposes')) {
             const secMatch = emailAuthErr.message?.match(/after (\d+) seconds/i);
             const waitSec = secMatch ? secMatch[1] : '42';
-            toast.error(`กรุณารอประมาณ ${waitSec} วินาทีแล้วลองเปลี่ยนอีเมลอีกครั้ง`);
+            toast.error(`Please wait approximately ${waitSec} seconds before trying to change your email again`);
           } else {
-            toast.error(`ไม่สามารถอัปเดตอีเมลได้: ${emailAuthErr.message}`);
+            toast.error(`Failed to update email: ${emailAuthErr.message}`);
           }
         } else {
           // Check if email confirmation flow is pending or updated immediately
           const pendingEmail = authData?.user?.new_email;
           if (pendingEmail) {
-            emailNotice = `ส่งลิงก์ยืนยันไปยัง ${editedEmail} เรียบร้อยแล้ว กรุณาตรวจสอบกล่องข้อความของคุณ`;
+            emailNotice = `Confirmation link sent to ${editedEmail}. Please check your inbox`;
           } else {
             updatePayload.email = editedEmail;
           }
@@ -209,11 +209,11 @@ const Profile = () => {
       if (emailNotice) {
         toast.success(emailNotice, { duration: 6000 });
       } else {
-        toast.success('บันทึกข้อมูลโปรไฟล์เรียบร้อยแล้ว');
+        toast.success('Profile updated successfully');
       }
     } catch (err) {
       console.error('Save Profile Error:', err);
-      toast.error(err.message || 'ไม่สามารถบันทึกข้อมูลโปรไฟล์ได้');
+      toast.error(err.message || 'Failed to update profile');
     } finally {
       setSavingProfile(false);
     }
@@ -223,13 +223,13 @@ const Profile = () => {
   const handleUpdatePassword = async (e) => {
     e.preventDefault();
     if (!passwordForm.newPassword) {
-      return toast.error('กรุณากรอกรหัสผ่านใหม่');
+      return toast.error('Please enter a new password');
     }
     if (passwordForm.newPassword.length < 6) {
-      return toast.error('รหัสผ่านใหม่ต้องมีความยาวอย่างน้อย 6 ตัวอักษร');
+      return toast.error('New password must be at least 6 characters');
     }
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      return toast.error('รหัสผ่านใหม่และการยืนยันรหัสผ่านไม่ตรงกัน');
+      return toast.error('New password and confirmation do not match');
     }
 
     try {
@@ -241,10 +241,10 @@ const Profile = () => {
       if (error) throw error;
 
       setPasswordForm({ newPassword: '', confirmPassword: '' });
-      toast.success('เปลี่ยนรหัสผ่านสำเร็จเรียบร้อยแล้ว');
+      toast.success('Password changed successfully');
     } catch (err) {
       console.error('Update Password Error:', err);
-      toast.error(err.message || 'เกิดข้อผิดพลาดในการเปลี่ยนรหัสผ่าน');
+      toast.error(err.message || 'Failed to change password');
     } finally {
       setUpdatingPassword(false);
     }
@@ -252,13 +252,13 @@ const Profile = () => {
 
   // Resolve assigned project names
   const assignedProjects = allProjectsAccess
-    ? 'ทุกโครงการในระบบ (All Projects Access)'
+    ? 'All Projects Access'
     : assignedProjectIds && assignedProjectIds.length > 0
     ? projectsList
         .filter((p) => assignedProjectIds.includes(p.id))
         .map((p) => p.name)
-        .join(', ') || 'ไม่มีโครงการที่ระบุ'
-    : 'ไม่ได้ระบุโครงการ';
+        .join(', ') || 'No assigned projects'
+    : 'No assigned projects';
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 pb-12">
@@ -267,10 +267,10 @@ const Profile = () => {
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2.5">
             <User className="w-7 h-7 text-primary" />
-            โปรไฟล์ส่วนตัว (Personal Profile)
+            Personal Profile
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            จัดการข้อมูลส่วนตัว รูปโปรไฟล์ และการรักษาความปลอดภัยของบัญชี
+            Manage personal information, profile photo, and account security
           </p>
         </div>
       </div>
@@ -301,7 +301,7 @@ const Profile = () => {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                title="เปลี่ยนรูปโปรไฟล์"
+                title="Change profile photo"
                 className="absolute bottom-0 right-0 p-2 rounded-full bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 transition-transform active:scale-95 cursor-pointer"
               >
                 <Camera className="w-4 h-4" />
@@ -320,7 +320,7 @@ const Profile = () => {
             <div className="flex-1 text-center sm:text-left space-y-2 min-w-0">
               <div className="flex flex-col sm:flex-row sm:items-center gap-2 flex-wrap justify-center sm:justify-start">
                 <h2 className="text-xl font-bold text-foreground">
-                  {formData.full_name || 'ผู้ใช้งาน StockFlow'}
+                  {formData.full_name || 'StockFlow User'}
                 </h2>
                 {formData.position && (
                   <span className="inline-block text-xs font-medium text-muted-foreground bg-muted px-2.5 py-0.5 rounded-full font-mono">
@@ -363,7 +363,7 @@ const Profile = () => {
           }`}
         >
           <User className="w-4 h-4" />
-          ข้อมูลส่วนตัว (Personal Info)
+          Personal Info
         </button>
 
         <button
@@ -376,7 +376,7 @@ const Profile = () => {
           }`}
         >
           <KeyRound className="w-4 h-4" />
-          เปลี่ยนรหัสผ่าน (Change Password)
+          Change Password
         </button>
       </div>
 
@@ -387,14 +387,14 @@ const Profile = () => {
             <CardContent className="p-6 space-y-6">
               <div className="font-bold text-sm text-foreground flex items-center gap-2 pb-2 border-b border-border">
                 <Sparkles className="w-4 h-4 text-primary" />
-                แก้ไขข้อมูลส่วนตัว (Self-Service Profile Edit)
+                Edit Personal Info
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 {/* Full Name */}
                 <div className="space-y-1.5">
                   <Label htmlFor="full_name" className="text-xs font-semibold text-foreground">
-                    ชื่อ-นามสกุล <span className="text-red-500">*</span>
+                    Full Name <span className="text-red-500">*</span>
                   </Label>
                   <Input
                     id="full_name"
@@ -402,7 +402,7 @@ const Profile = () => {
                     required
                     value={formData.full_name}
                     onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                    placeholder="เช่น นายวัชระ มานะดี"
+                    placeholder="e.g. John Doe"
                     className="h-9 text-xs rounded-lg bg-background border border-input focus-visible:ring-1 focus-visible:ring-primary"
                   />
                 </div>
@@ -410,7 +410,7 @@ const Profile = () => {
                 {/* Email */}
                 <div className="space-y-1.5">
                   <Label htmlFor="email" className="text-xs font-semibold text-foreground">
-                    อีเมลประจำตัว (Email)
+                    Email Address
                   </Label>
                   <Input
                     id="email"
@@ -425,14 +425,14 @@ const Profile = () => {
                 {/* Phone Number */}
                 <div className="space-y-1.5">
                   <Label htmlFor="phone" className="text-xs font-semibold text-foreground">
-                    เบอร์โทรศัพท์ติดต่อ (Phone Number)
+                    Phone Number
                   </Label>
                   <Input
                     id="phone"
                     type="tel"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    placeholder="เช่น 0812345678"
+                    placeholder="e.g. 0812345678"
                     className="h-9 text-xs rounded-lg bg-background border border-input focus-visible:ring-1 focus-visible:ring-primary"
                   />
                 </div>
@@ -440,14 +440,14 @@ const Profile = () => {
                 {/* Position / Job Title */}
                 <div className="space-y-1.5">
                   <Label htmlFor="position" className="text-xs font-semibold text-foreground">
-                    ตำแหน่งงาน (Position / Job Title)
+                    Position / Job Title
                   </Label>
                   <Input
                     id="position"
                     type="text"
                     value={formData.position}
                     onChange={(e) => setFormData({ ...formData, position: e.target.value })}
-                    placeholder="เช่น วิศวกรโครงการ / เจ้าหน้าที่พัสดุ"
+                    placeholder="e.g. Project Engineer / Inventory Officer"
                     className="h-9 text-xs rounded-lg bg-background border border-input focus-visible:ring-1 focus-visible:ring-primary"
                   />
                 </div>
@@ -456,14 +456,14 @@ const Profile = () => {
               {/* READ-ONLY System Controlled Fields */}
               <div className="pt-4 border-t border-border space-y-4">
                 <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                  <Lock className="w-3.5 h-3.5" /> ข้อมูลประจำตัวในระบบ (Read-Only Identity Fields)
+                  <Lock className="w-3.5 h-3.5" /> Read-Only Identity Fields
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   {/* Read-Only Username */}
                   <div className="space-y-1.5">
                     <Label className="text-xs font-semibold text-muted-foreground">
-                      ชื่อผู้ใช้สำหรับเข้าสู่ระบบ (Username / Login ID)
+                      Username / Login ID
                     </Label>
                     <Input
                       type="text"
@@ -472,14 +472,14 @@ const Profile = () => {
                       className="h-9 text-xs rounded-lg bg-muted/50 text-muted-foreground cursor-not-allowed border-dashed border border-input"
                     />
                     <p className="text-[11px] text-muted-foreground italic">
-                      ชื่อผู้ใช้สำหรับเข้าสู่ระบบ ไม่สามารถแก้ไขได้
+                      System username cannot be edited
                     </p>
                   </div>
 
                   {/* Read-Only Role */}
                   <div className="space-y-1.5">
                     <Label className="text-xs font-semibold text-muted-foreground">
-                      บทบาทและสิทธิ์การใช้งาน (System Role)
+                      System Role
                     </Label>
                     <Input
                       type="text"
@@ -488,7 +488,7 @@ const Profile = () => {
                       className="h-9 text-xs rounded-lg bg-muted/50 text-muted-foreground cursor-not-allowed border-dashed border border-input font-bold"
                     />
                     <p className="text-[11px] text-muted-foreground italic">
-                      บทบาทกำหนดโดยผู้ดูแลระบบ (Admin-Controlled)
+                      Role assigned by administrator (Admin-Controlled)
                     </p>
                   </div>
                 </div>
@@ -496,7 +496,7 @@ const Profile = () => {
                 {/* Read-Only Projects Access */}
                 <div className="space-y-1.5">
                   <Label className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
-                    <FolderKanban className="w-3.5 h-3.5" /> โครงการที่ได้รับมอบหมาย (Assigned Projects)
+                    <FolderKanban className="w-3.5 h-3.5" /> Assigned Projects
                   </Label>
                   <div className="p-3 rounded-lg bg-muted/30 text-xs text-foreground font-medium border border-border/50">
                     {assignedProjects}
@@ -514,12 +514,12 @@ const Profile = () => {
                   {savingProfile || uploadingAvatar ? (
                     <>
                       <RefreshCw className="w-4 h-4 animate-spin" />
-                      กำลังบันทึก...
+                      Saving...
                     </>
                   ) : (
                     <>
                       <Save className="w-4 h-4" />
-                      บันทึกข้อมูล (Save Profile)
+                      Save Profile
                     </>
                   )}
                 </Button>
@@ -536,14 +536,14 @@ const Profile = () => {
             <CardContent className="p-6 space-y-6">
               <div className="font-bold text-sm text-foreground flex items-center gap-2 pb-2 border-b border-border">
                 <Lock className="w-4 h-4 text-primary" />
-                เปลี่ยนรหัสผ่านสำหรับเข้าสู่ระบบ (Self-Service Password Change)
+                Change Login Password
               </div>
 
               <div className="max-w-md space-y-4">
                 {/* New Password */}
                 <div className="space-y-1.5">
                   <Label htmlFor="newPassword" className="text-xs font-semibold text-foreground">
-                    รหัสผ่านใหม่ (New Password) <span className="text-red-500">*</span>
+                    New Password <span className="text-red-500">*</span>
                   </Label>
                   <Input
                     id="newPassword"
@@ -553,7 +553,7 @@ const Profile = () => {
                     minLength={6}
                     value={passwordForm.newPassword}
                     onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
-                    placeholder="อย่างน้อย 6 ตัวอักษร"
+                    placeholder="At least 6 characters"
                     className="h-9 text-xs rounded-lg bg-background border border-input focus-visible:ring-1 focus-visible:ring-primary"
                   />
                 </div>
@@ -561,7 +561,7 @@ const Profile = () => {
                 {/* Confirm Password */}
                 <div className="space-y-1.5">
                   <Label htmlFor="confirmPassword" className="text-xs font-semibold text-foreground">
-                    ยืนยันรหัสผ่านใหม่ (Confirm Password) <span className="text-red-500">*</span>
+                    Confirm New Password <span className="text-red-500">*</span>
                   </Label>
                   <Input
                     id="confirmPassword"
@@ -571,7 +571,7 @@ const Profile = () => {
                     minLength={6}
                     value={passwordForm.confirmPassword}
                     onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
-                    placeholder="กรอกรหัสผ่านใหม่อีกครั้ง"
+                    placeholder="Re-enter new password"
                     className="h-9 text-xs rounded-lg bg-background border border-input focus-visible:ring-1 focus-visible:ring-primary"
                   />
                 </div>
@@ -587,12 +587,12 @@ const Profile = () => {
                   {updatingPassword ? (
                     <>
                       <RefreshCw className="w-4 h-4 animate-spin" />
-                      กำลังอัปเดตรหัสผ่าน...
+                      Updating password...
                     </>
                   ) : (
                     <>
                       <CheckCircle2 className="w-4 h-4" />
-                      อัปเดตรหัสผ่าน (Update Password)
+                      Update Password
                     </>
                   )}
                 </Button>

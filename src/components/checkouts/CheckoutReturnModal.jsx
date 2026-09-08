@@ -30,7 +30,7 @@ const CheckoutReturnModal = ({
         const remaining = item.quantity_borrowed - (item.quantity_returned + item.quantity_damaged + item.quantity_lost);
         return {
           checkout_item_id: item.id,
-          item_name: item.items?.name || item.item_name || 'อุปกรณ์',
+          item_name: item.items?.name || item.item_name || 'Item',
           sku: item.items?.sku || '',
           unit: item.items?.unit || 'ชิ้น',
           serial_number: item.serial_number || '',
@@ -88,16 +88,16 @@ const CheckoutReturnModal = ({
 
     const itemsToProcess = returnItems.filter(i => Number(i.returned_quantity) > 0);
     if (itemsToProcess.length === 0) {
-      return toast.error('กรุณาระบุจำนวนอุปกรณ์ที่ต้องการรับคืนอย่างน้อย 1 รายการ');
+      return toast.error('Please specify the return quantity for at least one item');
     }
 
     for (const item of itemsToProcess) {
       const qty = Number(item.returned_quantity);
       if (qty <= 0) {
-        return toast.error(`จำนวนรับคืนของ "${item.item_name}" ต้องมากกว่า 0`);
+        return toast.error(`Return quantity for "${item.item_name}" must be greater than 0`);
       }
       if (qty > item.remaining_to_return) {
-        return toast.error(`จำนวนรับคืนของ "${item.item_name}" เกินกว่ายอดคงค้าง (${item.remaining_to_return} ${item.unit})`);
+        return toast.error(`Return quantity for "${item.item_name}" exceeds outstanding balance (${item.remaining_to_return} ${item.unit})`);
       }
     }
 
@@ -121,12 +121,12 @@ const CheckoutReturnModal = ({
 
       if (error) throw error;
 
-      toast.success(data.completed ? 'รับคืนอุปกรณ์ครบถ้วนเรียบร้อยแล้ว' : 'บันทึกการรับคืนบางส่วนสำเร็จ');
+      toast.success(data.completed ? 'All items returned successfully' : 'Partial return recorded successfully');
       if (onReturnSuccess) onReturnSuccess(data);
       onClose();
     } catch (err) {
       console.error('Return error:', err);
-      toast.error(err.message || 'เกิดข้อผิดพลาดในการรับคืนอุปกรณ์');
+      toast.error(err.message || 'Failed to process return');
     } finally {
       setSubmitting(false);
     }
@@ -146,16 +146,16 @@ const CheckoutReturnModal = ({
               </div>
               <div className="min-w-0 flex-1">
                 <DialogTitle className="text-lg font-extrabold text-foreground tracking-tight flex items-center gap-2">
-                  <span>รับคืนเครื่องมือ / วัสดุอุปกรณ์</span>
+                  <span>Return Equipment & Materials</span>
                   <span className="font-mono text-xs font-bold text-indigo-600 bg-indigo-500/10 px-2 py-0.5 rounded-md">
                     {order.order_number}
                   </span>
                 </DialogTitle>
                 <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground mt-1">
-                  <span>ผู้ส่งคืน: <strong className="text-foreground">{order.borrower_name}</strong></span>
+                  <span>Borrower: <strong className="text-foreground">{order.borrower_name}</strong></span>
                   {order.borrower_department && <span>({order.borrower_department})</span>}
                   <span>•</span>
-                  <span>คลังเดิม: <strong className="text-foreground">{order.projects?.name}</strong></span>
+                  <span>Original Location: <strong className="text-foreground">{order.projects?.name}</strong></span>
                 </div>
               </div>
             </div>
@@ -166,7 +166,7 @@ const CheckoutReturnModal = ({
             <div className="relative w-full sm:w-60">
               <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="ค้นหาชื่อ, S/N..."
+                placeholder="Search name, S/N..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-8 h-8 text-xs rounded-lg"
@@ -182,7 +182,7 @@ const CheckoutReturnModal = ({
                 className="h-8 px-2.5 text-xs font-semibold gap-1 rounded-lg"
               >
                 <CheckSquare className="w-3.5 h-3.5 text-emerald-600" />
-                <span>คืนทั้งหมด ({totalRemainingInOrder})</span>
+                <span>Return All ({totalRemainingInOrder})</span>
               </Button>
               <Button
                 type="button"
@@ -191,7 +191,7 @@ const CheckoutReturnModal = ({
                 onClick={handleClearAll}
                 className="h-8 px-2.5 text-xs text-muted-foreground hover:text-destructive rounded-lg"
               >
-                เคลียร์
+                Clear
               </Button>
             </div>
           </div>
@@ -200,7 +200,7 @@ const CheckoutReturnModal = ({
           <div className="space-y-3 max-h-[380px] overflow-y-auto pr-1">
             {filteredReturnItems.length === 0 ? (
               <div className="py-8 text-center text-xs text-muted-foreground">
-                ไม่พบรายการอุปกรณ์ตามคำค้นหา
+                No items match the search query
               </div>
             ) : (
               filteredReturnItems.map(item => {
@@ -228,15 +228,15 @@ const CheckoutReturnModal = ({
                         </div>
 
                         <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-mono">
-                          <span>ยืม: {item.quantity_borrowed} {item.unit}</span>
+                          <span>Borrowed: {item.quantity_borrowed} {item.unit}</span>
                           <span>•</span>
-                          <span>คงค้าง: <strong className="text-indigo-600 dark:text-indigo-400">{item.remaining_to_return} {item.unit}</strong></span>
+                          <span>Outstanding: <strong className="text-indigo-600 dark:text-indigo-400">{item.remaining_to_return} {item.unit}</strong></span>
                         </div>
                       </div>
 
                       {item.remaining_to_return === 0 ? (
                         <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/15 text-emerald-600">
-                          คืนครบแล้ว
+                          Completed
                         </span>
                       ) : (
                         <Button
@@ -253,12 +253,12 @@ const CheckoutReturnModal = ({
                           {isReturning ? (
                             <>
                               <Check className="w-3 h-3 inline" />
-                              <span>เลือกคืนแล้ว</span>
+                              <span>Selected</span>
                             </>
                           ) : (
                             <>
                               <Plus className="w-3 h-3 inline" />
-                              <span>เลือกคืน</span>
+                              <span>Select</span>
                             </>
                           )}
                         </Button>
@@ -269,7 +269,7 @@ const CheckoutReturnModal = ({
                       <div className="grid grid-cols-12 gap-2 pt-2 border-t border-border/40 items-center">
                         {/* Return Quantity */}
                         <div className="col-span-4 space-y-0.5">
-                          <Label className="text-[10px] font-bold text-foreground">จำนวนที่คืนรอบนี้</Label>
+                          <Label className="text-[10px] font-bold text-foreground">Quantity to Return</Label>
                           <Input
                             type="number"
                             min={0}
@@ -282,22 +282,22 @@ const CheckoutReturnModal = ({
 
                         {/* Condition Selector */}
                         <div className="col-span-4 space-y-0.5">
-                          <Label className="text-[10px] font-bold text-foreground">สภาพอุปกรณ์</Label>
+                          <Label className="text-[10px] font-bold text-foreground">Condition</Label>
                           <select
                             value={item.condition}
                             onChange={(e) => handleUpdateItem(item.checkout_item_id, 'condition', e.target.value)}
                             className="w-full h-8 rounded-lg border border-input bg-background px-2 text-xs font-semibold focus:ring-2 focus:ring-emerald-500 cursor-pointer"
                           >
-                            <option value="normal">ปกติ (พร้อมใช้)</option>
-                            <option value="needs_repair">ชำรุด (ต้องซ่อม)</option>
-                            <option value="damaged">เสียหายหนัก</option>
-                            <option value="lost">สูญหาย</option>
+                            <option value="normal">Normal (Ready to use)</option>
+                            <option value="needs_repair">Needs Repair</option>
+                            <option value="damaged">Damaged</option>
+                            <option value="lost">Lost</option>
                           </select>
                         </div>
 
                         {/* Destination Warehouse */}
                         <div className="col-span-4 space-y-0.5">
-                          <Label className="text-[10px] font-bold text-foreground">คืนเข้าคลัง</Label>
+                          <Label className="text-[10px] font-bold text-foreground">Destination Location</Label>
                           <select
                             value={item.destination_project_id}
                             onChange={(e) => handleUpdateItem(item.checkout_item_id, 'destination_project_id', e.target.value)}
@@ -315,10 +315,10 @@ const CheckoutReturnModal = ({
                         {item.condition !== 'normal' && (
                           <div className="col-span-12 space-y-0.5 pt-1">
                             <Label className="text-[10px] text-amber-600 dark:text-amber-400 font-bold">
-                              ระบุรายละเอียดความชำรุด / การสูญหาย:
+                              Condition Details / Damage Notes:
                             </Label>
                             <Input
-                              placeholder="เช่น หน้าจอแตก, สายไฟขาด, หายในไซต์งาน..."
+                              placeholder="e.g. Cracked screen, broken wire, lost on site..."
                               value={item.damage_notes}
                               onChange={(e) => handleUpdateItem(item.checkout_item_id, 'damage_notes', e.target.value)}
                               className="h-8 text-xs rounded-lg"
@@ -340,7 +340,7 @@ const CheckoutReturnModal = ({
               onClick={onClose}
               className="rounded-lg h-9 px-4 text-xs font-semibold cursor-pointer"
             >
-              ยกเลิก
+              Cancel
             </Button>
 
             <Button
@@ -349,7 +349,7 @@ const CheckoutReturnModal = ({
               className="rounded-lg h-9 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold gap-1.5 shadow-xs cursor-pointer"
             >
               <CheckCircle2 className="w-4 h-4" />
-              <span>{submitting ? 'กำลังบันทึก...' : `ยืนยันรับคืน (${totalUnitsToReturn} ชิ้น)`}</span>
+              <span>{submitting ? 'Saving...' : `Confirm Return (${totalUnitsToReturn} ${totalUnitsToReturn === 1 ? 'unit' : 'units'})`}</span>
             </Button>
           </DialogFooter>
         </form>

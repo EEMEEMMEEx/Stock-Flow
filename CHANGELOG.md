@@ -1,5 +1,32 @@
 # Changelog
 
+## [v1.4.94] [2026-09-09] UI Text Cleanup & Professional English Normalization (Phase 1)
+
+- **UI Text Standardization & English Normalization:**
+  - แปลงข้อความและ Label สองภาษา (`"Thai (English)"`) ให้เหลือเฉพาะภาษาอังกฤษระดับมืออาชีพ
+  - แปลข้อความภาษาไทยในฝั่ง Static Client UI ทั้งหมดให้เป็นภาษาอังกฤษที่เป็นธรรมชาติ ถูกต้องตามหลัก Business/Inventory Domain
+  - ครอบคลุมทุกหน้าหลักและคอมโพเนนต์: Navigation & Layout (`Sidebar`, `Topbar`, `AppFooter`, `NotificationBell`, `ProjectLocationSelector`), `StockIn`, `Manual`, `Items`, `Withdrawals`, `Checkouts`, `Dashboard`, `History`, `Reports`, `Login`, `ForceChangePasswordModal`, `RoleManagement`, `UserManagement`, `DefaultPasswordManager`, `Settings`, `Profile`, `Projects`, `EmailTemplateManager`
+  - คงสภาพ 6 พื้นที่ Out-of-Scope ไว้อย่างเคร่งครัด 100% (Landing Page 12 ภาษา, PDF Templates, Email Defaults, Fallback หน่วย `'ชิ้น'`, Role Mapping ใน `roleUtils.js`, Notification Dispatcher)
+  - บันทึก `src/lib/passwordPolicy.js` เป็น Known Exception สำหรับ Phase 1
+- **Quality & Verification:**
+  - แก้ไข JSX unescaped entities ใน `src/pages/Settings.jsx`
+  - ตรวจสอบผ่าน `npm run lint` (0 errors) และ `npm run build` (ผ่าน 100%)
+- **Mandatory System Version Management (Rule 10):**
+  - ปรับเวอร์ชันระบบเป็น `1.4.94` ใน `package.json`, `package-lock.json`
+
+## [v1.4.93] [2026-09-08] End-to-End Mobile Dev Access Diagnosis & Cloudflare Tunnel Setup
+
+- **Network Diagnosis & Root Cause Identification:**
+  - ตรวจสอบการ Bind ของ Vite Dev Server พบว่ารับฟังบน `0.0.0.0:5173` และ `[::]:5173` สมบูรณ์
+  - ทดสอบ `curl.exe -I http://192.168.1.109:5173` จากเครื่องโฮสต์ได้ผลลัพธ์ `200 OK`
+  - ตรวจพบสาเหตุหลักที่มือถือเข้าไม่ได้จากเครือข่ายภายนอก: Wi-Fi ถูกจัดอยู่ในโหมด `Public Profile` ใน Windows Firewall, ไม่มี Inbound Rule สำหรับพอร์ต 5173, และเราเตอร์อาจมี AP / Client Isolation
+- **Cloudflare Tunnel Deployment (Guaranteed Mobile / Multi-Network Reachability):**
+  - ติดตั้ง `cloudflared` (v2026.8.3) และเริ่มต้นรัน Tunnel ไปยัง `http://localhost:5173`
+  - ให้บริการผ่าน Public HTTPS URL: `https://restored-adopt-historical-income.trycloudflare.com` ซึ่งรองรับ Secure Context (PWA, Service Worker, Web Crypto, HMR WebSocket `wss://`) และใช้งานได้ทุกเครือข่ายทั้ง Wi-Fi และ 4G/5G Cellular
+  - เพิ่ม npm script `"tunnel": "cloudflared tunnel --url http://localhost:5173"` ใน `package.json`
+- **Mandatory System Version Management (Rule 10):**
+  - ปรับเวอร์ชันระบบเป็น `1.4.93` ใน `package.json`, `package-lock.json`
+
 ## [v1.4.92] [2026-09-08] Fix Duplicate React Keys, Supabase Token Refresh & Dashboard Reflows
 
 - **TASK 1 — Fix Duplicate React Key Warning (`src/lib/siteKits.js` & `SiteKitAvailabilityCards.jsx`):**

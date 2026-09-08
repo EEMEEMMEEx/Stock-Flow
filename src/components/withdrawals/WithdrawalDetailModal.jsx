@@ -40,10 +40,10 @@ const WithdrawalDetailModal = ({
               </div>
               <div>
                 <DialogTitle className="text-lg font-extrabold text-foreground tracking-tight flex items-center gap-2">
-                  <span>ใบคำขอเบิกจ่าย #{order.id?.slice(0, 8)}</span>
+                  <span>Requisition Request #{order.id?.slice(0, 8)}</span>
                 </DialogTitle>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  สร้างเมื่อ: {order.requested_at ? format(new Date(order.requested_at), 'dd/MM/yyyy HH:mm:ss') : '-'}
+                  Created at: {order.requested_at ? format(new Date(order.requested_at), 'dd/MM/yyyy HH:mm:ss') : '-'}
                 </p>
               </div>
             </div>
@@ -52,23 +52,23 @@ const WithdrawalDetailModal = ({
             <div className="shrink-0">
               {isPending && (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
-                  <Clock className="w-3.5 h-3.5" /> รออนุมัติจากแอดมิน
+                  <Clock className="w-3.5 h-3.5" /> Pending Admin Approval
                 </span>
               )}
               {isApproved && (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30">
-                  <CheckCircle2 className="w-3.5 h-3.5" /> อนุมัติแล้ว (รอส่งมอบ)
-                  {hasShortage && <span className="text-amber-500 font-extrabold">*ของไม่ครบ</span>}
+                  <CheckCircle2 className="w-3.5 h-3.5" /> Approved (Pending Delivery)
+                  {hasShortage && <span className="text-amber-500 font-extrabold">*Shortage</span>}
                 </span>
               )}
               {isCompleted && (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
-                  <CheckCircle2 className="w-3.5 h-3.5" /> รับของเรียบร้อย
+                  <CheckCircle2 className="w-3.5 h-3.5" /> Receipt Completed
                 </span>
               )}
               {isRejected && (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30">
-                  <XCircle className="w-3.5 h-3.5" /> ปฏิเสธคำขอ
+                  <XCircle className="w-3.5 h-3.5" /> Request Rejected
                 </span>
               )}
             </div>
@@ -83,7 +83,7 @@ const WithdrawalDetailModal = ({
                   <div className="w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[11px] font-mono">
                     1
                   </div>
-                  <span>ยื่นคำขอเบิก</span>
+                  <span>Request Submitted</span>
                 </div>
 
                 <div className={`flex-1 h-1 mx-3 rounded-full ${isApproved || isCompleted ? 'bg-indigo-600' : 'bg-muted'}`} />
@@ -95,7 +95,7 @@ const WithdrawalDetailModal = ({
                   }`}>
                     2
                   </div>
-                  <span>อนุมัติ & ตัดสต็อก</span>
+                  <span>Approved & Deducted</span>
                 </div>
 
                 <div className={`flex-1 h-1 mx-3 rounded-full ${isCompleted ? 'bg-indigo-600' : 'bg-muted'}`} />
@@ -107,7 +107,7 @@ const WithdrawalDetailModal = ({
                   }`}>
                     3
                   </div>
-                  <span>รับมอบสินค้า</span>
+                  <span>Delivered & Completed</span>
                 </div>
               </div>
             </div>
@@ -120,7 +120,7 @@ const WithdrawalDetailModal = ({
             <div className="space-y-1">
               <span className="text-muted-foreground flex items-center gap-1.5 font-semibold">
                 <Building2 className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-                สถานที่จัดเก็บ (Location):
+                Location:
               </span>
               <p className="font-bold text-foreground">
                 {order.projects?.project_code ? `[${order.projects.project_code}] ` : ''}{order.projects?.name || '-'}
@@ -130,24 +130,24 @@ const WithdrawalDetailModal = ({
             <div className="space-y-1">
               <span className="text-muted-foreground flex items-center gap-1.5 font-semibold">
                 <User className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-                ผู้ขอเบิก:
+                Requester:
               </span>
-              <p className="font-bold text-foreground">{order.profiles?.full_name || 'ผู้ใช้งาน'}</p>
+              <p className="font-bold text-foreground">{order.profiles?.full_name || 'User'}</p>
             </div>
 
             <div className="space-y-1 sm:col-span-2">
               <span className="text-muted-foreground flex items-center gap-1.5 font-semibold">
                 <FileText className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-                วัตถุประสงค์:
+                Purpose:
               </span>
-              <p className="font-semibold text-foreground">{order.purpose || 'ไม่ได้ระบุ'}</p>
+              <p className="font-semibold text-foreground">{order.purpose || 'Not specified'}</p>
             </div>
 
             {order.delivery_address && (
               <div className="space-y-1 sm:col-span-2">
                 <span className="text-muted-foreground flex items-center gap-1.5 font-semibold">
                   <MapPin className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-                  สถานที่จัดส่ง / ผู้รับ:
+                  Delivery Destination / Recipient:
                 </span>
                 <p className="font-semibold text-foreground">{order.delivery_address}</p>
               </div>
@@ -158,9 +158,9 @@ const WithdrawalDetailModal = ({
               <div className="sm:col-span-2 bg-amber-500/10 border border-amber-500/30 p-3 rounded-xl text-amber-900 dark:text-amber-200 space-y-1">
                 <p className="font-bold flex items-center gap-1.5">
                   <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                  <span>บันทึกการอนุมัติกรณีของไม่ครบ (Shortage Override):</span>
+                  <span>Shortage Override Notes:</span>
                 </p>
-                <p className="text-[11px] pl-5">{order.override_reason || 'อนุมัติตัดสต็อกตามจำนวนที่มีอยู่จริงในคลัง'}</p>
+                <p className="text-[11px] pl-5">{order.override_reason || 'Stock deducted based on actual available inventory'}</p>
               </div>
             )}
 
@@ -169,7 +169,7 @@ const WithdrawalDetailModal = ({
               <div className="sm:col-span-2 bg-red-500/10 border border-red-500/30 p-3 rounded-xl text-red-900 dark:text-red-200 space-y-1">
                 <p className="font-bold flex items-center gap-1.5">
                   <XCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
-                  <span>เหตุผลการปฏิเสธคำขอ:</span>
+                  <span>Rejection Reason:</span>
                 </p>
                 <p className="text-[11px] pl-5">{order.reject_reason}</p>
               </div>
@@ -180,18 +180,18 @@ const WithdrawalDetailModal = ({
           <div className="space-y-2">
             <h4 className="text-xs font-extrabold uppercase tracking-wider text-foreground flex items-center gap-1.5">
               <Package className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-              <span>รายการวัสดุที่ขอเบิก ({orderDetails.length} รายการ)</span>
+              <span>Requested Items ({orderDetails.length} items)</span>
             </h4>
 
             <div className="border border-border rounded-xl overflow-hidden shadow-xs">
               <Table>
                 <TableHeader className="bg-muted/50 text-xs">
                   <TableRow>
-                    <TableHead>รายการวัสดุ</TableHead>
-                    <TableHead className="text-center">ขอเบิก</TableHead>
-                    <TableHead className="text-center">ตัดสต็อกจริง</TableHead>
-                    <TableHead className="text-center text-amber-600">ขาดส่ง (Shortage)</TableHead>
-                    <TableHead>สถานที่ส่ง / S/N</TableHead>
+                    <TableHead>Item Name</TableHead>
+                    <TableHead className="text-center">Requested</TableHead>
+                    <TableHead className="text-center">Actual Deducted</TableHead>
+                    <TableHead className="text-center text-amber-600">Shortage</TableHead>
+                    <TableHead>Destination / S/N</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody className="text-xs">
@@ -217,7 +217,7 @@ const WithdrawalDetailModal = ({
                         </TableCell>
                         <TableCell className="text-center">
                           {isPending ? (
-                            <span className="text-muted-foreground italic font-normal text-[11px]">- (รออนุมัติ)</span>
+                            <span className="text-muted-foreground italic font-normal text-[11px]">- (Pending)</span>
                           ) : isApprovedOrCompleted ? (
                             <span className="font-bold font-mono text-emerald-600 dark:text-emerald-400">
                               {deducted} {item.items?.unit}
@@ -255,7 +255,7 @@ const WithdrawalDetailModal = ({
             className="rounded-lg text-xs font-semibold text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 gap-1.5 cursor-pointer h-9 px-4"
           >
             <FileText className="w-4 h-4 text-indigo-600" />
-            <span>พิมพ์ / ดาวน์โหลด PDF ใบเบิกของ</span>
+            <span>Print / Download Issue Slip (PDF)</span>
           </Button>
 
           <div className="flex items-center gap-2">
@@ -269,7 +269,7 @@ const WithdrawalDetailModal = ({
                     className="rounded-lg text-xs font-semibold cursor-pointer h-9 px-4"
                     onClick={() => onOpenRejectModal(order)}
                   >
-                    ปฏิเสธคำขอ
+                    Reject Request
                   </Button>
                 )}
                 {canApprove && (
@@ -279,7 +279,7 @@ const WithdrawalDetailModal = ({
                     className="rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer h-9 px-4 shadow-xs"
                     onClick={() => onApproveOrder(order.id)}
                   >
-                    อนุมัติบิลนี้
+                    Approve Request
                   </Button>
                 )}
               </>
@@ -292,7 +292,7 @@ const WithdrawalDetailModal = ({
                 className="rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer h-9 px-4 shadow-xs"
                 onClick={() => onCompleteOrder(order.id)}
               >
-                ยืนยันรับของเสร็จสิ้น
+                Confirm Receipt Complete
               </Button>
             )}
 
@@ -303,7 +303,7 @@ const WithdrawalDetailModal = ({
               onClick={onClose}
               className="rounded-lg text-xs h-9 px-4 font-semibold"
             >
-              ปิดหน้าต่าง
+              Close
             </Button>
           </div>
         </DialogFooter>

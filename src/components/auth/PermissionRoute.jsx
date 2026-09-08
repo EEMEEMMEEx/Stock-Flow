@@ -13,7 +13,7 @@ const PermissionRoute = ({ permission, children }) => {
 
   useEffect(() => {
     if (!loading && profile && !hasPermission) {
-      toast.error('คุณไม่มีสิทธิ์เข้าถึงเมนูนี้', { 
+      toast.error('You do not have permission to access this page', { 
         id: `perm-denied-${permission}`,
         duration: 4000
       });
@@ -25,7 +25,7 @@ const PermissionRoute = ({ permission, children }) => {
     return (
       <div className="h-64 w-full flex flex-col items-center justify-center gap-3">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        <span className="text-xs text-muted-foreground">กำลังตรวจสอบสิทธิ์การใช้งาน...</span>
+        <span className="text-xs text-muted-foreground">Checking permissions...</span>
       </div>
     );
   }
@@ -45,10 +45,10 @@ const PermissionRoute = ({ permission, children }) => {
             <div className="space-y-2">
               <h2 className="text-xl font-bold text-foreground tracking-tight flex items-center justify-center gap-2">
                 <Lock className="w-5 h-5 text-amber-500" />
-                ไม่มีสิทธิ์เข้าถึงหน้านี้
+                Access Denied
               </h2>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                บัญชีของคุณยังไม่มีสิทธิ์เข้าถึงเมนูนึ้ หากจำเป็นต้องใช้งาน กรุณาติดต่อผู้ดูแลระบบเพื่อขออนุมัติสิทธิ์เพิ่มเติม
+                Your account does not have permission to access this page. Please contact an administrator if you need access.
               </p>
             </div>
 
@@ -60,7 +60,7 @@ const PermissionRoute = ({ permission, children }) => {
                 className="w-full sm:w-auto h-9 px-4 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer"
               >
                 <ArrowLeft className="w-4 h-4" />
-                ย้อนกลับ
+                Go Back
               </Button>
 
               <Button
@@ -69,7 +69,7 @@ const PermissionRoute = ({ permission, children }) => {
               >
                 <Link to="/">
                   <Home className="w-4 h-4" />
-                  กลับหน้าหลัก (Dashboard)
+                  Back to Dashboard
                 </Link>
               </Button>
             </div>

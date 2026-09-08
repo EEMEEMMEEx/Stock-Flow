@@ -140,10 +140,10 @@ export const useNotifications = (userId) => {
       // Reload notifications list
       await loadNotifications();
 
-      return { success: true, data, message: data?.message || 'อนุมัติคำขอเบิกจ่ายสำเร็จ' };
+      return { success: true, data, message: data?.message || 'Withdrawal request approved successfully' };
     } catch (err) {
       console.error('Quick Approve Error in Notification:', err);
-      return { success: false, error: err, message: err.message || 'เกิดข้อผิดพลาดในการอนุมัติ' };
+      return { success: false, error: err, message: err.message || 'An error occurred during approval' };
     }
   }, [loadNotifications, markAsRead]);
 

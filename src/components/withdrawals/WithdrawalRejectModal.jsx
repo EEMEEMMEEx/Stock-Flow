@@ -3,10 +3,10 @@ import { Button } from '@/components/ui/button';
 import { XCircle } from 'lucide-react';
 
 const REJECT_PRESETS = [
-  'วัสดุในคลังโครงการไม่เพียงพอ',
-  'ข้อมูลรายการที่ขอเบิกไม่ถูกต้อง',
-  'ผู้ขอเบิกแจ้งขอยกเลิกรายการ',
-  'โครงการสิ้นสุดหรือปิดรับเบิกแล้ว'
+  'Insufficient stock in project location',
+  'Incorrect requisition information',
+  'Requester requested cancellation',
+  'Project ended or requisitions closed'
 ];
 
 const WithdrawalRejectModal = ({
@@ -32,20 +32,20 @@ const WithdrawalRejectModal = ({
               <div className="p-2 rounded-lg bg-red-500/15 border border-red-500/30">
                 <XCircle className="w-5 h-5" />
               </div>
-              <span>ปฏิเสธคำขอเบิกจ่าย #{orderToReject?.id?.slice(0, 8)}</span>
+              <span>Reject Requisition #{orderToReject?.id?.slice(0, 8)}</span>
             </DialogTitle>
           </DialogHeader>
 
           <div className="py-4 space-y-3 text-xs">
             <div className="space-y-1.5">
               <label className="font-bold text-foreground flex items-center gap-1">
-                <span>ระบุเหตุผลในการปฏิเสธ</span>
+                <span>Rejection Reason</span>
                 <span className="text-destructive">*</span>
               </label>
               <textarea
                 required
                 className="flex min-h-[90px] w-full rounded-lg border border-input bg-background px-3 py-2 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 resize-none shadow-2xs"
-                placeholder="เช่น สินค้าในคลังโครงการไม่เพียงพอ หรือข้อมูลไม่ถูกต้อง..."
+                placeholder="e.g. Insufficient stock in location or incorrect details..."
                 value={rejectReason}
                 onChange={(e) => onRejectReasonChange(e.target.value)}
               />
@@ -53,7 +53,7 @@ const WithdrawalRejectModal = ({
 
             {/* Quick Reason Presets */}
             <div className="space-y-1">
-              <span className="text-[10px] font-bold text-muted-foreground uppercase">เลือกเหตุผลสำเร็จรูป:</span>
+              <span className="text-[10px] font-bold text-muted-foreground uppercase">Quick presets:</span>
               <div className="flex flex-wrap gap-1">
                 {REJECT_PRESETS.map(preset => (
                   <button
@@ -76,7 +76,7 @@ const WithdrawalRejectModal = ({
               onClick={onClose}
               className="rounded-lg text-xs h-9 px-4 font-semibold"
             >
-              ยกเลิก
+              Cancel
             </Button>
             <Button
               type="submit"
@@ -84,7 +84,7 @@ const WithdrawalRejectModal = ({
               disabled={!rejectReason.trim() || isProcessing}
               className="rounded-lg text-xs h-9 px-4 font-semibold shadow-xs cursor-pointer"
             >
-              {isProcessing ? 'กำลังปฏิเสธ...' : 'ยืนยันปฏิเสธคำขอ'}
+              {isProcessing ? 'Rejecting...' : 'Confirm Reject'}
             </Button>
           </DialogFooter>
         </form>

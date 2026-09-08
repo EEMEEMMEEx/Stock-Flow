@@ -133,7 +133,7 @@ const UserManagement = () => {
       await Promise.all([fetchUsers(), fetchProjects(), fetchDbRoles()]);
     } catch (error) {
       console.error('Fetch Data Error:', error);
-      toast.error('เกิดข้อผิดพลาดในการโหลดข้อมูล');
+      toast.error('An error occurred while loading data');
     } finally {
       setLoading(false);
     }
@@ -192,7 +192,7 @@ const UserManagement = () => {
       if (error) {
         // Fallback for fallback creation directly in profiles if RPC not installed
         if (error.code === 'PGRST202' || error.status === 404) {
-          toast.error('กรุณารันไฟล์ Migration 40 ใน Supabase SQL Editor เพื่อเปิดใช้งานการสร้าง Auth User ผ่าน RPC');
+          toast.error('Please run Migration 40 in Supabase SQL Editor to enable RPC auth user creation');
           return;
         }
         throw error;
@@ -211,29 +211,29 @@ const UserManagement = () => {
           }
         }
 
-        toast.success('สร้างบัญชีผู้ใช้ใหม่สำเร็จ');
+        toast.success('User account created successfully');
         if (userPayload.send_invitation) {
           try {
             await sendUserInvitationEmail({
               recipientEmail: userPayload.email,
               userName: userPayload.full_name,
               roleName: userPayload.role,
-              projectAccessSummary: userPayload.all_projects ? 'ทุกโครงการ' : `${userPayload.project_ids?.length || 0} โครงการที่เลือก`,
+              projectAccessSummary: userPayload.all_projects ? 'All Projects' : `${userPayload.project_ids?.length || 0} selected projects`,
               actionUrl: window.location.origin
             });
-            toast.success('สร้างบัญชีและส่งอีเมลเชิญสำเร็จ');
+            toast.success('User created and invitation email sent successfully');
           } catch (emailError) {
             console.error('Invitation Email Error:', emailError);
-            toast.error('สร้างบัญชีสำเร็จ แต่อีเมลส่งไม่สำเร็จ สามารถกด Resend Invitation ได้ภายหลัง');
+            toast.error('User created, but invitation email failed to send. You can resend the invitation later.');
           }
         }
         await fetchUsers();
       } else {
-        toast.error(data?.message || 'ไม่สามารถสร้างผู้ใช้ได้');
+        toast.error(data?.message || 'Failed to create user');
       }
     } catch (error) {
       console.error('Admin Create User Error:', error);
-      toast.error(error.message || 'เกิดข้อผิดพลาดในการสร้างบัญชีผู้ใช้');
+      toast.error(error.message || 'An error occurred while creating user');
       throw error;
     }
   };
@@ -245,12 +245,12 @@ const UserManagement = () => {
         recipientEmail: user.email,
         userName: user.full_name,
         roleName: user.role,
-        projectAccessSummary: user.all_projects ? 'ทุกโครงการ' : `${user.assigned_project_ids?.length || 0} โครงการที่ได้รับมอบหมาย`,
+        projectAccessSummary: user.all_projects ? 'All Projects' : `${user.assigned_project_ids?.length || 0} assigned projects`,
         actionUrl: window.location.origin
       });
-      toast.success(`ส่งอีเมลเชิญซ้ำไปยัง ${user.email} สำเร็จ`);
+      toast.success(`Invitation email resent to ${user.email} successfully`);
     } catch (error) {
-      toast.error(`ส่งอีเมลเชิญซ้ำไม่สำเร็จ: ${error.message}`);
+      toast.error(`Failed to resend invitation email: ${error.message}`);
     } finally { setResendingInvitationId(null); }
   };
 
@@ -332,20 +332,20 @@ const UserManagement = () => {
           console.warn('Direct project assignment sync warning:', assignErr);
         }
 
-        toast.success('อัปเดตข้อมูลและสิทธิ์ผู้ใช้เรียบร้อยแล้ว');
+        toast.success('User details and permissions updated successfully');
         await Promise.all([fetchUsers(), fetchDbRoles()]);
         return;
       }
 
       if (data?.success) {
-        toast.success('อัปเดตข้อมูลและสิทธิ์ผู้ใช้สำเร็จ');
+        toast.success('User details and permissions updated successfully');
         await Promise.all([fetchUsers(), fetchDbRoles()]);
       } else {
-        toast.error(data?.message || 'ไม่สามารถอัปเดตข้อมูลผู้ใช้ได้');
+        toast.error(data?.message || 'Failed to update user details');
       }
     } catch (error) {
       console.error('Admin Update User Error:', error);
-      toast.error(error.message || 'เกิดข้อผิดพลาดในการอัปเดตผู้ใช้');
+      toast.error(error.message || 'An error occurred while updating user');
       throw error;
     }
   };
@@ -359,17 +359,17 @@ const UserManagement = () => {
 
       if (error) {
         if (error.code === 'PGRST202' || error.status === 404) {
-          toast.error('กรุณารันไฟล์ Migration 08 ใน Supabase SQL Editor เพื่อเปิดใช้งานการรีเซ็ตรหัสผ่าน');
+          toast.error('Please run Migration 08 in Supabase SQL Editor to enable password resets');
           return;
         }
         throw error;
       }
       if (data?.success) {
-        toast.success('รีเซ็ตรหัสผ่านสำเร็จ');
+        toast.success('Password reset successfully');
       }
     } catch (error) {
       console.error('Admin Reset Password Error:', error);
-      toast.error(error.message || 'เกิดข้อผิดพลาดในการรีเซ็ตรหัสผ่าน');
+      toast.error(error.message || 'An error occurred while resetting password');
       throw error;
     }
   };
@@ -378,7 +378,7 @@ const UserManagement = () => {
   const handleToggleStatus = async (userObj) => {
     const isTargetSuper = (userObj.role || '').toLowerCase() === 'super' || (userObj.roles?.code || '').toUpperCase() === 'SUPER' || (userObj.email || '').toLowerCase() === 'admin@stockflow.com';
     if (isTargetSuper && !isSuperAdmin) {
-      toast.error('ความปลอดภัยของระบบ: เฉพาะ Super Admin เท่านั้นที่สามารถเปลี่ยนสถานะบัญชี Super Admin ได้');
+      toast.error('System Security: Only Super Admin can change Super Admin account status');
       return;
     }
 
@@ -391,11 +391,11 @@ const UserManagement = () => {
 
       if (error) throw error;
       if (data?.success) {
-        toast.success(nextStatus === 'active' ? 'เปิดใช้งานบัญชีเรียบร้อย' : 'ระงับการใช้งานบัญชีเรียบร้อย');
+        toast.success(nextStatus === 'active' ? 'Account activated successfully' : 'Account deactivated successfully');
         await fetchUsers();
       }
     } catch (error) {
-      toast.error(error.message || 'เกิดข้อผิดพลาดในการเปลี่ยนสถานะบัญชี');
+      toast.error(error.message || 'An error occurred while changing account status');
     }
   };
 
@@ -403,7 +403,7 @@ const UserManagement = () => {
     if (!selectedUserForDelete) return;
     const isTargetSuper = (selectedUserForDelete.role || '').toLowerCase() === 'super' || (selectedUserForDelete.roles?.code || '').toUpperCase() === 'SUPER' || (selectedUserForDelete.email || '').toLowerCase() === 'admin@stockflow.com';
     if (isTargetSuper) {
-      toast.error('ความปลอดภัยของระบบ: ไม่สามารถลบบัญชี Super Admin ได้');
+      toast.error('System Security: Cannot delete Super Admin account');
       setSelectedUserForDelete(null);
       return;
     }
@@ -415,14 +415,14 @@ const UserManagement = () => {
       });
       if (error) throw error;
       if (data?.success) {
-        toast.success(`ลบบัญชีผู้ใช้ ${selectedUserForDelete.email} ถาวรสำเร็จ`);
+        toast.success(`Permanently deleted user account ${selectedUserForDelete.email} successfully`);
         await fetchUsers();
       } else {
-        toast.error(data?.message || 'ไม่สามารถลบผู้ใช้ได้');
+        toast.error(data?.message || 'Failed to delete user');
       }
     } catch (err) {
       console.error('Delete User Error:', err);
-      toast.error(err.message || 'เกิดข้อผิดพลาดในการลบบัญชีผู้ใช้');
+      toast.error(err.message || 'An error occurred while deleting user account');
     } finally {
       setSelectedUserForDelete(null);
       setLoading(false);
@@ -432,7 +432,7 @@ const UserManagement = () => {
   const handleDeleteUserAttempt = (userObj) => {
     const isTargetSuper = (userObj.role || '').toLowerCase() === 'super' || (userObj.roles?.code || '').toUpperCase() === 'SUPER' || (userObj.email || '').toLowerCase() === 'admin@stockflow.com';
     if (isTargetSuper) {
-      toast.error('ความปลอดภัยของระบบ: ไม่สามารถลบบัญชี Super Admin ได้');
+      toast.error('System Security: Cannot delete Super Admin account');
       return;
     }
 
@@ -440,7 +440,7 @@ const UserManagement = () => {
     if (userObj.role === 'admin' && userObj.status === 'active') {
       const activeAdmins = users.filter(u => u.role === 'admin' && u.status === 'active');
       if (activeAdmins.length <= 1) {
-        toast.error('ไม่สามารถลบหรือปิดบัญชี Admin คนสุดท้ายของระบบได้');
+        toast.error('Cannot delete or deactivate the last Administrator in the system');
         return;
       }
     }
@@ -516,7 +516,7 @@ const UserManagement = () => {
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
             <UserCog className="w-7 h-7 text-primary" />
-            จัดการผู้ใช้และสิทธิ์ (User Management & RBAC)
+            User Management & RBAC
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
             Manage application users, roles, status, and project access.
@@ -531,17 +531,17 @@ const UserManagement = () => {
             className="h-9 rounded-lg font-semibold flex items-center gap-2 cursor-pointer shadow-xs"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            รีเฟรช
+            Refresh
           </Button>
 
           <Button 
             onClick={() => setIsAddModalOpen(true)}
             disabled={!can('users.create')}
-            title={!can('users.create') ? 'ไม่มีสิทธิ์เพิ่มผู้ใช้งานใหม่ (ต้องการสิทธิ์ users.create)' : 'เพิ่มผู้ใช้งานใหม่'}
+            title={!can('users.create') ? 'Missing permission to add users (requires users.create)' : 'Add New User'}
             className="h-9 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-sm flex items-center gap-2 cursor-pointer shadow-xs shrink-0 disabled:opacity-30 disabled:cursor-not-allowed"
           >
             <Plus className="w-4 h-4 shrink-0" />
-            <span>เพิ่มผู้ใช้</span>
+            <span>Add User</span>
           </Button>
         </div>
       </div>
@@ -552,12 +552,12 @@ const UserManagement = () => {
           <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
           <div className="space-y-1">
             <div className="font-semibold text-amber-800 dark:text-amber-300">
-              แจ้งเตือน: ยังไม่ได้เปิดใช้งาน Supabase RPC Functions บนฐานข้อมูล Cloud
+              Notice: Supabase RPC Functions not yet enabled on Cloud Database
             </div>
             <p className="text-muted-foreground">
-              ระบบกำลังแสดงข้อมูลผู้ใช้ผ่านตาราง <code className="bg-amber-200/50 dark:bg-amber-950/60 px-1 py-0.5 rounded font-mono">profiles</code> โดยอัตโนมัติ (Fallback Mode)
-              หากต้องการเปิดใช้งานสิทธิ์ Admin เต็มรูปแบบ (สร้าง Auth User ใหม่แบบ Atomic, กำหนดสิทธิ์รายโครงการ, และรีเซ็ตรหัสผ่าน) 
-              กรุณานำโค้ดในไฟล์ <code className="bg-amber-200/50 dark:bg-amber-950/60 px-1 py-0.5 rounded font-mono">supabase/migrations/08_rbac_and_user_management.sql</code> ไปวางและกด Run ใน <strong>Supabase Dashboard → SQL Editor</strong>
+              The system is currently displaying users via the <code className="bg-amber-200/50 dark:bg-amber-950/60 px-1 py-0.5 rounded font-mono">profiles</code> table automatically (Fallback Mode).
+              To enable full Admin privileges (atomic auth user creation, project access scoping, and password resets), 
+              please run the script from <code className="bg-amber-200/50 dark:bg-amber-950/60 px-1 py-0.5 rounded font-mono">supabase/migrations/08_rbac_and_user_management.sql</code> in <strong>Supabase Dashboard → SQL Editor</strong>.
             </p>
           </div>
         </div>
@@ -571,7 +571,7 @@ const UserManagement = () => {
           <div className="relative flex-1">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="ค้นหาชื่อ, อีเมล, ตำแหน่ง..."
+              placeholder="Search by name, email, position..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 h-9 text-xs rounded-lg bg-background border border-input"
@@ -585,7 +585,7 @@ const UserManagement = () => {
               onChange={(e) => setRoleFilter(e.target.value)}
               className="w-full h-9 px-3 text-xs rounded-lg bg-background text-foreground border border-input focus:ring-1 focus:ring-primary focus:outline-none shadow-xs"
             >
-              <option value="all">บทบาท: ทั้งหมด</option>
+              <option value="all">Role: All</option>
               {dbRoles.length > 0 ? (
                 dbRoles.map((r) => (
                   <option key={r.id || r.code} value={(r.code || '').toLowerCase()}>
@@ -610,9 +610,9 @@ const UserManagement = () => {
               onChange={(e) => setStatusFilter(e.target.value)}
               className="w-full h-9 px-3 text-xs rounded-lg bg-background text-foreground border border-input focus:ring-1 focus:ring-primary focus:outline-none shadow-xs"
             >
-              <option value="all">สถานะ: ทั้งหมด</option>
-              <option value="active">Active (เปิดใช้งาน)</option>
-              <option value="inactive">Inactive (ระงับการใช้งาน)</option>
+              <option value="all">Status: All</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
             </select>
           </div>
 
@@ -623,7 +623,7 @@ const UserManagement = () => {
               onChange={(e) => setProjectFilter(e.target.value)}
               className="w-full h-9 px-3 text-xs rounded-lg bg-background text-foreground border border-input focus:ring-1 focus:ring-primary focus:outline-none shadow-xs"
             >
-              <option value="all">โครงการ: ทั้งหมด</option>
+              <option value="all">Project: All</option>
               {projects.map(p => (
                 <option key={p.id} value={p.id}>{p.name}</option>
               ))}
@@ -639,12 +639,12 @@ const UserManagement = () => {
             <table className="w-full text-sm text-left">
               <thead className="text-xs text-muted-foreground uppercase bg-muted/50 border-b border-border">
                 <tr>
-                  <th className="px-6 py-3.5">ผู้ใช้งาน (User)</th>
-                  <th className="px-4 py-3.5">บทบาท (Role)</th>
-                  <th className="px-4 py-3.5">โครงการที่เข้าถึงได้ (Projects)</th>
-                  <th className="px-4 py-3.5">สถานะ (Status)</th>
-                  <th className="px-4 py-3.5">วันที่สร้าง (Created)</th>
-                  <th className="px-6 py-3.5 text-right">การจัดการ (Actions)</th>
+                  <th className="px-6 py-3.5">User</th>
+                  <th className="px-4 py-3.5">Role</th>
+                  <th className="px-4 py-3.5">Assigned Projects</th>
+                  <th className="px-4 py-3.5">Status</th>
+                  <th className="px-4 py-3.5">Created</th>
+                  <th className="px-6 py-3.5 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/40">
@@ -653,14 +653,14 @@ const UserManagement = () => {
                     <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
                       <div className="inline-flex items-center gap-2">
                         <RefreshCw className="w-4 h-4 animate-spin text-primary" />
-                        กำลังโหลดข้อมูลผู้ใช้งาน...
+                        Loading users...
                       </div>
                     </td>
                   </tr>
                 ) : filteredUsers.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
-                      ไม่พบข้อมูลผู้ใช้งานที่ตรงตามเงื่อนไข
+                      No users found matching the filter criteria
                     </td>
                   </tr>
                 ) : (
@@ -682,26 +682,26 @@ const UserManagement = () => {
                     const canDeleteUser = !isTargetSuper && isSuperAdmin && can('users.delete') && !isSelf && !isLastActiveAdmin;
 
                     const getEditTitle = () => {
-                      if (isTargetSuper && !isSuperAdmin) return 'เฉพาะ Super Admin เท่านั้นที่สามารถแก้ไขผู้ดูแลระบบสูงสุดได้';
-                      if (!can('users.update')) return 'ไม่มีสิทธิ์แก้ไขข้อมูลผู้ใช้ (ต้องการสิทธิ์ users.update)';
-                      return 'แก้ไขข้อมูลผู้ใช้ (Edit User)';
+                      if (isTargetSuper && !isSuperAdmin) return 'Only Super Admin can edit the Super Admin account';
+                      if (!can('users.update')) return 'Missing permission to edit users (requires users.update)';
+                      return 'Edit User';
                     };
 
                     const getDeactivateTitle = () => {
-                      if (isSelf) return 'ไม่สามารถระงับการใช้งานบัญชีของตนเองได้';
-                      if (isTargetSuper && !isSuperAdmin) return 'เฉพาะ Super Admin เท่านั้นที่สามารถระงับการใช้งาน Super Admin ได้';
-                      if (isLastActiveAdmin) return 'ไม่สามารถระงับบัญชี Administrator คนสุดท้ายของระบบได้';
-                      if (!can('users.deactivate')) return 'ไม่มีสิทธิ์ระงับการใช้งานบัญชี (ต้องการสิทธิ์ users.deactivate)';
-                      return u.status === 'active' ? 'ระงับการใช้งานบัญชี (Deactivate)' : 'เปิดใช้งานบัญชี (Activate)';
+                      if (isSelf) return 'Cannot deactivate your own account';
+                      if (isTargetSuper && !isSuperAdmin) return 'Only Super Admin can deactivate a Super Admin account';
+                      if (isLastActiveAdmin) return 'Cannot deactivate the last Administrator in the system';
+                      if (!can('users.deactivate')) return 'Missing permission to deactivate account (requires users.deactivate)';
+                      return u.status === 'active' ? 'Deactivate Account' : 'Activate Account';
                     };
 
                     const getDeleteTitle = () => {
-                      if (isSelf) return 'ไม่สามารถลบบัญชีของตนเองได้';
-                      if (isTargetSuper) return 'ไม่สามารถลบบัญชี Super Admin ได้';
-                      if (isLastActiveAdmin) return 'ไม่สามารถลบบัญชี Administrator คนสุดท้ายของระบบได้';
-                      if (!isSuperAdmin) return 'เฉพาะ Super Admin เท่านั้นที่สามารถลบบัญชีผู้ใช้ได้';
-                      if (!can('users.delete')) return 'ไม่มีสิทธิ์ลบบัญชีผู้ใช้ (ต้องการสิทธิ์ users.delete)';
-                      return 'ลบบัญชีผู้ใช้ถาวร (Delete User)';
+                      if (isSelf) return 'Cannot delete your own account';
+                      if (isTargetSuper) return 'Cannot delete Super Admin account';
+                      if (isLastActiveAdmin) return 'Cannot delete the last Administrator in the system';
+                      if (!isSuperAdmin) return 'Only Super Admin can delete user accounts';
+                      if (!can('users.delete')) return 'Missing permission to delete user (requires users.delete)';
+                      return 'Permanently Delete User';
                     };
 
                     return (
@@ -748,7 +748,7 @@ const UserManagement = () => {
                         <td className="px-4 py-4 max-w-xs">
                           {u.all_projects ? (
                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
-                              <FolderKanban className="w-3 h-3" /> ทุกโครงการ (All Projects)
+                              <FolderKanban className="w-3 h-3" /> All Projects
                             </span>
                           ) : u.assigned_project_ids && u.assigned_project_ids.length > 0 ? (
                             <div className="flex flex-wrap gap-1">
@@ -759,7 +759,7 @@ const UserManagement = () => {
                               ))}
                             </div>
                           ) : (
-                            <span className="text-xs text-muted-foreground font-italic">ไม่ได้ระบุโครงการ</span>
+                            <span className="text-xs text-muted-foreground font-italic">No projects assigned</span>
                           )}
                         </td>
 
@@ -802,8 +802,8 @@ const UserManagement = () => {
                               size="icon"
                               title={
                                 !canResendInvite
-                                  ? "ไม่มีสิทธิ์ส่งอีเมลเชิญ"
-                                  : "ส่งอีเมลเชิญซ้ำ (Resend Invitation)"
+                                  ? "Missing permission to send invitation email"
+                                  : "Resend Invitation"
                               }
                               onClick={() => handleResendInvitation(u)}
                               disabled={resendingInvitationId === u.id || !canResendInvite}
@@ -822,8 +822,8 @@ const UserManagement = () => {
                               size="icon"
                               title={
                                 !canResetPassword
-                                  ? "ไม่มีสิทธิ์รีเซ็ตรหัสผ่าน"
-                                  : "รีเซ็ตรหัสผ่าน (Reset Password)"
+                                  ? "Missing permission to reset password"
+                                  : "Reset Password"
                               }
                               onClick={() => setSelectedUserForResetPw(u)}
                               disabled={!canResetPassword}

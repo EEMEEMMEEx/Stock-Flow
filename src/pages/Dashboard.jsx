@@ -176,7 +176,7 @@ const Dashboard = () => {
         if (!itemStockAgg.has(b.item_id)) {
           itemStockAgg.set(b.item_id, {
             item_id: b.item_id,
-            item_name: b.item_name || 'วัสดุ',
+            item_name: b.item_name || 'Item',
             unit: b.unit || 'ชิ้น',
             total_in: 0,
             total_out: 0,
@@ -193,7 +193,7 @@ const Dashboard = () => {
         .sort((a, b) => b.balance - a.balance)
         .slice(0, 10)
         .map(item => {
-          const raw = item.item_name || 'วัสดุ';
+          const raw = item.item_name || 'Item';
           const truncated = raw.length > 15 ? `${raw.slice(0, 14)}…` : raw;
           return {
             ...item,
@@ -270,9 +270,9 @@ const Dashboard = () => {
   const statCards = useMemo(() => [
     {
       id: 'pending',
-      label: 'รออนุมัติเบิกจ่าย',
+      label: 'Pending Approvals',
       value: stats.pendingCount,
-      subtext: 'คำขอที่รอการพิจารณา',
+      subtext: 'Requests awaiting review',
       icon: AlertCircle,
       tone: 'warning',
       href: '/withdrawals',
@@ -280,9 +280,9 @@ const Dashboard = () => {
     },
     {
       id: 'projects',
-      label: 'โครงการ Active',
+      label: 'Active Projects',
       value: stats.projectCount,
-      subtext: `${stats.logicalProjectCount} โครงการ (${stats.projectCount} สถานที่)`,
+      subtext: `${stats.logicalProjectCount} ${stats.logicalProjectCount === 1 ? 'project' : 'projects'} (${stats.projectCount} ${stats.projectCount === 1 ? 'location' : 'locations'})`,
       icon: FolderKanban,
       tone: 'info',
       href: '/projects',
@@ -290,9 +290,9 @@ const Dashboard = () => {
     },
     {
       id: 'items',
-      label: 'รายการวัสดุ',
+      label: 'Items Catalog',
       value: stats.itemCount,
-      subtext: `คงเหลือรวม ${stats.totalStockUnits.toLocaleString()} หน่วย`,
+      subtext: `Total stock: ${stats.totalStockUnits.toLocaleString()} units`,
       icon: Package,
       tone: 'indigo',
       href: '/items',
@@ -300,9 +300,9 @@ const Dashboard = () => {
     },
     {
       id: 'today_withdrawals',
-      label: 'เบิกจ่ายวันนี้',
+      label: "Today's Withdrawals",
       value: stats.todayWithdrawals,
-      subtext: 'คำขอเบิกจ่ายวันนี้',
+      subtext: 'Withdrawals today',
       icon: ArrowUpFromLine,
       tone: 'success',
       href: '/withdrawals',
@@ -312,10 +312,10 @@ const Dashboard = () => {
 
   const getStatusLabel = (status) => {
     switch (status) {
-      case 'pending': return { text: 'รออนุมัติ', cls: 'text-amber-700 bg-amber-500/10 border-amber-500/30 dark:text-amber-300 dark:bg-amber-400/15' };
-      case 'approved': return { text: 'อนุมัติ', cls: 'text-blue-700 bg-blue-500/10 border-blue-500/30 dark:text-blue-300 dark:bg-blue-400/15' };
-      case 'completed': return { text: 'รับของแล้ว', cls: 'text-emerald-700 bg-emerald-500/10 border-emerald-500/30 dark:text-emerald-300 dark:bg-emerald-400/15' };
-      case 'rejected': return { text: 'ปฏิเสธ', cls: 'text-red-700 bg-red-500/10 border-red-500/30 dark:text-red-300 dark:bg-red-400/15' };
+      case 'pending': return { text: 'Pending', cls: 'text-amber-700 bg-amber-500/10 border-amber-500/30 dark:text-amber-300 dark:bg-amber-400/15' };
+      case 'approved': return { text: 'Approved', cls: 'text-blue-700 bg-blue-500/10 border-blue-500/30 dark:text-blue-300 dark:bg-blue-400/15' };
+      case 'completed': return { text: 'Completed', cls: 'text-emerald-700 bg-emerald-500/10 border-emerald-500/30 dark:text-emerald-300 dark:bg-emerald-400/15' };
+      case 'rejected': return { text: 'Rejected', cls: 'text-red-700 bg-red-500/10 border-red-500/30 dark:text-red-300 dark:bg-red-400/15' };
       default: return { text: status, cls: 'text-muted-foreground bg-muted/70 border-border' };
     }
   };
@@ -378,7 +378,7 @@ const Dashboard = () => {
             </span>
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
-            ยินดีต้อนรับกลับมา, <span className="font-semibold text-foreground">{profile?.full_name}</span>. สรุปภาพรวมและสต็อกคงเหลือแบบเรียลไทม์
+            Welcome back, <span className="font-semibold text-foreground">{profile?.full_name}</span>. Real-time overview & inventory summary.
           </p>
         </div>
 
@@ -390,7 +390,7 @@ const Dashboard = () => {
           className="rounded-lg h-9 px-3 gap-2 text-xs font-medium border-border hover:bg-accent cursor-pointer shadow-xs"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin text-emerald-600' : ''}`} />
-          <span>{refreshing ? 'กำลังซิงค์...' : 'รีเฟรชข้อมูล'}</span>
+          <span>{refreshing ? 'Syncing...' : 'Refresh Data'}</span>
         </Button>
       </div>
 
@@ -426,14 +426,14 @@ const Dashboard = () => {
                 <BarChart3 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 <span>
                   {chartViewMode === 'project' 
-                    ? 'สรุปยอดสต็อกแยกตามโครงการ Active' 
-                    : 'TOP 10 วัสดุคงเหลือสูงสุด'}
+                    ? 'Stock Balance by Active Project' 
+                    : 'Top 10 Items by Stock Balance'}
                 </span>
               </CardTitle>
               <p className="text-[11px] text-muted-foreground">
                 {chartViewMode === 'project' 
-                  ? `แสดงยอดรับเข้า เบิกจ่าย และคงเหลือใน ${stockByProjects.length} สถานที่จัดเก็บ`
-                  : 'แสดงยอดรับเข้า เบิกจ่าย และคงเหลือแยกตามรายการวัสดุ (ชี้เมาส์เพื่อดูชื่อเต็ม)'}
+                  ? `Showing total in, total out, and balance across ${stockByProjects.length} storage locations`
+                  : 'Showing total in, total out, and balance by item (hover for full name)'}
               </p>
             </div>
 
@@ -448,7 +448,7 @@ const Dashboard = () => {
                   chartViewMode === 'project' ? 'bg-emerald-600 text-white shadow-xs' : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                <Building2 className="w-3 h-3" /> ตามโครงการ
+                <Building2 className="w-3 h-3" /> By Project
               </Button>
               <Button
                 type="button"
@@ -459,7 +459,7 @@ const Dashboard = () => {
                   chartViewMode === 'item' ? 'bg-emerald-600 text-white shadow-xs' : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                <Package className="w-3 h-3" /> Top วัสดุ
+                <Package className="w-3 h-3" /> Top Items
               </Button>
             </div>
           </CardHeader>
@@ -509,20 +509,20 @@ const Dashboard = () => {
                         }
                         return '';
                       }}
-                      formatter={(val, name) => [`${Number(val).toLocaleString()} ชิ้น`, name]}
+                      formatter={(val, name) => [`${Number(val).toLocaleString()} ${Number(val) === 1 ? 'unit' : 'units'}`, name]}
                     />
                     <Legend wrapperStyle={{ paddingTop: chartViewMode === 'item' ? '24px' : '15px', fontSize: '12px' }} />
-                    <Bar dataKey="total_in" name="รับเข้า (Total In)" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={28} />
-                    <Bar dataKey="total_out" name="เบิกจ่าย (Total Out)" fill="#f59e0b" radius={[4, 4, 0, 0]} maxBarSize={28} />
-                    <Bar dataKey="balance" name="คงเหลือ (Balance)" fill="#6366f1" radius={[4, 4, 0, 0]} maxBarSize={28} />
+                    <Bar dataKey="total_in" name="Total In" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={28} />
+                    <Bar dataKey="total_out" name="Total Out" fill="#f59e0b" radius={[4, 4, 0, 0]} maxBarSize={28} />
+                    <Bar dataKey="balance" name="Balance" fill="#6366f1" radius={[4, 4, 0, 0]} maxBarSize={28} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center h-full min-h-[350px] text-muted-foreground">
                 <Package className="w-12 h-12 mb-3 opacity-30 stroke-1" />
-                <p className="text-sm font-semibold">ยังไม่มีข้อมูลสต็อกในโครงการ Active</p>
-                <p className="text-xs mt-1">เมื่อมีการรับเข้าสต็อก ข้อมูลกราฟจะแสดงผลที่นี่โดยอัตโนมัติ</p>
+                <p className="text-sm font-semibold">No stock data in active projects</p>
+                <p className="text-xs mt-1">When stock is added, chart data will appear here automatically.</p>
               </div>
             )}
           </CardContent>
@@ -533,7 +533,7 @@ const Dashboard = () => {
           <CardHeader className="border-b border-border/40 pb-3">
             <CardTitle className="text-sm font-bold tracking-wide uppercase text-foreground flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              <span>กิจกรรมล่าสุด</span>
+              <span>Recent Activity</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="flex-1 p-0">
@@ -552,11 +552,11 @@ const Dashboard = () => {
                         </span>
                       </div>
                       <p className="text-xs font-bold text-foreground leading-snug mb-1">
-                        เบิก {item.withdrawal_items?.[0]?.items?.name || 'รายการวัสดุ'} {item.withdrawal_items?.length > 1 ? `และอีก ${item.withdrawal_items.length - 1} รายการ` : ''}
+                        Withdrew {item.withdrawal_items?.[0]?.items?.name || 'Item'} {item.withdrawal_items?.length > 1 ? `and ${item.withdrawal_items.length - 1} other ${item.withdrawal_items.length - 1 === 1 ? 'item' : 'items'}` : ''}
                       </p>
                       <p className="text-[11px] font-medium text-muted-foreground flex items-center gap-1.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                        {item.projects?.name || 'คลังส่วนกลาง'}
+                        {item.projects?.name || 'Central Warehouse'}
                       </p>
                     </div>
                   );
@@ -565,8 +565,8 @@ const Dashboard = () => {
             ) : (
               <div className="flex flex-col items-center justify-center h-full min-h-[350px] text-muted-foreground p-6">
                 <ArrowUpFromLine className="w-10 h-10 mb-3 opacity-30 stroke-1" />
-                <p className="text-sm font-semibold">ยังไม่มีกิจกรรม</p>
-                <p className="text-xs mt-1 text-center">เมื่อมีการเบิกจ่าย จะแสดงผลที่นี่แบบเรียลไทม์</p>
+                <p className="text-sm font-semibold">No recent activity</p>
+                <p className="text-xs mt-1 text-center">When withdrawals occur, real-time activity will show here.</p>
               </div>
             )}
           </CardContent>

@@ -122,10 +122,10 @@ const SiteKitCategoryCard = ({
                 </CardTitle>
               </div>
               <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground truncate">
-                <span>BOM {itemCount} รายการ</span>
+                <span>BOM: {itemCount} {itemCount === 1 ? 'item' : 'items'}</span>
                 {category.is_customized && (
                   <span className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold">
-                    • ปรับแต่งแล้ว
+                    • Customized
                   </span>
                 )}
               </div>
@@ -144,7 +144,7 @@ const SiteKitCategoryCard = ({
               ) : (
                 <AlertTriangle className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
               )}
-              <span>{completeSets} ชุด</span>
+              <span>{completeSets} {completeSets === 1 ? 'Set' : 'Sets'}</span>
             </div>
           </div>
         </div>
@@ -155,22 +155,22 @@ const SiteKitCategoryCard = ({
         <div className="rounded-lg p-2.5 bg-muted/40 border border-border/50 text-[11px] space-y-1.5 min-h-[58px]">
           <div className="flex items-center gap-1.5 font-semibold text-muted-foreground">
             <AlertCircle className={`w-3.5 h-3.5 ${isReady ? 'text-amber-500' : 'text-rose-500'}`} />
-            <span>{isReady ? 'สต็อกจำกัดสำหรับชุดถัดไป:' : 'สต็อกจำกัด (ยังจัดชุดไม่ได้):'}</span>
+            <span>{isReady ? 'Bottleneck for next set:' : 'Shortage (cannot assemble):'}</span>
           </div>
           <div className="text-foreground font-medium line-clamp-2 leading-relaxed">
             {bottlenecks.length > 0 ? (
-              bottlenecks.slice(0, 2).join(', ') + (bottlenecks.length > 2 ? ` (+อีก ${bottlenecks.length - 2} รายการ)` : '')
+              bottlenecks.slice(0, 2).join(', ') + (bottlenecks.length > 2 ? ` (+${bottlenecks.length - 2} more)` : '')
             ) : (
-              'พร้อมจัดชุดทุกรายการ'
+              'All items ready'
             )}
           </div>
         </div>
 
         {/* Footer Action */}
         <div className="flex items-center justify-between text-[11px] font-semibold text-muted-foreground pt-1 border-t border-border/40 group-hover:text-foreground transition-colors">
-          <span>{canEditBom ? 'ดูสเปก / แก้ไข BOM' : 'ดูสเปกและสต็อก BOM'}</span>
+          <span>{canEditBom ? 'View Specs / Edit BOM' : 'View Specs & Stock'}</span>
           <div className="flex items-center gap-0.5 text-emerald-600 dark:text-emerald-400">
-            <span>{canEditBom ? 'จัดการ' : 'เปิดดู'}</span>
+            <span>{canEditBom ? 'Manage' : 'View'}</span>
             <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
           </div>
         </div>

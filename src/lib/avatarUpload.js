@@ -13,7 +13,7 @@ export const uploadAvatarImage = async (userId, file) => {
     return r2Url;
   } catch (error) {
     console.error('Upload Avatar Error:', error);
-    toast.error('ไม่สามารถอัปโหลดรูปโปรไฟล์ได้: ' + (error.message || 'เกิดข้อผิดพลาด'));
+    toast.error('Failed to upload avatar image: ' + (error.message || 'An error occurred'));
     return null;
   }
 };

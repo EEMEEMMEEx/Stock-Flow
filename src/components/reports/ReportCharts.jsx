@@ -27,7 +27,7 @@ const CustomTooltip = ({ active, payload, label }) => {
           <p key={`item-${index}`} className="flex items-center gap-2" style={{ color: entry.color }}>
             <span className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
             <span>{entry.name}:</span>
-            <span className="font-bold">{Number(entry.value).toLocaleString('th-TH')}</span>
+            <span className="font-bold">{Number(entry.value).toLocaleString()}</span>
           </p>
         ))}
       </div>
@@ -52,13 +52,13 @@ const ReportCharts = ({ activeTab, reportData = [] }) => {
       let qty = 0;
 
       if (activeTab === 'stock_in') {
-        pName = row.projects?.name || 'ไม่ระบุโครงการ';
+        pName = row.projects?.name || 'Unassigned Project';
         qty = Number(row.quantity) || 0;
       } else if (activeTab === 'withdrawals') {
-        pName = row.projects?.name || 'ไม่ระบุโครงการ';
+        pName = row.projects?.name || 'Unassigned Project';
         qty = Number(row.deducted_quantity !== undefined ? row.deducted_quantity : row.quantity) || 0;
       } else if (activeTab === 'balance') {
-        pName = row.project_name || 'ไม่ระบุโครงการ';
+        pName = row.project_name || 'Unassigned Project';
         qty = Number(row.balance) || 0;
       }
 
@@ -96,11 +96,11 @@ const ReportCharts = ({ activeTab, reportData = [] }) => {
       });
 
       return [
-        { name: 'อนุมัติแล้ว', value: approvedCount, color: '#10b981' },
-        { name: 'เสร็จสิ้น', value: completedCount, color: '#3b82f6' },
-        { name: 'รออนุมัติ', value: pendingCount, color: '#f59e0b' },
-        { name: 'ของไม่ครบ', value: shortageCount, color: '#f97316' },
-        { name: 'ปฏิเสธ', value: rejectedCount, color: '#ef4444' }
+        { name: 'Approved', value: approvedCount, color: '#10b981' },
+        { name: 'Completed', value: completedCount, color: '#3b82f6' },
+        { name: 'Pending', value: pendingCount, color: '#f59e0b' },
+        { name: 'Shortage', value: shortageCount, color: '#f97316' },
+        { name: 'Rejected', value: rejectedCount, color: '#ef4444' }
       ].filter((d) => d.value > 0);
     } else if (activeTab === 'balance') {
       let normalCount = 0;
@@ -112,14 +112,14 @@ const ReportCharts = ({ activeTab, reportData = [] }) => {
       });
 
       return [
-        { name: 'มีคงเหลือ', value: normalCount, color: '#10b981' },
-        { name: 'สินค้าเป็น 0/เหลือน้อย', value: lowCount, color: '#ef4444' }
+        { name: 'In Stock', value: normalCount, color: '#10b981' },
+        { name: 'Low / Zero Stock', value: lowCount, color: '#ef4444' }
       ].filter((d) => d.value > 0);
     } else {
       // Stock In supplier breakdown
       const supplierMap = {};
       reportData.forEach((row) => {
-        const sup = row.supplier || 'ไม่ระบุ Supplier';
+        const sup = row.supplier || 'Unspecified Supplier';
         supplierMap[sup] = (supplierMap[sup] || 0) + (Number(row.quantity) || 0);
       });
       return Object.keys(supplierMap)
@@ -145,14 +145,14 @@ const ReportCharts = ({ activeTab, reportData = [] }) => {
             <BarChart3 className="w-4 h-4 text-primary" />
             <span>
               {activeTab === 'stock_in'
-                ? 'สัดส่วนรับเข้าแยกตามโครงการ (Top Projects)'
+                ? 'Stock-In Breakdown by Project'
                 : activeTab === 'withdrawals'
-                ? 'สัดส่วนเบิกจ่ายแยกตามโครงการ (Top Withdrawals)'
-                : 'สัดส่วนยอดคงเหลือแยกตามโครงการ (Top Balance)'}
+                ? 'Withdrawals Breakdown by Project'
+                : 'Stock Balance by Project'}
             </span>
           </CardTitle>
           <span className="text-[11px] font-medium text-muted-foreground flex items-center gap-1">
-            <TrendingUp className="w-3 h-3 text-emerald-500" /> หน่วยปริมาณ
+            <TrendingUp className="w-3 h-3 text-emerald-500" /> Quantity
           </span>
         </CardHeader>
         <CardContent className="p-4 pt-0">
@@ -173,7 +173,7 @@ const ReportCharts = ({ activeTab, reportData = [] }) => {
                 <Tooltip content={<CustomTooltip />} />
                 <Bar
                   dataKey="value"
-                  name={activeTab === 'stock_in' ? 'รับเข้า' : activeTab === 'withdrawals' ? 'เบิกออก' : 'คงเหลือ'}
+                  name={activeTab === 'stock_in' ? 'Stock-In' : activeTab === 'withdrawals' ? 'Withdrawals' : 'Balance'}
                   fill={activeTab === 'stock_in' ? '#10b981' : activeTab === 'withdrawals' ? '#f59e0b' : '#3b82f6'}
                   radius={[6, 6, 0, 0]}
                   maxBarSize={45}
@@ -191,10 +191,10 @@ const ReportCharts = ({ activeTab, reportData = [] }) => {
             <PieChartIcon className="w-4 h-4 text-primary" />
             <span>
               {activeTab === 'stock_in'
-                ? 'สัดส่วนตาม Supplier'
+                ? 'Supplier Distribution'
                 : activeTab === 'withdrawals'
-                ? 'สัดส่วนสถานะการเบิกจ่าย'
-                : 'สัดส่วนสถานะคลังสินค้า'}
+                ? 'Withdrawal Status Breakdown'
+                : 'Inventory Status Breakdown'}
             </span>
           </CardTitle>
         </CardHeader>
@@ -226,7 +226,7 @@ const ReportCharts = ({ activeTab, reportData = [] }) => {
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <p className="text-xs text-muted-foreground">ไม่มีข้อมูลแสดงกราฟ</p>
+              <p className="text-xs text-muted-foreground">No chart data available</p>
             )}
           </div>
         </CardContent>

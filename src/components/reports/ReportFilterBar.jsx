@@ -53,7 +53,7 @@ const ReportFilterBar = ({
             <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
               <Filter className="w-4 h-4" />
             </div>
-            <span>ตัวกรองข้อมูลรายงาน (Report Filters)</span>
+            <span>Report Filters</span>
             {hasActiveFilters && (
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary text-primary-foreground">
                 Active
@@ -72,7 +72,7 @@ const ReportFilterBar = ({
               }`}
             >
               <BarChart3 className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">{showCharts ? 'ซ่อนกราฟ' : 'แสดงกราฟ Visuals'}</span>
+              <span className="hidden sm:inline">{showCharts ? 'Hide Visuals' : 'Show Visuals'}</span>
             </Button>
 
             {hasActiveFilters && (
@@ -84,7 +84,7 @@ const ReportFilterBar = ({
                 className="h-8 px-2.5 text-xs text-muted-foreground hover:text-rose-600 dark:hover:text-rose-400 gap-1"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
-                <span>ล้างตัวกรอง</span>
+                <span>Clear Filters</span>
               </Button>
             )}
 
@@ -107,7 +107,7 @@ const ReportFilterBar = ({
               {/* Project & Storage Location Filter */}
               <div className="space-y-1.5">
                 <Label className="text-xs font-semibold text-foreground flex items-center gap-1">
-                  โครงการ & คลังจัดเก็บ {activeTab === 'balance' && <span className="text-rose-500">*</span>}
+                  Project & Location {activeTab === 'balance' && <span className="text-rose-500">*</span>}
                 </Label>
                 <select
                   name="project_id"
@@ -115,7 +115,7 @@ const ReportFilterBar = ({
                   onChange={onFilterChange}
                   className="flex h-9 w-full rounded-xl border border-input bg-background px-3 py-1 text-xs shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring font-medium cursor-pointer"
                 >
-                  {activeTab !== 'balance' && <option value="">-- ทุกโครงการ & ทุกคลังจัดเก็บ (All Locations) --</option>}
+                  {activeTab !== 'balance' && <option value="">-- All Projects & Locations --</option>}
                   {(() => {
                     const map = new Map();
                     projects.forEach(p => {
@@ -124,10 +124,10 @@ const ReportFilterBar = ({
                       else map.get(key).locations.push(p);
                     });
                     return Array.from(map.values()).map(group => (
-                      <optgroup key={group.key} label={`โครงการ: ${group.project_code ? `[${group.project_code}] ` : ''}${group.name}`}>
+                      <optgroup key={group.key} label={`Project: ${group.project_code ? `[${group.project_code}] ` : ''}${group.name}`}>
                         {group.locations.map(loc => (
                           <option key={loc.id} value={loc.id}>
-                            {loc.location || 'คลังหลัก'} {loc.description ? `— ${loc.description}` : ''}
+                            {loc.location || 'Main Storage'} {loc.description ? `— ${loc.description}` : ''}
                           </option>
                         ))}
                       </optgroup>
@@ -140,7 +140,7 @@ const ReportFilterBar = ({
               {activeTab !== 'balance' && (
                 <>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-foreground">ตั้งแต่วันที่ (Start Date)</Label>
+                    <Label className="text-xs font-semibold text-foreground">Start Date</Label>
                     <div className="relative">
                       <Input
                         type="date"
@@ -153,7 +153,7 @@ const ReportFilterBar = ({
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-foreground">ถึงวันที่ (End Date)</Label>
+                    <Label className="text-xs font-semibold text-foreground">End Date</Label>
                     <div className="relative">
                       <Input
                         type="date"
@@ -170,14 +170,14 @@ const ReportFilterBar = ({
               {/* Search Filter (Stock-In) */}
               {activeTab === 'stock_in' && (
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-foreground">ค้นหา (Supplier / PO / วัสดุ)</Label>
+                  <Label className="text-xs font-semibold text-foreground">Search (Supplier / PO / Item)</Label>
                   <div className="relative">
                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
                       name="search"
                       value={filters.search}
                       onChange={onFilterChange}
-                      placeholder="พิมพ์ชื่อ Supplier, เลข PO..."
+                      placeholder="Search supplier, PO #, item..."
                       className="pl-8 h-9 text-xs rounded-xl"
                     />
                   </div>
@@ -187,18 +187,18 @@ const ReportFilterBar = ({
               {/* Status Filter (Withdrawals) */}
               {activeTab === 'withdrawals' && (
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-foreground">สถานะการเบิกจ่าย</Label>
+                  <Label className="text-xs font-semibold text-foreground">Withdrawal Status</Label>
                   <select
                     name="status"
                     value={filters.status}
                     onChange={onFilterChange}
                     className="flex h-9 w-full rounded-xl border border-input bg-background px-3 py-1 text-xs shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
-                    <option value="">ทุกสถานะ (All Statuses)</option>
-                    <option value="pending">รออนุมัติ (Pending)</option>
-                    <option value="approved">อนุมัติแล้ว (Approved)</option>
-                    <option value="completed">เสร็จสิ้น (Completed)</option>
-                    <option value="rejected">ปฏิเสธ (Rejected)</option>
+                    <option value="">All Statuses</option>
+                    <option value="pending">Pending</option>
+                    <option value="approved">Approved</option>
+                    <option value="completed">Completed</option>
+                    <option value="rejected">Rejected</option>
                   </select>
                 </div>
               )}
@@ -207,14 +207,14 @@ const ReportFilterBar = ({
               {activeTab === 'balance' && (
                 <>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-foreground">หมวดหมู่สินค้า</Label>
+                    <Label className="text-xs font-semibold text-foreground">Category</Label>
                     <select
                       name="category_id"
                       value={filters.category_id}
                       onChange={onFilterChange}
                       className="flex h-9 w-full rounded-xl border border-input bg-background px-3 py-1 text-xs shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
-                      <option value="">ทุกหมวดหมู่ (All Categories)</option>
+                      <option value="">All Categories</option>
                       {categories.map((c) => (
                         <option key={c.id} value={c.id}>
                           {c.name}
@@ -224,14 +224,14 @@ const ReportFilterBar = ({
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-foreground">ค้นหาชื่อวัสดุ / รหัส</Label>
+                    <Label className="text-xs font-semibold text-foreground">Search Item Name / Code</Label>
                     <div className="relative">
                       <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                       <Input
                         name="search"
                         value={filters.search}
                         onChange={onFilterChange}
-                        placeholder="พิมพ์ชื่อวัสดุ..."
+                        placeholder="Search item name or code..."
                         className="pl-8 h-9 text-xs rounded-xl"
                       />
                     </div>
@@ -248,7 +248,7 @@ const ReportFilterBar = ({
                   className="w-full h-9 rounded-xl font-semibold text-xs bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs gap-1.5"
                 >
                   <Search className="w-3.5 h-3.5" />
-                  <span>{loading ? 'กำลังดึงข้อมูล...' : 'ค้นหา / ดึงรายงาน'}</span>
+                  <span>{loading ? 'Fetching report...' : 'Filter / Generate Report'}</span>
                 </Button>
               </div>
             </div>
@@ -257,35 +257,35 @@ const ReportFilterBar = ({
             {activeTab !== 'balance' && (
               <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-border/40 text-xs">
                 <span className="text-muted-foreground font-medium flex items-center gap-1 mr-1">
-                  <Calendar className="w-3.5 h-3.5 text-primary" /> เลือกด่วน:
+                  <Calendar className="w-3.5 h-3.5 text-primary" /> Quick ranges:
                 </span>
                 <button
                   type="button"
                   onClick={() => handleApplyPreset('today')}
                   className="px-2.5 py-1 rounded-lg bg-accent/60 hover:bg-accent text-foreground text-[11px] font-medium transition-colors border border-border/40"
                 >
-                  วันนี้
+                  Today
                 </button>
                 <button
                   type="button"
                   onClick={() => handleApplyPreset('7days')}
                   className="px-2.5 py-1 rounded-lg bg-accent/60 hover:bg-accent text-foreground text-[11px] font-medium transition-colors border border-border/40"
                 >
-                  7 วันล่าสุด
+                  Last 7 days
                 </button>
                 <button
                   type="button"
                   onClick={() => handleApplyPreset('30days')}
                   className="px-2.5 py-1 rounded-lg bg-accent/60 hover:bg-accent text-foreground text-[11px] font-medium transition-colors border border-border/40"
                 >
-                  30 วันล่าสุด
+                  Last 30 days
                 </button>
                 <button
                   type="button"
                   onClick={() => handleApplyPreset('month')}
                   className="px-2.5 py-1 rounded-lg bg-accent/60 hover:bg-accent text-foreground text-[11px] font-medium transition-colors border border-border/40"
                 >
-                  เดือนนี้
+                  This month
                 </button>
               </div>
             )}

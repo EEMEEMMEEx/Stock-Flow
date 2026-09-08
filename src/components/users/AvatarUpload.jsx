@@ -53,14 +53,14 @@ const AvatarUpload = ({ value, name = '', onChange, onRemove }) => {
     // 1. Validate File Type
     const lowerType = (file.type || '').toLowerCase();
     if (!ALLOWED_TYPES.includes(lowerType)) {
-      toast.error('รองรับเฉพาะไฟล์รูปภาพ JPG และ PNG เท่านั้น');
+      toast.error('Only JPG and PNG image files are supported');
       e.target.value = '';
       return;
     }
 
     // 2. Validate File Size (Max 2 MB)
     if (file.size > MAX_FILE_SIZE) {
-      toast.error('ไฟล์รูปภาพต้องมีขนาดไม่เกิน 2 MB');
+      toast.error('Image file size must not exceed 2 MB');
       e.target.value = '';
       return;
     }
@@ -99,7 +99,7 @@ const AvatarUpload = ({ value, name = '', onChange, onRemove }) => {
       <div 
         onClick={() => fileInputRef.current?.click()}
         className="relative w-[56px] h-[56px] min-w-[56px] min-h-[56px] rounded-full overflow-hidden shadow-xs cursor-pointer group flex items-center justify-center bg-primary/10 border-2 border-primary/20 hover:border-primary transition-all shrink-0"
-        title="คลิกเพื่ออัปโหลดรูปโปรไฟล์"
+        title="Click to upload profile photo"
       >
         {safePreviewSrc ? (
           <img
@@ -131,7 +131,7 @@ const AvatarUpload = ({ value, name = '', onChange, onRemove }) => {
             className="h-8 px-3 rounded-lg text-xs font-medium flex items-center gap-1.5 text-primary cursor-pointer border border-border shadow-xs hover:bg-accent"
           >
             <Upload className="w-3.5 h-3.5" />
-            อัปโหลดรูปโปรไฟล์
+            Upload Photo
           </Button>
 
           {previewUrl && (
@@ -143,13 +143,13 @@ const AvatarUpload = ({ value, name = '', onChange, onRemove }) => {
               className="text-xs h-8 px-2.5 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50"
             >
               <Trash2 className="w-3.5 h-3.5 mr-1" />
-              ลบรูป
+              Remove
             </Button>
           )}
         </div>
 
         <p className="text-[11px] text-muted-foreground">
-          รองรับไฟล์ JPG, PNG ขนาดไม่เกิน 2 MB
+          Supports JPG, PNG up to 2 MB
         </p>
 
         {/* Hidden Native File Input */}

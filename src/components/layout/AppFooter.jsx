@@ -75,7 +75,7 @@ const AppFooter = () => {
             className="hover:text-primary transition-colors flex items-center gap-1 text-[11px] font-medium"
           >
             <BookOpen className="w-3 h-3" aria-hidden="true" />
-            <span>คู่มือการใช้งาน</span>
+            <span>Manual</span>
           </NavLink>
 
           <span className="text-border">•</span>

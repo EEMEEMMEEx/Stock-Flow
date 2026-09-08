@@ -33,7 +33,7 @@ const ReportSiteKits = ({ projects = [] }) => {
       setSiteKits(data || []);
     } catch (error) {
       console.error('Error loading site kits report:', error);
-      toast.error('ไม่สามารถโหลดข้อมูลความพร้อมชุดติดตั้งได้');
+      toast.error('Failed to load site kits availability data');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -76,25 +76,25 @@ const ReportSiteKits = ({ projects = [] }) => {
 
   const handleExportExcel = () => {
     if (!canExport) {
-      toast.error('คุณไม่มีสิทธิ์ส่งออกรายงาน Excel (ต้องการสิทธิ์ reports.export)');
+      toast.error('You do not have permission to export Excel reports (reports.export required)');
       return;
     }
     try {
       const exportData = filteredItems.map((item, index) => ({
-        'ลำดับ': index + 1,
-        'หมวดหมู่อุปกรณ์': item.category_name,
+        'No.': index + 1,
+        'Equipment Category': item.category_name,
         'Part Number': item.part_number || '-',
-        'รายการอุปกรณ์ตาม BOM': item.bom_name,
-        'สเปกจำนวนใช้ต่อไซต์': item.qty_per_site,
-        'หน่วย': item.unit || 'ชิ้น',
-        'ยอดคงเหลือจริงในสต็อก': item.total_stock,
-        'จำนวนชุดที่จัดได้': item.sets_possible,
-        'ขาดสำหรับชุดถัดไป': item.missing_for_next_set || 0,
-        'สถานะ': item.total_stock === 0 
-          ? 'หมดสต็อก' 
+        'BOM Item Name': item.bom_name,
+        'Qty Per Site': item.qty_per_site,
+        'Unit': item.unit || 'ชิ้น',
+        'Current Stock': item.total_stock,
+        'Kits Possible': item.sets_possible,
+        'Missing For Next Set': item.missing_for_next_set || 0,
+        'Status': item.total_stock === 0 
+          ? 'Out of Stock' 
           : item.isLimiting 
-          ? 'สต็อกจำกัด (Limiting)' 
-          : 'พร้อมจัดชุด'
+          ? 'Limiting Stock' 
+          : 'Ready'
       }));
 
       const ws = utils.json_to_sheet(exportData);
@@ -109,22 +109,22 @@ const ReportSiteKits = ({ projects = [] }) => {
       ws['!cols'] = wscols;
 
       const dateStr = new Date().toISOString().split('T')[0];
-      writeFile(wb, `รายงานความพร้อมชุดติดตั้งไซต์_BOM_${dateStr}.xlsx`);
-      toast.success('ส่งออกไฟล์ Excel เรียบร้อยแล้ว');
+      writeFile(wb, `Site_Kits_BOM_Availability_Report_${dateStr}.xlsx`);
+      toast.success('Excel report exported successfully');
     } catch (err) {
       console.error('Export error:', err);
-      toast.error('เกิดข้อผิดพลาดในการส่งออก Excel');
+      toast.error('Failed to export Excel report');
     }
   };
 
   const handleExportPDF = async () => {
     if (!canExport) {
-      toast.error('คุณไม่มีสิทธิ์ส่งออกรายงาน PDF (ต้องการสิทธิ์ reports.export)');
+      toast.error('You do not have permission to export PDF reports (reports.export required)');
       return;
     }
     try {
       setPdfLoading(true);
-      const toastId = toast.loading('กำลังสร้างไฟล์ PDF รายงาน Site Kits BOM...');
+      const toastId = toast.loading('Generating Site Kits BOM PDF report...');
 
       const { SiteKitsReportPDF } = await import('@/lib/pdf-templates.jsx');
       const { pdf } = await import('@react-pdf/renderer');
@@ -132,11 +132,11 @@ const ReportSiteKits = ({ projects = [] }) => {
       const selectedProj = projects.find(p => p.id === selectedProjectId);
       const projectName = selectedProj 
         ? (selectedProj.location ? `${selectedProj.name} (${selectedProj.location})` : selectedProj.name)
-        : 'ทุกสถานที่จัดเก็บ (รวมทุกคลัง)';
+        : 'All Storage Locations';
 
       const categoryName = selectedCategoryId === 'all'
-        ? 'ทั้งหมด 4 หมวด'
-        : siteKits.find(c => c.category_id === selectedCategoryId)?.category_name || 'หมวดหมู่ที่เลือก';
+        ? 'All 4 Categories'
+        : siteKits.find(c => c.category_id === selectedCategoryId)?.category_name || 'Selected Category';
 
       const doc = (
         <SiteKitsReportPDF
@@ -153,16 +153,16 @@ const ReportSiteKits = ({ projects = [] }) => {
       const a = document.createElement('a');
       a.href = url;
       const dateStr = new Date().toISOString().split('T')[0];
-      a.download = `รายงานความพร้อมชุดติดตั้งไซต์_BOM_${dateStr}.pdf`;
+      a.download = `Site_Kits_BOM_Availability_Report_${dateStr}.pdf`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
 
-      toast.success('ส่งออกไฟล์ PDF เรียบร้อยแล้ว', { id: toastId });
+      toast.success('PDF report exported successfully', { id: toastId });
     } catch (err) {
       console.error('Site Kits PDF Export Error:', err);
-      toast.error('เกิดข้อผิดพลาดในการสร้าง PDF');
+      toast.error('Failed to generate PDF report');
     } finally {
       setPdfLoading(false);
     }
@@ -181,7 +181,7 @@ const ReportSiteKits = ({ projects = [] }) => {
               selectedCategoryId === 'all' ? 'bg-emerald-600 text-white shadow-xs' : 'border-border/70'
             }`}
           >
-            <Layers className="w-3.5 h-3.5 mr-1" /> ทั้งหมด ({siteKits.length} หมวด)
+            <Layers className="w-3.5 h-3.5 mr-1" /> All ({siteKits.length} {siteKits.length === 1 ? 'Category' : 'Categories'})
           </Button>
 
           {siteKits.map(cat => {
@@ -201,7 +201,7 @@ const ReportSiteKits = ({ projects = [] }) => {
                 <Icon className="w-3.5 h-3.5" />
                 <span>{cat.category_name.split(' ')[0]}</span>
                 <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-background/30 font-black">
-                  {cat.complete_sets} ชุด
+                  {cat.complete_sets} {cat.complete_sets === 1 ? 'set' : 'sets'}
                 </span>
               </Button>
             );
@@ -214,7 +214,7 @@ const ReportSiteKits = ({ projects = [] }) => {
             onChange={(e) => setSelectedProjectId(e.target.value)}
             className="h-9 rounded-xl px-3 text-xs bg-background border border-border/80 focus:ring-1 focus:ring-emerald-500 font-medium text-foreground cursor-pointer"
           >
-            <option value="">ทุกสถานที่จัดเก็บ (รวมทุกคลัง)</option>
+            <option value="">All Storage Locations (All Warehouses)</option>
             {projects.map(p => (
               <option key={p.id} value={p.id}>
                 {p.location ? `${p.name} (${p.location})` : p.name}
@@ -226,7 +226,7 @@ const ReportSiteKits = ({ projects = [] }) => {
             <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
               type="text"
-              placeholder="ค้นหาชื่อ / Part No..."
+              placeholder="Search name / Part No..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="h-9 pl-8 text-xs rounded-xl border-border/80 bg-background"
@@ -255,7 +255,7 @@ const ReportSiteKits = ({ projects = [] }) => {
                 className="h-9 px-3.5 rounded-xl font-semibold text-xs border-rose-200 dark:border-rose-900/60 text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
               >
                 <FileText className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
-                <span>{pdfLoading ? 'กำลังสร้าง PDF...' : 'Export PDF'}</span>
+                <span>{pdfLoading ? 'Generating PDF...' : 'Export PDF'}</span>
               </Button>
 
               <Button
@@ -289,17 +289,17 @@ const ReportSiteKits = ({ projects = [] }) => {
                   <Badge className={`font-black text-xs px-2.5 py-0.5 rounded-full ${
                     isReady ? 'bg-emerald-600 text-white' : 'bg-rose-600 text-white'
                   }`}>
-                    {cat.complete_sets} ชุด
+                    {cat.complete_sets} {cat.complete_sets === 1 ? 'set' : 'sets'}
                   </Badge>
                 </div>
                 <div className="text-[11px] text-muted-foreground pt-1 border-t border-border/50">
                   {cat.bottlenecks && cat.bottlenecks.length > 0 ? (
                     <span className="text-amber-600 dark:text-amber-400 font-medium">
-                      สต็อกจำกัด: {cat.bottlenecks[0]}
+                      Limiting: {cat.bottlenecks[0]}
                     </span>
                   ) : (
                     <span className="text-emerald-600 dark:text-emerald-400 font-medium">
-                      พร้อมติดตั้งครบทุกรายการ
+                      Ready for installation
                     </span>
                   )}
                 </div>
@@ -315,10 +315,10 @@ const ReportSiteKits = ({ projects = [] }) => {
             <div>
               <CardTitle className="text-sm font-bold tracking-wide uppercase text-foreground flex items-center gap-2">
                 <Layers className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                <span>ตารางแจกแจงรายการสเปก BOM และสถานะสต็อกจริง</span>
+                <span>BOM Specifications & Current Stock Status</span>
               </CardTitle>
               <p className="text-xs text-muted-foreground mt-0.5">
-                แสดงผล {filteredItems.length} รายการ (ไฮไลต์แถบสีส้มคือรายการที่มีสต็อกจำกัดในการจัดชุด)
+                Showing {filteredItems.length} {filteredItems.length === 1 ? 'record' : 'records'} (orange rows indicate components limiting kit assembly)
               </p>
             </div>
           </div>
@@ -329,22 +329,22 @@ const ReportSiteKits = ({ projects = [] }) => {
             <table className="w-full text-left text-xs border-collapse">
               <thead className="bg-muted/70 text-muted-foreground font-bold border-b border-border/70">
                 <tr>
-                  <th className="py-3 px-4 w-12 text-center">ลำดับ</th>
-                  <th className="py-3 px-4">หมวดหมู่อุปกรณ์</th>
+                  <th className="py-3 px-4 w-12 text-center">No.</th>
+                  <th className="py-3 px-4">Equipment Category</th>
                   <th className="py-3 px-4">Part Number</th>
-                  <th className="py-3 px-4">รายการอุปกรณ์ตาม BOM</th>
-                  <th className="py-3 px-4 text-center">ใช้ต่อไซต์</th>
-                  <th className="py-3 px-4 text-center">สต็อกจริง</th>
-                  <th className="py-3 px-4 text-center">จัดได้ (ชุด)</th>
-                  <th className="py-3 px-4 text-center">ขาดชุดถัดไป</th>
-                  <th className="py-3 px-4 text-center">สถานะ</th>
+                  <th className="py-3 px-4">BOM Item Name</th>
+                  <th className="py-3 px-4 text-center">Per Site</th>
+                  <th className="py-3 px-4 text-center">Actual Stock</th>
+                  <th className="py-3 px-4 text-center">Kits Possible</th>
+                  <th className="py-3 px-4 text-center">Missing for Next Set</th>
+                  <th className="py-3 px-4 text-center">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/40">
                 {filteredItems.length === 0 ? (
                   <tr>
                     <td colSpan={9} className="py-12 text-center text-muted-foreground">
-                      ไม่พบข้อมูลรายการอุปกรณ์ตามเงื่อนไขที่เลือก
+                      No equipment items found matching selected criteria
                     </td>
                   </tr>
                 ) : (
@@ -367,7 +367,7 @@ const ReportSiteKits = ({ projects = [] }) => {
                       <td className="py-3 px-4">
                         <div className="font-semibold text-foreground">{item.bom_name}</div>
                         <div className="text-[10px] text-muted-foreground">
-                          จับคู่ในระบบ: {item.db_matched_name}
+                          Matched in system: {item.db_matched_name}
                         </div>
                       </td>
                       <td className="py-3 px-4 text-center font-bold text-foreground">
@@ -386,7 +386,7 @@ const ReportSiteKits = ({ projects = [] }) => {
                             ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300'
                             : 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
                         }`}>
-                          {item.sets_possible} ชุด
+                          {item.sets_possible} {item.sets_possible === 1 ? 'set' : 'sets'}
                         </span>
                       </td>
                       <td className="py-3 px-4 text-center font-semibold text-muted-foreground">
@@ -396,22 +396,22 @@ const ReportSiteKits = ({ projects = [] }) => {
                           </span>
                         ) : (
                           <span className="text-emerald-600 dark:text-emerald-400 font-medium">
-                            ครบถ้วน
+                            Complete
                           </span>
                         )}
                       </td>
                       <td className="py-3 px-4 text-center">
                         {item.total_stock === 0 ? (
                           <Badge variant="outline" className="bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/30 text-[10px] font-bold">
-                            หมดสต็อก
+                            Out of Stock
                           </Badge>
                         ) : item.isLimiting ? (
                           <Badge variant="outline" className="bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30 text-[10px] font-bold">
-                            สต็อกจำกัด
+                            Limiting Stock
                           </Badge>
                         ) : (
                           <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 text-[10px] font-bold">
-                            พร้อม
+                            Ready
                           </Badge>
                         )}
                       </td>

@@ -125,21 +125,21 @@ const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = []
         <DialogHeader>
           <DialogTitle className="text-xl font-bold flex items-center gap-2 text-foreground">
             <ShieldCheck className="w-6 h-6 text-primary" />
-            กำหนดสิทธิ์การใช้งาน (Permissions Configuration) — {role?.name} ({role?.code})
+            Permissions Configuration — {role?.name} ({role?.code})
           </DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
-            เปิด-ปิดสิทธิ์การใช้งานแต่ละส่วนสำหรับบทบาทนี้ ระบบจะจัดสรรสิทธิ์ตามเงื่อนไขความสัมพันธ์อัตโนมัติ
+            Configure permissions for this role. System automatically resolves dependencies.
           </DialogDescription>
         </DialogHeader>
 
         {/* Status Bar */}
         <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-lg bg-muted/30 border border-border/50 text-xs">
           <div className="flex items-center gap-4">
-            <span>สิทธิ์ที่เลือกทั้งหมด: <strong className="text-primary text-sm font-bold">{selectedIds.length}</strong> / {catalog.length} รายการ</span>
+            <span>Selected permissions: <strong className="text-primary text-sm font-bold">{selectedIds.length}</strong> / {catalog.length} items</span>
             {(addedCount > 0 || removedCount > 0) && (
               <span className="flex items-center gap-2 font-medium">
-                {addedCount > 0 && <span className="text-emerald-600 dark:text-emerald-400">+{addedCount} เพิ่มใหม่</span>}
-                {removedCount > 0 && <span className="text-red-500">-{removedCount} ยกเลิก</span>}
+                {addedCount > 0 && <span className="text-emerald-600 dark:text-emerald-400">+{addedCount} Added</span>}
+                {removedCount > 0 && <span className="text-red-500">-{removedCount} Removed</span>}
               </span>
             )}
           </div>
@@ -152,7 +152,7 @@ const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = []
               onClick={() => setSelectedIds(catalog.map(p => p.id))}
               className="text-xs h-7 px-2.5 rounded-lg"
             >
-              เลือกทั้งหมดในระบบ
+              Select All
             </Button>
             <Button
               type="button"
@@ -161,7 +161,7 @@ const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = []
               onClick={() => setSelectedIds([])}
               className="text-xs h-7 px-2.5 rounded-lg"
             >
-              ล้างทั้งหมด
+              Clear All
             </Button>
           </div>
         </div>
@@ -197,7 +197,7 @@ const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = []
                         onClick={() => isAllCategorySelected ? handleClearAllCategory(categoryItems) : handleSelectAllCategory(categoryItems)}
                         className="text-primary hover:underline font-medium cursor-pointer"
                       >
-                        {isAllCategorySelected ? 'ยกเลิกทั้งกลุ่ม' : 'เลือกทั้งหมดในกลุ่ม'}
+                        {isAllCategorySelected ? 'Deselect Category' : 'Select Category'}
                       </button>
                     </div>
                   </div>
@@ -247,16 +247,16 @@ const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = []
 
           <DialogFooter className="pt-3 border-t border-border">
             <Button type="button" variant="ghost" onClick={onClose} className="h-9 px-4 rounded-lg text-xs">
-              ยกเลิก
+              Cancel
             </Button>
             <Button type="submit" disabled={loading} className="h-9 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs shadow-xs cursor-pointer">
               {loading ? (
                 <>
                   <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                  <span>กำลังบันทึก...</span>
+                  <span>Saving...</span>
                 </>
               ) : (
-                `บันทึกการตั้งค่าสิทธิ์ (${selectedIds.length} สิทธิ์)`
+                `Save Permissions (${selectedIds.length} ${selectedIds.length === 1 ? 'permission' : 'permissions'})`
               )}
             </Button>
           </DialogFooter>

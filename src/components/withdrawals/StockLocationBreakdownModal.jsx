@@ -21,7 +21,7 @@ const StockLocationBreakdownModal = ({
       return {
         ...b,
         balance: Number(b.balance) || 0,
-        project: project || { name: 'คลังไม่ระบุชื่อ', project_code: '-', location: '-' }
+        project: project || { name: 'Unnamed Location', project_code: '-', location: '-' }
       };
     })
     .filter(b => b.balance > 0)
@@ -54,7 +54,7 @@ const StockLocationBreakdownModal = ({
                   </>
                 )}
                 <span>•</span>
-                <span>รวมทั้งระบบ: <strong className="text-emerald-600 dark:text-emerald-400 font-bold">{totalBalance} {item.unit || 'ชิ้น'}</strong></span>
+                <span>System Total: <strong className="text-emerald-600 dark:text-emerald-400 font-bold">{totalBalance} {item.unit || 'ชิ้น'}</strong></span>
               </div>
             </div>
           </div>
@@ -62,14 +62,14 @@ const StockLocationBreakdownModal = ({
 
         <div className="py-3 space-y-3">
           <div className="flex items-center justify-between text-xs font-bold text-muted-foreground uppercase tracking-wider">
-            <span>สถานที่จัดเก็บและยอดคงเหลือ ({itemBalances.length} คลัง)</span>
-            <span>สถานะ</span>
+            <span>Storage Locations & Balance ({itemBalances.length} Locations)</span>
+            <span>Status</span>
           </div>
 
           {itemBalances.length === 0 ? (
             <div className="py-8 text-center text-muted-foreground text-xs bg-muted/20 rounded-xl border border-dashed border-border/60">
               <Package className="w-8 h-8 mx-auto mb-2 opacity-40 stroke-1" />
-              ไม่มีสินค้าในคลังใดเลย (ยอดคงเหลือ 0 {item.unit || 'ชิ้น'})
+              Out of stock in all locations (0 {item.unit || 'ชิ้น'})
             </div>
           ) : (
             <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
@@ -92,13 +92,13 @@ const StockLocationBreakdownModal = ({
                         </span>
                         {isCurrentSelected && (
                           <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-600 text-white flex items-center gap-0.5">
-                            <CheckCircle2 className="w-2.5 h-2.5" /> คลังที่เลือกอยู่
+                            <CheckCircle2 className="w-2.5 h-2.5" /> Selected
                           </span>
                         )}
                       </div>
                       <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
                         <MapPin className="w-3 h-3 shrink-0 text-muted-foreground/60" />
-                        <span>{b.project.location || 'คลังหลัก'}</span>
+                        <span>{b.project.location || 'Main Location'}</span>
                         {b.project.description && (
                           <span className="text-muted-foreground/70">({b.project.description})</span>
                         )}
@@ -123,7 +123,7 @@ const StockLocationBreakdownModal = ({
                           }}
                           className="h-7 px-2.5 rounded-lg text-[11px] font-semibold bg-indigo-600 hover:bg-indigo-700 text-white gap-1 shadow-2xs cursor-pointer"
                         >
-                          <span>เลือกคลังนี้</span>
+                          <span>Select Location</span>
                           <ArrowRight className="w-3 h-3" />
                         </Button>
                       )}
@@ -142,7 +142,7 @@ const StockLocationBreakdownModal = ({
             onClick={onClose}
             className="w-full sm:w-auto rounded-lg text-xs h-9 px-4 font-semibold"
           >
-            ปิดหน้าต่าง
+            Close
           </Button>
         </DialogFooter>
       </DialogContent>
