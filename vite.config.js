@@ -134,7 +134,9 @@ export default defineConfig(({ mode }) => {
       }
     },
     server: {
+      host: true,            // accept connections from LAN / external network
       port: 5173,
+      strictPort: true,      // fail instead of silently switching ports
       allowedHosts: true,
     }
   };

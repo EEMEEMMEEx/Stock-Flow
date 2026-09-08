@@ -1,10 +1,10 @@
 {
   "name": "stock-flow-app",
   "private": true,
-  "version": "1.4.90",
+  "version": "1.4.92",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",

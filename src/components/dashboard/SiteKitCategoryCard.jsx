@@ -179,4 +179,4 @@ const SiteKitCategoryCard = ({
   );
 };
 
-export default SiteKitCategoryCard;
+export default React.memo(SiteKitCategoryCard);

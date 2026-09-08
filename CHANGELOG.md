@@ -1,5 +1,30 @@
 # Changelog
 
+## [v1.4.92] [2026-09-08] Fix Duplicate React Keys, Supabase Token Refresh & Dashboard Reflows
+
+- **TASK 1 — Fix Duplicate React Key Warning (`src/lib/siteKits.js` & `SiteKitAvailabilityCards.jsx`):**
+  - กำหนด Fallback ID แบบเฉพาะเจาะจง (`bom-${category_id}-${po_seq}-${item_id || idx}`) ใน `itemsDetail` ภายใน `siteKits.js`
+  - ปรับปรุงการสร้าง unique composite key ในตาราง `<tbody>` ของ `SiteKitAvailabilityCards.jsx` ทั้งโหมดอ่านและโหมดแก้ไข (`ro-comp-${id}`, `ro-spr-${id}`, `edit-comp-${id}`, `edit-spare-${id}`)
+  - ทำ In-memory Deduplication ด้วย `useMemo` สำหรับรายการ Complete Set และ Spare Equipment
+- **TASK 2 — Graceful Supabase Auth Refresh & Token 400 Recovery (`src/lib/supabase.js` & `AuthProvider.jsx`):**
+  - ตั้งค่า explicit auth options สำหรับ Supabase Client Singleton: `persistSession: true`, `autoRefreshToken: true`, `detectSessionInUrl: true`, `flowType: 'pkce'`
+  - เพิ่มการดักจับข้อผิดพลาด 400 Bad Request / Invalid Refresh Token ใน `getSession()` และ `onAuthStateChange` อย่างนุ่มนวล พร้อมสั่ง `signOut()` และล้าง Stale Session อัตโนมัติ เพื่อส่งผู้ใช้ไปยังหน้า Login โดยไม่ค้างหน้าจอ
+- **TASK 3 — Eliminate Forced Reflow & Reduce Event Handler Latency (`Dashboard.jsx`, `DashboardStatCard.jsx`, `SiteKitCategoryCard.jsx`):**
+  - Wrap `statCards`, `chartTheme`, และ `currentChartData` ใน `useMemo` เพื่อป้องกันการ re-render ซ้ำซ้อนของ Recharts `ResponsiveContainer`
+  - นำ `React.memo` มาครอบ `DashboardStatCard`, `SiteKitCategoryCard`, และ `SiteKitAvailabilityCards`
+  - ทำ Pagination / Virtual Slicing ให้กับ Master Catalog Search ใน Site Kit Modal (จำกัด 30-50 รายการ) เพื่อลด DOM node และตัดภาระ reflow
+- **Mandatory System Version Management (Rule 10):**
+  - ปรับเวอร์ชันระบบเป็น `1.4.92` ใน `package.json`, `package-lock.json`
+
+## [v1.4.91] [2026-09-08] Enable LAN Access & Hostname-Based Dev Server
+
+- **Vite Dev Server Configuration (`vite.config.js` & `package.json`):**
+  - เปิดใช้งาน `host: true` และ `strictPort: true` ใน `server` configuration ของ Vite
+  - ปรับปรุง npm script `"dev": "vite --host"` เพื่อให้เปิดรับ connection จากทุก Network Interface (LAN / Wi-Fi / Hotspot)
+  - กำหนดที่อยู่คงที่ผ่าน mDNS Hostname `http://NSD-10609127.local:5173` สำหรับการเข้าถึงจากอุปกรณ์ภายนอกโดยไม่ต้องจำ IP ที่เปลี่ยนตาม Network
+- **Mandatory System Version Management (Rule 10):**
+  - ปรับเวอร์ชันระบบเป็น `1.4.91` ใน `package.json`, `package-lock.json`
+
 ## [v1.4.90] [2026-09-08] Eliminate Auth Listener & Re-fetch Storm Cycle
 
 - **Decouple Auth Listener from Reactive Dependencies (`src/contexts/AuthProvider.jsx`):**

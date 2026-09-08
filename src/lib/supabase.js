@@ -12,7 +12,15 @@ const supabaseAnonKey = rawAnonKey && rawAnonKey.trim() !== '' ? rawAnonKey : 'p
 
 export const supabase = createClient(
   supabaseUrl,
-  supabaseAnonKey
+  supabaseAnonKey,
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+      flowType: 'pkce'
+    }
+  }
 )
 
 

@@ -271,22 +271,61 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     let isMounted = true;
 
-    // 1. Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!isMounted) return;
-      const currentUser = session?.user ?? null;
-      setUser(currentUser);
-      if (currentUser) {
-        fetchProfileRef.current?.(currentUser);
-      } else {
+    // 1. Get initial session with graceful 400 / invalid refresh token recovery
+    supabase.auth.getSession()
+      .then(({ data: { session }, error }) => {
+        if (!isMounted) return;
+        if (error) {
+          console.warn('[AuthContext] Stale session or refresh error detected, resetting auth state:', error.message);
+          supabase.auth.signOut().catch(() => {});
+          setUser(null);
+          setProfile(null);
+          profileRef.current = null;
+          setPermissions([]);
+          setAssignedProjectIds([]);
+          setAllProjectsAccess(true);
+          setLoading(false);
+          return;
+        }
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
+        if (currentUser) {
+          fetchProfileRef.current?.(currentUser);
+        } else {
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        if (!isMounted) return;
+        console.warn('[AuthContext] Session bootstrap failure, clearing stale token:', err?.message || err);
+        supabase.auth.signOut().catch(() => {});
+        setUser(null);
+        setProfile(null);
+        profileRef.current = null;
+        setPermissions([]);
+        setAssignedProjectIds([]);
+        setAllProjectsAccess(true);
         setLoading(false);
-      }
-    });
+      });
 
     // 2. Listen for Auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!isMounted) return;
       const currentUser = session?.user ?? null;
+
+      // Handle unauthenticated state or token failure
+      if (!session) {
+        permissionsCacheRef.current.clear();
+        loadedProfileUserIdRef.current = null;
+        setUser(null);
+        setProfile(null);
+        profileRef.current = null;
+        setPermissions([]);
+        setAssignedProjectIds([]);
+        setAllProjectsAccess(true);
+        setLoading(false);
+        return;
+      }
 
       setUser(prev => {
         if (prev?.id === currentUser?.id && prev?.email === currentUser?.email) {
@@ -303,15 +342,6 @@ export const AuthProvider = ({ children }) => {
           loadedProfileUserIdRef.current = null;
         }
         fetchProfileRef.current?.(currentUser);
-      } else {
-        permissionsCacheRef.current.clear();
-        loadedProfileUserIdRef.current = null;
-        setProfile(null);
-        profileRef.current = null;
-        setPermissions([]);
-        setAssignedProjectIds([]);
-        setAllProjectsAccess(true);
-        setLoading(false);
       }
     });
 

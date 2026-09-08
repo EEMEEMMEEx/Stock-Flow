@@ -295,7 +295,7 @@ export async function fetchSiteKitsAvailability(projectId = null) {
         }
       }
 
-      for (const b of bomList) {
+      for (const [idx, b] of bomList.entries()) {
         const isSpare = b.mandatory === false || b.notes === 'spare';
         const match = findMatchingItem(items, b);
         const totalStock = match ? (stockMap[match.id] || 0) : 0;
@@ -306,9 +306,9 @@ export async function fetchSiteKitsAvailability(projectId = null) {
         }
 
         itemsDetail.push({
-          id: b.id,
+          id: b.id || `bom-${catDef.category_id}-${b.po || idx + 1}-${b.item_id || match?.id || idx}`,
           item_id: b.item_id || match?.id || null,
-          po_seq: b.po,
+          po_seq: b.po || (idx + 1),
           part_number: b.part || (match ? match.sku : ''),
           bom_name: b.name,
           db_matched_name: match ? match.name : '(ยังไม่พบในระบบ)',

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
@@ -266,8 +266,8 @@ const Dashboard = () => {
     };
   }, [fetchDashboardData]);
 
-  // Prioritized KPI Stat Cards Configuration
-  const statCards = [
+  // Prioritized KPI Stat Cards Configuration (Memoized to prevent unnecessary re-renders)
+  const statCards = useMemo(() => [
     {
       id: 'pending',
       label: 'รออนุมัติเบิกจ่าย',
@@ -308,7 +308,7 @@ const Dashboard = () => {
       href: '/withdrawals',
       permission: 'withdrawals.view'
     },
-  ];
+  ], [stats.pendingCount, stats.projectCount, stats.logicalProjectCount, stats.itemCount, stats.totalStockUnits, stats.todayWithdrawals]);
 
   const getStatusLabel = (status) => {
     switch (status) {
@@ -320,27 +320,31 @@ const Dashboard = () => {
     }
   };
 
-  const chartTheme = resolvedTheme === 'dark'
-    ? {
-        grid: '#334155',
-        tick: '#94a3b8',
-        cursor: 'rgba(99, 102, 241, 0.12)',
-        tooltipBackground: '#1e293b',
-        tooltipBorder: '#334155',
-        tooltipText: '#f8fafc',
-        tooltipShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.3)',
-      }
-    : {
-        grid: '#f1f5f9',
-        tick: '#64748b',
-        cursor: 'rgba(241, 245, 249, 0.8)',
-        tooltipBackground: '#ffffff',
-        tooltipBorder: '#e2e8f0',
-        tooltipText: '#0f172a',
-        tooltipShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05)',
-      };
+  const chartTheme = useMemo(() => (
+    resolvedTheme === 'dark'
+      ? {
+          grid: '#334155',
+          tick: '#94a3b8',
+          cursor: 'rgba(99, 102, 241, 0.12)',
+          tooltipBackground: '#1e293b',
+          tooltipBorder: '#334155',
+          tooltipText: '#f8fafc',
+          tooltipShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.3)',
+        }
+      : {
+          grid: '#f1f5f9',
+          tick: '#64748b',
+          cursor: 'rgba(241, 245, 249, 0.8)',
+          tooltipBackground: '#ffffff',
+          tooltipBorder: '#e2e8f0',
+          tooltipText: '#0f172a',
+          tooltipShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05)',
+        }
+  ), [resolvedTheme]);
 
-  const currentChartData = chartViewMode === 'project' ? stockByProjects : topItemsStock;
+  const currentChartData = useMemo(() => (
+    chartViewMode === 'project' ? stockByProjects : topItemsStock
+  ), [chartViewMode, stockByProjects, topItemsStock]);
 
   if (loading) {
     return (

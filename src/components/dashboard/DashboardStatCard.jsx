@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -119,4 +120,4 @@ const DashboardStatCard = ({
   );
 };
 
-export default DashboardStatCard;
+export default memo(DashboardStatCard);

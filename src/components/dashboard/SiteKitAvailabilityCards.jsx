@@ -178,6 +178,29 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
     ).slice(0, 50);
   }, [masterItems, searchCatalogQuery]);
 
+  // Memoized & deduplicated items for read-only Dialog views (TASK 1 & TASK 3)
+  const completeSetItems = useMemo(() => {
+    const raw = (selectedCategory?.items || []).filter(isCompleteSetItem);
+    const seen = new Set();
+    return raw.filter((item, idx) => {
+      const key = item.id || `${item.item_id || 'noitem'}-${item.po_seq ?? idx}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, [selectedCategory?.items]);
+
+  const spareItems = useMemo(() => {
+    const raw = (selectedCategory?.items || []).filter(isSpareItem);
+    const seen = new Set();
+    return raw.filter((item, idx) => {
+      const key = item.id || `${item.item_id || 'noitem'}-${item.po_seq ?? idx}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, [selectedCategory?.items]);
+
   const handleAddRow = (isSpareContext = false) => {
     setBomDraft(prev => {
       const newItem = {
@@ -663,7 +686,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
 
                           return (
                             <tr
-                              key={item.item_id || item.part_number || originalIndex}
+                              key={item.id ? `edit-comp-${item.id}` : `${item.item_id || 'item'}-${item.part_number || 'part'}-${originalIndex}`}
                               draggable
                               onDragStart={(e) => handleDragStart(e, displayIdx, 'complete')}
                               onDragOver={(e) => handleDragOver(e, displayIdx, 'complete')}
@@ -855,7 +878,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
 
                           return (
                             <tr
-                              key={item.item_id || item.part_number || originalIndex}
+                              key={item.id ? `edit-spare-${item.id}` : `${item.item_id || 'item'}-${item.part_number || 'part'}-${originalIndex}`}
                               draggable
                               onDragStart={(e) => handleDragStart(e, displayIdx, 'spare')}
                               onDragOver={(e) => handleDragOver(e, displayIdx, 'spare')}
@@ -1044,11 +1067,11 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/40">
-                    {(selectedCategory?.items || []).filter(isCompleteSetItem).map((item, idx) => {
+                    {completeSetItems.map((item, idx) => {
                       const isLimiting = item.is_mandatory && item.sets_possible === selectedCategory.complete_sets;
                       return (
                         <tr 
-                          key={item.item_id || item.po_seq || idx} 
+                          key={item.id ? `ro-comp-${item.id}` : `${item.item_id || item.part_number || 'comp'}-${item.po_seq ?? idx}-${idx}`} 
                           className={`hover:bg-muted/30 transition-colors ${
                             isLimiting ? 'bg-amber-500/5 dark:bg-amber-500/10' : ''
                           }`}
@@ -1103,7 +1126,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                     })}
                   </tbody>
                 </table>
-                {(selectedCategory?.items || []).filter(isCompleteSetItem).length === 0 && (
+                {completeSetItems.length === 0 && (
                   <div className="p-8 text-center text-xs text-muted-foreground">
                     ยังไม่มีรายการใน Complete Set
                   </div>
@@ -1126,13 +1149,13 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/40">
-                    {(selectedCategory?.items || []).filter(isSpareItem).map((item, idx) => {
+                    {spareItems.map((item, idx) => {
                       const stock = Number(item.total_stock) || 0;
                       const allocatedStock = 0;
                       const spareStock = stock;
 
                       return (
-                        <tr key={item.item_id || item.po_seq || idx} className="hover:bg-muted/30 transition-colors">
+                        <tr key={item.id ? `ro-spr-${item.id}` : `${item.item_id || item.part_number || 'spr'}-${item.po_seq ?? idx}-${idx}`} className="hover:bg-muted/30 transition-colors">
                           <td className="py-2.5 px-3 text-center font-semibold text-muted-foreground">
                             {idx + 1}
                           </td>
@@ -1242,4 +1265,4 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
   );
 };
 
-export default SiteKitAvailabilityCards;
+export default React.memo(SiteKitAvailabilityCards);
