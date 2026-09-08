@@ -4,6 +4,7 @@ import { Zap, ClipboardList } from 'lucide-react';
 import { pdf } from '@react-pdf/renderer';
 import { MaterialWithdrawalPDF } from '@/lib/pdf-templates';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTranslation } from '@/i18n';
 import toast from 'react-hot-toast';
 import { dispatchWithdrawalNotification } from '@/lib/notificationDispatcher';
 
@@ -16,6 +17,7 @@ import WithdrawalRejectModal from '@/components/withdrawals/WithdrawalRejectModa
 
 const Withdrawals = () => {
   const { isAdmin, can, profile } = useAuth();
+  const { t } = useTranslation();
   
   const canCreate = can('withdrawals.create');
   const canApprove = can('withdrawals.approve');
@@ -626,7 +628,7 @@ const Withdrawals = () => {
             }`}
           >
             <Zap className="w-3.5 h-3.5 text-amber-400 fill-amber-400/30" />
-            <span>POS Terminal</span>
+            <span>{t('withdrawals.title', 'POS Terminal')}</span>
             {cart.length > 0 && (
               <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-extrabold ${
                 activeTab === 'pos' ? 'bg-white/20 text-white' : 'bg-indigo-600 text-white'
@@ -647,7 +649,7 @@ const Withdrawals = () => {
             }`}
           >
             <ClipboardList className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Requisitions</span>
+            <span>{t('withdrawals.newRequisition', 'Requisitions')}</span>
             {pendingOrdersCount > 0 && (
               <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-extrabold bg-amber-500 text-slate-950 animate-pulse">
                 {pendingOrdersCount} Pending

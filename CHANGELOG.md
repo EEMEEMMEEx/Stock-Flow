@@ -1,5 +1,24 @@
 # Changelog
 
+## [v1.5.0] [2026-09-09] System-Wide TH/EN Language Switching Architecture (i18n)
+
+- **Native React Context i18n Architecture (`src/i18n/`):**
+  - ออกแบบและติดตั้งระบบสลับภาษา TH/EN แบบ Native Context และ JavaScript Recursive Proxy Fallback Zero-Dependency ขนาดกะทัดรัด (~3 KB)
+  - ระบบ Hot-switching สลับภาษาได้ทันทีทั่วทั้งแอปพลิเคชันโดยไม่ต้อง Reload หน้าเว็บ
+  - บันทึกการเลือกภาษาลงใน `localStorage` (`stockflow.app.lang`) แบบ Persistent ข้าม Session โดยอัตโนมัติ
+  - ระบบ Dot-Notation Path Resolver (`t('dashboard.stats.totalValue')`) และ String Interpolation (`t('common.showingResults', { count: 10 })`)
+  - โครงสร้าง Recursive Fallback ป้องกัน Error: กรณีไม่มี Key ในภาษาที่เลือก จะ Fallback ไปยังภาษาตรงกันข้าม และหากไม่มีจะคืนค่า Key โดยไม่ทำให้ React Component Crash
+- **Comprehensive Dictionaries (`en.js` & `th.js`):**
+  - จัดทำ Dictionary สองภาษาครอบคลุมทุกโมดูลหลัก: `common`, `nav`, `auth`, `dashboard`, `stockIn`, `items`, `withdrawals`, `checkouts`, `history`, `reports`, `users`, `roles`, `settings`, `profile`, `manual`
+- **UI Switcher Integration (`LanguageSwitcher.jsx`):**
+  - ติดตั้ง UI Switcher (Radix Dropdown & Quick Toggle Pill พร้อมไอคอน Globe และ Badge TH/EN) ใน 4 จุดยุทธศาสตร์: Topbar, หน้า Login, Profile Preferences, และ Settings
+- **System-Wide Page & Layout Wiring:**
+  - เชื่อมโยง `useTranslation` และฟังก์ชัน `t()` ไปยัง Root App (`App.jsx`), Layouts (`Topbar`, `Sidebar`, `AppFooter`), Auth (`Login`, `PermissionRoute`), และ Pages สำคัญ (`Dashboard`, `Profile`, `Settings`, `Projects`, `Items`, `StockIn`, `Withdrawals`, `Checkouts`, `HistoryHeader`, `ReportHeader`, `UserManagement`, `RoleManagement`)
+- **Preserved Out-of-Scope Integrity:**
+  - คงสภาพ 6 ขอบเขตตามนโยบายอย่างสมบูรณ์: Landing Page 12 ภาษา, PDF Templates, Email Templates, DB fallback unit `'ชิ้น'`, DB role mapping ใน `roleUtils.js`, Notification Dispatcher
+- **Mandatory System Version Management (Rule 10):**
+  - อัปเกรดเวอร์ชันระบบเป็น `1.5.0` (MINOR SemVer bump) ใน `package.json` และ `package-lock.json`
+
 ## [v1.4.94] [2026-09-09] UI Text Cleanup & Professional English Normalization (Phase 1)
 
 - **UI Text Standardization & English Normalization:**

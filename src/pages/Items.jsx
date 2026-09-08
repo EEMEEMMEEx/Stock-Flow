@@ -19,9 +19,11 @@ import { format } from 'date-fns';
 import { ProjectLocationSelector } from '@/components/common/ProjectLocationSelector';
 import { TransferItemDialog } from '@/components/items/TransferItemDialog';
 import { uploadFileToR2 } from '@/lib/r2Storage';
+import { useTranslation } from '@/i18n';
 
 const Items = () => {
   const { can, profile } = useAuth();
+  const { t } = useTranslation();
   const [items, setItems] = useState([]);
   const [categories, setCategories] = useState([]);
   const [projectsList, setProjectsList] = useState([]);
@@ -937,10 +939,10 @@ const Items = () => {
             <div className="p-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400">
               <Package className="w-7 h-7" />
             </div>
-            <span>Items Master</span>
+            <span>{t('items.title', 'Items Master')}</span>
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Centralized inventory items catalog and stock balances across all project locations.
+            {t('items.subtitle', 'Manage master items, categories, and warehouse balances')}
           </p>
         </div>
 
@@ -953,7 +955,7 @@ const Items = () => {
             className="rounded-lg h-9 px-3 gap-1.5 border-input hover:bg-accent text-xs font-medium cursor-pointer shadow-xs"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${(loading || refreshing) ? 'animate-spin text-indigo-600' : ''}`} />
-            <span>{refreshing ? 'Syncing...' : 'Refresh'}</span>
+            <span>{refreshing ? t('common.pleaseWait', 'Syncing...') : t('common.refresh', 'Refresh')}</span>
           </Button>
         </div>
       </div>

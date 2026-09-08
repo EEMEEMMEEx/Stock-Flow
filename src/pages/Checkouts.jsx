@@ -7,6 +7,7 @@ import {
 import toast from 'react-hot-toast';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTranslation } from '@/i18n';
 
 import CheckoutPosTerminal from '@/components/checkouts/CheckoutPosTerminal';
 import CheckoutActiveList from '@/components/checkouts/CheckoutActiveList';
@@ -17,6 +18,7 @@ import CheckoutHistoryList from '@/components/checkouts/CheckoutHistoryList';
 
 const Checkouts = () => {
   const { can } = useAuth();
+  const { t } = useTranslation();
 
   const canCreate = can('checkouts.create');
   const canReturn = can('checkouts.return');
@@ -176,10 +178,10 @@ const Checkouts = () => {
             </div>
             <div>
               <h1 className="text-xl sm:text-2xl font-extrabold text-foreground tracking-tight flex items-center gap-2">
-                <span>Equipment & Tool Checkouts</span>
+                <span>{t('checkouts.title', 'Equipment & Tool Checkouts')}</span>
               </h1>
               <p className="text-xs text-muted-foreground">
-                Manage tool and equipment loans, track return due dates, extend loan durations, and log asset conditions
+                {t('checkouts.subtitle', 'Manage tool and equipment loans, track return due dates, extend loan durations, and log asset conditions')}
               </p>
             </div>
           </div>
@@ -194,7 +196,7 @@ const Checkouts = () => {
             className="rounded-lg h-9 px-3 gap-1.5 border-input hover:bg-accent text-xs font-semibold cursor-pointer shadow-2xs"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-            <span>Refresh</span>
+            <span>{loading ? t('common.loading', 'Loading...') : t('common.refresh', 'Refresh')}</span>
           </Button>
 
           {activeTab !== 'pos' && canCreate && (
@@ -204,7 +206,7 @@ const Checkouts = () => {
               className="rounded-lg h-9 px-4 bg-indigo-600 hover:bg-indigo-700 text-white text-xs gap-1.5 font-semibold cursor-pointer shadow-xs transition-colors"
             >
               <Plus className="w-4 h-4" />
-              <span>New Checkout</span>
+              <span>{t('checkouts.newCheckout', 'New Checkout')}</span>
             </Button>
           )}
         </div>
@@ -221,7 +223,7 @@ const Checkouts = () => {
             }`}
         >
           <Clock className="w-3.5 h-3.5" />
-          <span>Active Loans</span>
+          <span>{t('checkouts.activeCheckouts', 'Active Loans')}</span>
           {orders.filter(o => o.status !== 'completed').length > 0 && (
             <span className="px-1.5 py-0.2 rounded-md bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 text-[10px] font-mono font-bold">
               {orders.filter(o => o.status !== 'completed').length}
@@ -239,7 +241,7 @@ const Checkouts = () => {
               }`}
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>Checkout (POS)</span>
+            <span>{t('checkouts.newCheckout', 'Checkout (POS)')}</span>
           </button>
         )}
 
@@ -252,7 +254,7 @@ const Checkouts = () => {
             }`}
         >
           <History className="w-3.5 h-3.5" />
-          <span>History</span>
+          <span>{t('checkouts.loanHistory', 'History')}</span>
         </button>
       </div>
 

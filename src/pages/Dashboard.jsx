@@ -15,6 +15,7 @@ import {
 } from 'recharts';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTheme } from '@/components/theme-provider';
+import { useTranslation } from '@/i18n';
 import DashboardStatCard from '@/components/dashboard/DashboardStatCard';
 import SiteKitAvailabilityCards from '@/components/dashboard/SiteKitAvailabilityCards';
 import { fetchSiteKitsAvailability } from '@/lib/siteKits';
@@ -65,6 +66,7 @@ const CustomXAxisTick = ({ x, y, payload, isItemMode, theme }) => {
 const Dashboard = () => {
   const { profile } = useAuth();
   const { resolvedTheme } = useTheme();
+  const { t } = useTranslation();
   
   const [stats, setStats] = useState({
     projectCount: 0,
@@ -270,7 +272,7 @@ const Dashboard = () => {
   const statCards = useMemo(() => [
     {
       id: 'pending',
-      label: 'Pending Approvals',
+      label: t('dashboard.pendingWithdrawals', 'Pending Approvals'),
       value: stats.pendingCount,
       subtext: 'Requests awaiting review',
       icon: AlertCircle,
@@ -280,7 +282,7 @@ const Dashboard = () => {
     },
     {
       id: 'projects',
-      label: 'Active Projects',
+      label: t('nav.projects', 'Active Projects'),
       value: stats.projectCount,
       subtext: `${stats.logicalProjectCount} ${stats.logicalProjectCount === 1 ? 'project' : 'projects'} (${stats.projectCount} ${stats.projectCount === 1 ? 'location' : 'locations'})`,
       icon: FolderKanban,
@@ -290,7 +292,7 @@ const Dashboard = () => {
     },
     {
       id: 'items',
-      label: 'Items Catalog',
+      label: t('nav.items', 'Items Catalog'),
       value: stats.itemCount,
       subtext: `Total stock: ${stats.totalStockUnits.toLocaleString()} units`,
       icon: Package,
@@ -300,7 +302,7 @@ const Dashboard = () => {
     },
     {
       id: 'today_withdrawals',
-      label: "Today's Withdrawals",
+      label: t('dashboard.recentMovements', "Today's Withdrawals"),
       value: stats.todayWithdrawals,
       subtext: 'Withdrawals today',
       icon: ArrowUpFromLine,
@@ -308,14 +310,14 @@ const Dashboard = () => {
       href: '/withdrawals',
       permission: 'withdrawals.view'
     },
-  ], [stats.pendingCount, stats.projectCount, stats.logicalProjectCount, stats.itemCount, stats.totalStockUnits, stats.todayWithdrawals]);
+  ], [t, stats.pendingCount, stats.projectCount, stats.logicalProjectCount, stats.itemCount, stats.totalStockUnits, stats.todayWithdrawals]);
 
   const getStatusLabel = (status) => {
     switch (status) {
-      case 'pending': return { text: 'Pending', cls: 'text-amber-700 bg-amber-500/10 border-amber-500/30 dark:text-amber-300 dark:bg-amber-400/15' };
-      case 'approved': return { text: 'Approved', cls: 'text-blue-700 bg-blue-500/10 border-blue-500/30 dark:text-blue-300 dark:bg-blue-400/15' };
-      case 'completed': return { text: 'Completed', cls: 'text-emerald-700 bg-emerald-500/10 border-emerald-500/30 dark:text-emerald-300 dark:bg-emerald-400/15' };
-      case 'rejected': return { text: 'Rejected', cls: 'text-red-700 bg-red-500/10 border-red-500/30 dark:text-red-300 dark:bg-red-400/15' };
+      case 'pending': return { text: t('common.pending', 'Pending'), cls: 'text-amber-700 bg-amber-500/10 border-amber-500/30 dark:text-amber-300 dark:bg-amber-400/15' };
+      case 'approved': return { text: t('common.approved', 'Approved'), cls: 'text-blue-700 bg-blue-500/10 border-blue-500/30 dark:text-blue-300 dark:bg-blue-400/15' };
+      case 'completed': return { text: t('common.completed', 'Completed'), cls: 'text-emerald-700 bg-emerald-500/10 border-emerald-500/30 dark:text-emerald-300 dark:bg-emerald-400/15' };
+      case 'rejected': return { text: t('common.rejected', 'Rejected'), cls: 'text-red-700 bg-red-500/10 border-red-500/30 dark:text-red-300 dark:bg-red-400/15' };
       default: return { text: status, cls: 'text-muted-foreground bg-muted/70 border-border' };
     }
   };
@@ -371,14 +373,14 @@ const Dashboard = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h2 className="text-3xl font-extrabold tracking-tight text-foreground flex items-center gap-2.5">
-            <span>Dashboard</span>
+            <span>{t('dashboard.title', 'Dashboard')}</span>
             <span className="flex h-2.5 w-2.5 relative">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
             </span>
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Welcome back, <span className="font-semibold text-foreground">{profile?.full_name}</span>. Real-time overview & inventory summary.
+            Welcome back, <span className="font-semibold text-foreground">{profile?.full_name}</span>. {t('dashboard.subtitle', 'Real-time overview of warehouse inventory and operations')}
           </p>
         </div>
 
@@ -390,7 +392,7 @@ const Dashboard = () => {
           className="rounded-lg h-9 px-3 gap-2 text-xs font-medium border-border hover:bg-accent cursor-pointer shadow-xs"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin text-emerald-600' : ''}`} />
-          <span>{refreshing ? 'Syncing...' : 'Refresh Data'}</span>
+          <span>{refreshing ? t('common.pleaseWait', 'Syncing...') : t('common.refresh', 'Refresh Data')}</span>
         </Button>
       </div>
 

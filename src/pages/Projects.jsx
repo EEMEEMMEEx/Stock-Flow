@@ -11,6 +11,7 @@ import {
   Layers, ChevronDown, ChevronUp, Info, X, AlertTriangle, ShieldAlert 
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTranslation } from '@/i18n';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 
@@ -97,6 +98,7 @@ const ProjectCodeTagInput = ({
 
 const Projects = () => {
   const { can, profile } = useAuth();
+  const { t } = useTranslation();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -533,7 +535,7 @@ const Projects = () => {
             <div className="p-2 rounded-lg bg-primary/10 text-primary">
               <Building2 className="w-5 h-5" />
             </div>
-            <span>Projects</span>
+            <span>{t('nav.projects', 'Projects')}</span>
           </h2>
           <p className="text-muted-foreground mt-1 text-xs sm:text-sm flex items-center gap-2">
             <span>Main Projects: <strong className="text-foreground font-semibold">{logicalProjects.length} {logicalProjects.length === 1 ? 'project' : 'projects'}</strong></span>
@@ -549,7 +551,7 @@ const Projects = () => {
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Search projects or locations..."
+              placeholder={t('common.search', 'Search projects or locations...')}
               className="pl-9 h-9 text-xs rounded-lg bg-background border border-input focus-visible:ring-1 focus-visible:ring-primary"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -565,7 +567,7 @@ const Projects = () => {
             }}>
               <DialogTrigger asChild>
                 <Button className="shrink-0 gap-2 rounded-lg font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs cursor-pointer h-9 px-4 text-xs">
-                  <Plus className="h-4 w-4" /> New Project
+                  <Plus className="h-4 w-4" /> {t('common.create', 'New Project')}
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[480px] rounded-xl bg-card text-card-foreground p-6 border border-border shadow-xl">

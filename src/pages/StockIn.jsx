@@ -23,9 +23,11 @@ import {
   filterAndAggregateWarehouseItems 
 } from '@/lib/stock-in-parser';
 import { ProjectLocationSelector } from '@/components/common/ProjectLocationSelector';
+import { useTranslation } from '@/i18n';
 
 const StockIn = () => {
   const { can, user } = useAuth();
+  const { t } = useTranslation();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   
@@ -513,10 +515,10 @@ const StockIn = () => {
         <div>
           <h2 className="text-3xl font-bold tracking-tight flex items-center gap-2">
             <ArrowDownToLine className="w-8 h-8 text-green-500" />
-            Stock Receipts
+            <span>{t('stockIn.title', 'Stock Receipts')}</span>
           </h2>
           <p className="text-muted-foreground mt-2">
-            History and records of incoming project materials (Supports warehouse breakdown & DOPA+USO)
+            {t('stockIn.subtitle', 'History and records of incoming project materials')}
           </p>
         </div>
         
@@ -535,7 +537,7 @@ const StockIn = () => {
               onClick={() => fileInputRef.current?.click()}
             >
               <Upload className="w-4 h-4" />
-              <span>Import CSV (.csv)</span>
+              <span>{t('stockIn.importCsv', 'Import CSV (.csv)')}</span>
             </Button>
 
             <Button 
@@ -543,7 +545,7 @@ const StockIn = () => {
               onClick={handleOpenCreateDialog}
             >
               <Plus className="w-4 h-4 shrink-0" />
-              <span>Receive Stock</span>
+              <span>{t('stockIn.directStockIn', 'Receive Stock')}</span>
             </Button>
           </div>
         )}

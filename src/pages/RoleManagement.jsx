@@ -12,8 +12,10 @@ import toast from 'react-hot-toast';
 import AddRoleModal from '@/components/roles/AddRoleModal';
 import EditRoleModal from '@/components/roles/EditRoleModal';
 import PermissionManagementModal from '@/components/roles/PermissionManagementModal';
+import { useTranslation } from '@/i18n';
 
 const RoleManagement = () => {
+  const { t } = useTranslation();
   const { can, refreshProfile, isSuperAdmin } = useAuth();
   const [roles, setRoles] = useState([]);
   const [catalog, setCatalog] = useState([]);
@@ -391,10 +393,10 @@ const fetchRoles = useCallback(async () => {
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
             <ShieldCheck className="w-7 h-7 text-primary" />
-            Role & Permission Management (RBAC)
+            {t('roles.title', 'Role & Permission Management (RBAC)')}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Create/edit roles and configure permissions (RBAC) for each role
+            {t('roles.subtitle', 'Create/edit roles and configure permissions (RBAC) for each role')}
           </p>
         </div>
 
@@ -406,7 +408,7 @@ const fetchRoles = useCallback(async () => {
             className="h-9 px-3 text-xs rounded-lg flex items-center gap-2"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
+            {t('common.refresh', 'Refresh')}
           </Button>
 
           {can('roles.create') && (
@@ -415,7 +417,7 @@ const fetchRoles = useCallback(async () => {
               className="h-9 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs shadow-xs flex items-center gap-2 transition-all duration-200 cursor-pointer shrink-0"
             >
               <Plus className="w-4 h-4 shrink-0" />
-              <span>Add Role</span>
+              <span>{t('roles.addRole', 'Add Role')}</span>
             </Button>
           )}
         </div>

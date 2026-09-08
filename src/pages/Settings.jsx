@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { 
   Settings as SettingsIcon, AppWindow, Package, Mail, ShieldCheck, 
-  Database, Server, Save, ChevronDown, ChevronRight, RefreshCw, Send, Lock, Unlock, Sparkles, AlertTriangle
+  Database, Server, Save, ChevronDown, ChevronRight, RefreshCw, Send, Lock, Unlock, Sparkles, AlertTriangle, Globe
 } from 'lucide-react';
 import { APP_CONFIG } from '@/config/appConfig';
 import toast from 'react-hot-toast';
@@ -15,12 +15,12 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import EmailTemplateManager from '@/components/settings/EmailTemplateManager';
 import DefaultPasswordManager from '@/components/settings/DefaultPasswordManager';
 import { sendTestEmail } from '@/lib/emailService';
-
-
-
+import { useTranslation } from '@/i18n';
+import LanguageSwitcher from '@/components/common/LanguageSwitcher';
 
 const Settings = () => {
   const { can } = useAuth();
+  const { t, isThai } = useTranslation();
   const canUpdate = can('settings.update');
 
   const [loading, setLoading] = useState(true);
@@ -354,10 +354,10 @@ const Settings = () => {
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
             <SettingsIcon className="w-7 h-7 text-primary" />
-            System Settings
+            {t('settings.title', 'System Settings')}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Manage system information, operating rules, notifications, and application settings
+            {t('settings.subtitle', 'Manage system preferences, mail server (SMTP), and security configurations')}
           </p>
         </div>
 
@@ -368,7 +368,7 @@ const Settings = () => {
           className="h-9 rounded-lg font-semibold flex items-center gap-2 text-xs cursor-pointer shadow-xs"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-          Refresh Settings
+          {loading ? t('common.loading', 'Loading...') : t('common.refresh', 'Refresh')}
         </Button>
       </div>
 
@@ -454,6 +454,22 @@ const Settings = () => {
                     value={import.meta.env.MODE || 'production'}
                     className="mt-1 h-9 text-xs rounded-lg bg-muted/40 text-muted-foreground font-mono uppercase cursor-not-allowed border border-input"
                   />
+                </div>
+              </div>
+
+              {/* System Language Preference */}
+              <div className="p-3.5 rounded-lg border border-border/60 bg-muted/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                    <Globe className="w-3.5 h-3.5 text-primary" />
+                    {t('profile.interfaceLanguage', 'Display Language')}
+                  </Label>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    {isThai ? 'กำหนดภาษาเริ่มต้นสำหรับการแสดงผลของแอปพลิเคชัน (ไทย / English)' : 'Configure application default display language (Thai / English)'}
+                  </p>
+                </div>
+                <div className="shrink-0">
+                  <LanguageSwitcher />
                 </div>
               </div>
 

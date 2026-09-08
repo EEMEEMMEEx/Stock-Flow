@@ -7,9 +7,11 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/components/theme-provider';
+import { useTranslation } from '@/i18n';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import NotificationBell from './NotificationBell';
+import LanguageSwitcher from '@/components/common/LanguageSwitcher';
 import RoleBadge from '@/components/ui/RoleBadge';
 import { getRoleLabel, getRoleTextColorClass } from '@/lib/roleUtils';
 
@@ -35,10 +37,11 @@ const Topbar = ({ onMenuClick, menuButtonRef, isMobileMenuOpen }) => {
   const navigate = useNavigate();
   const { profile, user, signOut, can } = useAuth();
   const { theme, resolvedTheme, setTheme } = useTheme();
+  const { t } = useTranslation();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const roleLabel = getRoleLabel(profile?.roles?.code || profile?.role || 'STAFF', profile?.roles?.name);
   const roleColorClass = getRoleTextColorClass(profile?.roles?.code || profile?.role || 'STAFF', profile?.roles?.name);
-  const themeLabel = resolvedTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
+  const themeLabel = resolvedTheme === 'dark' ? t('nav.lightMode', 'Switch to light mode') : t('nav.darkMode', 'Switch to dark mode');
 
   const toggleTheme = () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
 
@@ -70,6 +73,9 @@ const Topbar = ({ onMenuClick, menuButtonRef, isMobileMenuOpen }) => {
 
       {/* Right side: Global Actions & User Profile Dropdown */}
       <div className="flex items-center gap-2 ml-auto" aria-label="Header controls">
+        {/* Language Switcher Dropdown */}
+        <LanguageSwitcher />
+
         {/* Dark/Light Theme Toggle */}
         <Button
           variant="ghost"
@@ -94,7 +100,7 @@ const Topbar = ({ onMenuClick, menuButtonRef, isMobileMenuOpen }) => {
             <button
               type="button"
               className="flex h-9 max-w-[13rem] items-center gap-2 rounded-lg border border-input bg-background px-2 text-left text-foreground shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 cursor-pointer"
-              aria-label="User menu"
+              aria-label={t('nav.userMenu', 'User menu')}
               aria-haspopup="menu"
               aria-expanded={userMenuOpen}
             >
@@ -107,7 +113,7 @@ const Topbar = ({ onMenuClick, menuButtonRef, isMobileMenuOpen }) => {
             </button>
           </DropdownMenu.Trigger>
           <DropdownMenu.Portal>
-            <DropdownMenu.Content align="end" sideOffset={10} className={menuContentClassName} aria-label="User menu">
+            <DropdownMenu.Content align="end" sideOffset={10} className={menuContentClassName} aria-label={t('nav.userMenu', 'User menu')}>
               <div className="flex items-center gap-3 px-3 py-3">
                 <Avatar profile={profile} user={user} className="h-10 w-10 shrink-0 text-base" />
                 <div className="min-w-0">
@@ -119,12 +125,12 @@ const Topbar = ({ onMenuClick, menuButtonRef, isMobileMenuOpen }) => {
                 </div>
               </div>
               <DropdownMenu.Separator className="mx-1 my-1 h-px bg-border/70" />
-              <DropdownMenu.Item asChild className={menuItemClassName}><Link to="/profile"><UserRound className="h-4 w-4 text-primary" />Profile</Link></DropdownMenu.Item>
-              <DropdownMenu.Item asChild className={menuItemClassName}><Link to="/profile?tab=password"><ShieldCheck className="h-4 w-4 text-primary" />Security & Password</Link></DropdownMenu.Item>
-              <DropdownMenu.Item asChild className={menuItemClassName}><Link to="/manual"><HelpCircle className="h-4 w-4 text-primary" />Manual</Link></DropdownMenu.Item>
-              {can('settings.view') && <DropdownMenu.Item asChild className={menuItemClassName}><Link to="/settings"><Settings className="h-4 w-4 text-primary" />Settings</Link></DropdownMenu.Item>}
+              <DropdownMenu.Item asChild className={menuItemClassName}><Link to="/profile"><UserRound className="h-4 w-4 text-primary" />{t('nav.profile', 'Profile')}</Link></DropdownMenu.Item>
+              <DropdownMenu.Item asChild className={menuItemClassName}><Link to="/profile?tab=password"><ShieldCheck className="h-4 w-4 text-primary" />{t('auth.changePassword', 'Security & Password')}</Link></DropdownMenu.Item>
+              <DropdownMenu.Item asChild className={menuItemClassName}><Link to="/manual"><HelpCircle className="h-4 w-4 text-primary" />{t('nav.manual', 'Manual')}</Link></DropdownMenu.Item>
+              {can('settings.view') && <DropdownMenu.Item asChild className={menuItemClassName}><Link to="/settings"><Settings className="h-4 w-4 text-primary" />{t('nav.settings', 'Settings')}</Link></DropdownMenu.Item>}
               <DropdownMenu.Separator className="mx-1 my-1 h-px bg-border/70" />
-              <DropdownMenu.Item className={cn(menuItemClassName, 'text-destructive focus:bg-destructive/10 focus:text-destructive')} onSelect={() => void handleSignOut()}><LogOut className="h-4 w-4" />Sign Out</DropdownMenu.Item>
+              <DropdownMenu.Item className={cn(menuItemClassName, 'text-destructive focus:bg-destructive/10 focus:text-destructive')} onSelect={() => void handleSignOut()}><LogOut className="h-4 w-4" />{t('nav.logout', 'Sign Out')}</DropdownMenu.Item>
             </DropdownMenu.Content>
           </DropdownMenu.Portal>
         </DropdownMenu.Root>

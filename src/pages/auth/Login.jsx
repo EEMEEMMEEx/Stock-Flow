@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Package, Lock, Mail } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTranslation } from '@/i18n';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import LanguageSwitcher from '@/components/common/LanguageSwitcher';
 import toast from 'react-hot-toast';
 
 const Login = () => {
@@ -12,6 +14,7 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { signIn } = useAuth();
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
@@ -49,6 +52,11 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Top right language switcher */}
+      <div className="absolute top-4 right-4 z-20">
+        <LanguageSwitcher />
+      </div>
+
       {/* Background decoration */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-200/40 blur-[120px]" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-purple-200/40 blur-[120px]" />
@@ -60,7 +68,7 @@ const Login = () => {
           </div>
           <CardTitle className="text-3xl font-bold text-center">StockFlow</CardTitle>
           <CardDescription className="text-center text-base">
-            Sign in to manage project inventory
+            {t('auth.welcomeBack', 'Sign in to manage project inventory')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -70,7 +78,7 @@ const Login = () => {
                 <Mail className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
                 <Input
                   type="email"
-                  placeholder="Email"
+                  placeholder={t('auth.email', 'Email')}
                   autoComplete="email"
                   className="pl-10 h-12 bg-background/50 border-white/10 focus:border-primary"
                   value={email}
@@ -84,7 +92,7 @@ const Login = () => {
                 <Lock className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
                 <Input
                   type="password"
-                  placeholder="Password"
+                  placeholder={t('auth.password', 'Password')}
                   autoComplete="current-password"
                   className="pl-10 h-12 bg-slate-50 border-slate-200 focus:border-primary"
                   value={password}
@@ -98,7 +106,7 @@ const Login = () => {
               className="w-full h-12 text-base font-medium shadow-lg shadow-primary/20" 
               disabled={loading}
             >
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading ? t('auth.signingIn', 'Signing in...') : t('auth.signIn', 'Sign In')}
             </Button>
           </form>
         </CardContent>

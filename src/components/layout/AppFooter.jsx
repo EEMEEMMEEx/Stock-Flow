@@ -4,9 +4,11 @@ import { ShieldCheck, BookOpen } from 'lucide-react';
 import { APP_CONFIG } from '@/config/appConfig';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTranslation } from '@/i18n';
 
 const AppFooter = () => {
   const { can } = useAuth();
+  const { t } = useTranslation();
   const canViewSettings = can('settings.view');
   const [footerSettings, setFooterSettings] = useState({
     name: APP_CONFIG.name,
@@ -75,7 +77,7 @@ const AppFooter = () => {
             className="hover:text-primary transition-colors flex items-center gap-1 text-[11px] font-medium"
           >
             <BookOpen className="w-3 h-3" aria-hidden="true" />
-            <span>Manual</span>
+            <span>{t('nav.manual', 'Manual')}</span>
           </NavLink>
 
           <span className="text-border">•</span>

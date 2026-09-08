@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './contexts/AuthProvider';
 import { ThemeProvider } from './components/ThemeProvider';
+import { LanguageProvider } from './i18n';
 import PageWrapper from './components/layout/PageWrapper';
 import Login from './pages/auth/Login';
 import Dashboard from './pages/Dashboard';
@@ -66,33 +67,34 @@ function App() {
 
   return (
     <ThemeProvider defaultTheme="system" storageKey="stock-flow-theme-v2">
-      <AuthProvider>
-        <BrowserRouter basename={baseUrl} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<HomeRoute />} />
-            <Route path="/landing" element={<LandingPage />} />
-            <Route path="/login" element={<Login />} />
-            
-            {/* Protected Routes inside PageWrapper */}
-            <Route element={<PageWrapper />}>
-              <Route path="/dashboard" element={<PermissionRoute permission="dashboard.view"><Dashboard /></PermissionRoute>} />
-              <Route path="/projects" element={<PermissionRoute permission="projects.view"><Projects /></PermissionRoute>} />
-              <Route path="/items" element={<PermissionRoute permission="items.view"><Items /></PermissionRoute>} />
-              <Route path="/stock-in" element={<PermissionRoute permission="stock_in.view"><StockIn /></PermissionRoute>} />
-              <Route path="/withdrawals" element={<PermissionRoute permission="withdrawals.view"><Withdrawals /></PermissionRoute>} />
-              <Route path="/checkouts" element={<PermissionRoute permission="checkouts.view"><Checkouts /></PermissionRoute>} />
-              <Route path="/history" element={<PermissionRoute permission="history.view"><History /></PermissionRoute>} />
-              <Route path="/reports" element={<PermissionRoute permission="reports.view"><Reports /></PermissionRoute>} />
-              <Route path="/users" element={<PermissionRoute permission="users.view"><UserManagement /></PermissionRoute>} />
-              <Route path="/roles" element={<PermissionRoute permission="roles.view"><RoleManagement /></PermissionRoute>} />
-              <Route path="/settings" element={<PermissionRoute permission="settings.view"><Settings /></PermissionRoute>} />
-              <Route path="/profile" element={<PermissionRoute permission={null}><Profile /></PermissionRoute>} />
-              <Route path="/manual" element={<Manual />} />
-            </Route>
+      <LanguageProvider>
+        <AuthProvider>
+          <BrowserRouter basename={baseUrl} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/" element={<HomeRoute />} />
+              <Route path="/landing" element={<LandingPage />} />
+              <Route path="/login" element={<Login />} />
+              
+              {/* Protected Routes inside PageWrapper */}
+              <Route element={<PageWrapper />}>
+                <Route path="/dashboard" element={<PermissionRoute permission="dashboard.view"><Dashboard /></PermissionRoute>} />
+                <Route path="/projects" element={<PermissionRoute permission="projects.view"><Projects /></PermissionRoute>} />
+                <Route path="/items" element={<PermissionRoute permission="items.view"><Items /></PermissionRoute>} />
+                <Route path="/stock-in" element={<PermissionRoute permission="stock_in.view"><StockIn /></PermissionRoute>} />
+                <Route path="/withdrawals" element={<PermissionRoute permission="withdrawals.view"><Withdrawals /></PermissionRoute>} />
+                <Route path="/checkouts" element={<PermissionRoute permission="checkouts.view"><Checkouts /></PermissionRoute>} />
+                <Route path="/history" element={<PermissionRoute permission="history.view"><History /></PermissionRoute>} />
+                <Route path="/reports" element={<PermissionRoute permission="reports.view"><Reports /></PermissionRoute>} />
+                <Route path="/users" element={<PermissionRoute permission="users.view"><UserManagement /></PermissionRoute>} />
+                <Route path="/roles" element={<PermissionRoute permission="roles.view"><RoleManagement /></PermissionRoute>} />
+                <Route path="/settings" element={<PermissionRoute permission="settings.view"><Settings /></PermissionRoute>} />
+                <Route path="/profile" element={<PermissionRoute permission={null}><Profile /></PermissionRoute>} />
+                <Route path="/manual" element={<Manual />} />
+              </Route>
 
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
 
             <Toaster 
               position="top-right" 
@@ -101,7 +103,8 @@ function App() {
               }}
             />
           </BrowserRouter>
-      </AuthProvider>
+        </AuthProvider>
+      </LanguageProvider>
     </ThemeProvider>
   );
 }

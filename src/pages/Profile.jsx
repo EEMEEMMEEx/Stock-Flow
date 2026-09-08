@@ -8,15 +8,18 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { 
   User, Mail, KeyRound, Save, Camera, 
-  RefreshCw, CheckCircle2, Lock, FolderKanban, Sparkles
+  RefreshCw, CheckCircle2, Lock, FolderKanban, Sparkles, Globe
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { uploadAvatarImage } from '@/lib/avatarUpload';
 import RoleBadge from '@/components/ui/RoleBadge';
 import { getRoleLabel } from '@/lib/roleUtils';
+import { useTranslation } from '@/i18n';
+import LanguageSwitcher from '@/components/common/LanguageSwitcher';
 
 const Profile = () => {
   const { user, profile, refreshProfile, assignedProjectIds, allProjectsAccess } = useAuth();
+  const { t, isThai } = useTranslation();
   const [searchParams] = useSearchParams();
   
   // Tab state: 'info' | 'password'
@@ -267,10 +270,10 @@ const Profile = () => {
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2.5">
             <User className="w-7 h-7 text-primary" />
-            Personal Profile
+            {t('profile.title', 'Personal Profile')}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Manage personal information, profile photo, and account security
+            {t('profile.subtitle', 'Manage personal information, profile photo, and account security')}
           </p>
         </div>
       </div>
@@ -363,7 +366,7 @@ const Profile = () => {
           }`}
         >
           <User className="w-4 h-4" />
-          Personal Info
+          {t('profile.accountDetails', 'Personal Info')}
         </button>
 
         <button
@@ -376,7 +379,7 @@ const Profile = () => {
           }`}
         >
           <KeyRound className="w-4 h-4" />
-          Change Password
+          {t('auth.changePassword', 'Change Password')}
         </button>
       </div>
 
@@ -450,6 +453,22 @@ const Profile = () => {
                     placeholder="e.g. Project Engineer / Inventory Officer"
                     className="h-9 text-xs rounded-lg bg-background border border-input focus-visible:ring-1 focus-visible:ring-primary"
                   />
+                </div>
+
+                {/* Interface Language Preference */}
+                <div className="space-y-1.5 sm:col-span-2 p-3.5 rounded-lg border border-border/60 bg-muted/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                      <Globe className="w-3.5 h-3.5 text-primary" />
+                      {t('profile.interfaceLanguage', 'Display Language')}
+                    </Label>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                      {isThai ? 'สลับการแสดงผลเมนูและข้อความทั้งระบบระหว่างภาษาไทยและภาษาอังกฤษ' : 'Switch application interface language between Thai and English'}
+                    </p>
+                  </div>
+                  <div className="shrink-0">
+                    <LanguageSwitcher />
+                  </div>
                 </div>
               </div>
 

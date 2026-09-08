@@ -19,6 +19,7 @@ import {
   PanelLeftOpen
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTranslation } from '@/i18n';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -30,37 +31,41 @@ const NAVIGATION_GROUPS = [
   {
     id: 'main',
     title: 'Main Operations',
+    titleKey: 'nav.mainOperations',
     items: [
-      { id: 'dashboard', name: 'Dashboard', path: '/', icon: LayoutDashboard, permission: 'dashboard.view' },
-      { id: 'projects', name: 'Projects', path: '/projects', icon: FolderKanban, permission: 'projects.view' },
-      { id: 'items', name: 'Items', path: '/items', icon: Package, permission: 'items.view' },
-      { id: 'stock_in', name: 'Stock In', path: '/stock-in', icon: ArrowDownToLine, permission: 'stock_in.view' },
-      { id: 'withdrawals', name: 'Withdrawals', path: '/withdrawals', icon: ArrowUpFromLine, permission: 'withdrawals.view' },
-      { id: 'checkouts', name: 'Checkouts', path: '/checkouts', icon: RotateCcw, permission: 'checkouts.view' },
-      { id: 'history', name: 'History', path: '/history', icon: History, permission: 'history.view' },
-      { id: 'reports', name: 'Reports', path: '/reports', icon: FileText, permission: 'reports.view' },
+      { id: 'dashboard', name: 'Dashboard', nameKey: 'nav.dashboard', path: '/', icon: LayoutDashboard, permission: 'dashboard.view' },
+      { id: 'projects', name: 'Projects', nameKey: 'nav.projects', path: '/projects', icon: FolderKanban, permission: 'projects.view' },
+      { id: 'items', name: 'Items', nameKey: 'nav.items', path: '/items', icon: Package, permission: 'items.view' },
+      { id: 'stock_in', name: 'Stock In', nameKey: 'nav.stockIn', path: '/stock-in', icon: ArrowDownToLine, permission: 'stock_in.view' },
+      { id: 'withdrawals', name: 'Withdrawals', nameKey: 'nav.withdrawals', path: '/withdrawals', icon: ArrowUpFromLine, permission: 'withdrawals.view' },
+      { id: 'checkouts', name: 'Checkouts', nameKey: 'nav.checkouts', path: '/checkouts', icon: RotateCcw, permission: 'checkouts.view' },
+      { id: 'history', name: 'History', nameKey: 'nav.history', path: '/history', icon: History, permission: 'history.view' },
+      { id: 'reports', name: 'Reports', nameKey: 'nav.reports', path: '/reports', icon: FileText, permission: 'reports.view' },
     ]
   },
   {
     id: 'admin',
     title: 'Administration',
+    titleKey: 'nav.administration',
     items: [
-      { id: 'users', name: 'Users', path: '/users', icon: UserCog, permission: 'users.view' },
-      { id: 'roles', name: 'Roles & Permissions', path: '/roles', icon: ShieldCheck, permission: 'roles.view' },
+      { id: 'users', name: 'Users', nameKey: 'nav.users', path: '/users', icon: UserCog, permission: 'users.view' },
+      { id: 'roles', name: 'Roles & Permissions', nameKey: 'nav.roles', path: '/roles', icon: ShieldCheck, permission: 'roles.view' },
     ]
   },
   {
     id: 'account',
     title: 'Account & Help',
+    titleKey: 'nav.accountHelp',
     items: [
-      { id: 'profile', name: 'Profile', path: '/profile', icon: User, permission: null },
-      { id: 'manual', name: 'Manual', path: '/manual', icon: BookOpen, permission: null },
+      { id: 'profile', name: 'Profile', nameKey: 'nav.profile', path: '/profile', icon: User, permission: null },
+      { id: 'manual', name: 'Manual', nameKey: 'nav.manual', path: '/manual', icon: BookOpen, permission: null },
     ]
   }
 ];
 
 const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
   const { can, loading } = useAuth();
+  const { t } = useTranslation();
   const location = useLocation();
   const closeButtonRef = useRef(null);
 
@@ -92,6 +97,8 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
       ? location.pathname === '/' 
       : location.pathname.startsWith(item.path);
 
+    const itemName = item.nameKey ? t(item.nameKey, item.name) : item.name;
+
     const linkContent = (
       <NavLink
         key={item.id}
@@ -112,7 +119,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
             isDesktopCollapsed ? "hidden" : "block"
           )}
         >
-          {item.name}
+          {itemName}
         </span>
       </NavLink>
     );
@@ -124,7 +131,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
             {linkContent}
           </TooltipTrigger>
           <TooltipContent side="right" sideOffset={12}>
-            {item.name}
+            {itemName}
           </TooltipContent>
         </Tooltip>
       );
@@ -252,7 +259,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
                         isCollapsed ? "hidden" : "block"
                       )}
                     >
-                      {group.title}
+                      {group.titleKey ? t(group.titleKey, group.title) : group.title}
                     </div>
                     {visibleItems.map((item) => renderNavItem(item, isCollapsed))}
                   </div>
@@ -282,7 +289,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
                   </NavLink>
                 </TooltipTrigger>
                 <TooltipContent side="right" sideOffset={12}>
-                  Settings
+                  {t('nav.settings', 'Settings')}
                 </TooltipContent>
               </Tooltip>
             ) : (
@@ -297,7 +304,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
                 )}
               >
                 <Settings className="w-5 h-5 shrink-0" />
-                <span className="truncate whitespace-nowrap">Settings</span>
+                <span className="truncate whitespace-nowrap">{t('nav.settings', 'Settings')}</span>
               </NavLink>
             )}
           </div>

@@ -19,8 +19,10 @@ import RoleBadge from '@/components/ui/RoleBadge';
 import { getRoleLabel } from '@/lib/roleUtils';
 import { uploadAvatarImage } from '@/lib/avatarUpload';
 import { sendUserInvitationEmail } from '@/lib/emailService';
+import { useTranslation } from '@/i18n';
 
 const UserManagement = () => {
+  const { t } = useTranslation();
   const { isSuperAdmin, user, can } = useAuth();
   const [users, setUsers] = useState([]);
   const [projects, setProjects] = useState([]);
@@ -516,10 +518,10 @@ const UserManagement = () => {
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
             <UserCog className="w-7 h-7 text-primary" />
-            User Management & RBAC
+            {t('users.title', 'User Management & RBAC')}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Manage application users, roles, status, and project access.
+            {t('users.subtitle', 'Manage application users, roles, status, and project access.')}
           </p>
         </div>
 
@@ -531,17 +533,17 @@ const UserManagement = () => {
             className="h-9 rounded-lg font-semibold flex items-center gap-2 cursor-pointer shadow-xs"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
+            {t('common.refresh', 'Refresh')}
           </Button>
 
           <Button 
             onClick={() => setIsAddModalOpen(true)}
             disabled={!can('users.create')}
-            title={!can('users.create') ? 'Missing permission to add users (requires users.create)' : 'Add New User'}
+            title={!can('users.create') ? 'Missing permission to add users (requires users.create)' : t('users.addUser', 'Add User')}
             className="h-9 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-sm flex items-center gap-2 cursor-pointer shadow-xs shrink-0 disabled:opacity-30 disabled:cursor-not-allowed"
           >
             <Plus className="w-4 h-4 shrink-0" />
-            <span>Add User</span>
+            <span>{t('users.addUser', 'Add User')}</span>
           </Button>
         </div>
       </div>
@@ -571,7 +573,7 @@ const UserManagement = () => {
           <div className="relative flex-1">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Search by name, email, position..."
+              placeholder={t('common.search', 'Search by name, email, position...')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 h-9 text-xs rounded-lg bg-background border border-input"

@@ -1,12 +1,15 @@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { History as HistoryIcon, RefreshCw } from 'lucide-react';
+import { useTranslation } from '@/i18n';
 
 const HistoryHeader = ({
   totalCount = 0,
   loading = false,
   onRefresh
 }) => {
+  const { t } = useTranslation();
+
   return (
     <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-card/60 backdrop-blur border border-border/60 p-4 sm:p-5 rounded-2xl shadow-sm">
       {/* Title & Description */}
@@ -17,10 +20,10 @@ const HistoryHeader = ({
           </div>
           <div>
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-              Withdrawal History
+              {t('history.title', 'Withdrawal History')}
             </h1>
             <p className="text-xs sm:text-sm text-muted-foreground">
-              Processed withdrawal requests — Approved / Completed / Rejected
+              {t('history.subtitle', 'Processed withdrawal requests — Approved / Completed / Rejected')}
             </p>
           </div>
         </div>

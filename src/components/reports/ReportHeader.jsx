@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { FileText, Download, ArrowDownToLine, ArrowUpFromLine, Scale, Sparkles, RefreshCw, Layers } from 'lucide-react';
+import { useTranslation } from '@/i18n';
 
 const ReportHeader = ({
   activeTab,
@@ -13,6 +14,7 @@ const ReportHeader = ({
   pdfLoading = false,
   canExport = true
 }) => {
+  const { t } = useTranslation();
   const tabs = [
     {
       id: 'stock_in',
@@ -55,13 +57,13 @@ const ReportHeader = ({
             </div>
             <div>
               <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                Reports & Inventory Analytics
+                {t('reports.title', 'Reports & Inventory Analytics')}
                 <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
                   <Sparkles className="w-3 h-3" /> Live Analytics
                 </span>
               </h1>
               <p className="text-xs sm:text-sm text-muted-foreground">
-                Comprehensive history of stock-in, withdrawals, balances, and operational insights
+                {t('reports.subtitle', 'Comprehensive history of stock-in, withdrawals, balances, and operational insights')}
               </p>
             </div>
           </div>
@@ -78,7 +80,7 @@ const ReportHeader = ({
             title="Refresh Data"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-            <span className="hidden sm:inline">Refresh</span>
+            <span className="hidden sm:inline">{loading ? t('common.loading', 'Loading...') : t('common.refresh', 'Refresh')}</span>
           </Button>
 
           {canExport && (
@@ -91,7 +93,7 @@ const ReportHeader = ({
                 className="h-9 px-3.5 rounded-xl font-semibold text-xs border-rose-200 dark:border-rose-900/60 text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
               >
                 <FileText className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
-                <span>{pdfLoading ? 'Generating PDF...' : 'Export PDF'}</span>
+                <span>{pdfLoading ? t('common.pleaseWait', 'Generating PDF...') : t('reports.exportPdf', 'Export PDF')}</span>
               </Button>
 
               <Button
@@ -101,13 +103,13 @@ const ReportHeader = ({
                 className="h-9 px-3.5 rounded-xl font-semibold text-xs bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white shadow-xs hover:shadow-md shadow-emerald-600/20 flex items-center gap-1.5 transition-all cursor-pointer"
               >
                 <Download className="w-3.5 h-3.5" />
-                <span>Export Excel</span>
+                <span>{t('reports.exportExcel', 'Export Excel')}</span>
               </Button>
             </>
           )}
 
           <Badge variant="outline" className="h-9 px-3 rounded-xl bg-background border-border text-muted-foreground text-xs font-medium flex items-center gap-1.5 ml-auto sm:ml-0">
-            <span>Total:</span>
+            <span>{t('common.total', 'Total')}:</span>
             <span className="font-bold text-foreground">{totalItemsCount.toLocaleString()}</span>
             <span>{totalItemsCount === 1 ? 'record' : 'records'}</span>
           </Badge>
