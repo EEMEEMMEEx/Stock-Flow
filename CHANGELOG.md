@@ -1,5 +1,23 @@
 # Changelog
 
+## [v1.4.89] [2026-09-08] Robust User Permission Verification & Request Storm Prevention
+
+- **Single-Request Profile & Role Retrieval (`src/contexts/AuthProvider.jsx`):**
+  - รวมการดึงข้อมูล `profiles` และความสัมพันธ์ `roles(*)` ในคำขอเดียว (Single Roundtrip)
+  - ยกเลิกการสั่ง `update({ role_id })` ภายในฟังก์ชัน `fetchProfile` เพื่อกำจัดลูป Realtime Event ซ้ำซ้อนอย่างเด็ดขาด
+  - ป้องกันข้อความแจ้งเตือน "Error selecting profile" ค้างใน Console โดยบันทึกแจ้งเตือนเพียงครั้งเดียว
+- **Live Permissions with Exponential Backoff & Safe Baseline Fallback (`src/contexts/AuthProvider.jsx`):**
+  - เพิ่ม Timeout 3,500ms ต่อคำขอ เพื่อป้องกันการค้างสะสมของ Pending Network Requests
+  - รองรับการเรียก `get_my_permissions` RPC, `get_user_permissions(userId)` และ `role_permissions` ตารางตรง
+  - รองรับ Exponential Backoff Retry สูงสุด 3 ครั้ง (500ms, 1000ms, 2000ms) เมื่อ Endpoint ขัดข้องหรือไม่ตอบสนอง
+  - บันทึกการล้มเหลวเพียงครั้งเดียว (Single Notice Log) และเปิดใช้งาน Safe Baseline Permissions ตาม Role ของผู้ใช้ทันทีเพื่อป้องกันการถูกล็อกเอาต์
+- **Session-Level Permissions Caching & Concurrency Safeguards (`src/contexts/AuthProvider.jsx`):**
+  - แคชผลลัพธ์ Permissions ใน Memory ตาม Key `${userId}:${roleCode}` ตลอดเซสชัน ไม่ยิง GET requests ซ้ำเมื่อ Role ยังคงเดิม
+  - ป้องกัน Concurrent Request Storms ด้วย In-flight Fetch Lock
+  - เพิ่ม Debounce 1,000ms บน Realtime Subscription ช่อง RBAC ป้องกัน Event Burst
+- **Mandatory System Version Management (Rule 10):**
+  - ปรับเวอร์ชันระบบเป็น `1.4.89` ใน `package.json`, `package-lock.json`
+
 ## [v1.4.88] [2026-09-08] Vercel Build Optimization & ERR_INSUFFICIENT_RESOURCES Fix
 
 - **Vercel Build Resource & Memory Optimization (`vercel.json`):**

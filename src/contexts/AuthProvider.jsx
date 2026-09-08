@@ -1,6 +1,41 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { AuthContext } from './AuthContext';
+
+// Helper: Run promise with timeout
+const withTimeout = (promise, ms = 4000) => {
+  let timeoutId;
+  const timeoutPromise = new Promise((_, reject) => {
+    timeoutId = setTimeout(() => reject(new Error('REQUEST_TIMEOUT')), ms);
+  });
+  return Promise.race([promise, timeoutPromise]).finally(() => clearTimeout(timeoutId));
+};
+
+// Safe Baseline Role Fallback Permissions (Prevents lockout when API/Network glitched)
+const getSafeBaselinePermissions = (roleStr, emailStr = '') => {
+  const normalizedRole = (roleStr || 'staff').toLowerCase().trim();
+  const isSuperOrAdmin = normalizedRole === 'super' || normalizedRole === 'admin' || (emailStr || '').toLowerCase() === 'admin@stockflow.com';
+
+  if (isSuperOrAdmin) {
+    return [
+      'dashboard.view', 'items.view', 'items.create', 'items.update', 'items.delete', 'items.adjust_stock', 'items.transfer',
+      'stock_in.view', 'stock_in.create', 'withdrawals.view', 'withdrawals.create', 'withdrawals.approve', 'withdrawals.reject', 'withdrawals.complete',
+      'checkouts.view', 'checkouts.create', 'checkouts.extend', 'checkouts.return', 'history.view', 'reports.view', 'reports.export',
+      'projects.view', 'projects.create', 'projects.update', 'projects.delete', 'users.view', 'users.create', 'users.update', 'users.deactivate', 'users.reset_password',
+      'roles.view', 'roles.create', 'roles.update', 'roles.delete', 'roles.manage_permissions', 'settings.view', 'settings.update'
+    ];
+  }
+  if (['supervisor', 'approver', 'manager'].includes(normalizedRole)) {
+    return [
+      'dashboard.view', 'items.view', 'stock_in.view', 'withdrawals.view', 'withdrawals.create', 'withdrawals.approve', 'withdrawals.reject', 'withdrawals.complete',
+      'checkouts.view', 'checkouts.create', 'checkouts.extend', 'checkouts.return', 'history.view', 'reports.view', 'reports.export', 'projects.view'
+    ];
+  }
+  return [
+    'dashboard.view', 'items.view', 'stock_in.view', 'withdrawals.view', 'withdrawals.create',
+    'checkouts.view', 'history.view', 'projects.view'
+  ];
+};
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -10,258 +45,231 @@ export const AuthProvider = ({ children }) => {
   const [allProjectsAccess, setAllProjectsAccess] = useState(true);
   const [loading, setLoading] = useState(true);
 
-  // Query Database Live Role Permissions
-  const fetchUserPermissions = useCallback(async (userId, userProfile) => {
-    // Step 1: Query authorized permissions via database RPC (get_user_permissions primary, get_my_permissions alias)
-    try {
-      let rpcData = null;
-      let rpcErr = null;
+  // Caching & Concurrency Control Refs (Step 4 & Request Storm Prevention)
+  const permissionsCacheRef = useRef(new Map());
+  const inFlightFetchRef = useRef(false);
+  const hasLoggedProfileErrorRef = useRef(false);
+  const hasLoggedPermFailureRef = useRef(false);
+  const realtimeDebounceTimerRef = useRef(null);
 
-      // 1a. Query get_user_permissions with userId
-      if (userId) {
-        const resUser = await supabase.rpc('get_user_permissions', { p_user_id: userId });
-        rpcData = resUser.data;
-        rpcErr = resUser.error;
-      }
+  // Step 2 & 3: Query live permissions via get_my_permissions / role_permissions with exponential backoff
+  const queryLivePermissionsWithBackoff = useCallback(async (userId, userProfile) => {
+    const roleId = userProfile?.role_id || userProfile?.roles?.id;
+    const roleCode = (userProfile?.roles?.code || userProfile?.role || 'staff').toUpperCase().trim();
+    const detectedRole = (userProfile?.role || roleCode).toLowerCase();
+    const maxAttempts = 3;
+    const backoffDelays = [500, 1000, 2000];
 
-      // 1b. If get_user_permissions returned error or empty, try get_my_permissions
-      if (rpcErr || !rpcData || !Array.isArray(rpcData) || rpcData.length === 0) {
-        const resMy = await supabase.rpc('get_my_permissions');
-        if (!resMy.error && Array.isArray(resMy.data) && resMy.data.length > 0) {
-          rpcData = resMy.data;
-          rpcErr = null;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        let rpcData = null;
+        let rpcErr = null;
+
+        // 1a. Try get_my_permissions RPC (alias for get_user_permissions(auth.uid()))
+        try {
+          const resMy = await withTimeout(supabase.rpc('get_my_permissions'), 3500);
+          if (!resMy.error && Array.isArray(resMy.data) && resMy.data.length > 0) {
+            rpcData = resMy.data;
+          } else if (resMy.error) {
+            rpcErr = resMy.error;
+          }
+        } catch {
+          // RPC timeout or network error, proceed to fallback
+        }
+
+        // 1b. If get_my_permissions didn't return data, try get_user_permissions(userId)
+        if ((!rpcData || rpcData.length === 0) && userId) {
+          try {
+            const resUser = await withTimeout(supabase.rpc('get_user_permissions', { p_user_id: userId }), 3500);
+            if (!resUser.error && Array.isArray(resUser.data) && resUser.data.length > 0) {
+              rpcData = resUser.data;
+              rpcErr = null;
+            }
+          } catch {
+            // RPC timeout, proceed to direct role_permissions table lookup
+          }
+        }
+
+        // Extract permission codes from RPC result
+        if (Array.isArray(rpcData) && rpcData.length > 0) {
+          const codes = rpcData
+            .map(r => (typeof r === 'string' ? r : r?.permission_code || r?.code))
+            .filter(Boolean);
+          if (codes.length > 0) {
+            return codes;
+          }
+        }
+
+        // 1c. Direct lookup from role_permissions using role_id
+        if (roleId) {
+          const rpRes = await withTimeout(
+            supabase
+              .from('role_permissions')
+              .select('permissions!inner(code)')
+              .eq('role_id', roleId),
+            3500
+          );
+
+          if (!rpRes.error && Array.isArray(rpRes.data) && rpRes.data.length > 0) {
+            const codes = rpRes.data.map(r => r.permissions?.code).filter(Boolean);
+            if (codes.length > 0) {
+              return codes;
+            }
+          }
+        }
+      } catch (err) {
+        // Log failure once on unexpected exceptions
+        if (attempt === maxAttempts && !hasLoggedPermFailureRef.current) {
+          console.warn('[AuthContext] Live permissions attempt failed:', err?.message || err);
         }
       }
 
-      if (!rpcErr && Array.isArray(rpcData) && rpcData.length > 0) {
-        const extractedCodes = rpcData
-          .map(r => (typeof r === 'string' ? r : r?.permission_code || r?.code))
-          .filter(Boolean);
-
-        if (extractedCodes.length > 0) {
-          setPermissions(extractedCodes);
-          return;
-        }
+      // Exponential backoff before next attempt
+      if (attempt < maxAttempts) {
+        await new Promise(res => setTimeout(res, backoffDelays[attempt - 1]));
       }
-    } catch (rpcCatch) {
-      console.warn('RPC permissions query notice:', rpcCatch?.message || rpcCatch);
     }
 
-    try {
-      // Step 2: Direct lookup from role_permissions using role_id
-      let query = supabase
-        .from('role_permissions')
-        .select('permission_id, permissions!inner(code)');
-
-      if (userProfile?.role_id) {
-        query = query.eq('role_id', userProfile.role_id);
-      } else {
-        const searchCode = (userProfile?.role || 'staff').toUpperCase().trim();
-        let targetCodes = [searchCode];
-        if (['STAFF', 'OPERATOR', 'REQUESTER'].includes(searchCode)) {
-          targetCodes = ['STAFF', 'OPERATOR', 'REQUESTER'];
-        } else if (['SUPERVISOR', 'APPROVER', 'MANAGER'].includes(searchCode)) {
-          targetCodes = ['SUPERVISOR', 'APPROVER', 'MANAGER'];
-        } else if (['ADMIN', 'ADMINISTRATOR'].includes(searchCode)) {
-          targetCodes = ['ADMIN', 'ADMINISTRATOR'];
-        }
-
-        const { data: rData } = await supabase
-          .from('roles')
-          .select('id')
-          .in('code', targetCodes)
-          .limit(1)
-          .maybeSingle();
-
-        if (rData?.id) {
-          query = query.eq('role_id', rData.id);
-        }
-      }
-
-      const { data: rpData, error: rpErr } = await query;
-      if (!rpErr && Array.isArray(rpData) && rpData.length > 0) {
-        const extractedCodes = rpData
-          .map(r => r.permissions?.code)
-          .filter(Boolean);
-        if (extractedCodes.length > 0) {
-          setPermissions(extractedCodes);
-          return;
-        }
-      }
-    } catch (directErr) {
-      console.warn('Direct role_permissions table query failed:', directErr);
+    // Step 3: Endpoint unreachable or timed out after max attempts
+    // Log failure ONCE and apply safe baseline permissions
+    if (!hasLoggedPermFailureRef.current) {
+      console.warn(`[AuthContext] Live permissions endpoint unreachable after ${maxAttempts} attempts. Applying safe baseline permissions for role: ${detectedRole}`);
+      hasLoggedPermFailureRef.current = true;
     }
 
-    // Step 3: Safe Baseline Role Fallback (Prevents active users from being locked out during network/API glitches)
-    const normalizedRole = (userProfile?.role || 'staff').toLowerCase().trim();
-    const isSuperOrAdmin = normalizedRole === 'super' || normalizedRole === 'admin' || (user?.email || '').toLowerCase() === 'admin@stockflow.com';
-
-    if (isSuperOrAdmin) {
-      setPermissions([
-        'dashboard.view', 'items.view', 'items.create', 'items.update', 'items.delete', 'items.adjust_stock', 'items.transfer',
-        'stock_in.view', 'stock_in.create', 'withdrawals.view', 'withdrawals.create', 'withdrawals.approve', 'withdrawals.reject', 'withdrawals.complete',
-        'checkouts.view', 'checkouts.create', 'checkouts.extend', 'checkouts.return', 'history.view', 'reports.view', 'reports.export',
-        'projects.view', 'projects.create', 'projects.update', 'projects.delete', 'users.view', 'users.create', 'users.update', 'users.deactivate', 'users.reset_password',
-        'roles.view', 'roles.create', 'roles.update', 'roles.delete', 'roles.manage_permissions', 'settings.view', 'settings.update'
-      ]);
-    } else if (['supervisor', 'approver', 'manager'].includes(normalizedRole)) {
-      setPermissions([
-        'dashboard.view', 'items.view', 'stock_in.view', 'withdrawals.view', 'withdrawals.create', 'withdrawals.approve', 'withdrawals.reject', 'withdrawals.complete',
-        'checkouts.view', 'checkouts.create', 'checkouts.extend', 'checkouts.return', 'history.view', 'reports.view', 'reports.export', 'projects.view'
-      ]);
-    } else {
-      setPermissions([
-        'dashboard.view', 'items.view', 'stock_in.view', 'withdrawals.view', 'withdrawals.create',
-        'checkouts.view', 'history.view', 'projects.view'
-      ]);
-    }
-    console.warn(`[AuthContext] Live permissions unavailable. Applied safe baseline permissions for role: ${normalizedRole}`);
+    return getSafeBaselinePermissions(detectedRole, user?.email);
   }, [user]);
 
-  const fetchProfile = useCallback(async (userObj) => {
+  // Step 1: Fetch user's profile and role (Single Request) + Session Cache (Step 4)
+  const fetchProfile = useCallback(async (userObj, forceRefresh = false) => {
     if (!userObj) return;
+
+    // Concurrency Lock: Prevent simultaneous fetch requests from creating request storms
+    if (inFlightFetchRef.current) return;
+    inFlightFetchRef.current = true;
+
     try {
       const userId = userObj.id;
-      
-      // Step A: Safely fetch user profile directly
+
+      // Single Request: Fetch profile and joined role record in ONE roundtrip
       let { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('*, roles(*)')
         .eq('id', userId)
         .maybeSingle();
 
+      // Log failure once if error occurs (prevents "Error selecting profile" console loops)
       if (error && error.code !== 'PGRST116') {
-        console.error('Error selecting profile:', error);
+        if (!hasLoggedProfileErrorRef.current) {
+          console.warn('[AuthContext] Profile fetch notice:', error.message || error);
+          hasLoggedProfileErrorRef.current = true;
+        }
       }
 
-      // Step B: Auto-create profile ONLY if genuinely missing from DB (default to staff)
-      if (!data) {
+      // Auto-create profile ONLY if missing from DB (default to staff)
+      if (!data && !error) {
         const defaultName = userObj.email ? userObj.email.split('@')[0] : 'User';
-        const { data: created, error: createError } = await supabase
+        const { data: created } = await supabase
           .from('profiles')
           .upsert([{ id: userId, full_name: defaultName, role: 'staff', status: 'active' }])
-          .select('*')
+          .select('*, roles(*)')
           .maybeSingle();
-          
-        if (!createError) data = created;
+        if (created) data = created;
       }
 
-      // Check if user account is inactive or suspended (immediately revoke and sign out)
+      // Inactive / Suspended check: Revoke access and sign out
       if (data && (data.status === 'inactive' || data.status === 'suspended')) {
         setProfile(data);
         setPermissions([]);
         setLoading(false);
         try {
           await supabase.auth.signOut();
-        } catch (signOutErr) {
-          console.warn('[AuthContext] Forced sign-out error:', signOutErr);
+        } catch {
+          // ignore signout errors
         }
         return;
       }
 
-      // Step C: Resolve role record and synchronize role_id
-      if (data) {
-        try {
-          let roleData = null;
-          if (data.role_id) {
-            const { data: rd } = await supabase
-              .from('roles')
-              .select('*')
-              .eq('id', data.role_id)
-              .maybeSingle();
-            roleData = rd;
-          }
-          
-          if (!roleData && data.role) {
-            const searchCode = data.role.toUpperCase().trim();
-            let targetCodes = [searchCode];
-            if (['STAFF', 'OPERATOR', 'REQUESTER'].includes(searchCode)) {
-              targetCodes = ['STAFF', 'OPERATOR', 'REQUESTER'];
-            } else if (['SUPERVISOR', 'APPROVER', 'MANAGER'].includes(searchCode)) {
-              targetCodes = ['SUPERVISOR', 'APPROVER', 'MANAGER'];
-            } else if (['ADMIN', 'ADMINISTRATOR'].includes(searchCode)) {
-              targetCodes = ['ADMIN', 'ADMINISTRATOR'];
-            }
-
-            const { data: rd } = await supabase
-              .from('roles')
-              .select('*')
-              .in('code', targetCodes)
-              .limit(1)
-              .maybeSingle();
-            roleData = rd;
-          }
-
-          if (roleData) {
-            data.roles = roleData;
-            if (data.role_id !== roleData.id) {
-              await supabase
-                .from('profiles')
-                .update({ role_id: roleData.id })
-                .eq('id', userId);
-              data.role_id = roleData.id;
-            }
-          }
-        } catch (roleSyncErr) {
-          console.warn('Role metadata resolution error:', roleSyncErr);
-        }
-      }
-
-      // Step D: Fetch Project Assignments for user
+      // Step D: Fetch Project Assignments for user (secondary single query)
       try {
-        const { data: assignments, error: assignError } = await supabase
-          .from('user_project_assignments')
-          .select('project_id')
-          .eq('user_id', userId);
+        const { data: assignments } = await withTimeout(
+          supabase
+            .from('user_project_assignments')
+            .select('project_id')
+            .eq('user_id', userId),
+          3000
+        );
 
-        if (!assignError && assignments) {
+        if (assignments && assignments.length > 0) {
           const pIds = assignments.map(a => a.project_id);
           setAssignedProjectIds(pIds);
-          
-          // Determine if user has global access
           const isRoleAdmin = (data?.role || '').toLowerCase() === 'admin';
           const isSuper = (data?.role || '').toLowerCase() === 'super' || (userObj.email || '').toLowerCase() === 'admin@stockflow.com';
-          const hasSpecificAssignments = pIds.length > 0;
-          
           if (data?.all_projects !== undefined) {
             setAllProjectsAccess(data.all_projects);
           } else {
-            setAllProjectsAccess(isSuper || isRoleAdmin || !hasSpecificAssignments);
+            setAllProjectsAccess(isSuper || isRoleAdmin || pIds.length === 0);
           }
         } else {
           setAssignedProjectIds([]);
           setAllProjectsAccess(true);
         }
-      } catch (assignCatch) {
-        console.warn('Project assignments query error:', assignCatch);
+      } catch {
         setAssignedProjectIds([]);
         setAllProjectsAccess(true);
       }
 
-      setProfile(data);
-      if (data) {
-        await fetchUserPermissions(userId, data);
+      // Step 4: Session Caching for permissions (refetch only on role change or forceRefresh)
+      const roleKey = (data?.roles?.code || data?.role || 'STAFF').toUpperCase().trim();
+      const cacheKey = `${userId}:${roleKey}`;
+
+      let resolvedPermissions = null;
+      if (!forceRefresh && permissionsCacheRef.current.has(cacheKey)) {
+        // Use cached permissions for the session (No repeated identical GET requests!)
+        resolvedPermissions = permissionsCacheRef.current.get(cacheKey);
+      } else {
+        // Query live permissions or apply baseline
+        resolvedPermissions = await queryLivePermissionsWithBackoff(userId, data);
+        if (resolvedPermissions && resolvedPermissions.length > 0) {
+          permissionsCacheRef.current.set(cacheKey, resolvedPermissions);
+        }
       }
+
+      // Step 5: Proceed only after permissions are resolved
+      setPermissions(resolvedPermissions || getSafeBaselinePermissions(data?.role, userObj.email));
+      setProfile(data);
     } catch (e) {
-      console.error('Error fetching profile:', e);
+      if (!hasLoggedProfileErrorRef.current) {
+        console.warn('[AuthContext] General auth error:', e?.message || e);
+        hasLoggedProfileErrorRef.current = true;
+      }
     } finally {
+      inFlightFetchRef.current = false;
       setLoading(false);
     }
-  }, [fetchUserPermissions]);
+  }, [queryLivePermissionsWithBackoff]);
 
   useEffect(() => {
-    // Get initial session
+    // Initial Session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user) fetchProfile(session.user);
       else setLoading(false);
     });
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    // Listen for Auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
-      if (session?.user) fetchProfile(session.user);
-      else {
+      if (session?.user) {
+        // On explicit sign-in, clear cache to ensure fresh permissions
+        if (event === 'SIGNED_IN') {
+          permissionsCacheRef.current.clear();
+          hasLoggedProfileErrorRef.current = false;
+          hasLoggedPermFailureRef.current = false;
+        }
+        fetchProfile(session.user);
+      } else {
+        permissionsCacheRef.current.clear();
         setProfile(null);
         setPermissions([]);
         setAssignedProjectIds([]);
@@ -273,42 +281,40 @@ export const AuthProvider = ({ children }) => {
     return () => subscription.unsubscribe();
   }, [fetchProfile]);
 
-  // Listen for real-time RBAC updates (role_permissions, roles, profiles) for current user
+  // Real-time RBAC updates with 1000ms debounce to prevent request storms
   useEffect(() => {
     if (!user) return;
 
+    const debouncedRefresh = () => {
+      if (realtimeDebounceTimerRef.current) {
+        clearTimeout(realtimeDebounceTimerRef.current);
+      }
+      realtimeDebounceTimerRef.current = setTimeout(() => {
+        permissionsCacheRef.current.clear();
+        fetchProfile(user, true);
+      }, 1000);
+    };
+
     const channel = supabase
       .channel(`realtime_auth_rbac_${user.id}`)
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'role_permissions' },
-        () => {
-          fetchProfile(user);
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'roles' },
-        () => {
-          fetchProfile(user);
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'profiles', filter: `id=eq.${user.id}` },
-        () => {
-          fetchProfile(user);
-        }
-      )
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'role_permissions' }, debouncedRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'roles' }, debouncedRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles', filter: `id=eq.${user.id}` }, debouncedRefresh)
       .subscribe();
 
     return () => {
+      if (realtimeDebounceTimerRef.current) {
+        clearTimeout(realtimeDebounceTimerRef.current);
+      }
       supabase.removeChannel(channel);
     };
   }, [user, fetchProfile]);
 
   const signIn = (email, password) => supabase.auth.signInWithPassword({ email, password });
-  const signOut = () => supabase.auth.signOut();
+  const signOut = () => {
+    permissionsCacheRef.current.clear();
+    return supabase.auth.signOut();
+  };
 
   const isUserEmailAdmin = (user?.email || '').toLowerCase() === 'admin@stockflow.com';
   const roleCode = profile?.roles?.code || (profile?.role ? profile.role.toUpperCase() : 'STAFF');
@@ -344,7 +350,10 @@ export const AuthProvider = ({ children }) => {
       assignedProjectIds,
       allProjectsAccess,
       mustChangePassword: profile?.must_change_password === true,
-      refreshProfile: () => fetchProfile(user)
+      refreshProfile: () => {
+        permissionsCacheRef.current.clear();
+        return fetchProfile(user, true);
+      }
     }}>
       {!loading && children}
     </AuthContext.Provider>
