@@ -1,5 +1,19 @@
 # Changelog
 
+## [v1.4.88] [2026-09-08] Vercel Build Optimization & ERR_INSUFFICIENT_RESOURCES Fix
+
+- **Vercel Build Resource & Memory Optimization (`vercel.json`):**
+  - เพิ่ม `NODE_OPTIONS=--max-old-space-size=4096` ใน `buildCommand` เพื่อขยาย memory allocation limit และเพิ่มประสิทธิภาพ Node.js Garbage Collection ในช่วง Vite build
+  - เพิ่ม `installCommand: "npm install"` ให้ Vercel build environment ติดตั้ง dependencies อย่างชัดเจนและถูกต้อง
+- **Vite Build Configuration Hardening (`vite.config.js`):**
+  - กำหนด `sourcemap: false` เพื่อลด memory footprint ในการประมวลผล source maps ระหว่าง production bundling
+  - กำหนด `minify: 'esbuild'` อย่างชัดเจน
+  - เพิ่ม `vendor-supabase` (`@supabase/supabase-js`) แยกออกมาเป็น vendor chunk อิสระใน `manualChunks` เพื่อกระจาย chunk memory ไม่ให้กระจุกตัวใน main bundle
+- **Dependency Overrides Optimization (`package.json`, `package-lock.json`):**
+  - ถอด `esbuild` override (`^0.25.0`) ออกจาก `package.json` ให้ Vite 5.4.21 ใช้ esbuild เวอร์ชันเสถียรที่ผ่านการ optimize แล้ว (`0.21.5`)
+- **Mandatory System Version Management (Rule 10):**
+  - ปรับเวอร์ชันระบบเป็น `1.4.88` ใน `package.json`, `package-lock.json`
+
 ## [v1.4.87] [2026-09-08] Vercel Build ERESOLVE Hardening & Vite Strict Override
 
 - **Vite & Plugin React Peer Dependency Alignment (`package.json`, `package-lock.json`):**

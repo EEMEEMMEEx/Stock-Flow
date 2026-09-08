@@ -118,6 +118,8 @@ export default defineConfig(({ mode }) => {
     build: {
       modulePreload: false,
       chunkSizeWarningLimit: 1500,
+      sourcemap: false,
+      minify: 'esbuild',
       rollupOptions: {
         output: {
           manualChunks: {
@@ -125,7 +127,8 @@ export default defineConfig(({ mode }) => {
             'vendor-pdf': ['@react-pdf/renderer'],
             'vendor-charts': ['recharts'],
             'vendor-ui': ['lucide-react', 'framer-motion'],
-            'vendor-utils': ['xlsx', 'date-fns']
+            'vendor-utils': ['xlsx', 'date-fns'],
+            'vendor-supabase': ['@supabase/supabase-js']
           }
         }
       }
