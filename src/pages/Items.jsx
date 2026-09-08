@@ -785,8 +785,8 @@ const Items = () => {
           valB = pB.sku || '';
           break;
         case 'project_display':
-          valA = pA.project_display || '';
-          valB = pB.project_display || '';
+          valA = pA.project_location || pA.project_display || '';
+          valB = pB.project_location || pB.project_display || '';
           break;
         case 'category_name':
           valA = pA.category_name || '';
@@ -1344,21 +1344,15 @@ const Items = () => {
                         )}
                       </TableCell>
 
-                      {/* Destination Project & Storage Location */}
+                      {/* Destination Storage Location / Warehouse Tag */}
                       <TableCell>
-                        {item.project_display !== '-' ? (
-                          <div className="space-y-1">
-                            <span className="inline-flex items-center gap-1 font-semibold text-primary text-xs">
-                              <Building2 className="w-3 h-3 shrink-0" />
-                              {item.project_display}
-                            </span>
-                            {item.project_location && (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
-                                <Building2 className="w-3 h-3 shrink-0 inline" />
-                                <span>{item.project_location}</span>
-                              </span>
-                            )}
-                          </div>
+                        {item.project_location ? (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
+                            <Building2 className="w-3 h-3 shrink-0 inline" />
+                            <span>{item.project_location}</span>
+                          </span>
+                        ) : item.project_display !== '-' ? (
+                          <span className="text-muted-foreground/50 font-italic text-[11px]">ไม่ระบุคลัง</span>
                         ) : (
                           <span className="text-muted-foreground/50 font-italic text-[11px]">ไม่ระบุโครงการ</span>
                         )}
@@ -1504,15 +1498,17 @@ const Items = () => {
                     </div>
                   </div>
 
-                  {/* Project Location Pill */}
-                  <div className="mt-3 p-2.5 rounded-lg bg-muted/40 border border-border/60 text-xs space-y-0.5">
-                    <div className="font-semibold text-primary flex items-center gap-1.5 truncate">
-                      <Building2 className="w-3.5 h-3.5 shrink-0" />
-                      <span className="truncate">{item.project_display}</span>
-                    </div>
-                    {item.project_location && (
-                      <div className="text-[10px] text-muted-foreground truncate pl-5">
-                        {item.project_location}
+                  {/* Storage Location / Warehouse Pill */}
+                  <div className="mt-3 p-2.5 rounded-lg bg-muted/40 border border-border/60 text-xs">
+                    {item.project_location ? (
+                      <div className="font-bold text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5 truncate">
+                        <Building2 className="w-3.5 h-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                        <span className="truncate">{item.project_location}</span>
+                      </div>
+                    ) : (
+                      <div className="text-muted-foreground/50 italic text-[11px] flex items-center gap-1.5">
+                        <Building2 className="w-3.5 h-3.5 shrink-0 opacity-40" />
+                        <span>ไม่ระบุคลัง</span>
                       </div>
                     )}
                   </div>

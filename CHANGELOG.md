@@ -1,5 +1,15 @@
 # Changelog
 
+## [v1.4.86] [2026-09-08] Items Page UI Organization Label Cleanup
+
+- **Organization Label Removal in Inventory Displays (`src/pages/Items.jsx`):**
+  - นำการแสดงผลชื่อองค์กร/รหัสโครงการ (`item.project_display`: เช่น `20317-9999, 25310-9999 — DOPA-DTRS | USO-SHF`) ออกจากแถวตารางข้อมูล (Table Rows) และการ์ดกริด (Bento Cards) ในหน้า `/items` ตามคำขอ
+  - คงการแสดงผลแท็กคลังสินค้า / สถานที่จัดเก็บ (`item.project_location`: เช่น `คลัง EMS (SAP)`) พร้อม Badge สีเขียวไอคอน `Building2` และการจัดระยะ Layout เดิมไว้อย่างสมบูรณ์
+  - ปรับปรุงการจัดเรียงลำดับคอลัมน์สถานที่จัดเก็บ (`Location`) ให้เรียงตามชื่อคลัง (`project_location`) เป็นหลัก
+  - คง Data logic และ backend mapping เดิมไว้ครบถ้วนเพื่อรองรับการค้นหา (Search)
+- **Mandatory System Version Management (Rule 10):**
+  - ปรับเวอร์ชันระบบเป็น `1.4.86` ใน `package.json`, `package-lock.json`
+
 ## [v1.4.85] [2026-09-08] Reusable BOM Category Cards & Equipment Set Integration
 
 - **Reusable Category Card Component (`SiteKitCategoryCard.jsx`):**
