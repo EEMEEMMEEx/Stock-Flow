@@ -1,5 +1,23 @@
 # Changelog
 
+## [v1.4.85] [2026-09-08] Reusable BOM Category Cards & Equipment Set Integration
+
+- **Reusable Category Card Component (`SiteKitCategoryCard.jsx`):**
+  - สร้างคอมโพเนนต์การ์ดหมวดหมู่ BOM ที่สามารถนำกลับมาใช้ซ้ำได้ (`SiteKitCategoryCard`) รองรับการแสดงผลแบบ Data-driven 100%
+  - คงโครงสร้าง UI และดีไซน์เดิมครบถ้วน: Card container, Gradient top border (เขียว-ฟ้าเมื่อพร้อมจัดชุด, ส้ม-แดงเมื่อติดสต็อก), Category icon, Category title, BOM item count, Customization status (`• ปรับแต่งแล้ว`), Quantity status badge (`CheckCircle2` / `AlertTriangle`), Limited stock bottleneck summary box, และ Action footer
+  - ใช้ Lucide React SVG Icons 100% (Zero emoji) พร้อมฟังก์ชัน `resolveCategoryVisuals` ที่จับคู่ไอคอนและโทนสี Gradient อัตโนมัติตามหมวดหมู่อุปกรณ์
+- **Dynamic Equipment Set & Real Category Integration (`siteKits.js`):**
+  - เชื่อมโยงข้อมูลหมวดหมู่ **ชุดอุปกรณ์รวม (Equipment Set)** (`8986d991-42ef-4c79-8d38-7790e163117e`) จากฐานข้อมูลจริง เข้าสู่ระบบการ์ด BOM
+  - ปรับปรุง `fetchSiteKitsAvailability` ให้อ่านและประมวลผลหมวดหมู่จริงแบบไดนามิกจากตาราง `categories`, `site_bom_templates`, และ `items`
+  - ป้องกันการสร้างการ์ด generic หรือ placeholder ในชื่อ "Other" โดยสิ้นเชิง
+  - รองรับการเพิ่มหมวดหมู่อุปกรณ์ใหม่ในอนาคต โดยจะแสดงเป็นการ์ดบนหน้า Dashboard ทันทีโดยไม่ต้องแก้โค้ด UI
+- **Dashboard & Reports Modernization (`SiteKitAvailabilityCards.jsx`, `ReportSiteKits.jsx`):**
+  - ปรับปรุง `SiteKitAvailabilityCards.jsx` ให้ใช้งาน `<SiteKitCategoryCard>` ลดความซ้ำซ้อนของ JSX
+  - ขจัด Dependency และไอคอนภายนอกที่ไม่ใช่ Lucide SVG (`MicrowaveAntennaIcon`, `BaseStationTowerIcon`)
+  - ซิงค์การแสดงผลไอคอนและจำนวนหมวดหมู่แบบไดนามิกใน `ReportSiteKits.jsx`
+- **Mandatory System Version Management (Rule 10):**
+  - ปรับเวอร์ชันระบบเป็น `1.4.85` ใน `package.json`, `package-lock.json`
+
 ## [v1.4.84] [2026-09-08] Production Dashboard Preload Mismatch & Supabase RPC Fix
 
 - **Service Worker / Preload Resource Mismatch Remediated (`vite.config.js`, `index.html`):**

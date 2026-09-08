@@ -10,8 +10,6 @@ import {
   Trash2, RotateCcw, Save, Search, 
   Package, ShieldCheck, Check, Info, GripVertical
 } from 'lucide-react';
-import MicrowaveAntennaIcon from '@/components/icons/MicrowaveAntennaIcon';
-import BaseStationTowerIcon from '@/components/icons/BaseStationTowerIcon';
 import { 
   Dialog, DialogContent, DialogHeader, 
   DialogTitle, DialogDescription 
@@ -23,20 +21,7 @@ import {
   resetCategoryBomToDefault, 
   fetchMasterCatalogItems 
 } from '@/lib/siteKits';
-
-const CATEGORY_ICONS = {
-  '1d2b2e5d-f8a6-4b73-ad66-bbeb16483dba': MicrowaveAntennaIcon,
-  '793d55c3-4750-42e1-a82e-438e7be131c8': BaseStationTowerIcon,
-  '3fb47021-6c65-4a4f-bca4-595280d9ba97': Router,
-  '823af00d-99b0-4d9a-943b-0ae29bc83ff0': Antenna,
-};
-
-const CATEGORY_GRADIENTS = {
-  '1d2b2e5d-f8a6-4b73-ad66-bbeb16483dba': 'from-blue-600/15 via-blue-500/5 to-transparent border-blue-500/30 text-blue-700 dark:text-blue-400',
-  '793d55c3-4750-42e1-a82e-438e7be131c8': 'from-emerald-600/15 via-emerald-500/5 to-transparent border-emerald-500/30 text-emerald-700 dark:text-emerald-400',
-  '3fb47021-6c65-4a4f-bca4-595280d9ba97': 'from-indigo-600/15 via-indigo-500/5 to-transparent border-indigo-500/30 text-indigo-700 dark:text-indigo-400',
-  '823af00d-99b0-4d9a-943b-0ae29bc83ff0': 'from-amber-600/15 via-amber-500/5 to-transparent border-amber-500/30 text-amber-700 dark:text-amber-400',
-};
+import SiteKitCategoryCard, { resolveCategoryVisuals } from './SiteKitCategoryCard';
 
 const COMMON_UNITS = ['ชิ้น', 'ชุด', 'เมตร', 'ลูก', 'ต้น', 'เครื่อง', 'กล่อง', 'ม้วน', 'แพ็ค'];
 
@@ -490,89 +475,16 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
         </div>
       </div>
 
-      {/* 4 Category Cards Grid */}
+      {/* Responsive BOM Category Cards Grid (Data-driven) */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        {siteKits.map((cat) => {
-          const Icon = CATEGORY_ICONS[cat.category_id] || Layers;
-          const isReady = cat.complete_sets > 0;
-          const gradientCls = CATEGORY_GRADIENTS[cat.category_id] || 'from-primary/10 via-primary/5 to-transparent border-border/80 text-primary';
-
-          return (
-            <Card
-              key={cat.category_id}
-              onClick={() => setSelectedCategory(cat)}
-              className="group relative overflow-hidden rounded-xl border border-border bg-card shadow-xs hover:border-emerald-500/50 hover:shadow-xs transition-all duration-150 cursor-pointer flex flex-col justify-between"
-            >
-              {/* Subtle top color gradient accent */}
-              <div className={`absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r ${isReady ? 'from-emerald-500 to-teal-400' : 'from-rose-500 to-amber-500'}`} />
-
-              <CardHeader className="pb-2 pt-4 px-5">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center bg-gradient-to-br ${gradientCls} border shrink-0`}>
-                      <Icon className="w-5 h-5" />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <CardTitle className="text-sm font-bold truncate text-foreground group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
-                          {cat.category_name}
-                        </CardTitle>
-                      </div>
-                      <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground truncate">
-                        <span>BOM {cat.total_items_in_bom || cat.items?.length || 0} รายการ</span>
-                        {cat.is_customized && (
-                          <span className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold">• ปรับแต่งแล้ว</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Complete Sets Badge */}
-                  <div className="shrink-0 text-right">
-                    <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black border shadow-2xs ${
-                      isReady 
-                        ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/40' 
-                        : 'bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/40'
-                    }`}>
-                      {isReady ? (
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                      ) : (
-                        <AlertTriangle className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
-                      )}
-                      <span>{cat.complete_sets} ชุด</span>
-                    </div>
-                  </div>
-                </div>
-              </CardHeader>
-
-              <CardContent className="px-5 pb-4 pt-1 space-y-3 flex-1 flex flex-col justify-between">
-                {/* Bottleneck Summary Box */}
-                <div className="rounded-lg p-2.5 bg-muted/40 border border-border/50 text-[11px] space-y-1.5 min-h-[58px]">
-                  <div className="flex items-center gap-1.5 font-semibold text-muted-foreground">
-                    <AlertCircle className={`w-3.5 h-3.5 ${isReady ? 'text-amber-500' : 'text-rose-500'}`} />
-                    <span>{isReady ? 'สต็อกจำกัดสำหรับชุดถัดไป:' : 'สต็อกจำกัด (ยังจัดชุดไม่ได้):'}</span>
-                  </div>
-                  <div className="text-foreground font-medium line-clamp-2 leading-relaxed">
-                    {cat.bottlenecks && cat.bottlenecks.length > 0 ? (
-                      cat.bottlenecks.slice(0, 2).join(', ') + (cat.bottlenecks.length > 2 ? ` (+อีก ${cat.bottlenecks.length - 2} รายการ)` : '')
-                    ) : (
-                      'พร้อมจัดชุดทุกรายการ'
-                    )}
-                  </div>
-                </div>
-
-                {/* Footer Action */}
-                <div className="flex items-center justify-between text-[11px] font-semibold text-muted-foreground pt-1 border-t border-border/40 group-hover:text-foreground transition-colors">
-                  <span>{canEditBom ? 'ดูสเปก / แก้ไข BOM' : 'ดูสเปกและสต็อก BOM'}</span>
-                  <div className="flex items-center gap-0.5 text-emerald-600 dark:text-emerald-400">
-                    <span>{canEditBom ? 'จัดการ' : 'เปิดดู'}</span>
-                    <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
+        {siteKits.map((cat) => (
+          <SiteKitCategoryCard
+            key={cat.category_id}
+            category={cat}
+            canEditBom={canEditBom}
+            onSelect={setSelectedCategory}
+          />
+        ))}
       </div>
 
       {/* Detailed BOM Breakdown & Admin Editor Dialog Modal */}
@@ -589,9 +501,10 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 shrink-0">
-                  {selectedCategory && (
-                    React.createElement(CATEGORY_ICONS[selectedCategory.category_id] || Layers, { className: 'w-5 h-5' })
-                  )}
+                  {selectedCategory && (() => {
+                    const { Icon } = resolveCategoryVisuals(selectedCategory);
+                    return <Icon className="w-5 h-5" />;
+                  })()}
                 </div>
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">

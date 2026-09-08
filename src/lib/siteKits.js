@@ -76,6 +76,21 @@ export const SITE_BOM_TEMPLATES = [
       { po: 6, part: '30207-0024-01908', name: 'Grounding_kit_for_1/2"_cable', qty: 1, unit: 'ชิ้น', mandatory: true },
       { po: 7, part: '30207-0024-04417', name: 'สายอากาศ SC459-SF1LNF(D00) [806-869MHz]', qty: 2, unit: 'ต้น', mandatory: true }
     ]
+  },
+  {
+    category_id: '8986d991-42ef-4c79-8d38-7790e163117e',
+    category_name: 'ชุดอุปกรณ์รวม (Equipment Set)',
+    code: 'EQSET',
+    icon: 'Boxes',
+    description: 'ชุดอุปกรณ์รวมและอุปกรณ์ประกอบการติดตั้ง',
+    bom: [
+      { po: 1, part: 'SKU-2NOH98D', name: 'Battery (BL1806)', qty: 1, unit: 'ชิ้น', mandatory: true },
+      { po: 2, part: 'SKU-F7EBXX', name: 'Charger (CH10A07)', qty: 1, unit: 'ชิ้น', mandatory: true },
+      { po: 3, part: 'SKU-HL3K0F', name: 'Cutting feeder 1/2', qty: 1, unit: 'ชิ้น', mandatory: true },
+      { po: 4, part: 'SKU-HL3OGR', name: 'Cutting feeder 7/8', qty: 1, unit: 'ชิ้น', mandatory: true },
+      { po: 5, part: 'SKU-1311F57', name: 'Dummy Load Bird 100 Watts', qty: 1, unit: 'ชิ้น', mandatory: true },
+      { po: 6, part: 'SKU-47O4GEP', name: 'Battery (BL1806) สำรอง', qty: 1, unit: 'ชิ้น', mandatory: false, notes: 'spare' }
+    ]
   }
 ];
 
@@ -122,6 +137,10 @@ function findMatchingItem(items, b) {
     if (bName.includes('module48vdc1000watt') && iName.includes('r48-1000e3')) return true;
     if (bName.includes('heat exchanger') && iName.includes('heat exchanger')) return true;
     if (bName.includes('vision_lithium') && iName.includes('vision_lithium')) return true;
+    if (bName.includes('battery (bl1806)') && iName.includes('battery (bl1806)')) return true;
+    if (bName.includes('charger (ch10a07)') && iName.includes('charger (ch10a07)')) return true;
+    if (bName.includes('cutting feeder') && iName.includes('cutting feeder')) return true;
+    if (bName.includes('dummy load bird') && iName.includes('dummy load bird')) return true;
 
     return false;
   });
@@ -147,24 +166,27 @@ function findMatchingItem(items, b) {
 
 /**
  * Fetch real-time site kits availability across all categories and warehouses
- * Uses database `site_bom_templates` if configured, otherwise falls back to `SITE_BOM_TEMPLATES`.
+ * Dynamically queries real categories from Supabase (including Equipment Set),
+ * with strict rejection of any generic 'Other' category.
  * @param {string|null} projectId - Optional project UUID to filter stock by project/location
  * @returns {Promise<Array>} List of category BOM availability objects
  */
 export async function fetchSiteKitsAvailability(projectId = null) {
   try {
-    // 1. Fetch items, stock balance, and dynamic BOM templates from DB
-    const [itemsRes, stockRes, dbTemplatesRes] = await Promise.all([
+    // 1. Fetch items, stock balance, dynamic BOM templates, and categories from DB in parallel
+    const [itemsRes, stockRes, dbTemplatesRes, categoriesRes] = await Promise.all([
       supabase.from('items').select('*'),
       projectId 
         ? supabase.from('stock_balance').select('*').eq('project_id', projectId)
         : supabase.from('stock_balance').select('*'),
-      supabase.from('site_bom_templates').select('*').order('po_seq', { ascending: true })
+      supabase.from('site_bom_templates').select('*').order('po_seq', { ascending: true }),
+      supabase.from('categories').select('*').order('name', { ascending: true })
     ]);
 
     const items = itemsRes.data || [];
     const stock = stockRes.data || [];
     const dbTemplates = dbTemplatesRes.data || [];
+    const dbCategories = categoriesRes.data || [];
 
     // Group dbTemplates by category_id
     const dbTemplatesByCat = {};
@@ -191,16 +213,87 @@ export async function fetchSiteKitsAvailability(projectId = null) {
       stockMap[s.item_id] = (stockMap[s.item_id] || 0) + Number(s.balance || 0);
     });
 
+    // Build unified list of real categories (strictly excluding any category named 'Other' / 'อื่นๆ')
+    const unifiedCategoriesMap = new Map();
+
+    // First seed with known standard templates
+    SITE_BOM_TEMPLATES.forEach(t => {
+      unifiedCategoriesMap.set(t.category_id, {
+        category_id: t.category_id,
+        category_name: t.category_name,
+        code: t.code,
+        icon: t.icon,
+        description: t.description,
+        bom: t.bom
+      });
+    });
+
+    // Merge with actual categories from the database
+    dbCategories.forEach(c => {
+      const catName = (c.name || '').trim();
+      const lower = catName.toLowerCase();
+      // Enforce strict requirement: Do not create or show a generic 'Other' category
+      if (lower === 'other' || lower === 'อื่นๆ' || lower === 'etc') return;
+
+      const existing = unifiedCategoriesMap.get(c.id);
+      if (existing) {
+        // Sync display name with DB if available
+        if (catName) existing.category_name = catName;
+        if (c.description) existing.description = c.description;
+      } else {
+        unifiedCategoriesMap.set(c.id, {
+          category_id: c.id,
+          category_name: catName,
+          code: c.code || '',
+          icon: 'Package',
+          description: c.description || '',
+          bom: []
+        });
+      }
+    });
+
+    // Also include any categories present in dbTemplates if not yet mapped
+    Object.keys(dbTemplatesByCat).forEach(catId => {
+      if (!unifiedCategoriesMap.has(catId)) {
+        unifiedCategoriesMap.set(catId, {
+          category_id: catId,
+          category_name: 'หมวดหมู่อุปกรณ์ (BOM)',
+          code: '',
+          icon: 'Boxes',
+          description: '',
+          bom: []
+        });
+      }
+    });
+
     const summaryKPI = [];
 
-    for (const template of SITE_BOM_TEMPLATES) {
+    for (const [catId, catDef] of unifiedCategoriesMap.entries()) {
       let minSets = Infinity;
       const itemsDetail = [];
 
       // Prefer DB configured template if available for this category
-      const bomList = (dbTemplatesByCat[template.category_id] && dbTemplatesByCat[template.category_id].length > 0)
-        ? dbTemplatesByCat[template.category_id]
-        : template.bom;
+      let bomList = (dbTemplatesByCat[catId] && dbTemplatesByCat[catId].length > 0)
+        ? dbTemplatesByCat[catId]
+        : (catDef.bom || []);
+
+      // If category has no explicit template, dynamically group items belonging to this category
+      if (bomList.length === 0) {
+        const catItems = items.filter(i => i.category_id === catId);
+        if (catItems.length > 0) {
+          bomList = catItems.slice(0, 20).map((ci, idx) => ({
+            id: ci.id,
+            po: idx + 1,
+            part: ci.sku || '',
+            name: ci.name,
+            qty: 1,
+            unit: ci.unit || 'ชิ้น',
+            mandatory: ci.item_type !== 'CHILD',
+            item_id: ci.id,
+            notes: ci.item_type === 'CHILD' ? 'spare' : ''
+          }));
+        }
+      }
 
       for (const b of bomList) {
         const isSpare = b.mandatory === false || b.notes === 'spare';
@@ -234,11 +327,11 @@ export async function fetchSiteKitsAvailability(projectId = null) {
       const bottleneckItems = itemsDetail.filter(i => i.is_mandatory && i.sets_possible === minSets);
 
       summaryKPI.push({
-        category_id: template.category_id,
-        category_name: template.category_name,
-        code: template.code,
+        category_id: catDef.category_id,
+        category_name: catDef.category_name,
+        code: catDef.code,
         complete_sets: minSets,
-        is_customized: !!(dbTemplatesByCat[template.category_id] && dbTemplatesByCat[template.category_id].length > 0),
+        is_customized: !!(dbTemplatesByCat[catDef.category_id] && dbTemplatesByCat[catDef.category_id].length > 0),
         bottlenecks: bottleneckItems.map(i => i.bom_name),
         bottleneck_details: bottleneckItems.map(i => 
           `${i.bom_name} (คงเหลือ: ${i.total_stock} ${i.unit}, ใช้: ${i.qty_per_site} ${i.unit}/ไซต์)`

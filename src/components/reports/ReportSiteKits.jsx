@@ -7,19 +7,11 @@ import {
   FileSpreadsheet, FileText, Layers, 
   Router, Antenna, RefreshCw, Search 
 } from 'lucide-react';
-import MicrowaveAntennaIcon from '@/components/icons/MicrowaveAntennaIcon';
-import BaseStationTowerIcon from '@/components/icons/BaseStationTowerIcon';
 import { utils, writeFile } from 'xlsx';
 import toast from 'react-hot-toast';
 import { fetchSiteKitsAvailability } from '@/lib/siteKits';
 import { useAuth } from '@/contexts/AuthContext';
-
-const CATEGORY_ICONS = {
-  '1d2b2e5d-f8a6-4b73-ad66-bbeb16483dba': MicrowaveAntennaIcon,
-  '793d55c3-4750-42e1-a82e-438e7be131c8': BaseStationTowerIcon,
-  '3fb47021-6c65-4a4f-bca4-595280d9ba97': Router,
-  '823af00d-99b0-4d9a-943b-0ae29bc83ff0': Antenna,
-};
+import { resolveCategoryVisuals } from '@/components/dashboard/SiteKitCategoryCard';
 
 const ReportSiteKits = ({ projects = [] }) => {
   const { can } = useAuth();
@@ -189,11 +181,11 @@ const ReportSiteKits = ({ projects = [] }) => {
               selectedCategoryId === 'all' ? 'bg-emerald-600 text-white shadow-xs' : 'border-border/70'
             }`}
           >
-            <Layers className="w-3.5 h-3.5 mr-1" /> ทั้งหมด 4 หมวด
+            <Layers className="w-3.5 h-3.5 mr-1" /> ทั้งหมด ({siteKits.length} หมวด)
           </Button>
 
           {siteKits.map(cat => {
-            const Icon = CATEGORY_ICONS[cat.category_id] || Layers;
+            const { Icon } = resolveCategoryVisuals(cat);
             const isSelected = selectedCategoryId === cat.category_id;
             return (
               <Button
@@ -281,7 +273,7 @@ const ReportSiteKits = ({ projects = [] }) => {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {siteKits.map(cat => {
-          const Icon = CATEGORY_ICONS[cat.category_id] || Layers;
+          const { Icon } = resolveCategoryVisuals(cat);
           const isReady = cat.complete_sets > 0;
 
           return (
