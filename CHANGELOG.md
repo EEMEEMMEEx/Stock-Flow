@@ -1,5 +1,15 @@
 # Changelog
 
+## [v1.4.90] [2026-09-08] Eliminate Auth Listener & Re-fetch Storm Cycle
+
+- **Decouple Auth Listener from Reactive Dependencies (`src/contexts/AuthProvider.jsx`):**
+  - แก้ไข `useEffect` ของ `onAuthStateChange` และ `getSession()` ให้ Mount เพียงครั้งเดียว (`[]`) โดยใช้ `fetchProfileRef`
+  - ขจัดปัญหา Dependency Loop ที่เกิดจากการอัปเดต `user` state แล้วไป trigger ให้ `useEffect` unmount/remount listener ใหม่เรื่อยๆ จนส่งผลให้เกิดการยิงคำขอ `profiles` และ `user_project_assignments` ถี่ระดับเสี้ยววินาที (100–200ms)
+  - เพิ่ม `loadedProfileUserIdRef` เพื่อป้องกันการยิงคิวรีโปรไฟล์ซ้ำหากผู้ใช้ในเซสชันได้รับการยืนยันข้อมูลเรียบร้อยแล้ว
+  - กำหนด Dependency ของ Realtime Subscription ให้ผูกกับ `user.id` โดยตรง แทนการผูกกับฟังก์ชัน ทำให้ไม่มีการสับเปลี่ยน Channel โดยไม่จำเป็น
+- **Mandatory System Version Management (Rule 10):**
+  - ปรับเวอร์ชันระบบเป็น `1.4.90` ใน `package.json`, `package-lock.json`
+
 ## [v1.4.89] [2026-09-08] Robust User Permission Verification & Request Storm Prevention
 
 - **Single-Request Profile & Role Retrieval (`src/contexts/AuthProvider.jsx`):**

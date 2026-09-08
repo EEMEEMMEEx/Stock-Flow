@@ -45,7 +45,15 @@ export const AuthProvider = ({ children }) => {
   const [allProjectsAccess, setAllProjectsAccess] = useState(true);
   const [loading, setLoading] = useState(true);
 
-  // Caching & Concurrency Control Refs (Step 4 & Request Storm Prevention)
+  // Stable Refs (Step 4 & Infinite Loop / Request Storm Elimination)
+  const userRef = useRef(user);
+  userRef.current = user;
+
+  const profileRef = useRef(profile);
+  profileRef.current = profile;
+
+  const fetchProfileRef = useRef(null);
+  const loadedProfileUserIdRef = useRef(null);
   const permissionsCacheRef = useRef(new Map());
   const inFlightFetchRef = useRef(false);
   const hasLoggedProfileErrorRef = useRef(false);
@@ -53,6 +61,7 @@ export const AuthProvider = ({ children }) => {
   const realtimeDebounceTimerRef = useRef(null);
 
   // Step 2 & 3: Query live permissions via get_my_permissions / role_permissions with exponential backoff
+  // Stable callback with NO reactive dependencies
   const queryLivePermissionsWithBackoff = useCallback(async (userId, userProfile) => {
     const roleId = userProfile?.role_id || userProfile?.roles?.id;
     const roleCode = (userProfile?.roles?.code || userProfile?.role || 'staff').toUpperCase().trim();
@@ -63,15 +72,12 @@ export const AuthProvider = ({ children }) => {
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
         let rpcData = null;
-        let rpcErr = null;
 
         // 1a. Try get_my_permissions RPC (alias for get_user_permissions(auth.uid()))
         try {
           const resMy = await withTimeout(supabase.rpc('get_my_permissions'), 3500);
           if (!resMy.error && Array.isArray(resMy.data) && resMy.data.length > 0) {
             rpcData = resMy.data;
-          } else if (resMy.error) {
-            rpcErr = resMy.error;
           }
         } catch {
           // RPC timeout or network error, proceed to fallback
@@ -83,7 +89,6 @@ export const AuthProvider = ({ children }) => {
             const resUser = await withTimeout(supabase.rpc('get_user_permissions', { p_user_id: userId }), 3500);
             if (!resUser.error && Array.isArray(resUser.data) && resUser.data.length > 0) {
               rpcData = resUser.data;
-              rpcErr = null;
             }
           } catch {
             // RPC timeout, proceed to direct role_permissions table lookup
@@ -137,20 +142,25 @@ export const AuthProvider = ({ children }) => {
       hasLoggedPermFailureRef.current = true;
     }
 
-    return getSafeBaselinePermissions(detectedRole, user?.email);
-  }, [user]);
+    return getSafeBaselinePermissions(detectedRole, userRef.current?.email);
+  }, []);
 
   // Step 1: Fetch user's profile and role (Single Request) + Session Cache (Step 4)
+  // Stable callback depends ONLY on queryLivePermissionsWithBackoff
   const fetchProfile = useCallback(async (userObj, forceRefresh = false) => {
     if (!userObj) return;
+    const userId = userObj.id;
+
+    // Session check: Do NOT re-fetch profile if already resolved for this user and not forceRefresh
+    if (!forceRefresh && loadedProfileUserIdRef.current === userId && profileRef.current) {
+      return;
+    }
 
     // Concurrency Lock: Prevent simultaneous fetch requests from creating request storms
     if (inFlightFetchRef.current) return;
     inFlightFetchRef.current = true;
 
     try {
-      const userId = userObj.id;
-
       // Single Request: Fetch profile and joined role record in ONE roundtrip
       let { data, error } = await supabase
         .from('profiles')
@@ -180,6 +190,7 @@ export const AuthProvider = ({ children }) => {
       // Inactive / Suspended check: Revoke access and sign out
       if (data && (data.status === 'inactive' || data.status === 'suspended')) {
         setProfile(data);
+        profileRef.current = data;
         setPermissions([]);
         setLoading(false);
         try {
@@ -236,8 +247,11 @@ export const AuthProvider = ({ children }) => {
       }
 
       // Step 5: Proceed only after permissions are resolved
-      setPermissions(resolvedPermissions || getSafeBaselinePermissions(data?.role, userObj.email));
+      const finalPerms = resolvedPermissions || getSafeBaselinePermissions(data?.role, userObj.email);
+      setPermissions(finalPerms);
       setProfile(data);
+      profileRef.current = data;
+      loadedProfileUserIdRef.current = userId;
     } catch (e) {
       if (!hasLoggedProfileErrorRef.current) {
         console.warn('[AuthContext] General auth error:', e?.message || e);
@@ -249,28 +263,51 @@ export const AuthProvider = ({ children }) => {
     }
   }, [queryLivePermissionsWithBackoff]);
 
+  // Connect stable ref
+  fetchProfileRef.current = fetchProfile;
+
+  // Initial Session & Auth Listener — RUNS ONCE ON MOUNT ONLY
+  // Eliminates re-subscription feedback storm
   useEffect(() => {
-    // Initial Session
+    let isMounted = true;
+
+    // 1. Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      if (session?.user) fetchProfile(session.user);
-      else setLoading(false);
+      if (!isMounted) return;
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+      if (currentUser) {
+        fetchProfileRef.current?.(currentUser);
+      } else {
+        setLoading(false);
+      }
     });
 
-    // Listen for Auth state changes
+    // 2. Listen for Auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        // On explicit sign-in, clear cache to ensure fresh permissions
+      if (!isMounted) return;
+      const currentUser = session?.user ?? null;
+
+      setUser(prev => {
+        if (prev?.id === currentUser?.id && prev?.email === currentUser?.email) {
+          return prev; // Maintain reference identity
+        }
+        return currentUser;
+      });
+
+      if (currentUser) {
         if (event === 'SIGNED_IN') {
           permissionsCacheRef.current.clear();
           hasLoggedProfileErrorRef.current = false;
           hasLoggedPermFailureRef.current = false;
+          loadedProfileUserIdRef.current = null;
         }
-        fetchProfile(session.user);
+        fetchProfileRef.current?.(currentUser);
       } else {
         permissionsCacheRef.current.clear();
+        loadedProfileUserIdRef.current = null;
         setProfile(null);
+        profileRef.current = null;
         setPermissions([]);
         setAssignedProjectIds([]);
         setAllProjectsAccess(true);
@@ -278,12 +315,16 @@ export const AuthProvider = ({ children }) => {
       }
     });
 
-    return () => subscription.unsubscribe();
-  }, [fetchProfile]);
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
+  }, []); // Run ONCE on mount
 
-  // Real-time RBAC updates with 1000ms debounce to prevent request storms
+  // Real-time RBAC updates — depends ONLY on user.id
+  const currentUserId = user?.id;
   useEffect(() => {
-    if (!user) return;
+    if (!currentUserId) return;
 
     const debouncedRefresh = () => {
       if (realtimeDebounceTimerRef.current) {
@@ -291,15 +332,18 @@ export const AuthProvider = ({ children }) => {
       }
       realtimeDebounceTimerRef.current = setTimeout(() => {
         permissionsCacheRef.current.clear();
-        fetchProfile(user, true);
+        loadedProfileUserIdRef.current = null;
+        if (userRef.current) {
+          fetchProfileRef.current?.(userRef.current, true);
+        }
       }, 1000);
     };
 
     const channel = supabase
-      .channel(`realtime_auth_rbac_${user.id}`)
+      .channel(`realtime_auth_rbac_${currentUserId}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'role_permissions' }, debouncedRefresh)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'roles' }, debouncedRefresh)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles', filter: `id=eq.${user.id}` }, debouncedRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles', filter: `id=eq.${currentUserId}` }, debouncedRefresh)
       .subscribe();
 
     return () => {
@@ -308,11 +352,12 @@ export const AuthProvider = ({ children }) => {
       }
       supabase.removeChannel(channel);
     };
-  }, [user, fetchProfile]);
+  }, [currentUserId]);
 
   const signIn = (email, password) => supabase.auth.signInWithPassword({ email, password });
   const signOut = () => {
     permissionsCacheRef.current.clear();
+    loadedProfileUserIdRef.current = null;
     return supabase.auth.signOut();
   };
 
@@ -352,7 +397,10 @@ export const AuthProvider = ({ children }) => {
       mustChangePassword: profile?.must_change_password === true,
       refreshProfile: () => {
         permissionsCacheRef.current.clear();
-        return fetchProfile(user, true);
+        loadedProfileUserIdRef.current = null;
+        if (userRef.current) {
+          return fetchProfileRef.current?.(userRef.current, true);
+        }
       }
     }}>
       {!loading && children}
