@@ -1,5 +1,14 @@
 # Changelog
 
+## [v1.4.87] [2026-09-08] Vercel Build ERESOLVE Hardening & Vite Strict Override
+
+- **Vite & Plugin React Peer Dependency Alignment (`package.json`, `package-lock.json`):**
+  - กำหนดเวอร์ชัน `vite` เป็น `5.4.21` (Exact Pinning) และเพิ่ม `"vite": "$vite"` ในบล็อก `overrides` ของ `package.json`
+  - บังคับให้ npm บนทุกสภาพแวดล้อมรวมถึง CI/CD ของ Vercel แก้ไข dependency tree ของ `vite` ให้ตรงกับเวอร์ชันเสถียร (Vite 5) เสมอ ป้องกัน npm จากการพยายาม resolve `vite@8.2.2` ที่ขัดแย้งกับ `@vitejs/plugin-react@4.7.0`
+  - คงความเข้ากันได้สมบูรณ์กับ `@tailwindcss/vite@^4.0.0` และ `vite-plugin-pwa@^1.3.0` โดยไม่ต้องใช้ `--force` หรือ `--legacy-peer-deps`
+- **Mandatory System Version Management (Rule 10):**
+  - ปรับเวอร์ชันระบบเป็น `1.4.87` ใน `package.json`, `package-lock.json`
+
 ## [v1.4.86] [2026-09-08] Items Page UI Organization Label Cleanup
 
 - **Organization Label Removal in Inventory Displays (`src/pages/Items.jsx`):**
