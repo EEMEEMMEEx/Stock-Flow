@@ -85,7 +85,12 @@ export default defineConfig(({ mode }) => {
         registerType: 'autoUpdate',
         includeAssets: ['favicon.svg'],
         workbox: {
-          maximumFileSizeToCacheInBytes: 5 * 1024 * 1024
+          maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
+          globPatterns: ['**/*.{js,css,html,svg,ico,woff,woff2}'],
+          cleanupOutdatedCaches: true,
+          clientsClaim: true,
+          skipWaiting: true,
+          navigateFallbackDenylist: [/^\/api/, /^\/rest\/v1/]
         },
         manifest: {
           name: 'Stock Flow System',
@@ -111,6 +116,7 @@ export default defineConfig(({ mode }) => {
       },
     },
     build: {
+      modulePreload: false,
       chunkSizeWarningLimit: 1500,
       rollupOptions: {
         output: {

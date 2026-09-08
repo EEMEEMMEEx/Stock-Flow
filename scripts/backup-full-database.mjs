@@ -647,6 +647,19 @@ BEGIN
 END;
 $$;
 
+CREATE OR REPLACE FUNCTION public.get_my_permissions()
+RETURNS TABLE (permission_code TEXT)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, auth, pg_temp
+AS $$
+BEGIN
+  RETURN QUERY
+  SELECT p.permission_code
+  FROM public.get_user_permissions(auth.uid()) p;
+END;
+$$;
+
 -- 6.3 Admin User Management RPCs
 CREATE OR REPLACE FUNCTION public.admin_get_users()
 RETURNS TABLE (
@@ -1785,6 +1798,7 @@ CREATE POLICY "Allow auth mutate stock_transactions" ON public.stock_transaction
 -- 7.3 Function Grants
 GRANT EXECUTE ON FUNCTION public.has_permission(UUID, TEXT) TO authenticated, anon, service_role;
 GRANT EXECUTE ON FUNCTION public.get_user_permissions(UUID) TO authenticated, anon, service_role;
+GRANT EXECUTE ON FUNCTION public.get_my_permissions() TO authenticated, anon, service_role;
 GRANT EXECUTE ON FUNCTION public.admin_get_users() TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.admin_create_user(TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, BOOLEAN, UUID[]) TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.admin_get_roles_with_stats() TO authenticated, service_role;

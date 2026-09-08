@@ -28,7 +28,7 @@
       import { Buffer } from 'https://esm.sh/buffer';
       window.Buffer = Buffer;
       window.global = window;
-      window.process = { env: { NODE_ENV: 'development' } };
+      window.process = window.process || { env: { NODE_ENV: import.meta.env?.MODE || 'production' } };
     </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>

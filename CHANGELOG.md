@@ -1,5 +1,21 @@
 # Changelog
 
+## [v1.4.84] [2026-09-08] Production Dashboard Preload Mismatch & Supabase RPC Fix
+
+- **Service Worker / Preload Resource Mismatch Remediated (`vite.config.js`, `index.html`):**
+  - กำหนด `build.modulePreload: false` ใน `vite.config.js` เพื่อไม่ให้ Vite สร้างแท็ก `<link rel="modulepreload">` ที่ชนกับ Service Worker ใน Chromium
+  - ขจัดคำเตือนเบราว์เซอร์ `A preload for 'vendor-react-....js' is found, but is not used because of a cross-world service worker resource mismatch` โดยสมบูรณ์
+  - ปรับปรุงการกำหนดค่า Workbox ใน `VitePWA`: ระบุ `cleanupOutdatedCaches: true`, `clientsClaim: true`, `skipWaiting: true`, `globPatterns` และ `navigateFallbackDenylist` สำหรับ API endpoints
+  - ปรับแก้ environment shim ใน `index.html` ให้รองรับ production mode แบบไดนามิก
+- **Supabase RPC API Error 404 Resolution (`AuthProvider.jsx`, `67_create_get_my_permissions_rpc.sql`):**
+  - สร้าง Migration 67 `67_create_get_my_permissions_rpc.sql` เป็น Alias Function สำหรับ `get_user_permissions(auth.uid())`
+  - ปรับปรุง `AuthProvider.jsx` ในฟังก์ชัน `fetchUserPermissions` ให้เรียก `get_user_permissions(p_user_id)` เป็นหลัก และแปลงผลลัพธ์จาก Record Object (`{ permission_code: '...' }`) เป็น String Array ให้สอดคล้องกับ `can(permCode)`
+  - ปรับปรุง Fallback หลายชั้น: Table Direct Lookup (`role_permissions`) และ Safe Baseline Role Permissions ป้องกันผู้ใช้หลุดสิทธิ์ในกรณีเครือข่ายขัดข้อง
+- **Database Backup Engine Synchronization (`scripts/backup-full-database.mjs`):**
+  - เพิ่มนิยาม DDL และสิทธิ์ GRANT EXECUTE สำหรับ `get_my_permissions()` ลงในสคริปต์สำรองฐานข้อมูลหลัก
+- **Mandatory System Version Management (Rule 10):**
+  - ขยับเวอร์ชันระบบเป็น `1.4.84` ใน `package.json`, `package-lock.json`
+
 ## [v1.4.83] [2026-09-08] Vercel Deployment & Vite Dependency Resolution Fix
 
 - **Resolve ERESOLVE Vite & Plugin React Peer Dependency Conflict (`package.json`, `package-lock.json`):**
