@@ -271,9 +271,11 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     let isMounted = true;
 
-    // 1. Get initial session with graceful 400 / invalid refresh token recovery
+    // 1. Restore the local session, then verify it with Supabase Auth before
+    // allowing it to unlock protected application routes. getSession() reads
+    // browser storage and must not be the sole source of authorization.
     supabase.auth.getSession()
-      .then(({ data: { session }, error }) => {
+      .then(async ({ data: { session }, error }) => {
         if (!isMounted) return;
         if (error) {
           console.warn('[AuthContext] Stale session or refresh error detected, resetting auth state:', error.message);
@@ -287,13 +289,30 @@ export const AuthProvider = ({ children }) => {
           setLoading(false);
           return;
         }
-        const currentUser = session?.user ?? null;
-        setUser(currentUser);
-        if (currentUser) {
-          fetchProfileRef.current?.(currentUser);
-        } else {
+        if (!session) {
           setLoading(false);
+          return;
         }
+
+        const { data: { user: verifiedUser }, error: verificationError } = await supabase.auth.getUser();
+        if (!isMounted) return;
+
+        if (verificationError || !verifiedUser) {
+          console.warn('[AuthContext] Session verification failed, clearing auth state:', verificationError?.message || 'No verified user returned');
+          await supabase.auth.signOut().catch(() => {});
+          setUser(null);
+          setProfile(null);
+          profileRef.current = null;
+          setPermissions([]);
+          setAssignedProjectIds([]);
+          setAllProjectsAccess(true);
+          setLoading(false);
+          return;
+        }
+
+        const currentUser = verifiedUser;
+        setUser(currentUser);
+        fetchProfileRef.current?.(currentUser);
       })
       .catch((err) => {
         if (!isMounted) return;
@@ -311,6 +330,11 @@ export const AuthProvider = ({ children }) => {
     // 2. Listen for Auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!isMounted) return;
+
+      // Initial session restoration is verified in the bootstrap flow above.
+      // Avoid trusting the storage-backed callback payload or racing profile loads.
+      if (event === 'INITIAL_SESSION') return;
+
       const currentUser = session?.user ?? null;
 
       // Handle unauthenticated state or token failure

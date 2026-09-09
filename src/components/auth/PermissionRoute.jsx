@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,7 @@ const PermissionRoute = ({ permission, children }) => {
   const { can, loading, profile, user } = useAuth();
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const hasPermission = !permission || can(permission);
 
   useEffect(() => {
@@ -30,6 +31,12 @@ const PermissionRoute = ({ permission, children }) => {
         <span className="text-xs text-muted-foreground">{t('common.pleaseWait', 'Checking permissions...')}</span>
       </div>
     );
+  }
+
+  // PageWrapper protects the route group, while this keeps the permission
+  // guard safe if it is ever reused outside that layout.
+  if (!user) {
+    return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
   // Access Denied UX when user lacks permission for direct URL navigation

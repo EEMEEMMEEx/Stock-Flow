@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
 import AppFooter from './AppFooter';
@@ -9,6 +9,7 @@ import ForceChangePasswordModal from '@/components/auth/ForceChangePasswordModal
 
 const PageWrapper = () => {
   const { user, loading, mustChangePassword, refreshProfile } = useAuth();
+  const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   // Lifted Desktop Collapsed State with LocalStorage Persistence
@@ -62,7 +63,7 @@ const PageWrapper = () => {
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
   return (

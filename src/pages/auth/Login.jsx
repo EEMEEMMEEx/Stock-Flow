@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Package, Lock, Mail } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n';
@@ -16,6 +16,11 @@ const Login = () => {
   const { signIn } = useAuth();
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
+  const requestedPath = location.state?.from?.pathname;
+  const returnTo = typeof requestedPath === 'string' && requestedPath.startsWith('/')
+    ? requestedPath
+    : '/dashboard';
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -23,7 +28,7 @@ const Login = () => {
     try {
       const { error } = await signIn(email, password);
       if (error) throw error;
-      navigate('/');
+      navigate(returnTo, { replace: true });
       toast.success('Signed in successfully');
     } catch (error) {
       console.error('[Login Error]:', error);

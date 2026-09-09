@@ -1,5 +1,28 @@
 # Changelog
 
+## [2026-09-09 16:27]
+- **Files Modified:** `src/contexts/AuthProvider.jsx`, `src/components/layout/PageWrapper.jsx`, `src/components/auth/PermissionRoute.jsx`, `src/pages/auth/Login.jsx`, `src/lib/supabase.js`, `.env.example`
+- **Changes:**
+  - `AuthProvider.jsx`: ตรวจสอบ session ที่กู้จาก browser storage กับ Supabase Auth ผ่าน `getUser()` ก่อนอนุญาตให้เข้าถึงระบบ และล้างสถานะเมื่อการตรวจสอบไม่สำเร็จ
+  - `PageWrapper.jsx`, `PermissionRoute.jsx`, `Login.jsx`: ป้องกันทุกหน้าภายในและเก็บเส้นทางเดิมไว้เพื่อพากลับไปยังหน้าที่ร้องขอหลังล็อกอินสำเร็จ
+  - `supabase.js`, `.env.example`: รองรับ `VITE_SUPABASE_PUBLISHABLE_KEY` เป็น browser credential หลัก โดยยังรองรับ `VITE_SUPABASE_ANON_KEY` เดิม
+- **Reason:** เพิ่มความปลอดภัยของ Supabase Auth และทำให้ protected routes ทำงานแบบ fail-closed
+
+## [2026-09-09 16:24]
+- **Files Modified:** `supabase/migrations/20260909092350_restore_legacy_transfer_transaction_types.sql`
+- **Changes:**
+  - เพิ่ม migration แบบ transaction-safe เพื่อคืนค่า `transfer_in`, `transfer_out` และ `adjustment` ใน `stock_transactions_transaction_type_check` โดยคง transaction types เดิมทั้งหมด
+  - เพิ่ม preflight และ validation เพื่อหยุดการ deploy หากพบ transaction type ที่ยังไม่ได้ตรวจทาน
+- **Reason:** แก้ PostgreSQL error `23514` ระหว่าง `process_item_transfer` ที่เกิดจาก schema drift ระหว่าง RPC และ CHECK constraint
+
+## [v1.5.9] [2026-09-09] Pyrefly Static Type Checker Integration & Configuration
+
+- **Pyrefly Type Checker Initialization (`pyrefly.toml`):**
+  - ติดตั้งและเปิดใช้งาน Pyrefly CLI (`pyrefly 1.2.0`) ผ่าน `uv tool`
+  - สร้างไฟล์คอนฟิกูเรชัน `pyrefly.toml` พร้อมตั้งค่า `project-includes` สำหรับตรวจเช็คไฟล์ Python (`**/*.py*`)
+- **Mandatory System Version Management (Rule 10):**
+  - อัปเกรดเวอร์ชันระบบเป็น `1.5.9` (PATCH bump) ใน `package.json`
+
 ## [v1.5.8] [2026-09-09] Context & Antigravity Doctor Alignment & Package Script Normalization
 
 - **Antigravity Doctor Validation Harmonization (`.agents/hooks/antigravity-doctor.mjs`):**
