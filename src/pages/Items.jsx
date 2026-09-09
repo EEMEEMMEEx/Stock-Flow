@@ -11,7 +11,8 @@ import {
   LayoutGrid, List, RefreshCw, ImageIcon, Box, 
   SlidersHorizontal, CheckCircle2, AlertCircle, ChevronLeft, ChevronRight,
   ArrowRightLeft, Lock, Sparkles, History,
-  ChevronDown, ArrowUpDown, ArrowUp, ArrowDown, CornerDownRight, FolderTree
+  ChevronDown, ArrowUpDown, ArrowUp, ArrowDown, CornerDownRight, FolderTree,
+  MapPin, Plane
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import toast from 'react-hot-toast';
@@ -54,7 +55,7 @@ const Items = () => {
   const [hasTransactionConflict, setHasTransactionConflict] = useState(false);
   const [isTransferOpen, setIsTransferOpen] = useState(false);
   const [itemToTransfer, setItemToTransfer] = useState(null);
-  const [formData, setFormData] = useState({ name: '', model: '', sku: '', category_id: '', unit: 'ชิ้น', description: '', image_url: '' });
+  const [formData, setFormData] = useState({ name: '', model: '', sku: '', source: '', vendor: '', category_id: '', unit: 'ชิ้น', description: '', image_url: '' });
   const [selectedItem, setSelectedItem] = useState(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const realtimeTimeoutRef = useRef(null);
@@ -130,7 +131,7 @@ const Items = () => {
       const [itemsRes, stockRes, projectsRes] = await Promise.all([
         supabase
           .from('items')
-          .select('id, name, model, sku, item_type, parent_sku, parent_id, seq_no, unit, description, notes, image_url, category_id, categories(name)')
+          .select('id, name, model, sku, source, vendor, item_type, parent_sku, parent_id, seq_no, unit, description, notes, image_url, category_id, categories(name)')
           .order('name'),
         supabase
           .from('stock_balance')
@@ -182,6 +183,8 @@ const Items = () => {
           name: item.name || b.item_name || 'Material Item',
           model: item.model || b.model || '-',
           sku: item.sku || '-',
+          source: item.source || '',
+          vendor: item.vendor || '',
           item_type: item.item_type || 'PARENT',
           parent_sku: item.parent_sku || '',
           parent_id: item.parent_id || null,
@@ -210,6 +213,8 @@ const Items = () => {
             name: item.name || 'Material Item',
             model: item.model || '-',
             sku: item.sku || '-',
+            source: item.source || '',
+            vendor: item.vendor || '',
             item_type: item.item_type || 'PARENT',
             parent_sku: item.parent_sku || '',
             parent_id: item.parent_id || null,
@@ -400,6 +405,8 @@ const Items = () => {
         name: formData.name,
         model: formData.model || null,
         sku: formData.sku || null,
+        source: formData.source || null,
+        vendor: formData.vendor || null,
         category_id: formData.category_id || null,
         unit: formData.unit,
         description: formData.description || null,
@@ -575,6 +582,8 @@ const Items = () => {
       name: item.name, 
       model: item.model !== '-' ? (item.model || '') : '',
       sku: item.sku !== '-' ? (item.sku || '') : '', 
+      source: item.source !== '-' ? (item.source || '') : '',
+      vendor: item.vendor !== '-' ? (item.vendor || '') : '',
       category_id: item.category_id || '',
       unit: item.unit || 'ชิ้น', 
       description: item.description || item.notes || '',
@@ -719,6 +728,8 @@ const Items = () => {
         (item.name && item.name.toLowerCase().includes(q)) ||
         (item.model && item.model.toLowerCase().includes(q)) ||
         (item.sku && item.sku.toLowerCase().includes(q)) ||
+        (item.source && item.source.toLowerCase().includes(q)) ||
+        (item.vendor && item.vendor.toLowerCase().includes(q)) ||
         (item.description && item.description.toLowerCase().includes(q)) ||
         (item.project_display && item.project_display.toLowerCase().includes(q)) ||
         (item.category_name && item.category_name.toLowerCase().includes(q))
@@ -782,9 +793,13 @@ const Items = () => {
           valA = pA.model || '';
           valB = pB.model || '';
           break;
-        case 'sku':
-          valA = pA.sku || '';
-          valB = pB.sku || '';
+        case 'source':
+          valA = pA.source || '';
+          valB = pB.source || '';
+          break;
+        case 'vendor':
+          valA = pA.vendor || '';
+          valB = pB.vendor || '';
           break;
         case 'project_display':
           valA = pA.project_location || pA.project_display || '';
@@ -927,6 +942,52 @@ const Items = () => {
       <ArrowUp className="w-3.5 h-3.5 text-primary shrink-0" />
     ) : (
       <ArrowDown className="w-3.5 h-3.5 text-primary shrink-0" />
+    );
+  };
+
+  // Source Badge Renderer (Local: Sky / MapPin, Import: Amber / Plane)
+  const renderSourceBadge = (source) => {
+    const src = (source || '').trim().toLowerCase();
+    if (src === 'local') {
+      return (
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/20">
+          <MapPin className="w-3 h-3 shrink-0" />
+          <span className="hidden sm:inline">Local</span>
+          <span className="sm:hidden">L</span>
+        </span>
+      );
+    }
+    if (src === 'import') {
+      return (
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20">
+          <Plane className="w-3 h-3 shrink-0" />
+          <span className="hidden sm:inline">Import</span>
+          <span className="sm:hidden">I</span>
+        </span>
+      );
+    }
+    if (source && source !== '-') {
+      return (
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-muted text-muted-foreground border border-border">
+          <span>{source}</span>
+        </span>
+      );
+    }
+    return <span className="text-muted-foreground/50">-</span>;
+  };
+
+  // Vendor Pill Renderer (Muted pill matching Model column, truncated with tooltip)
+  const renderVendorCell = (vendor) => {
+    if (!vendor || vendor === '-') {
+      return <span className="text-muted-foreground/50">-</span>;
+    }
+    return (
+      <span 
+        className="inline-block max-w-[180px] px-2 py-0.5 rounded bg-muted/60 font-mono text-[11px] text-foreground font-medium truncate line-clamp-1"
+        title={vendor}
+      >
+        {vendor}
+      </span>
     );
   };
 
@@ -1180,14 +1241,26 @@ const Items = () => {
                       {renderSortIcon('model')}
                     </div>
                   </TableHead>
+                  {/* Source */}
                   <TableHead 
-                    className="min-w-[130px] cursor-pointer hover:text-foreground transition-colors"
-                    onClick={() => handleSort('sku')}
-                    title="Sort by SKU code"
+                    className="w-[100px] text-left cursor-pointer hover:text-foreground transition-colors"
+                    onClick={() => handleSort('source')}
+                    title="Sort by source"
                   >
                     <div className="flex items-center gap-1.5">
-                      <span className="font-bold">SKU / Code</span>
-                      {renderSortIcon('sku')}
+                      <span className="font-bold">{t('items.table.source', 'Source')}</span>
+                      {renderSortIcon('source')}
+                    </div>
+                  </TableHead>
+                  {/* Vendor */}
+                  <TableHead 
+                    className="min-w-[140px] text-left hidden lg:table-cell cursor-pointer hover:text-foreground transition-colors"
+                    onClick={() => handleSort('vendor')}
+                    title="Sort by vendor"
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-bold">{t('items.table.vendor', 'Vendor')}</span>
+                      {renderSortIcon('vendor')}
                     </div>
                   </TableHead>
                   <TableHead 
@@ -1221,7 +1294,6 @@ const Items = () => {
                     </div>
                   </TableHead>
                   <TableHead className="w-[70px]">Unit</TableHead>
-                  <TableHead className="min-w-[160px] hidden lg:table-cell">Description</TableHead>
                   <TableHead className="text-right w-[90px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -1337,13 +1409,14 @@ const Items = () => {
                         )}
                       </TableCell>
 
-                      {/* SKU */}
-                      <TableCell className="font-mono text-xs text-muted-foreground">
-                        {item.sku && item.sku !== '-' ? (
-                          <span className="font-semibold text-foreground">{item.sku}</span>
-                        ) : (
-                          <span className="text-muted-foreground/50">-</span>
-                        )}
+                      {/* Source */}
+                      <TableCell className="w-[100px] text-left">
+                        {renderSourceBadge(item.source)}
+                      </TableCell>
+
+                      {/* Vendor */}
+                      <TableCell className="min-w-[140px] text-left hidden lg:table-cell font-medium text-muted-foreground">
+                        {renderVendorCell(item.vendor)}
                       </TableCell>
 
                       {/* Destination Storage Location / Warehouse Tag */}
@@ -1381,11 +1454,6 @@ const Items = () => {
 
                       {/* Unit */}
                       <TableCell className="text-muted-foreground font-medium">{item.unit}</TableCell>
-
-                      {/* Description */}
-                      <TableCell className="hidden lg:table-cell text-muted-foreground text-[11px]">
-                        <span className="line-clamp-2">{item.description || '-'}</span>
-                      </TableCell>
 
                       {/* Actions */}
                       <TableCell className="text-right">
@@ -1695,6 +1763,32 @@ const Items = () => {
                 <div className="space-y-1.5">
                   <Label htmlFor="edit-sku" className="text-xs font-semibold">SKU / Code</Label>
                   <Input id="edit-sku" value={formData.sku} onChange={e => setFormData({...formData, sku: e.target.value})} className="rounded-lg font-mono" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="edit-source" className="text-xs font-semibold">Source</Label>
+                  <select 
+                    id="edit-source" 
+                    className="flex h-9 w-full rounded-lg border border-input bg-background px-3 py-1.5 text-xs font-medium"
+                    value={formData.source} 
+                    onChange={e => setFormData({...formData, source: e.target.value})}
+                  >
+                    <option value="">-- Select Source --</option>
+                    <option value="Local">Local (ในประเทศ)</option>
+                    <option value="Import">Import (นำเข้า)</option>
+                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="edit-vendor" className="text-xs font-semibold">Vendor</Label>
+                  <Input 
+                    id="edit-vendor" 
+                    value={formData.vendor} 
+                    onChange={e => setFormData({...formData, vendor: e.target.value})} 
+                    placeholder="Enter vendor" 
+                    className="rounded-lg" 
+                  />
                 </div>
               </div>
 

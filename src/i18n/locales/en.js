@@ -156,6 +156,12 @@ export default {
     transferTitle: 'Transfer Item Between Locations',
     transferQty: 'Transfer Quantity',
     destLocation: 'Destination Location',
+    table: {
+      source: 'Source',
+      vendor: 'Vendor',
+      local: 'Local',
+      import: 'Import',
+    },
   },
   withdrawals: {
     title: 'Requisitions & Withdrawals',

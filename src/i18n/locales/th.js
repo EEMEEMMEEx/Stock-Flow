@@ -156,6 +156,12 @@ export default {
     transferTitle: 'โอนย้ายพัสดุระหว่างคลัง',
     transferQty: 'จำนวนที่ต้องการโอนย้าย',
     destLocation: 'สถานที่จัดเก็บปลายทาง',
+    table: {
+      source: 'ที่มา',
+      vendor: 'ผู้จำหน่าย',
+      local: 'ในประเทศ',
+      import: 'นำเข้า',
+    },
   },
   withdrawals: {
     title: 'คำขอเบิกและจ่ายพัสดุ',
