@@ -1,5 +1,18 @@
 # Changelog
 
+## [v1.5.8] [2026-09-09] Context & Antigravity Doctor Alignment & Package Script Normalization
+
+- **Antigravity Doctor Validation Harmonization (`.agents/hooks/antigravity-doctor.mjs`):**
+  - แยกการตรวจสอบเวอร์ชันของ AG Kit Toolkit (`.agents/VERSION` รูปแบบ CalVer `YYYY.M.D`) ออกจากการตรวจสอบเวอร์ชันของแอปพลิเคชัน (`package.json` รูปแบบ SemVer)
+  - แก้ไขปัญหา `validation.version_mismatch` ที่บล็อกคำสั่ง `npm run check:antigravity` ให้ผ่านสมบูรณ์ 100% ทุกเฟส (discovery, mcp, hooks, orchestration, plugin, validation)
+- **NPM Package Script Path Resolution (`package.json`):**
+  - ปรับปรุงสคริปต์ `"generate:agents"` และ `"check:agents"` ให้ชี้ไปยังไฟล์สคริปต์จริงที่ใช้เครื่องหมาย Underscore (`generate_manifest.py`, `validate_kit.py`)
+  - อัปเดต manifest และ dependency graph ให้ซิงค์สมบูรณ์
+- **Test Toolkit Resilience (`.agents/scripts/tests/test_toolkit.py`):**
+  - เพิ่มการตรวจสอบความมีอยู่ของไฟล์สคริปต์เสริม (Optional skill scripts) เพื่อให้ข้ามการทดสอบอย่างปลอดภัยเมื่อ skill ถูกถอดออก
+- **Mandatory System Version Management (Rule 10):**
+  - อัปเกรดเวอร์ชันระบบเป็น `1.5.8` (PATCH bump) ใน `package.json`
+
 ## [v1.5.7] [2026-09-09] System-Wide Typography Scale & CardTitle Hierarchy Refactoring
 
 - **Core UI Card Title Hierarchy Normalization (`src/components/ui/card.jsx`):**
