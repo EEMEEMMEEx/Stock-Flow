@@ -302,8 +302,8 @@ const Manual = () => {
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider">
               <Sparkles className="w-3.5 h-3.5" /> StockFlow System Knowledge Base
             </div>
-            <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-foreground flex items-center gap-3">
-              <BookOpen className="w-8 h-8 sm:w-10 h-10 text-primary shrink-0" />
+            <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-3">
+              <BookOpen className="w-7 h-7 text-primary shrink-0" />
               StockFlow User Manual
             </h1>
             <p className="text-xs sm:text-sm text-muted-foreground max-w-2xl leading-relaxed">
@@ -470,7 +470,7 @@ const Manual = () => {
                         <Icon className={`w-5 h-5 ${sec.iconColor}`} />
                       </div>
                       <div>
-                        <CardTitle className="text-base sm:text-lg font-bold text-foreground">
+                        <CardTitle className="text-base font-bold text-foreground">
                           {sec.title}
                         </CardTitle>
                         <CardDescription className="text-xs text-muted-foreground mt-0.5">

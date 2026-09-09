@@ -56,7 +56,7 @@ const ReportHeader = ({
               <FileText className="w-6 h-6" />
             </div>
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+              <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
                 {t('reports.title', 'Reports & Inventory Analytics')}
                 <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
                   <Sparkles className="w-3 h-3" /> Live Analytics

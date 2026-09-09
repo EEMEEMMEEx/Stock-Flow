@@ -100,7 +100,7 @@ const CheckoutActiveList = ({
             </div>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-bold tracking-tight text-foreground">{activeLoansCount}</span>
+            <span className="text-xl font-bold tracking-tight text-foreground">{activeLoansCount}</span>
             <span className="text-xs text-muted-foreground font-medium">orders ({totalUnitsBorrowed} {totalUnitsBorrowed === 1 ? 'unit' : 'units'})</span>
           </div>
         </Card>
@@ -118,7 +118,7 @@ const CheckoutActiveList = ({
             </div>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400">{dueSoonCount}</span>
+            <span className="text-xl font-bold tracking-tight text-amber-600 dark:text-amber-400">{dueSoonCount}</span>
             <span className="text-xs text-muted-foreground font-medium">orders</span>
           </div>
         </Card>
@@ -136,7 +136,7 @@ const CheckoutActiveList = ({
             </div>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-bold tracking-tight text-red-600 dark:text-red-400">{overdueCount}</span>
+            <span className="text-xl font-bold tracking-tight text-red-600 dark:text-red-400">{overdueCount}</span>
             <span className="text-xs text-muted-foreground font-medium">orders</span>
           </div>
         </Card>
@@ -154,7 +154,7 @@ const CheckoutActiveList = ({
             </div>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
+            <span className="text-xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
               {activeLoansCount - overdueCount}
             </span>
             <span className="text-xs text-muted-foreground font-medium">orders</span>

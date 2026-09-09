@@ -177,7 +177,7 @@ const Checkouts = () => {
               <RotateCcw className="w-6 h-6" />
             </div>
             <div>
-              <h1 className="text-xl sm:text-2xl font-extrabold text-foreground tracking-tight flex items-center gap-2">
+              <h1 className="text-2xl font-bold text-foreground tracking-tight flex items-center gap-2">
                 <span>{t('checkouts.title', 'Equipment & Tool Checkouts')}</span>
               </h1>
               <p className="text-xs text-muted-foreground">

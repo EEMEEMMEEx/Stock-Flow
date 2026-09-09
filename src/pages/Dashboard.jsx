@@ -372,7 +372,7 @@ const Dashboard = () => {
       {/* Header with Live Status & Manual Refresh */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-3xl font-extrabold tracking-tight text-foreground flex items-center gap-2.5">
+          <h2 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2.5">
             <span>{t('dashboard.title', 'Dashboard')}</span>
             <span className="flex h-2.5 w-2.5 relative">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>

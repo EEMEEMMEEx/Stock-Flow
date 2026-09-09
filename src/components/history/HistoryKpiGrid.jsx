@@ -101,7 +101,7 @@ const HistoryKpiGrid = ({ historyData = [] }) => {
                   {card.title}
                 </p>
                 <div className="flex items-baseline gap-1 mt-0.5">
-                  <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground truncate">
+                  <h2 className="text-xl font-bold tracking-tight text-foreground truncate">
                     {card.value}
                   </h2>
                   {card.unit && (

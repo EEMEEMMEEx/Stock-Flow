@@ -1001,7 +1001,7 @@ const Items = () => {
       {/* Top Banner Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight flex items-center gap-3">
+          <h2 className="text-2xl font-bold tracking-tight flex items-center gap-3">
             <div className="p-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400">
               <Package className="w-7 h-7" />
             </div>
@@ -1036,7 +1036,7 @@ const Items = () => {
             </div>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-bold tracking-tight">{uniqueMasterItemsCount}</span>
+            <span className="text-xl font-bold tracking-tight">{uniqueMasterItemsCount}</span>
             <span className="text-xs text-muted-foreground font-medium">items</span>
           </div>
           <div className="mt-1 text-[11px] text-muted-foreground font-mono">
@@ -1052,7 +1052,7 @@ const Items = () => {
             </div>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
+            <span className="text-xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
               {totalStockQuantity.toLocaleString()}
             </span>
             <span className="text-xs text-muted-foreground font-medium">units</span>
@@ -1067,7 +1067,7 @@ const Items = () => {
             </div>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-bold tracking-tight">{activeLocationsWithStockCount}</span>
+            <span className="text-xl font-bold tracking-tight">{activeLocationsWithStockCount}</span>
             <span className="text-xs text-muted-foreground font-medium">locations</span>
           </div>
         </Card>
@@ -1080,7 +1080,7 @@ const Items = () => {
             </div>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-bold tracking-tight">{totalCategoriesCount}</span>
+            <span className="text-xl font-bold tracking-tight">{totalCategoriesCount}</span>
             <span className="text-xs text-muted-foreground font-medium">categories</span>
           </div>
         </Card>

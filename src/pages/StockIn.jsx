@@ -513,8 +513,8 @@ const StockIn = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-            <ArrowDownToLine className="w-8 h-8 text-green-500" />
+          <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+            <ArrowDownToLine className="w-7 h-7 text-green-500" />
             <span>{t('stockIn.title', 'Stock Receipts')}</span>
           </h2>
           <p className="text-muted-foreground mt-2">

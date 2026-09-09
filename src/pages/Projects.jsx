@@ -666,7 +666,7 @@ const Projects = () => {
                   <div className="flex items-start justify-between gap-3">
                     <div className="space-y-2 min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <CardTitle className="text-xl font-bold tracking-tight text-foreground truncate">
+                        <CardTitle className="text-base font-bold tracking-tight text-foreground truncate">
                           {group.canonicalName}
                         </CardTitle>
                         <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">

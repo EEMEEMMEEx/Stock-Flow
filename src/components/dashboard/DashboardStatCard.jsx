@@ -85,7 +85,7 @@ const DashboardStatCard = ({
         ) : error ? (
           <span className="text-xl font-bold text-muted-foreground/60" title="Unable to load data">—</span>
         ) : (
-          <span className={`text-2xl sm:text-3xl font-bold tracking-tight ${style.valueText}`}>
+          <span className={`text-xl sm:text-2xl font-bold tracking-tight ${style.valueText}`}>
             {typeof value === 'number' ? value.toLocaleString('th-TH') : (value ?? 0)}
           </span>
         )}

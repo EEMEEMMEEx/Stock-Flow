@@ -106,7 +106,7 @@ const WithdrawalOrdersList = ({
       {/* Header & Quick Action Bar */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-extrabold tracking-tight flex items-center gap-2.5 text-foreground">
+          <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2.5 text-foreground">
             <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
               <FileText className="w-6 h-6" />
             </div>
@@ -134,7 +134,7 @@ const WithdrawalOrdersList = ({
             <span>Total Requests</span>
             <FileText className="w-4 h-4 text-indigo-500" />
           </div>
-          <p className="text-2xl font-extrabold font-mono text-foreground">{loading ? '-' : totalOrdersCount}</p>
+          <p className="text-xl font-bold font-mono text-foreground">{loading ? '-' : totalOrdersCount}</p>
         </Card>
 
         <Card className="p-4 rounded-xl bg-card border border-amber-500/30 bg-amber-500/5 shadow-xs space-y-1">
@@ -142,7 +142,7 @@ const WithdrawalOrdersList = ({
             <span>Pending</span>
             <Clock className="w-4 h-4 text-amber-500" />
           </div>
-          <p className="text-2xl font-extrabold font-mono text-amber-600 dark:text-amber-400">{loading ? '-' : pendingOrdersCount}</p>
+          <p className="text-xl font-bold font-mono text-amber-600 dark:text-amber-400">{loading ? '-' : pendingOrdersCount}</p>
         </Card>
 
         <Card className="p-4 rounded-xl bg-card border border-blue-500/30 bg-blue-500/5 shadow-xs space-y-1">
@@ -150,7 +150,7 @@ const WithdrawalOrdersList = ({
             <span>Approved</span>
             <CheckCircle2 className="w-4 h-4 text-blue-500" />
           </div>
-          <p className="text-2xl font-extrabold font-mono text-blue-600 dark:text-blue-400">{loading ? '-' : approvedOrdersCount}</p>
+          <p className="text-xl font-bold font-mono text-blue-600 dark:text-blue-400">{loading ? '-' : approvedOrdersCount}</p>
         </Card>
 
         <Card className="p-4 rounded-xl bg-card border border-emerald-500/30 bg-emerald-500/5 shadow-xs space-y-1">
@@ -158,7 +158,7 @@ const WithdrawalOrdersList = ({
             <span>Completed</span>
             <CheckCircle2 className="w-4 h-4 text-emerald-500" />
           </div>
-          <p className="text-2xl font-extrabold font-mono text-emerald-600 dark:text-emerald-400">{loading ? '-' : completedOrdersCount}</p>
+          <p className="text-xl font-bold font-mono text-emerald-600 dark:text-emerald-400">{loading ? '-' : completedOrdersCount}</p>
         </Card>
       </div>
 

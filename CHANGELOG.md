@@ -1,5 +1,23 @@
 # Changelog
 
+## [v1.5.7] [2026-09-09] System-Wide Typography Scale & CardTitle Hierarchy Refactoring
+
+- **Core UI Card Title Hierarchy Normalization (`src/components/ui/card.jsx`):**
+  - ปรับ default font size ของ `CardTitle` จากเดิม `text-xl sm:text-2xl` เป็น `text-lg font-semibold leading-none tracking-tight`
+  - แก้ไขปัญหา Root Cause ในหน้า Roles & Permissions (`src/pages/RoleManagement.jsx`) และหน้าการจัดการต่างๆ ที่ Role Title ดูใหญ่เกินขนาด (oversized) บนจอเดสก์ท็อปเนื่องจากถูก `sm:text-2xl` (24px) ครอบทับ
+  - คืนสัดส่วนความสมดุลให้กับ Role Cards (Badge `text-xs`, Title `text-lg`, Description `text-xs`, Stats `text-sm`, Button `text-xs`)
+- **Page Title Standardization (`text-2xl font-bold tracking-tight`):**
+  - ปรับลดขนาดและจัดมาตรฐานหัวข้อหน้าหลักทุกหน้าในระบบจากที่เคยกระจัดกระจาย (`text-3xl`, `text-2xl sm:text-3xl`, `text-xl sm:text-2xl`) ให้เป็นระดับเดียวกันคือ `text-2xl font-bold tracking-tight`
+  - ไฟล์ที่ปรับปรุง: `src/pages/Dashboard.jsx`, `src/pages/StockIn.jsx`, `src/pages/Items.jsx`, `src/pages/Manual.jsx`, `src/pages/Checkouts.jsx`, `src/components/withdrawals/WithdrawalOrdersList.jsx`, `src/components/reports/ReportHeader.jsx`, `src/components/history/HistoryHeader.jsx`
+- **KPI Numeric Metric Values Normalization (`text-xl font-bold tracking-tight`):**
+  - ปรับค่าตัวเลขแสดงผลบน KPI Stat Cards จาก `text-2xl` ให้เป็น `text-xl font-bold tracking-tight` เพื่อไม่ให้บดบังหัวข้อหลักและมีสัดส่วนที่กะทัดรัดลงตัว
+  - ไฟล์ที่ปรับปรุง: `src/pages/Items.jsx`, `src/components/withdrawals/WithdrawalOrdersList.jsx`, `src/components/checkouts/CheckoutActiveList.jsx`, `src/components/reports/ReportKpiGrid.jsx`, `src/components/history/HistoryKpiGrid.jsx`, และปรับ `src/components/dashboard/DashboardStatCard.jsx` เป็น `text-xl sm:text-2xl`
+- **Grid Sub-card Titles Adjustment:**
+  - `src/pages/Projects.jsx`: ปรับ Project Card Title เป็น `text-base font-bold tracking-tight`
+  - `src/pages/Manual.jsx`: ปรับ Section Card Title เป็น `text-base font-bold`
+- **Mandatory System Version Management (Rule 10):**
+  - ปรับเวอร์ชันระบบเป็น `1.5.7` (PATCH bump) ใน `package.json`
+
 ## [v1.5.6] [2026-09-09] Fix Admin Item Mutation RLS Policy & Frontend Error Hardening
 
 - **Database RLS & RBAC Permission Catalog Alignment (`supabase/migrations/69_fix_items_mutate_rls_permissions.sql`):**
