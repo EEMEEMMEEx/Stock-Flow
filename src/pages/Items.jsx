@@ -966,7 +966,7 @@ const Items = () => {
         </span>
       );
     }
-    if (source && source !== '-') {
+    if (source && source.trim() !== '-' && source.trim() !== '') {
       return (
         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-muted text-muted-foreground border border-border">
           <span>{source}</span>
@@ -978,7 +978,7 @@ const Items = () => {
 
   // Vendor Pill Renderer (Muted pill matching Model column, truncated with tooltip)
   const renderVendorCell = (vendor) => {
-    if (!vendor || vendor === '-') {
+    if (!vendor || vendor.trim() === '-' || vendor.trim() === '') {
       return <span className="text-muted-foreground/50">-</span>;
     }
     return (
@@ -1241,6 +1241,16 @@ const Items = () => {
                       {renderSortIcon('model')}
                     </div>
                   </TableHead>
+                  <TableHead 
+                    className="min-w-[120px] cursor-pointer hover:text-foreground transition-colors"
+                    onClick={() => handleSort('category_name')}
+                    title="Sort by category"
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-bold">Category</span>
+                      {renderSortIcon('category_name')}
+                    </div>
+                  </TableHead>
                   {/* Source */}
                   <TableHead 
                     className="w-[100px] text-left cursor-pointer hover:text-foreground transition-colors"
@@ -1271,16 +1281,6 @@ const Items = () => {
                     <div className="flex items-center gap-1.5 font-bold text-indigo-600 dark:text-indigo-400">
                       <span>Location</span>
                       {renderSortIcon('project_display')}
-                    </div>
-                  </TableHead>
-                  <TableHead 
-                    className="min-w-[120px] cursor-pointer hover:text-foreground transition-colors"
-                    onClick={() => handleSort('category_name')}
-                    title="Sort by category"
-                  >
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-bold">Category</span>
-                      {renderSortIcon('category_name')}
                     </div>
                   </TableHead>
                   <TableHead 
@@ -1400,13 +1400,21 @@ const Items = () => {
 
                       {/* Model */}
                       <TableCell className="font-medium text-muted-foreground">
-                        {item.model && item.model !== '-' ? (
+                        {item.model && item.model.trim() !== '-' && item.model.trim() !== '' ? (
                           <span className="px-2 py-0.5 rounded bg-muted/60 font-mono text-[11px] text-foreground font-medium">
                             {item.model}
                           </span>
                         ) : (
                           <span className="text-muted-foreground/50">-</span>
                         )}
+                      </TableCell>
+
+                      {/* Category */}
+                      <TableCell>
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-muted text-[11px] font-medium text-muted-foreground border">
+                          <Tag className="w-2.5 h-2.5 text-muted-foreground" />
+                          {item.category_name}
+                        </span>
                       </TableCell>
 
                       {/* Source */}
@@ -1433,14 +1441,6 @@ const Items = () => {
                         )}
                       </TableCell>
 
-                      {/* Category */}
-                      <TableCell>
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-muted text-[11px] font-medium text-muted-foreground border">
-                          <Tag className="w-2.5 h-2.5 text-muted-foreground" />
-                          {item.category_name}
-                        </span>
-                      </TableCell>
-
                       {/* Balance Badge */}
                       <TableCell className="text-center">
                         <span className={`inline-flex items-center justify-center px-2.5 py-1 rounded-md text-xs font-bold font-mono shadow-xs ${
@@ -1453,7 +1453,9 @@ const Items = () => {
                       </TableCell>
 
                       {/* Unit */}
-                      <TableCell className="text-muted-foreground font-medium">{item.unit}</TableCell>
+                      <TableCell className="text-muted-foreground font-medium">
+                        {item.unit && item.unit !== '-' ? item.unit : <span className="text-muted-foreground/50">-</span>}
+                      </TableCell>
 
                       {/* Actions */}
                       <TableCell className="text-right">
