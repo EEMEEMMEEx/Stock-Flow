@@ -414,12 +414,17 @@ const Items = () => {
         image_url: formData.image_url || null,
       };
 
-      const { error: itemErr } = await supabase
+      const { data: updatedRows, error: itemErr } = await supabase
         .from('items')
         .update(updatePayload)
-        .eq('id', selectedItem.id);
+        .eq('id', selectedItem.id)
+        .select('id');
 
       if (itemErr) throw itemErr;
+
+      if (!updatedRows || updatedRows.length === 0) {
+        throw new Error('Update failed: 0 rows affected. You may not have permission to edit this item or the record was not found.');
+      }
 
       // 2. Execute Stock Adjustment if changed
       if (isStockChanged) {

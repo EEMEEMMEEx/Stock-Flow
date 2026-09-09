@@ -1,5 +1,20 @@
 # Changelog
 
+## [v1.5.6] [2026-09-09] Fix Admin Item Mutation RLS Policy & Frontend Error Hardening
+
+- **Database RLS & RBAC Permission Catalog Alignment (`supabase/migrations/69_fix_items_mutate_rls_permissions.sql`):**
+  - แก้ไขปัญหาผู้ใช้กลุ่ม ADMIN ไม่สามารถบันทึกหรือแก้ไขข้อมูลฟิลด์ `Vendor` และ `Source` (และฟิลด์ทั้งหมดของ Master Item) เมื่อกดปุ่ม "Update Item & Stock"
+  - สืบเนื่องจาก Migration 65 กำหนดเงื่อนไข RLS ตรวจสอบ `has_permission(..., 'items.manage')` ซึ่งไม่มีอยู่ในแคตตาล็อกสิทธิ์ `public.permissions` ทำให้ PostgreSQL RLS กรองแถวออกและไม่เกิดการอัปเดต (`0 rows affected`)
+  - เพิ่มสิทธิ์ `'items.manage'` เข้าสู่ `public.permissions` และผูกสิทธิ์เข้ากับบทบาท `ADMIN` และ `SUPER`
+  - ปรับปรุง RLS Policy `"Authorized users mutate items"` บนตาราง `public.items` ให้รองรับทั้ง `is_super_admin()`, `items.update`, `items.create`, `items.delete`, และ `items.manage`
+- **Frontend Defensive Programming & Silent Failure Elimination (`src/pages/Items.jsx`):**
+  - ในฟังก์ชัน `handleEditItem`: เพิ่มคำสั่ง `.select('id')` ต่อท้าย `supabase.from('items').update(...)` และตรวจสอบผลลัพธ์ว่ามีแถวถูกอัปเดตจริงอย่างน้อย 1 แถว (`updatedRows && updatedRows.length > 0`)
+  - หากได้ผลลัพธ์เป็น 0 rows (เช่น ติดสิทธิ์ RLS หรือแถวข้อมูลไม่พบ) จะ throw error แจ้งเตือนผู้ใช้ทันที เพื่อป้องกันปัญหา PostgREST ส่ง HTTP 204 แล้วหน้าบ้านเข้าใจผิดว่าอัปเดตสำเร็จ
+- **Scripts & Tools (`scripts/apply-migration-69.mjs`):**
+  - สร้างสคริปต์อัตโนมัติสำหรับเชื่อมโยงสิทธิ์ RBAC และแสดงคำสั่ง SQL ปรับปรุง RLS Policy
+- **Mandatory System Version Management (Rule 10):**
+  - ปรับเวอร์ชันระบบเป็น `1.5.6` (PATCH bump) ใน `package.json`
+
 ## [v1.5.0] [2026-09-09] System-Wide TH/EN Language Switching Architecture (i18n)
 
 - **Native React Context i18n Architecture (`src/i18n/`):**
