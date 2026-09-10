@@ -511,7 +511,7 @@ const CheckoutPosTerminal = ({
                     id="checkout_borrower"
                     value={borrowerType === 'external' ? '__external__' : borrowerId}
                     onChange={(e) => handleBorrowerChange(e.target.value)}
-                    disabled={loadingBorrowers || borrowerOptions.length === 0}
+                    disabled={loadingBorrowers}
                     className="flex h-9 w-full rounded-lg border border-input bg-background px-3 py-1 text-xs text-foreground shadow-xs outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {borrowerOptions.length === 0 ? (
@@ -526,7 +526,7 @@ const CheckoutPosTerminal = ({
                     <option value="__external__">Other — person not in system</option>
                   </select>
                   <p className="text-[10px] text-muted-foreground">
-                    ADMIN/SUPER can create a checkout for another active user.
+                    {borrowerType === 'external' ? 'Enter the external borrower name and phone number.' : 'ADMIN/SUPER can create a checkout for another active user.'}
                   </p>
                 </div>
               )}
@@ -535,7 +535,7 @@ const CheckoutPosTerminal = ({
                   <Label className="text-xs font-semibold text-foreground">Borrower Name / Technician <span className="text-destructive">*</span></Label>
                   <Input
                     required
-                    placeholder="e.g. John Doe"
+                    placeholder={borrowerType === 'external' ? 'Enter borrower name' : 'e.g. John Doe'}
                     value={borrowerName}
                     readOnly={borrowerType === 'profile'}
                     onChange={(e) => setBorrowerName(e.target.value)}
@@ -545,7 +545,7 @@ const CheckoutPosTerminal = ({
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold text-foreground">Phone Number</Label>
                   <Input
-                    placeholder="e.g. 081-234-5678"
+                    placeholder={borrowerType === 'external' ? 'Enter phone number (optional)' : 'e.g. 081-234-5678'}
                     value={borrowerPhone}
                     readOnly={borrowerType === 'profile'}
                     onChange={(e) => setBorrowerPhone(e.target.value)}

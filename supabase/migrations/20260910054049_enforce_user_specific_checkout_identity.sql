@@ -168,7 +168,11 @@ BEGIN
   END IF;
 
   IF v_borrower_name = '' THEN
-    RAISE EXCEPTION 'ไม่พบชื่อผู้ยืมในข้อมูลบัญชี';
+    IF v_borrower_type = 'external' THEN
+      RAISE EXCEPTION 'กรุณาระบุชื่อบุคคลภายนอกระบบ';
+    ELSE
+      RAISE EXCEPTION 'ไม่พบชื่อผู้ยืมในข้อมูลบัญชี';
+    END IF;
   END IF;
 
   IF v_borrow_type = 'standard' THEN

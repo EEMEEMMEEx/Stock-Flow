@@ -1,4 +1,10 @@
 # Changelog
+## [2026-09-10 13:14]
+- **Files Modified:** src/components/checkouts/CheckoutPosTerminal.jsx, supabase/migrations/20260910054049_enforce_user_specific_checkout_identity.sql
+- **Changes:**
+  - CheckoutPosTerminal.jsx: เพิ่มตัวเลือก Other สำหรับ ADMIN/SUPER และเปิดให้กรอกชื่อ/เบอร์ของบุคคลที่ไม่มีบัญชีในระบบ
+  - 20260910054049_enforce_user_specific_checkout_identity.sql: เพิ่ม borrower_type=external, บังคับสิทธิ์ ADMIN/SUPER และเก็บข้อมูลผู้ยืมภายนอกโดยไม่สร้าง borrower profile ปลอม
+- **Reason:** รองรับการ checkout ให้บุคคลภายนอกระบบ โดยยังล็อก regular user ให้ใช้ได้เฉพาะบัญชีตัวเอง
 ## [2026-09-10 12:53]
 - **Files Modified:** src/components/checkouts/CheckoutPosTerminal.jsx, supabase/migrations/20260910054049_enforce_user_specific_checkout_identity.sql
 - **Changes:**
