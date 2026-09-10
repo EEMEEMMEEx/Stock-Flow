@@ -169,7 +169,7 @@ const CheckoutActiveList = ({
             <div className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
               <Layers className="w-4 h-4" />
             </div>
-            <span>Outstanding Loans ({filteredOrders.length} records)</span>
+            <span>Active Loans ({filteredOrders.length} records)</span>
           </CardTitle>
 
           {/* Search Box */}

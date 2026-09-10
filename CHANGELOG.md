@@ -1,4 +1,9 @@
 # Changelog
+## [2026-09-10 14:44] - v1.5.10
+- **Files Modified:** src/components/checkouts/CheckoutActiveList.jsx, package.json, package-lock.json
+- **Changes:** เปลี่ยนข้อความหัวตารางรายการยืมจาก "Outstanding Loans" เป็น "Active Loans" เพื่อให้สื่อความหมายชัดเจน ตรงกับสถานะอุปกรณ์ที่กำลังยืมอยู่และยังไม่ได้ส่งคืน และสอดคล้องกับ UI ส่วนอื่นของระบบ (Metric Cards, Navigation Tabs, i18n) โดยไม่กระทบ business logic เดิม
+- **Reason:** ปรับปรุง Label ให้เข้าใจง่ายและเป็นมิตรต่อผู้ใช้งานตามที่ได้รับมอบหมาย
+
 ## [2026-09-10 13:14]
 - **Files Modified:** src/components/checkouts/CheckoutPosTerminal.jsx, supabase/migrations/20260910054049_enforce_user_specific_checkout_identity.sql
 - **Changes:**
