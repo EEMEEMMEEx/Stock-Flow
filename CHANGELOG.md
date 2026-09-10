@@ -1,4 +1,10 @@
 # Changelog
+## [2026-09-10 12:53]
+- **Files Modified:** src/components/checkouts/CheckoutPosTerminal.jsx, supabase/migrations/20260910054049_enforce_user_specific_checkout_identity.sql
+- **Changes:**
+  - CheckoutPosTerminal.jsx: ผูกชื่อและโทรศัพท์กับ profile ของผู้ใช้ปัจจุบัน, ล็อก regular user ให้ checkout ได้เฉพาะตัวเอง และเพิ่มตัวเลือก checkout ในนามผู้ใช้อื่นสำหรับ ADMIN/SUPER
+  - 20260910054049_enforce_user_specific_checkout_identity.sql: เพิ่ม RPC โหลด active borrowers แบบจำกัดสิทธิ์ และบังคับ borrower_id, ชื่อ, โทรศัพท์, role และ stock validation ใน process_checkout_order
+- **Reason:** ทำให้ข้อมูลผู้ยืมถูกต้องตามบัญชีผู้ใช้และป้องกันการปลอม borrower identity โดยยังรักษา checkout workflow เดิม
 ## [2026-09-10 11:52]
 - **Files Modified:** `.gitignore`, `package.json`, `package-lock.json`, `supabase/migrations/*.sql`
 - **Changes:** เปิดให้ deployment migrations ถูก track ใน Git โดยยัง ignore `supabase/migrations/archive`; เพิ่ม migration history `52–69` และ migration timestamped ที่มีอยู่ใน local เพื่อให้ Preview เห็นชุด migration ครบ; อัปเกรดและ pin `vite` เป็น `7.3.6` ซึ่ง resolve `esbuild` เป็น `0.28.2`

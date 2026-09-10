@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,15 +20,20 @@ const CheckoutPosTerminal = ({
   rawBalances = [],
   onCheckoutSuccess
 }) => {
-  const { profile } = useAuth();
+  const { profile, user, isAdmin, isSuperAdmin } = useAuth();
+  const canChooseBorrower = isAdmin || isSuperAdmin;
   
   // Selected source project
   const [selectedProjectId, setSelectedProjectId] = useState('');
   
   // Borrower Info Form
+  const [borrowerType, setBorrowerType] = useState('profile');
+  const [borrowerId, setBorrowerId] = useState('');
   const [borrowerName, setBorrowerName] = useState('');
   const [borrowerPhone, setBorrowerPhone] = useState('');
   const [borrowerDepartment, setBorrowerDepartment] = useState('');
+  const [borrowerOptions, setBorrowerOptions] = useState([]);
+  const [loadingBorrowers, setLoadingBorrowers] = useState(false);
   
   // Today + 7 days default expected return date
   const defaultDueDate = useMemo(() => {
@@ -49,6 +54,69 @@ const CheckoutPosTerminal = ({
   // Active batch paste input states per item: { [itemId]: string }
   const [batchInputText, setBatchInputText] = useState({});
   const [showBatchInput, setShowBatchInput] = useState({});
+
+  // Keep the default borrower tied to the authenticated profile.
+  useEffect(() => {
+    if (!profile?.id) return;
+
+    setBorrowerType('profile');
+    setBorrowerId(profile.id);
+    setBorrowerName(profile.full_name?.trim() || user?.email?.split('@')[0] || 'User');
+    setBorrowerPhone(profile.phone || '');
+    setBorrowerDepartment(profile.department || '');
+  }, [profile?.id, profile?.full_name, profile?.phone, profile?.department, user?.email]);
+
+  // ADMIN/SUPER may select an active profile when checking out on behalf of another user.
+  useEffect(() => {
+    let isMounted = true;
+
+    if (!canChooseBorrower) {
+      setBorrowerOptions([]);
+      return undefined;
+    }
+
+    const loadBorrowers = async () => {
+      setLoadingBorrowers(true);
+      const { data, error } = await supabase.rpc('get_checkout_borrowers');
+
+      if (!isMounted) return;
+
+      if (error) {
+        console.error('Error loading checkout borrowers:', error);
+        toast.error('Failed to load active users for checkout');
+        setBorrowerOptions([]);
+      } else {
+        setBorrowerOptions(data || []);
+      }
+      setLoadingBorrowers(false);
+    };
+
+    loadBorrowers();
+    return () => {
+      isMounted = false;
+    };
+  }, [canChooseBorrower]);
+
+  const handleBorrowerChange = (selectedId) => {
+    if (selectedId === '__external__') {
+      setBorrowerType('external');
+      setBorrowerId('');
+      setBorrowerName('');
+      setBorrowerPhone('');
+      setBorrowerDepartment('');
+      return;
+    }
+
+    const selectedBorrower = borrowerOptions.find((borrower) => borrower.id === selectedId);
+    if (!selectedBorrower) return;
+
+    setBorrowerType('profile');
+    setBorrowerId(selectedBorrower.id);
+    setBorrowerName(selectedBorrower.full_name || '');
+    setBorrowerPhone(selectedBorrower.phone || '');
+    setBorrowerDepartment(selectedBorrower.department || '');
+  };
+
 
 
   // Available items in the selected project location
@@ -190,6 +258,12 @@ const CheckoutPosTerminal = ({
     if (!selectedProjectId) {
       return toast.error('Please select source project/location');
     }
+    if (borrowerType === 'profile' && !borrowerId) {
+      return toast.error('Unable to resolve the checkout user. Please refresh and try again.');
+    }
+    if (borrowerType === 'external' && !canChooseBorrower) {
+      return toast.error('Only ADMIN/SUPER can checkout for a person outside the system.');
+    }
     if (!borrowerName.trim()) {
       return toast.error('Please specify borrower name');
     }
@@ -245,6 +319,8 @@ const CheckoutPosTerminal = ({
 
       const payload = {
         project_id: selectedProjectId,
+        borrower_type: borrowerType,
+        borrower_id: borrowerType === 'profile' ? borrowerId : null,
         borrower_name: borrowerName.trim(),
         borrower_phone: borrowerPhone.trim() || null,
         borrower_department: borrowerDepartment.trim() || null,
@@ -252,7 +328,6 @@ const CheckoutPosTerminal = ({
         expected_return_date: borrowType === 'standard' ? expectedReturnDate : null,
         purpose: purpose.trim() || null,
         notes: notes.trim() || null,
-        created_by: profile?.id || null,
         items: expandedItems
       };
 
@@ -266,9 +341,11 @@ const CheckoutPosTerminal = ({
       setCart([]);
       setBorrowType('standard');
       setExpectedReturnDate(defaultDueDate);
-      setBorrowerName('');
-      setBorrowerPhone('');
-      setBorrowerDepartment('');
+      setBorrowerType('profile');
+      setBorrowerId(profile?.id || '');
+      setBorrowerName(profile?.full_name?.trim() || user?.email?.split('@')[0] || 'User');
+      setBorrowerPhone(profile?.phone || '');
+      setBorrowerDepartment(profile?.department || '');
       setPurpose('');
       setNotes('');
       setBatchInputText({});
@@ -424,6 +501,35 @@ const CheckoutPosTerminal = ({
               </h3>
             </div>
             <div className="p-6 pt-4 space-y-3">
+
+              {canChooseBorrower && (
+                <div className="space-y-1">
+                  <Label htmlFor="checkout_borrower" className="text-xs font-semibold text-foreground">
+                    Checkout On Behalf Of
+                  </Label>
+                  <select
+                    id="checkout_borrower"
+                    value={borrowerType === 'external' ? '__external__' : borrowerId}
+                    onChange={(e) => handleBorrowerChange(e.target.value)}
+                    disabled={loadingBorrowers || borrowerOptions.length === 0}
+                    className="flex h-9 w-full rounded-lg border border-input bg-background px-3 py-1 text-xs text-foreground shadow-xs outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {borrowerOptions.length === 0 ? (
+                      <option value="">No active users available</option>
+                    ) : (
+                      borrowerOptions.map((borrower) => (
+                        <option key={borrower.id} value={borrower.id}>
+                          {borrower.full_name || 'Unnamed user'}{borrower.phone ? ' — ' + borrower.phone : ''}
+                        </option>
+                      ))
+                    )}
+                    <option value="__external__">Other — person not in system</option>
+                  </select>
+                  <p className="text-[10px] text-muted-foreground">
+                    ADMIN/SUPER can create a checkout for another active user.
+                  </p>
+                </div>
+              )}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold text-foreground">Borrower Name / Technician <span className="text-destructive">*</span></Label>
@@ -431,6 +537,7 @@ const CheckoutPosTerminal = ({
                     required
                     placeholder="e.g. John Doe"
                     value={borrowerName}
+                    readOnly={borrowerType === 'profile'}
                     onChange={(e) => setBorrowerName(e.target.value)}
                     className="h-9 text-xs rounded-lg bg-background border border-input"
                   />
@@ -440,6 +547,7 @@ const CheckoutPosTerminal = ({
                   <Input
                     placeholder="e.g. 081-234-5678"
                     value={borrowerPhone}
+                    readOnly={borrowerType === 'profile'}
                     onChange={(e) => setBorrowerPhone(e.target.value)}
                     className="h-9 text-xs rounded-lg bg-background border border-input"
                   />
