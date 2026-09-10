@@ -157,7 +157,6 @@ const Items = () => {
       const itemMap = {};
       iData.forEach(i => { itemMap[i.id] = i; });
 
-      const itemsWithBalanceSet = new Set();
       const records = [];
 
       // Construct project-specific stock balance records (only for active projects)
@@ -168,20 +167,37 @@ const Items = () => {
           return;
         }
 
-        const item = itemMap[b.item_id] || { id: b.item_id, name: b.item_name, unit: b.unit };
+        // Balance rows must resolve to the canonical item master. The old
+        // fallback rendered partial transfer rows with empty master metadata.
+        const item = itemMap[b.item_id];
+        if (!item) {
+          console.warn('[Items] Ignoring stock balance with missing item master:', b.item_id);
+          return;
+        }
 
-        itemsWithBalanceSet.add(b.item_id);
+        // A warehouse row represents current inventory, not historical
+        // activity. Once a transfer drains the source, stock_balance can
+        // still expose the grouped source record at zero; do not render it
+        // as an empty warehouse row.
+        const balance = Number(b.balance);
+        if (!Number.isFinite(balance) || balance <= 0) {
+          return;
+        }
+
 
         const projectCode = project.project_code || '';
         const projectName = project.name || b.project_name || '';
         const projectDisplay = projectCode ? `${projectCode} — ${projectName}` : (projectName || '-');
 
+        const recordKey = `${b.item_id}_${b.project_id}`;
+        if (records.some(record => record.recordKey === recordKey)) return;
+
         records.push({
-          recordKey: `${b.item_id}_${b.project_id}`,
+          recordKey,
           id: item.id,
           project_id: b.project_id,
-          name: item.name || b.item_name || 'Material Item',
-          model: item.model || b.model || '-',
+          name: item.name || 'Material Item',
+          model: item.model || '-',
           sku: item.sku || '-',
           source: item.source || '',
           vendor: item.vendor || '',
@@ -195,7 +211,7 @@ const Items = () => {
           project_name: projectName,
           project_location: project.location || '',
           project_display: projectDisplay,
-          balance: b.balance !== undefined ? b.balance : 0,
+          balance,
           unit: item.unit || b.unit || 'ชิ้น',
           description: item.description || item.notes || '',
           image_url: item.image_url || '',
@@ -203,36 +219,6 @@ const Items = () => {
         });
       });
 
-      // Include master items that don't have stock balance records yet (Balance: 0)
-      iData.forEach(item => {
-        if (!itemsWithBalanceSet.has(item.id)) {
-          records.push({
-            recordKey: `${item.id}_none`,
-            id: item.id,
-            project_id: null,
-            name: item.name || 'Material Item',
-            model: item.model || '-',
-            sku: item.sku || '-',
-            source: item.source || '',
-            vendor: item.vendor || '',
-            item_type: item.item_type || 'PARENT',
-            parent_sku: item.parent_sku || '',
-            parent_id: item.parent_id || null,
-            seq_no: item.seq_no || null,
-            category_name: item.categories?.name || '-',
-            category_id: item.category_id,
-            project_code: '',
-            project_name: '-',
-            project_location: '',
-            project_display: '-',
-            balance: 0,
-            unit: item.unit || 'ชิ้น',
-            description: item.description || item.notes || '',
-            image_url: item.image_url || '',
-            originalItem: item
-          });
-        }
-      });
 
       // Sort by item name then project name
       records.sort((a, b) => a.name.localeCompare(b.name, 'th'));

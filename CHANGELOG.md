@@ -1,4 +1,24 @@
 # Changelog
+## [2026-09-10 11:07]
+- **Files Modified:** `src/components/users/EditUserModal.jsx`
+- **Changes:** ใช้ `useMemo` รักษา reference ของ role lists และย้ายการ reset `activeTab` ไปให้เกิดเฉพาะเมื่อเปิด modal หรือเปลี่ยน user ไม่ให้การโหลด form/RBAC data ดึงกลับ TAB 1
+- **Reason:** แก้ TAB 2: Roles & Permissions และ TAB 3: Project Access ไม่สามารถสลับจากปุ่ม tab หรือ Next/Back ได้
+## [2026-09-10 10:57]
+- **Files Modified:** `src/pages/Items.jsx`
+- **Changes:** ไม่สร้าง master row ที่ไม่มี inventory คงเหลือ และแสดงเฉพาะ warehouse allocation ที่มี `balance > 0` เพื่อเอาแถว `No Project / Stock 0` ออกจากหน้า `/items` หลัง refresh
+- **Reason:** แก้ orphan/empty source-location row ที่ยังค้างหลังโอน Warehouse A → Warehouse B
+## [2026-09-10 10:46]
+- **Files Modified:** `src/pages/Items.jsx`
+- **Changes:** กรอง stock balance ที่เป็น `0` หรือไม่ใช่ค่าตัวเลขก่อนสร้าง warehouse row เพื่อไม่ให้แถวคลังต้นทางค้างหลังโอน และคงการใช้ item master เดิมสำหรับ metadata/Parent/Child
+- **Reason:** แก้ปัญหา warehouse ต้นทางยังแสดงแถวว่างหลัง stock ถูกโอนไปปลายทาง
+
+## [2026-09-10 10:24]
+- **Files Modified:** `src/components/items/TransferItemDialog.jsx`, `src/pages/Items.jsx`, `supabase/migrations/20260910120000_fix_item_warehouse_transfer_master_data.sql`
+- **Changes:**
+  - `TransferItemDialog.jsx`: ตรวจผลลัพธ์ `success` จาก transfer RPC และแสดง error เมื่อฐานข้อมูลไม่ทำรายการสำเร็จ
+  - `Items.jsx`: ใช้ item master เป็นแหล่งข้อมูล metadata เดียว, ไม่แสดง orphan balance rows และป้องกัน allocation ซ้ำในหน้า `/items`
+  - `20260910120000_fix_item_warehouse_transfer_master_data.sql`: เพิ่ม canonical transfer RPC ที่ใช้ `items.id` เดิม, คง Parent/Child metadata และไม่ insert/update `public.items`
+- **Reason:** แก้ปัญหาโอนคลังแล้วเกิดแถวซ้ำที่ชื่อ/รุ่น/หมวดหมู่/ผู้ขายว่าง และทำให้การโอนเปลี่ยนเฉพาะ stock allocation
 
 ## [2026-09-09 16:27]
 - **Files Modified:** `src/contexts/AuthProvider.jsx`, `src/components/layout/PageWrapper.jsx`, `src/components/auth/PermissionRoute.jsx`, `src/pages/auth/Login.jsx`, `src/lib/supabase.js`, `.env.example`

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -62,7 +62,7 @@ const EditUserModal = ({
 }) => {
   const navigate = useNavigate();
   const { isSuperAdmin } = useAuth();
-  const [activeTab, setActiveTab] = useState('profile'); // 'profile' | 'security' | 'permissions'
+  const [activeTab, setActiveTab] = useState('profile'); // 'profile' | 'rbac' | 'projects'
   const [loading, setLoading] = useState(false);
   const [projectSearch, setProjectSearch] = useState('');
   
@@ -72,12 +72,18 @@ const EditUserModal = ({
   const [loadingPerms, setLoadingPerms] = useState(false);
   const [liveRoles, setLiveRoles] = useState(roles && roles.length > 0 ? roles : []);
 
-  const rawRoles = liveRoles.length > 0 ? liveRoles : (roles.length > 0 ? roles : DEFAULT_ROLES);
-  const availableRoles = rawRoles.filter(r => {
-    const code = (r.code || '').toUpperCase();
-    if (code === 'SUPER' && !isSuperAdmin) return false;
-    return true;
-  });
+  const rawRoles = useMemo(
+    () => liveRoles.length > 0 ? liveRoles : (roles.length > 0 ? roles : DEFAULT_ROLES),
+    [liveRoles, roles]
+  );
+  const availableRoles = useMemo(
+    () => rawRoles.filter(r => {
+      const code = (r.code || '').toUpperCase();
+      if (code === 'SUPER' && !isSuperAdmin) return false;
+      return true;
+    }),
+    [rawRoles, isSuperAdmin]
+  );
 
   const [formData, setFormData] = useState({
     email: '',
@@ -128,9 +134,14 @@ const EditUserModal = ({
         selected_projects: user.assigned_project_ids || []
       });
 
-      setActiveTab('profile');
     }
   }, [user, isOpen, availableRoles]);
+
+  // Reset the wizard only when a different user is opened, not when form or
+  // live RBAC data changes while the current tab is being viewed.
+  useEffect(() => {
+    if (isOpen) setActiveTab('profile');
+  }, [isOpen, user?.id]);
 
   // Load LIVE Roles and RBAC Permissions directly from Database for the selected role
   const fetchLiveRolePermissions = useCallback(async () => {

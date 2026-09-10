@@ -92,6 +92,9 @@ export const TransferItemDialog = ({
       });
 
       if (rpcError) throw rpcError;
+      if (!rpcData?.success) {
+        throw new Error(rpcData?.message || 'Transfer was not completed');
+      }
 
       toast.success(
         rpcData?.message || `Transferred ${item.name} (${currentQtyNum} ${item.unit || 'ชิ้น'}) successfully`,
