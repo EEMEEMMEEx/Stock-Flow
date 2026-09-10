@@ -105,8 +105,11 @@ stock-flow-atomic-transaction-workflow.*
 /docs
 .freebuff/
 
-# Exclude entire Supabase folder from Git tracking
-supabase/
+# Keep deployment migrations tracked; ignore other local Supabase artifacts
+supabase/*
+!supabase/migrations/
+supabase/migrations/archive/
+!supabase/migrations/*.sql
 .ua/
 
 # Project context and internal development notes

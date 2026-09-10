@@ -1,4 +1,8 @@
 # Changelog
+## [2026-09-10 11:52]
+- **Files Modified:** `.gitignore`, `package.json`, `package-lock.json`, `supabase/migrations/*.sql`
+- **Changes:** เปิดให้ deployment migrations ถูก track ใน Git โดยยัง ignore `supabase/migrations/archive`; เพิ่ม migration history `52–69` และ migration timestamped ที่มีอยู่ใน local เพื่อให้ Preview เห็นชุด migration ครบ; อัปเกรดและ pin `vite` เป็น `7.3.6` ซึ่ง resolve `esbuild` เป็น `0.28.2`
+- **Reason:** แก้ Preview error เรื่อง remote migration versions ไม่พบใน local และปิด esbuild development-server CORS vulnerability โดยไม่ใช้ `--force` หรือ `--legacy-peer-deps`
 ## [2026-09-10 11:07]
 - **Files Modified:** `src/components/users/EditUserModal.jsx`
 - **Changes:** ใช้ `useMemo` รักษา reference ของ role lists และย้ายการ reset `activeTab` ไปให้เกิดเฉพาะเมื่อเปิด modal หรือเปลี่ยน user ไม่ให้การโหลด form/RBAC data ดึงกลับ TAB 1
