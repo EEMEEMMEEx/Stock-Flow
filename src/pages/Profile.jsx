@@ -19,7 +19,7 @@ import LanguageSwitcher from '@/components/common/LanguageSwitcher';
 
 const Profile = () => {
   const { user, profile, refreshProfile, assignedProjectIds, allProjectsAccess } = useAuth();
-  const { t, isThai } = useTranslation();
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   
   // Tab state: 'info' | 'password'
@@ -463,7 +463,7 @@ const Profile = () => {
                       {t('profile.interfaceLanguage', 'Display Language')}
                     </Label>
                     <p className="text-[11px] text-muted-foreground mt-0.5">
-                      {isThai ? 'สลับการแสดงผลเมนูและข้อความทั้งระบบระหว่างภาษาไทยและภาษาอังกฤษ' : 'Switch application interface language between Thai and English'}
+                      {t('profile.switchLangDesc', 'Switch application interface language between Thai and English')}
                     </p>
                   </div>
                   <div className="shrink-0">

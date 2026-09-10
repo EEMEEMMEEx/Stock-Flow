@@ -1,4 +1,14 @@
 # Changelog
+## [2026-09-10 15:46] - v1.6.0
+- **Files Modified:** `package.json`, `package-lock.json`, `src/i18n/i18n.js`, `src/i18n/LanguageProvider.jsx`, `src/i18n/index.js`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `src/pages/StockIn.jsx`, `src/pages/Items.jsx`, `src/pages/Withdrawals.jsx`, `src/pages/Settings.jsx`, `src/pages/Profile.jsx`, `src/pages/Projects.jsx`, `src/pages/Reports.jsx`
+- **Changes:**
+  - ติดตั้งและผสานรวม `i18next` และ `react-i18next` เป็น Translation Engine กลางของระบบ
+  - สร้าง `src/i18n/i18n.js` ตั้งค่าการตรวจจับภาษา, local storage persistence และ resource dictionaries
+  - อัปเกรด `LanguageProvider.jsx` โดยหุ้มด้วย `I18nextProvider` พร้อมคง Backward Compatibility 100% สำหรับ `useTranslation()` เดิม
+  - รวบรวมข้อความภาษาไทยที่ฮาร์ดโค้ดไว้ในหมวดหมู่พัสดุเริ่มต้น, แหล่งที่มา (Local/Import), หน่วยนับ (ชิ้น), และข้อความแจ้งเตือนคำขอเบิก เข้าสู่พจนานุกรมกลาง `th.js` และ `en.js`
+  - ปรับปรุงโค้ดหน้าจอหลักให้เรียกใช้ translation keys แทนข้อความภาษาไทยตรง เพื่อให้ดูแลรักษาง่ายจากจุดเดียว
+- **Reason:** ยกระดับระบบสองภาษาตามมาตรฐานสากลด้วย i18next รวมศูนย์คำแปลภาษาไทยและภาษาอังกฤษ และคงฟังก์ชันการทำงานพร้อมเลย์เอาต์เดิมอย่างสมบูรณ์
+
 ## [2026-09-10 14:44] - v1.5.10
 - **Files Modified:** src/components/checkouts/CheckoutActiveList.jsx, package.json, package-lock.json
 - **Changes:** เปลี่ยนข้อความหัวตารางรายการยืมจาก "Outstanding Loans" เป็น "Active Loans" เพื่อให้สื่อความหมายชัดเจน ตรงกับสถานะอุปกรณ์ที่กำลังยืมอยู่และยังไม่ได้ส่งคืน และสอดคล้องกับ UI ส่วนอื่นของระบบ (Metric Cards, Navigation Tabs, i18n) โดยไม่กระทบ business logic เดิม

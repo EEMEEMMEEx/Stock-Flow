@@ -50,6 +50,9 @@ export default {
     date: 'Date',
     quantity: 'Quantity',
     price: 'Price',
+    defaultUnit: 'pcs',
+    localSource: 'Local (Domestic)',
+    importSource: 'Import',
   },
   nav: {
     dashboard: 'Dashboard',
@@ -134,6 +137,9 @@ export default {
     completeStockIn: 'Complete Stock In',
     stockInSuccess: 'Stock received successfully!',
     downloadSummary: 'Download Receipt Summary',
+    qtySourceRemaining: 'Remaining Balance',
+    qtySourceTotal: 'Total',
+    unitPcs: 'pcs',
   },
   items: {
     title: 'Inventory Items',
@@ -156,6 +162,25 @@ export default {
     transferTitle: 'Transfer Item Between Locations',
     transferQty: 'Transfer Quantity',
     destLocation: 'Destination Location',
+    defaultUnit: 'pcs',
+    categories: {
+      construction: 'Construction Materials',
+      constructionDesc: 'Cement, stone, soil, sand, steel',
+      electrical: 'Electrical & Lighting',
+      electricalDesc: 'Wires, switches, light bulbs',
+      plumbing: 'Plumbing & Sanitary',
+      plumbingDesc: 'PVC pipes, faucets, fittings',
+      tools: 'Tools & Equipment',
+      toolsDesc: 'Drills, hammers, pliers, nails',
+      chemical: 'Paints & Chemicals',
+      chemicalDesc: 'Paints, adhesives, chemicals',
+      miscellaneous: 'Miscellaneous',
+      miscellaneousDesc: 'General supplies',
+    },
+    sources: {
+      local: 'Local (Domestic)',
+      import: 'Import',
+    },
     table: {
       source: 'Source',
       vendor: 'Vendor',
@@ -179,6 +204,9 @@ export default {
     shortageWarning: 'Insufficient Stock in Selected Location',
     rejectRequisition: 'Reject Requisition',
     rejectionReason: 'Rejection Reason',
+    noStockInLocation: 'This item has no stock in the selected location, but has {{count}} {{unit}} across other locations. Please select another location or project.',
+    cannotExceedStock: 'Cannot request more than available stock in this location ({{available}} {{unit}})',
+    maxQtyLimited: 'Maximum quantity limited to available stock ({{available}} {{unit}})',
   },
   checkouts: {
     title: 'Equipment Checkout & Return',
@@ -252,6 +280,7 @@ export default {
     smtpSettings: 'SMTP Configuration',
     testConnection: 'Test SMTP Connection',
     saveChanges: 'Save Settings',
+    defaultLangDesc: 'Configure application default display language (Thai / English)',
   },
   profile: {
     title: 'User Profile',
@@ -262,6 +291,7 @@ export default {
     preferences: 'Interface Preferences',
     interfaceLanguage: 'Display Language',
     themePreference: 'Theme Mode',
+    switchLangDesc: 'Switch application interface language between Thai and English',
   },
   manual: {
     title: 'User Manual & System Documentation',

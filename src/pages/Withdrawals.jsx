@@ -224,10 +224,13 @@ const Withdrawals = () => {
     if (availableStock <= 0) {
       if (totalSys > 0) {
         toast.error(
-          `This item has no stock in selected location, but has ${totalSys} ${item.unit || 'ชิ้น'} across other locations.\nPlease select another location or project.`
+          t('withdrawals.noStockInLocation', {
+            count: totalSys,
+            unit: item.unit || t('common.defaultUnit', 'ชิ้น')
+          }, `This item has no stock in selected location, but has ${totalSys} ${item.unit || 'ชิ้น'} across other locations.\nPlease select another location or project.`)
         );
       } else {
-        toast.error('This item is out of stock');
+        toast.error(t('common.outOfStock', 'This item is out of stock'));
       }
       return;
     }
@@ -236,7 +239,12 @@ const Withdrawals = () => {
       const existing = prev.find(i => i.id === item.id);
       if (existing) {
         if (existing.quantity >= availableStock) {
-          toast.error(`Cannot request more than available stock in this location (${availableStock} ${item.unit || 'ชิ้น'})`);
+          toast.error(
+            t('withdrawals.cannotExceedStock', {
+              available: availableStock,
+              unit: item.unit || t('common.defaultUnit', 'ชิ้น')
+            }, `Cannot request more than available stock in this location (${availableStock} ${item.unit || 'ชิ้น'})`)
+          );
           return prev;
         }
         const newQ = existing.quantity + 1;
@@ -271,7 +279,12 @@ const Withdrawals = () => {
         }
 
         if (newQ > availableStock) {
-          toast.error(`Maximum quantity limited to available stock (${availableStock} ${item.unit || 'ชิ้น'})`);
+          toast.error(
+            t('withdrawals.maxQtyLimited', {
+              available: availableStock,
+              unit: item.unit || t('common.defaultUnit', 'ชิ้น')
+            }, `Maximum quantity limited to available stock (${availableStock} ${item.unit || 'ชิ้น'})`)
+          );
           newQ = availableStock;
         }
 
@@ -297,7 +310,12 @@ const Withdrawals = () => {
         if (isNaN(num) || num < 1) num = 1;
 
         if (num > availableStock) {
-          toast.error(`Maximum quantity limited to available stock (${availableStock} ${item.unit || 'ชิ้น'})`);
+          toast.error(
+            t('withdrawals.maxQtyLimited', {
+              available: availableStock,
+              unit: item.unit || t('common.defaultUnit', 'ชิ้น')
+            }, `Maximum quantity limited to available stock (${availableStock} ${item.unit || 'ชิ้น'})`)
+          );
           num = availableStock;
         }
 

@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { utils, writeFile } from 'xlsx';
 import toast from 'react-hot-toast';
+import { useTranslation } from '@/i18n';
 
 // Subcomponents
 import ReportHeader from '@/components/reports/ReportHeader';
@@ -14,6 +15,7 @@ import ReportPagination from '@/components/reports/ReportPagination';
 import ReportSiteKits from '@/components/reports/ReportSiteKits';
 
 const Reports = () => {
+  const { t } = useTranslation();
   const { can } = useAuth();
   const canExport = can('reports.export');
   const [activeTab, setActiveTab] = useState('stock_in'); // 'stock_in', 'withdrawals', 'balance'
@@ -370,7 +372,7 @@ const Reports = () => {
           'Part Number': item.part_number || '-',
           'BOM Item Name': item.bom_name,
           'Qty Per Site': item.qty_per_site,
-          'Unit': item.unit || 'ชิ้น',
+          'Unit': item.unit || t('common.defaultUnit', 'ชิ้น'),
           'Current Stock': item.total_stock,
           'Kits Possible': item.sets_possible,
           'Missing For Next Set': item.missing_for_next_set || 0,

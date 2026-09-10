@@ -50,6 +50,9 @@ export default {
     date: 'วันที่',
     quantity: 'จำนวน',
     price: 'ราคา',
+    defaultUnit: 'ชิ้น',
+    localSource: 'Local (ในประเทศ)',
+    importSource: 'Import (นำเข้า)',
   },
   nav: {
     dashboard: 'แดชบอร์ด',
@@ -134,6 +137,9 @@ export default {
     completeStockIn: 'เสร็จสิ้นการรับเข้า',
     stockInSuccess: 'บันทึกรับเข้าพัสดุสำเร็จเรียบร้อย!',
     downloadSummary: 'ดาวน์โหลดสรุปใบรับพัสดุ',
+    qtySourceRemaining: 'คงเหลือ',
+    qtySourceTotal: 'รวมทั้งหมด',
+    unitPcs: 'ชิ้น',
   },
   items: {
     title: 'คลังพัสดุ',
@@ -156,6 +162,25 @@ export default {
     transferTitle: 'โอนย้ายพัสดุระหว่างคลัง',
     transferQty: 'จำนวนที่ต้องการโอนย้าย',
     destLocation: 'สถานที่จัดเก็บปลายทาง',
+    defaultUnit: 'ชิ้น',
+    categories: {
+      construction: 'วัสดุก่อสร้าง',
+      constructionDesc: 'ปูน, หิน, ดิน, ทราย, เหล็ก',
+      electrical: 'งานไฟฟ้าและแสงสว่าง',
+      electricalDesc: 'สายไฟ, สวิตช์, หลอดไฟ',
+      plumbing: 'งานประปาและสุขภัณฑ์',
+      plumbingDesc: 'ท่อ PVC, ก๊อกน้ำ, ข้อต่อ',
+      tools: 'เครื่องมือช่างและอุปกรณ์',
+      toolsDesc: 'สว่าน, ค้อน, คีม, ตะปู',
+      chemical: 'สีและเคมีภัณฑ์',
+      chemicalDesc: 'สีทาบ้าน, กาว, น้ำยา',
+      miscellaneous: 'เบ็ดเตล็ด',
+      miscellaneousDesc: 'อุปกรณ์ทั่วไป',
+    },
+    sources: {
+      local: 'Local (ในประเทศ)',
+      import: 'Import (นำเข้า)',
+    },
     table: {
       source: 'ที่มา',
       vendor: 'ผู้จำหน่าย',
@@ -179,6 +204,9 @@ export default {
     shortageWarning: 'พัสดุในคลังที่เลือกมีไม่เพียงพอ',
     rejectRequisition: 'ปฏิเสธคำขอเบิก',
     rejectionReason: 'เหตุผลในการปฏิเสธ',
+    noStockInLocation: 'พัสดุนี้ไม่มีสต็อกในคลังที่เลือก แต่มี {{count}} {{unit}} ในคลังอื่น กรุณาเลือกคลังหรือโครงการอื่น',
+    cannotExceedStock: 'ไม่สามารถขอเบิกเกินจำนวนคงเหลือในคลังนี้ได้ (คงเหลือ {{available}} {{unit}})',
+    maxQtyLimited: 'จำกัดจำนวนการเบิกสูงสุดตามสต็อกคงเหลือ ({{available}} {{unit}})',
   },
   checkouts: {
     title: 'ระบบยืม-คืนอุปกรณ์',
@@ -252,6 +280,7 @@ export default {
     smtpSettings: 'การเชื่อมต่อเมลเซิร์ฟเวอร์ (SMTP)',
     testConnection: 'ทดสอบการส่งอีเมล',
     saveChanges: 'บันทึกการตั้งค่า',
+    defaultLangDesc: 'กำหนดภาษาเริ่มต้นสำหรับการแสดงผลของแอปพลิเคชัน (ไทย / English)',
   },
   profile: {
     title: 'โปรไฟล์ส่วนตัว',
@@ -262,6 +291,7 @@ export default {
     preferences: 'การแสดงผลและภาษา',
     interfaceLanguage: 'ภาษาของระบบ',
     themePreference: 'โหมดการแสดงผล (ธีม)',
+    switchLangDesc: 'สลับการแสดงผลเมนูและข้อความทั้งระบบระหว่างภาษาไทยและภาษาอังกฤษ',
   },
   manual: {
     title: 'คู่มือการใช้งานและเอกสารระบบ',

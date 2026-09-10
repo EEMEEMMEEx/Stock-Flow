@@ -325,7 +325,7 @@ const StockIn = () => {
               name: row.name || row.sku || 'New Stock Item',
               sku: row.sku || null,
               model: row.model || null,
-              unit: 'ชิ้น',
+              unit: t('common.defaultUnit', 'ชิ้น'),
               item_type: row.item_type || 'PARENT',
               parent_sku: row.parent_sku || null,
               description: row.notes || null,
@@ -761,7 +761,7 @@ const StockIn = () => {
                     <TableHead className="w-[14%]">Part No. / SKU</TableHead>
                     <TableHead className="w-[32%]">Material / Item Name</TableHead>
                     <TableHead className="w-[15%]">Model / Brand</TableHead>
-                    <TableHead className="w-[10%] text-right">Quantity ({selectedQtySource === 'คงเหลือ' ? 'Total' : selectedQtySource})</TableHead>
+                    <TableHead className="w-[10%] text-right">{t('common.quantity', 'Quantity')} ({selectedQtySource === 'คงเหลือ' ? t('common.total', 'Total') : selectedQtySource})</TableHead>
                     <TableHead className="w-[12%]">Notes</TableHead>
                     <TableHead className="w-[3%] text-center">Remove</TableHead>
                   </TableRow>
@@ -1324,7 +1324,7 @@ const StockIn = () => {
                           </TableCell>
 
                           <TableCell className="align-top text-muted-foreground font-medium">
-                            {item.items?.unit || 'ชิ้น'}
+                            {item.items?.unit || t('common.defaultUnit', 'ชิ้น')}
                           </TableCell>
 
                           <TableCell className="align-top text-muted-foreground font-mono text-[11px] space-y-0.5">

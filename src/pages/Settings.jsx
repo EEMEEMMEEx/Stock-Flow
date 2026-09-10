@@ -20,7 +20,7 @@ import LanguageSwitcher from '@/components/common/LanguageSwitcher';
 
 const Settings = () => {
   const { can } = useAuth();
-  const { t, isThai } = useTranslation();
+  const { t } = useTranslation();
   const canUpdate = can('settings.update');
 
   const [loading, setLoading] = useState(true);
@@ -465,7 +465,7 @@ const Settings = () => {
                     {t('profile.interfaceLanguage', 'Display Language')}
                   </Label>
                   <p className="text-[11px] text-muted-foreground mt-0.5">
-                    {isThai ? 'กำหนดภาษาเริ่มต้นสำหรับการแสดงผลของแอปพลิเคชัน (ไทย / English)' : 'Configure application default display language (Thai / English)'}
+                    {t('settings.defaultLangDesc', 'Configure application default display language (Thai / English)')}
                   </p>
                 </div>
                 <div className="shrink-0">

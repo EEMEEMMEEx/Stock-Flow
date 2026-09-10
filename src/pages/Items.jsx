@@ -103,12 +103,12 @@ const Items = () => {
       
       if (!data || data.length === 0) {
         const defaultCats = [
-          { name: 'วัสดุก่อสร้าง', description: 'ปูน, หิน, ดิน, ทราย, เหล็ก' },
-          { name: 'งานไฟฟ้าและแสงสว่าง', description: 'สายไฟ, สวิตช์, หลอดไฟ' },
-          { name: 'งานประปาและสุขภัณฑ์', description: 'ท่อ PVC, ก๊อกน้ำ, ข้อต่อ' },
-          { name: 'เครื่องมือช่างและอุปกรณ์', description: 'สว่าน, ค้อน, คีม, ตะปู' },
-          { name: 'สีและเคมีภัณฑ์', description: 'สีทาบ้าน, กาว, น้ำยา' },
-          { name: 'เบ็ดเตล็ด', description: 'อุปกรณ์ทั่วไป' }
+          { name: t('items.categories.construction', 'วัสดุก่อสร้าง'), description: t('items.categories.constructionDesc', 'ปูน, หิน, ดิน, ทราย, เหล็ก') },
+          { name: t('items.categories.electrical', 'งานไฟฟ้าและแสงสว่าง'), description: t('items.categories.electricalDesc', 'สายไฟ, สวิตช์, หลอดไฟ') },
+          { name: t('items.categories.plumbing', 'งานประปาและสุขภัณฑ์'), description: t('items.categories.plumbingDesc', 'ท่อ PVC, ก๊อกน้ำ, ข้อต่อ') },
+          { name: t('items.categories.tools', 'เครื่องมือช่างและอุปกรณ์'), description: t('items.categories.toolsDesc', 'สว่าน, ค้อน, คีม, ตะปู') },
+          { name: t('items.categories.chemical', 'สีและเคมีภัณฑ์'), description: t('items.categories.chemicalDesc', 'สีทาบ้าน, กาว, น้ำยา') },
+          { name: t('items.categories.miscellaneous', 'เบ็ดเตล็ด'), description: t('items.categories.miscellaneousDesc', 'อุปกรณ์ทั่วไป') }
         ];
         const { data: seeded } = await supabase.from('categories').insert(defaultCats).select();
         if (seeded && seeded.length > 0) data = seeded;
@@ -117,7 +117,7 @@ const Items = () => {
     } catch (error) {
       console.error("Fetch Categories Error:", error);
     }
-  }, []);
+  }, [t]);
 
   const fetchItems = useCallback(async (isInitial = false) => {
     try {
@@ -1769,8 +1769,8 @@ const Items = () => {
                     onChange={e => setFormData({...formData, source: e.target.value})}
                   >
                     <option value="">-- Select Source --</option>
-                    <option value="Local">Local (ในประเทศ)</option>
-                    <option value="Import">Import (นำเข้า)</option>
+                    <option value="Local">{t('items.sources.local', 'Local (ในประเทศ)')}</option>
+                    <option value="Import">{t('items.sources.import', 'Import (นำเข้า)')}</option>
                   </select>
                 </div>
                 <div className="space-y-1.5">

@@ -966,7 +966,7 @@ const Projects = () => {
                             {item.project_name || '-'}
                           </TableCell>
                           <TableCell className="text-right font-mono font-semibold text-primary py-2">
-                            {item.balance} {item.unit || 'ชิ้น'}
+                            {item.balance} {item.unit || t('common.defaultUnit', 'ชิ้น')}
                           </TableCell>
                         </TableRow>
                       ))}
