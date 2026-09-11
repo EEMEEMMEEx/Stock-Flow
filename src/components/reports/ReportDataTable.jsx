@@ -3,6 +3,7 @@ import { Card } from '@/components/ui/card';
 import { ArrowUpDown, ArrowUp, ArrowDown, AlertCircle, CheckCircle2, Clock, XCircle, Building2 } from 'lucide-react';
 import ReportEmptyState from './ReportEmptyState';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useTranslation } from '@/i18n';
 
 const ReportDataTable = ({
   activeTab,
@@ -12,6 +13,8 @@ const ReportDataTable = ({
   onResetFilters,
   loading = false
 }) => {
+  const { t, i18n } = useTranslation();
+
   const renderSortIcon = (key) => {
     if (sortConfig.key !== key) {
       return <ArrowUpDown className="w-3 h-3 shrink-0 opacity-40 group-hover:opacity-100 transition-opacity" />;
@@ -55,7 +58,7 @@ const ReportDataTable = ({
                     onClick={() => onSort('received_date')}
                     className="flex items-center gap-1.5 font-bold text-xs text-foreground group"
                   >
-                    <span>Received Date</span>
+                    <span>{t('reports.table.receivedDate')}</span>
                     {renderSortIcon('received_date')}
                   </button>
                 </TableHead>
@@ -65,7 +68,7 @@ const ReportDataTable = ({
                     onClick={() => onSort('projects.name')}
                     className="flex items-center gap-1.5 font-bold text-xs text-foreground group"
                   >
-                    <span>Project</span>
+                    <span>{t('reports.table.project')}</span>
                     {renderSortIcon('projects.name')}
                   </button>
                 </TableHead>
@@ -75,20 +78,20 @@ const ReportDataTable = ({
                     onClick={() => onSort('items.name')}
                     className="flex items-center gap-1.5 font-bold text-xs text-foreground group"
                   >
-                    <span>Item / Model</span>
+                    <span>{t('reports.table.itemModel')}</span>
                     {renderSortIcon('items.name')}
                   </button>
                 </TableHead>
 
-                <TableHead className="font-bold text-xs text-foreground">Supplier</TableHead>
-                <TableHead className="font-bold text-xs text-foreground">PO #</TableHead>
+                <TableHead className="font-bold text-xs text-foreground">{t('reports.table.supplier')}</TableHead>
+                <TableHead className="font-bold text-xs text-foreground">{t('reports.table.poNumber')}</TableHead>
 
                 <TableHead className="text-right w-[140px]">
                   <button
                     onClick={() => onSort('quantity')}
                     className="flex items-center justify-end gap-1.5 font-bold text-xs text-foreground group w-full"
                   >
-                    <span>Stock In Qty</span>
+                    <span>{t('reports.table.stockInQty')}</span>
                     {renderSortIcon('quantity')}
                   </button>
                 </TableHead>
@@ -102,7 +105,7 @@ const ReportDataTable = ({
                     onClick={() => onSort('requested_at')}
                     className="flex items-center gap-1.5 font-bold text-xs text-foreground group"
                   >
-                    <span>Requested Date</span>
+                    <span>{t('reports.table.requestedDate')}</span>
                     {renderSortIcon('requested_at')}
                   </button>
                 </TableHead>
@@ -112,7 +115,7 @@ const ReportDataTable = ({
                     onClick={() => onSort('projects.name')}
                     className="flex items-center gap-1.5 font-bold text-xs text-foreground group"
                   >
-                    <span>Project</span>
+                    <span>{t('reports.table.project')}</span>
                     {renderSortIcon('projects.name')}
                   </button>
                 </TableHead>
@@ -122,27 +125,27 @@ const ReportDataTable = ({
                     onClick={() => onSort('items.name')}
                     className="flex items-center gap-1.5 font-bold text-xs text-foreground group"
                   >
-                    <span>Item Name</span>
+                    <span>{t('reports.table.itemName')}</span>
                     {renderSortIcon('items.name')}
                   </button>
                 </TableHead>
 
-                <TableHead className="font-bold text-xs text-foreground">Requester</TableHead>
+                <TableHead className="font-bold text-xs text-foreground">{t('reports.table.requester')}</TableHead>
 
                 <TableHead className="text-center font-bold text-xs text-foreground w-[150px]">
-                  Status
+                  {t('reports.table.status')}
                 </TableHead>
 
                 <TableHead className="text-center font-bold text-xs text-foreground">
-                  Requested
+                  {t('reports.table.requested')}
                 </TableHead>
 
                 <TableHead className="text-center font-bold text-xs text-emerald-600 dark:text-emerald-400">
-                  Stock Deducted
+                  {t('reports.table.stockDeducted')}
                 </TableHead>
 
                 <TableHead className="text-center font-bold text-xs text-amber-600 dark:text-amber-400">
-                  Shortage
+                  {t('reports.table.shortage')}
                 </TableHead>
               </TableRow>
             )}
@@ -154,7 +157,7 @@ const ReportDataTable = ({
                     onClick={() => onSort('project_name')}
                     className="flex items-center gap-1.5 font-bold text-xs text-foreground group"
                   >
-                    <span>Project</span>
+                    <span>{t('reports.table.project')}</span>
                     {renderSortIcon('project_name')}
                   </button>
                 </TableHead>
@@ -164,7 +167,7 @@ const ReportDataTable = ({
                     onClick={() => onSort('item_name')}
                     className="flex items-center gap-1.5 font-bold text-xs text-foreground group"
                   >
-                    <span>Item Name</span>
+                    <span>{t('reports.table.itemName')}</span>
                     {renderSortIcon('item_name')}
                   </button>
                 </TableHead>
@@ -174,7 +177,7 @@ const ReportDataTable = ({
                     onClick={() => onSort('total_in')}
                     className="flex items-center justify-end gap-1.5 font-bold text-xs text-emerald-600 dark:text-emerald-400 group w-full"
                   >
-                    <span>Total In</span>
+                    <span>{t('reports.table.totalIn')}</span>
                     {renderSortIcon('total_in')}
                   </button>
                 </TableHead>
@@ -184,7 +187,7 @@ const ReportDataTable = ({
                     onClick={() => onSort('total_out')}
                     className="flex items-center justify-end gap-1.5 font-bold text-xs text-amber-600 dark:text-amber-400 group w-full"
                   >
-                    <span>Total Out</span>
+                    <span>{t('reports.table.totalOut')}</span>
                     {renderSortIcon('total_out')}
                   </button>
                 </TableHead>
@@ -194,7 +197,7 @@ const ReportDataTable = ({
                     onClick={() => onSort('balance')}
                     className="flex items-center justify-end gap-1.5 font-bold text-xs text-foreground group w-full"
                   >
-                    <span>Current Balance</span>
+                    <span>{t('reports.table.currentBalance')}</span>
                     {renderSortIcon('balance')}
                   </button>
                 </TableHead>
@@ -230,7 +233,9 @@ const ReportDataTable = ({
                     <TableCell>
                       <div className="font-medium text-foreground">{row.items?.name}</div>
                       {row.model && (
-                        <span className="text-[10px] text-muted-foreground">Model: {row.model}</span>
+                        <span className="text-[10px] text-muted-foreground">
+                          {t('reports.table.model', { model: row.model })}
+                        </span>
                       )}
                     </TableCell>
 
@@ -247,7 +252,7 @@ const ReportDataTable = ({
                 {activeTab === 'withdrawals' && (
                   <>
                     <TableCell className="font-medium text-foreground whitespace-nowrap">
-                      {row.requested_at ? new Date(row.requested_at).toLocaleDateString() : '—'}
+                      {row.requested_at ? new Date(row.requested_at).toLocaleDateString(i18n.language === 'th' ? 'th-TH' : 'en-US') : '—'}
                     </TableCell>
 
                     <TableCell className="font-semibold text-foreground">
@@ -284,22 +289,22 @@ const ReportDataTable = ({
                         {row.has_shortage ? (
                           <>
                             <AlertCircle className="w-3 h-3 text-amber-600 shrink-0" />
-                            <span>{row.status} (Shortage)</span>
+                            <span>{t(`status.${row.status}`)} {t('reports.table.shortageSuffix', { shortage: t('reports.charts.shortage') })}</span>
                           </>
                         ) : row.status === 'approved' || row.status === 'completed' ? (
                           <>
                             <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
-                            <span>{row.status}</span>
+                            <span>{t(`status.${row.status}`)}</span>
                           </>
                         ) : row.status === 'rejected' ? (
                           <>
                             <XCircle className="w-3 h-3 text-rose-600 shrink-0" />
-                            <span>{row.status}</span>
+                            <span>{t(`status.${row.status}`)}</span>
                           </>
                         ) : (
                           <>
                             <Clock className="w-3 h-3 text-yellow-600 shrink-0" />
-                            <span>{row.status}</span>
+                            <span>{t(`status.${row.status}`)}</span>
                           </>
                         )}
                       </span>

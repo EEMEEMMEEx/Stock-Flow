@@ -307,7 +307,7 @@ const Reports = () => {
 
   const handleExportExcel = async () => {
     if (!canExport) {
-      toast.error('You do not have permission to export Excel reports (reports.export required)');
+      toast.error(t('reports.export.permissionDeniedExcel'));
       return;
     }
     try {
@@ -315,39 +315,39 @@ const Reports = () => {
       let sheetName = '';
 
       if (activeTab === 'stock_in') {
-        sheetName = 'Stock_In';
+        sheetName = t('reports.export.sheetStockIn');
         exportData = processedData.map((r) => ({
-          'Received Date': r.received_date,
-          'Project': r.projects?.name,
-          'Item Name': r.items?.name,
-          'Quantity': r.quantity,
-          'Unit': r.items?.unit,
-          'Supplier': r.supplier || '-',
-          'PO Number': r.po_number || '-'
+          [t('reports.export.colReceivedDate')]: r.received_date,
+          [t('reports.export.colProject')]: r.projects?.name,
+          [t('reports.export.colItemName')]: r.items?.name,
+          [t('reports.export.colQuantity')]: r.quantity,
+          [t('reports.export.colUnit')]: r.items?.unit,
+          [t('reports.export.colSupplier')]: r.supplier || '-',
+          [t('reports.export.colPoNumber')]: r.po_number || '-'
         }));
       } else if (activeTab === 'withdrawals') {
-        sheetName = 'Withdrawals';
+        sheetName = t('reports.export.sheetWithdrawals');
         exportData = processedData.map((r) => ({
-          'Requested Date': r.requested_at ? new Date(r.requested_at).toLocaleDateString() : '—',
-          'Project': r.projects?.name,
-          'Item Name': r.items?.name,
-          'Requested Qty': r.quantity,
-          'Stock Deducted': r.deducted_quantity,
-          'Shortage': r.shortage_quantity,
-          'Unit': r.items?.unit,
-          'Requester': r.profiles?.full_name,
-          'Status': r.has_shortage ? `${r.status} (Shortage)` : r.status,
-          'Shortage Override Reason': r.override_reason || '-'
+          [t('reports.export.colRequestedDate')]: r.requested_at ? new Date(r.requested_at).toLocaleDateString() : '—',
+          [t('reports.export.colProject')]: r.projects?.name,
+          [t('reports.export.colItemName')]: r.items?.name,
+          [t('reports.export.colRequestedQty')]: r.quantity,
+          [t('reports.export.colStockDeducted')]: r.deducted_quantity,
+          [t('reports.export.colShortage')]: r.shortage_quantity,
+          [t('reports.export.colUnit')]: r.items?.unit,
+          [t('reports.export.colRequester')]: r.profiles?.full_name,
+          [t('reports.export.colStatus')]: r.has_shortage ? `${t(`status.${r.status}`)} ${t('reports.table.shortageSuffix', { shortage: t('reports.charts.shortage') })}` : t(`status.${r.status}`),
+          [t('reports.export.colShortageOverrideReason')]: r.override_reason || '-'
         }));
       } else if (activeTab === 'balance') {
-        sheetName = 'Stock_Balance';
+        sheetName = t('reports.export.sheetBalance');
         exportData = processedData.map((r) => ({
-          'Project': r.project_name,
-          'Item Name': r.item_name,
-          'Total In': r.total_in,
-          'Total Out': r.total_out,
-          'Balance': r.balance,
-          'Unit': r.unit
+          [t('reports.export.colProject')]: r.project_name,
+          [t('reports.export.colItemName')]: r.item_name,
+          [t('reports.export.colTotalIn')]: r.total_in,
+          [t('reports.export.colTotalOut')]: r.total_out,
+          [t('reports.export.colBalance')]: r.balance,
+          [t('reports.export.colUnit')]: r.unit
         }));
       } else if (activeTab === 'site_kits') {
         const { fetchSiteKitsAvailability } = await import('@/lib/siteKits');
@@ -365,27 +365,27 @@ const Reports = () => {
             });
           });
         });
-        sheetName = 'Site_Kits_BOM';
+        sheetName = t('reports.export.sheetSiteKits');
         exportData = itemsList.map((item, index) => ({
-          'No.': index + 1,
-          'Equipment Category': item.category_name,
-          'Part Number': item.part_number || '-',
-          'BOM Item Name': item.bom_name,
-          'Qty Per Site': item.qty_per_site,
-          'Unit': item.unit || t('common.defaultUnit', 'ชิ้น'),
-          'Current Stock': item.total_stock,
-          'Kits Possible': item.sets_possible,
-          'Missing For Next Set': item.missing_for_next_set || 0,
-          'Status': item.total_stock === 0 
-            ? 'Out of Stock' 
+          [t('reports.export.colNo')]: index + 1,
+          [t('reports.export.colEquipmentCategory')]: item.category_name,
+          [t('reports.export.colPartNumber')]: item.part_number || '-',
+          [t('reports.export.colBomItemName')]: item.bom_name,
+          [t('reports.export.colQtyPerSite')]: item.qty_per_site,
+          [t('reports.export.colUnit')]: item.unit || t('common.piece'),
+          [t('reports.export.colCurrentStock')]: item.total_stock,
+          [t('reports.export.colKitsPossible')]: item.sets_possible,
+          [t('reports.export.colMissingForNextSet')]: item.missing_for_next_set || 0,
+          [t('reports.export.colStatus')]: item.total_stock === 0 
+            ? t('reports.siteKits.outOfStock') 
             : item.isLimiting 
-            ? 'Limiting Stock' 
-            : 'Ready'
+            ? t('reports.siteKits.limitingStock') 
+            : t('reports.siteKits.ready')
         }));
       }
 
       if (exportData.length === 0) {
-        toast.error('No data to export');
+        toast.error(t('reports.export.noData'));
         return;
       }
 
@@ -393,21 +393,21 @@ const Reports = () => {
       const wb = utils.book_new();
       utils.book_append_sheet(wb, ws, sheetName);
       writeFile(wb, `${sheetName}_Report_${new Date().toISOString().split('T')[0]}.xlsx`);
-      toast.success('Excel report exported successfully');
+      toast.success(t('reports.export.excelSuccess'));
     } catch (error) {
       console.error(error);
-      toast.error('Failed to export Excel report');
+      toast.error(t('reports.export.excelFailed'));
     }
   };
 
   const handleExportPDF = async () => {
     if (!canExport) {
-      toast.error('You do not have permission to export PDF reports (reports.export required)');
+      toast.error(t('reports.export.permissionDeniedPdf'));
       return;
     }
     try {
       setPdfLoading(true);
-      const toastId = toast.loading('Generating PDF report...');
+      const toastId = toast.loading(t('reports.export.generatingPdf'));
 
       const { StockReportPDF, SiteKitsReportPDF } = await import('@/lib/pdf-templates.jsx');
       const { pdf } = await import('@react-pdf/renderer');
@@ -432,14 +432,14 @@ const Reports = () => {
           });
         });
         const selectedProj = projects.find(p => p.id === filters.project_id);
-        const projectName = selectedProj ? (selectedProj.location ? `${selectedProj.name} (${selectedProj.location})` : selectedProj.name) : 'All Storage Locations';
+        const projectName = selectedProj ? (selectedProj.location ? `${selectedProj.name} (${selectedProj.location})` : selectedProj.name) : t('reports.export.allStorageLocations');
 
         doc = (
           <SiteKitsReportPDF
             items={itemsList}
             siteKits={siteKitsData || []}
             projectName={projectName}
-            categoryName="All 4 Categories"
+            categoryName={t('reports.export.all4Categories')}
           />
         );
         downloadFileName = `Site_Kits_BOM_Availability_Report_${new Date().toISOString().split('T')[0]}.pdf`;
@@ -457,10 +457,10 @@ const Reports = () => {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
 
-      toast.success('PDF report exported successfully', { id: toastId });
+      toast.success(t('reports.export.pdfSuccess'), { id: toastId });
     } catch (error) {
       console.error(error);
-      toast.error('Failed to generate PDF report');
+      toast.error(t('reports.export.pdfFailed'));
     } finally {
       setPdfLoading(false);
     }

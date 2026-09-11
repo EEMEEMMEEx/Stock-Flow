@@ -24,6 +24,7 @@ import {
 } from '@/lib/stock-in-parser';
 import { ProjectLocationSelector } from '@/components/common/ProjectLocationSelector';
 import { useTranslation } from '@/i18n';
+import { formatI18nDate, formatI18nNumber } from '@/lib/i18n-format';
 
 const StockIn = () => {
   const { can, user } = useAuth();
@@ -157,7 +158,7 @@ const StockIn = () => {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-    toast.success('DOPA+USO CSV template (UTF-8 BOM) downloaded successfully');
+    toast.success(t('common.success'));
   };
 
   // Direct CSV File Parsing with Native DOPA+USO & Multi-Warehouse Detection
@@ -176,7 +177,7 @@ const StockIn = () => {
         const { items: parsed, detectedWarehouses } = parseDopaStockCsv(text);
         
         if (parsed.length === 0) {
-          toast.error('No valid data rows found in the CSV file');
+          toast.error(t('stockIn.csvImport.noItemsMatch'));
           return;
         }
 
@@ -198,10 +199,10 @@ const StockIn = () => {
         setPreviewItems(aggregated);
         setPreviewSearch('');
         setIsImportPreviewOpen(true);
-        toast.success(`Successfully loaded ${parsed.length} item(s) (found ${detectedWarehouses.length} storage location(s))`);
+        toast.success(t('stockIn.toasts.csvParsed', { count: parsed.length }));
       } catch (err) {
         console.error('CSV Parsing error:', err);
-        toast.error('Error importing CSV: ' + err.message);
+        toast.error(t('stockIn.toasts.csvParseError'));
       } finally {
         if (fileInputRef.current) fileInputRef.current.value = '';
       }
@@ -446,7 +447,7 @@ const StockIn = () => {
         if (txErr) console.warn('Warning inserting stock_transactions:', txErr);
       }
 
-      toast.success('Stock receipt recorded successfully');
+      toast.success(t('stockIn.toasts.created'));
 
       dispatchStockInNotification({
         orderId: orderId,
@@ -460,7 +461,7 @@ const StockIn = () => {
       fetchData();
     } catch (error) {
       console.error('StockIn Submit Error:', error);
-      toast.error('Failed to record stock receipt: ' + (error.message || ''));
+      toast.error(t('stockIn.toasts.createFailed'));
     } finally {
       setIsSubmitting(false);
     }
@@ -556,21 +557,21 @@ const StockIn = () => {
         <Table>
           <TableHeader className="bg-muted/50">
             <TableRow>
-              <TableHead>Receipt Date</TableHead>
-              <TableHead>Storage Location</TableHead>
-              <TableHead>Recorded By</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead>{t('stockIn.receivedDate')}</TableHead>
+              <TableHead>{t('stockIn.destinationWarehouse')}</TableHead>
+              <TableHead>{t('stockIn.receivedBy')}</TableHead>
+              <TableHead className="text-right">{t('common.actions')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={4} className="text-center py-8">Loading data...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={4} className="text-center py-8">{t('common.loading')}</TableCell></TableRow>
             ) : orders.length === 0 ? (
-              <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">No stock receipt records found</TableCell></TableRow>
+              <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">{t('common.noData')}</TableCell></TableRow>
             ) : (
               orders.map((o) => (
                 <TableRow key={o.id} className="hover:bg-muted/20">
-                  <TableCell className="text-muted-foreground font-mono">{format(new Date(o.created_at), 'dd/MM/yyyy HH:mm')}</TableCell>
+                  <TableCell className="text-muted-foreground font-mono">{formatI18nDate(o.created_at, 'dd/MM/yyyy HH:mm')}</TableCell>
                   <TableCell className="font-medium">
                     {o.projects?.project_code ? (
                       <span className="font-mono text-emerald-600 dark:text-emerald-400 font-bold mr-1.5">
@@ -587,7 +588,7 @@ const StockIn = () => {
                   <TableCell>{o.profiles?.full_name || 'Admin User'}</TableCell>
                   <TableCell className="text-right">
                     <Button size="sm" variant="outline" className="rounded-xl h-8 text-xs font-semibold" onClick={() => viewOrderDetails(o)}>
-                      View Details
+                      {t('common.viewDetails')}
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -610,7 +611,7 @@ const StockIn = () => {
                 </div>
                 <div>
                   <DialogTitle className="text-lg font-bold flex items-center gap-2 text-foreground">
-                    <span>Stock Receipt Preview</span>
+                    <span>{t('stockIn.csvImport.modalTitle')}</span>
                   </DialogTitle>
                   <p className="text-xs text-muted-foreground mt-0.5">
                     File: <strong className="text-foreground">{importFileName || 'CSV Document'}</strong>
@@ -621,7 +622,7 @@ const StockIn = () => {
               {/* Summary Badges */}
               <div className="flex items-center gap-1.5 flex-wrap">
                 <span className="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-emerald-500/15 text-emerald-600 border border-emerald-500/30 font-mono">
-                  Total {previewItems.length} {previewItems.length === 1 ? 'item' : 'items'}
+                  {t('stockIn.totalItems')}: {previewItems.length}
                 </span>
                 <span className="px-2 py-0.5 rounded-lg text-[11px] font-bold bg-indigo-500/15 text-indigo-600 border border-indigo-500/30">
                   PARENT: {previewParentCount}
@@ -630,7 +631,7 @@ const StockIn = () => {
                   CHILD: {previewChildCount}
                 </span>
                 <span className="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 font-mono">
-                  Total {previewTotalQty.toLocaleString()} pcs
+                  {t('stockIn.totalUnits')}: {formatI18nNumber(previewTotalQty)} {t('common.piece')}
                 </span>
               </div>
             </div>
@@ -655,7 +656,7 @@ const StockIn = () => {
                 <div className="space-y-1">
                   <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
                     <Filter className="w-3.5 h-3.5 text-indigo-600" />
-                    <span>2. Filter by Warehouse Balance:</span>
+                    <span>{t('stockIn.csvImport.detectedWarehouses')}:</span>
                   </div>
                   
                   {/* Quick Warehouse Pills */}
@@ -672,7 +673,7 @@ const StockIn = () => {
                       }`}
                     >
                       <BarChart3 className="w-3.5 h-3.5" />
-                      <span>Total Balance</span>
+                      <span>{t('stockIn.qtySourceTotal')}</span>
                     </Button>
 
                     {csvDetectedWarehouses.map(wh => {
@@ -709,12 +710,12 @@ const StockIn = () => {
                   {onlyPositiveFilter ? (
                     <>
                       <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                      <span>Show only balance &gt; 0</span>
+                      <span>{t('stockIn.csvImport.filterPositiveOnly')}</span>
                     </>
                   ) : (
                     <>
                       <Layers className="w-3.5 h-3.5 text-indigo-500" />
-                      <span>Show all items (including 0 balance)</span>
+                      <span>{t('common.all')}</span>
                     </>
                   )}
                 </Button>
@@ -739,7 +740,7 @@ const StockIn = () => {
               <div className="relative w-full sm:w-72">
                 <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <Input
-                  placeholder="Search name, part number, or model in preview..."
+                  placeholder={t('stockIn.csvImport.searchPreviewPlaceholder')}
                   value={previewSearch}
                   onChange={(e) => setPreviewSearch(e.target.value)}
                   className="pl-8 h-8 text-xs rounded-lg"
@@ -848,7 +849,7 @@ const StockIn = () => {
               className="rounded-lg h-9 px-4 text-xs font-semibold cursor-pointer"
               onClick={() => setIsImportPreviewOpen(false)}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
 
             <div className="flex items-center gap-2">
@@ -858,7 +859,7 @@ const StockIn = () => {
                 onClick={handleApplyPreviewToForm}
                 className="rounded-lg h-9 px-4 text-xs font-semibold gap-1.5 border-border text-foreground hover:bg-muted cursor-pointer"
               >
-                <span>Edit in Form</span>
+                <span>{t('common.edit')}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Button>
 
@@ -871,12 +872,12 @@ const StockIn = () => {
                 {isSubmitting ? (
                   <>
                     <RefreshCw className="w-4 h-4 animate-spin" />
-                    <span>Recording receipt...</span>
+                    <span>{t('stockIn.toasts.submitting')}</span>
                   </>
                 ) : (
                   <>
                     <CheckCircle2 className="w-4 h-4" />
-                    <span>Confirm Stock Receipt ({previewItems.length} {previewItems.length === 1 ? 'item' : 'items'})</span>
+                    <span>{t('stockIn.csvImport.importBtn', { count: previewItems.length })}</span>
                   </>
                 )}
               </Button>
@@ -1167,7 +1168,7 @@ const StockIn = () => {
 
             <DialogFooter className="gap-2 sm:gap-0 border-t border-border/40 pt-4">
               <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)} disabled={isSubmitting} className="rounded-lg h-9 px-4 text-xs font-semibold">
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button 
                 type="submit" 
@@ -1177,12 +1178,12 @@ const StockIn = () => {
                 {isSubmitting ? (
                   <>
                     <RefreshCw className="w-4 h-4 shrink-0 animate-spin" />
-                    <span>Recording receipt...</span>
+                    <span>{t('stockIn.toasts.submitting')}</span>
                   </>
                 ) : (
                   <>
                     <Check className="w-4 h-4 shrink-0" />
-                    <span>Confirm Stock Receipt</span>
+                    <span>{t('stockIn.completeStockIn')}</span>
                   </>
                 )}
               </Button>
@@ -1357,7 +1358,7 @@ const StockIn = () => {
               className="h-9 px-5 rounded-lg text-xs font-semibold hover:bg-muted cursor-pointer"
               onClick={() => setSelectedOrder(null)}
             >
-              Close
+              {t('common.close')}
             </Button>
           </DialogFooter>
         </DialogContent>

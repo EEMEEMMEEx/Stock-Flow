@@ -1,8 +1,11 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { ClipboardList, CheckCircle2, PackageCheck, XCircle, AlertTriangle, TrendingUp } from 'lucide-react';
+import { useTranslation } from '@/i18n';
 
 const HistoryKpiGrid = ({ historyData = [] }) => {
+  const { t } = useTranslation();
+
   const metrics = React.useMemo(() => {
     let total = historyData.length;
     let approved = 0;
@@ -25,57 +28,57 @@ const HistoryKpiGrid = ({ historyData = [] }) => {
   const cards = [
     {
       id: 'total',
-      title: 'Total History Requests',
+      title: t('history.kpis.totalTransactions', 'Total History Requests'),
       value: metrics.total.toLocaleString(),
-      unit: metrics.total === 1 ? 'order' : 'orders',
-      subtext: 'All historical records in system',
+      unit: metrics.total === 1 ? t('history.orderWord_one', 'order') : t('history.orderWord_other', 'orders'),
+      subtext: t('history.kpiAllRecords', 'All historical records in system'),
       icon: ClipboardList,
       iconBg: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
-      badge: 'Total',
+      badge: t('common.total', 'Total'),
       badgeBg: 'bg-blue-500/10 text-blue-600 dark:text-blue-300'
     },
     {
       id: 'approved',
-      title: 'Approved (Pending Pickup)',
+      title: t('history.kpis.approved', 'Approved (Pending Pickup)'),
       value: metrics.approved.toLocaleString(),
-      unit: metrics.approved === 1 ? 'order' : 'orders',
-      subtext: 'Approved requests ready for handover',
+      unit: metrics.approved === 1 ? t('history.orderWord_one', 'order') : t('history.orderWord_other', 'orders'),
+      subtext: t('history.kpiApprovedSubtext', 'Approved requests ready for handover'),
       icon: CheckCircle2,
       iconBg: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20',
-      badge: 'Approved',
+      badge: t('common.approved', 'Approved'),
       badgeBg: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-300'
     },
     {
       id: 'completed',
-      title: 'Completed',
+      title: t('history.kpis.completed', 'Completed'),
       value: metrics.completed.toLocaleString(),
-      unit: metrics.completed === 1 ? 'order' : 'orders',
-      subtext: 'Items verified and received',
+      unit: metrics.completed === 1 ? t('history.orderWord_one', 'order') : t('history.orderWord_other', 'orders'),
+      subtext: t('history.kpiCompletedSubtext', 'Items verified and received'),
       icon: PackageCheck,
       iconBg: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
-      badge: 'Completed',
+      badge: t('common.completed', 'Completed'),
       badgeBg: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-300'
     },
     {
       id: 'rejected',
-      title: 'Rejected',
+      title: t('history.kpis.rejected', 'Rejected'),
       value: metrics.rejected.toLocaleString(),
-      unit: metrics.rejected === 1 ? 'order' : 'orders',
-      subtext: 'Requests rejected by admin',
+      unit: metrics.rejected === 1 ? t('history.orderWord_one', 'order') : t('history.orderWord_other', 'orders'),
+      subtext: t('history.kpiRejectedSubtext', 'Requests rejected by admin'),
       icon: XCircle,
       iconBg: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20',
-      badge: 'Rejected',
+      badge: t('common.rejected', 'Rejected'),
       badgeBg: 'bg-rose-500/10 text-rose-600 dark:text-rose-300'
     },
     {
       id: 'shortages',
-      title: 'Shortages',
+      title: t('history.shortages', 'Shortages'),
       value: metrics.shortages.toLocaleString(),
-      unit: metrics.shortages === 1 ? 'order' : 'orders',
-      subtext: metrics.shortages > 0 ? 'Items partially fulfilled or pending delivery' : 'No pending shortages',
+      unit: metrics.shortages === 1 ? t('history.orderWord_one', 'order') : t('history.orderWord_other', 'orders'),
+      subtext: metrics.shortages > 0 ? t('history.kpiShortageActive', 'Items partially fulfilled or pending delivery') : t('history.kpiShortageNone', 'No pending shortages'),
       icon: AlertTriangle,
       iconBg: metrics.shortages > 0 ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20' : 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20',
-      badge: metrics.shortages > 0 ? 'Attention' : 'Normal',
+      badge: metrics.shortages > 0 ? t('common.warning', 'Attention') : t('common.normal', 'Normal'),
       badgeBg: metrics.shortages > 0 ? 'bg-amber-500/10 text-amber-600 dark:text-amber-300' : 'bg-slate-500/10 text-slate-600 dark:text-slate-300'
     }
   ];

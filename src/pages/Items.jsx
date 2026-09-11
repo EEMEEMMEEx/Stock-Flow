@@ -103,12 +103,12 @@ const Items = () => {
       
       if (!data || data.length === 0) {
         const defaultCats = [
-          { name: t('items.categories.construction', 'วัสดุก่อสร้าง'), description: t('items.categories.constructionDesc', 'ปูน, หิน, ดิน, ทราย, เหล็ก') },
-          { name: t('items.categories.electrical', 'งานไฟฟ้าและแสงสว่าง'), description: t('items.categories.electricalDesc', 'สายไฟ, สวิตช์, หลอดไฟ') },
-          { name: t('items.categories.plumbing', 'งานประปาและสุขภัณฑ์'), description: t('items.categories.plumbingDesc', 'ท่อ PVC, ก๊อกน้ำ, ข้อต่อ') },
-          { name: t('items.categories.tools', 'เครื่องมือช่างและอุปกรณ์'), description: t('items.categories.toolsDesc', 'สว่าน, ค้อน, คีม, ตะปู') },
-          { name: t('items.categories.chemical', 'สีและเคมีภัณฑ์'), description: t('items.categories.chemicalDesc', 'สีทาบ้าน, กาว, น้ำยา') },
-          { name: t('items.categories.miscellaneous', 'เบ็ดเตล็ด'), description: t('items.categories.miscellaneousDesc', 'อุปกรณ์ทั่วไป') }
+          { name: t('items.categories.construction'), description: t('items.categories.constructionDesc') },
+          { name: t('items.categories.electrical'), description: t('items.categories.electricalDesc') },
+          { name: t('items.categories.plumbing'), description: t('items.categories.plumbingDesc') },
+          { name: t('items.categories.tools'), description: t('items.categories.toolsDesc') },
+          { name: t('items.categories.chemical'), description: t('items.categories.chemicalDesc') },
+          { name: t('items.categories.miscellaneous'), description: t('items.categories.miscellaneousDesc') }
         ];
         const { data: seeded } = await supabase.from('categories').insert(defaultCats).select();
         if (seeded && seeded.length > 0) data = seeded;
@@ -225,7 +225,7 @@ const Items = () => {
       setItems(records);
     } catch (error) {
       console.error("Fetch Items Error:", error);
-      toast.error('Failed to load items catalog: ' + (error.message || ''));
+      toast.error(t('items.toasts.loadCatalogFailed') + ': ' + (error.message || ''));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -285,11 +285,11 @@ const Items = () => {
     if (!file) return;
 
     if (file.size > 5 * 1024 * 1024) {
-      return toast.error('Image file size must not exceed 5MB');
+      return toast.error(t('items.toasts.imageSizeExceeded'));
     }
 
     setUploadingImage(true);
-    const toastId = toast.loading('Uploading image to Cloudflare R2...');
+    const toastId = toast.loading(t('items.toasts.uploadingImage'));
 
     try {
       const fileExt = file.name.split('.').pop()?.toLowerCase() || 'png';
@@ -299,13 +299,13 @@ const Items = () => {
       const publicUrl = await uploadFileToR2(file, 'items', customFileName);
       if (publicUrl) {
         setFormData(prev => ({ ...prev, image_url: publicUrl }));
-        toast.success('Image uploaded to Cloudflare R2 successfully', { id: toastId });
+        toast.success(t('items.toasts.imageUploaded'), { id: toastId });
       } else {
-        toast.error('Failed to upload image', { id: toastId });
+        toast.error(t('items.toasts.imageUploadFailed'), { id: toastId });
       }
     } catch (err) {
       console.error('[Items] Image upload error:', err);
-      toast.error('An error occurred during image upload: ' + (err.message || ''));
+      toast.error(t('items.toasts.imageUploadError') + ': ' + (err.message || ''));
     } finally {
       setUploadingImage(false);
     }
@@ -365,22 +365,22 @@ const Items = () => {
 
       if (isStockChanged) {
         if (!allowDirectStockAdjustment) {
-          toast.error('Direct stock adjustment is disabled in system settings');
+          toast.error(t('items.toasts.directAdjustmentDisabled'));
           setIsAdjustingStock(false);
           return;
         }
         if (!canAdjustStock) {
-          toast.error('You do not have permission to adjust stock (requires items.adjust_stock)');
+          toast.error(t('items.toasts.noAdjustPermission'));
           setIsAdjustingStock(false);
           return;
         }
         if (!adjustProjectId) {
-          toast.error('Please select a project/location to adjust stock');
+          toast.error(t('items.toasts.selectProjectToAdjust'));
           setIsAdjustingStock(false);
           return;
         }
         if (!stockAdjustReason.trim()) {
-          toast.error('Adjustment reason is required');
+          toast.error(t('items.toasts.reasonRequired'));
           setIsAdjustingStock(false);
           return;
         }
@@ -473,9 +473,9 @@ const Items = () => {
             created_by: profile?.id || null
           }]);
         }
-        toast.success(rpcData?.message || `Stock adjusted successfully: ${currentStockQty} ➔ ${parsedNewStock} ${formData.unit}`);
+        toast.success(rpcData?.message || t('items.toasts.stockAdjustedSuccess', { current: currentStockQty, newQty: parsedNewStock, unit: formData.unit }));
       } else {
-        toast.success('Item updated successfully');
+        toast.success(t('items.toasts.itemUpdatedSuccess'));
       }
 
       setIsEditOpen(false);
@@ -486,22 +486,22 @@ const Items = () => {
       if (code === '23505') {
         const detail = error?.details || '';
         if (detail.includes('sku')) {
-          toast.error('This SKU already exists in the system. Please use a unique SKU');
+          toast.error(t('items.toasts.skuExists'));
         } else {
-          toast.error('Duplicate item entry: ' + (error?.message || ''));
+          toast.error(t('items.toasts.duplicateEntry') + ': ' + (error?.message || ''));
         }
       } else if (code === '23503') {
-        toast.error('Selected category does not exist. Please select a valid category');
+        toast.error(t('items.toasts.categoryNotFound'));
       } else if (code === '23502') {
-        toast.error('Please fill in required fields (Item Name and Unit)');
+        toast.error(t('items.toasts.requiredFields'));
       } else if (code === '23514') {
-        toast.error('Input validation failed: ' + (error?.message || ''));
+        toast.error(t('items.toasts.validationFailed') + ': ' + (error?.message || ''));
       } else if (error?.status === 403 || code === '42501') {
-        toast.error('You do not have permission to edit items. Please contact administrator');
+        toast.error(t('items.toasts.noEditPermission'));
       } else if (error?.message) {
-        toast.error('Error: ' + error.message);
+        toast.error(t('common.error') + ': ' + error.message);
       } else {
-        toast.error('An unexpected error occurred while saving item');
+        toast.error(t('items.toasts.saveUnexpectedError'));
       }
     } finally {
       setIsAdjustingStock(false);
@@ -511,7 +511,7 @@ const Items = () => {
   const handleDeleteItem = async (force = false) => {
     if (!selectedItem || isDeleting) return;
     if (!allowItemDeletion) {
-      toast.error('Item deletion is disabled in system settings');
+      toast.error(t('items.toasts.itemDeletionDisabled'));
       return;
     }
     setIsDeleting(true);
@@ -524,12 +524,12 @@ const Items = () => {
 
         if (rpcError) {
           if (rpcError.code === 'PGRST202' || rpcError.status === 404) {
-            throw new Error('Force delete RPC is not available in database. Please run Migration 48 in Supabase SQL Editor');
+            throw new Error(t('items.toasts.forceDeleteRpcMissing'));
           }
           throw rpcError;
         }
 
-        toast.success(data?.message || 'Force deleted item and transaction history successfully');
+        toast.success(data?.message || t('items.toasts.forceDeletedSuccess'));
         setIsDeleteOpen(false);
         setHasTransactionConflict(false);
         fetchItems();
@@ -551,13 +551,13 @@ const Items = () => {
         throw error;
       }
 
-      toast.success('Item deleted successfully');
+      toast.success(t('items.toasts.itemDeletedSuccess'));
       setIsDeleteOpen(false);
       setHasTransactionConflict(false);
       fetchItems();
     } catch (error) {
       console.error('Delete Item Error:', error);
-      toast.error('An error occurred while deleting item: ' + (error.message || ''));
+      toast.error(t('items.toasts.deleteItemError') + ': ' + (error.message || ''));
     } finally {
       setIsDeleting(false);
     }
@@ -565,7 +565,7 @@ const Items = () => {
 
   const openEditDialog = (item) => {
     if (!can('items.update')) {
-      toast.error('You do not have permission to edit items (requires items.update)');
+      toast.error(t('items.toasts.requiresEditPermission'));
       return;
     }
     setSelectedItem(item);
@@ -600,7 +600,7 @@ const Items = () => {
 
   const openDeleteDialog = (item) => {
     if (!can('items.delete')) {
-      toast.error('You do not have permission to delete items (requires items.delete)');
+      toast.error(t('items.toasts.requiresDeletePermission'));
       return;
     }
     setSelectedItem(item);
@@ -610,7 +610,7 @@ const Items = () => {
 
   const openTransferDialog = (item) => {
     if (!can('items.transfer')) {
-      toast.error('You do not have permission to transfer stock (requires items.transfer)');
+      toast.error(t('items.toasts.requiresTransferPermission'));
       return;
     }
     setItemToTransfer(item);
@@ -943,7 +943,7 @@ const Items = () => {
       return (
         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/20">
           <MapPin className="w-3 h-3 shrink-0" />
-          <span className="hidden sm:inline">Local</span>
+          <span className="hidden sm:inline">{t('items.table.local')}</span>
           <span className="sm:hidden">L</span>
         </span>
       );
@@ -952,7 +952,7 @@ const Items = () => {
       return (
         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20">
           <Plane className="w-3 h-3 shrink-0" />
-          <span className="hidden sm:inline">Import</span>
+          <span className="hidden sm:inline">{t('items.table.import')}</span>
           <span className="sm:hidden">I</span>
         </span>
       );
@@ -991,10 +991,10 @@ const Items = () => {
             <div className="p-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400">
               <Package className="w-7 h-7" />
             </div>
-            <span>{t('items.title', 'Items Master')}</span>
+            <span>{t('items.title')}</span>
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
-            {t('items.subtitle', 'Manage master items, categories, and warehouse balances')}
+            {t('items.subtitle')}
           </p>
         </div>
 
@@ -1007,7 +1007,7 @@ const Items = () => {
             className="rounded-lg h-9 px-3 gap-1.5 border-input hover:bg-accent text-xs font-medium cursor-pointer shadow-xs"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${(loading || refreshing) ? 'animate-spin text-indigo-600' : ''}`} />
-            <span>{refreshing ? t('common.pleaseWait', 'Syncing...') : t('common.refresh', 'Refresh')}</span>
+            <span>{refreshing ? t('common.pleaseWait') : t('common.refresh')}</span>
           </Button>
         </div>
       </div>
@@ -1016,23 +1016,23 @@ const Items = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
         <Card className="p-4 rounded-xl bg-card border border-border shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground">Total Master Items</span>
+            <span className="text-xs font-semibold text-muted-foreground">{t('items.kpis.totalMasterItems')}</span>
             <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
               <Box className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-xl font-bold tracking-tight">{uniqueMasterItemsCount}</span>
-            <span className="text-xs text-muted-foreground font-medium">items</span>
+            <span className="text-xs text-muted-foreground font-medium">{t('items.kpis.itemsUnit')}</span>
           </div>
           <div className="mt-1 text-[11px] text-muted-foreground font-mono">
-            {parentKitsCount} Parents • {childKitsCount} Children
+            {parentKitsCount} {t('items.kpis.parents')} • {childKitsCount} {t('items.kpis.children')}
           </div>
         </Card>
 
         <Card className="p-4 rounded-xl bg-card border border-border shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground">Total Stock Balance</span>
+            <span className="text-xs font-semibold text-muted-foreground">{t('items.kpis.totalStockBalance')}</span>
             <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
               <CheckCircle2 className="w-4 h-4" />
             </div>
@@ -1041,33 +1041,33 @@ const Items = () => {
             <span className="text-xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
               {totalStockQuantity.toLocaleString()}
             </span>
-            <span className="text-xs text-muted-foreground font-medium">units</span>
+            <span className="text-xs text-muted-foreground font-medium">{t('items.kpis.units')}</span>
           </div>
         </Card>
 
         <Card className="p-4 rounded-xl bg-card border border-border shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground">Active Storage Locations</span>
+            <span className="text-xs font-semibold text-muted-foreground">{t('items.kpis.activeLocations')}</span>
             <div className="p-2 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
               <Building2 className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-xl font-bold tracking-tight">{activeLocationsWithStockCount}</span>
-            <span className="text-xs text-muted-foreground font-medium">locations</span>
+            <span className="text-xs text-muted-foreground font-medium">{t('items.kpis.locationsUnit')}</span>
           </div>
         </Card>
 
         <Card className="p-4 rounded-xl bg-card border border-border shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground">Categories</span>
+            <span className="text-xs font-semibold text-muted-foreground">{t('items.kpis.categories')}</span>
             <div className="p-2 rounded-lg bg-violet-500/10 text-violet-600 dark:text-violet-400">
               <Tag className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-xl font-bold tracking-tight">{totalCategoriesCount}</span>
-            <span className="text-xs text-muted-foreground font-medium">categories</span>
+            <span className="text-xs text-muted-foreground font-medium">{t('items.kpis.categoriesUnit')}</span>
           </div>
         </Card>
       </div>
@@ -1080,7 +1080,7 @@ const Items = () => {
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Search by name, model, SKU, project, or description..."
+              placeholder={t('items.filters.searchPlaceholder')}
               className="pl-9 pr-4 h-9 rounded-lg text-xs bg-background border-input shadow-xs"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -1097,7 +1097,7 @@ const Items = () => {
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
               >
-                <option value="all">All Categories ({categories.length})</option>
+                <option value="all">{t('items.filters.allCategoriesCount', { count: categories.length })}</option>
                 {categories.map(c => (
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
@@ -1111,7 +1111,7 @@ const Items = () => {
                 value={projectFilter}
                 onChange={(val) => setProjectFilter(val)}
                 allowAll={true}
-                allLabel="-- All Projects & Storage Locations --"
+                allLabel={t('items.filters.allProjectsLocations')}
                 mode="unified"
                 size="sm"
                 showSummaryCard={false}
@@ -1127,7 +1127,7 @@ const Items = () => {
                 onClick={() => setViewMode('table')}
                 className={`h-8 px-2.5 rounded-md text-xs gap-1 font-medium cursor-pointer ${viewMode === 'table' ? 'bg-background text-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground'}`}
               >
-                <List className="w-3.5 h-3.5" /> Table
+                <List className="w-3.5 h-3.5" /> {t('items.filters.table')}
               </Button>
               <Button
                 type="button"
@@ -1136,7 +1136,7 @@ const Items = () => {
                 onClick={() => setViewMode('grid')}
                 className={`h-8 px-2.5 rounded-md text-xs gap-1 font-medium cursor-pointer ${viewMode === 'grid' ? 'bg-background text-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground'}`}
               >
-                <LayoutGrid className="w-3.5 h-3.5" /> Grid
+                <LayoutGrid className="w-3.5 h-3.5" /> {t('items.filters.grid')}
               </Button>
             </div>
           </div>
@@ -1146,8 +1146,7 @@ const Items = () => {
         <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground pt-2 border-t border-border/40">
           <div className="flex items-center gap-3">
             <span>
-              Filtered items: <strong className="text-foreground font-semibold">{totalRootGroups}</strong> parent groups 
-              (<strong className="text-foreground font-semibold">{totalFilteredRecords}</strong> total items)
+              {t('items.filters.filteredSummary', { groups: totalRootGroups, total: totalFilteredRecords })}
             </span>
 
             {/* Expand / Collapse All Controls for Table Mode */}
@@ -1159,10 +1158,10 @@ const Items = () => {
                   size="sm"
                   onClick={expandAllGroups}
                   className="h-6 px-2 text-[11px] font-medium text-foreground hover:bg-background rounded shadow-xs cursor-pointer"
-                  title="Expand All"
+                  title={t('items.filters.expandAll')}
                 >
                   <ChevronDown className="w-3 h-3 mr-1 text-indigo-600 dark:text-indigo-400" />
-                  <span>Expand All</span>
+                  <span>{t('items.filters.expandAll')}</span>
                 </Button>
                 <Button
                   type="button"
@@ -1170,10 +1169,10 @@ const Items = () => {
                   size="sm"
                   onClick={collapseAllGroups}
                   className="h-6 px-2 text-[11px] font-medium text-foreground hover:bg-background rounded shadow-xs cursor-pointer"
-                  title="Collapse All"
+                  title={t('items.filters.collapseAll')}
                 >
                   <ChevronRight className="w-3 h-3 mr-1 text-indigo-600 dark:text-indigo-400" />
-                  <span>Collapse All</span>
+                  <span>{t('items.filters.collapseAll')}</span>
                 </Button>
               </div>
             )}
@@ -1184,7 +1183,7 @@ const Items = () => {
               onClick={() => { setSearchQuery(''); setCategoryFilter('all'); setProjectFilter('all'); }}
               className="text-xs text-primary hover:underline font-semibold cursor-pointer"
             >
-              Clear all filters
+              {t('items.filters.clearAll')}
             </button>
           )}
         </div>
@@ -1194,14 +1193,14 @@ const Items = () => {
       {loading ? (
         <Card className="p-12 text-center rounded-xl bg-card border border-border shadow-xs">
           <RefreshCw className="w-8 h-8 text-primary animate-spin mx-auto mb-3" />
-          <p className="text-sm text-muted-foreground font-medium">Loading items master data...</p>
+          <p className="text-sm text-muted-foreground font-medium">{t('items.loadingData')}</p>
         </Card>
       ) : totalRootGroups === 0 ? (
         <Card className="p-12 text-center rounded-xl bg-card border border-border shadow-xs space-y-3">
           <AlertCircle className="w-10 h-10 text-muted-foreground/50 mx-auto" />
-          <h3 className="font-bold text-lg text-foreground">No items found</h3>
+          <h3 className="font-bold text-lg text-foreground">{t('items.noItemsFound')}</h3>
           <p className="text-xs text-muted-foreground max-w-md mx-auto">
-            Try adjusting your search query or reset filters to display all items.
+            {t('items.noItemsFoundDesc')}
           </p>
         </Card>
       ) : viewMode === 'table' ? (
@@ -1211,34 +1210,34 @@ const Items = () => {
             <Table>
               <TableHeader className="bg-muted/40 select-none">
                 <TableRow className="text-xs hover:bg-transparent">
-                  <TableHead className="w-14 text-center">Image</TableHead>
+                  <TableHead className="w-14 text-center">{t('items.table.image')}</TableHead>
                   <TableHead 
                     className="min-w-[200px] cursor-pointer hover:text-foreground transition-colors"
                     onClick={() => handleSort('name')}
-                    title="Sort by item name"
+                    title={t('items.table.sortByItemName')}
                   >
                     <div className="flex items-center gap-1.5">
-                      <span className="font-bold">Item Name</span>
+                      <span className="font-bold">{t('items.table.itemName')}</span>
                       {renderSortIcon('name')}
                     </div>
                   </TableHead>
                   <TableHead 
                     className="min-w-[120px] cursor-pointer hover:text-foreground transition-colors"
                     onClick={() => handleSort('model')}
-                    title="Sort by model"
+                    title={t('items.table.sortByModel')}
                   >
                     <div className="flex items-center gap-1.5">
-                      <span className="font-bold">Model</span>
+                      <span className="font-bold">{t('items.table.model')}</span>
                       {renderSortIcon('model')}
                     </div>
                   </TableHead>
                   <TableHead 
                     className="min-w-[120px] cursor-pointer hover:text-foreground transition-colors"
                     onClick={() => handleSort('category_name')}
-                    title="Sort by category"
+                    title={t('items.table.sortByCategory')}
                   >
                     <div className="flex items-center gap-1.5">
-                      <span className="font-bold">Category</span>
+                      <span className="font-bold">{t('items.table.category')}</span>
                       {renderSortIcon('category_name')}
                     </div>
                   </TableHead>
@@ -1246,10 +1245,10 @@ const Items = () => {
                   <TableHead 
                     className="w-[100px] text-left cursor-pointer hover:text-foreground transition-colors"
                     onClick={() => handleSort('source')}
-                    title="Sort by source"
+                    title={t('items.table.sortBySource')}
                   >
                     <div className="flex items-center gap-1.5">
-                      <span className="font-bold">{t('items.table.source', 'Source')}</span>
+                      <span className="font-bold">{t('items.table.source')}</span>
                       {renderSortIcon('source')}
                     </div>
                   </TableHead>
@@ -1257,35 +1256,35 @@ const Items = () => {
                   <TableHead 
                     className="min-w-[140px] text-left hidden lg:table-cell cursor-pointer hover:text-foreground transition-colors"
                     onClick={() => handleSort('vendor')}
-                    title="Sort by vendor"
+                    title={t('items.table.sortByVendor')}
                   >
                     <div className="flex items-center gap-1.5">
-                      <span className="font-bold">{t('items.table.vendor', 'Vendor')}</span>
+                      <span className="font-bold">{t('items.table.vendor')}</span>
                       {renderSortIcon('vendor')}
                     </div>
                   </TableHead>
                   <TableHead 
                     className="min-w-[180px] cursor-pointer hover:text-foreground transition-colors"
                     onClick={() => handleSort('project_display')}
-                    title="Sort by location"
+                    title={t('items.table.sortByLocation')}
                   >
                     <div className="flex items-center gap-1.5 font-bold text-indigo-600 dark:text-indigo-400">
-                      <span>Location</span>
+                      <span>{t('items.table.location')}</span>
                       {renderSortIcon('project_display')}
                     </div>
                   </TableHead>
                   <TableHead 
                     className="text-center w-[110px] cursor-pointer hover:text-foreground transition-colors"
                     onClick={() => handleSort('balance')}
-                    title="Sort by current stock balance"
+                    title={t('items.table.sortByStock')}
                   >
                     <div className="flex items-center justify-center gap-1.5">
-                      <span className="font-bold">Current Stock</span>
+                      <span className="font-bold">{t('items.table.currentStock')}</span>
                       {renderSortIcon('balance')}
                     </div>
                   </TableHead>
-                  <TableHead className="w-[70px]">Unit</TableHead>
-                  <TableHead className="text-right w-[90px]">Actions</TableHead>
+                  <TableHead className="w-[70px]">{t('items.table.unit')}</TableHead>
+                  <TableHead className="text-right w-[90px]">{t('items.table.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody className="text-xs">
@@ -1330,13 +1329,13 @@ const Items = () => {
                             <div className="flex items-center gap-1 mt-0.5 text-blue-600 dark:text-blue-400 shrink-0 font-mono font-bold select-none">
                               <CornerDownRight className="w-4 h-4 stroke-[2.25]" />
                               <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono font-extrabold bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/30">
-                                CHILD
+                                {t('items.table.child')}
                               </span>
                             </div>
                             <div className="min-w-0 flex-1">
                               <span className="text-foreground/95 line-clamp-2">{item.name}</span>
                               <div className="flex items-center gap-1.5 mt-0.5 text-[10px] text-muted-foreground font-mono">
-                                <span>Parent:</span>
+                                <span>{t('items.table.parentLabel')}</span>
                                 <span className="font-semibold text-foreground/80 truncate max-w-[200px]" title={item.parentName}>
                                   {item.parentName || item.parentSku}
                                 </span>
@@ -1356,7 +1355,7 @@ const Items = () => {
                                 size="icon"
                                 onClick={() => toggleGroupCollapse(item.groupKey)}
                                 className="h-6 w-6 p-0 rounded hover:bg-muted text-muted-foreground hover:text-foreground shrink-0 cursor-pointer shadow-none"
-                                title={item.isCollapsed ? "Expand Children" : "Collapse Children"}
+                                title={item.isCollapsed ? t('items.table.expandChildren') : t('items.table.collapseChildren')}
                               >
                                 {item.isCollapsed ? (
                                   <ChevronRight className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
@@ -1371,14 +1370,14 @@ const Items = () => {
                                 type="button"
                                 onClick={() => toggleGroupCollapse(item.groupKey)}
                                 className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/25 shrink-0 hover:bg-indigo-500/20 transition-colors cursor-pointer"
-                                title="Click to expand/collapse children"
+                                title={t('items.table.clickToExpand')}
                               >
                                 <FolderTree className="w-3 h-3" />
-                                <span>PARENT ({item.childCount})</span>
+                                <span>{t('items.table.parent', { count: item.childCount })}</span>
                               </button>
                             ) : item.isOrphanChild ? (
                               <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/25 shrink-0">
-                                CHILD (Single)
+                                {t('items.table.childSingle')}
                               </span>
                             ) : null}
 
@@ -1426,9 +1425,9 @@ const Items = () => {
                             <span>{item.project_location}</span>
                           </span>
                         ) : item.project_display !== '-' ? (
-                          <span className="text-muted-foreground/50 font-italic text-[11px]">No Location</span>
+                          <span className="text-muted-foreground/50 font-italic text-[11px]">{t('items.table.noLocation')}</span>
                         ) : (
-                          <span className="text-muted-foreground/50 font-italic text-[11px]">No Project</span>
+                          <span className="text-muted-foreground/50 font-italic text-[11px]">{t('items.table.noProject')}</span>
                         )}
                       </TableCell>
 
@@ -1456,7 +1455,7 @@ const Items = () => {
                             size="icon" 
                             className="h-8 w-8 rounded-lg text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950/40" 
                             onClick={() => openAdjustmentHistoryDialog(item)} 
-                            title="Stock Adjustment History"
+                            title={t('items.table.stockHistoryTitle')}
                           >
                             <History className="w-4 h-4" />
                           </Button>
@@ -1469,8 +1468,8 @@ const Items = () => {
                               disabled={!item.project_id || (parseInt(item.balance, 10) || 0) <= 0}
                               title={
                                 !item.project_id || (parseInt(item.balance, 10) || 0) <= 0 
-                                  ? "Cannot transfer (no stock in this location)" 
-                                  : "Transfer Location"
+                                  ? t('items.table.cannotTransferNoStock') 
+                                  : t('items.table.transferLocationTitle')
                               }
                             >
                               <ArrowRightLeft className="w-4 h-4" />
@@ -1482,7 +1481,7 @@ const Items = () => {
                               size="icon" 
                               className="h-8 w-8 rounded-lg text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/40" 
                               onClick={() => openEditDialog(item)} 
-                              title="Edit Master Item"
+                              title={t('items.table.editMasterItem')}
                             >
                               <Edit3 className="w-4 h-4" />
                             </Button>
@@ -1493,7 +1492,7 @@ const Items = () => {
                               size="icon" 
                               className="h-8 w-8 rounded-lg text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40" 
                               onClick={() => openDeleteDialog(item.originalItem || item)} 
-                              title="Delete Item"
+                              title={t('items.table.deleteItem')}
                             >
                               <Trash2 className="w-4 h-4" />
                             </Button>
@@ -1530,12 +1529,12 @@ const Items = () => {
                     {isChild ? (
                       <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-500/10 text-blue-600 border border-blue-500/20 flex items-center gap-1">
                         <CornerDownRight className="w-3 h-3" />
-                        CHILD (Parent: {item.parentSku || item.parentName})
+                        {t('items.table.child')} ({t('items.table.parentLabel')} {item.parentSku || item.parentName})
                       </span>
                     ) : item.hasChildren ? (
                       <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/25 flex items-center gap-1">
                         <FolderTree className="w-3 h-3" />
-                        PARENT ({item.childCount} children)
+                        {t('items.table.parentWithChildren', { count: item.childCount })}
                       </span>
                     ) : null}
                   </div>
@@ -1555,7 +1554,7 @@ const Items = () => {
                         {item.name}
                       </h4>
                       <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground font-mono">
-                        {item.model && item.model !== '-' && <span>Model: {item.model}</span>}
+                        {item.model && item.model !== '-' && <span>{t('items.table.model')}: {item.model}</span>}
                         {item.sku && item.sku !== '-' && <span>SKU: {item.sku}</span>}
                       </div>
                     </div>
@@ -1571,7 +1570,7 @@ const Items = () => {
                     ) : (
                       <div className="text-muted-foreground/50 italic text-[11px] flex items-center gap-1.5">
                         <Building2 className="w-3.5 h-3.5 shrink-0 opacity-40" />
-                        <span>No Location</span>
+                        <span>{t('items.table.noLocation')}</span>
                       </div>
                     )}
                   </div>
@@ -1580,7 +1579,7 @@ const Items = () => {
                 {/* Card Footer: Stock Balance & Actions */}
                 <div className="pt-2 border-t border-border/40 flex items-center justify-between gap-2">
                   <div className="flex items-baseline gap-1.5">
-                    <span className="text-xs text-muted-foreground">Stock:</span>
+                    <span className="text-xs text-muted-foreground">{t('items.table.stock')}</span>
                     <span className={`px-2 py-0.5 rounded-md text-xs font-bold font-mono ${
                       item.balance > 0 
                         ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30' 
@@ -1663,14 +1662,14 @@ const Items = () => {
                 setPageInput(String(p));
               }}
               className="h-8 w-8 rounded-lg border-border text-foreground hover:bg-accent disabled:opacity-30 transition-colors cursor-pointer shadow-xs"
-              aria-label="Previous Page"
+              aria-label={t('items.pagination.prevPage')}
             >
               <ChevronLeft className="w-4 h-4" />
             </Button>
 
             {/* Page Counter & Editable Numeric Input */}
             <div className="flex items-center gap-1.5 font-medium text-foreground">
-              <span>Page</span>
+              <span>{t('items.pagination.page')}</span>
               <input
                 type="number"
                 min={1}
@@ -1680,9 +1679,9 @@ const Items = () => {
                 onBlur={handlePageInputBlur}
                 onKeyDown={(e) => { if (e.key === 'Enter') handlePageInputBlur(); }}
                 className="h-8 w-12 text-center font-mono text-xs font-bold rounded-lg border border-input bg-background focus:ring-2 focus:ring-primary focus:outline-none transition-colors shadow-xs"
-                aria-label="Current Page Number"
+                aria-label={t('items.pagination.currentPaginationNumber')}
               />
-              <span>of</span>
+              <span>{t('items.pagination.of')}</span>
               <span className="font-mono font-bold text-foreground">{totalPages}</span>
             </div>
 
@@ -1698,7 +1697,7 @@ const Items = () => {
                 setPageInput(String(p));
               }}
               className="h-8 w-8 rounded-lg border-border text-foreground hover:bg-accent disabled:opacity-30 transition-colors cursor-pointer shadow-xs"
-              aria-label="Next Page"
+              aria-label={t('items.pagination.nextPage')}
             >
               <ChevronRight className="w-4 h-4" />
             </Button>
@@ -1714,18 +1713,18 @@ const Items = () => {
                   setRowsPerPage(Number(e.target.value));
                 }}
                 className="h-8 rounded-lg border border-input bg-background px-2.5 text-xs font-medium text-foreground focus:ring-2 focus:ring-primary cursor-pointer shadow-xs transition-colors"
-                aria-label="Rows per page"
+                aria-label={t('items.pagination.rowsPerPage')}
               >
-                <option value={25}>25 groups</option>
-                <option value={50}>50 groups</option>
-                <option value={100}>100 groups</option>
-                <option value={200}>200 groups</option>
+                <option value={25}>{t('items.pagination.groupsPerPage', { count: 25 })}</option>
+                <option value={50}>{t('items.pagination.groupsPerPage', { count: 50 })}</option>
+                <option value={100}>{t('items.pagination.groupsPerPage', { count: 100 })}</option>
+                <option value={200}>{t('items.pagination.groupsPerPage', { count: 200 })}</option>
               </select>
             </div>
 
             {/* Total Records Counter */}
             <span className="font-mono text-xs text-muted-foreground font-medium">
-              {totalRootGroups.toLocaleString()} groups ({totalFilteredRecords.toLocaleString()} items)
+              {t('items.pagination.groupsAndItemsCount', { groups: totalRootGroups.toLocaleString(), items: totalFilteredRecords.toLocaleString() })}
             </span>
           </div>
         </div>
@@ -1738,48 +1737,48 @@ const Items = () => {
             <DialogHeader>
               <DialogTitle className="text-xl font-bold flex items-center gap-2">
                 <Edit3 className="w-5 h-5 text-primary" />
-                <span>Edit Master Item</span>
+                <span>{t('items.dialogs.editItemTitle')}</span>
               </DialogTitle>
             </DialogHeader>
             
             <div className="grid gap-4 py-4">
               <div className="space-y-1.5">
-                <Label htmlFor="edit-name" className="text-xs font-semibold">Item Name <span className="text-destructive">*</span></Label>
+                <Label htmlFor="edit-name" className="text-xs font-semibold">{t('items.dialogs.itemName')} <span className="text-destructive">*</span></Label>
                 <Input id="edit-name" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="rounded-lg font-medium" />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label htmlFor="edit-model" className="text-xs font-semibold">Model <span className="text-destructive">*</span></Label>
-                  <Input id="edit-model" value={formData.model} onChange={e => setFormData({...formData, model: e.target.value})} placeholder="Enter model" className="rounded-lg" />
+                  <Label htmlFor="edit-model" className="text-xs font-semibold">{t('items.dialogs.model')} <span className="text-destructive">*</span></Label>
+                  <Input id="edit-model" value={formData.model} onChange={e => setFormData({...formData, model: e.target.value})} placeholder={t('items.dialogs.enterModel')} className="rounded-lg" />
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="edit-sku" className="text-xs font-semibold">SKU / Code</Label>
+                  <Label htmlFor="edit-sku" className="text-xs font-semibold">{t('items.dialogs.sku')}</Label>
                   <Input id="edit-sku" value={formData.sku} onChange={e => setFormData({...formData, sku: e.target.value})} className="rounded-lg font-mono" />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label htmlFor="edit-source" className="text-xs font-semibold">Source</Label>
+                  <Label htmlFor="edit-source" className="text-xs font-semibold">{t('items.dialogs.source')}</Label>
                   <select 
                     id="edit-source" 
                     className="flex h-9 w-full rounded-lg border border-input bg-background px-3 py-1.5 text-xs font-medium"
                     value={formData.source} 
                     onChange={e => setFormData({...formData, source: e.target.value})}
                   >
-                    <option value="">-- Select Source --</option>
-                    <option value="Local">{t('items.sources.local', 'Local (ในประเทศ)')}</option>
-                    <option value="Import">{t('items.sources.import', 'Import (นำเข้า)')}</option>
+                    <option value="">{t('items.dialogs.selectSource')}</option>
+                    <option value="Local">{t('items.sources.local')}</option>
+                    <option value="Import">{t('items.sources.import')}</option>
                   </select>
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="edit-vendor" className="text-xs font-semibold">Vendor</Label>
+                  <Label htmlFor="edit-vendor" className="text-xs font-semibold">{t('items.dialogs.vendor')}</Label>
                   <Input 
                     id="edit-vendor" 
                     value={formData.vendor} 
                     onChange={e => setFormData({...formData, vendor: e.target.value})} 
-                    placeholder="Enter vendor" 
+                    placeholder={t('items.dialogs.enterVendor')} 
                     className="rounded-lg" 
                   />
                 </div>
@@ -1787,25 +1786,25 @@ const Items = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label htmlFor="edit-category" className="text-xs font-semibold">Category</Label>
+                  <Label htmlFor="edit-category" className="text-xs font-semibold">{t('items.dialogs.category')}</Label>
                   <select id="edit-category" className="flex h-9 w-full rounded-lg border border-input bg-background px-3 py-1.5 text-xs font-medium" value={formData.category_id} onChange={e => setFormData({...formData, category_id: e.target.value})}>
-                    <option value="">-- Select Category --</option>
+                    <option value="">{t('items.dialogs.selectCategory')}</option>
                     {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="edit-unit" className="text-xs font-semibold">Unit <span className="text-destructive">*</span></Label>
+                  <Label htmlFor="edit-unit" className="text-xs font-semibold">{t('items.dialogs.unit')} <span className="text-destructive">*</span></Label>
                   <Input id="edit-unit" required value={formData.unit} onChange={e => setFormData({...formData, unit: e.target.value})} className="rounded-lg" />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="edit-description" className="text-xs font-semibold">Description / Notes</Label>
+                <Label htmlFor="edit-description" className="text-xs font-semibold">{t('items.dialogs.descriptionNotes')}</Label>
                 <Input id="edit-description" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="rounded-lg" />
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="edit-image" className="text-xs font-semibold">Item Image</Label>
+                <Label htmlFor="edit-image" className="text-xs font-semibold">{t('items.dialogs.itemImage')}</Label>
                 <div className="flex items-center gap-3">
                   {formData.image_url ? (
                     <img src={formData.image_url} alt="Preview" className="w-14 h-14 object-cover rounded-lg border shadow-xs shrink-0" />
@@ -1823,18 +1822,18 @@ const Items = () => {
                 <div className="flex items-center justify-between">
                   <Label className="text-xs font-bold flex items-center gap-1.5 text-foreground">
                     <SlidersHorizontal className="w-3.5 h-3.5 text-primary" />
-                    <span>Current Stock Adjustment</span>
+                    <span>{t('items.dialogs.currentStockAdjustment')}</span>
                   </Label>
 
                   {allowDirectStockAdjustment && canAdjustStock ? (
                     <span className="text-[10px] font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full flex items-center gap-1">
                       <Sparkles className="w-2.5 h-2.5" />
-                      <span>Enabled</span>
+                      <span>{t('items.dialogs.enabled')}</span>
                     </span>
                   ) : (
                     <span className="text-[10px] font-bold bg-muted text-muted-foreground border border-border/40 px-2 py-0.5 rounded-full flex items-center gap-1">
                       <Lock className="w-2.5 h-2.5" />
-                      <span>Disabled</span>
+                      <span>{t('items.dialogs.disabled')}</span>
                     </span>
                   )}
                 </div>
@@ -1843,14 +1842,14 @@ const Items = () => {
                   <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-800 dark:text-amber-300 flex items-start gap-2">
                     <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                     <div>
-                      Direct stock adjustment is disabled in system settings (Enable in <strong>Settings &gt; Withdrawal & Stock Rules</strong>)
+                      {t('items.dialogs.directAdjustmentDisabled')}
                     </div>
                   </div>
                 ) : !canAdjustStock ? (
                   <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-800 dark:text-amber-300 flex items-start gap-2">
                     <Lock className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                     <div>
-                      You do not have permission to adjust stock (requires <code>items.adjust_stock</code> or Admin)
+                      {t('items.dialogs.directAdjustmentNoPermission')}
                     </div>
                   </div>
                 ) : (
@@ -1859,7 +1858,7 @@ const Items = () => {
                     <div className="space-y-1">
                       <Label htmlFor="adjust-project" className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
                         <Building2 className="w-3 h-3 text-primary" />
-                        <span>Select Location / Project to Adjust</span>
+                        <span>{t('items.dialogs.selectLocationToAdjust')}</span>
                       </Label>
                       <select
                         id="adjust-project"
@@ -1878,7 +1877,7 @@ const Items = () => {
                     {/* Stock comparison & input */}
                     <div className="grid grid-cols-2 gap-3 items-end">
                       <div className="space-y-1">
-                        <Label className="text-[11px] font-semibold text-muted-foreground">Current Stock</Label>
+                        <Label className="text-[11px] font-semibold text-muted-foreground">{t('items.dialogs.currentStock')}</Label>
                         <div className="h-9 px-3 rounded-lg bg-background border border-border/80 flex items-center justify-between font-mono text-xs font-bold">
                           <span className="text-foreground">{currentStockQty}</span>
                           <span className="text-muted-foreground text-[10px]">{formData.unit || 'ชิ้น'}</span>
@@ -1887,7 +1886,7 @@ const Items = () => {
 
                       <div className="space-y-1">
                         <Label htmlFor="adjust-new-qty" className="text-[11px] font-bold text-foreground flex items-center justify-between">
-                          <span>New Stock</span>
+                          <span>{t('items.dialogs.newStock')}</span>
                           {parseInt(newStockQty, 10) !== currentStockQty && !isNaN(parseInt(newStockQty, 10)) && (
                             <span className={`text-[10px] font-mono font-extrabold px-1.5 py-0.2 rounded-md ${
                               parseInt(newStockQty, 10) > currentStockQty 
@@ -1905,7 +1904,7 @@ const Items = () => {
                           value={newStockQty}
                           onChange={(e) => setNewStockQty(e.target.value)}
                           className="h-9 rounded-lg font-mono text-xs font-bold bg-background"
-                          placeholder="Enter new stock balance"
+                          placeholder={t('items.dialogs.enterNewStock')}
                         />
                       </div>
                     </div>
@@ -1915,7 +1914,7 @@ const Items = () => {
                       <div className="space-y-1.5 pt-1 animate-in fade-in-50 duration-200">
                         <Label htmlFor="adjust-reason" className="text-[11px] font-bold text-primary flex items-center gap-1">
                           <Sparkles className="w-3 h-3 text-amber-500" />
-                          <span>Adjustment Reason <span className="text-destructive">*</span></span>
+                          <span>{t('items.dialogs.adjustmentReason')} <span className="text-destructive">*</span></span>
                         </Label>
                         <textarea
                           id="adjust-reason"
@@ -1923,7 +1922,7 @@ const Items = () => {
                           required
                           value={stockAdjustReason}
                           onChange={(e) => setStockAdjustReason(e.target.value)}
-                          placeholder="e.g. Annual inventory count, damaged goods, initial balance adjustment..."
+                          placeholder={t('items.dialogs.adjustmentReasonPlaceholder')}
                           className="w-full rounded-lg border border-input bg-background px-3 py-2 text-xs shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
                         />
                       </div>
@@ -1934,9 +1933,9 @@ const Items = () => {
             </div>
 
             <DialogFooter className="gap-2 sm:gap-0">
-              <Button type="button" variant="outline" className="rounded-lg" onClick={() => setIsEditOpen(false)}>Cancel</Button>
+              <Button type="button" variant="outline" className="rounded-lg" onClick={() => setIsEditOpen(false)}>{t('common.cancel')}</Button>
               <Button type="submit" disabled={isAdjustingStock} className="rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-xs">
-                {isAdjustingStock ? 'Saving...' : 'Update Item & Stock'}
+                {isAdjustingStock ? t('items.dialogs.saving') : t('items.dialogs.updateItemAndStock')}
               </Button>
             </DialogFooter>
           </form>
@@ -1955,22 +1954,22 @@ const Items = () => {
           <DialogHeader>
             <DialogTitle className="text-destructive font-bold text-lg flex items-center gap-2">
               <AlertCircle className="w-5 h-5" />
-              <span>{hasTransactionConflict ? 'Transaction History Found' : 'Confirm Delete Item'}</span>
+              <span>{hasTransactionConflict ? t('items.dialogs.transactionHistoryFound') : t('items.dialogs.confirmDeleteItem')}</span>
             </DialogTitle>
             <DialogDescription className="pt-2 text-foreground/80 space-y-2" asChild>
               <div>
                 {hasTransactionConflict ? (
                   <div className="space-y-2">
                     <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 text-xs">
-                      Item <strong>{selectedItem?.name}</strong> (SKU: {selectedItem?.sku || '-'}) has existing transaction history or active inventory in the system.
+                      {t('items.dialogs.hasHistoryWarning', { name: selectedItem?.name, sku: selectedItem?.sku || '-' })}
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      If you want to completely remove this item, all related transaction history and movements will also be deleted. This action cannot be undone.
+                      {t('items.dialogs.hasHistoryDesc')}
                     </p>
                   </div>
                 ) : (
                   <p className="text-xs text-muted-foreground">
-                    Are you sure you want to delete <strong>{selectedItem?.name}</strong> (SKU: {selectedItem?.sku || '-'})? This action cannot be undone.
+                    {t('items.dialogs.standardDeleteConfirm', { name: selectedItem?.name, sku: selectedItem?.sku || '-' })}
                   </p>
                 )}
               </div>
@@ -1987,7 +1986,7 @@ const Items = () => {
                 setHasTransactionConflict(false);
               }}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             {hasTransactionConflict ? (
               <Button 
@@ -1997,7 +1996,7 @@ const Items = () => {
                 disabled={isDeleting}
                 onClick={() => handleDeleteItem(true)}
               >
-                {isDeleting ? 'Deleting...' : 'Force Delete Item & History'}
+                {isDeleting ? t('items.dialogs.deleting') : t('items.dialogs.forceDeleteBtn')}
               </Button>
             ) : (
               <Button 
@@ -2007,7 +2006,7 @@ const Items = () => {
                 disabled={isDeleting}
                 onClick={() => handleDeleteItem(false)}
               >
-                {isDeleting ? 'Checking...' : 'Confirm Delete'}
+                {isDeleting ? t('items.dialogs.checking') : t('items.dialogs.confirmDeleteBtn')}
               </Button>
             )}
           </DialogFooter>
@@ -2030,10 +2029,10 @@ const Items = () => {
           <DialogHeader>
             <DialogTitle className="text-lg font-bold flex items-center gap-2 text-foreground">
               <History className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-              <span>Stock Adjustment History</span>
+              <span>{t('items.dialogs.historyTitle')}</span>
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
-              Item: <strong className="text-foreground">{selectedItemForHistory?.name}</strong> (SKU: {selectedItemForHistory?.sku || '-'})
+              {t('items.dialogs.historyItem', { name: selectedItemForHistory?.name, sku: selectedItemForHistory?.sku || '-' })}
             </DialogDescription>
           </DialogHeader>
 
@@ -2041,12 +2040,12 @@ const Items = () => {
             {loadingHistoryLogs ? (
               <div className="py-8 text-center text-xs text-muted-foreground">
                 <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-amber-600" />
-                <span>Loading stock adjustment history...</span>
+                <span>{t('items.dialogs.loadingHistory')}</span>
               </div>
             ) : adjustmentHistoryLogs.length === 0 ? (
               <div className="p-6 rounded-lg border border-dashed border-border/80 text-center text-xs text-muted-foreground">
                 <History className="w-6 h-6 mx-auto mb-1 opacity-40" />
-                <span>No stock adjustment history for this item</span>
+                <span>{t('items.dialogs.noHistory')}</span>
               </div>
             ) : (
               <div className="space-y-2">
@@ -2079,10 +2078,10 @@ const Items = () => {
                           </span>
                         </div>
                         <div className="text-[11px] text-muted-foreground">
-                          Reason: <span className="text-foreground font-medium">&quot;{log.reason}&quot;</span>
+                          {t('items.dialogs.reason')} <span className="text-foreground font-medium">&quot;{log.reason}&quot;</span>
                         </div>
                         <div className="text-[10px] text-muted-foreground">
-                          By: {log.profiles?.full_name || 'Staff'}
+                          {t('items.dialogs.by')} {log.profiles?.full_name || t('items.dialogs.staff')}
                         </div>
                       </div>
 
@@ -2104,7 +2103,7 @@ const Items = () => {
               onClick={() => setIsHistoryDialogOpen(false)}
               className="rounded-lg text-xs"
             >
-              Close
+              {t('common.close')}
             </Button>
           </DialogFooter>
         </DialogContent>

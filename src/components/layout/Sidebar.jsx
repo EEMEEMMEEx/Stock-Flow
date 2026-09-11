@@ -97,7 +97,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
       ? location.pathname === '/' 
       : location.pathname.startsWith(item.path);
 
-    const itemName = item.nameKey ? t(item.nameKey, item.name) : item.name;
+    const itemName = item.nameKey ? t(item.nameKey) : item.name;
 
     const linkContent = (
       <NavLink
@@ -259,7 +259,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
                         isCollapsed ? "hidden" : "block"
                       )}
                     >
-                      {group.titleKey ? t(group.titleKey, group.title) : group.title}
+                      {group.titleKey ? t(group.titleKey) : group.title}
                     </div>
                     {visibleItems.map((item) => renderNavItem(item, isCollapsed))}
                   </div>
@@ -289,7 +289,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
                   </NavLink>
                 </TooltipTrigger>
                 <TooltipContent side="right" sideOffset={12}>
-                  {t('nav.settings', 'Settings')}
+                  {t('nav.settings')}
                 </TooltipContent>
               </Tooltip>
             ) : (

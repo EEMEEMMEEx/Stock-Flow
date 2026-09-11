@@ -1,5 +1,6 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
+import LanguageDetector from 'i18next-browser-languagedetector';
 import th from './locales/th';
 import en from './locales/en';
 
@@ -28,15 +29,25 @@ export const getInitialLanguage = () => {
   return 'th';
 };
 
+const detectorOptions = {
+  order: ['localStorage', 'navigator', 'htmlTag'],
+  lookupLocalStorage: LOCAL_STORAGE_KEY,
+  caches: ['localStorage'],
+  checkWhitelist: true,
+};
+
 i18n
+  .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources: {
-      th: { translation: th },
       en: { translation: en },
+      th: { translation: th },
     },
+    detection: detectorOptions,
+    supportedLngs: ['th', 'en'],
     lng: getInitialLanguage(),
-    fallbackLng: 'th',
+    fallbackLng: 'en',
     interpolation: {
       escapeValue: false, // React already escapes values
     },
@@ -45,5 +56,20 @@ i18n
     returnNull: false,
     returnEmptyString: false,
   });
+
+// Synchronize document <html lang="..."> and data-lang attribute on change
+const syncHtmlLanguage = (lng) => {
+  if (typeof document !== 'undefined') {
+    const validLng = lng === 'en' ? 'en' : 'th';
+    document.documentElement.lang = validLng;
+    document.documentElement.setAttribute('data-lang', validLng);
+  }
+};
+
+syncHtmlLanguage(i18n.language || getInitialLanguage());
+
+i18n.on('languageChanged', (lng) => {
+  syncHtmlLanguage(lng);
+});
 
 export default i18n;

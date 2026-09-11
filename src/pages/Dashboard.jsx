@@ -274,7 +274,7 @@ const Dashboard = () => {
       id: 'pending',
       label: t('dashboard.pendingWithdrawals', 'Pending Approvals'),
       value: stats.pendingCount,
-      subtext: 'Requests awaiting review',
+      subtext: t('dashboard.pendingWithdrawalsSubtext', 'Requests awaiting review'),
       icon: AlertCircle,
       tone: 'warning',
       href: '/withdrawals',
@@ -282,9 +282,9 @@ const Dashboard = () => {
     },
     {
       id: 'projects',
-      label: t('nav.projects', 'Active Projects'),
+      label: t('nav.projects'),
       value: stats.projectCount,
-      subtext: `${stats.logicalProjectCount} ${stats.logicalProjectCount === 1 ? 'project' : 'projects'} (${stats.projectCount} ${stats.projectCount === 1 ? 'location' : 'locations'})`,
+      subtext: t('dashboard.projectsSubtext', { logicalCount: stats.logicalProjectCount, count: stats.projectCount }),
       icon: FolderKanban,
       tone: 'info',
       href: '/projects',
@@ -292,9 +292,9 @@ const Dashboard = () => {
     },
     {
       id: 'items',
-      label: t('nav.items', 'Items Catalog'),
+      label: t('nav.items'),
       value: stats.itemCount,
-      subtext: `Total stock: ${stats.totalStockUnits.toLocaleString()} units`,
+      subtext: t('dashboard.itemsSubtext', { count: stats.totalStockUnits.toLocaleString() }),
       icon: Package,
       tone: 'indigo',
       href: '/items',
@@ -304,7 +304,7 @@ const Dashboard = () => {
       id: 'today_withdrawals',
       label: t('dashboard.recentMovements', "Today's Withdrawals"),
       value: stats.todayWithdrawals,
-      subtext: 'Withdrawals today',
+      subtext: t('dashboard.withdrawalsSubtext', 'Withdrawals today'),
       icon: ArrowUpFromLine,
       tone: 'success',
       href: '/withdrawals',
@@ -380,7 +380,7 @@ const Dashboard = () => {
             </span>
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Welcome back, <span className="font-semibold text-foreground">{profile?.full_name}</span>. {t('dashboard.subtitle', 'Real-time overview of warehouse inventory and operations')}
+            {t('dashboard.welcomeBack', 'Welcome back,')} <span className="font-semibold text-foreground">{profile?.full_name}</span>. {t('dashboard.subtitle', 'Real-time overview of warehouse inventory and operations')}
           </p>
         </div>
 
@@ -392,7 +392,7 @@ const Dashboard = () => {
           className="rounded-lg h-9 px-3 gap-2 text-xs font-medium border-border hover:bg-accent cursor-pointer shadow-xs"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin text-emerald-600' : ''}`} />
-          <span>{refreshing ? t('common.pleaseWait', 'Syncing...') : t('common.refresh', 'Refresh Data')}</span>
+          <span>{refreshing ? t('dashboard.syncingData', 'Syncing...') : t('dashboard.refreshData', 'Refresh Data')}</span>
         </Button>
       </div>
 
@@ -428,14 +428,14 @@ const Dashboard = () => {
                 <BarChart3 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 <span>
                   {chartViewMode === 'project' 
-                    ? 'Stock Balance by Active Project' 
-                    : 'Top 10 Items by Stock Balance'}
+                    ? t('dashboard.stockBalanceByProject', 'Stock Balance by Active Project') 
+                    : t('dashboard.top10Items', 'Top 10 Items by Stock Balance')}
                 </span>
               </CardTitle>
               <p className="text-[11px] text-muted-foreground">
                 {chartViewMode === 'project' 
-                  ? `Showing total in, total out, and balance across ${stockByProjects.length} storage locations`
-                  : 'Showing total in, total out, and balance by item (hover for full name)'}
+                  ? t('dashboard.showingProjectDesc', { count: stockByProjects.length, defaultValue: `Showing total in, total out, and balance across ${stockByProjects.length} storage locations` })
+                  : t('dashboard.showingItemDesc', 'Showing total in, total out, and balance by item (hover for full name)')}
               </p>
             </div>
 
@@ -450,7 +450,7 @@ const Dashboard = () => {
                   chartViewMode === 'project' ? 'bg-emerald-600 text-white shadow-xs' : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                <Building2 className="w-3 h-3" /> By Project
+                <Building2 className="w-3 h-3" /> {t('dashboard.byProject', 'By Project')}
               </Button>
               <Button
                 type="button"
@@ -461,7 +461,7 @@ const Dashboard = () => {
                   chartViewMode === 'item' ? 'bg-emerald-600 text-white shadow-xs' : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                <Package className="w-3 h-3" /> Top Items
+                <Package className="w-3 h-3" /> {t('dashboard.topItems', 'Top Items')}
               </Button>
             </div>
           </CardHeader>
@@ -511,20 +511,20 @@ const Dashboard = () => {
                         }
                         return '';
                       }}
-                      formatter={(val, name) => [`${Number(val).toLocaleString()} ${Number(val) === 1 ? 'unit' : 'units'}`, name]}
+                      formatter={(val, name) => [`${Number(val).toLocaleString()} ${Number(val) === 1 ? t('dashboard.unit', 'unit') : t('dashboard.units', 'units')}`, name]}
                     />
                     <Legend wrapperStyle={{ paddingTop: chartViewMode === 'item' ? '24px' : '15px', fontSize: '12px' }} />
-                    <Bar dataKey="total_in" name="Total In" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={28} />
-                    <Bar dataKey="total_out" name="Total Out" fill="#f59e0b" radius={[4, 4, 0, 0]} maxBarSize={28} />
-                    <Bar dataKey="balance" name="Balance" fill="#6366f1" radius={[4, 4, 0, 0]} maxBarSize={28} />
+                    <Bar dataKey="total_in" name={t('dashboard.totalIn', 'Total In')} fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={28} />
+                    <Bar dataKey="total_out" name={t('dashboard.totalOut', 'Total Out')} fill="#f59e0b" radius={[4, 4, 0, 0]} maxBarSize={28} />
+                    <Bar dataKey="balance" name={t('dashboard.balance', 'Balance')} fill="#6366f1" radius={[4, 4, 0, 0]} maxBarSize={28} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center h-full min-h-[350px] text-muted-foreground">
                 <Package className="w-12 h-12 mb-3 opacity-30 stroke-1" />
-                <p className="text-sm font-semibold">No stock data in active projects</p>
-                <p className="text-xs mt-1">When stock is added, chart data will appear here automatically.</p>
+                <p className="text-sm font-semibold">{t('dashboard.noStockData', 'No stock data in active projects')}</p>
+                <p className="text-xs mt-1">{t('dashboard.noStockDataDesc', 'When stock is added, chart data will appear here automatically.')}</p>
               </div>
             )}
           </CardContent>
@@ -535,7 +535,7 @@ const Dashboard = () => {
           <CardHeader className="border-b border-border/40 pb-3">
             <CardTitle className="text-sm font-bold tracking-wide uppercase text-foreground flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              <span>Recent Activity</span>
+              <span>{t('dashboard.recentActivity', 'Recent Activity')}</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="flex-1 p-0">
@@ -554,11 +554,18 @@ const Dashboard = () => {
                         </span>
                       </div>
                       <p className="text-xs font-bold text-foreground leading-snug mb-1">
-                        Withdrew {item.withdrawal_items?.[0]?.items?.name || 'Item'} {item.withdrawal_items?.length > 1 ? `and ${item.withdrawal_items.length - 1} other ${item.withdrawal_items.length - 1 === 1 ? 'item' : 'items'}` : ''}
+                        {t('dashboard.withdrewItem', {
+                          item: item.withdrawal_items?.[0]?.items?.name || t('dashboard.item', 'Item'),
+                          defaultValue: `Withdrew ${item.withdrawal_items?.[0]?.items?.name || 'Item'}`
+                        })} {item.withdrawal_items?.length > 1 ? t('dashboard.andOtherItems', {
+                          count: item.withdrawal_items.length - 1,
+                          itemWord: item.withdrawal_items.length - 1 === 1 ? t('dashboard.item', 'item') : t('dashboard.items', 'items'),
+                          defaultValue: `and ${item.withdrawal_items.length - 1} other ${item.withdrawal_items.length - 1 === 1 ? 'item' : 'items'}`
+                        }) : ''}
                       </p>
                       <p className="text-[11px] font-medium text-muted-foreground flex items-center gap-1.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                        {item.projects?.name || 'Central Warehouse'}
+                        {item.projects?.name || t('dashboard.centralWarehouse', 'Central Warehouse')}
                       </p>
                     </div>
                   );
@@ -567,8 +574,8 @@ const Dashboard = () => {
             ) : (
               <div className="flex flex-col items-center justify-center h-full min-h-[350px] text-muted-foreground p-6">
                 <ArrowUpFromLine className="w-10 h-10 mb-3 opacity-30 stroke-1" />
-                <p className="text-sm font-semibold">No recent activity</p>
-                <p className="text-xs mt-1 text-center">When withdrawals occur, real-time activity will show here.</p>
+                <p className="text-sm font-semibold">{t('dashboard.noRecentActivity', 'No recent activity')}</p>
+                <p className="text-xs mt-1 text-center">{t('dashboard.noRecentActivityDesc', 'When withdrawals occur, real-time activity will show here.')}</p>
               </div>
             )}
           </CardContent>

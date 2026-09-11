@@ -444,11 +444,11 @@ const fetchRoles = useCallback(async () => {
         {loading ? (
           <div className="col-span-full py-16 text-center text-muted-foreground">
             <RefreshCw className="w-6 h-6 animate-spin text-primary mx-auto mb-2" />
-            Loading roles and permissions...
+            {t('common.loading', 'Loading roles and permissions...')}
           </div>
         ) : roles.length === 0 ? (
           <div className="col-span-full py-16 text-center text-muted-foreground">
-            No roles found in system
+            {t('roles.noRolesFound', 'No roles found in system')}
           </div>
         ) : (
           roles.map((roleObj) => (
@@ -467,7 +467,7 @@ const fetchRoles = useCallback(async () => {
 
                   {roleObj.is_system && (
                     <span className="text-[10px] bg-muted/80 text-muted-foreground px-2 py-0.5 rounded flex items-center gap-1">
-                      <Lock className="w-3 h-3" /> System Role
+                      <Lock className="w-3 h-3" /> {t('common.systemRole', 'System Role')}
                     </span>
                   )}
                 </div>
@@ -476,7 +476,7 @@ const fetchRoles = useCallback(async () => {
                   {roleObj.name}
                 </CardTitle>
                 <CardDescription className="text-xs text-muted-foreground line-clamp-2 min-h-[2.5rem]">
-                  {roleObj.description || 'No description provided'}
+                  {roleObj.description || t('common.noDescription', 'No description provided')}
                 </CardDescription>
               </CardHeader>
 
@@ -486,16 +486,16 @@ const fetchRoles = useCallback(async () => {
                   <div className="flex items-center gap-2">
                     <Users className="w-4 h-4 text-primary" />
                     <div>
-                      <div className="text-[10px] text-muted-foreground">Users</div>
-                      <div className="font-bold text-sm text-foreground">{roleObj.user_count || 0} {roleObj.user_count === 1 ? 'user' : 'users'}</div>
+                      <div className="text-[10px] text-muted-foreground">{t('common.users', 'Users')}</div>
+                      <div className="font-bold text-sm text-foreground">{t('roles.usersCount', { count: roleObj.user_count || 0 })}</div>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2 border-l border-border pl-3">
                     <Shield className="w-4 h-4 text-primary" />
                     <div>
-                      <div className="text-[10px] text-muted-foreground">Active Permissions</div>
-                      <div className="font-bold text-sm text-foreground">{roleObj.permission_count || 0} {roleObj.permission_count === 1 ? 'perm' : 'perms'}</div>
+                      <div className="text-[10px] text-muted-foreground">{t('roles.permissionMatrix', 'Permissions')}</div>
+                      <div className="font-bold text-sm text-foreground">{t('roles.permissionsCount', { count: roleObj.permission_count || 0 })}</div>
                     </div>
                   </div>
                 </div>
@@ -507,7 +507,7 @@ const fetchRoles = useCallback(async () => {
                       variant="outline"
                       size="sm"
                       disabled={roleObj.code === 'SUPER' && !isSuperAdmin}
-                      title={roleObj.code === 'SUPER' && !isSuperAdmin ? 'Only Super Admins can manage Super Admin permissions' : 'Permissions Configuration'}
+                      title={roleObj.code === 'SUPER' && !isSuperAdmin ? 'Only Super Admins can manage Super Admin permissions' : t('roles.managePermissions', 'Permissions')}
                       onClick={() => handleOpenPermissionModal(roleObj)}
                       className={`h-8 px-2.5 text-xs font-semibold flex items-center gap-1.5 rounded-lg ${
                         roleObj.code === 'SUPER' && !isSuperAdmin 
@@ -520,7 +520,7 @@ const fetchRoles = useCallback(async () => {
                       ) : (
                         <ShieldCheck className="w-4 h-4" />
                       )}
-                      Permissions
+                      {t('roles.managePermissions', 'Permissions')}
                     </Button>
                   ) : (
                     <div></div>
@@ -624,22 +624,22 @@ const fetchRoles = useCallback(async () => {
             <DialogHeader>
               <DialogTitle className="text-lg font-bold flex items-center gap-2 text-red-600">
                 <AlertCircle className="w-5 h-5" />
-                Delete Role
+                {t('roles.deleteRole', 'Delete Role')}
               </DialogTitle>
               <DialogDescription className="text-sm text-muted-foreground mt-2">
-                Are you sure you want to delete role <strong>{selectedRoleForDelete.name}</strong> ({selectedRoleForDelete.code})?
+                {t('roles.deleteRolePrompt', 'Are you sure you want to delete role "{{name}}"? This action cannot be undone.', { name: selectedRoleForDelete.name })}
                 <br />
                 <span className="text-xs text-red-500 font-medium mt-1 block">
-                  * This action cannot be undone.
+                  * {t('common.cannotUndo', 'This action cannot be undone.')}
                 </span>
               </DialogDescription>
             </DialogHeader>
             <DialogFooter className="mt-4">
               <Button variant="ghost" onClick={() => setSelectedRoleForDelete(null)}>
-                Cancel
+                {t('common.cancel', 'Cancel')}
               </Button>
               <Button variant="destructive" onClick={confirmDeleteRole}>
-                Confirm Delete
+                {t('common.delete', 'Confirm Delete')}
               </Button>
             </DialogFooter>
           </DialogContent>

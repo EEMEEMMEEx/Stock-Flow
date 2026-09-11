@@ -15,6 +15,7 @@ import {
 } from 'recharts';
 import { BarChart3, PieChart as PieChartIcon, TrendingUp } from 'lucide-react';
 import { useTheme } from '@/components/theme-provider';
+import { useTranslation } from '@/i18n';
 
 const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4'];
 
@@ -37,6 +38,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 const ReportCharts = ({ activeTab, reportData = [] }) => {
+  const { t } = useTranslation();
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === 'dark';
 
@@ -52,13 +54,13 @@ const ReportCharts = ({ activeTab, reportData = [] }) => {
       let qty = 0;
 
       if (activeTab === 'stock_in') {
-        pName = row.projects?.name || 'Unassigned Project';
+        pName = row.projects?.name || t('reports.charts.unassignedProject');
         qty = Number(row.quantity) || 0;
       } else if (activeTab === 'withdrawals') {
-        pName = row.projects?.name || 'Unassigned Project';
+        pName = row.projects?.name || t('reports.charts.unassignedProject');
         qty = Number(row.deducted_quantity !== undefined ? row.deducted_quantity : row.quantity) || 0;
       } else if (activeTab === 'balance') {
-        pName = row.project_name || 'Unassigned Project';
+        pName = row.project_name || t('reports.charts.unassignedProject');
         qty = Number(row.balance) || 0;
       }
 
@@ -76,7 +78,7 @@ const ReportCharts = ({ activeTab, reportData = [] }) => {
       }))
       .sort((a, b) => b.value - a.value)
       .slice(0, 6);
-  }, [reportData, activeTab]);
+  }, [reportData, activeTab, t]);
 
   // Process data for Status / Breakdown Pie Chart
   const statusPieData = useMemo(() => {
@@ -96,11 +98,11 @@ const ReportCharts = ({ activeTab, reportData = [] }) => {
       });
 
       return [
-        { name: 'Approved', value: approvedCount, color: '#10b981' },
-        { name: 'Completed', value: completedCount, color: '#3b82f6' },
-        { name: 'Pending', value: pendingCount, color: '#f59e0b' },
-        { name: 'Shortage', value: shortageCount, color: '#f97316' },
-        { name: 'Rejected', value: rejectedCount, color: '#ef4444' }
+        { name: t('reports.charts.approved'), value: approvedCount, color: '#10b981' },
+        { name: t('reports.charts.completed'), value: completedCount, color: '#3b82f6' },
+        { name: t('reports.charts.pending'), value: pendingCount, color: '#f59e0b' },
+        { name: t('reports.charts.shortage'), value: shortageCount, color: '#f97316' },
+        { name: t('reports.charts.rejected'), value: rejectedCount, color: '#ef4444' }
       ].filter((d) => d.value > 0);
     } else if (activeTab === 'balance') {
       let normalCount = 0;
@@ -112,14 +114,14 @@ const ReportCharts = ({ activeTab, reportData = [] }) => {
       });
 
       return [
-        { name: 'In Stock', value: normalCount, color: '#10b981' },
-        { name: 'Low / Zero Stock', value: lowCount, color: '#ef4444' }
+        { name: t('reports.charts.inStock'), value: normalCount, color: '#10b981' },
+        { name: t('reports.charts.lowOrZeroStock'), value: lowCount, color: '#ef4444' }
       ].filter((d) => d.value > 0);
     } else {
       // Stock In supplier breakdown
       const supplierMap = {};
       reportData.forEach((row) => {
-        const sup = row.supplier || 'Unspecified Supplier';
+        const sup = row.supplier || t('reports.charts.unspecifiedSupplier');
         supplierMap[sup] = (supplierMap[sup] || 0) + (Number(row.quantity) || 0);
       });
       return Object.keys(supplierMap)
@@ -130,7 +132,7 @@ const ReportCharts = ({ activeTab, reportData = [] }) => {
         }))
         .slice(0, 5);
     }
-  }, [reportData, activeTab]);
+  }, [reportData, activeTab, t]);
 
   if (reportData.length === 0) {
     return null;
@@ -145,14 +147,14 @@ const ReportCharts = ({ activeTab, reportData = [] }) => {
             <BarChart3 className="w-4 h-4 text-primary" />
             <span>
               {activeTab === 'stock_in'
-                ? 'Stock-In Breakdown by Project'
+                ? t('reports.charts.stockInByProject')
                 : activeTab === 'withdrawals'
-                ? 'Withdrawals Breakdown by Project'
-                : 'Stock Balance by Project'}
+                ? t('reports.charts.withdrawalsByProject')
+                : t('reports.charts.balanceByProject')}
             </span>
           </CardTitle>
           <span className="text-[11px] font-medium text-muted-foreground flex items-center gap-1">
-            <TrendingUp className="w-3 h-3 text-emerald-500" /> Quantity
+            <TrendingUp className="w-3 h-3 text-emerald-500" /> {t('reports.charts.quantity')}
           </span>
         </CardHeader>
         <CardContent className="p-4 pt-0">
@@ -173,7 +175,7 @@ const ReportCharts = ({ activeTab, reportData = [] }) => {
                 <Tooltip content={<CustomTooltip />} />
                 <Bar
                   dataKey="value"
-                  name={activeTab === 'stock_in' ? 'Stock-In' : activeTab === 'withdrawals' ? 'Withdrawals' : 'Balance'}
+                  name={activeTab === 'stock_in' ? t('reports.charts.stockIn') : activeTab === 'withdrawals' ? t('reports.charts.withdrawals') : t('reports.charts.balance')}
                   fill={activeTab === 'stock_in' ? '#10b981' : activeTab === 'withdrawals' ? '#f59e0b' : '#3b82f6'}
                   radius={[6, 6, 0, 0]}
                   maxBarSize={45}
@@ -191,10 +193,10 @@ const ReportCharts = ({ activeTab, reportData = [] }) => {
             <PieChartIcon className="w-4 h-4 text-primary" />
             <span>
               {activeTab === 'stock_in'
-                ? 'Supplier Distribution'
+                ? t('reports.charts.supplierDistribution')
                 : activeTab === 'withdrawals'
-                ? 'Withdrawal Status Breakdown'
-                : 'Inventory Status Breakdown'}
+                ? t('reports.charts.withdrawalStatusBreakdown')
+                : t('reports.charts.inventoryStatusBreakdown')}
             </span>
           </CardTitle>
         </CardHeader>
@@ -226,7 +228,7 @@ const ReportCharts = ({ activeTab, reportData = [] }) => {
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <p className="text-xs text-muted-foreground">No chart data available</p>
+              <p className="text-xs text-muted-foreground">{t('reports.charts.noData')}</p>
             )}
           </div>
         </CardContent>

@@ -535,13 +535,13 @@ const Projects = () => {
             <div className="p-2 rounded-lg bg-primary/10 text-primary">
               <Building2 className="w-5 h-5" />
             </div>
-            <span>{t('nav.projects', 'Projects')}</span>
+            <span>{t('projects.title')}</span>
           </h2>
           <p className="text-muted-foreground mt-1 text-xs sm:text-sm flex items-center gap-2">
-            <span>Main Projects: <strong className="text-foreground font-semibold">{logicalProjects.length} {logicalProjects.length === 1 ? 'project' : 'projects'}</strong></span>
+            <span>{t('projects.subtitle')}</span>
             <span className="text-muted-foreground/60">•</span>
             <span className="text-xs bg-muted text-muted-foreground px-2.5 py-0.5 rounded-full border border-border font-medium">
-              {totalLocationsCount} {totalLocationsCount === 1 ? 'location' : 'locations'} total
+              {totalLocationsCount} {t('projects.location')}
             </span>
           </p>
         </div>
@@ -551,7 +551,7 @@ const Projects = () => {
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder={t('common.search', 'Search projects or locations...')}
+              placeholder={t('projects.searchPlaceholder')}
               className="pl-9 h-9 text-xs rounded-lg bg-background border border-input focus-visible:ring-1 focus-visible:ring-primary"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -567,7 +567,7 @@ const Projects = () => {
             }}>
               <DialogTrigger asChild>
                 <Button className="shrink-0 gap-2 rounded-lg font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs cursor-pointer h-9 px-4 text-xs">
-                  <Plus className="h-4 w-4" /> {t('common.create', 'New Project')}
+                  <Plus className="h-4 w-4" /> {t('projects.newProject')}
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[480px] rounded-xl bg-card text-card-foreground p-6 border border-border shadow-xl">
@@ -577,10 +577,10 @@ const Projects = () => {
                       <div className="p-2 rounded-lg bg-primary/10 text-primary">
                         <Building2 className="w-5 h-5" />
                       </div>
-                      <span>Create New Project</span>
+                      <span>{t('projects.newProject')}</span>
                     </DialogTitle>
                     <DialogDescription className="text-xs text-muted-foreground">
-                      Enter project name and project code(s) for inventory and material withdrawals
+                      {t('projects.subtitle')}
                     </DialogDescription>
                   </DialogHeader>
                   <div className="grid gap-3.5 py-4">

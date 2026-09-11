@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { ProjectLocationSelector } from '@/components/common/ProjectLocationSelector';
 import toast from 'react-hot-toast';
+import { useTranslation } from '@/i18n';
 
 export const TransferItemDialog = ({
   open,
@@ -34,6 +35,7 @@ export const TransferItemDialog = ({
   onSuccess,
   currentProfile
 }) => {
+  const { t } = useTranslation();
   const [destinationProjectId, setDestinationProjectId] = useState('');
   const [transferQuantity, setTransferQuantity] = useState('');
   const [notes, setNotes] = useState('');
@@ -68,17 +70,17 @@ export const TransferItemDialog = ({
   const handleTransfer = async (e) => {
     e.preventDefault();
     if (!destinationProjectId) {
-      toast.error('Please select destination project and location');
+      toast.error(t('items.transfer.toasts.selectDifferent'));
       return;
     }
 
     if (!isValidQuantity) {
-      toast.error(`Transfer quantity must be between 1 and ${maxBalance} ${item.unit || 'ชิ้น'}`);
+      toast.error(t('items.transfer.toasts.invalidQty'));
       return;
     }
 
     setIsSubmitting(true);
-    const toastId = toast.loading('Processing stock transfer...');
+    const toastId = toast.loading(t('common.pleaseWait'));
 
     try {
       // Execute atomic Supabase RPC
@@ -93,11 +95,11 @@ export const TransferItemDialog = ({
 
       if (rpcError) throw rpcError;
       if (!rpcData?.success) {
-        throw new Error(rpcData?.message || 'Transfer was not completed');
+        throw new Error(rpcData?.message || t('items.transfer.toasts.failed'));
       }
 
       toast.success(
-        rpcData?.message || `Transferred ${item.name} (${currentQtyNum} ${item.unit || 'ชิ้น'}) successfully`,
+        rpcData?.message || t('items.transfer.toasts.success'),
         { id: toastId }
       );
 
@@ -105,7 +107,7 @@ export const TransferItemDialog = ({
       if (onSuccess) onSuccess();
     } catch (error) {
       console.error('[Transfer] Error executing transfer:', error);
-      toast.error('Failed to transfer item: ' + (error.message || 'Please try again'), { id: toastId });
+      toast.error(t('items.transfer.toasts.failed') + ': ' + (error.message || ''), { id: toastId });
     } finally {
       setIsSubmitting(false);
     }
@@ -122,10 +124,10 @@ export const TransferItemDialog = ({
             </div>
             <div>
               <DialogTitle className="text-lg font-bold text-foreground flex items-center gap-2">
-                <span>Transfer Storage Location / Warehouse</span>
+                <span>{t('items.transfer.title')}</span>
               </DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-                Move inventory balance between storage locations and projects
+                {t('items.transferItem')}
               </DialogDescription>
             </div>
           </div>
@@ -158,8 +160,8 @@ export const TransferItemDialog = ({
                 )}
               </div>
               <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground font-mono">
-                {item.model && item.model !== '-' && <span>Model: <strong className="text-foreground">{item.model}</strong></span>}
-                {item.sku && item.sku !== '-' && <span>SKU: <strong className="text-foreground">{item.sku}</strong></span>}
+                {item.model && item.model !== '-' && <span>{t('items.model')}: <strong className="text-foreground">{item.model}</strong></span>}
+                {item.sku && item.sku !== '-' && <span>{t('items.sku')}: <strong className="text-foreground">{item.sku}</strong></span>}
               </div>
             </div>
           </div>
@@ -171,7 +173,7 @@ export const TransferItemDialog = ({
               <div className="p-3.5 rounded-lg bg-muted/30 border border-border/70 space-y-1.5">
                 <span className="text-[11px] font-bold text-muted-foreground flex items-center gap-1">
                   <Building2 className="w-3.5 h-3.5 text-muted-foreground" />
-                  <span>Source Location</span>
+                  <span>{t('items.transfer.sourceLocation')}</span>
                 </span>
                 <div className="font-bold text-xs text-foreground truncate">
                   {item.project_display || '-'}
@@ -183,9 +185,9 @@ export const TransferItemDialog = ({
                   </div>
                 )}
                 <div className="pt-2 border-t border-border/40 flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground font-medium">Available Stock:</span>
+                  <span className="text-muted-foreground font-medium">{t('items.currentStock')}:</span>
                   <span className="px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 font-mono font-bold">
-                    {maxBalance} {item.unit || 'ชิ้น'}
+                    {maxBalance} {item.unit || t('items.defaultUnit')}
                   </span>
                 </div>
               </div>
@@ -199,15 +201,10 @@ export const TransferItemDialog = ({
                   required={true}
                   mode="unified"
                   size="sm"
-                  label="Destination Location"
-                  description="Select destination project and location"
+                  label={t('items.transfer.targetLocation')}
+                  description={t('items.destLocation')}
                   showSummaryCard={false}
                 />
-                {!destinationProjectId && (
-                  <p className="text-[11px] text-primary font-medium">
-                    * Please select destination location
-                  </p>
-                )}
               </div>
             </div>
 
@@ -216,14 +213,14 @@ export const TransferItemDialog = ({
               <div className="flex items-center justify-between">
                 <Label htmlFor="transfer-qty" className="text-xs font-bold text-foreground flex items-center gap-1.5">
                   <Layers className="w-3.5 h-3.5 text-primary" />
-                  <span>Transfer Quantity ({item.unit || 'ชิ้น'}) *</span>
+                  <span>{t('items.transfer.transferQty')} ({item.unit || t('items.defaultUnit')}) *</span>
                 </Label>
                 <button
                   type="button"
                   onClick={handleSetMax}
                   className="text-[11px] font-bold text-primary hover:underline px-2 py-0.5 rounded-md bg-primary/10 hover:bg-primary/20 transition-colors cursor-pointer"
                 >
-                  Transfer All ({maxBalance} {item.unit || 'ชิ้น'})
+                  {t('items.transferQty')} ({maxBalance})
                 </button>
               </div>
 
@@ -236,18 +233,17 @@ export const TransferItemDialog = ({
                   value={transferQuantity}
                   onChange={(e) => setTransferQuantity(e.target.value)}
                   className="h-9 text-xs font-mono font-bold rounded-lg bg-background"
-                  placeholder="Enter quantity..."
                   required
                 />
                 <span className="text-xs font-semibold text-muted-foreground shrink-0 px-2">
-                  {item.unit || 'ชิ้น'}
+                  {item.unit || t('items.defaultUnit')}
                 </span>
               </div>
 
               {currentQtyNum > maxBalance && (
                 <div className="flex items-center gap-1.5 text-destructive text-[11px] font-semibold">
                   <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                  <span>Transfer quantity exceeds available stock ({maxBalance} {item.unit || 'ชิ้น'})</span>
+                  <span>{t('items.transfer.toasts.invalidQty')}</span>
                 </div>
               )}
             </div>
@@ -256,12 +252,11 @@ export const TransferItemDialog = ({
             <div className="space-y-1.5">
               <Label htmlFor="transfer-notes" className="text-xs font-bold text-foreground flex items-center gap-1.5">
                 <Info className="w-3.5 h-3.5 text-muted-foreground" />
-                <span>Notes / Transfer Reason</span>
+                <span>{t('items.transfer.notes')}</span>
               </Label>
               <Input
                 id="transfer-notes"
                 type="text"
-                placeholder="e.g. On-site backup reserve, stock rebalancing, document ref..."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 className="h-9 text-xs rounded-lg bg-background"
@@ -277,7 +272,7 @@ export const TransferItemDialog = ({
               disabled={isSubmitting}
               className="rounded-lg text-xs h-9 font-medium"
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               type="submit"
@@ -285,7 +280,7 @@ export const TransferItemDialog = ({
               className="rounded-lg text-xs h-9 font-medium bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5 shadow-xs"
             >
               <ArrowRightLeft className={`w-3.5 h-3.5 ${isSubmitting ? 'animate-spin' : ''}`} />
-              <span>{isSubmitting ? 'Transferring...' : 'Confirm Transfer'}</span>
+              <span>{isSubmitting ? t('common.pleaseWait') : t('items.transfer.transferBtn')}</span>
             </Button>
           </DialogFooter>
         </form>

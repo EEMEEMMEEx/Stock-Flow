@@ -5,15 +5,17 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { 
   FileSpreadsheet, FileText, Layers, 
-  Router, Antenna, RefreshCw, Search 
+  RefreshCw, Search 
 } from 'lucide-react';
 import { utils, writeFile } from 'xlsx';
 import toast from 'react-hot-toast';
 import { fetchSiteKitsAvailability } from '@/lib/siteKits';
 import { useAuth } from '@/contexts/AuthContext';
 import { resolveCategoryVisuals } from '@/components/dashboard/SiteKitCategoryCard';
+import { useTranslation } from '@/i18n';
 
 const ReportSiteKits = ({ projects = [] }) => {
+  const { t } = useTranslation();
   const { can } = useAuth();
   const canExport = can('reports.export');
   const [selectedProjectId, setSelectedProjectId] = useState('');
@@ -33,12 +35,12 @@ const ReportSiteKits = ({ projects = [] }) => {
       setSiteKits(data || []);
     } catch (error) {
       console.error('Error loading site kits report:', error);
-      toast.error('Failed to load site kits availability data');
+      toast.error(t('reports.siteKits.loadFailed'));
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [selectedProjectId]);
+  }, [selectedProjectId, t]);
 
   useEffect(() => {
     loadData(true);
@@ -76,30 +78,30 @@ const ReportSiteKits = ({ projects = [] }) => {
 
   const handleExportExcel = () => {
     if (!canExport) {
-      toast.error('You do not have permission to export Excel reports (reports.export required)');
+      toast.error(t('reports.export.permissionDeniedExcel'));
       return;
     }
     try {
       const exportData = filteredItems.map((item, index) => ({
-        'No.': index + 1,
-        'Equipment Category': item.category_name,
-        'Part Number': item.part_number || '-',
-        'BOM Item Name': item.bom_name,
-        'Qty Per Site': item.qty_per_site,
-        'Unit': item.unit || 'ชิ้น',
-        'Current Stock': item.total_stock,
-        'Kits Possible': item.sets_possible,
-        'Missing For Next Set': item.missing_for_next_set || 0,
-        'Status': item.total_stock === 0 
-          ? 'Out of Stock' 
+        [t('reports.export.colNo')]: index + 1,
+        [t('reports.export.colEquipmentCategory')]: item.category_name,
+        [t('reports.export.colPartNumber')]: item.part_number || '-',
+        [t('reports.export.colBomItemName')]: item.bom_name,
+        [t('reports.export.colQtyPerSite')]: item.qty_per_site,
+        [t('reports.export.colUnit')]: item.unit || t('common.piece'),
+        [t('reports.export.colCurrentStock')]: item.total_stock,
+        [t('reports.export.colKitsPossible')]: item.sets_possible,
+        [t('reports.export.colMissingForNextSet')]: item.missing_for_next_set || 0,
+        [t('reports.export.colStatus')]: item.total_stock === 0 
+          ? t('reports.siteKits.outOfStock') 
           : item.isLimiting 
-          ? 'Limiting Stock' 
-          : 'Ready'
+          ? t('reports.siteKits.limitingStock') 
+          : t('reports.siteKits.ready')
       }));
 
       const ws = utils.json_to_sheet(exportData);
       const wb = utils.book_new();
-      utils.book_append_sheet(wb, ws, 'Site_Kits_BOM');
+      utils.book_append_sheet(wb, ws, t('reports.export.sheetSiteKits'));
 
       const wscols = [
         { wch: 8 }, { wch: 25 }, { wch: 20 },
@@ -110,21 +112,21 @@ const ReportSiteKits = ({ projects = [] }) => {
 
       const dateStr = new Date().toISOString().split('T')[0];
       writeFile(wb, `Site_Kits_BOM_Availability_Report_${dateStr}.xlsx`);
-      toast.success('Excel report exported successfully');
+      toast.success(t('reports.export.excelSuccess'));
     } catch (err) {
       console.error('Export error:', err);
-      toast.error('Failed to export Excel report');
+      toast.error(t('reports.export.excelFailed'));
     }
   };
 
   const handleExportPDF = async () => {
     if (!canExport) {
-      toast.error('You do not have permission to export PDF reports (reports.export required)');
+      toast.error(t('reports.export.permissionDeniedPdf'));
       return;
     }
     try {
       setPdfLoading(true);
-      const toastId = toast.loading('Generating Site Kits BOM PDF report...');
+      const toastId = toast.loading(t('reports.siteKits.generatingPdf'));
 
       const { SiteKitsReportPDF } = await import('@/lib/pdf-templates.jsx');
       const { pdf } = await import('@react-pdf/renderer');
@@ -132,11 +134,11 @@ const ReportSiteKits = ({ projects = [] }) => {
       const selectedProj = projects.find(p => p.id === selectedProjectId);
       const projectName = selectedProj 
         ? (selectedProj.location ? `${selectedProj.name} (${selectedProj.location})` : selectedProj.name)
-        : 'All Storage Locations';
+        : t('reports.siteKits.allWarehouses');
 
       const categoryName = selectedCategoryId === 'all'
-        ? 'All 4 Categories'
-        : siteKits.find(c => c.category_id === selectedCategoryId)?.category_name || 'Selected Category';
+        ? t('reports.siteKits.all4Categories')
+        : siteKits.find(c => c.category_id === selectedCategoryId)?.category_name || t('reports.siteKits.selectedCategory');
 
       const doc = (
         <SiteKitsReportPDF
@@ -159,10 +161,10 @@ const ReportSiteKits = ({ projects = [] }) => {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
 
-      toast.success('PDF report exported successfully', { id: toastId });
+      toast.success(t('reports.export.pdfSuccess'), { id: toastId });
     } catch (err) {
       console.error('Site Kits PDF Export Error:', err);
-      toast.error('Failed to generate PDF report');
+      toast.error(t('reports.export.pdfFailed'));
     } finally {
       setPdfLoading(false);
     }
@@ -181,7 +183,7 @@ const ReportSiteKits = ({ projects = [] }) => {
               selectedCategoryId === 'all' ? 'bg-emerald-600 text-white shadow-xs' : 'border-border/70'
             }`}
           >
-            <Layers className="w-3.5 h-3.5 mr-1" /> All ({siteKits.length} {siteKits.length === 1 ? 'Category' : 'Categories'})
+            <Layers className="w-3.5 h-3.5 mr-1" /> {t('reports.siteKits.allCategories', { count: siteKits.length, unit: siteKits.length === 1 ? t('reports.siteKits.category') : t('reports.siteKits.categories') })}
           </Button>
 
           {siteKits.map(cat => {
@@ -201,7 +203,7 @@ const ReportSiteKits = ({ projects = [] }) => {
                 <Icon className="w-3.5 h-3.5" />
                 <span>{cat.category_name.split(' ')[0]}</span>
                 <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-background/30 font-black">
-                  {cat.complete_sets} {cat.complete_sets === 1 ? 'set' : 'sets'}
+                  {cat.complete_sets} {cat.complete_sets === 1 ? t('reports.siteKits.set') : t('reports.siteKits.sets')}
                 </span>
               </Button>
             );
@@ -214,7 +216,7 @@ const ReportSiteKits = ({ projects = [] }) => {
             onChange={(e) => setSelectedProjectId(e.target.value)}
             className="h-9 rounded-xl px-3 text-xs bg-background border border-border/80 focus:ring-1 focus:ring-emerald-500 font-medium text-foreground cursor-pointer"
           >
-            <option value="">All Storage Locations (All Warehouses)</option>
+            <option value="">{t('reports.siteKits.allWarehouses')}</option>
             {projects.map(p => (
               <option key={p.id} value={p.id}>
                 {p.location ? `${p.name} (${p.location})` : p.name}
@@ -226,7 +228,7 @@ const ReportSiteKits = ({ projects = [] }) => {
             <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
               type="text"
-              placeholder="Search name / Part No..."
+              placeholder={t('reports.siteKits.searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="h-9 pl-8 text-xs rounded-xl border-border/80 bg-background"
@@ -240,6 +242,7 @@ const ReportSiteKits = ({ projects = [] }) => {
             onClick={() => loadData(false)}
             disabled={refreshing}
             className="h-9 px-3 rounded-xl border-border/80 text-xs font-bold cursor-pointer"
+            title={t('common.refresh')}
           >
             <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin text-emerald-600' : ''}`} />
           </Button>
@@ -255,7 +258,7 @@ const ReportSiteKits = ({ projects = [] }) => {
                 className="h-9 px-3.5 rounded-xl font-semibold text-xs border-rose-200 dark:border-rose-900/60 text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
               >
                 <FileText className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
-                <span>{pdfLoading ? 'Generating PDF...' : 'Export PDF'}</span>
+                <span>{pdfLoading ? t('reports.siteKits.generatingPdf') : t('reports.siteKits.exportPdf')}</span>
               </Button>
 
               <Button
@@ -264,7 +267,7 @@ const ReportSiteKits = ({ projects = [] }) => {
                 className="h-9 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold gap-1.5 shadow-xs cursor-pointer"
               >
                 <FileSpreadsheet className="w-3.5 h-3.5" />
-                <span>Export Excel</span>
+                <span>{t('reports.siteKits.exportExcel')}</span>
               </Button>
             </>
           )}
@@ -289,17 +292,17 @@ const ReportSiteKits = ({ projects = [] }) => {
                   <Badge className={`font-black text-xs px-2.5 py-0.5 rounded-full ${
                     isReady ? 'bg-emerald-600 text-white' : 'bg-rose-600 text-white'
                   }`}>
-                    {cat.complete_sets} {cat.complete_sets === 1 ? 'set' : 'sets'}
+                    {cat.complete_sets} {cat.complete_sets === 1 ? t('reports.siteKits.set') : t('reports.siteKits.sets')}
                   </Badge>
                 </div>
                 <div className="text-[11px] text-muted-foreground pt-1 border-t border-border/50">
                   {cat.bottlenecks && cat.bottlenecks.length > 0 ? (
                     <span className="text-amber-600 dark:text-amber-400 font-medium">
-                      Limiting: {cat.bottlenecks[0]}
+                      {t('reports.siteKits.limitingPrefix', { name: cat.bottlenecks[0] })}
                     </span>
                   ) : (
                     <span className="text-emerald-600 dark:text-emerald-400 font-medium">
-                      Ready for installation
+                      {t('reports.siteKits.readyForInstallation')}
                     </span>
                   )}
                 </div>
@@ -315,10 +318,10 @@ const ReportSiteKits = ({ projects = [] }) => {
             <div>
               <CardTitle className="text-sm font-bold tracking-wide uppercase text-foreground flex items-center gap-2">
                 <Layers className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                <span>BOM Specifications & Current Stock Status</span>
+                <span>{t('reports.siteKits.bomSpecsTitle')}</span>
               </CardTitle>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Showing {filteredItems.length} {filteredItems.length === 1 ? 'record' : 'records'} (orange rows indicate components limiting kit assembly)
+                {t('reports.siteKits.bomSpecsSubtitle', { count: filteredItems.length, unit: filteredItems.length === 1 ? t('reports.record') : t('reports.records') })}
               </p>
             </div>
           </div>
@@ -329,22 +332,22 @@ const ReportSiteKits = ({ projects = [] }) => {
             <table className="w-full text-left text-xs border-collapse">
               <thead className="bg-muted/70 text-muted-foreground font-bold border-b border-border/70">
                 <tr>
-                  <th className="py-3 px-4 w-12 text-center">No.</th>
-                  <th className="py-3 px-4">Equipment Category</th>
-                  <th className="py-3 px-4">Part Number</th>
-                  <th className="py-3 px-4">BOM Item Name</th>
-                  <th className="py-3 px-4 text-center">Per Site</th>
-                  <th className="py-3 px-4 text-center">Actual Stock</th>
-                  <th className="py-3 px-4 text-center">Kits Possible</th>
-                  <th className="py-3 px-4 text-center">Missing for Next Set</th>
-                  <th className="py-3 px-4 text-center">Status</th>
+                  <th className="py-3 px-4 w-12 text-center">{t('reports.siteKits.thNo')}</th>
+                  <th className="py-3 px-4">{t('reports.siteKits.thCategory')}</th>
+                  <th className="py-3 px-4">{t('reports.siteKits.thPartNumber')}</th>
+                  <th className="py-3 px-4">{t('reports.siteKits.thBomItemName')}</th>
+                  <th className="py-3 px-4 text-center">{t('reports.siteKits.thPerSite')}</th>
+                  <th className="py-3 px-4 text-center">{t('reports.siteKits.thActualStock')}</th>
+                  <th className="py-3 px-4 text-center">{t('reports.siteKits.thKitsPossible')}</th>
+                  <th className="py-3 px-4 text-center">{t('reports.siteKits.thMissingForNextSet')}</th>
+                  <th className="py-3 px-4 text-center">{t('reports.siteKits.thStatus')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/40">
                 {filteredItems.length === 0 ? (
                   <tr>
                     <td colSpan={9} className="py-12 text-center text-muted-foreground">
-                      No equipment items found matching selected criteria
+                      {t('reports.siteKits.noEquipment')}
                     </td>
                   </tr>
                 ) : (
@@ -367,11 +370,11 @@ const ReportSiteKits = ({ projects = [] }) => {
                       <td className="py-3 px-4">
                         <div className="font-semibold text-foreground">{item.bom_name}</div>
                         <div className="text-[10px] text-muted-foreground">
-                          Matched in system: {item.db_matched_name}
+                          {t('reports.siteKits.matchedInSystem', { name: item.db_matched_name })}
                         </div>
                       </td>
                       <td className="py-3 px-4 text-center font-bold text-foreground">
-                        {item.qty_per_site} <span className="text-[10px] font-normal text-muted-foreground">{item.unit || 'ชิ้น'}</span>
+                        {item.qty_per_site} <span className="text-[10px] font-normal text-muted-foreground">{item.unit || t('common.piece')}</span>
                       </td>
                       <td className="py-3 px-4 text-center font-bold text-foreground">
                         <span className={item.total_stock === 0 ? 'text-rose-600 dark:text-rose-400' : ''}>
@@ -386,32 +389,32 @@ const ReportSiteKits = ({ projects = [] }) => {
                             ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300'
                             : 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
                         }`}>
-                          {item.sets_possible} {item.sets_possible === 1 ? 'set' : 'sets'}
+                          {item.sets_possible} {item.sets_possible === 1 ? t('reports.siteKits.set') : t('reports.siteKits.sets')}
                         </span>
                       </td>
                       <td className="py-3 px-4 text-center font-semibold text-muted-foreground">
                         {item.missing_for_next_set > 0 ? (
                           <span className="text-rose-600 dark:text-rose-400 font-bold">
-                            +{item.missing_for_next_set} {item.unit || 'ชิ้น'}
+                            +{item.missing_for_next_set} {item.unit || t('common.piece')}
                           </span>
                         ) : (
                           <span className="text-emerald-600 dark:text-emerald-400 font-medium">
-                            Complete
+                            {t('reports.siteKits.complete')}
                           </span>
                         )}
                       </td>
                       <td className="py-3 px-4 text-center">
                         {item.total_stock === 0 ? (
                           <Badge variant="outline" className="bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/30 text-[10px] font-bold">
-                            Out of Stock
+                            {t('reports.siteKits.outOfStock')}
                           </Badge>
                         ) : item.isLimiting ? (
                           <Badge variant="outline" className="bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30 text-[10px] font-bold">
-                            Limiting Stock
+                            {t('reports.siteKits.limitingStock')}
                           </Badge>
                         ) : (
                           <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 text-[10px] font-bold">
-                            Ready
+                            {t('reports.siteKits.ready')}
                           </Badge>
                         )}
                       </td>

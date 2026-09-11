@@ -31,34 +31,28 @@ export const LanguageProvider = ({ children }) => {
   }, []);
 
   /**
-   * Unified translate function powered by i18next
+   * SSOT translate function powered by i18next
    * Supports:
-   * 1. t('key')
-   * 2. t('key', 'Default fallback text')
-   * 3. t('key', { name: 'John' })
-   * 4. t('key', { count: 5 }, 'Fallback text')
+   * 1. t('page.section.element')
+   * 2. t('key', { count: 5 })
+   * 3. t('key', 'Default English fallback', { count: 5 })
    */
   const t = useCallback(
-    (key, paramsOrDefault, defaultVal) => {
+    (key, paramsOrOptions, maybeOptions) => {
       if (!key || typeof key !== 'string') return '';
-
       let options = {};
-      if (paramsOrDefault && typeof paramsOrDefault === 'object') {
-        options = { ...paramsOrDefault };
-        if (typeof defaultVal === 'string') {
-          options.defaultValue = defaultVal;
+      if (typeof paramsOrOptions === 'string') {
+        // Handle 3-arg call: t(key, fallbackString, optionsObject)
+        if (maybeOptions && typeof maybeOptions === 'object') {
+          options = { ...maybeOptions, defaultValue: paramsOrOptions };
+        } else {
+          options = { defaultValue: paramsOrOptions };
         }
-      } else if (typeof paramsOrDefault === 'string') {
-        options.defaultValue = paramsOrDefault;
+      } else if (paramsOrOptions && typeof paramsOrOptions === 'object') {
+        // Handle 2-arg call: t(key, optionsObject)
+        options = { ...paramsOrOptions };
       }
-
-      const translated = i18n.t(key, options);
-      // If i18next returned the key because it is missing, and fallback was provided, use fallback
-      if (translated === key && options.defaultValue) {
-        return options.defaultValue;
-      }
-
-      return translated;
+      return i18n.t(key, options);
     },
     []
   );

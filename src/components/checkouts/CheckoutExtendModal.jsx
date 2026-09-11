@@ -11,6 +11,7 @@ import toast from 'react-hot-toast';
 import { format, addDays, differenceInDays, isAfter, parseISO } from 'date-fns';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTranslation } from '@/i18n';
 
 const CheckoutExtendModal = ({
   isOpen,
@@ -19,6 +20,7 @@ const CheckoutExtendModal = ({
   onExtendSuccess
 }) => {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [newDueDate, setNewDueDate] = useState('');
   const [isIndefiniteChoice, setIsIndefiniteChoice] = useState(false);
   const [reason, setReason] = useState('');
@@ -40,7 +42,7 @@ const CheckoutExtendModal = ({
   // Initialize dates when order changes
   useEffect(() => {
     if (order && (order.borrow_type === 'indefinite' || !order.expected_return_date) && isOpen) {
-      toast.error('Indefinite loans cannot be extended');
+      toast.error(t('checkouts.indefiniteCannotExtend'));
       onClose();
       return;
     }
@@ -64,8 +66,8 @@ const CheckoutExtendModal = ({
         isValid: true,
         isIndefinite: true,
         statusType: 'indefinite',
-        statusLabel: 'Active (Indefinite)',
-        formattedNewDate: 'Indefinite'
+        statusLabel: t('checkouts.activeIndefinite'),
+        formattedNewDate: t('checkouts.indefinite')
       };
     }
 
@@ -81,16 +83,16 @@ const CheckoutExtendModal = ({
       const daysFromToday = differenceInDays(parsedNewDate, today);
 
       let statusType = 'normal';
-      let statusLabel = 'On Schedule';
+      let statusLabel = t('checkouts.onSchedule');
       if (daysFromToday < 0) {
         statusType = 'overdue';
-        statusLabel = 'Still Overdue';
+        statusLabel = t('checkouts.stillOverdue');
       } else if (daysFromToday <= 2) {
         statusType = 'due_soon';
-        statusLabel = `Due soon (${daysFromToday} ${daysFromToday === 1 ? 'day' : 'days'} left)`;
+        statusLabel = t('checkouts.dueSoon', { days: daysFromToday });
       } else {
         statusType = 'normal';
-        statusLabel = `On schedule (${daysFromToday} ${daysFromToday === 1 ? 'day' : 'days'} left)`;
+        statusLabel = t('checkouts.onScheduleDays', { days: daysFromToday });
       }
 
       return {
@@ -126,17 +128,17 @@ const CheckoutExtendModal = ({
     e.preventDefault();
 
     if (order?.borrow_type === 'indefinite' && !isIndefiniteChoice) {
-      toast.error('Indefinite loans cannot be extended');
+      toast.error(t('checkouts.indefiniteCannotExtend'));
       return;
     }
 
     if (!isIndefiniteChoice && !newDueDate) {
-      toast.error('Please specify a new return due date or select indefinite loan');
+      toast.error(t('checkouts.specifyDueDate'));
       return;
     }
 
     if (!isIndefiniteChoice && !previewData?.isValid) {
-      toast.error(`New due date must be after current due date (${format(currentDueDate, 'dd/MM/yyyy')})`);
+      toast.error(t('checkouts.dueDateAfterCurrent', { date: format(currentDueDate, 'dd/MM/yyyy') }));
       return;
     }
 
@@ -235,15 +237,15 @@ const CheckoutExtendModal = ({
       }
 
       if (isIndefiniteChoice) {
-        toast.success(`Loan order ${order.order_number} set to Indefinite successfully`);
+        toast.success(t('checkouts.setIndefiniteSuccess', { orderNumber: order.order_number }));
       } else {
-        toast.success(`Return due date for ${order.order_number} extended successfully`);
+        toast.success(t('checkouts.extendSuccess', { orderNumber: order.order_number }));
       }
       if (onExtendSuccess) onExtendSuccess();
       onClose();
     } catch (err) {
       console.error('Extend Due Date Error:', err);
-      toast.error(err.message || 'Failed to save changes');
+      toast.error(err.message || t('checkouts.failedToSave'));
     } finally {
       setSubmitting(false);
     }
@@ -259,13 +261,13 @@ const CheckoutExtendModal = ({
             </div>
             <div>
               <DialogTitle className="text-lg font-extrabold text-foreground tracking-tight flex items-center gap-2">
-                <span>Extend Return Due Date</span>
+                <span>{t('checkouts.extendReturnDueDate')}</span>
                 <span className="font-mono text-xs font-bold text-indigo-600 bg-indigo-500/10 px-2 py-0.5 rounded-md">
                   {order.order_number}
                 </span>
               </DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-                Extend equipment loan duration or convert to an indefinite loan
+                {t('checkouts.extendDescription')}
               </DialogDescription>
             </div>
           </div>
@@ -289,14 +291,14 @@ const CheckoutExtendModal = ({
             </div>
 
             <div className="flex items-center justify-between pt-1 border-t border-border/40">
-              <span className="text-muted-foreground">Current Due Date:</span>
+              <span className="text-muted-foreground">{t('checkouts.currentDueDate')}:</span>
               <div className="flex items-center gap-1.5">
                 <span className="font-bold text-foreground font-mono">
                   {format(currentDueDate, 'dd/MM/yyyy')}
                 </span>
                 {order.isOverdue && (
                   <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-500/15 text-red-600 border border-red-500/30">
-                    Overdue
+                    {t('checkouts.overdue')}
                   </span>
                 )}
               </div>
@@ -308,11 +310,11 @@ const CheckoutExtendModal = ({
             <Label htmlFor="new-due-date" className="text-xs font-bold flex items-center justify-between">
               <span className="flex items-center gap-1.5">
                 <Calendar className="w-3.5 h-3.5 text-indigo-500" />
-                <span>New Return Due Date *</span>
+                <span>{t('checkouts.newReturnDueDate')} *</span>
               </span>
               {!isIndefiniteChoice && (
                 <span className="text-[11px] text-muted-foreground font-normal">
-                  Must be after {format(currentDueDate, 'dd/MM/yyyy')}
+                  {t('checkouts.mustBeAfter', { date: format(currentDueDate, 'dd/MM/yyyy') })}
                 </span>
               )}
             </Label>
@@ -322,8 +324,8 @@ const CheckoutExtendModal = ({
                 <div className="flex items-center gap-2">
                   <InfinityIcon className="w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0" />
                   <div>
-                    <div className="font-bold text-xs">Indefinite Loan</div>
-                    <div className="text-[11px] opacity-80">No fixed due date and order will not trigger overdue alerts</div>
+                    <div className="font-bold text-xs">{t('checkouts.indefiniteLoan')}</div>
+                    <div className="text-[11px] opacity-80">{t('checkouts.indefiniteDescription')}</div>
                   </div>
                 </div>
                 <Button
@@ -336,7 +338,7 @@ const CheckoutExtendModal = ({
                   }}
                   className="h-7 px-2 text-[11px] font-medium border-purple-500/40 text-purple-700 dark:text-purple-300 hover:bg-purple-500/20 cursor-pointer"
                 >
-                  Specify Date
+                  {t('checkouts.specifyDate')}
                 </Button>
               </div>
             ) : (
@@ -353,12 +355,12 @@ const CheckoutExtendModal = ({
 
             {/* Quick Extension Shortcut Buttons */}
             <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
-              <span className="text-[11px] text-muted-foreground mr-1">Quick presets:</span>
+              <span className="text-[11px] text-muted-foreground mr-1">{t('checkouts.quickPresets')}:</span>
               {[
-                { label: '+3 Days', days: 3 },
-                { label: '+7 Days (1 Week)', days: 7 },
-                { label: '+14 Days (2 Weeks)', days: 14 },
-                { label: '+30 Days (1 Month)', days: 30 }
+                { labelKey: 'checkouts.plus3Days', days: 3 },
+                { labelKey: 'checkouts.plus7Days', days: 7 },
+                { labelKey: 'checkouts.plus14Days', days: 14 },
+                { labelKey: 'checkouts.plus30Days', days: 30 }
               ].map(preset => (
                 <Button
                   key={preset.days}
@@ -369,7 +371,7 @@ const CheckoutExtendModal = ({
                   className="h-7 px-2.5 rounded-lg text-[11px] font-semibold border-border/80 hover:bg-indigo-500/10 hover:text-indigo-600 hover:border-indigo-500/30 cursor-pointer transition-all"
                 >
                   <Plus className="w-2.5 h-2.5 mr-0.5" />
-                  {preset.label}
+                  {t(preset.labelKey)}
                 </Button>
               ))}
 
@@ -385,7 +387,7 @@ const CheckoutExtendModal = ({
                 }`}
               >
                 <InfinityIcon className="w-3 h-3 mr-1" />
-                Indefinite
+                {t('checkouts.indefinite')}
               </Button>
             </div>
           </div>
@@ -410,13 +412,13 @@ const CheckoutExtendModal = ({
                 <div>
                   <div className="font-bold">
                     {isIndefiniteChoice
-                      ? 'Status: Converted to Indefinite Loan'
+                      ? t('checkouts.convertedToIndefinite')
                       : previewData.isValid 
-                        ? `Extended +${previewData.additionalDays} ${previewData.additionalDays === 1 ? 'day' : 'days'} (${previewData.formattedNewDate})`
-                        : 'Invalid date (must be after current due date)'}
+                        ? t('checkouts.extendedDays', { days: previewData.additionalDays, date: previewData.formattedNewDate })
+                        : t('checkouts.invalidDate')}
                   </div>
                   <div className="text-[11px] opacity-85">
-                    New Loan Status: <strong>{previewData.statusLabel}</strong>
+                    {t('checkouts.newLoanStatus')}: <strong>{previewData.statusLabel}</strong>
                   </div>
                 </div>
               </div>
@@ -427,13 +429,13 @@ const CheckoutExtendModal = ({
           <div className="space-y-1.5">
             <Label htmlFor="extend-reason" className="text-xs font-bold flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-              <span>Extension Reason</span>
-              <span className="text-[11px] text-muted-foreground font-normal">(Optional)</span>
+              <span>{t('checkouts.extensionReason')}</span>
+              <span className="text-[11px] text-muted-foreground font-normal">({t('common.optional')})</span>
             </Label>
             <textarea
               id="extend-reason"
               rows={2}
-              placeholder="e.g. On-site installation ongoing, awaiting final system tests..."
+              placeholder={t('checkouts.extensionReasonPlaceholder')}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               className="w-full rounded-lg border border-input bg-transparent px-3 py-2 text-xs shadow-2xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 resize-none"
@@ -449,7 +451,7 @@ const CheckoutExtendModal = ({
               disabled={submitting}
               className="rounded-lg h-9 text-xs font-semibold cursor-pointer"
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
 
             {isIndefiniteChoice ? (
@@ -460,7 +462,7 @@ const CheckoutExtendModal = ({
                 className="rounded-lg h-9 px-4 bg-purple-600 hover:bg-purple-700 text-white text-xs gap-1.5 font-semibold shadow-xs cursor-pointer transition-colors"
               >
                 <InfinityIcon className="w-3.5 h-3.5" />
-                <span>{submitting ? 'Saving...' : 'Confirm Indefinite Loan'}</span>
+                <span>{submitting ? t('common.saving') : t('checkouts.confirmIndefiniteLoan')}</span>
               </Button>
             ) : (
               <Button
@@ -470,7 +472,7 @@ const CheckoutExtendModal = ({
                 className="rounded-lg h-9 px-4 bg-amber-600 hover:bg-amber-700 text-white text-xs gap-1.5 font-semibold shadow-xs cursor-pointer transition-colors"
               >
                 <CalendarClock className="w-3.5 h-3.5" />
-                <span>{submitting ? 'Saving...' : 'Confirm Extension'}</span>
+                <span>{submitting ? t('common.saving') : t('checkouts.confirmExtension')}</span>
               </Button>
             )}
           </DialogFooter>

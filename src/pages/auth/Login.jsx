@@ -29,10 +29,10 @@ const Login = () => {
       const { error } = await signIn(email, password);
       if (error) throw error;
       navigate(returnTo, { replace: true });
-      toast.success('Signed in successfully');
+      toast.success(t('common.success'));
     } catch (error) {
       console.error('[Login Error]:', error);
-      let msg = error.message || 'An error occurred while signing in';
+      let msg = error.message || t('common.error');
       if (
         error?.status === 500 || 
         String(error?.status) === '500' || 
@@ -40,19 +40,15 @@ const Login = () => {
         msg.includes('Internal Server Error') || 
         msg.includes('500')
       ) {
-        msg = 'Supabase Authentication service is temporarily unavailable (HTTP 500). Please check the authentication service/database or try logging in again.';
-      } else if (msg.includes('Email logins are disabled')) {
-        msg = 'Email logins are disabled in Supabase. Please enable Email Provider in Supabase Dashboard.';
-      } else if (msg.includes('Invalid login credentials')) {
-        msg = 'Invalid email or password. Please check your credentials and try again.';
+        msg = t('common.error');
+      } else if (msg.includes('Invalid login credentials') || msg.includes('invalid_credentials')) {
+        msg = t('auth.invalidCredentials');
       }
 
       toast.error(msg, { duration: 6000 });
     } finally {
       setLoading(false);
     }
-
-
   };
 
   return (
@@ -73,7 +69,7 @@ const Login = () => {
           </div>
           <CardTitle className="text-3xl font-bold text-center">StockFlow</CardTitle>
           <CardDescription className="text-center text-base">
-            {t('auth.welcomeBack', 'Sign in to manage project inventory')}
+            {t('auth.welcomeBack')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -83,7 +79,7 @@ const Login = () => {
                 <Mail className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
                 <Input
                   type="email"
-                  placeholder={t('auth.email', 'Email')}
+                  placeholder={t('auth.email')}
                   autoComplete="email"
                   className="pl-10 h-12 bg-background/50 border-white/10 focus:border-primary"
                   value={email}
@@ -97,7 +93,7 @@ const Login = () => {
                 <Lock className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
                 <Input
                   type="password"
-                  placeholder={t('auth.password', 'Password')}
+                  placeholder={t('auth.password')}
                   autoComplete="current-password"
                   className="pl-10 h-12 bg-slate-50 border-slate-200 focus:border-primary"
                   value={password}
@@ -111,7 +107,7 @@ const Login = () => {
               className="w-full h-12 text-base font-medium shadow-lg shadow-primary/20" 
               disabled={loading}
             >
-              {loading ? t('auth.signingIn', 'Signing in...') : t('auth.signIn', 'Sign In')}
+              {loading ? t('auth.signingIn') : t('auth.signIn')}
             </Button>
           </form>
         </CardContent>

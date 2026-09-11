@@ -11,6 +11,7 @@ import {
 import toast from 'react-hot-toast';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTranslation } from '@/i18n';
 
 const CheckoutReturnModal = ({
   isOpen,
@@ -19,6 +20,7 @@ const CheckoutReturnModal = ({
   projects = [],
   onReturnSuccess
 }) => {
+  const { t } = useTranslation();
   const { profile } = useAuth();
   const [returnItems, setReturnItems] = useState([]);
   const [submitting, setSubmitting] = useState(false);
@@ -88,16 +90,16 @@ const CheckoutReturnModal = ({
 
     const itemsToProcess = returnItems.filter(i => Number(i.returned_quantity) > 0);
     if (itemsToProcess.length === 0) {
-      return toast.error('Please specify the return quantity for at least one item');
+      return toast.error(t('checkouts.toasts.specifyReturnQty'));
     }
 
     for (const item of itemsToProcess) {
       const qty = Number(item.returned_quantity);
       if (qty <= 0) {
-        return toast.error(`Return quantity for "${item.item_name}" must be greater than 0`);
+        return toast.error(t('checkouts.toasts.returnQtyPositive', { item: item.item_name }));
       }
       if (qty > item.remaining_to_return) {
-        return toast.error(`Return quantity for "${item.item_name}" exceeds outstanding balance (${item.remaining_to_return} ${item.unit})`);
+        return toast.error(t('checkouts.toasts.returnQtyExceeds', { item: item.item_name, remaining: item.remaining_to_return, unit: item.unit }));
       }
     }
 
@@ -121,12 +123,12 @@ const CheckoutReturnModal = ({
 
       if (error) throw error;
 
-      toast.success(data.completed ? 'All items returned successfully' : 'Partial return recorded successfully');
+      toast.success(data.completed ? t('checkouts.toasts.allReturnedSuccess') : t('checkouts.toasts.partialReturnedSuccess'));
       if (onReturnSuccess) onReturnSuccess(data);
       onClose();
     } catch (err) {
       console.error('Return error:', err);
-      toast.error(err.message || 'Failed to process return');
+      toast.error(err.message || t('checkouts.toasts.returnFailed'));
     } finally {
       setSubmitting(false);
     }
@@ -146,16 +148,16 @@ const CheckoutReturnModal = ({
               </div>
               <div className="min-w-0 flex-1">
                 <DialogTitle className="text-lg font-extrabold text-foreground tracking-tight flex items-center gap-2">
-                  <span>Return Equipment & Materials</span>
+                  <span>{t('checkouts.returnEquipment')}</span>
                   <span className="font-mono text-xs font-bold text-indigo-600 bg-indigo-500/10 px-2 py-0.5 rounded-md">
                     {order.order_number}
                   </span>
                 </DialogTitle>
                 <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground mt-1">
-                  <span>Borrower: <strong className="text-foreground">{order.borrower_name}</strong></span>
+                  <span>{t('checkouts.borrower')}: <strong className="text-foreground">{order.borrower_name}</strong></span>
                   {order.borrower_department && <span>({order.borrower_department})</span>}
                   <span>•</span>
-                  <span>Original Location: <strong className="text-foreground">{order.projects?.name}</strong></span>
+                  <span>{t('items.location')}: <strong className="text-foreground">{order.projects?.name}</strong></span>
                 </div>
               </div>
             </div>
@@ -166,7 +168,7 @@ const CheckoutReturnModal = ({
             <div className="relative w-full sm:w-60">
               <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Search name, S/N..."
+                placeholder={t('common.search')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-8 h-8 text-xs rounded-lg"
@@ -182,7 +184,7 @@ const CheckoutReturnModal = ({
                 className="h-8 px-2.5 text-xs font-semibold gap-1 rounded-lg"
               >
                 <CheckSquare className="w-3.5 h-3.5 text-emerald-600" />
-                <span>Return All ({totalRemainingInOrder})</span>
+                <span>{t('checkouts.returnAll')} ({totalRemainingInOrder})</span>
               </Button>
               <Button
                 type="button"
@@ -191,7 +193,7 @@ const CheckoutReturnModal = ({
                 onClick={handleClearAll}
                 className="h-8 px-2.5 text-xs text-muted-foreground hover:text-destructive rounded-lg"
               >
-                Clear
+                {t('common.reset')}
               </Button>
             </div>
           </div>
@@ -200,7 +202,7 @@ const CheckoutReturnModal = ({
           <div className="space-y-3 max-h-[380px] overflow-y-auto pr-1">
             {filteredReturnItems.length === 0 ? (
               <div className="py-8 text-center text-xs text-muted-foreground">
-                No items match the search query
+                {t('common.notFound')}
               </div>
             ) : (
               filteredReturnItems.map(item => {
@@ -228,15 +230,15 @@ const CheckoutReturnModal = ({
                         </div>
 
                         <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-mono">
-                          <span>Borrowed: {item.quantity_borrowed} {item.unit}</span>
+                          <span>{t('checkouts.borrowQty')}: {item.quantity_borrowed} {item.unit}</span>
                           <span>•</span>
-                          <span>Outstanding: <strong className="text-indigo-600 dark:text-indigo-400">{item.remaining_to_return} {item.unit}</strong></span>
+                          <span>{t('stockIn.qtySourceRemaining', 'Outstanding')}: <strong className="text-indigo-600 dark:text-indigo-400">{item.remaining_to_return} {item.unit}</strong></span>
                         </div>
                       </div>
 
                       {item.remaining_to_return === 0 ? (
                         <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/15 text-emerald-600">
-                          Completed
+                          {t('common.completed')}
                         </span>
                       ) : (
                         <Button
@@ -253,12 +255,12 @@ const CheckoutReturnModal = ({
                           {isReturning ? (
                             <>
                               <Check className="w-3 h-3 inline" />
-                              <span>Selected</span>
+                              <span>{t('common.confirm')}</span>
                             </>
                           ) : (
                             <>
                               <Plus className="w-3 h-3 inline" />
-                              <span>Select</span>
+                              <span>{t('common.select')}</span>
                             </>
                           )}
                         </Button>
@@ -269,7 +271,7 @@ const CheckoutReturnModal = ({
                       <div className="grid grid-cols-12 gap-2 pt-2 border-t border-border/40 items-center">
                         {/* Return Quantity */}
                         <div className="col-span-4 space-y-0.5">
-                          <Label className="text-[10px] font-bold text-foreground">Quantity to Return</Label>
+                          <Label className="text-[10px] font-bold text-foreground">{t('checkouts.chooseReturnQty')}</Label>
                           <Input
                             type="number"
                             min={0}
@@ -282,22 +284,22 @@ const CheckoutReturnModal = ({
 
                         {/* Condition Selector */}
                         <div className="col-span-4 space-y-0.5">
-                          <Label className="text-[10px] font-bold text-foreground">Condition</Label>
+                          <Label className="text-[10px] font-bold text-foreground">{t('checkouts.condition')}</Label>
                           <select
                             value={item.condition}
                             onChange={(e) => handleUpdateItem(item.checkout_item_id, 'condition', e.target.value)}
                             className="w-full h-8 rounded-lg border border-input bg-background px-2 text-xs font-semibold focus:ring-2 focus:ring-emerald-500 cursor-pointer"
                           >
-                            <option value="normal">Normal (Ready to use)</option>
-                            <option value="needs_repair">Needs Repair</option>
-                            <option value="damaged">Damaged</option>
-                            <option value="lost">Lost</option>
+                            <option value="normal">{t('checkouts.normal')}</option>
+                            <option value="needs_repair">{t('checkouts.damagedCondition')}</option>
+                            <option value="damaged">{t('checkouts.damaged')}</option>
+                            <option value="lost">{t('checkouts.lost')}</option>
                           </select>
                         </div>
 
                         {/* Destination Warehouse */}
                         <div className="col-span-4 space-y-0.5">
-                          <Label className="text-[10px] font-bold text-foreground">Destination Location</Label>
+                          <Label className="text-[10px] font-bold text-foreground">{t('items.destLocation')}</Label>
                           <select
                             value={item.destination_project_id}
                             onChange={(e) => handleUpdateItem(item.checkout_item_id, 'destination_project_id', e.target.value)}
@@ -315,10 +317,10 @@ const CheckoutReturnModal = ({
                         {item.condition !== 'normal' && (
                           <div className="col-span-12 space-y-0.5 pt-1">
                             <Label className="text-[10px] text-amber-600 dark:text-amber-400 font-bold">
-                              Condition Details / Damage Notes:
+                              {t('checkouts.conditionNotes')}
                             </Label>
                             <Input
-                              placeholder="e.g. Cracked screen, broken wire, lost on site..."
+                              placeholder={t('checkouts.conditionNotesPlaceholder')}
                               value={item.damage_notes}
                               onChange={(e) => handleUpdateItem(item.checkout_item_id, 'damage_notes', e.target.value)}
                               className="h-8 text-xs rounded-lg"
@@ -340,7 +342,7 @@ const CheckoutReturnModal = ({
               onClick={onClose}
               className="rounded-lg h-9 px-4 text-xs font-semibold cursor-pointer"
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
 
             <Button
@@ -349,7 +351,7 @@ const CheckoutReturnModal = ({
               className="rounded-lg h-9 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold gap-1.5 shadow-xs cursor-pointer"
             >
               <CheckCircle2 className="w-4 h-4" />
-              <span>{submitting ? 'Saving...' : `Confirm Return (${totalUnitsToReturn} ${totalUnitsToReturn === 1 ? 'unit' : 'units'})`}</span>
+              <span>{submitting ? t('common.pleaseWait') : `${t('checkouts.confirmReturn')} (${totalUnitsToReturn} ${totalUnitsToReturn === 1 ? t('checkouts.unitCount_one') : t('checkouts.unitCount_other')})`}</span>
             </Button>
           </DialogFooter>
         </form>

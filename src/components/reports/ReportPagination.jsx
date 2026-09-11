@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { useTranslation } from '@/i18n';
 
 const ReportPagination = ({
   currentPage = 1,
@@ -9,6 +10,8 @@ const ReportPagination = ({
   onPageChange,
   onPageSizeChange
 }) => {
+  const { t } = useTranslation();
+
   if (totalItems === 0) return null;
 
   const startItem = (currentPage - 1) * pageSize + 1;
@@ -36,14 +39,14 @@ const ReportPagination = ({
       {/* Items count summary */}
       <div className="flex items-center gap-3 text-muted-foreground font-medium">
         <span>
-          Showing <strong className="text-foreground font-bold">{startItem}</strong> to{' '}
-          <strong className="text-foreground font-bold">{endItem}</strong> of{' '}
-          <strong className="text-foreground font-bold">{totalItems.toLocaleString()}</strong> records
+          {t('reports.pagination.showing')} <strong className="text-foreground font-bold">{startItem}</strong> {t('reports.pagination.to')}{' '}
+          <strong className="text-foreground font-bold">{endItem}</strong> {t('reports.pagination.of')}{' '}
+          <strong className="text-foreground font-bold">{totalItems.toLocaleString()}</strong> {t('reports.pagination.records')}
         </span>
 
         {/* Page size select */}
         <div className="flex items-center gap-1.5 ml-2 border-l border-border/60 pl-3">
-          <span className="text-[11px]">Per page:</span>
+          <span className="text-[11px]">{t('reports.pagination.perPage')}</span>
           <select
             value={pageSize}
             onChange={(e) => onPageSizeChange(Number(e.target.value))}
@@ -65,7 +68,7 @@ const ReportPagination = ({
           onClick={() => onPageChange(1)}
           disabled={currentPage === 1}
           className="h-8 w-8 p-0 rounded-lg"
-          title="First page"
+          title={t('reports.pagination.firstPage')}
         >
           <ChevronsLeft className="w-4 h-4" />
         </Button>
@@ -76,7 +79,7 @@ const ReportPagination = ({
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
           className="h-8 w-8 p-0 rounded-lg"
-          title="Previous page"
+          title={t('reports.pagination.previousPage')}
         >
           <ChevronLeft className="w-4 h-4" />
         </Button>
@@ -103,7 +106,7 @@ const ReportPagination = ({
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
           className="h-8 w-8 p-0 rounded-lg"
-          title="Next page"
+          title={t('reports.pagination.nextPage')}
         >
           <ChevronRight className="w-4 h-4" />
         </Button>
@@ -114,7 +117,7 @@ const ReportPagination = ({
           onClick={() => onPageChange(totalPages)}
           disabled={currentPage === totalPages}
           className="h-8 w-8 p-0 rounded-lg"
-          title="Last page"
+          title={t('reports.pagination.lastPage')}
         >
           <ChevronsRight className="w-4 h-4" />
         </Button>

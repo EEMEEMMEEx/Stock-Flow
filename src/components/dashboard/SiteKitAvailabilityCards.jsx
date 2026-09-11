@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/dialog';
 import { useAuth } from '@/contexts/AuthContext';
 import toast from 'react-hot-toast';
+import { useTranslation } from '@/i18n';
 import { 
   saveCategoryBom, 
   resetCategoryBomToDefault, 
@@ -26,6 +27,7 @@ import SiteKitCategoryCard, { resolveCategoryVisuals } from './SiteKitCategoryCa
 const COMMON_UNITS = ['ชิ้น', 'ชุด', 'เมตร', 'ลูก', 'ต้น', 'เครื่อง', 'กล่อง', 'ม้วน', 'แพ็ค'];
 
 const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh }) => {
+  const { t } = useTranslation();
   const { isAdmin, can } = useAuth();
   const canEditBom = isAdmin || can('roles.manage_permissions') || can('items.update');
 
@@ -367,7 +369,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
     try {
       setSaving(true);
       await saveCategoryBom(selectedCategory.category_id, cleanBomDraft);
-      toast.success(`BOM specification for ${selectedCategory.category_name} saved successfully`);
+      toast.success(t('siteKits.saveSuccess', { name: selectedCategory.category_name }));
       setIsEditing(false);
 
       // Keep the dialog in sync so the new BOM items and Spare Equipment are visible immediately.
@@ -422,7 +424,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
       }
     } catch (error) {
       console.error('Error saving BOM:', error);
-      toast.error(error.message || 'Failed to save BOM specification');
+      toast.error(error.message || t('siteKits.saveFailed'));
     } finally {
       setSaving(false);
     }
@@ -430,14 +432,14 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
 
   const handleResetDefault = async () => {
     if (!selectedCategory) return;
-    if (!window.confirm(`Are you sure you want to reset the BOM specification for "${selectedCategory.category_name}" to factory default?`)) {
+    if (!window.confirm(t('siteKits.resetConfirm', { name: selectedCategory.category_name }))) {
       return;
     }
 
     try {
       setResetting(true);
       await resetCategoryBomToDefault(selectedCategory.category_id);
-      toast.success(`Reset default BOM specification for ${selectedCategory.category_name} successfully`);
+      toast.success(t('siteKits.resetSuccess', { name: selectedCategory.category_name }));
       setIsEditing(false);
 
       if (onRefresh) {
@@ -446,7 +448,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
       setSelectedCategory(null);
     } catch (error) {
       console.error('Error resetting BOM to default:', error);
-      toast.error(error.message || 'Failed to reset default BOM specification');
+      toast.error(error.message || t('siteKits.resetFailed'));
     } finally {
       setResetting(false);
     }
@@ -536,22 +538,22 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                     </DialogTitle>
                     {isEditing ? (
                       <Badge className="bg-blue-600 text-white text-[11px] font-bold px-2 py-0.5 rounded-md">
-                        {bomView === 'spare' ? 'Edit Spare Equipment (Admin)' : 'Edit BOM Mode (Admin)'}
+                        {bomView === 'spare' ? t('siteKits.editSpareAdmin') : t('siteKits.editBomAdmin')}
                       </Badge>
                     ) : (
                       <Badge variant="outline" className="text-[11px] font-semibold border-emerald-500/40 text-emerald-700 dark:text-emerald-300">
-                        {selectedCategory?.complete_sets} {selectedCategory?.complete_sets === 1 ? 'complete set' : 'complete sets'} assembled
+                        {t('siteKits.completeSetsAssembled', { count: selectedCategory?.complete_sets || 0 })}
                       </Badge>
                     )}
                   </div>
                   <DialogDescription className="text-xs text-muted-foreground mt-0.5">
                     {isEditing 
                       ? (bomView === 'spare' 
-                          ? 'Customize spare equipment items, add new items, and configure allocation.' 
-                          : 'Customize items used in the installation kit, quantity specs, and mandatory requirements per kit.')
+                          ? t('siteKits.editSpareDesc')
+                          : t('siteKits.editBomDesc'))
                       : (bomView === 'spare'
-                          ? 'Spare equipment items and remaining spare stock after kit assembly.'
-                          : 'Compare actual available stock against requirements per 1 installation site.')}
+                          ? t('siteKits.viewSpareDesc')
+                          : t('siteKits.viewBomDesc'))}
                   </DialogDescription>
                 </div>
               </div>
@@ -566,7 +568,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                     className="rounded-lg h-9 px-3 gap-1.5 text-xs font-medium border-blue-500/30 text-blue-700 dark:text-blue-300 hover:bg-blue-500/10 cursor-pointer shadow-xs"
                   >
                     <PenLine className="w-3.5 h-3.5" />
-                    <span>{bomView === 'spare' ? 'Edit Spare Equipment' : 'Edit BOM Specification'}</span>
+                    <span>{bomView === 'spare' ? t('siteKits.editSpareBtn') : t('siteKits.editBomBtn')}</span>
                   </Button>
                 )}
 
@@ -580,7 +582,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                       className="rounded-lg h-9 px-3 gap-1.5 text-xs font-medium text-muted-foreground hover:text-rose-600 border-border hover:bg-rose-500/10 cursor-pointer shadow-xs"
                     >
                       <RotateCcw className={`w-3.5 h-3.5 ${resetting ? 'animate-spin' : ''}`} />
-                      <span>Reset to Default</span>
+                      <span>{t('siteKits.resetDefault')}</span>
                     </Button>
 
                     <Button
@@ -590,7 +592,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                       onClick={() => setIsEditing(false)}
                       className="rounded-lg h-9 px-3 text-xs font-medium text-muted-foreground hover:bg-muted cursor-pointer"
                     >
-                      <span>Cancel</span>
+                      <span>{t('common.cancel')}</span>
                     </Button>
 
                     <Button
@@ -600,7 +602,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                       className="rounded-lg h-9 px-4 gap-1.5 text-xs font-medium bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer shadow-xs"
                     >
                       <Save className={`w-3.5 h-3.5 ${saving ? 'animate-spin' : ''}`} />
-                      <span>{saving ? 'Saving...' : 'Save Changes'}</span>
+                      <span>{saving ? t('common.loading') : t('common.save')}</span>
                     </Button>
                   </div>
                 )}
@@ -626,7 +628,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                Complete Set
+                {t('siteKits.completeSetTab')}
                 {bomView === 'complete' && (
                   <span className="absolute inset-x-0 -bottom-px h-0.5 bg-emerald-600 dark:bg-emerald-400" />
                 )}
@@ -642,7 +644,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                Spare Equipment
+                {t('siteKits.spareEquipmentTab')}
                 {bomView === 'spare' && (
                   <span className="absolute inset-x-0 -bottom-px h-0.5 bg-emerald-600 dark:bg-emerald-400" />
                 )}
@@ -660,7 +662,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                 <div className="flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 px-4 text-xs text-blue-800 dark:text-blue-300">
                   <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
                   <span>
-                    Items required for a complete installation set. Moving any item to Spare Equipment will automatically remove it from the Complete Set.
+                    {t('siteKits.completeSetNotice')}
                   </span>
                 </div>
 
@@ -668,12 +670,12 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                   <table className="w-full text-left text-xs border-collapse">
                     <thead className="bg-muted/70 text-muted-foreground font-bold border-b border-border/70">
                       <tr>
-                        <th className="py-2.5 px-2 w-16 text-center">#</th>
-                        <th className="py-2.5 px-3 min-w-[200px]">Item in Complete Set / Part Number</th>
-                        <th className="py-2.5 px-3 text-center w-28">Qty / Site</th>
-                        <th className="py-2.5 px-3 text-center w-28">Unit</th>
-                        <th className="py-2.5 px-3 text-center w-32">Kit Category</th>
-                        <th className="py-2.5 px-3 text-center w-14">Action</th>
+                        <th className="py-2.5 px-2 w-16 text-center">{t('siteKits.thSeq')}</th>
+                        <th className="py-2.5 px-3 min-w-[200px]">{t('siteKits.thItemPart')}</th>
+                        <th className="py-2.5 px-3 text-center w-28">{t('siteKits.thQtySite')}</th>
+                        <th className="py-2.5 px-3 text-center w-28">{t('siteKits.thUnit')}</th>
+                        <th className="py-2.5 px-3 text-center w-32">{t('siteKits.thKitCategory')}</th>
+                        <th className="py-2.5 px-3 text-center w-14">{t('siteKits.thAction')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border/40">
@@ -850,7 +852,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                 <div className="flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 px-4 text-xs text-blue-800 dark:text-blue-300">
                   <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
                   <span>
-                    Spare Equipment items are automatically separated from Complete Sets and do not limit the complete set count.
+                    {t('siteKits.spareNotice')}
                   </span>
                 </div>
 
@@ -858,13 +860,13 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                   <table className="w-full text-left text-xs border-collapse">
                     <thead className="bg-muted/70 text-muted-foreground font-bold border-b border-border/70">
                       <tr>
-                        <th className="py-2.5 px-2 w-16 text-center">#</th>
-                        <th className="py-2.5 px-3 min-w-[200px]">Item in Spare / Part Number</th>
-                        <th className="py-2.5 px-3 text-center w-24">Qty / Site</th>
-                        <th className="py-2.5 px-3 text-center w-24">Unit</th>
-                        <th className="py-2.5 px-3 text-center w-32">Kit Category</th>
-                        <th className="py-2.5 px-3 text-center w-28">Stock / Spare</th>
-                        <th className="py-2.5 px-3 text-center w-12">Action</th>
+                        <th className="py-2.5 px-2 w-16 text-center">{t('siteKits.thSeq')}</th>
+                        <th className="py-2.5 px-3 min-w-[200px]">{t('siteKits.thItemPart')}</th>
+                        <th className="py-2.5 px-3 text-center w-24">{t('siteKits.thQtySite')}</th>
+                        <th className="py-2.5 px-3 text-center w-24">{t('siteKits.thUnit')}</th>
+                        <th className="py-2.5 px-3 text-center w-32">{t('siteKits.thKitCategory')}</th>
+                        <th className="py-2.5 px-3 text-center w-28">{t('siteKits.thAvailableStock')}</th>
+                        <th className="py-2.5 px-3 text-center w-12">{t('siteKits.thAction')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border/40">
@@ -1058,12 +1060,12 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                 <table className="w-full text-left text-xs border-collapse">
                   <thead className="bg-muted/70 text-muted-foreground font-bold border-b border-border/70">
                     <tr>
-                      <th className="py-2.5 px-3 w-12 text-center">#</th>
-                      <th className="py-2.5 px-3">Item in Complete Set</th>
-                      <th className="py-2.5 px-3 text-center w-24">Qty / Site</th>
-                      <th className="py-2.5 px-3 text-center w-24">Actual Stock</th>
-                      <th className="py-2.5 px-3 text-center w-24">Sets Possible</th>
-                      <th className="py-2.5 px-3 text-center w-24">Status</th>
+                      <th className="py-2.5 px-3 w-12 text-center">{t('siteKits.thSeq')}</th>
+                      <th className="py-2.5 px-3">{t('siteKits.thItemPart')}</th>
+                      <th className="py-2.5 px-3 text-center w-24">{t('siteKits.thQtySite')}</th>
+                      <th className="py-2.5 px-3 text-center w-24">{t('siteKits.thAvailableStock')}</th>
+                      <th className="py-2.5 px-3 text-center w-24">{t('siteKits.thSetsPossible')}</th>
+                      <th className="py-2.5 px-3 text-center w-24">{t('siteKits.thStatus')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/40">
@@ -1140,12 +1142,12 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                 <table className="w-full text-left text-xs border-collapse">
                   <thead className="bg-muted/70 text-muted-foreground font-bold border-b border-border/70">
                     <tr>
-                      <th className="py-2.5 px-3 w-12 text-center">No.</th>
-                      <th className="py-2.5 px-3">Equipment</th>
-                      <th className="py-2.5 px-3 text-center w-28">Required / site</th>
-                      <th className="py-2.5 px-3 text-center w-24">Stock</th>
-                      <th className="py-2.5 px-3 text-center w-32">Complete set stock</th>
-                      <th className="py-2.5 px-3 text-center w-24">Spare</th>
+                      <th className="py-2.5 px-3 w-12 text-center">{t('siteKits.thSeq')}</th>
+                      <th className="py-2.5 px-3">{t('siteKits.thItemPart')}</th>
+                      <th className="py-2.5 px-3 text-center w-28">{t('siteKits.thQtySite')}</th>
+                      <th className="py-2.5 px-3 text-center w-24">{t('siteKits.thAvailableStock')}</th>
+                      <th className="py-2.5 px-3 text-center w-32">{t('siteKits.completeSetTab')}</th>
+                      <th className="py-2.5 px-3 text-center w-24">{t('siteKits.spareEquipmentTab')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/40">

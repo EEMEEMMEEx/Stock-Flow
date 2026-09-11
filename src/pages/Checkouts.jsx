@@ -93,11 +93,11 @@ const Checkouts = () => {
       }
     } catch (err) {
       console.error('Error fetching checkout data:', err);
-      toast.error('Failed to load checkout/return data');
+      toast.error(t('checkouts.toasts.loadFailed'));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchCheckoutData();
@@ -129,7 +129,7 @@ const Checkouts = () => {
       )
       .subscribe();
 
-    const handleVisibilityChange = () => {
+  const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         fetchCheckoutData();
       }
@@ -145,7 +145,7 @@ const Checkouts = () => {
   // Modal triggers
   const handleOpenReturnModal = (order) => {
     if (!canReturn) {
-      toast.error('You do not have permission to return items (checkouts.return required)');
+      toast.error(t('checkouts.toasts.noReturnPermission'));
       return;
     }
     setSelectedOrderForReturn(order);
@@ -153,10 +153,6 @@ const Checkouts = () => {
   };
 
   const handleOpenExtendModal = (order) => {
-    if (!canExtend) {
-      toast.error('You do not have permission to extend return due dates (checkouts.extend required)');
-      return;
-    }
     setSelectedOrderForExtend(order);
     setIsExtendModalOpen(true);
   };
@@ -167,21 +163,20 @@ const Checkouts = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-16">
-
-      {/* Header & Action Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2.5 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400">
-              <RotateCcw className="w-6 h-6" />
-            </div>
-            <div>
+    <div className="space-y-6">
+      {/* Top Header with Quick Actions */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-border pb-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/60 shadow-xs">
+            <RotateCcw className="w-6 h-6" />
+          </div>
+          <div>
+            <div className="space-y-0.5">
               <h1 className="text-2xl font-bold text-foreground tracking-tight flex items-center gap-2">
-                <span>{t('checkouts.title', 'Equipment & Tool Checkouts')}</span>
+                <span>{t('checkouts.title')}</span>
               </h1>
               <p className="text-xs text-muted-foreground">
-                {t('checkouts.subtitle', 'Manage tool and equipment loans, track return due dates, extend loan durations, and log asset conditions')}
+                {t('checkouts.subtitle')}
               </p>
             </div>
           </div>
@@ -196,7 +191,7 @@ const Checkouts = () => {
             className="rounded-lg h-9 px-3 gap-1.5 border-input hover:bg-accent text-xs font-semibold cursor-pointer shadow-2xs"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-            <span>{loading ? t('common.loading', 'Loading...') : t('common.refresh', 'Refresh')}</span>
+            <span>{loading ? t('common.loading') : t('common.refresh')}</span>
           </Button>
 
           {activeTab !== 'pos' && canCreate && (
@@ -206,7 +201,7 @@ const Checkouts = () => {
               className="rounded-lg h-9 px-4 bg-indigo-600 hover:bg-indigo-700 text-white text-xs gap-1.5 font-semibold cursor-pointer shadow-xs transition-colors"
             >
               <Plus className="w-4 h-4" />
-              <span>{t('checkouts.newCheckout', 'New Checkout')}</span>
+              <span>{t('checkouts.newCheckout')}</span>
             </Button>
           )}
         </div>
@@ -223,7 +218,7 @@ const Checkouts = () => {
             }`}
         >
           <Clock className="w-3.5 h-3.5" />
-          <span>{t('checkouts.activeCheckouts', 'Active Loans')}</span>
+          <span>{t('checkouts.activeTab')}</span>
           {orders.filter(o => o.status !== 'completed').length > 0 && (
             <span className="px-1.5 py-0.2 rounded-md bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 text-[10px] font-mono font-bold">
               {orders.filter(o => o.status !== 'completed').length}
@@ -241,7 +236,7 @@ const Checkouts = () => {
               }`}
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>{t('checkouts.newCheckout', 'Checkout (POS)')}</span>
+            <span>{t('checkouts.posTab')}</span>
           </button>
         )}
 
@@ -254,7 +249,7 @@ const Checkouts = () => {
             }`}
         >
           <History className="w-3.5 h-3.5" />
-          <span>{t('checkouts.loanHistory', 'History')}</span>
+          <span>{t('checkouts.historyTab')}</span>
         </button>
       </div>
 

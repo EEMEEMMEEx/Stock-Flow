@@ -6,8 +6,10 @@ import { Label } from '@/components/ui/label';
 import { KeyRound, Eye, EyeOff, Save, RefreshCw, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
 import { validatePasswordPolicy, generateStrongPassword } from '@/lib/passwordPolicy';
 import toast from 'react-hot-toast';
+import { useTranslation } from '@/i18n';
 
 const DefaultPasswordManager = ({ canUpdate }) => {
+  const { t } = useTranslation();
   const [status, setStatus] = useState({ configured: false, updated_at: null });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -107,10 +109,10 @@ const DefaultPasswordManager = ({ canUpdate }) => {
           <KeyRound className="w-5 h-5 text-purple-600 dark:text-purple-400 shrink-0" />
           <div>
             <h4 className="text-sm font-bold text-foreground">
-              Default Reset Password
+              {t('settings.defaultPassword.title')}
             </h4>
             <p className="text-[11px] text-muted-foreground">
-              Temporary password assigned when an administrator resets a user&apos;s password. The configured password is encrypted securely on the server and cannot be viewed retrospectively.
+              {t('settings.defaultPassword.description')}
             </p>
           </div>
         </div>
@@ -118,16 +120,16 @@ const DefaultPasswordManager = ({ canUpdate }) => {
         {/* Status Badge */}
         <div className="shrink-0">
           {loading ? (
-            <span className="text-[11px] text-muted-foreground animate-pulse">Checking status...</span>
+            <span className="text-[11px] text-muted-foreground animate-pulse">{t('common.loading')}</span>
           ) : status.configured ? (
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
               <CheckCircle2 className="w-3.5 h-3.5" />
-              Configured
+              {t('status.active')}
             </span>
           ) : (
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 border border-zinc-500/30">
               <XCircle className="w-3.5 h-3.5" />
-              Not Configured
+              {t('status.inactive')}
             </span>
           )}
         </div>

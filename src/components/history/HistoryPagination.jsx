@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { useTranslation } from '@/i18n';
 
 const HistoryPagination = ({
   currentPage = 1,
@@ -9,6 +10,7 @@ const HistoryPagination = ({
   onPageChange,
   onPageSizeChange
 }) => {
+  const { t } = useTranslation();
   if (totalItems === 0) return null;
 
   const startItem = (currentPage - 1) * pageSize + 1;
@@ -35,14 +37,14 @@ const HistoryPagination = ({
       {/* Items count summary */}
       <div className="flex items-center gap-3 text-muted-foreground font-medium">
         <span>
-          Showing <strong className="text-foreground font-bold">{startItem}</strong> to{' '}
-          <strong className="text-foreground font-bold">{endItem}</strong> of{' '}
-          <strong className="text-foreground font-bold">{totalItems.toLocaleString()}</strong> records
+          {t('history.showing', 'Showing')} <strong className="text-foreground font-bold">{startItem}</strong> {t('history.to', 'to')}{' '}
+          <strong className="text-foreground font-bold">{endItem}</strong> {t('history.of', 'of')}{' '}
+          <strong className="text-foreground font-bold">{totalItems.toLocaleString()}</strong> {t('history.results', 'records')}
         </span>
 
         {/* Page size select */}
         <div className="flex items-center gap-1.5 ml-2 border-l border-border/60 pl-3">
-          <span className="text-[11px]">Per page:</span>
+          <span className="text-[11px]">{t('history.rowsPerPage', 'Per page')}:</span>
           <select
             value={pageSize}
             onChange={(e) => onPageSizeChange(Number(e.target.value))}

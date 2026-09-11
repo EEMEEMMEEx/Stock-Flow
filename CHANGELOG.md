@@ -1,4 +1,103 @@
 # Changelog
+## [2026-09-11 17:10] - v1.8.5
+- **Files Modified:** `package.json`, `CHANGELOG.md`, `src/pages/Checkouts.jsx`, `src/components/checkouts/CheckoutActiveList.jsx`, `src/components/checkouts/CheckoutHistoryList.jsx`, `src/components/checkouts/CheckoutReturnModal.jsx`, `src/components/checkouts/CheckoutDetailModal.jsx`, `src/components/checkouts/CheckoutExtendModal.jsx`, `src/components/checkouts/CheckoutPosTerminal.jsx`, `src/pages/Items.jsx`, `src/components/items/TransferItemDialog.jsx`, `src/i18n/locales/en.js`, `src/i18n/locales/th.js`
+- **Changes:**
+  - ยกระดับการแปลภาษาหน้าจัดการอุปกรณ์และคลังพัสดุ `/items` และหน้ายืม-คืนอุปกรณ์ `/checkouts` ให้ครอบคลุมภาษาไทย 100% (Full i18n Coverage) ด้วย `i18next + react-i18next`
+  - แทนที่ข้อความภาษาอังกฤษฮาร์ดโค้ดทั้งหมดด้วย Translation Keys และกำจัด Inline Fallback Strings ตามกฎ Single Source of Truth (`en.js` และ `th.js`)
+  - **หน้าจัดการพัสดุและรายการหลัก (`/items` & `TransferItemDialog.jsx`):**
+    - แปลงส่วนหัว (Title & Subtitle), ปุ่ม Refresh / Syncing
+    - แปลงการ์ดตัวชี้วัด Operational KPIs ทั้ง 4 ใบ (Total Master Items, Total Stock Balance, Active Storage Locations, Categories) และหน่วยนับ (items, units, locations, categories, parents, children)
+    - แปลงแถบตัวกรองและควบคุมมุมมอง (Search Placeholder, Dropdown ตัวกรองหมวดหมู่พัสดุและสถานที่จัดเก็บ, ปุ่มสลับ Table/Grid, สรุปจำนวนรายการที่กรองได้, ปุ่ม Expand/Collapse All, ปุ่มล้างตัวกรองทั้งหมด)
+    - แปลงหัวตารางและเนื้อหาตาราง (Image, Item Name, Model, Category, Source Local/Import, Vendor, Location, Current Stock, Unit, Actions, Child/Parent Badges, No Location/No Project)
+    - แปลง Tooltips การเรียงลำดับและการทำงาน (Sort by ..., Expand/Collapse, Stock Adjustment History, Transfer Location, Edit Master Item, Delete Item)
+    - แปลงการแสดงผลแบบการ์ด Bento Grid
+    - แปลงแถบ Pagination ส่วนท้าย (Page X of Y, Rows per page selector, ตัวนับจำนวนกลุ่มและรายการ)
+    - แปลงกล่องข้อความและแบบฟอร์ม Dialog ทั้งหมด (Edit Master Item, Delete Item Confirmation, Force Delete, Stock Adjustment History, Transfer Item Dialog)
+    - แปลงข้อความแจ้งเตือน Toast ทุกกรณี (โหลดข้อมูล, อัปโหลดรูปภาพ R2, แก้ไขข้อมูลพัสดุ, ปรับยอดสต็อก, ตรวจสอบสิทธิ์, ลบพัสดุ, และโอนย้ายพัสดุข้ามคลัง)
+  - **หน้ายืม-คืนอุปกรณ์ (`/checkouts` และคอมโพเนนต์ย่อยทั้งหมด):**
+    - `CheckoutReturnModal.jsx`: แปลงแบบฟอร์มการคืนพัสดุ การเลือกสภาพพัสดุ (Normal, Damaged, Lost) และการคำนวณยอดคืน
+    - `CheckoutActiveList.jsx`: แปลงรายการยืมที่ยังเปิดอยู่ ป้ายสถานะ Overdue, Due Soon, On Schedule, Indefinite Loan และปุ่มจัดการ
+    - `CheckoutHistoryList.jsx`: แปลงประวัติการยืม-คืนที่เสร็จสิ้น ช่องค้นหาประวัติ และป้ายสถานะ Fully Returned
+    - `CheckoutDetailModal.jsx`: แปลงรายละเอียดใบยืม-คืน ตารางรายการพัสดุ บันทึกประวัติการคืนและขยายเวลา พร้อมแจ้งเตือน Toast การพิมพ์ PDF ใบยืมและใบรับคืน
+    - `CheckoutExtendModal.jsx`: แปลงฟอร์มขยายกำหนดส่งคืน ปุ่มลัดวันยืมด่วน (+3, +7, +14, +30 วัน) ตัวเลือกยืมแบบไม่มีกำหนด และสถานะพรีวิว
+    - `CheckoutPosTerminal.jsx`: แปลงหน้าจอเบิกยืมอุปกรณ์ การเลือกผู้ยืม (พนักงาน / บุคคลภายนอก) ตัวเลือกลักษณะการยืม การกรอก Serial Number ทั้งแบบเดี่ยวและ Batch Paste พร้อมข้อความแจ้งเตือนความถูกต้องของสต็อก
+  - ขยายพจนานุกรมคำศัพท์สู่ 1,386 คีย์ ตรวจสอบความถูกต้องและ Parity ผ่าน `node scripts/check-i18n-parity.mjs` (100% Key Parity ระหว่าง `en.js` และ `th.js`, 0 Missing keys, 0 Orphan keys)
+  - ตรวจสอบการ Build สำเร็จสมบูรณ์ไร้ข้อผิดพลาด (`npm run build` PASS)
+- **Reason:** แปลงข้อความ UI และระบบการแจ้งเตือนทั้งหมดใน `/checkouts` และ `/items` ให้เป็นภาษาไทย 100% ตามคำขอของผู้ใช้ โดยไม่มีข้อความภาษาอังกฤษฮาร์ดโค้ดหรือ Raw Translation Keys คงค้าง พร้อมคงการทำงาน Business Logic เดิมอย่างสมบูรณ์
+
+## [2026-09-11 16:20] - v1.8.4
+- **Files Modified:** `package.json`, `CHANGELOG.md`, `src/pages/Reports.jsx`, `src/components/reports/ReportHeader.jsx`, `src/components/reports/ReportKpiGrid.jsx`, `src/components/reports/ReportFilterBar.jsx`, `src/components/reports/ReportCharts.jsx`, `src/components/reports/ReportDataTable.jsx`, `src/components/reports/ReportPagination.jsx`, `src/components/reports/ReportEmptyState.jsx`, `src/components/reports/ReportSiteKits.jsx`, `src/i18n/locales/en.js`, `src/i18n/locales/th.js`, `docs/reports-i18n-100-coverage-plan.md`
+- **Changes:**
+  - ยกระดับการแปลภาษาในหน้ารายงานและสถิติคลังพัสดุ `/reports` (`src/pages/Reports.jsx` และ 8 คอมโพเนนต์ย่อยใน `src/components/reports/`) สู่ความครอบคลุม 100% (Full i18n Coverage) ด้วย `i18next + react-i18next`
+  - แทนที่ข้อความภาษาอังกฤษฮาร์ดโค้ดทั้งหมดด้วย Translation Keys ใต้กลุ่ม `reports.*` โดยไม่มีการใช้ inline English fallback ตามมาตรฐาน Single Source of Truth (`en.js` และ `th.js`)
+  - ครอบคลุมทุกส่วนการทำงาน:
+    - **Header & Navigation:** ชื่อรายงาน (`reports.title`), คำอธิบาย (`reports.subtitle`), ป้ายกำกับ Live Analytics, แท็บทั้ง 4 แท็บ (Stock-In, Withdrawals, Stock Balance, Site Kits BOM), ปุ่ม Refresh, ปุ่มส่งออก PDF / Excel, และตัวนับจำนวนเรคคอร์ด
+    - **Operational KPI Grid:** การ์ดตัวชี้วัดสรุป 6 ใบ (Total Report Records, Total Stock-In, Total Stock-Out, Current Balance, Shortages / Low Stock Warnings, Selected Project), ป้ายสถานะ (Badge), ข้อความขอบเขต และคำอธิบายย่อย
+    - **Filter Toolbar:** ส่วนหัวตัวกรอง, สลับแสดง/ซ่อนกราฟ, ล้างตัวกรอง, ดรอปดาวน์โครงการและสถานที่จัดเก็บ, ตัวเลือกช่วงวันที่, ช่องค้นหาผู้จัดจำหน่าย/เลข PO/ชื่อพัสดุ, ตัวกรองสถานะการเบิกจ่าย, หมวดหมู่พัสดุ, ปุ่มดึงข้อมูลรายงาน, และช่วงเวลาด่วน (Today, Last 7 days, Last 30 days, This month)
+    - **Visual Analytics (Recharts):** ชื่อกราฟแท่งและกราฟวงกลม, คำอธิบายแกนตัวเลข/จำนวน, สถานะพัสดุ (In Stock, Low/Zero Stock, Approved, Completed, Pending, Shortage, Rejected), และ Tooltip labels
+    - **Detailed Data Table:** หัวตารางทั้งหมด (Received Date, Project, Item/Model, Supplier, PO #, Stock In Qty, Requested Date, Item Name, Requester, Status, Requested, Stock Deducted, Shortage, Total In, Total Out, Current Balance), Model prefix, การแมปสถานะคำขอเบิกจ่ายและแท็กขาดแคลนแบบสองภาษา
+    - **Pagination & Empty State:** ข้อความแสดงลำดับหน้า (`Showing X to Y of Z records`), ตัวเลือกจำนวนแถวต่อหน้า, Tooltips ปุ่มเลื่อนหน้าทั้งหมด, และกล่องแจ้งเตือนไม่พบข้อมูลพร้อมปุ่มรีเซ็ต
+    - **Site Kits BOM Report:** แท็บหมวดหมู่อุปกรณ์และตัวนับชุด, การ์ดสรุปความพร้อมและชิ้นส่วนจำกัด (Bottlenecks / Limiting prefix), ตารางสเปก BOM พร้อมสถานะความพร้อม (Out of Stock, Limiting Stock, Ready, Complete)
+    - **Export & Toasts:** การแจ้งเตือน Toast การส่งออก Excel / PDF ทั้งหมด, ตรวจสอบสิทธิ์ `reports.export`, แปลงชื่อหัวคอลัมน์และชื่อชีตในไฟล์ Excel แบบ Localization
+  - ตรวจสอบความถูกต้องของคีย์แปลภาษาผ่าน `node scripts/check-i18n-parity.mjs` (1,163 คีย์เท่ากัน 100%, 0 Missing keys, 0 Orphan keys)
+  - ทดสอบการ Build สำหรับ Production สำเร็จสมบูรณ์ (`npm run build` PASS)
+- **Reason:** แปลงข้อความ UI ทั้งหมดในหน้า `/reports` ให้เป็นภาษาไทย 100% ครบถ้วนทุกองค์ประกอบโดยไม่มีข้อความภาษาอังกฤษฮาร์ดโค้ดหรือ Raw Translation Keys คงค้าง พร้อมรักษาการทำงานและเลย์เอาต์เดิมอย่างสมบูรณ์
+
+## [2026-09-11 15:45] - v1.8.3
+- **Files Modified:** `package.json`, `CHANGELOG.md`, `src/pages/Profile.jsx`, `src/i18n/locales/en.js`, `src/i18n/locales/th.js`
+- **Changes:**
+  - แปลงข้อความ UI ทั้งหมดในหน้าโปรไฟล์ส่วนตัว `/profile` (`src/pages/Profile.jsx`) เป็นภาษาไทย 100% (Full i18n Coverage) ด้วย `i18next + react-i18next`
+  - แทนที่ข้อความภาษาอังกฤษที่ฮาร์ดโค้ดทั้งหมดด้วย Translation Keys ผ่านฟังก์ชัน `t('key')` ตามมาตรฐาน Single Source of Truth (`en.js` และ `th.js`)
+  - ครอบคลุมทุกองค์ประกอบบนหน้าจอ: Page Title/Subtitle, Change photo tooltip, Default username fallback, Active account badge, Navigation tabs (Personal Info, Change Password), Form section header, Field labels และ Placeholders (Full Name, Email, Phone, Position, Display Language, New Password, Confirm Password), Read-only section & fields (Username, System Role, Assigned Projects), และปุ่ม Action (Saving, Save Profile, Updating password, Update Password)
+  - แปลงข้อความแจ้งเตือน Toast ทั้งหมดเป็นภาษาไทยและรองรับ interpolation (`waitEmailCooldown`, `emailUpdateFailed`, `emailConfirmationSent`, `profileUpdated`, `passwordChanged`, etc.)
+  - ตรวจสอบความถูกต้องของคีย์แปลภาษาผ่าน `check-i18n-parity.mjs` (1003 คีย์เท่ากัน 100%, ไม่มี Missing หรือ Orphan keys)
+- **Reason:** แปลงข้อความ UI และการแจ้งเตือนในหน้า `/profile` ให้เป็นภาษาไทย 100% โดยไม่มีข้อความภาษาอังกฤษฮาร์ดโค้ดหรือ raw keys ค้างบนหน้าจอ
+
+## [2026-09-11 15:30] - v1.8.2
+- **Files Modified:** `package.json`, `CHANGELOG.md`, `src/pages/Manual.jsx`, `src/i18n/locales/en.js`, `src/i18n/locales/th.js`
+- **Changes:**
+  - ยกระดับการแปลภาษาในหน้าคู่มือการใช้งานระบบ `/manual` (`src/pages/Manual.jsx`) สู่ความครอบคลุม 100% (Full i18n Coverage) ด้วย `i18next + react-i18next`
+  - ย้ายข้อมูลเนื้อหาคู่มือทั้ง 11 หมวดหมู่ (Navigation & RBAC, POS Terminal, Status Lifecycle, Checkouts & Returns, Supervisor Approval, Stock In & CSV Import, Stock Adjustment & Transfer, Projects & Items Master, User Management & Scopes, Dynamic RBAC at /roles, Reports & Audit Trail) ออกจาก hardcoded array สู่พจนานุกรมกลาง `en.js` (SSOT) และ `th.js`
+  - ปรับปรุงการเรียก `t('key')` แบบ Single Source of Truth ปลดการใช้ inline English fallback ทั้งหมด
+  - แปลง UI Chrome ทั้งหมดให้รองรับภาษาไทย 100% ได้แก่ Hero Badge, Role Matrix Cards (Staff, Supervisor, Admin), Search placeholder & Clear button, Quick Role Navigation filter tabs, Document counter (`showingDocs`), Search query status (`searchResultsFor`), Empty state text & button, Step-by-Step Instructions header, Pro-Tip & Warnings alerts, และ Footer support
+  - คงสภาพฟังก์ชันการทำงาน, การค้นหา (Search), การกรองตามบทบาท (Role Filter), Permission checks, การนำทาง (Navigate link) และเลย์เอาต์เดิมอย่างสมบูรณ์
+- **Reason:** แปลงข้อความ UI ในหน้า `/manual` เป็นภาษาไทย 100% โดยไม่มีข้อความภาษาอังกฤษฮาร์ดโค้ดค้างบนหน้าจอ
+
+## [2026-09-11 15:00] - v1.8.1
+- **Files Modified:** `package.json`, `CHANGELOG.md`, `src/i18n/LanguageProvider.jsx`, `src/pages/Dashboard.jsx`, `src/pages/RoleManagement.jsx`
+- **Changes:**
+  - แก้ไขปัญหา Translation Interpolation ในฟังก์ชัน `t()` ของ `LanguageProvider.jsx` ให้รองรับทั้งแบบ 2 พารามิเตอร์ `t(key, options)` และ 3 พารามิเตอร์ `t(key, defaultValue, options)` ป้องกันการตัด options ส่งผลให้ตัวแปร `{{count}}` และ `{{logicalCount}}` ถูก resolve และแสดงผลตัวเลขจริงได้อย่างถูกต้อง
+  - ปรับปรุงการเรียก `t('dashboard.projectsSubtext', { logicalCount, count })` และ `t('dashboard.itemsSubtext', { count })` ใน `Dashboard.jsx` และ `RoleManagement.jsx` ให้เป็นไปตามมาตรฐาน Single Source of Truth
+- **Reason:** แก้ไขปัญหาการแสดงผล placeholder ดิบ `{{count}}` และ `{{logicalCount}}` บน UI ให้ถูกต้องสมบูรณ์
+
+## [2026-09-11 14:15] - v1.8.0
+- **Files Modified:** `package.json`, `index.html`, `src/App.css`, `src/i18n/i18n.js`, `src/i18n/LanguageProvider.jsx`, `src/lib/i18n-format.js`, `src/i18n/locales/en.js`, `src/i18n/locales/th.js`, `scripts/check-i18n-parity.mjs`, `src/pages/auth/Login.jsx`, `src/components/layout/AppFooter.jsx`, `src/components/layout/Topbar.jsx`, `src/components/layout/Sidebar.jsx`, `src/components/common/ProjectLocationSelector.jsx`, `src/pages/Withdrawals.jsx`, `src/pages/StockIn.jsx`, `src/pages/Checkouts.jsx`, `src/pages/Items.jsx`, `src/components/items/TransferItemDialog.jsx`, `src/pages/Projects.jsx`, `src/pages/Reports.jsx`, `src/components/reports/*`, `src/pages/Settings.jsx`, `src/components/settings/DefaultPasswordManager.jsx`, `src/pages/Profile.jsx`, `src/components/users/AddUserModal.jsx`
+- **Changes:**
+  - ยกระดับระบบสองภาษาให้ครอบคลุม 100% (Full i18n Coverage) ด้วยสถาปัตยกรรม Single Source of Truth (`en.js` เป็น SSOT) ปลดการใช้ inline fallback และเรียกใช้ผ่าน `t('key')` ทั้งระบบ
+  - สร้างโมดูล Formatting กลาง `src/lib/i18n-format.js` รองรับการแสดงผลปี พ.ศ. (+543), วันที่ตาม Locale ภาษาไทย, การจัดรูปแบบตัวเลข/สกุลเงิน, และ Recharts Tooltip Formatter แบบ Dynamic
+  - ปรับปรุง Typography สำหรับภาษาไทยใน `index.html` และ `src/App.css` ติดตั้งฟอนต์ Google Fonts `Sarabun`, ปรับ `line-height: 1.6` และ safe text truncation ป้องกันข้อความภาษาไทยตัดตก
+  - สร้างสคริปต์ตรวจสอบความเท่ากันของคีย์อัตโนมัติ `scripts/check-i18n-parity.mjs` และผูกคำสั่ง `npm run check:i18n` สำหรับ CI/CD (ผลการตรวจ: 861 คีย์เท่ากัน 100% ไม่มี missing หรือ orphan)
+  - แปลภาษาและจัดระเบียบ Text/Labels ในโมดูลหลักทั้งหมด: Login, Layout, Projects, Items, Stock In, Requisitions, Checkouts, Reports, System Settings, User/Role Management และ Profile
+- **Reason:** ยกระดับประสบการณ์ใช้งานสองภาษา (ไทย ↔ อังกฤษ) แบบ 100% เต็มระบบตามข้อกำหนดความถูกต้อง ปลอดภัย และไม่กระทบต่อ Business Logic หรือ Database Schema เดิม
+
+## [2026-09-10 17:05] - v1.7.1
+- **Files Modified:** `package.json`, `CHANGELOG.md`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `src/components/layout/NotificationBell.jsx`
+- **Changes:**
+  - เพิ่ม dynamic translation key `notifications.srOnlyUnread` รองรับ dynamic `{{count}}` สำหรับ Screen Readers ทั้งภาษาไทยและภาษาอังกฤษ
+  - ปรับปรุง plural interpolation ใน `en.js` ตามมาตรฐาน CLDR ของ i18next (`srOnlyUnread_one` / `srOnlyUnread_other`, `daysAgo_one` / `daysAgo_other`)
+  - อัปเดต `NotificationBell.jsx` แทนที่ข้อความ hardcoded English `sr-only` ด้วยฟังก์ชัน `t()` แบบส่ง `{ count: unreadCount }` เพื่อแปลภาษาแบบ Dynamic โดยคงตัวแปร interpolation ไว้ครบถ้วน
+- **Reason:** ปรับปรุง dynamic `{{count}}` interpolation ให้ถูกต้องตามหลัก i18n และ Screen Reader Accessibility (A11y)
+
+- **Files Modified:** `package.json`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `src/pages/Dashboard.jsx`, `src/pages/History.jsx`, `src/pages/Manual.jsx`, `src/pages/RoleManagement.jsx`, `src/pages/UserManagement.jsx`, `src/components/checkouts/*`, `src/components/withdrawals/*`, `src/components/dashboard/*`, `src/components/layout/NotificationBell.jsx`
+- **Changes:**
+  - ทำ Full i18n Coverage 100% ครอบคลุมทั้งโปรเจกต์ (ภาษาไทย ↔ ภาษาอังกฤษ)
+  - เพิ่ม translation keys สมบูรณ์สำหรับโมดูล Checkouts (POS terminal, Multi-step wizard, active loans, return modal, extend loan, history list)
+  - เพิ่ม translation keys สมบูรณ์สำหรับโมดูล Withdrawals (POS requisition terminal, cart panel, shortages, rejection dialog, location breakdown, order status badges)
+  - เพิ่ม translation keys สำหรับโมดูล Dashboard (Stat cards, locale-aware number formatting, Site Installation Kits, BOM editor, Spare Equipment)
+  - เพิ่ม translation keys สำหรับ System Notification Bell (Header, Filter tabs, Relative time, Quick actions, Toasts, Badges)
+  - เพิ่ม translation keys สำหรับ Admin Modules (User Management, Role Management, User Manual, History)
+- **Reason:** ยกระดับระบบสองภาษาให้ครอบคลุม 100% ทุกหน้าจอและการแจ้งเตือนในระบบ โดยยังคงรักษา Business Logic, UI Layout และ Workflow เดิมไว้ทั้งหมดอย่างปลอดภัย
+
 ## [2026-09-10 15:46] - v1.6.0
 - **Files Modified:** `package.json`, `package-lock.json`, `src/i18n/i18n.js`, `src/i18n/LanguageProvider.jsx`, `src/i18n/index.js`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `src/pages/StockIn.jsx`, `src/pages/Items.jsx`, `src/pages/Withdrawals.jsx`, `src/pages/Settings.jsx`, `src/pages/Profile.jsx`, `src/pages/Projects.jsx`, `src/pages/Reports.jsx`
 - **Changes:**

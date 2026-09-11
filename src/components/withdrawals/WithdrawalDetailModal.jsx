@@ -6,6 +6,7 @@ import {
   Building2, User, MapPin, Package 
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { useTranslation } from '@/i18n';
 
 const WithdrawalDetailModal = ({
   order,
@@ -21,6 +22,7 @@ const WithdrawalDetailModal = ({
   onCompleteOrder,
   onDownloadPDF
 }) => {
+  const { t } = useTranslation();
   if (!order) return null;
 
   const isPending = order.status === 'pending';
@@ -40,10 +42,10 @@ const WithdrawalDetailModal = ({
               </div>
               <div>
                 <DialogTitle className="text-lg font-extrabold text-foreground tracking-tight flex items-center gap-2">
-                  <span>Requisition Request #{order.id?.slice(0, 8)}</span>
+                  <span>{t('withdrawals.requisitionRequest', 'Requisition Request')} #{order.id?.slice(0, 8)}</span>
                 </DialogTitle>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Created at: {order.requested_at ? format(new Date(order.requested_at), 'dd/MM/yyyy HH:mm:ss') : '-'}
+                  {t('withdrawals.createdAt', 'Created at')}: {order.requested_at ? format(new Date(order.requested_at), 'dd/MM/yyyy HH:mm:ss') : '-'}
                 </p>
               </div>
             </div>
@@ -52,23 +54,23 @@ const WithdrawalDetailModal = ({
             <div className="shrink-0">
               {isPending && (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
-                  <Clock className="w-3.5 h-3.5" /> Pending Admin Approval
+                  <Clock className="w-3.5 h-3.5" /> {t('withdrawals.pendingApproval', 'Pending Admin Approval')}
                 </span>
               )}
               {isApproved && (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30">
-                  <CheckCircle2 className="w-3.5 h-3.5" /> Approved (Pending Delivery)
-                  {hasShortage && <span className="text-amber-500 font-extrabold">*Shortage</span>}
+                  <CheckCircle2 className="w-3.5 h-3.5" /> {t('withdrawals.approvedPendingDelivery', 'Approved (Pending Delivery)')}
+                  {hasShortage && <span className="text-amber-500 font-extrabold">*{t('withdrawals.shortage', 'Shortage')}</span>}
                 </span>
               )}
               {isCompleted && (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
-                  <CheckCircle2 className="w-3.5 h-3.5" /> Receipt Completed
+                  <CheckCircle2 className="w-3.5 h-3.5" /> {t('withdrawals.receiptCompleted', 'Receipt Completed')}
                 </span>
               )}
               {isRejected && (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30">
-                  <XCircle className="w-3.5 h-3.5" /> Request Rejected
+                  <XCircle className="w-3.5 h-3.5" /> {t('withdrawals.requestRejected', 'Request Rejected')}
                 </span>
               )}
             </div>
@@ -83,7 +85,7 @@ const WithdrawalDetailModal = ({
                   <div className="w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[11px] font-mono">
                     1
                   </div>
-                  <span>Request Submitted</span>
+                  <span>{t('withdrawals.stepRequestSubmitted', 'Request Submitted')}</span>
                 </div>
 
                 <div className={`flex-1 h-1 mx-3 rounded-full ${isApproved || isCompleted ? 'bg-indigo-600' : 'bg-muted'}`} />
@@ -95,7 +97,7 @@ const WithdrawalDetailModal = ({
                   }`}>
                     2
                   </div>
-                  <span>Approved & Deducted</span>
+                  <span>{t('withdrawals.stepApprovedDeducted', 'Approved & Deducted')}</span>
                 </div>
 
                 <div className={`flex-1 h-1 mx-3 rounded-full ${isCompleted ? 'bg-indigo-600' : 'bg-muted'}`} />
@@ -107,7 +109,7 @@ const WithdrawalDetailModal = ({
                   }`}>
                     3
                   </div>
-                  <span>Delivered & Completed</span>
+                  <span>{t('withdrawals.stepDeliveredCompleted', 'Delivered & Completed')}</span>
                 </div>
               </div>
             </div>
@@ -120,7 +122,7 @@ const WithdrawalDetailModal = ({
             <div className="space-y-1">
               <span className="text-muted-foreground flex items-center gap-1.5 font-semibold">
                 <Building2 className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-                Location:
+                {t('common.location', 'Location')}:
               </span>
               <p className="font-bold text-foreground">
                 {order.projects?.project_code ? `[${order.projects.project_code}] ` : ''}{order.projects?.name || '-'}
@@ -130,24 +132,24 @@ const WithdrawalDetailModal = ({
             <div className="space-y-1">
               <span className="text-muted-foreground flex items-center gap-1.5 font-semibold">
                 <User className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-                Requester:
+                {t('common.requester', 'Requester')}:
               </span>
-              <p className="font-bold text-foreground">{order.profiles?.full_name || 'User'}</p>
+              <p className="font-bold text-foreground">{order.profiles?.full_name || t('common.user', 'User')}</p>
             </div>
 
             <div className="space-y-1 sm:col-span-2">
               <span className="text-muted-foreground flex items-center gap-1.5 font-semibold">
                 <FileText className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-                Purpose:
+                {t('withdrawals.purpose', 'Purpose')}:
               </span>
-              <p className="font-semibold text-foreground">{order.purpose || 'Not specified'}</p>
+              <p className="font-semibold text-foreground">{order.purpose || t('withdrawals.notSpecified', 'Not specified')}</p>
             </div>
 
             {order.delivery_address && (
               <div className="space-y-1 sm:col-span-2">
                 <span className="text-muted-foreground flex items-center gap-1.5 font-semibold">
                   <MapPin className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-                  Delivery Destination / Recipient:
+                  {t('withdrawals.deliveryDestinationRecipient', 'Delivery Destination / Recipient')}:
                 </span>
                 <p className="font-semibold text-foreground">{order.delivery_address}</p>
               </div>
@@ -158,9 +160,9 @@ const WithdrawalDetailModal = ({
               <div className="sm:col-span-2 bg-amber-500/10 border border-amber-500/30 p-3 rounded-xl text-amber-900 dark:text-amber-200 space-y-1">
                 <p className="font-bold flex items-center gap-1.5">
                   <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                  <span>Shortage Override Notes:</span>
+                  <span>{t('withdrawals.shortageOverrideNotes', 'Shortage Override Notes')}:</span>
                 </p>
-                <p className="text-[11px] pl-5">{order.override_reason || 'Stock deducted based on actual available inventory'}</p>
+                <p className="text-[11px] pl-5">{order.override_reason || t('withdrawals.stockDeductedActual', 'Stock deducted based on actual available inventory')}</p>
               </div>
             )}
 
@@ -169,7 +171,7 @@ const WithdrawalDetailModal = ({
               <div className="sm:col-span-2 bg-red-500/10 border border-red-500/30 p-3 rounded-xl text-red-900 dark:text-red-200 space-y-1">
                 <p className="font-bold flex items-center gap-1.5">
                   <XCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
-                  <span>Rejection Reason:</span>
+                  <span>{t('withdrawals.rejectionReason', 'Rejection Reason')}:</span>
                 </p>
                 <p className="text-[11px] pl-5">{order.reject_reason}</p>
               </div>
@@ -180,18 +182,18 @@ const WithdrawalDetailModal = ({
           <div className="space-y-2">
             <h4 className="text-xs font-extrabold uppercase tracking-wider text-foreground flex items-center gap-1.5">
               <Package className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-              <span>Requested Items ({orderDetails.length} items)</span>
+              <span>{t('withdrawals.requestedItems', 'Requested Items')} ({orderDetails.length} {t('common.items', 'items')})</span>
             </h4>
 
             <div className="border border-border rounded-xl overflow-hidden shadow-xs">
               <Table>
                 <TableHeader className="bg-muted/50 text-xs">
                   <TableRow>
-                    <TableHead>Item Name</TableHead>
-                    <TableHead className="text-center">Requested</TableHead>
-                    <TableHead className="text-center">Actual Deducted</TableHead>
-                    <TableHead className="text-center text-amber-600">Shortage</TableHead>
-                    <TableHead>Destination / S/N</TableHead>
+                    <TableHead>{t('items.itemName', 'Item Name')}</TableHead>
+                    <TableHead className="text-center">{t('withdrawals.requested', 'Requested')}</TableHead>
+                    <TableHead className="text-center">{t('withdrawals.actualDeducted', 'Actual Deducted')}</TableHead>
+                    <TableHead className="text-center text-amber-600">{t('withdrawals.shortage', 'Shortage')}</TableHead>
+                    <TableHead>{t('withdrawals.destinationSN', 'Destination / S/N')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody className="text-xs">
@@ -217,7 +219,7 @@ const WithdrawalDetailModal = ({
                         </TableCell>
                         <TableCell className="text-center">
                           {isPending ? (
-                            <span className="text-muted-foreground italic font-normal text-[11px]">- (Pending)</span>
+                            <span className="text-muted-foreground italic font-normal text-[11px]">- ({t('common.pending', 'Pending')})</span>
                           ) : isApprovedOrCompleted ? (
                             <span className="font-bold font-mono text-emerald-600 dark:text-emerald-400">
                               {deducted} {item.items?.unit}
@@ -255,7 +257,7 @@ const WithdrawalDetailModal = ({
             className="rounded-lg text-xs font-semibold text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 gap-1.5 cursor-pointer h-9 px-4"
           >
             <FileText className="w-4 h-4 text-indigo-600" />
-            <span>Print / Download Issue Slip (PDF)</span>
+            <span>{t('withdrawals.printDownloadPDF', 'Print / Download Issue Slip (PDF)')}</span>
           </Button>
 
           <div className="flex items-center gap-2">
@@ -269,7 +271,7 @@ const WithdrawalDetailModal = ({
                     className="rounded-lg text-xs font-semibold cursor-pointer h-9 px-4"
                     onClick={() => onOpenRejectModal(order)}
                   >
-                    Reject Request
+                    {t('withdrawals.rejectRequest', 'Reject Request')}
                   </Button>
                 )}
                 {canApprove && (
@@ -279,7 +281,7 @@ const WithdrawalDetailModal = ({
                     className="rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer h-9 px-4 shadow-xs"
                     onClick={() => onApproveOrder(order.id)}
                   >
-                    Approve Request
+                    {t('withdrawals.approveRequest', 'Approve Request')}
                   </Button>
                 )}
               </>
@@ -292,7 +294,7 @@ const WithdrawalDetailModal = ({
                 className="rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer h-9 px-4 shadow-xs"
                 onClick={() => onCompleteOrder(order.id)}
               >
-                Confirm Receipt Complete
+                {t('withdrawals.confirmReceiptComplete', 'Confirm Receipt Complete')}
               </Button>
             )}
 
@@ -303,7 +305,7 @@ const WithdrawalDetailModal = ({
               onClick={onClose}
               className="rounded-lg text-xs h-9 px-4 font-semibold"
             >
-              Close
+              {t('common.close', 'Close')}
             </Button>
           </div>
         </DialogFooter>

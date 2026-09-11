@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AlertTriangle, ShieldAlert } from 'lucide-react';
+import { useTranslation } from '@/i18n';
 
 const WithdrawalShortageModal = ({
   isOpen,
@@ -12,6 +13,8 @@ const WithdrawalShortageModal = ({
   onOverrideReasonChange,
   onConfirmApprove
 }) => {
+  const { t } = useTranslation();
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-xl rounded-xl bg-card p-6 border border-border shadow-xl">
@@ -20,7 +23,7 @@ const WithdrawalShortageModal = ({
             <div className="p-2 rounded-lg bg-amber-500/15 border border-amber-500/30">
               <AlertTriangle className="w-5 h-5" />
             </div>
-            <span>Approve with Shortage Override</span>
+            <span>{t('withdrawals.approveWithShortage', 'Approve with Shortage Override')}</span>
           </DialogTitle>
         </DialogHeader>
 
@@ -28,11 +31,11 @@ const WithdrawalShortageModal = ({
           <div className="bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 p-3.5 rounded-xl leading-relaxed space-y-1">
             <p className="font-bold flex items-center gap-1.5 text-xs">
               <ShieldAlert className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
-              <span>Insufficient project inventory detected for requested quantities</span>
+              <span>{t('withdrawals.insufficientInventory', 'Insufficient project inventory detected for requested quantities')}</span>
             </p>
             <p className="text-[11px] pl-5 opacity-90">
-              If confirmed, the system will deduct inventory up to available stock and record shortages.
-              <strong>Available stock will be reduced to 0 and will not go negative.</strong>
+              {t('withdrawals.shortageWarning', 'If confirmed, the system will deduct inventory up to available stock and record shortages.')}{' '}
+              <strong>{t('withdrawals.stockWillNotGoNegative', 'Available stock will be reduced to 0 and will not go negative.')}</strong>
             </p>
           </div>
 
@@ -40,11 +43,11 @@ const WithdrawalShortageModal = ({
             <Table>
               <TableHeader className="bg-muted/50 text-xs">
                 <TableRow>
-                  <TableHead>Item Name</TableHead>
-                  <TableHead className="text-center">Requested</TableHead>
-                  <TableHead className="text-center">Available</TableHead>
-                  <TableHead className="text-center text-emerald-600 font-bold">To Deduct</TableHead>
-                  <TableHead className="text-center text-amber-600 font-bold">Shortage</TableHead>
+                  <TableHead>{t('items.itemName', 'Item Name')}</TableHead>
+                  <TableHead className="text-center">{t('withdrawals.requested', 'Requested')}</TableHead>
+                  <TableHead className="text-center">{t('withdrawals.available', 'Available')}</TableHead>
+                  <TableHead className="text-center text-emerald-600 font-bold">{t('withdrawals.toDeduct', 'To Deduct')}</TableHead>
+                  <TableHead className="text-center text-amber-600 font-bold">{t('withdrawals.shortage', 'Shortage')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody className="text-xs">
@@ -67,10 +70,10 @@ const WithdrawalShortageModal = ({
 
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-foreground uppercase tracking-wider block">
-              Override Reason <span className="text-destructive">*</span>
+              {t('withdrawals.overrideReason', 'Override Reason')} <span className="text-destructive">*</span>
             </label>
             <Input
-              placeholder="e.g. Issue available stock first, remaining quantity to be fulfilled later"
+              placeholder={t('withdrawals.overrideReasonPlaceholder', 'e.g. Issue available stock first, remaining quantity to be fulfilled later')}
               value={overrideReason}
               onChange={(e) => onOverrideReasonChange(e.target.value)}
               className="text-xs rounded-lg h-9 bg-background border-border"
@@ -85,14 +88,14 @@ const WithdrawalShortageModal = ({
             onClick={onClose}
             className="rounded-lg text-xs h-9 px-4 font-semibold"
           >
-            Cancel
+            {t('common.cancel', 'Cancel')}
           </Button>
           <Button
             type="button"
             className="rounded-lg text-xs h-9 px-4 bg-amber-600 hover:bg-amber-700 text-white font-semibold shadow-xs cursor-pointer"
             onClick={() => onConfirmApprove(shortageData.orderId, true, overrideReason)}
           >
-            Confirm Shortage Override
+            {t('withdrawals.confirmShortageOverride', 'Confirm Shortage Override')}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -7,6 +7,7 @@ import {
   Eye, User, Building2, Phone, Layers, CalendarClock, Infinity as InfinityIcon
 } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
+import { useTranslation } from '@/i18n';
 
 const CheckoutActiveList = ({
   orders = [],
@@ -17,6 +18,7 @@ const CheckoutActiveList = ({
   onOpenDetailModal,
   onOpenExtendModal
 }) => {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all'); // 'all' | 'overdue' | 'due_soon' | 'active'
 
@@ -94,14 +96,16 @@ const CheckoutActiveList = ({
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground">Active Loans</span>
+            <span className="text-xs font-semibold text-muted-foreground">{t('checkouts.activeLoans')}</span>
             <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
               <Clock className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-xl font-bold tracking-tight text-foreground">{activeLoansCount}</span>
-            <span className="text-xs text-muted-foreground font-medium">orders ({totalUnitsBorrowed} {totalUnitsBorrowed === 1 ? 'unit' : 'units'})</span>
+            <span className="text-xs text-muted-foreground font-medium">
+              {t('checkouts.ordersCount', { count: activeLoansCount })} ({t('checkouts.unitsCount', { count: totalUnitsBorrowed })})
+            </span>
           </div>
         </Card>
 
@@ -112,14 +116,16 @@ const CheckoutActiveList = ({
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground">Due Soon (≤ 2 days)</span>
+            <span className="text-xs font-semibold text-muted-foreground">{t('checkouts.dueSoon')}</span>
             <div className="p-2 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
               <Clock className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-xl font-bold tracking-tight text-amber-600 dark:text-amber-400">{dueSoonCount}</span>
-            <span className="text-xs text-muted-foreground font-medium">orders</span>
+            <span className="text-xs text-muted-foreground font-medium">
+              {t('checkouts.ordersCount', { count: dueSoonCount })}
+            </span>
           </div>
         </Card>
 
@@ -130,14 +136,16 @@ const CheckoutActiveList = ({
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-red-600 dark:text-red-400">Overdue</span>
+            <span className="text-xs font-semibold text-red-600 dark:text-red-400">{t('checkouts.overdue')}</span>
             <div className="p-2 rounded-lg bg-red-500/10 text-red-600 dark:text-red-400">
               <AlertTriangle className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-xl font-bold tracking-tight text-red-600 dark:text-red-400">{overdueCount}</span>
-            <span className="text-xs text-muted-foreground font-medium">orders</span>
+            <span className="text-xs text-muted-foreground font-medium">
+              {t('checkouts.ordersCount', { count: overdueCount })}
+            </span>
           </div>
         </Card>
 
@@ -148,7 +156,7 @@ const CheckoutActiveList = ({
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground">On Schedule</span>
+            <span className="text-xs font-semibold text-muted-foreground">{t('checkouts.onSchedule')}</span>
             <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
               <CheckCircle2 className="w-4 h-4" />
             </div>
@@ -157,7 +165,9 @@ const CheckoutActiveList = ({
             <span className="text-xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
               {activeLoansCount - overdueCount}
             </span>
-            <span className="text-xs text-muted-foreground font-medium">orders</span>
+            <span className="text-xs text-muted-foreground font-medium">
+              {t('checkouts.ordersCount', { count: activeLoansCount - overdueCount })}
+            </span>
           </div>
         </Card>
       </div>
@@ -169,14 +179,14 @@ const CheckoutActiveList = ({
             <div className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
               <Layers className="w-4 h-4" />
             </div>
-            <span>Active Loans ({filteredOrders.length} records)</span>
+            <span>{t('checkouts.activeLoans')} ({filteredOrders.length} {t('common.records')})</span>
           </CardTitle>
 
           {/* Search Box */}
           <div className="relative w-full sm:w-72">
             <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Search order number, borrower, dept, S/N..."
+              placeholder={t('checkouts.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-8 h-9 text-xs rounded-lg"
@@ -187,13 +197,13 @@ const CheckoutActiveList = ({
         <CardContent className="p-0">
           {loading ? (
             <div className="py-16 text-center text-muted-foreground text-xs">
-              Loading checkout data...
+              {t('common.loading')}
             </div>
           ) : filteredOrders.length === 0 ? (
             <div className="py-16 text-center text-muted-foreground text-xs space-y-1">
               <CheckCircle2 className="w-8 h-8 mx-auto mb-2 text-emerald-500 opacity-60 stroke-1" />
-              <p className="font-semibold text-foreground">No active loans match the criteria</p>
-              <p className="text-[11px]">All items returned or no orders found in this filter</p>
+              <p className="font-semibold text-foreground">{t('checkouts.noActiveLoansFound')}</p>
+              <p className="text-[11px]">{t('checkouts.noActiveLoansDesc')}</p>
             </div>
           ) : (
             <div className="divide-y divide-border/40">
@@ -218,27 +228,27 @@ const CheckoutActiveList = ({
                         {order.isIndefinite ? (
                           <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-500/30 flex items-center gap-1">
                             <InfinityIcon className="w-3 h-3 text-purple-600 dark:text-purple-400" />
-                            Indefinite
+                            {t('checkouts.indefiniteLoan')}
                           </span>
                         ) : order.isOverdue ? (
                           <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30 flex items-center gap-1 animate-pulse">
                             <AlertTriangle className="w-3 h-3" />
-                            {Math.abs(order.daysDiff)} {Math.abs(order.daysDiff) === 1 ? 'day' : 'days'} overdue
+                            {t('checkouts.overdueBy', { days: Math.abs(order.daysDiff) })}
                           </span>
                         ) : order.isDueSoon ? (
                           <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 flex items-center gap-1">
                             <Clock className="w-3 h-3" />
-                            {order.daysDiff === 0 ? 'Due today' : `Due in ${order.daysDiff} ${order.daysDiff === 1 ? 'day' : 'days'}`}
+                            {order.daysDiff === 0 ? t('checkouts.dueToday') : t('checkouts.dueIn', { days: order.daysDiff })}
                           </span>
                         ) : (
                           <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
-                            Active
+                            {t('common.active')}
                           </span>
                         )}
 
                         {order.status === 'partial_returned' && (
                           <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-blue-500/10 text-blue-600 border border-blue-500/20">
-                            Partially Returned ({order.totalReturned}/{order.totalBorrowed})
+                            {t('checkouts.processing')} ({order.totalReturned}/{order.totalBorrowed})
                           </span>
                         )}
                       </div>
@@ -263,7 +273,7 @@ const CheckoutActiveList = ({
                       <div className="text-[11px] text-muted-foreground pt-1 flex flex-wrap gap-1.5">
                         {order.checkout_items?.map((item, idx) => (
                           <span key={item.id || idx} className="bg-muted/60 px-2 py-0.5 rounded-md border border-border/40 font-mono text-[10px]">
-                            {item.items?.name || 'Item'} ×{item.quantity_borrowed - (item.quantity_returned + item.quantity_damaged + item.quantity_lost)} {item.items?.unit || 'ชิ้น'}
+                            {item.items?.name || t('common.item')} ×{item.quantity_borrowed - (item.quantity_returned + item.quantity_damaged + item.quantity_lost)} {item.items?.unit || t('common.piece')}
                             {item.serial_number && <span className="text-indigo-600 dark:text-indigo-400"> (S/N: {item.serial_number})</span>}
                           </span>
                         ))}
@@ -274,7 +284,7 @@ const CheckoutActiveList = ({
                     <div className="flex items-center gap-2 shrink-0 self-end md:self-center">
                       <div className="text-right mr-2 hidden sm:block">
                         <div className="text-[11px] text-muted-foreground">
-                          Borrowed: {order.checkout_date ? format(new Date(order.checkout_date), 'dd/MM/yyyy') : '-'}
+                          {t('checkouts.borrowDate')}: {order.checkout_date ? format(new Date(order.checkout_date), 'dd/MM/yyyy') : '-'}
                         </div>
                         <div className={`text-xs font-bold ${
                           order.isOverdue 
@@ -283,7 +293,7 @@ const CheckoutActiveList = ({
                             ? 'text-purple-600 dark:text-purple-400' 
                             : 'text-foreground'
                         }`}>
-                          Due Date: {order.isIndefinite ? 'Indefinite' : (order.expected_return_date ? format(new Date(order.expected_return_date), 'dd/MM/yyyy') : '-')}
+                          {t('checkouts.dueDate')}: {order.isIndefinite ? t('checkouts.indefiniteLoan') : (order.expected_return_date ? format(new Date(order.expected_return_date), 'dd/MM/yyyy') : '-')}
                         </div>
                       </div>
 
@@ -292,16 +302,16 @@ const CheckoutActiveList = ({
                         size="sm"
                         onClick={() => onOpenDetailModal(order)}
                         className="rounded-lg h-9 text-xs gap-1.5 font-semibold shadow-2xs cursor-pointer"
-                        title="View loan details and print"
+                        title={t('common.viewDetails')}
                       >
                         <Eye className="w-3.5 h-3.5" />
-                        <span className="hidden sm:inline">View Order</span>
+                        <span className="hidden sm:inline">{t('common.viewDetails')}</span>
                       </Button>
 
                       {order.isIndefinite ? (
-                        <div className="inline-flex items-center gap-1 px-2.5 rounded-lg h-9 bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-500/30 text-xs font-semibold select-none" title="Indefinite Loan">
+                        <div className="inline-flex items-center gap-1 px-2.5 rounded-lg h-9 bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-500/30 text-xs font-semibold select-none" title={t('checkouts.indefiniteLoan')}>
                           <InfinityIcon className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
-                          <span className="hidden sm:inline">Indefinite</span>
+                          <span className="hidden sm:inline">{t('checkouts.indefiniteLoan')}</span>
                         </div>
                       ) : (
                         canExtend && onOpenExtendModal && order.status !== 'completed' && (
@@ -310,10 +320,10 @@ const CheckoutActiveList = ({
                             size="sm"
                             onClick={() => onOpenExtendModal(order)}
                             className="rounded-lg h-9 text-xs gap-1.5 font-semibold border-amber-500/30 text-amber-700 dark:text-amber-400 hover:bg-amber-500/10 shadow-2xs cursor-pointer"
-                            title="Extend due date"
+                            title={t('checkouts.extendLoan')}
                           >
                             <CalendarClock className="w-3.5 h-3.5" />
-                            <span>Extend</span>
+                            <span>{t('checkouts.extendLoan')}</span>
                           </Button>
                         )
                       )}
@@ -325,7 +335,7 @@ const CheckoutActiveList = ({
                           className="rounded-lg h-9 px-3.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs gap-1.5 font-semibold shadow-xs cursor-pointer"
                         >
                           <RotateCcw className="w-3.5 h-3.5" />
-                          <span>Return Items</span>
+                          <span>{t('checkouts.returnEquipment')}</span>
                         </Button>
                       )}
                     </div>

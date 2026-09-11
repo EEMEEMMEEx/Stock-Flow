@@ -3,45 +3,47 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { FileText, Eye, Clock, CheckCircle2, AlertTriangle, XCircle, ArrowUpDown, Building2 } from 'lucide-react';
 import { format } from 'date-fns';
+import { useTranslation } from '@/i18n';
 
 export const StatusBadge = ({ status, has_shortage, is_shortage_override }) => {
+  const { t } = useTranslation();
   switch (status) {
     case 'pending':
       return (
         <span className="inline-flex items-center gap-1 text-amber-600 bg-amber-500/10 px-2.5 py-1 rounded-full text-xs font-semibold border border-amber-500/20">
-          <Clock className="w-3.5 h-3.5" /> Pending
+          <Clock className="w-3.5 h-3.5" /> {t('common.pending', 'Pending')}
         </span>
       );
     case 'approved':
       if (has_shortage || is_shortage_override) {
         return (
           <span className="inline-flex items-center gap-1 text-amber-700 dark:text-amber-300 bg-amber-500/15 px-2.5 py-1 rounded-full text-xs font-bold border border-amber-500/30">
-            <AlertTriangle className="w-3.5 h-3.5" /> Approved (Shortage)
+            <AlertTriangle className="w-3.5 h-3.5" /> {t('withdrawals.approvedShortage', 'Approved (Shortage)')}
           </span>
         );
       }
       return (
         <span className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded-full text-xs font-semibold border border-blue-500/20">
-          <CheckCircle2 className="w-3.5 h-3.5" /> Approved
+          <CheckCircle2 className="w-3.5 h-3.5" /> {t('common.approved', 'Approved')}
         </span>
       );
     case 'completed':
       if (has_shortage || is_shortage_override) {
         return (
           <span className="inline-flex items-center gap-1 text-amber-700 dark:text-amber-300 bg-amber-500/15 px-2.5 py-1 rounded-full text-xs font-bold border border-amber-500/30">
-            <AlertTriangle className="w-3.5 h-3.5" /> Completed (Shortage)
+            <AlertTriangle className="w-3.5 h-3.5" /> {t('withdrawals.completedShortage', 'Completed (Shortage)')}
           </span>
         );
       }
       return (
         <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full text-xs font-semibold border border-emerald-500/20">
-          <CheckCircle2 className="w-3.5 h-3.5" /> Completed
+          <CheckCircle2 className="w-3.5 h-3.5" /> {t('common.completed', 'Completed')}
         </span>
       );
     case 'rejected':
       return (
         <span className="inline-flex items-center gap-1 text-rose-600 dark:text-rose-400 bg-rose-500/10 px-2.5 py-1 rounded-full text-xs font-semibold border border-rose-500/20">
-          <XCircle className="w-3.5 h-3.5" /> Rejected
+          <XCircle className="w-3.5 h-3.5" /> {t('common.rejected', 'Rejected')}
         </span>
       );
     default:
@@ -57,6 +59,8 @@ const HistoryDataTable = ({
   onViewDetails,
   onDownloadPDF
 }) => {
+  const { t } = useTranslation();
+
   const renderSortHeader = (label, field) => {
     const isActive = sortField === field;
     return (
@@ -77,22 +81,22 @@ const HistoryDataTable = ({
         <Table>
           <TableHeader className="bg-muted/40 backdrop-blur border-b border-border/50">
             <TableRow>
-              <TableHead className="w-[110px] font-bold text-xs">Order #</TableHead>
+              <TableHead className="w-[110px] font-bold text-xs">{t('history.orderNo', 'Order #')}</TableHead>
               <TableHead className="w-[140px] text-xs">
-                {renderSortHeader('Date / Time', 'requested_at')}
+                {renderSortHeader(t('history.dateTime', 'Date / Time'), 'requested_at')}
               </TableHead>
               <TableHead className="min-w-[180px] text-xs">
-                {renderSortHeader('Project', 'project')}
+                {renderSortHeader(t('history.project', 'Project'), 'project')}
               </TableHead>
               <TableHead className="min-w-[130px] text-xs">
-                {renderSortHeader('Requester', 'requester')}
+                {renderSortHeader(t('history.requester', 'Requester'), 'requester')}
               </TableHead>
-              <TableHead className="min-w-[200px] text-xs">Items</TableHead>
-              <TableHead className="w-[100px] text-center text-xs">Total Qty</TableHead>
+              <TableHead className="min-w-[200px] text-xs">{t('history.items', 'Items')}</TableHead>
+              <TableHead className="w-[100px] text-center text-xs">{t('history.totalQty', 'Total Qty')}</TableHead>
               <TableHead className="w-[170px] text-center text-xs">
-                {renderSortHeader('Status', 'status')}
+                {renderSortHeader(t('common.status', 'Status'), 'status')}
               </TableHead>
-              <TableHead className="w-[140px] text-right text-xs font-bold">Actions</TableHead>
+              <TableHead className="w-[140px] text-right text-xs font-bold">{t('common.actions', 'Actions')}</TableHead>
             </TableRow>
           </TableHeader>
 
@@ -141,19 +145,22 @@ const HistoryDataTable = ({
                     {firstItem ? (
                       <div className="space-y-1">
                         <div className="font-medium text-foreground line-clamp-1">
-                          {firstItem.items?.name || 'Item'}
+                          {firstItem.items?.name || t('dashboard.item', 'Item')}
                         </div>
                         <div className="text-[11px] text-muted-foreground flex items-center gap-2">
-                          <span>Requested: {firstItem.quantity} {firstItem.items?.unit || ''}</span>
+                          <span>{t('withdrawals.requested', 'Requested')}: {firstItem.quantity} {firstItem.items?.unit || ''}</span>
                           {firstItem.shortage_quantity > 0 && (
                             <span className="text-amber-600 dark:text-amber-400 font-bold">
-                              (Shortage: {firstItem.shortage_quantity})
+                              ({t('history.shortage', 'Shortage')}: {firstItem.shortage_quantity})
                             </span>
                           )}
                         </div>
                         {totalItemsCount > 1 && (
                           <span className="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
-                            +{totalItemsCount - 1} more {totalItemsCount - 1 === 1 ? 'item' : 'items'}
+                            {t('history.moreItems', {
+                              count: totalItemsCount - 1,
+                              defaultValue: `+${totalItemsCount - 1} more items`
+                            })}
                           </span>
                         )}
                       </div>
@@ -187,7 +194,7 @@ const HistoryDataTable = ({
                         title="View withdrawal order details"
                       >
                         <Eye className="w-3.5 h-3.5 text-muted-foreground" />
-                        <span className="hidden xl:inline">Details</span>
+                        <span className="hidden xl:inline">{t('history.details', 'Details')}</span>
                       </Button>
 
                       <Button
@@ -198,7 +205,7 @@ const HistoryDataTable = ({
                         title="Print / Download PDF"
                       >
                         <FileText className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
-                        <span>PDF</span>
+                        <span>{t('history.pdf', 'PDF')}</span>
                       </Button>
                     </div>
                   </TableCell>

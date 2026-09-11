@@ -7,12 +7,14 @@ import {
   Building2, FileText, Infinity as InfinityIcon
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { useTranslation } from '@/i18n';
 
 const CheckoutHistoryList = ({
   orders = [],
   loading = false,
   onOpenDetailModal
 }) => {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
 
   const completedOrders = useMemo(() => {
@@ -39,13 +41,15 @@ const CheckoutHistoryList = ({
           <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
             <History className="w-4 h-4" />
           </div>
-          <span>Completed Loan & Return History ({filteredOrders.length} {filteredOrders.length === 1 ? 'order' : 'orders'})</span>
+          <span>
+            {t('checkouts.completedHistory')} ({filteredOrders.length} {filteredOrders.length === 1 ? t('checkouts.order') : t('checkouts.orders')})
+          </span>
         </CardTitle>
 
         <div className="relative w-full sm:w-72">
           <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search history, order #, borrower..."
+            placeholder={t('checkouts.searchHistoryPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-8 h-9 text-xs rounded-lg"
@@ -56,13 +60,13 @@ const CheckoutHistoryList = ({
       <CardContent className="p-0">
         {loading ? (
           <div className="py-16 text-center text-muted-foreground text-xs">
-            Loading loan & return history...
+            {t('checkouts.loadingHistory')}
           </div>
         ) : filteredOrders.length === 0 ? (
           <div className="py-16 text-center text-muted-foreground text-xs space-y-1">
             <FileText className="w-8 h-8 mx-auto mb-2 opacity-40 stroke-1" />
-            <p className="font-semibold text-foreground">No completed loan & return records yet</p>
-            <p className="text-[11px]">Completed returns will automatically appear here</p>
+            <p className="font-semibold text-foreground">{t('checkouts.noCompletedRecords')}</p>
+            <p className="text-[11px]">{t('checkouts.completedWillAppear')}</p>
           </div>
         ) : (
           <div className="divide-y divide-border/40">
@@ -86,12 +90,12 @@ const CheckoutHistoryList = ({
                       {order.borrow_type === 'indefinite' && (
                         <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-500/30 flex items-center gap-1">
                           <InfinityIcon className="w-3 h-3 text-purple-600 dark:text-purple-400" />
-                          No Return Date
+                          {t('checkouts.noReturnDate')}
                         </span>
                       )}
                       <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-emerald-500/15 text-emerald-600 border border-emerald-500/30 flex items-center gap-1">
                         <CheckCircle2 className="w-3 h-3" />
-                        Fully Returned ({totalBorrowed} {totalBorrowed === 1 ? 'unit' : 'units'})
+                        {t('checkouts.fullyReturned')} ({totalBorrowed} {totalBorrowed === 1 ? t('checkouts.unitCount_one') : t('checkouts.unitCount_other')})
                       </span>
                     </div>
 
@@ -109,7 +113,7 @@ const CheckoutHistoryList = ({
                       <div className="text-[11px] text-muted-foreground pt-1 flex flex-wrap gap-1.5">
                         {order.checkout_items?.map((item, idx) => (
                           <span key={item.id || idx} className="bg-muted/60 px-2 py-0.5 rounded-md border border-border/40 font-mono text-[10px]">
-                            {item.items?.name || 'Item'} ×{item.quantity_borrowed} {item.items?.unit || 'ชิ้น'}
+                            {item.items?.name || t('common.item')} ×{item.quantity_borrowed} {item.items?.unit || t('common.defaultUnit')}
                             {item.serial_number && <span className="text-indigo-600 dark:text-indigo-400 font-semibold"> (S/N: {item.serial_number})</span>}
                           </span>
                         ))}
@@ -119,10 +123,10 @@ const CheckoutHistoryList = ({
                     <div className="flex items-center gap-3 shrink-0 self-end md:self-center">
                     <div className="text-right text-xs">
                       <div className="text-muted-foreground text-[11px]">
-                        Borrowed: {order.checkout_date ? format(new Date(order.checkout_date), 'dd/MM/yyyy') : '-'}
+                        {t('checkouts.borrowed')}: {order.checkout_date ? format(new Date(order.checkout_date), 'dd/MM/yyyy') : '-'}
                       </div>
                       <div className="font-bold text-emerald-600 dark:text-emerald-400">
-                        Returned: {order.actual_returned_date ? format(new Date(order.actual_returned_date), 'dd/MM/yyyy') : '-'}
+                        {t('checkouts.returned')}: {order.actual_returned_date ? format(new Date(order.actual_returned_date), 'dd/MM/yyyy') : '-'}
                       </div>
                     </div>
 
@@ -133,7 +137,7 @@ const CheckoutHistoryList = ({
                       className="rounded-lg h-9 text-xs gap-1.5 font-semibold shadow-2xs cursor-pointer"
                     >
                       <Eye className="w-3.5 h-3.5" />
-                      <span>View Details / Print</span>
+                      <span>{t('checkouts.viewDetailsPrint')}</span>
                     </Button>
                   </div>
                 </div>

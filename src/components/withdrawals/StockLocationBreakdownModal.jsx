@@ -1,6 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Package, Building2, MapPin, CheckCircle2, ArrowRight } from 'lucide-react';
+import { useTranslation } from '@/i18n';
 
 const StockLocationBreakdownModal = ({
   isOpen,
@@ -11,6 +12,7 @@ const StockLocationBreakdownModal = ({
   selectedProjectId,
   onSelectProject
 }) => {
+  const { t } = useTranslation();
   if (!item) return null;
 
   // Filter balances for this item that have stock > 0
@@ -54,7 +56,7 @@ const StockLocationBreakdownModal = ({
                   </>
                 )}
                 <span>•</span>
-                <span>System Total: <strong className="text-emerald-600 dark:text-emerald-400 font-bold">{totalBalance} {item.unit || 'ชิ้น'}</strong></span>
+                <span>{t('withdrawals.systemTotal', 'System Total:')} <strong className="text-emerald-600 dark:text-emerald-400 font-bold">{totalBalance} {item.unit || t('common.piece', 'ชิ้น')}</strong></span>
               </div>
             </div>
           </div>
@@ -62,14 +64,14 @@ const StockLocationBreakdownModal = ({
 
         <div className="py-3 space-y-3">
           <div className="flex items-center justify-between text-xs font-bold text-muted-foreground uppercase tracking-wider">
-            <span>Storage Locations & Balance ({itemBalances.length} Locations)</span>
-            <span>Status</span>
+            <span>{t('withdrawals.storageLocationsAndBalance', 'Storage Locations & Balance ({{count}} Locations)', { count: itemBalances.length })}</span>
+            <span>{t('common.status', 'Status')}</span>
           </div>
 
           {itemBalances.length === 0 ? (
             <div className="py-8 text-center text-muted-foreground text-xs bg-muted/20 rounded-xl border border-dashed border-border/60">
               <Package className="w-8 h-8 mx-auto mb-2 opacity-40 stroke-1" />
-              Out of stock in all locations (0 {item.unit || 'ชิ้น'})
+              {t('withdrawals.outOfStockInAllLocations', 'Out of stock in all locations (0 {{unit}})', { unit: item.unit || t('common.piece', 'ชิ้น') })}
             </div>
           ) : (
             <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
@@ -92,7 +94,7 @@ const StockLocationBreakdownModal = ({
                         </span>
                         {isCurrentSelected && (
                           <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-600 text-white flex items-center gap-0.5">
-                            <CheckCircle2 className="w-2.5 h-2.5" /> Selected
+                            <CheckCircle2 className="w-2.5 h-2.5" /> {t('withdrawals.selectedBadge', 'Selected')}
                           </span>
                         )}
                       </div>
@@ -110,7 +112,7 @@ const StockLocationBreakdownModal = ({
                         <span className="text-xs font-mono font-extrabold text-emerald-600 dark:text-emerald-400">
                           {b.balance}
                         </span>
-                        <span className="text-[10px] text-muted-foreground ml-1">{item.unit || 'ชิ้น'}</span>
+                        <span className="text-[10px] text-muted-foreground ml-1">{item.unit || t('common.piece', 'ชิ้น')}</span>
                       </div>
 
                       {!isCurrentSelected && onSelectProject && (
@@ -123,7 +125,7 @@ const StockLocationBreakdownModal = ({
                           }}
                           className="h-7 px-2.5 rounded-lg text-[11px] font-semibold bg-indigo-600 hover:bg-indigo-700 text-white gap-1 shadow-2xs cursor-pointer"
                         >
-                          <span>Select Location</span>
+                          <span>{t('common.select', 'Select')} {t('common.location', 'Location')}</span>
                           <ArrowRight className="w-3 h-3" />
                         </Button>
                       )}
@@ -142,7 +144,7 @@ const StockLocationBreakdownModal = ({
             onClick={onClose}
             className="w-full sm:w-auto rounded-lg text-xs h-9 px-4 font-semibold"
           >
-            Close
+            {t('common.close', 'Close')}
           </Button>
         </DialogFooter>
       </DialogContent>

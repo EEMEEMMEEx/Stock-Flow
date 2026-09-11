@@ -180,7 +180,7 @@ const Withdrawals = () => {
       }
     } catch (error) {
       console.error('FetchData Error:', error);
-      toast.error('Failed to load withdrawal data');
+      toast.error(t('withdrawals.toasts.loadFailed'));
     } finally {
       setLoading(false);
     }
@@ -359,13 +359,13 @@ const Withdrawals = () => {
     if (cart.length === 0) return;
 
     if (!projectId || projectId === 'all') {
-      toast.error('Please select a destination storage location');
+      toast.error(t('withdrawals.toasts.selectLocation'));
       return;
     }
 
     try {
       setIsSubmitting(true);
-      const toastId = toast.loading('Creating requisition request...');
+      const toastId = toast.loading(t('withdrawals.toasts.submitting'));
 
       // 1. Create order with status = 'pending'
       const { data: orderData, error: orderError } = await supabase
@@ -395,7 +395,7 @@ const Withdrawals = () => {
       const { error: itemsError } = await supabase.from('withdrawal_items').insert(itemsToInsert);
       if (itemsError) throw itemsError;
 
-      toast.success('Requisition request created successfully (Status: Pending)', { id: toastId });
+      toast.success(t('withdrawals.toasts.submitted'), { id: toastId });
 
       // 3. Dispatch transactional notification email
       dispatchWithdrawalNotification({
@@ -414,7 +414,7 @@ const Withdrawals = () => {
       setActiveTab('orders');
     } catch (error) {
       console.error('Submit Requisition Error:', error);
-      toast.error('Failed to create requisition request');
+      toast.error(t('withdrawals.toasts.submitFailed'));
     } finally {
       setIsSubmitting(false);
     }
@@ -424,7 +424,7 @@ const Withdrawals = () => {
   const handleApproveOrder = async (orderId, allowShortage = false, overrideReason = '') => {
     if (!canApprove || isProcessing) return;
     setIsProcessing(true);
-    const toastId = toast.loading('Approving requisition and updating stock...');
+    const toastId = toast.loading(t('withdrawals.toasts.approving'));
     try {
       const { data, error } = await supabase.rpc('approve_inventory_request', {
         p_request_id: orderId,
@@ -433,7 +433,7 @@ const Withdrawals = () => {
       });
       if (error) throw error;
 
-      toast.success(data?.message || 'Requisition approved successfully', { id: toastId });
+      toast.success(data?.message || t('withdrawals.toasts.approved'), { id: toastId });
 
       // Dispatch notification email
       dispatchWithdrawalNotification({
@@ -473,7 +473,7 @@ const Withdrawals = () => {
           setShortageOverrideReason('');
           setIsShortageModalOpen(true);
         } catch {
-          toast.error('Insufficient project inventory for approval');
+          toast.error(t('withdrawals.toasts.insufficientInventory'));
         }
       } else {
         let cleanErrMsg = rawMsg.replace(/.*(?:EXCEPTION|Error|P0001):\s*/i, '') || 'Failed to approve requisition';
@@ -502,12 +502,12 @@ const Withdrawals = () => {
     e.preventDefault();
     if (!canReject || !orderToReject || isProcessing) return;
     if (!rejectReason.trim()) {
-      toast.error('Please specify a rejection reason');
+      toast.error(t('withdrawals.toasts.rejectReasonRequired'));
       return;
     }
 
     setIsProcessing(true);
-    const toastId = toast.loading('Rejecting requisition...');
+    const toastId = toast.loading(t('withdrawals.toasts.rejecting'));
     try {
       const { error } = await supabase.rpc('reject_inventory_request', {
         p_request_id: orderToReject.id,
@@ -515,7 +515,7 @@ const Withdrawals = () => {
       });
       if (error) throw error;
 
-      toast.success('Requisition rejected successfully', { id: toastId });
+      toast.success(t('withdrawals.toasts.rejected'), { id: toastId });
 
       // Dispatch rejection notification
       dispatchWithdrawalNotification({
@@ -547,14 +547,14 @@ const Withdrawals = () => {
   const handleCompleteOrder = async (orderId) => {
     if (isProcessing) return;
     setIsProcessing(true);
-    const toastId = toast.loading('Confirming receipt of items...');
+    const toastId = toast.loading(t('withdrawals.toasts.completing'));
     try {
       const { error } = await supabase.rpc('complete_inventory_request', {
         p_request_id: orderId
       });
       if (error) throw error;
 
-      toast.success('Receipt confirmed successfully (Status: Received)', { id: toastId });
+      toast.success(t('withdrawals.toasts.completed'), { id: toastId });
 
       dispatchWithdrawalNotification({
         eventType: 'withdrawal_completed',
@@ -646,12 +646,12 @@ const Withdrawals = () => {
             }`}
           >
             <Zap className="w-3.5 h-3.5 text-amber-400 fill-amber-400/30" />
-            <span>{t('withdrawals.title', 'POS Terminal')}</span>
+            <span>{t('withdrawals.posTab')}</span>
             {cart.length > 0 && (
               <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-extrabold ${
                 activeTab === 'pos' ? 'bg-white/20 text-white' : 'bg-indigo-600 text-white'
               }`}>
-                {cart.length} items ({totalCartUnits} {totalCartUnits === 1 ? 'unit' : 'units'})
+                {cart.length} {t('common.items')} ({totalCartUnits} {t('common.unit')})
               </span>
             )}
           </button>
@@ -667,10 +667,10 @@ const Withdrawals = () => {
             }`}
           >
             <ClipboardList className="w-3.5 h-3.5 text-emerald-400" />
-            <span>{t('withdrawals.newRequisition', 'Requisitions')}</span>
+            <span>{t('withdrawals.requisitionsTab')}</span>
             {pendingOrdersCount > 0 && (
               <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-extrabold bg-amber-500 text-slate-950 animate-pulse">
-                {pendingOrdersCount} Pending
+                {pendingOrdersCount} {t('common.pending')}
               </span>
             )}
           </button>
@@ -679,7 +679,7 @@ const Withdrawals = () => {
         {/* Status Indicator */}
         <div className="hidden md:flex items-center gap-2 text-xs font-semibold text-muted-foreground pr-3">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-          <span>Requisition System Ready</span>
+          <span>{t('withdrawals.systemReady')}</span>
         </div>
       </div>
 

@@ -1,13 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { XCircle } from 'lucide-react';
-
-const REJECT_PRESETS = [
-  'Insufficient stock in project location',
-  'Incorrect requisition information',
-  'Requester requested cancellation',
-  'Project ended or requisitions closed'
-];
+import { useTranslation } from '@/i18n';
 
 const WithdrawalRejectModal = ({
   isOpen,
@@ -18,6 +12,15 @@ const WithdrawalRejectModal = ({
   onConfirmReject,
   isProcessing = false
 }) => {
+  const { t } = useTranslation();
+
+  const REJECT_PRESETS = [
+    t('withdrawals.rejectPreset1', 'Insufficient stock in project location'),
+    t('withdrawals.rejectPreset2', 'Incorrect requisition information'),
+    t('withdrawals.rejectPreset3', 'Requester requested cancellation'),
+    t('withdrawals.rejectPreset4', 'Project ended or requisitions closed')
+  ];
+
   const handleSubmit = (e) => {
     e.preventDefault();
     onConfirmReject(e);
@@ -32,20 +35,20 @@ const WithdrawalRejectModal = ({
               <div className="p-2 rounded-lg bg-red-500/15 border border-red-500/30">
                 <XCircle className="w-5 h-5" />
               </div>
-              <span>Reject Requisition #{orderToReject?.id?.slice(0, 8)}</span>
+              <span>{t('withdrawals.rejectTitle', 'Reject Requisition')} #{orderToReject?.id?.slice(0, 8)}</span>
             </DialogTitle>
           </DialogHeader>
 
           <div className="py-4 space-y-3 text-xs">
             <div className="space-y-1.5">
               <label className="font-bold text-foreground flex items-center gap-1">
-                <span>Rejection Reason</span>
+                <span>{t('withdrawals.rejectReason', 'Rejection Reason')}</span>
                 <span className="text-destructive">*</span>
               </label>
               <textarea
                 required
                 className="flex min-h-[90px] w-full rounded-lg border border-input bg-background px-3 py-2 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 resize-none shadow-2xs"
-                placeholder="e.g. Insufficient stock in location or incorrect details..."
+                placeholder={t('withdrawals.rejectReasonPlaceholder', 'e.g. Insufficient stock in location or incorrect details...')}
                 value={rejectReason}
                 onChange={(e) => onRejectReasonChange(e.target.value)}
               />
@@ -53,7 +56,7 @@ const WithdrawalRejectModal = ({
 
             {/* Quick Reason Presets */}
             <div className="space-y-1">
-              <span className="text-[10px] font-bold text-muted-foreground uppercase">Quick presets:</span>
+              <span className="text-[10px] font-bold text-muted-foreground uppercase">{t('checkouts.quickPresets', 'Quick presets')}:</span>
               <div className="flex flex-wrap gap-1">
                 {REJECT_PRESETS.map(preset => (
                   <button
@@ -76,7 +79,7 @@ const WithdrawalRejectModal = ({
               onClick={onClose}
               className="rounded-lg text-xs h-9 px-4 font-semibold"
             >
-              Cancel
+              {t('common.cancel', 'Cancel')}
             </Button>
             <Button
               type="submit"
@@ -84,7 +87,7 @@ const WithdrawalRejectModal = ({
               disabled={!rejectReason.trim() || isProcessing}
               className="rounded-lg text-xs h-9 px-4 font-semibold shadow-xs cursor-pointer"
             >
-              {isProcessing ? 'Rejecting...' : 'Confirm Reject'}
+              {isProcessing ? t('common.processing', 'Processing...') : t('withdrawals.confirmReject', 'Confirm Reject')}
             </Button>
           </DialogFooter>
         </form>

@@ -1,8 +1,11 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Package, ArrowDownToLine, ArrowUpFromLine, Layers, AlertTriangle, FolderKanban, TrendingUp } from 'lucide-react';
+import { useTranslation } from '@/i18n';
 
 const ReportKpiGrid = ({ activeTab, reportData = [], projects = [], selectedProjectId = '' }) => {
+  const { t } = useTranslation();
+
   // Compute KPI metrics dynamically based on active tab and report data
   const metrics = React.useMemo(() => {
     let totalItems = reportData.length;
@@ -32,7 +35,7 @@ const ReportKpiGrid = ({ activeTab, reportData = [], projects = [], selectedProj
     }
 
     const selectedProject = projects.find(p => p.id === selectedProjectId);
-    const projectName = selectedProject ? selectedProject.name : 'All Projects';
+    const projectName = selectedProject ? selectedProject.name : t('reports.kpi.allProjects');
 
     return {
       totalItems,
@@ -43,73 +46,73 @@ const ReportKpiGrid = ({ activeTab, reportData = [], projects = [], selectedProj
       pendingCount,
       projectName
     };
-  }, [activeTab, reportData, projects, selectedProjectId]);
+  }, [activeTab, reportData, projects, selectedProjectId, t]);
 
   const cards = [
     {
       id: 'total_records',
-      title: 'Total Report Records',
+      title: t('reports.kpi.totalRecords'),
       value: metrics.totalItems.toLocaleString(),
-      unit: metrics.totalItems === 1 ? 'record' : 'records',
-      subtext: `Scope: ${metrics.projectName}`,
+      unit: metrics.totalItems === 1 ? t('reports.record') : t('reports.records'),
+      subtext: t('reports.kpi.scope', { name: metrics.projectName }),
       icon: Package,
       iconBg: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
-      badge: 'Filtered',
+      badge: t('reports.kpi.filtered'),
       badgeBg: 'bg-blue-500/10 text-blue-600 dark:text-blue-300'
     },
     {
       id: 'stock_in',
-      title: 'Total Stock-In Qty',
+      title: t('reports.kpi.totalStockIn'),
       value: activeTab === 'withdrawals' ? '-' : metrics.stockInTotal.toLocaleString(),
-      unit: activeTab === 'withdrawals' ? '' : (metrics.stockInTotal === 1 ? 'unit' : 'units'),
-      subtext: activeTab === 'stock_in' ? 'Filtered total' : 'Cumulative stock-in',
+      unit: activeTab === 'withdrawals' ? '' : (metrics.stockInTotal === 1 ? t('reports.kpi.unit') : t('reports.kpi.units')),
+      subtext: activeTab === 'stock_in' ? t('reports.kpi.filteredTotal') : t('reports.kpi.cumulativeStockIn'),
       icon: ArrowDownToLine,
       iconBg: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
-      badge: activeTab === 'stock_in' ? '+Receiving' : 'Total In',
+      badge: activeTab === 'stock_in' ? t('reports.kpi.badgeReceiving') : t('reports.kpi.badgeTotalIn'),
       badgeBg: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-300'
     },
     {
       id: 'stock_out',
-      title: 'Total Stock-Out Qty',
+      title: t('reports.kpi.totalStockOut'),
       value: activeTab === 'stock_in' ? '-' : metrics.stockOutTotal.toLocaleString(),
-      unit: activeTab === 'stock_in' ? '' : (metrics.stockOutTotal === 1 ? 'unit' : 'units'),
-      subtext: activeTab === 'withdrawals' ? 'Actual stock deducted' : 'Cumulative dispatched',
+      unit: activeTab === 'stock_in' ? '' : (metrics.stockOutTotal === 1 ? t('reports.kpi.unit') : t('reports.kpi.units')),
+      subtext: activeTab === 'withdrawals' ? t('reports.kpi.actualStockDeducted') : t('reports.kpi.cumulativeDispatched'),
       icon: ArrowUpFromLine,
       iconBg: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
-      badge: activeTab === 'withdrawals' ? '-Dispatched' : 'Total Out',
+      badge: activeTab === 'withdrawals' ? t('reports.kpi.badgeDispatched') : t('reports.kpi.badgeTotalOut'),
       badgeBg: 'bg-amber-500/10 text-amber-600 dark:text-amber-300'
     },
     {
       id: 'balance',
-      title: 'Current Balance',
-      value: activeTab === 'balance' ? metrics.balanceTotal.toLocaleString() : 'See Balance tab',
-      unit: activeTab === 'balance' ? (metrics.balanceTotal === 1 ? 'unit' : 'units') : '',
-      subtext: activeTab === 'balance' ? 'Available inventory' : 'Select Tab 3 for details',
+      title: t('reports.kpi.currentBalance'),
+      value: activeTab === 'balance' ? metrics.balanceTotal.toLocaleString() : t('reports.kpi.seeBalanceTab'),
+      unit: activeTab === 'balance' ? (metrics.balanceTotal === 1 ? t('reports.kpi.unit') : t('reports.kpi.units')) : '',
+      subtext: activeTab === 'balance' ? t('reports.kpi.availableInventory') : t('reports.kpi.selectTab3'),
       icon: Layers,
       iconBg: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20',
-      badge: 'Balance',
+      badge: t('reports.kpi.badgeBalance'),
       badgeBg: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-300'
     },
     {
       id: 'shortage',
-      title: activeTab === 'withdrawals' ? 'Shortages' : 'Low Stock Warnings',
+      title: activeTab === 'withdrawals' ? t('reports.kpi.shortages') : t('reports.kpi.lowStockWarnings'),
       value: metrics.shortageCount.toLocaleString(),
-      unit: metrics.shortageCount === 1 ? 'record' : 'records',
-      subtext: activeTab === 'withdrawals' ? `Pending: ${metrics.pendingCount} ${metrics.pendingCount === 1 ? 'record' : 'records'}` : 'Items zero or low stock',
+      unit: metrics.shortageCount === 1 ? t('reports.record') : t('reports.records'),
+      subtext: activeTab === 'withdrawals' ? (metrics.pendingCount === 1 ? t('reports.kpi.pendingRecord', { count: metrics.pendingCount }) : t('reports.kpi.pendingRecords', { count: metrics.pendingCount })) : t('reports.kpi.itemsZeroOrLow'),
       icon: AlertTriangle,
       iconBg: metrics.shortageCount > 0 ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20' : 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20',
-      badge: metrics.shortageCount > 0 ? 'Attention' : 'Normal',
+      badge: metrics.shortageCount > 0 ? t('reports.kpi.attention') : t('reports.kpi.normal'),
       badgeBg: metrics.shortageCount > 0 ? 'bg-rose-500/10 text-rose-600 dark:text-rose-300' : 'bg-slate-500/10 text-slate-600 dark:text-slate-300'
     },
     {
       id: 'scope',
-      title: 'Selected Project',
+      title: t('reports.kpi.selectedProject'),
       value: metrics.projectName,
       unit: '',
-      subtext: `${projects.length} ${projects.length === 1 ? 'total project' : 'total projects'} in system`,
+      subtext: projects.length === 1 ? t('reports.kpi.totalProjectInSystem', { count: projects.length }) : t('reports.kpi.totalProjectsInSystem', { count: projects.length }),
       icon: FolderKanban,
       iconBg: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20',
-      badge: 'Project',
+      badge: t('reports.kpi.badgeProject'),
       badgeBg: 'bg-purple-500/10 text-purple-600 dark:text-purple-300'
     }
   ];

@@ -2,6 +2,7 @@ import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Package, Plus, Minus, Check, Building2 } from 'lucide-react';
+import { useTranslation } from '@/i18n';
 
 const WithdrawalItemCard = React.memo(({
   item,
@@ -10,6 +11,7 @@ const WithdrawalItemCard = React.memo(({
   onUpdateQuantity,
   onOpenLocationBreakdown
 }) => {
+  const { t } = useTranslation();
   const availableStock = item.balance !== undefined ? item.balance : Infinity;
   const totalSys = item.totalSystemBalance !== undefined ? item.totalSystemBalance : availableStock;
   const isOutOfStock = availableStock <= 0;
@@ -34,7 +36,7 @@ const WithdrawalItemCard = React.memo(({
       {isInCart && (
         <div className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded text-[10px] font-extrabold font-mono bg-indigo-600 text-white shadow-xs flex items-center gap-1">
           <Check className="w-3 h-3 stroke-[2.5]" />
-          <span>{cartQuantity} in cart</span>
+          <span>{cartQuantity} {t('withdrawals.inCart', 'in cart')}</span>
         </div>
       )}
 
@@ -62,7 +64,7 @@ const WithdrawalItemCard = React.memo(({
                   onOpenLocationBreakdown(item);
                 }
               }}
-              title="Click to view location breakdown"
+              title={t('withdrawals.viewLocationBreakdown', 'Click to view location breakdown')}
               className={`absolute top-2 right-2 px-2 py-0.5 rounded text-[10px] font-bold font-mono shadow-xs transition-colors cursor-pointer ${
                 isLowStock
                   ? 'bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 hover:bg-amber-500/30'
@@ -74,12 +76,12 @@ const WithdrawalItemCard = React.memo(({
               }`}
             >
               {isLowStock
-                ? `Low (${availableStock})`
+                ? t('common.lowStockCount', { count: availableStock, defaultValue: `Low (${availableStock})` })
                 : availableStock > 0
-                  ? `Stock: ${availableStock} ${item.unit || ''}`
+                  ? t('withdrawals.stockCount', { count: availableStock, unit: item.unit || '', defaultValue: `Stock: ${availableStock} ${item.unit || ''}` })
                   : hasStockInOtherWarehouse
-                    ? `Other (${totalSys})`
-                    : 'Out of stock'}
+                    ? t('withdrawals.otherCount', { count: totalSys, defaultValue: `Other (${totalSys})` })
+                    : t('common.outOfStock', 'Out of stock')}
             </button>
           )}
         </div>
@@ -87,7 +89,7 @@ const WithdrawalItemCard = React.memo(({
         {/* Item Information */}
         <div>
           <div className="flex items-center justify-between text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-1">
-            <span className="truncate max-w-[120px]">{item.sku && item.sku !== '-' ? item.sku : 'NO SKU'}</span>
+            <span className="truncate max-w-[120px]">{item.sku && item.sku !== '-' ? item.sku : t('items.noSku', 'NO SKU')}</span>
             {item.model && item.model !== '-' && (
               <span className="text-indigo-600 dark:text-indigo-400 font-semibold truncate max-w-[100px]">
                 {item.model}
@@ -103,7 +105,7 @@ const WithdrawalItemCard = React.memo(({
       {/* Footer Controls & Stepper */}
       <div className="mt-3 pt-2.5 border-t border-border/40 space-y-2">
         <div className="flex items-center justify-between text-[11px] text-muted-foreground font-medium">
-          <span>Unit: <strong className="text-foreground">{item.unit || 'ชิ้น'}</strong></span>
+          <span>{t('common.unit', 'Unit')}: <strong className="text-foreground">{item.unit || t('common.defaultUnit', 'pcs')}</strong></span>
           {hasStockInOtherWarehouse && (
             <button
               type="button"
@@ -113,7 +115,7 @@ const WithdrawalItemCard = React.memo(({
               }}
               className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold flex items-center gap-0.5 hover:underline cursor-pointer"
             >
-              <Building2 className="w-3 h-3" /> Other Locations
+              <Building2 className="w-3 h-3" /> {t('withdrawals.otherLocations', 'Other Locations')}
             </button>
           )}
         </div>
@@ -132,7 +134,7 @@ const WithdrawalItemCard = React.memo(({
             </Button>
             
             <span className="font-mono text-xs font-bold text-foreground px-2">
-              {cartQuantity} {item.unit || 'ชิ้น'}
+              {cartQuantity} {item.unit || t('common.defaultUnit', 'pcs')}
             </span>
 
             <Button
@@ -168,14 +170,14 @@ const WithdrawalItemCard = React.memo(({
             {isOutOfStock && hasStockInOtherWarehouse ? (
               <>
                 <Building2 className="w-3.5 h-3.5" />
-                <span>View Other Locations</span>
+                <span>{t('withdrawals.viewOtherLocations', 'View Other Locations')}</span>
               </>
             ) : completelyEmpty ? (
-              <span>Out of Stock</span>
+              <span>{t('common.outOfStock', 'Out of Stock')}</span>
             ) : (
               <>
                 <Plus className="w-3.5 h-3.5" />
-                <span>Add to Request</span>
+                <span>{t('withdrawals.addToRequest', 'Add to Request')}</span>
               </>
             )}
           </Button>

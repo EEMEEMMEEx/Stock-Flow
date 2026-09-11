@@ -37,19 +37,19 @@ const HistoryHeader = ({
           variant="outline"
           size="sm"
           className="h-9 px-3 rounded-xl border-border hover:bg-accent text-xs font-medium gap-1.5 transition-all"
-          title="Refresh Data"
+          title={t('common.refresh', 'Refresh Data')}
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-          <span className="hidden sm:inline">Refresh</span>
+          <span className="hidden sm:inline">{t('common.refresh', 'Refresh')}</span>
         </Button>
 
         <Badge
           variant="outline"
           className="h-9 px-3 rounded-xl bg-background border-border text-muted-foreground text-xs font-medium flex items-center gap-1.5 ml-auto sm:ml-0"
         >
-          <span>Total:</span>
+          <span>{t('common.total', 'Total')}:</span>
           <span className="font-bold text-foreground">{totalCount.toLocaleString()}</span>
-          <span>{totalCount === 1 ? 'record' : 'records'}</span>
+          <span>{totalCount === 1 ? t('history.record', 'record') : t('history.records', 'records')}</span>
         </Badge>
       </div>
     </div>

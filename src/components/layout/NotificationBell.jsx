@@ -11,34 +11,35 @@ import { useNotifications } from '@/hooks/useNotifications';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import toast from 'react-hot-toast';
+import { useTranslation } from '@/i18n';
 
 const controlClassName = 'h-9 w-9 shrink-0 rounded-lg border border-input bg-background text-foreground shadow-xs transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 cursor-pointer';
 const menuContentClassName = 'z-50 w-[min(26rem,calc(100vw-1.5rem))] overflow-hidden rounded-xl border border-border bg-popover p-2 text-popover-foreground shadow-xl outline-none data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0';
 
-const formatRelativeTime = (timestamp) => {
+const formatRelativeTime = (timestamp, t) => {
   if (!timestamp) return '';
   const seconds = Math.max(0, Math.floor((Date.now() - new Date(timestamp).getTime()) / 1000));
-  if (seconds < 60) return 'Just now';
+  if (seconds < 60) return t('notifications.time.justNow');
   if (seconds < 3600) {
     const mins = Math.floor(seconds / 60);
-    return `${mins} ${mins === 1 ? 'minute' : 'minutes'} ago`;
+    return t('notifications.time.minutesAgo', { count: mins });
   }
   if (seconds < 86400) {
     const hours = Math.floor(seconds / 3600);
-    return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`;
+    return t('notifications.time.hoursAgo', { count: hours });
   }
   const days = Math.floor(seconds / 86400);
-  return `${days} ${days === 1 ? 'day' : 'days'} ago`;
+  return t('notifications.time.daysAgo', { count: days });
 };
 
-const notificationPresentation = (eventType) => {
+const notificationPresentation = (eventType, t) => {
   switch (eventType) {
     case 'withdrawal.submitted':
     case 'withdrawal_submitted':
       return { 
         icon: ClipboardPlus, 
         className: 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/20',
-        badge: 'New Withdrawal Request',
+        badge: t('notifications.badges.newWithdrawal'),
         badgeClass: 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300'
       };
     case 'withdrawal.approved':
@@ -46,7 +47,7 @@ const notificationPresentation = (eventType) => {
       return { 
         icon: ClipboardCheck, 
         className: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/20',
-        badge: 'Approved',
+        badge: t('notifications.badges.approved'),
         badgeClass: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
       };
     case 'withdrawal.rejected':
@@ -54,7 +55,7 @@ const notificationPresentation = (eventType) => {
       return { 
         icon: CircleAlert, 
         className: 'bg-destructive/15 text-destructive border-destructive/20',
-        badge: 'Rejected',
+        badge: t('notifications.badges.rejected'),
         badgeClass: 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300'
       };
     case 'withdrawal.completed':
@@ -62,7 +63,7 @@ const notificationPresentation = (eventType) => {
       return { 
         icon: PackageCheck, 
         className: 'bg-primary/15 text-primary border-primary/20',
-        badge: 'Received',
+        badge: t('notifications.badges.completed'),
         badgeClass: 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
       };
     case 'checkout.overdue':
@@ -70,7 +71,7 @@ const notificationPresentation = (eventType) => {
       return { 
         icon: RotateCcw, 
         className: 'bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/20',
-        badge: 'Overdue',
+        badge: t('notifications.badges.overdue'),
         badgeClass: 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300'
       };
     case 'stock.low_stock':
@@ -78,20 +79,21 @@ const notificationPresentation = (eventType) => {
       return { 
         icon: AlertTriangle, 
         className: 'bg-orange-500/15 text-orange-700 dark:text-orange-300 border-orange-500/20',
-        badge: 'Critical Stock',
+        badge: t('notifications.badges.criticalStock'),
         badgeClass: 'bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-300'
       };
     default:
       return { 
         icon: FileClock, 
         className: 'bg-muted text-muted-foreground border-border/20',
-        badge: 'Alert',
+        badge: t('notifications.badges.alert'),
         badgeClass: 'bg-muted text-muted-foreground'
       };
   }
 };
 
 const NotificationBell = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user, profile, can } = useAuth();
   const {
@@ -161,7 +163,7 @@ const NotificationBell = () => {
 
     try {
       setApprovingId(notification.id);
-      const toastId = toast.loading('Approving requisition and deducting stock...');
+      const toastId = toast.loading(t('notifications.approvingToast'));
 
       const result = await approveQuickWithdrawal(orderId, notification.id, profile?.full_name || 'Admin');
 
@@ -169,19 +171,19 @@ const NotificationBell = () => {
         toast.dismiss(toastId);
         const errorMsg = result.message || '';
         if (errorMsg.includes('SHORTAGE_DETECTED')) {
-          toast.error('Insufficient stock found. Please check in the requisition management page.');
+          toast.error(t('notifications.shortageToast'));
           setIsOpen(false);
           navigate('/withdrawals');
           return;
         }
-        toast.error(errorMsg || 'Failed to approve request');
+        toast.error(errorMsg || t('notifications.approveFailed'));
         return;
       }
 
-      toast.success(result.message || 'Withdrawal request approved successfully', { id: toastId });
+      toast.success(result.message || t('notifications.approveSuccess'), { id: toastId });
     } catch (err) {
       console.error('Quick approve exception:', err);
-      toast.error('Failed to approve request');
+      toast.error(t('notifications.approveFailed'));
     } finally {
       setApprovingId(null);
     }
@@ -190,7 +192,7 @@ const NotificationBell = () => {
   const handleDelete = async (e, notificationId) => {
     e.stopPropagation();
     await deleteNotification(notificationId);
-    toast.success('Notification removed');
+    toast.success(t('notifications.removedToast'));
   };
 
   return (
@@ -200,8 +202,8 @@ const NotificationBell = () => {
           variant="ghost"
           size="icon"
           type="button"
-          title="Notifications"
-          aria-label="Notifications"
+          title={t('notifications.title')}
+          aria-label={t('notifications.title')}
           aria-haspopup="menu"
           aria-expanded={isOpen}
           className={cn(controlClassName, 'relative cursor-pointer')}
@@ -216,7 +218,7 @@ const NotificationBell = () => {
             </span>
           )}
           {unreadCount > 0 && (
-            <span className="sr-only">You have {unreadCount} unread notification{unreadCount === 1 ? '' : 's'}</span>
+            <span className="sr-only">{t('notifications.srOnlyUnread', { count: unreadCount })}</span>
           )}
         </Button>
       </DropdownMenu.Trigger>
@@ -226,7 +228,7 @@ const NotificationBell = () => {
           align="end"
           sideOffset={10}
           className={menuContentClassName}
-          aria-label="Notification Center"
+          aria-label={t('notifications.title')}
         >
           {/* Header */}
           <div className="flex items-center justify-between gap-3 px-3 pt-2 pb-2">
@@ -236,10 +238,12 @@ const NotificationBell = () => {
               </div>
               <div>
                 <DropdownMenu.Label className="p-0 text-sm font-bold text-foreground">
-                  Notifications
+                  {t('notifications.title')}
                 </DropdownMenu.Label>
                 <p className="text-[11px] text-muted-foreground">
-                  {unreadCount > 0 ? `${unreadCount} unread` : 'All caught up'}
+                  {unreadCount > 0 
+                    ? t('notifications.unreadCount', { count: unreadCount }) 
+                    : t('notifications.allCaughtUp')}
                 </p>
               </div>
             </div>
@@ -253,7 +257,7 @@ const NotificationBell = () => {
                 className="h-8 rounded-lg px-2 text-xs text-primary hover:bg-primary/10 font-semibold flex items-center gap-1"
               >
                 <CheckCheck className="h-3.5 w-3.5" />
-                <span>Mark all as read</span>
+                <span>{t('notifications.markAllAsRead')}</span>
               </Button>
             )}
           </div>
@@ -270,7 +274,7 @@ const NotificationBell = () => {
                   : 'text-muted-foreground hover:text-foreground'
               )}
             >
-              <span>All</span>
+              <span>{t('notifications.tabAll')}</span>
               <span className="text-[10px] bg-muted px-1.5 py-0.2 rounded-full font-mono">
                 {notifications.length}
               </span>
@@ -286,7 +290,7 @@ const NotificationBell = () => {
                   : 'text-muted-foreground hover:text-foreground'
               )}
             >
-              <span>Unread</span>
+              <span>{t('notifications.tabUnread')}</span>
               {unreadCount > 0 && (
                 <span className="text-[10px] bg-rose-500 text-white px-1.5 py-0.2 rounded-full font-mono">
                   {unreadCount}
@@ -304,7 +308,7 @@ const NotificationBell = () => {
                   : 'text-muted-foreground hover:text-foreground'
               )}
             >
-              <span>Action Needed</span>
+              <span>{t('notifications.tabAction')}</span>
               {pendingActionCount > 0 && (
                 <span className="text-[10px] bg-amber-500 text-white px-1.5 py-0.2 rounded-full font-mono animate-pulse">
                   {pendingActionCount}
@@ -320,20 +324,20 @@ const NotificationBell = () => {
             {loading && (
               <div className="py-10 text-center text-xs text-muted-foreground flex flex-col items-center gap-2">
                 <RefreshCw className="w-5 h-5 animate-spin text-primary" />
-                <span>Loading notifications...</span>
+                <span>{t('notifications.loading')}</span>
               </div>
             )}
 
             {!loading && error && (
               <div className="py-8 text-center px-4 space-y-2">
-                <p className="text-xs text-destructive font-medium">Failed to load notifications</p>
+                <p className="text-xs text-destructive font-medium">{t('notifications.loadError')}</p>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => void reload()}
                   className="h-8 text-xs"
                 >
-                  <RefreshCw className="mr-1.5 h-3.5 w-3.5" /> Try again
+                  <RefreshCw className="mr-1.5 h-3.5 w-3.5" /> {t('notifications.tryAgain')}
                 </Button>
               </div>
             )}
@@ -343,13 +347,13 @@ const NotificationBell = () => {
                 <div className="w-10 h-10 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
                   <ShieldCheck className="w-5 h-5" />
                 </div>
-                <div className="font-semibold text-foreground">No notifications in this tab</div>
-                <p className="text-[11px] text-muted-foreground">You are all caught up.</p>
+                <div className="font-semibold text-foreground">{t('notifications.emptyTitle')}</div>
+                <p className="text-[11px] text-muted-foreground">{t('notifications.emptyDesc')}</p>
               </div>
             )}
 
             {!loading && !error && filteredNotifications.map((notification) => {
-              const presentation = notificationPresentation(notification.event_type);
+              const presentation = notificationPresentation(notification.event_type, t);
               const Icon = presentation.icon;
               const isUnread = !notification.read_at;
               const isSubmitted = notification.event_type?.includes('submitted');
@@ -390,12 +394,12 @@ const NotificationBell = () => {
                         <div className="flex items-center gap-1.5">
                           <span className="text-[10px] text-muted-foreground flex items-center gap-1">
                             <Clock className="w-3 h-3" />
-                            {formatRelativeTime(notification.created_at)}
+                            {formatRelativeTime(notification.created_at, t)}
                           </span>
 
                           <button
                             type="button"
-                            title="Delete notification"
+                            title={t('notifications.deleteNotification')}
                             onClick={(e) => handleDelete(e, notification.id)}
                             className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive p-0.5 rounded transition-opacity"
                           >
@@ -435,7 +439,7 @@ const NotificationBell = () => {
                               ) : (
                                 <Check className="w-3 h-3" />
                               )}
-                              <span>{isApproving ? 'Approving...' : 'Quick Approve'}</span>
+                              <span>{isApproving ? t('notifications.approving') : t('notifications.quickApprove')}</span>
                             </Button>
 
                             <Button
@@ -448,7 +452,7 @@ const NotificationBell = () => {
                               }}
                               className="h-7 px-2 text-[11px] font-medium rounded-lg text-muted-foreground hover:text-foreground"
                             >
-                              View Requisition
+                              {t('notifications.viewRequisition')}
                             </Button>
                           </>
                         )}
@@ -464,7 +468,7 @@ const NotificationBell = () => {
                             }}
                             className="h-7 px-2.5 text-[11px] font-semibold bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg flex items-center gap-1 shadow-xs"
                           >
-                            <span>View Voucher</span>
+                            <span>{t('notifications.viewVoucher')}</span>
                             <ArrowRight className="w-3 h-3" />
                           </Button>
                         )}
@@ -481,7 +485,7 @@ const NotificationBell = () => {
                             className="h-7 px-2.5 text-[11px] font-semibold bg-rose-600 hover:bg-rose-700 text-white rounded-lg flex items-center gap-1 shadow-xs"
                           >
                             <RotateCcw className="w-3 h-3" />
-                            <span>Process Return</span>
+                            <span>{t('notifications.processReturn')}</span>
                           </Button>
                         )}
 
@@ -498,7 +502,7 @@ const NotificationBell = () => {
                             className="h-7 px-2.5 text-[11px] font-medium flex items-center gap-1"
                           >
                             <Package className="w-3 h-3 text-orange-500" />
-                            <span>Check Stock</span>
+                            <span>{t('notifications.checkStock')}</span>
                           </Button>
                         )}
                       </div>

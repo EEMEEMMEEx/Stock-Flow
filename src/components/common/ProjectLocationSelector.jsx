@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
 import { Building2, MapPin, ChevronRight, Layers, Info } from 'lucide-react';
+import { useTranslation } from '@/i18n';
 
 /**
  * ProjectLocationSelector
@@ -12,14 +13,18 @@ export const ProjectLocationSelector = ({
   onChange,
   required = false,
   allowAll = false,
-  allLabel = '-- All Locations (Total System Balance) --',
+  allLabel,
   mode = 'dual', // 'dual' (2 separate dropdowns) or 'unified' (single clear dropdown)
-  label = 'Project & Location',
-  description: _description = 'Select destination project and storage location',
+  label,
+  description: _description,
   showSummaryCard = true,
   className = '',
   size: _size = 'default' // 'default' | 'sm' | 'lg'
 }) => {
+  const { t } = useTranslation();
+  const displayLabel = label || t('projects.title');
+  const displayAllLabel = allLabel || `-- ${t('common.all')} ${t('common.location')} --`;
+
   // Group projects by unique Project Name + Project Code
   const groupedProjects = useMemo(() => {
     const map = new Map();
@@ -31,7 +36,7 @@ export const ProjectLocationSelector = ({
       if (!map.has(key)) {
         map.set(key, {
           key,
-          name: p.name || 'General Project',
+          name: p.name || t('projects.title'),
           project_code: p.project_code || '',
           locations: [p]
         });
@@ -40,7 +45,7 @@ export const ProjectLocationSelector = ({
       }
     });
     return Array.from(map.values());
-  }, [projects]);
+  }, [projects, t]);
 
   // Find the selected project location record
   const selectedRecord = useMemo(() => {
@@ -110,7 +115,6 @@ export const ProjectLocationSelector = ({
     }
   };
 
-
   // Render Dual Mode (Two-stage distinct dropdowns)
   if (mode === 'dual') {
     return (
@@ -119,11 +123,11 @@ export const ProjectLocationSelector = ({
         <div className="flex items-center justify-between">
           <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
             <Building2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-            <span>{label}</span>
+            <span>{displayLabel}</span>
             {required && <span className="text-destructive font-bold">*</span>}
           </label>
           <span className="text-[11px] text-muted-foreground font-normal">
-            {groupedProjects.length} Projects ({projects.length} Locations)
+            {groupedProjects.length} {t('common.projects')} ({projects.length} {t('common.location')})
           </span>
         </div>
 
@@ -133,18 +137,18 @@ export const ProjectLocationSelector = ({
           <div className="space-y-1">
             <span className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
               <Layers className="w-3 h-3 text-indigo-500" />
-              <span>1. Select Project</span>
+              <span>1. {t('common.select')} {t('common.project')}</span>
             </span>
             <select
               value={allowAll && value === 'all' ? 'all' : (activeGroupKey || '')}
               onChange={(e) => handleGroupChange(e.target.value)}
               className="w-full h-9 rounded-lg border border-input bg-background px-3 text-xs font-medium text-foreground focus:ring-2 focus:ring-primary shadow-xs cursor-pointer transition-colors"
             >
-              {allowAll && <option value="all">{allLabel}</option>}
-              {!allowAll && !activeGroupKey && <option value="" disabled>-- Please select project --</option>}
+              {allowAll && <option value="all">{displayAllLabel}</option>}
+              {!allowAll && !activeGroupKey && <option value="" disabled>-- {t('stockIn.selectProject')} --</option>}
               {groupedProjects.map(group => (
                 <option key={group.key} value={group.key}>
-                  {group.project_code ? `[${group.project_code}] ` : ''}{group.name} ({group.locations.length} Locations)
+                  {group.project_code ? `[${group.project_code}] ` : ''}{group.name} ({group.locations.length} {t('common.location')})
                 </option>
               ))}
             </select>
@@ -154,7 +158,7 @@ export const ProjectLocationSelector = ({
           <div className="space-y-1">
             <span className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
               <MapPin className="w-3 h-3 text-emerald-500" />
-              <span>2. Select Storage Location</span>
+              <span>2. {t('common.select')} {t('common.location')}</span>
             </span>
             <select
               required={required}
@@ -163,10 +167,10 @@ export const ProjectLocationSelector = ({
               onChange={(e) => handleLocationChange(e.target.value)}
               className="w-full h-9 rounded-lg border border-input bg-background px-3 text-xs font-medium text-emerald-700 dark:text-emerald-300 focus:ring-2 focus:ring-primary shadow-xs cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {!value && <option value="" disabled>-- Select Storage Location --</option>}
+              {!value && <option value="" disabled>-- {t('items.filterLocation')} --</option>}
               {(activeGroup?.locations || []).map(loc => (
                 <option key={loc.id} value={loc.id}>
-                  {loc.location || 'Main Storage / Unspecified'} {loc.description ? `— (${loc.description})` : ''}
+                  {loc.location || t('common.location')} {loc.description ? `— (${loc.description})` : ''}
                 </option>
               ))}
             </select>
@@ -183,11 +187,11 @@ export const ProjectLocationSelector = ({
                     [{selectedRecord.project_code}]
                   </span>
                 )}
-                <span>Project: {selectedRecord.name}</span>
+                <span>{t('common.project')}: {selectedRecord.name}</span>
                 <ChevronRight className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
                 <span className="text-emerald-700 dark:text-emerald-300 font-bold flex items-center gap-1">
                   <Building2 className="w-3.5 h-3.5 shrink-0 inline" />
-                  <span>Location: {selectedRecord.location || 'Main Storage'}</span>
+                  <span>{t('common.location')}: {selectedRecord.location || t('common.location')}</span>
                 </span>
               </div>
               {selectedRecord.description && (
@@ -199,7 +203,7 @@ export const ProjectLocationSelector = ({
             </div>
 
             <span className="shrink-0 px-2 py-0.5 rounded-full bg-emerald-600 text-white font-mono text-[10px] font-bold">
-              SELECTED
+              {t('common.confirm')}
             </span>
           </div>
         )}
@@ -207,18 +211,18 @@ export const ProjectLocationSelector = ({
     );
   }
 
-  // Render Unified Mode (Crystal-clear Single Select with explicit Project + Location label formatting)
+  // Render Unified Mode
   return (
     <div className={`space-y-2 ${className}`}>
       {/* Label */}
       <div className="flex items-center justify-between">
         <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
           <Building2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-          <span>{label}</span>
+          <span>{displayLabel}</span>
           {required && <span className="text-destructive font-bold">*</span>}
         </label>
         <span className="text-[11px] text-muted-foreground font-normal">
-          {projects.length} Locations
+          {projects.length} {t('common.location')}
         </span>
       </div>
 
@@ -228,16 +232,16 @@ export const ProjectLocationSelector = ({
         onChange={(e) => handleUnifiedChange(e.target.value)}
         className="w-full h-9 rounded-lg border border-input bg-background px-3 text-xs font-medium focus:ring-2 focus:ring-primary shadow-xs cursor-pointer transition-colors"
       >
-        {allowAll && <option value="all">{allLabel}</option>}
-        {!allowAll && !value && <option value="" disabled>-- Select Project & Location --</option>}
+        {allowAll && <option value="all">{displayAllLabel}</option>}
+        {!allowAll && !value && <option value="" disabled>-- {t('stockIn.selectProject')} & {t('common.location')} --</option>}
         {groupedProjects.map(group => (
           <optgroup
             key={group.key}
-            label={`Project: ${group.project_code ? `[${group.project_code}] ` : ''}${group.name}`}
+            label={`${t('common.project')}: ${group.project_code ? `[${group.project_code}] ` : ''}${group.name}`}
           >
             {group.locations.map(loc => (
               <option key={loc.id} value={loc.id}>
-                {loc.location || 'Main Storage'} {loc.description ? `(${loc.description})` : ''}
+                {loc.location || t('common.location')} {loc.description ? `(${loc.description})` : ''}
               </option>
             ))}
           </optgroup>
@@ -252,12 +256,12 @@ export const ProjectLocationSelector = ({
             <ChevronRight className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
             <span className="text-emerald-700 dark:text-emerald-300 font-bold flex items-center gap-1">
               <Building2 className="w-3.5 h-3.5 inline" />
-              <span>{selectedRecord.location || 'Main Storage'}</span>
+              <span>{selectedRecord.location || t('common.location')}</span>
             </span>
           </div>
 
           <span className="px-1.5 py-0.5 rounded bg-emerald-600 text-white font-mono text-[9px] font-bold shrink-0">
-            ACTIVE
+            {t('common.active')}
           </span>
         </div>
       )}

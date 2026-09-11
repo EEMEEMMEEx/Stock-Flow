@@ -1,13 +1,14 @@
 {
   "name": "stock-flow-app",
   "private": true,
-  "version": "1.6.0",
+  "version": "1.8.5",
   "type": "module",
   "scripts": {
     "dev": "vite --host",
     "tunnel": "cloudflared tunnel --url http://localhost:5173",
     "build": "vite build",
     "lint": "eslint .",
+    "check:i18n": "node scripts/check-i18n-parity.mjs",
     "preview": "vite preview",
     "test:email": "node --test src/lib/emailRenderer.test.js",
     "migrate:r2": "node scripts/migrate-legacy-images-to-r2.mjs",
@@ -38,6 +39,7 @@
     "dotenv": "^16.4.5",
     "framer-motion": "^11.3.24",
     "i18next": "^26.4.2",
+    "i18next-browser-languagedetector": "^8.2.1",
     "lucide-react": "^0.428.0",
     "nodemailer": "^10.0.0",
     "react": "^18.3.1",

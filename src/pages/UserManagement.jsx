@@ -587,7 +587,7 @@ const UserManagement = () => {
               onChange={(e) => setRoleFilter(e.target.value)}
               className="w-full h-9 px-3 text-xs rounded-lg bg-background text-foreground border border-input focus:ring-1 focus:ring-primary focus:outline-none shadow-xs"
             >
-              <option value="all">Role: All</option>
+              <option value="all">{t('users.allRoles', 'Role: All')}</option>
               {dbRoles.length > 0 ? (
                 dbRoles.map((r) => (
                   <option key={r.id || r.code} value={(r.code || '').toLowerCase()}>
@@ -612,9 +612,9 @@ const UserManagement = () => {
               onChange={(e) => setStatusFilter(e.target.value)}
               className="w-full h-9 px-3 text-xs rounded-lg bg-background text-foreground border border-input focus:ring-1 focus:ring-primary focus:outline-none shadow-xs"
             >
-              <option value="all">Status: All</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
+              <option value="all">{t('users.allStatuses', 'Status: All')}</option>
+              <option value="active">{t('users.activeStatus', 'Active')}</option>
+              <option value="inactive">{t('users.inactiveStatus', 'Inactive')}</option>
             </select>
           </div>
 
@@ -625,7 +625,7 @@ const UserManagement = () => {
               onChange={(e) => setProjectFilter(e.target.value)}
               className="w-full h-9 px-3 text-xs rounded-lg bg-background text-foreground border border-input focus:ring-1 focus:ring-primary focus:outline-none shadow-xs"
             >
-              <option value="all">Project: All</option>
+              <option value="all">{t('users.allProjects', 'Project: All')}</option>
               {projects.map(p => (
                 <option key={p.id} value={p.id}>{p.name}</option>
               ))}
@@ -641,12 +641,12 @@ const UserManagement = () => {
             <table className="w-full text-sm text-left">
               <thead className="text-xs text-muted-foreground uppercase bg-muted/50 border-b border-border">
                 <tr>
-                  <th className="px-6 py-3.5">User</th>
-                  <th className="px-4 py-3.5">Role</th>
-                  <th className="px-4 py-3.5">Assigned Projects</th>
-                  <th className="px-4 py-3.5">Status</th>
-                  <th className="px-4 py-3.5">Created</th>
-                  <th className="px-6 py-3.5 text-right">Actions</th>
+                  <th className="px-6 py-3.5">{t('common.user', 'User')}</th>
+                  <th className="px-4 py-3.5">{t('users.role', 'Role')}</th>
+                  <th className="px-4 py-3.5">{t('users.projectsAssigned', 'Assigned Projects')}</th>
+                  <th className="px-4 py-3.5">{t('common.status', 'Status')}</th>
+                  <th className="px-4 py-3.5">{t('common.date', 'Created')}</th>
+                  <th className="px-6 py-3.5 text-right">{t('common.actions', 'Actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/40">
@@ -655,14 +655,14 @@ const UserManagement = () => {
                     <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
                       <div className="inline-flex items-center gap-2">
                         <RefreshCw className="w-4 h-4 animate-spin text-primary" />
-                        Loading users...
+                        {t('common.loading', 'Loading users...')}
                       </div>
                     </td>
                   </tr>
                 ) : filteredUsers.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
-                      No users found matching the filter criteria
+                      {t('users.noUsersFound', 'No users found matching the filter criteria')}
                     </td>
                   </tr>
                 ) : (
@@ -750,7 +750,7 @@ const UserManagement = () => {
                         <td className="px-4 py-4 max-w-xs">
                           {u.all_projects ? (
                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
-                              <FolderKanban className="w-3 h-3" /> All Projects
+                              <FolderKanban className="w-3 h-3" /> {t('users.allProjects', 'All Projects')}
                             </span>
                           ) : u.assigned_project_ids && u.assigned_project_ids.length > 0 ? (
                             <div className="flex flex-wrap gap-1">
@@ -761,7 +761,7 @@ const UserManagement = () => {
                               ))}
                             </div>
                           ) : (
-                            <span className="text-xs text-muted-foreground font-italic">No projects assigned</span>
+                            <span className="text-xs text-muted-foreground font-italic">{t('users.noProjectsAssigned', 'No projects assigned')}</span>
                           )}
                         </td>
 
@@ -769,11 +769,11 @@ const UserManagement = () => {
                         <td className="px-4 py-4 whitespace-nowrap">
                           {u.status === 'active' ? (
                             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-                              <span className="w-2 h-2 rounded-full bg-emerald-500"></span> ACTIVE
+                              <span className="w-2 h-2 rounded-full bg-emerald-500"></span> {t('common.active', 'ACTIVE')}
                             </span>
                           ) : (
                             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300">
-                              <span className="w-2 h-2 rounded-full bg-red-500"></span> INACTIVE
+                              <span className="w-2 h-2 rounded-full bg-red-500"></span> {t('common.inactive', 'INACTIVE')}
                             </span>
                           )}
                         </td>

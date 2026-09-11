@@ -11,6 +11,7 @@ import { MaterialCheckoutPDF, MaterialReturnPDF } from '@/lib/checkout-pdf-templ
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 import { supabase } from '@/lib/supabase';
+import { useTranslation } from '@/i18n';
 
 const CheckoutDetailModal = ({
   isOpen,
@@ -21,6 +22,7 @@ const CheckoutDetailModal = ({
   onOpenReturnModal,
   onOpenExtendModal
 }) => {
+  const { t } = useTranslation();
   const [returnLogs, setReturnLogs] = useState([]);
   const [extensionLogs, setExtensionLogs] = useState([]);
   const [generatingPdf, setGeneratingPdf] = useState(false);
@@ -94,10 +96,10 @@ const CheckoutDetailModal = ({
       link.download = `Checkout_Slip_${order.order_number || 'DOC'}.pdf`;
       link.click();
       URL.revokeObjectURL(url);
-      toast.success('Checkout slip downloaded');
+      toast.success(t('checkouts.toasts.checkoutSlipDownloaded'));
     } catch (err) {
       console.error('PDF Error:', err);
-      toast.error('Failed to generate checkout slip PDF');
+      toast.error(t('checkouts.toasts.checkoutSlipPdfFailed'));
     } finally {
       setGeneratingPdf(false);
     }
@@ -113,10 +115,10 @@ const CheckoutDetailModal = ({
       link.download = `Return_Receipt_${order.order_number || 'DOC'}.pdf`;
       link.click();
       URL.revokeObjectURL(url);
-      toast.success('Return receipt downloaded');
+      toast.success(t('checkouts.toasts.returnReceiptDownloaded'));
     } catch (err) {
       console.error('PDF Error:', err);
-      toast.error('Failed to generate return receipt PDF');
+      toast.error(t('checkouts.toasts.returnReceiptPdfFailed'));
     } finally {
       setGeneratingPdf(false);
     }
@@ -133,19 +135,19 @@ const CheckoutDetailModal = ({
               </div>
               <div>
                 <DialogTitle className="text-lg font-extrabold text-foreground tracking-tight flex items-center gap-2">
-                  <span>Loan & Return Details</span>
+                  <span>{t('checkouts.title')}</span>
                   <span className="font-mono text-xs font-bold text-indigo-600 bg-indigo-500/10 px-2 py-0.5 rounded-md">
                     {order.order_number}
                   </span>
                   {isIndefinite && (
                     <span className="text-[11px] font-bold text-purple-700 dark:text-purple-300 bg-purple-500/15 border border-purple-500/30 px-2 py-0.5 rounded-md flex items-center gap-1">
                       <InfinityIcon className="w-3 h-3 text-purple-600 dark:text-purple-400" />
-                      Indefinite
+                      {t('checkouts.indefiniteLoan')}
                     </span>
                   )}
                 </DialogTitle>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Borrowed: {order.checkout_date ? format(new Date(order.checkout_date), 'dd/MM/yyyy HH:mm') : '-'}
+                  {t('checkouts.borrowDate')}: {order.checkout_date ? format(new Date(order.checkout_date), 'dd/MM/yyyy HH:mm') : '-'}
                 </p>
               </div>
             </div>
@@ -154,17 +156,17 @@ const CheckoutDetailModal = ({
             {order.status === 'completed' ? (
               <span className="px-3 py-1 rounded-xl text-xs font-bold bg-emerald-500/15 text-emerald-600 border border-emerald-500/30 flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4" />
-                Completed
+                {t('common.completed')}
               </span>
             ) : order.status === 'partial_returned' ? (
               <span className="px-3 py-1 rounded-xl text-xs font-bold bg-blue-500/15 text-blue-600 border border-blue-500/30 flex items-center gap-1.5">
                 <Clock className="w-4 h-4" />
-                Partially Returned ({totalReturned}/{totalBorrowed})
+                {t('checkouts.processing')} ({totalReturned}/{totalBorrowed})
               </span>
             ) : (
               <span className="px-3 py-1 rounded-xl text-xs font-bold bg-amber-500/15 text-amber-700 border border-amber-500/30 flex items-center gap-1.5">
                 <Clock className="w-4 h-4" />
-                Active
+                {t('common.active')}
               </span>
             )}
           </div>
@@ -176,11 +178,11 @@ const CheckoutDetailModal = ({
             <div className="space-y-1.5">
               <div className="flex items-center gap-2">
                 <User className="w-3.5 h-3.5 text-muted-foreground" />
-                <span className="text-muted-foreground">Borrower:</span>
+                <span className="text-muted-foreground">{t('checkouts.borrower')}:</span>
                 <strong className="text-foreground">{order.borrower_name}</strong>
               </div>
               {order.borrower_department && (
-                <div className="text-muted-foreground pl-5.5">Department: {order.borrower_department}</div>
+                <div className="text-muted-foreground pl-5.5">{t('checkouts.department')}: {order.borrower_department}</div>
               )}
               {order.borrower_phone && (
                 <div className="text-muted-foreground pl-5.5 flex items-center gap-1">
@@ -192,7 +194,7 @@ const CheckoutDetailModal = ({
             <div className="space-y-1.5">
               <div className="flex items-center gap-2">
                 <Building2 className="w-3.5 h-3.5 text-indigo-500" />
-                <span className="text-muted-foreground">Source Project/Warehouse:</span>
+                <span className="text-muted-foreground">{t('items.location')}:</span>
                 <strong className="text-foreground">{order.projects?.name}</strong>
               </div>
               <div className={`flex items-center gap-2 pl-5.5 font-semibold ${
@@ -200,11 +202,11 @@ const CheckoutDetailModal = ({
               }`}>
                 {isIndefinite ? <InfinityIcon className="w-3 h-3" /> : <Calendar className="w-3 h-3" />}
                 <span>
-                  Due Date: {isIndefinite ? 'Indefinite' : (order.expected_return_date ? format(new Date(order.expected_return_date), 'dd/MM/yyyy') : '-')}
+                  {t('checkouts.dueDate')}: {isIndefinite ? t('checkouts.indefiniteLoan') : (order.expected_return_date ? format(new Date(order.expected_return_date), 'dd/MM/yyyy') : '-')}
                 </span>
               </div>
               {order.purpose && (
-                <div className="text-muted-foreground pl-5.5">Purpose: {order.purpose}</div>
+                <div className="text-muted-foreground pl-5.5">{t('checkouts.purpose')}: {order.purpose}</div>
               )}
             </div>
           </div>
@@ -213,15 +215,15 @@ const CheckoutDetailModal = ({
           <div className="space-y-2">
             <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5">
               <Layers className="w-3.5 h-3.5 text-indigo-500" />
-              <span>Borrowed Items ({checkoutItems.length} items)</span>
+              <span>{t('checkouts.itemsInLoan')} ({checkoutItems.length} {t('common.piece')})</span>
             </h4>
 
             <div className="rounded-lg border border-border overflow-hidden divide-y divide-border/40">
               <div className="bg-muted/50 p-2.5 grid grid-cols-12 text-[11px] font-bold text-muted-foreground">
-                <div className="col-span-6">Item Name</div>
-                <div className="col-span-2 text-center">Borrowed</div>
-                <div className="col-span-2 text-center">Returned</div>
-                <div className="col-span-2 text-center">Remaining</div>
+                <div className="col-span-6">{t('items.itemName')}</div>
+                <div className="col-span-2 text-center">{t('checkouts.borrowQty')}</div>
+                <div className="col-span-2 text-center">{t('checkouts.returnQty')}</div>
+                <div className="col-span-2 text-center">{t('stockIn.qtySourceRemaining')}</div>
               </div>
 
               {checkoutItems.map((item, idx) => {
@@ -229,13 +231,13 @@ const CheckoutDetailModal = ({
                 return (
                   <div key={item.id || idx} className="p-2.5 grid grid-cols-12 text-xs items-center">
                     <div className="col-span-6 space-y-0.5">
-                      <p className="font-bold text-foreground line-clamp-1">{item.items?.name || 'Item'}</p>
+                      <p className="font-bold text-foreground line-clamp-1">{item.items?.name || t('dashboard.item')}</p>
                       {item.serial_number && (
                         <p className="text-[10px] text-indigo-600 dark:text-indigo-400 font-mono">S/N: {item.serial_number}</p>
                       )}
                     </div>
                     <div className="col-span-2 text-center font-mono font-semibold">
-                      {item.quantity_borrowed} {item.items?.unit || 'ชิ้น'}
+                      {item.quantity_borrowed} {item.items?.unit || t('common.piece')}
                     </div>
                     <div className="col-span-2 text-center font-mono font-bold text-emerald-600 dark:text-emerald-400">
                       {item.quantity_returned}
@@ -256,7 +258,7 @@ const CheckoutDetailModal = ({
             <div className="space-y-2 pt-2 border-t border-border/40">
               <h4 className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
                 <RotateCcw className="w-3.5 h-3.5" />
-                <span>Return History ({returnLogs.length} records)</span>
+                <span>{t('checkouts.loanHistory')} ({returnLogs.length} {t('common.results')})</span>
               </h4>
 
               <div className="space-y-2">
@@ -264,21 +266,21 @@ const CheckoutDetailModal = ({
                   <div key={log.id} className="p-2.5 rounded-xl bg-muted/25 border border-border/40 text-xs flex items-center justify-between">
                     <div>
                       <div className="font-semibold text-foreground flex items-center gap-1.5 flex-wrap">
-                        <span>{log.checkout_items?.items?.name || 'Item'}</span>
+                        <span>{log.checkout_items?.items?.name || t('dashboard.item')}</span>
                         {log.checkout_items?.serial_number && (
                           <span className="font-mono text-[10px] text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 px-1.5 py-0.2 rounded font-bold">
                             S/N: {log.checkout_items.serial_number}
                           </span>
                         )}
-                        <span>— Returned {log.returned_quantity} {log.checkout_items?.items?.unit || 'ชิ้น'}</span>
+                        <span>— {t('checkouts.returnQty')} {log.returned_quantity} {log.checkout_items?.items?.unit || t('common.piece')}</span>
                         <span className={`ml-1 px-1.5 py-0.5 rounded text-[10px] font-bold ${
                           log.item_condition === 'normal' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-red-500/10 text-red-600'
                         }`}>
-                          {log.item_condition === 'normal' ? 'Normal' : log.item_condition}
+                          {log.item_condition === 'normal' ? t('checkouts.normal') : log.item_condition}
                         </span>
                       </div>
                       <div className="text-[10px] text-muted-foreground mt-0.5">
-                        Received into: {log.projects?.name} • By: {log.profiles?.full_name || 'Staff'}
+                        {t('items.location')}: {log.projects?.name} • {t('history.performedBy')}: {log.profiles?.full_name || 'Staff'}
                       </div>
                     </div>
 
@@ -296,7 +298,7 @@ const CheckoutDetailModal = ({
             <div className="space-y-2 pt-2 border-t border-border/40">
               <h4 className="text-xs font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
                 <CalendarClock className="w-3.5 h-3.5" />
-                <span>Extension History ({extensionLogs.length} records)</span>
+                <span>{t('checkouts.extendDueDate')} ({extensionLogs.length} {t('common.results')})</span>
               </h4>
 
               <div className="space-y-2">
@@ -305,7 +307,7 @@ const CheckoutDetailModal = ({
                     <div>
                       <div className="font-semibold text-foreground flex items-center gap-1.5 flex-wrap">
                         <span className="text-muted-foreground line-through font-mono text-[11px]">
-                          {log.previous_due_date ? format(new Date(log.previous_due_date), 'dd/MM/yyyy') : 'Indefinite'}
+                          {log.previous_due_date ? format(new Date(log.previous_due_date), 'dd/MM/yyyy') : t('checkouts.indefiniteLoan')}
                         </span>
                         <ArrowRight className="w-3 h-3 text-amber-500" />
                         {log.new_due_date ? (
@@ -315,7 +317,7 @@ const CheckoutDetailModal = ({
                         ) : (
                           <span className="font-bold text-purple-600 dark:text-purple-400 font-mono inline-flex items-center gap-1">
                             <InfinityIcon className="w-3 h-3" />
-                            Indefinite
+                            {t('checkouts.indefiniteLoan')}
                           </span>
                         )}
                         {log.extension_reason && (
@@ -325,7 +327,7 @@ const CheckoutDetailModal = ({
                         )}
                       </div>
                       <div className="text-[10px] text-muted-foreground mt-0.5">
-                        Extended by: {log.profiles?.full_name || 'Staff'}
+                        {t('history.performedBy')}: {log.profiles?.full_name || 'Staff'}
                       </div>
                     </div>
 
@@ -350,7 +352,7 @@ const CheckoutDetailModal = ({
               className="rounded-lg h-9 text-xs gap-1.5 font-semibold shadow-2xs cursor-pointer"
             >
               <Download className="w-3.5 h-3.5" />
-              <span>Print Loan Slip (PDF)</span>
+              <span>{t('history.printPdf')}</span>
             </Button>
 
             {returnLogs.length > 0 && (
@@ -363,7 +365,7 @@ const CheckoutDetailModal = ({
                 className="rounded-lg h-9 text-xs gap-1.5 font-semibold text-emerald-700 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 shadow-2xs cursor-pointer"
               >
                 <Download className="w-3.5 h-3.5" />
-                <span>Print Return Slip (PDF)</span>
+                <span>{t('history.printPdf')}</span>
               </Button>
             )}
           </div>
@@ -372,7 +374,7 @@ const CheckoutDetailModal = ({
             {isIndefinite ? (
               <div className="inline-flex items-center gap-1.5 px-3 rounded-lg h-9 bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-500/30 text-xs font-semibold select-none">
                 <InfinityIcon className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
-                <span>Indefinite Loan</span>
+                <span>{t('checkouts.indefiniteLoan')}</span>
               </div>
             ) : (
               remaining > 0 && order.status !== 'completed' && onOpenExtendModal && canExtend && (
@@ -387,7 +389,7 @@ const CheckoutDetailModal = ({
                   className="rounded-lg h-9 border-amber-500/30 text-amber-700 dark:text-amber-400 hover:bg-amber-500/10 text-xs gap-1.5 font-semibold shadow-2xs cursor-pointer"
                 >
                   <CalendarClock className="w-3.5 h-3.5" />
-                  <span>Extend Due Date</span>
+                  <span>{t('checkouts.extendDueDate')}</span>
                 </Button>
               )
             )}
@@ -403,7 +405,7 @@ const CheckoutDetailModal = ({
                 className="rounded-lg h-9 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs gap-1.5 font-semibold shadow-xs cursor-pointer"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
-                <span>Return Items</span>
+                <span>{t('checkouts.returnEquipment')}</span>
               </Button>
             )}
 
@@ -414,7 +416,7 @@ const CheckoutDetailModal = ({
               onClick={onClose}
               className="rounded-lg h-9 text-xs font-semibold"
             >
-              Close
+              {t('common.close')}
             </Button>
           </div>
         </DialogFooter>

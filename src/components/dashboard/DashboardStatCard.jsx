@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTranslation } from '@/i18n';
 
 /**
  * Reusable Dashboard KPI Summary Card
@@ -48,6 +49,7 @@ const DashboardStatCard = ({
   permission = null,
 }) => {
   const { can } = useAuth();
+  const { t, language } = useTranslation();
 
   // RBAC Permission Check: Card is clickable ONLY if user has permission for destination route
   const isAuthorized = permission ? can(permission) : true;
@@ -83,10 +85,10 @@ const DashboardStatCard = ({
         {loading ? (
           <Skeleton className="h-8 w-14 rounded-lg" />
         ) : error ? (
-          <span className="text-xl font-bold text-muted-foreground/60" title="Unable to load data">—</span>
+          <span className="text-xl font-bold text-muted-foreground/60" title={t('common.noData', 'Unable to load data')}>—</span>
         ) : (
           <span className={`text-xl sm:text-2xl font-bold tracking-tight ${style.valueText}`}>
-            {typeof value === 'number' ? value.toLocaleString('th-TH') : (value ?? 0)}
+            {typeof value === 'number' ? value.toLocaleString(language === 'en' ? 'en-US' : 'th-TH') : (value ?? 0)}
           </span>
         )}
       </div>

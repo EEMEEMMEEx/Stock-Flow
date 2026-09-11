@@ -8,9 +8,11 @@ import toast from 'react-hot-toast';
 import AvatarUpload from '@/components/users/AvatarUpload';
 import { getRoleLabel } from '@/lib/roleUtils';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTranslation } from '@/i18n';
 
 const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) => {
   const { isSuperAdmin } = useAuth();
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('account'); // 'account' | 'access'
   const [loading, setLoading] = useState(false);
   const [projectSearch, setProjectSearch] = useState('');
@@ -126,10 +128,10 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
         <DialogHeader>
           <DialogTitle className="text-xl font-bold flex items-center gap-2">
             <User className="w-5 h-5 text-primary" />
-            Add User
+            {t('users.addUser')}
           </DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
-            Create a new user in Supabase Auth and configure roles and project access
+            {t('users.subtitle')}
           </DialogDescription>
         </DialogHeader>
 

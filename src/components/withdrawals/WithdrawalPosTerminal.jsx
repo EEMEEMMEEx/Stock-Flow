@@ -10,6 +10,7 @@ import {
   LayoutGrid, List, X, Filter
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useTranslation } from '@/i18n';
 import WithdrawalItemCard from './WithdrawalItemCard';
 import StockLocationBreakdownModal from './StockLocationBreakdownModal';
 import WithdrawalCartPanel from './WithdrawalCartPanel';
@@ -35,6 +36,7 @@ const WithdrawalPosTerminal = ({
   isLoading = false,
   isSubmitting = false
 }) => {
+  const { t } = useTranslation();
   // Search & Filters
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -160,8 +162,8 @@ const WithdrawalPosTerminal = ({
             value={selectedProjectId}
             onChange={(id) => onSelectProject(id)}
             allowAll={true}
-            allLabel="-- All Projects & Locations (System-wide Total) --"
-            label="Target Project & Storage Location"
+            allLabel={t('withdrawals.allLocationsLabel', '-- All Projects & Locations (System-wide Total) --')}
+            label={t('withdrawals.targetProjectLocation', 'Target Project & Storage Location')}
             mode="dual"
             showSummaryCard={selectedProjectId !== 'all'}
           />
@@ -175,7 +177,7 @@ const WithdrawalPosTerminal = ({
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 ref={searchInputRef}
-                placeholder="Search items... (Name, SKU, Model) Press / to focus"
+                placeholder={t('withdrawals.searchItemsFocusHint', 'Search items... (Name, SKU, Model) Press / to focus')}
                 className="pl-9 pr-8 h-9 rounded-lg bg-background border-border text-xs shadow-2xs"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -203,10 +205,10 @@ const WithdrawalPosTerminal = ({
                     ? 'bg-background text-foreground shadow-xs border border-border/60'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
-                title="Grid View"
+                title={t('withdrawals.gridView', 'Grid View')}
               >
                 <LayoutGrid className="w-4 h-4" />
-                <span>Grid</span>
+                <span>{t('withdrawals.gridView', 'Grid')}</span>
               </Button>
               <Button
                 type="button"
@@ -218,10 +220,10 @@ const WithdrawalPosTerminal = ({
                     ? 'bg-background text-foreground shadow-xs border border-border/60'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
-                title="Table View"
+                title={t('withdrawals.tableView', 'Table View')}
               >
                 <List className="w-4 h-4" />
-                <span>Table</span>
+                <span>{t('withdrawals.tableView', 'Table')}</span>
               </Button>
             </div>
           </div>
@@ -229,7 +231,7 @@ const WithdrawalPosTerminal = ({
           {/* Stock Availability Filter Tabs */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-thin">
             <span className="text-[11px] font-bold text-muted-foreground shrink-0 mr-1 flex items-center gap-1">
-              <Filter className="w-3 h-3" /> Stock Status:
+              <Filter className="w-3 h-3" /> {t('withdrawals.stockStatus', 'Stock Status:')}
             </span>
 
             <Button
@@ -243,7 +245,7 @@ const WithdrawalPosTerminal = ({
                   : 'border-border/60 text-muted-foreground hover:bg-accent'
               }`}
             >
-              All ({items.length})
+              {t('common.all', 'All')} ({items.length})
             </Button>
 
             <Button
@@ -257,7 +259,7 @@ const WithdrawalPosTerminal = ({
                   : 'border-emerald-500/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/10'
               }`}
             >
-              In Stock ({inStockCount})
+              {t('withdrawals.inStockTab', 'In Stock ({{count}})', { count: inStockCount })}
             </Button>
 
             <Button
@@ -271,7 +273,7 @@ const WithdrawalPosTerminal = ({
                   : 'border-amber-500/30 text-amber-700 dark:text-amber-300 hover:bg-amber-500/10'
               }`}
             >
-              Low Stock (≤ 5)
+              {t('withdrawals.lowStockTab', 'Low Stock (≤ 5)')}
             </Button>
 
             <Button
@@ -285,7 +287,7 @@ const WithdrawalPosTerminal = ({
                   : 'border-blue-500/30 text-blue-700 dark:text-blue-300 hover:bg-blue-500/10'
               }`}
             >
-              Other Locations
+              {t('withdrawals.otherLocationsTab', 'Other Locations')}
             </Button>
 
             <Button
@@ -299,7 +301,7 @@ const WithdrawalPosTerminal = ({
                   : 'border-slate-300 text-slate-600 dark:text-slate-400 hover:bg-slate-100'
               }`}
             >
-              Out of Stock
+              {t('withdrawals.outOfStockTab', 'Out of Stock')}
             </Button>
           </div>
 
@@ -307,7 +309,7 @@ const WithdrawalPosTerminal = ({
           <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/30">
             <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-thin">
               <span className="text-[11px] font-bold text-muted-foreground shrink-0 mr-1 flex items-center gap-1">
-                <Tag className="w-3 h-3" /> Category:
+                <Tag className="w-3 h-3" /> {t('common.category', 'Category')}:
               </span>
               <Button
                 type="button"
@@ -320,7 +322,7 @@ const WithdrawalPosTerminal = ({
                     : 'border-border/60 hover:bg-accent text-muted-foreground'
                 }`}
               >
-                All
+                {t('common.all', 'All')}
               </Button>
               {categories.map(cat => (
                 <Button
@@ -348,7 +350,7 @@ const WithdrawalPosTerminal = ({
                 onClick={handleResetFilters}
                 className="h-7 px-2 text-[11px] font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-xl shrink-0 gap-1 cursor-pointer"
               >
-                <RotateCcw className="w-3 h-3" /> Reset
+                <RotateCcw className="w-3 h-3" /> {t('common.reset', 'Reset')}
               </Button>
             )}
           </div>
@@ -370,9 +372,9 @@ const WithdrawalPosTerminal = ({
           ) : filteredItems.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-12 text-muted-foreground bg-card rounded-xl border border-border space-y-2">
               <Package className="w-12 h-12 text-muted-foreground/30 stroke-1" />
-              <p className="font-bold text-sm text-foreground">No matching items found</p>
+              <p className="font-bold text-sm text-foreground">{t('withdrawals.noMatchingItems', 'No matching items found')}</p>
               <p className="text-xs text-muted-foreground max-w-sm text-center">
-                Try a different search term or click reset filters above.
+                {t('withdrawals.noMatchingItemsDesc', 'Try a different search term or click reset filters above.')}
               </p>
               <Button
                 type="button"
@@ -381,7 +383,7 @@ const WithdrawalPosTerminal = ({
                 onClick={handleResetFilters}
                 className="rounded-lg text-xs mt-2"
               >
-                Reset All Filters
+                {t('withdrawals.resetAllFilters', 'Reset All Filters')}
               </Button>
             </div>
           ) : viewMode === 'table' ? (
@@ -391,10 +393,10 @@ const WithdrawalPosTerminal = ({
                 <TableHeader className="bg-muted/50 text-xs">
                   <TableRow>
                     <TableHead className="w-12 text-center">#</TableHead>
-                    <TableHead>Item / Details</TableHead>
-                    <TableHead>SKU / Model</TableHead>
-                    <TableHead className="text-center">Current Stock</TableHead>
-                    <TableHead className="text-right">Add to Request</TableHead>
+                    <TableHead>{t('withdrawals.itemDetailsCol', 'Item / Details')}</TableHead>
+                    <TableHead>{t('withdrawals.skuModelCol', 'SKU / Model')}</TableHead>
+                    <TableHead className="text-center">{t('withdrawals.currentStockCol', 'Current Stock')}</TableHead>
+                    <TableHead className="text-right">{t('withdrawals.addToRequestCol', 'Add to Request')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody className="text-xs">
@@ -428,11 +430,11 @@ const WithdrawalPosTerminal = ({
                             <span>{item.name}</span>
                             {isInCart && (
                               <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-indigo-600 text-white shadow-2xs">
-                                {cartItem.quantity} in cart
+                                {t('withdrawals.inCartBadge', '{{count}} in cart', { count: cartItem.quantity })}
                               </span>
                             )}
                           </div>
-                          <span className="text-[10px] text-muted-foreground">Unit: {item.unit || 'ชิ้น'}</span>
+                          <span className="text-[10px] text-muted-foreground">{t('common.unit', 'Unit')}: {item.unit || t('common.piece', 'ชิ้น')}</span>
                         </TableCell>
                         <TableCell className="font-mono text-[11px]">
                           <div>{item.sku || '-'}</div>
@@ -461,8 +463,8 @@ const WithdrawalPosTerminal = ({
                             {availableStock > 0
                               ? `${availableStock} ${item.unit || ''}`
                               : hasStockInOtherWarehouse
-                                ? `Other (${totalSys})`
-                                : 'Out of stock'}
+                                ? t('withdrawals.otherStockBadge', 'Other ({{count}})', { count: totalSys })
+                                : t('common.outOfStock', 'Out of stock')}
                           </button>
                         </TableCell>
                         <TableCell className="text-right">
@@ -513,7 +515,7 @@ const WithdrawalPosTerminal = ({
                               }`}
                             >
                               <Plus className="w-3.5 h-3.5" />
-                              <span>{isOutOfStock && hasStockInOtherWarehouse ? 'Other Locations' : 'Add to Request'}</span>
+                              <span>{isOutOfStock && hasStockInOtherWarehouse ? t('withdrawals.otherLocations', 'Other Locations') : t('withdrawals.addToRequestCol', 'Add to Request')}</span>
                             </Button>
                           )}
                         </TableCell>
@@ -561,7 +563,7 @@ const WithdrawalPosTerminal = ({
               </Button>
 
               <div className="flex items-center gap-1.5 font-medium text-foreground">
-                <span>Page</span>
+                <span>{t('common.page', 'Page')}</span>
                 <input
                   type="number"
                   min={1}
@@ -572,7 +574,7 @@ const WithdrawalPosTerminal = ({
                   onKeyDown={(e) => { if (e.key === 'Enter') handlePageInputBlur(); }}
                   className="h-8 w-12 text-center font-mono text-xs font-bold rounded-lg border border-input bg-background focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all shadow-2xs"
                 />
-                <span>of</span>
+                <span>{t('common.of', 'of')}</span>
                 <span className="font-mono font-bold text-foreground">{totalPages}</span>
               </div>
 
@@ -599,13 +601,13 @@ const WithdrawalPosTerminal = ({
                 onChange={(e) => setRowsPerPage(Number(e.target.value))}
                 className="h-8 rounded-lg border border-input bg-background px-2.5 text-xs font-bold text-foreground focus:ring-2 focus:ring-indigo-500 cursor-pointer shadow-2xs transition-all"
               >
-                <option value={24}>24 items/page</option>
-                <option value={48}>48 items/page</option>
-                <option value={96}>96 items/page</option>
+                <option value={24}>{t('withdrawals.itemsPerPage', '{{count}} items/page', { count: 24 })}</option>
+                <option value={48}>{t('withdrawals.itemsPerPage', '{{count}} items/page', { count: 48 })}</option>
+                <option value={96}>{t('withdrawals.itemsPerPage', '{{count}} items/page', { count: 96 })}</option>
               </select>
 
               <span className="font-mono text-xs text-muted-foreground font-semibold">
-                Total {totalRecords.toLocaleString()} items
+                {t('withdrawals.totalItemsCount', 'Total {{count}} items', { count: totalRecords.toLocaleString() })}
               </span>
             </div>
           </div>
@@ -643,12 +645,12 @@ const WithdrawalPosTerminal = ({
                 <ShoppingCart className="w-5 h-5" />
               </div>
               <div className="text-left">
-                <p className="text-xs font-extrabold uppercase tracking-wide">Requisition Cart</p>
-                <p className="text-[11px] font-mono opacity-90">{cart.length} items ({totalCartUnits} ชิ้น)</p>
+                <p className="text-xs font-extrabold uppercase tracking-wide">{t('withdrawals.cart', 'Requisition Cart')}</p>
+                <p className="text-[11px] font-mono opacity-90">{cart.length} {cart.length === 1 ? t('common.item', 'item') : t('common.items', 'items')} ({totalCartUnits} {totalCartUnits === 1 ? t('common.unit', 'unit') : t('common.units', 'units')})</p>
               </div>
             </div>
             <span className="text-xs font-extrabold bg-white/20 px-3 py-1 rounded-lg">
-              View Cart & Submit →
+              {t('withdrawals.viewCartAndSubmit', 'View Cart & Submit →')}
             </span>
           </Button>
         </div>
@@ -688,7 +690,7 @@ const WithdrawalPosTerminal = ({
         onSelectProject={(projId) => {
           onSelectProject(projId);
           setBreakdownModalItem(null);
-          toast.success('Target project changed successfully');
+          toast.success(t('withdrawals.targetProjectChanged', 'Target project changed successfully'));
         }}
       />
     </div>

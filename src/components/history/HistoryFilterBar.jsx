@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Filter, Search, RotateCcw, Calendar, ChevronDown, ChevronUp } from 'lucide-react';
 import { format, subDays, startOfMonth } from 'date-fns';
+import { useTranslation } from '@/i18n';
 
 const HistoryFilterBar = ({
   filters,
@@ -13,6 +14,7 @@ const HistoryFilterBar = ({
   projectsList = [],
   requestersList = []
 }) => {
+  const { t } = useTranslation();
   const [isExpanded, setIsExpanded] = React.useState(true);
 
   const handleApplyPreset = (presetKey) => {
@@ -47,10 +49,10 @@ const HistoryFilterBar = ({
             <div className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
               <Filter className="w-4 h-4" />
             </div>
-            <span>History Filters</span>
+            <span>{t('history.historyFilters', 'History Filters')}</span>
             {hasActiveFilters && (
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-600 text-white">
-                Active
+                {t('common.active', 'Active')}
               </span>
             )}
           </div>
@@ -65,7 +67,7 @@ const HistoryFilterBar = ({
                 className="h-8 px-2.5 text-xs text-muted-foreground hover:text-rose-600 dark:hover:text-rose-400 gap-1 cursor-pointer"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
-                <span>Clear Filters</span>
+                <span>{t('history.clearFilters', 'Clear Filters')}</span>
               </Button>
             )}
 
@@ -87,14 +89,14 @@ const HistoryFilterBar = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 items-end">
               {/* Search Text */}
               <div className="space-y-1.5 sm:col-span-2 lg:col-span-1">
-                <Label className="text-xs font-semibold text-foreground">Search (Order # / Project / Item / Requester)</Label>
+                <Label className="text-xs font-semibold text-foreground">{t('history.searchLabel', 'Search (Order # / Project / Item / Requester)')}</Label>
                 <div className="relative">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     name="search"
                     value={filters.search}
                     onChange={onFilterChange}
-                    placeholder="Search order #, project, item name..."
+                    placeholder={t('history.searchPlaceholder', 'Search order #, project, item name...')}
                     className="pl-8 h-9 text-xs rounded-xl"
                   />
                 </div>
@@ -102,14 +104,14 @@ const HistoryFilterBar = ({
 
               {/* Project Filter */}
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-foreground">Project</Label>
+                <Label className="text-xs font-semibold text-foreground">{t('history.project', 'Project')}</Label>
                 <select
                   name="project_id"
                   value={filters.project_id}
                   onChange={onFilterChange}
                   className="flex h-9 w-full rounded-xl border border-input bg-background px-3 py-1 text-xs shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
                 >
-                  <option value="">All Projects</option>
+                  <option value="">{t('history.allProjects', 'All Projects')}</option>
                   {projectsList.map((p) => (
                     <option key={p.id} value={p.id}>
                       {p.project_code ? `[${p.project_code}] ` : ''}{p.name}
@@ -120,31 +122,31 @@ const HistoryFilterBar = ({
 
               {/* Status Filter */}
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-foreground">Status</Label>
+                <Label className="text-xs font-semibold text-foreground">{t('common.status', 'Status')}</Label>
                 <select
                   name="status"
                   value={filters.status}
                   onChange={onFilterChange}
                   className="flex h-9 w-full rounded-xl border border-input bg-background px-3 py-1 text-xs shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
                 >
-                  <option value="">All Statuses</option>
-                  <option value="approved">Approved</option>
-                  <option value="completed">Completed</option>
-                  <option value="rejected">Rejected</option>
-                  <option value="shortage">Shortages</option>
+                  <option value="">{t('history.allStatuses', 'All Statuses')}</option>
+                  <option value="approved">{t('common.approved', 'Approved')}</option>
+                  <option value="completed">{t('common.completed', 'Completed')}</option>
+                  <option value="rejected">{t('common.rejected', 'Rejected')}</option>
+                  <option value="shortage">{t('history.shortages', 'Shortages')}</option>
                 </select>
               </div>
 
               {/* Requester Filter */}
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-foreground">Requester</Label>
+                <Label className="text-xs font-semibold text-foreground">{t('history.requester', 'Requester')}</Label>
                 <select
                   name="requester_id"
                   value={filters.requester_id}
                   onChange={onFilterChange}
                   className="flex h-9 w-full rounded-xl border border-input bg-background px-3 py-1 text-xs shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
                 >
-                  <option value="">All Requesters</option>
+                  <option value="">{t('history.allRequesters', 'All Requesters')}</option>
                   {requestersList.map((req) => (
                     <option key={req.id} value={req.id}>
                       {req.full_name}
@@ -155,7 +157,7 @@ const HistoryFilterBar = ({
 
               {/* Date Filters */}
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-foreground">Start Date</Label>
+                <Label className="text-xs font-semibold text-foreground">{t('history.startDate', 'Start Date')}</Label>
                 <Input
                   type="date"
                   name="start_date"
@@ -166,7 +168,7 @@ const HistoryFilterBar = ({
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-foreground">End Date</Label>
+                <Label className="text-xs font-semibold text-foreground">{t('history.endDate', 'End Date')}</Label>
                 <Input
                   type="date"
                   name="end_date"
@@ -180,35 +182,35 @@ const HistoryFilterBar = ({
             {/* Quick Date Presets */}
             <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-border/40 text-xs">
               <span className="text-muted-foreground font-medium flex items-center gap-1 mr-1">
-                <Calendar className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" /> Quick ranges:
+                <Calendar className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" /> {t('history.quickRanges', 'Quick ranges:')}
               </span>
               <button
                 type="button"
                 onClick={() => handleApplyPreset('today')}
                 className="px-2.5 py-1 rounded-lg bg-accent/60 hover:bg-accent text-foreground text-[11px] font-medium transition-colors border border-border/40 cursor-pointer"
               >
-                Today
+                {t('history.today', 'Today')}
               </button>
               <button
                 type="button"
                 onClick={() => handleApplyPreset('7days')}
                 className="px-2.5 py-1 rounded-lg bg-accent/60 hover:bg-accent text-foreground text-[11px] font-medium transition-colors border border-border/40 cursor-pointer"
               >
-                Last 7 days
+                {t('history.last7Days', 'Last 7 days')}
               </button>
               <button
                 type="button"
                 onClick={() => handleApplyPreset('30days')}
                 className="px-2.5 py-1 rounded-lg bg-accent/60 hover:bg-accent text-foreground text-[11px] font-medium transition-colors border border-border/40 cursor-pointer"
               >
-                Last 30 days
+                {t('history.last30Days', 'Last 30 days')}
               </button>
               <button
                 type="button"
                 onClick={() => handleApplyPreset('month')}
                 className="px-2.5 py-1 rounded-lg bg-accent/60 hover:bg-accent text-foreground text-[11px] font-medium transition-colors border border-border/40 cursor-pointer"
               >
-                This month
+                {t('history.thisMonth', 'This month')}
               </button>
             </div>
           </div>
