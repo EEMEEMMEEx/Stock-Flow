@@ -1,4 +1,13 @@
 # Changelog
+## [2026-09-15 13:30] - v1.9.1
+- **Files Modified:** `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - แก้ไขปัญหา Vercel `npm install` ล้มเหลวจากข้อขัดแย้งของ peer dependency ระหว่าง `eslint@9.39.5` กับ `eslint-plugin-react@7.37.5`
+  - กำหนดการตั้งค่า `overrides` ใน `package.json` ให้ `eslint-plugin-react` เชื่อมโยงเวอร์ชันของ `eslint` เข้ากับ root project (`$eslint`) โดยตรง
+  - ซิงค์และรีเจนเนอเรต `package-lock.json` ให้สมบูรณ์แบบโดยไม่ต้องใช้ `--force` หรือ `--legacy-peer-deps`
+  - ตรวจสอบผ่าน `npm run lint` (0 errors), `npm run test:email` (PASS 9/9), `npm run check:i18n` (PASS), และ `npm run build` (Vite production bundle built successfully)
+- **Reason:** ป้องกันข้อผิดพลาด `ERESOLVE could not resolve peer dependency` ในขั้นตอนการ Build บน Vercel
+
 ## [2026-09-15 12:00] - v1.9.0
 - **Files Modified:** `api/send-email.js`, `src/lib/emailService.js`, `src/lib/nodemailerTransport.test.js`, `package.json`, `CHANGELOG.md`
 - **Changes:**
