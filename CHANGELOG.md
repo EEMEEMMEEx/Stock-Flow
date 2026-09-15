@@ -1,4 +1,16 @@
 # Changelog
+## [2026-09-15 11:35] - v1.8.8
+- **Files Modified:** `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - แก้ไขปัญหาข้อผิดพลาด `npm install` (ERESOLVE dependency conflict) ที่เกิดจากการอัปเดตแพ็กเกจ
+  - จัดการข้อขัดแย้งของ peer dependency ระหว่าง `eslint@10.10.0` กับ `eslint-plugin-react@7.37.5` (ซึ่งรองรับ ESLint ได้สูงสุดเวอร์ชัน 9.x / `^9.7`)
+  - กำหนดเวอร์ชันที่เข้ากันได้อย่างสมบูรณ์ (Compatible Versions):
+    - `eslint`: `^9.39.5` (เสถียรและเข้ากันได้กับ `eslint-plugin-react@^7.37.5`, `eslint-plugin-react-hooks@^5.2.0`, และ `eslint-plugin-react-refresh@^0.5.7`)
+    - `@eslint/js`: `^9.39.5`
+  - อัปเดตแพ็กเกจ dependencies / devDependencies ที่เข้ากันได้ (Compatible minor/patch versions) และล็อกเวอร์ชันลงใน `package-lock.json` สะอาดเรียบร้อยโดยไม่ต้องใช้ `--force` หรือ `--legacy-peer-deps`
+  - ตรวจสอบผ่านคำสั่ง `npm install` (PASS 0 errors), `npm run build` (PASS Vite production bundle build สำเร็จ 100%), `npm run lint` (PASS 0 errors), และ `npm run check:i18n` (PASS 100% Key Parity)
+- **Reason:** แก้ไข dependency conflict ระหว่าง ESLint 10 กับ React ESLint plugins และคงความเข้ากันได้ของ dependencies ทั้งระบบ
+
 ## [2026-09-15 09:50] - v1.8.7
 - **Files Modified:** `package.json`, `supabase/migrations/65_security_and_reliability_remediation.sql`, `CHANGELOG.md`, `scripts/audit-migration-policies.mjs`
 - **Changes:**
