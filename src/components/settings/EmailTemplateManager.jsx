@@ -11,6 +11,7 @@ import { getSampleEmailData, renderEmailHtml, SUPPORTED_EVENT_VARIABLES } from '
 import { APP_CONFIG } from '@/config/appConfig';
 import toast from 'react-hot-toast';
 import { sendTestEmail } from '@/lib/emailService';
+import { useTranslation } from '@/i18n';
 
 const DEFAULT_BRANDING = {
   app_name: APP_CONFIG.name,
@@ -164,6 +165,7 @@ const EmailTemplateManager = ({
   canUpdate = true,
   onSave = () => {}
 }) => {
+  const { t } = useTranslation();
   const [events, setEvents] = useState(() => mergeEventsWithDefaults(eventsConfig));
   const [selectedEventKey, setSelectedEventKey] = useState('withdrawal_submitted');
   const [activeTab, setActiveTab] = useState('content'); // 'content' | 'recipients' | 'preview' | 'test'
@@ -177,6 +179,10 @@ const EmailTemplateManager = ({
   // Test Email State
   const [testRecipient, setTestRecipient] = useState('');
   const [sendingTest, setSendingTest] = useState(false);
+
+  const getEventTitle = (key, fallback) => t(`settings.emailTemplates.events.${key}.title`, fallback);
+  const getEventDesc = (key, fallback) => t(`settings.emailTemplates.events.${key}.desc`, fallback);
+  const getEventPrimaryRecipient = (key, fallback) => t(`settings.emailTemplates.events.${key}.primaryRecipient`, fallback);
 
   useEffect(() => {
     if (eventsConfig && Object.keys(eventsConfig).length > 0) {
@@ -227,14 +233,14 @@ const EmailTemplateManager = ({
         [selectedEventKey]: { ...defaultEvt }
       }));
       setIsDirty(true);
-      toast.success(`Reset template "${defaultEvt.title}" to default successfully`);
+      toast.success(t('settings.emailTemplates.editor.resetCurrentConfirm', { title: getEventTitle(selectedEventKey, defaultEvt.title), defaultValue: `Reset template "${defaultEvt.title}" to default successfully` }));
     }
   };
 
   const handleResetAllEvents = () => {
     setEvents({ ...DEFAULT_EVENTS_CONFIG });
     setIsDirty(true);
-    toast.success('Reset all email templates to system defaults successfully');
+    toast.success(t('settings.emailTemplates.list.resetAllConfirm', 'Reset all email templates to system defaults successfully'));
   };
 
   const handleInsertVariable = (varCode) => {
@@ -250,25 +256,25 @@ const EmailTemplateManager = ({
   };
 
   const handleSaveAll = () => {
-    if (!canUpdate) return toast.error('You do not have permission to save email templates');
+    if (!canUpdate) return toast.error(t('settings.toasts.permissionDenied', { perm: 'settings.update', defaultValue: 'You do not have permission to save email templates' }));
     onSave({ branding, events });
     setIsDirty(false);
-    toast.success('Saved email settings and templates successfully');
+    toast.success(t('settings.toasts.emailTemplatesSaved', 'Saved email settings and templates successfully'));
   };
 
   const handleSendTestEmail = async () => {
     const trimmedEmail = String(testRecipient || '').trim();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!trimmedEmail || !emailRegex.test(trimmedEmail)) {
-      return toast.error('Please enter a valid test recipient email (e.g. name@domain.com)');
+      return toast.error(t('settings.toasts.invalidEmail', 'Please enter a valid test recipient email (e.g. name@domain.com)'));
     }
 
     try {
       setSendingTest(true);
       await sendTestEmail(trimmedEmail, { ...selectedEvent, event_type: selectedEventKey });
-      toast.success(`Test email sent to ${trimmedEmail} successfully`);
+      toast.success(t('settings.toasts.testEmailSent', { email: trimmedEmail, defaultValue: `Test email sent to ${trimmedEmail} successfully` }));
     } catch (e) {
-      toast.error(e.message || 'An error occurred while sending test email via SMTP server');
+      toast.error(e.message || t('settings.toasts.testEmailFailed', 'An error occurred while sending test email via SMTP server'));
     } finally {
       setSendingTest(false);
     }
@@ -289,11 +295,13 @@ const EmailTemplateManager = ({
     return Object.keys(events).filter(key => {
       const item = events[key];
       if (!item) return false;
-      const title = String(item.title || '').toLowerCase();
-      const desc = String(item.desc || '').toLowerCase();
-      return !q || title.includes(q) || desc.includes(q);
+      const localizedTitle = String(getEventTitle(key, item.title) || '').toLowerCase();
+      const localizedDesc = String(getEventDesc(key, item.desc) || '').toLowerCase();
+      const rawTitle = String(item.title || '').toLowerCase();
+      const rawDesc = String(item.desc || '').toLowerCase();
+      return !q || localizedTitle.includes(q) || localizedDesc.includes(q) || rawTitle.includes(q) || rawDesc.includes(q);
     });
-  }, [events, searchQuery]);
+  }, [events, searchQuery, t]);
 
   return (
     <div className="space-y-6">
@@ -303,57 +311,57 @@ const EmailTemplateManager = ({
           <div>
             <h3 className="text-sm font-bold flex items-center gap-2 text-foreground">
               <Sparkles className="w-4 h-4 text-primary" />
-              Global Email Branding
+              {t('settings.emailTemplates.branding.title', 'Global Email Branding')}
             </h3>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Configure logo, accent color, and public base URL for all email notifications
+              {t('settings.emailTemplates.branding.description', 'Configure logo, accent color, and public base URL for all email notifications')}
             </p>
           </div>
 
           {isDirty && (
             <span className="text-xs text-amber-600 font-semibold bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 rounded-full animate-pulse flex items-center gap-1 w-fit">
               <AlertCircle className="w-3.5 h-3.5" />
-              Unsaved changes
+              {t('settings.emailTemplates.branding.unsaved', 'Unsaved changes')}
             </span>
           )}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
           <div>
-            <Label className="text-[11px] font-semibold">Sender Display Name</Label>
+            <Label className="text-[11px] font-semibold">{t('settings.emailTemplates.branding.senderName', 'Sender Display Name')}</Label>
             <Input
               disabled={!canUpdate}
               value={branding.app_name}
               onChange={(e) => { setBranding(prev => ({ ...prev, app_name: e.target.value })); setIsDirty(true); }}
-              placeholder="StockFlow"
+              placeholder={t('settings.emailTemplates.branding.senderNamePlaceholder', 'StockFlow')}
               className="mt-1 h-9 text-xs rounded-lg bg-background border border-input"
             />
           </div>
 
           <div>
-            <Label className="text-[11px] font-semibold">Logo Image URL</Label>
+            <Label className="text-[11px] font-semibold">{t('settings.emailTemplates.branding.logoUrl', 'Logo Image URL')}</Label>
             <Input
               disabled={!canUpdate}
               value={branding.logo_url}
               onChange={(e) => { setBranding(prev => ({ ...prev, logo_url: e.target.value })); setIsDirty(true); }}
-              placeholder="https://domain.com/logo.png"
+              placeholder={t('settings.emailTemplates.branding.logoUrlPlaceholder', 'https://domain.com/logo.png')}
               className="mt-1 h-9 text-xs rounded-lg bg-background border border-input"
             />
           </div>
 
           <div>
-            <Label className="text-[11px] font-semibold">Public Base URL</Label>
+            <Label className="text-[11px] font-semibold">{t('settings.emailTemplates.branding.publicBaseUrl', 'Public Base URL')}</Label>
             <Input
               disabled={!canUpdate}
               value={branding.public_base_url}
               onChange={(e) => { setBranding(prev => ({ ...prev, public_base_url: e.target.value })); setIsDirty(true); }}
-              placeholder="https://stockflowth.online"
+              placeholder={t('settings.emailTemplates.branding.publicBaseUrlPlaceholder', 'https://stockflowth.online')}
               className="mt-1 h-9 text-xs rounded-lg bg-background border border-input font-mono"
             />
           </div>
 
           <div>
-            <Label className="text-[11px] font-semibold">Accent Color</Label>
+            <Label className="text-[11px] font-semibold">{t('settings.emailTemplates.branding.accentColor', 'Accent Color')}</Label>
             <div className="flex items-center gap-2 mt-1">
               <input
                 type="color"
@@ -380,21 +388,23 @@ const EmailTemplateManager = ({
         <div className="lg:col-span-4 space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <h4 className="text-xs font-bold text-foreground">Notification Events ({filteredEventKeys.length})</h4>
+              <h4 className="text-xs font-bold text-foreground">
+                {t('settings.emailTemplates.list.title', { count: filteredEventKeys.length, defaultValue: `Notification Events (${filteredEventKeys.length})` })}
+              </h4>
               <button
                 type="button"
                 disabled={!canUpdate}
                 onClick={handleResetAllEvents}
                 className="text-[10px] text-primary hover:underline font-medium cursor-pointer"
-                title="Reset all templates to default"
+                title={t('settings.emailTemplates.list.resetAll', 'Reset all templates to default')}
               >
-                Reset All
+                {t('settings.emailTemplates.list.resetAll', 'Reset All')}
               </button>
             </div>
             <div className="relative w-36">
               <Search className="w-3 h-3 absolute left-2 top-2.5 text-muted-foreground" />
               <Input
-                placeholder="Search templates..."
+                placeholder={t('settings.emailTemplates.list.searchPlaceholder', 'Search templates...')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="text-[11px] h-8 pl-7 rounded-lg bg-background border border-input"
@@ -418,28 +428,28 @@ const EmailTemplateManager = ({
                 >
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xs font-bold line-clamp-1 text-foreground">
-                      {evt.title}
+                      {getEventTitle(key, evt.title)}
                     </span>
                     <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold border ${
                       evt.enabled 
                         ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30' 
                         : 'bg-muted text-muted-foreground border-border'
                     }`}>
-                      {evt.enabled ? 'Enabled' : 'Disabled'}
+                      {evt.enabled ? t('settings.emailTemplates.editor.enabled', 'Enabled') : t('settings.emailTemplates.editor.disabled', 'Disabled')}
                     </span>
                   </div>
 
                   <p className="text-[11px] text-muted-foreground line-clamp-1 mb-2">
-                    {evt.desc}
+                    {getEventDesc(key, evt.desc)}
                   </p>
 
                   <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-2 border-t border-border/40">
                     <span className="flex items-center gap-1">
                       <Users className="w-3 h-3 text-primary" />
-                      Primary: {evt.primary_recipient}
+                      {t('settings.emailTemplates.list.primaryLabel', { recipient: getEventPrimaryRecipient(key, evt.primary_recipient), defaultValue: `Primary: ${evt.primary_recipient}` })}
                     </span>
                     <span className="bg-muted/80 px-1.5 py-0.5 rounded text-[10px]">
-                      +{evt.roles?.length || 0} {evt.roles?.length === 1 ? 'role' : 'roles'}
+                      {t('settings.emailTemplates.list.rolesCount', { count: evt.roles?.length || 0, defaultValue: `+${evt.roles?.length || 0} roles` })}
                     </span>
                   </div>
                 </div>
@@ -455,9 +465,9 @@ const EmailTemplateManager = ({
               <div>
                 <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
                   <Mail className="w-5 h-5 text-primary" />
-                  {selectedEvent.title}
+                  {getEventTitle(selectedEventKey, selectedEvent.title)}
                 </CardTitle>
-                <CardDescription className="text-xs">{selectedEvent.desc}</CardDescription>
+                <CardDescription className="text-xs">{getEventDesc(selectedEventKey, selectedEvent.desc)}</CardDescription>
               </div>
 
               {/* Action Buttons: Reset & Enable Switch */}
@@ -469,14 +479,14 @@ const EmailTemplateManager = ({
                   disabled={!canUpdate}
                   onClick={handleResetCurrentEvent}
                   className="text-xs h-8 px-2.5 flex items-center gap-1 text-muted-foreground hover:text-foreground border-border/60"
-                  title="Reset this template to system default"
+                  title={t('settings.emailTemplates.editor.resetCurrent', 'Reset this template to system default')}
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
-                  Reset to Default
+                  {t('settings.emailTemplates.editor.resetCurrent', 'Reset to Default')}
                 </Button>
 
                 <div className="flex items-center gap-2 bg-background p-1.5 rounded-xl border border-border/50">
-                  <span className="text-xs font-medium text-muted-foreground">Status:</span>
+                  <span className="text-xs font-medium text-muted-foreground">{t('settings.emailTemplates.editor.status', 'Status:')}</span>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
                       type="checkbox"
@@ -488,7 +498,7 @@ const EmailTemplateManager = ({
                     <div className="w-9 h-5 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
                   </label>
                   <span className={`text-xs font-bold ${selectedEvent.enabled ? 'text-emerald-600' : 'text-muted-foreground'}`}>
-                    {selectedEvent.enabled ? 'Enabled' : 'Disabled'}
+                    {selectedEvent.enabled ? t('settings.emailTemplates.editor.enabled', 'Enabled') : t('settings.emailTemplates.editor.disabled', 'Disabled')}
                   </span>
                 </div>
               </div>
@@ -505,7 +515,7 @@ const EmailTemplateManager = ({
                 }`}
               >
                 <Code className="w-3.5 h-3.5" />
-                <span>Content</span>
+                <span>{t('settings.emailTemplates.editor.tabs.content', 'Content')}</span>
               </button>
 
               <button
@@ -517,7 +527,7 @@ const EmailTemplateManager = ({
                 }`}
               >
                 <Users className="w-3.5 h-3.5" />
-                <span>Recipients</span>
+                <span>{t('settings.emailTemplates.editor.tabs.recipients', 'Recipients')}</span>
               </button>
 
               <button
@@ -529,7 +539,7 @@ const EmailTemplateManager = ({
                 }`}
               >
                 <Monitor className="w-3.5 h-3.5" />
-                <span>Live Preview</span>
+                <span>{t('settings.emailTemplates.editor.tabs.preview', 'Live Preview')}</span>
               </button>
 
               <button
@@ -541,7 +551,7 @@ const EmailTemplateManager = ({
                 }`}
               >
                 <Send className="w-3.5 h-3.5 text-blue-500" />
-                <span>Test</span>
+                <span>{t('settings.emailTemplates.editor.tabs.test', 'Test')}</span>
               </button>
             </div>
 
@@ -552,8 +562,8 @@ const EmailTemplateManager = ({
                   {/* Subject Line & Dynamic Variable Chips */}
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="tpl_subject" className="font-semibold text-xs">Subject Line</Label>
-                      <span className="text-[10px] text-muted-foreground">Click variable chips to insert into subject</span>
+                      <Label htmlFor="tpl_subject" className="font-semibold text-xs">{t('settings.emailTemplates.editor.content.subjectLine', 'Subject Line')}</Label>
+                      <span className="text-[10px] text-muted-foreground">{t('settings.emailTemplates.editor.content.variableHint', 'Click variable chips to insert into subject')}</span>
                     </div>
 
                     <Input
@@ -585,7 +595,7 @@ const EmailTemplateManager = ({
                   {/* Status Badge & Heading */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
-                      <Label className="font-semibold text-xs">Badge Label</Label>
+                      <Label className="font-semibold text-xs">{t('settings.emailTemplates.editor.content.badgeLabel', 'Badge Label')}</Label>
                       <Input
                         disabled={!canUpdate}
                         value={selectedEvent.status_label}
@@ -595,22 +605,22 @@ const EmailTemplateManager = ({
                     </div>
 
                     <div>
-                      <Label className="font-semibold text-xs">Badge Color Theme</Label>
+                      <Label className="font-semibold text-xs">{t('settings.emailTemplates.editor.content.badgeTheme', 'Badge Color Theme')}</Label>
                       <select
                         disabled={!canUpdate}
                         value={selectedEvent.status_type}
                         onChange={(e) => handleUpdateSelectedEvent('status_type', e.target.value)}
                         className="w-full mt-1 h-9 rounded-lg border border-input bg-background px-3 py-1 text-xs shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
                       >
-                        <option value="warning">Amber / Pending (Warning)</option>
-                        <option value="approved">Emerald / Approved (Success)</option>
-                        <option value="rejected">Rose / Rejected (Error)</option>
-                        <option value="info">Blue / Info</option>
+                        <option value="warning">{t('settings.emailTemplates.editor.content.themes.warning', 'Amber / Pending (Warning)')}</option>
+                        <option value="approved">{t('settings.emailTemplates.editor.content.themes.approved', 'Emerald / Approved (Success)')}</option>
+                        <option value="rejected">{t('settings.emailTemplates.editor.content.themes.rejected', 'Rose / Rejected (Error)')}</option>
+                        <option value="info">{t('settings.emailTemplates.editor.content.themes.info', 'Blue / Info')}</option>
                       </select>
                     </div>
 
                     <div>
-                      <Label className="font-semibold text-xs">Heading</Label>
+                      <Label className="font-semibold text-xs">{t('settings.emailTemplates.editor.content.heading', 'Heading')}</Label>
                       <Input
                         disabled={!canUpdate}
                         value={selectedEvent.heading}
@@ -622,7 +632,7 @@ const EmailTemplateManager = ({
 
                   {/* Intro Message */}
                   <div>
-                    <Label className="font-semibold text-xs">Intro Message</Label>
+                    <Label className="font-semibold text-xs">{t('settings.emailTemplates.editor.content.intro', 'Intro Message')}</Label>
                     <textarea
                       disabled={!canUpdate}
                       rows={2}
@@ -635,7 +645,7 @@ const EmailTemplateManager = ({
                   {/* CTA Button Label & Link */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <Label className="font-semibold text-xs">CTA Button Label</Label>
+                      <Label className="font-semibold text-xs">{t('settings.emailTemplates.editor.content.ctaLabel', 'CTA Button Label')}</Label>
                       <Input
                         disabled={!canUpdate}
                         value={selectedEvent.cta_label}
@@ -645,7 +655,7 @@ const EmailTemplateManager = ({
                     </div>
 
                     <div>
-                      <Label className="font-semibold text-xs">CTA Target URL</Label>
+                      <Label className="font-semibold text-xs">{t('settings.emailTemplates.editor.content.ctaUrl', 'CTA Target URL')}</Label>
                       <Input
                         disabled={!canUpdate}
                         value={selectedEvent.cta_url}
@@ -657,7 +667,7 @@ const EmailTemplateManager = ({
 
                   {/* Footer Note */}
                   <div>
-                    <Label className="font-semibold text-xs">Footer Note</Label>
+                    <Label className="font-semibold text-xs">{t('settings.emailTemplates.editor.content.footerNote', 'Footer Note')}</Label>
                     <Input
                       disabled={!canUpdate}
                       value={selectedEvent.footer_note}
@@ -674,16 +684,16 @@ const EmailTemplateManager = ({
                   <div className="p-3.5 rounded-xl bg-primary/5 border border-primary/20 space-y-1">
                     <span className="font-bold text-foreground flex items-center gap-1.5">
                       <ShieldCheck className="w-4 h-4 text-primary" />
-                      Primary Recipient by Role
+                      {t('settings.emailTemplates.editor.recipients.primaryTitle', 'Primary Recipient by Role')}
                     </span>
                     <p className="text-muted-foreground text-[11px]">
-                      The system will automatically send to <strong className="text-foreground">{selectedEvent.primary_recipient}</strong> associated with the request.
+                      {t('settings.emailTemplates.editor.recipients.primaryDesc', { recipient: getEventPrimaryRecipient(selectedEventKey, selectedEvent.primary_recipient), defaultValue: `The system will automatically send to ${selectedEvent.primary_recipient} associated with the request.` })}
                     </p>
                   </div>
 
                   {/* Additional Role Checkboxes */}
                   <div className="space-y-2">
-                    <Label className="font-semibold text-xs">CC Additional Roles:</Label>
+                    <Label className="font-semibold text-xs">{t('settings.emailTemplates.editor.recipients.ccRoles', 'CC Additional Roles:')}</Label>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                       {roles.map(r => {
                         const isChecked = (selectedEvent.roles || []).includes(r.code);
@@ -712,7 +722,7 @@ const EmailTemplateManager = ({
                   {/* Extra To / CC Emails */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                     <div>
-                      <Label className="font-semibold text-xs">Direct Extra Recipients (To)</Label>
+                      <Label className="font-semibold text-xs">{t('settings.emailTemplates.editor.recipients.directTo', 'Direct Extra Recipients (To)')}</Label>
                       <Input
                         disabled={!canUpdate}
                         placeholder="extra1@company.com, extra2@company.com"
@@ -720,11 +730,11 @@ const EmailTemplateManager = ({
                         onChange={(e) => handleUpdateSelectedEvent('to_extra', e.target.value)}
                         className="mt-1 h-9 text-xs rounded-lg bg-background border border-input font-mono"
                       />
-                      <span className="text-[10px] text-muted-foreground mt-0.5 block">Separate multiple email addresses with commas (,)</span>
+                      <span className="text-[10px] text-muted-foreground mt-0.5 block">{t('settings.emailTemplates.editor.recipients.commaHint', 'Separate multiple email addresses with commas (,)')}</span>
                     </div>
 
                     <div>
-                      <Label className="font-semibold text-xs">Direct Extra CC Recipients</Label>
+                      <Label className="font-semibold text-xs">{t('settings.emailTemplates.editor.recipients.directCc', 'Direct Extra CC Recipients')}</Label>
                       <Input
                         disabled={!canUpdate}
                         placeholder="manager@company.com, audit@company.com"
@@ -732,7 +742,7 @@ const EmailTemplateManager = ({
                         onChange={(e) => handleUpdateSelectedEvent('cc_extra', e.target.value)}
                         className="mt-1 h-9 text-xs rounded-lg bg-background border border-input font-mono"
                       />
-                      <span className="text-[10px] text-muted-foreground mt-0.5 block">Separate multiple email addresses with commas (,)</span>
+                      <span className="text-[10px] text-muted-foreground mt-0.5 block">{t('settings.emailTemplates.editor.recipients.commaHint', 'Separate multiple email addresses with commas (,)')}</span>
                     </div>
                   </div>
                 </div>
@@ -745,7 +755,7 @@ const EmailTemplateManager = ({
                   <div className="flex items-center justify-between bg-muted/40 p-2 rounded-lg border border-border/40">
                     <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                       <Monitor className="w-3.5 h-3.5 text-primary" />
-                      Live HTML Renderer Preview
+                      {t('settings.emailTemplates.editor.preview.title', 'Live HTML Renderer Preview')}
                     </span>
 
                     <div className="flex items-center gap-1 bg-muted p-0.5 rounded-lg border border-border/50">
@@ -757,7 +767,7 @@ const EmailTemplateManager = ({
                         }`}
                       >
                         <Monitor className="w-3.5 h-3.5" />
-                        Desktop (620px)
+                        {t('settings.emailTemplates.editor.preview.desktop', 'Desktop (620px)')}
                       </button>
                       <button
                         type="button"
@@ -767,7 +777,7 @@ const EmailTemplateManager = ({
                         }`}
                       >
                         <Smartphone className="w-3.5 h-3.5" />
-                        Mobile (375px)
+                        {t('settings.emailTemplates.editor.preview.mobile', 'Mobile (375px)')}
                       </button>
                     </div>
                   </div>
@@ -779,7 +789,7 @@ const EmailTemplateManager = ({
                       style={{ width: previewDevice === 'mobile' ? '375px' : '620px' }}
                     >
                       <iframe
-                        title="Email Preview"
+                        title={t('settings.emailTemplates.editor.preview.title', 'Email Preview')}
                         srcDoc={currentPreviewHtml}
                         className="w-full h-[480px] border-0"
                       />
@@ -793,19 +803,19 @@ const EmailTemplateManager = ({
                 <div className="space-y-4 text-xs max-w-md mx-auto py-4">
                   <div className="p-4 rounded-xl bg-blue-500/5 border border-blue-500/20 text-center space-y-2">
                     <Send className="w-8 h-8 text-blue-600 mx-auto" />
-                    <h4 className="font-bold text-sm text-foreground">Send Test Email</h4>
+                    <h4 className="font-bold text-sm text-foreground">{t('settings.emailTemplates.editor.test.title', 'Send Test Email')}</h4>
                     <p className="text-xs text-muted-foreground">
-                      Send a test email rendered with current branding and sample data to your email address.
+                      {t('settings.emailTemplates.editor.test.description', 'Send a test email rendered with current branding and sample data to your email address.')}
                     </p>
                   </div>
 
                   <div className="space-y-3">
                     <div>
-                      <Label className="font-semibold text-xs">Test Recipient Email *</Label>
+                      <Label className="font-semibold text-xs">{t('settings.emailTemplates.editor.test.recipient', 'Test Recipient Email *')}</Label>
                       <Input
                         type="email"
                         required
-                        placeholder="your-email@company.com"
+                        placeholder={t('settings.emailTemplates.editor.test.recipientPlaceholder', 'your-email@company.com')}
                         value={testRecipient}
                         onChange={(e) => setTestRecipient(e.target.value)}
                         className="mt-1 h-9 text-xs rounded-lg bg-background border border-input"
@@ -819,7 +829,9 @@ const EmailTemplateManager = ({
                       className="w-full h-9 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-xs"
                     >
                       <Send className="w-4 h-4" />
-                      {sendingTest ? 'Sending test email...' : 'Send Test Email'}
+                      {sendingTest 
+                        ? t('settings.emailTemplates.editor.test.sendingBtn', 'Sending test email...') 
+                        : t('settings.emailTemplates.editor.test.sendBtn', 'Send Test Email')}
                     </Button>
                   </div>
                 </div>
@@ -829,7 +841,7 @@ const EmailTemplateManager = ({
               {canUpdate && (
                 <div className="flex justify-between items-center pt-4 border-t border-border/40">
                   <span className="text-[11px] text-muted-foreground">
-                    * Saved changes take effect immediately for outgoing notification emails
+                    {t('settings.emailTemplates.editor.saveFooterHint', '* Saved changes take effect immediately for outgoing notification emails')}
                   </span>
                   <Button
                     type="button"
@@ -837,7 +849,7 @@ const EmailTemplateManager = ({
                     className="h-9 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground flex items-center gap-2 text-xs font-semibold cursor-pointer shadow-xs"
                   >
                     <Save className="w-4 h-4" />
-                    Save Settings & Templates
+                    {t('settings.emailTemplates.editor.saveAllBtn', 'Save Settings & Templates')}
                   </Button>
                 </div>
               )}

@@ -1156,29 +1156,291 @@ export default {
   },
   "settings": {
     "title": "ตั้งค่าระบบ",
-    "subtitle": "กำหนดค่าระบบ เซิร์ฟเวอร์อีเมล (SMTP) และความปลอดภัย",
+    "subtitle": "จัดการค่ากำหนดของระบบ, เซิร์ฟเวอร์อีเมล (SMTP) และนโยบายความปลอดภัย",
     "generalSettings": "ข้อมูลทั่วไปของระบบ",
     "notificationSettings": "การแจ้งเตือนทางอีเมล",
     "smtpSettings": "การเชื่อมต่อเมลเซิร์ฟเวอร์ (SMTP)",
     "testConnection": "ทดสอบการส่งอีเมล",
     "saveChanges": "บันทึกการตั้งค่า",
     "defaultLangDesc": "กำหนดภาษาเริ่มต้นสำหรับการแสดงผลของแอปพลิเคชัน (ไทย / English)",
+    "readOnlyNotice": "บัญชีของคุณมีสิทธิ์เข้าถึงแบบอ่านอย่างเดียว (จำเป็นต้องมีสิทธิ์ {{perm}} ในการบันทึกการเปลี่ยนแปลง)",
     "tabs": {
       "general": "การตั้งค่าทั่วไป",
       "smtp": "การตั้งค่าระบบอีเมล (SMTP)",
       "security": "ความปลอดภัยและการเข้าถึง",
       "system": "ข้อมูลสถานะระบบ"
     },
+    "sections": {
+      "app": {
+        "title": "1. ข้อมูลแอปพลิเคชันและส่วนท้าย",
+        "description": "ชื่อระบบ, หน่วยงาน/องค์กร, คำอธิบายระบบ และการแสดงผลส่วนท้าย"
+      },
+      "inventory": {
+        "title": "2. กฎการจัดการพัสดุและการเบิกจ่าย",
+        "description": "กำหนดเกณฑ์สต็อกขั้นต่ำ, ข้อกำหนดวัตถุประสงค์การเบิก และนโยบายธุรกรรม"
+      },
+      "notification": {
+        "title": "3. การตั้งค่าการแจ้งเตือนและอีเมล",
+        "description": "กำหนดค่าเซิร์ฟเวอร์ SMTP และบทบาทผู้รับการแจ้งเตือนตามเหตุการณ์"
+      },
+      "security": {
+        "title": "4. นโยบายผู้ใช้งานและความปลอดภัย",
+        "description": "นโยบายรหัสผ่าน, การจัดการบัญชีผู้ใช้งาน และความปลอดภัยระดับแอปพลิเคชัน"
+      },
+      "storage": {
+        "title": "5. สถานะพื้นที่จัดเก็บข้อมูล",
+        "description": "สถานะการเชื่อมต่อ Cloudflare R2 Object Storage และนโยบายไฟล์รูปภาพ"
+      },
+      "system": {
+        "title": "6. ข้อมูลสถานะระบบ",
+        "description": "สรุปข้อมูลเวอร์ชัน, สภาพแวดล้อมระบบ และการเชื่อมต่อฐานข้อมูล"
+      }
+    },
+    "app": {
+      "appName": "ชื่อแอปพลิเคชัน",
+      "companyName": "บริษัท / องค์กร",
+      "companyPlaceholder": "เช่น บริษัท ฟอร์ท จำกัด (มหาชน) (ไม่บังคับ)",
+      "appSubtitle": "คำอธิบายแอปพลิเคชัน",
+      "appVersion": "เวอร์ชันแอปพลิเคชัน (ข้อมูล Build)",
+      "environment": "สภาพแวดล้อมระบบ (Environment)",
+      "displayLanguage": "ภาษาการแสดงผล",
+      "liveFooterPreview": "ตัวอย่างส่วนท้ายสด (Live Preview):",
+      "saveBtn": "บันทึกข้อมูลแอปพลิเคชันและส่วนท้าย",
+      "savingBtn": "กำลังบันทึก..."
+    },
+    "inventory": {
+      "policyTitle": "นโยบายการอนุมัติ: ทั้งหมดหรือไม่รับเลย (All-or-Nothing เพื่อป้องกันสต็อกติดลบ)",
+      "policyDesc": "StockFlow บังคับใช้นโยบายอนุมัติคำขอแบบสมบูรณ์ทั้งใบรายการ หากมีรายการวัสดุใดมียอดคงเหลือไม่เพียงพอ ผู้อนุมัติจะไม่สามารถอนุมัติเฉพาะบางส่วนได้ และต้องปฏิเสธทั้งคำขอเพื่อรักษาความถูกต้องของสต็อก",
+      "lowStockThreshold": "เกณฑ์สต็อกขั้นต่ำเริ่มต้น (Low Stock Threshold)",
+      "lowStockThresholdHint": "* เมื่อพัสดุคงเหลือต่ำกว่าเกณฑ์นี้ ระบบจะแสดงป้ายเตือน \"ใกล้หมด\" ในรายการพัสดุ",
+      "requirePurpose": "บังคับระบุวัตถุประสงค์ในการขอเบิกทุกรายการ",
+      "allowInactiveView": "อนุญาตให้ผู้ใช้ดูประวัติและยอดคงเหลือจากโครงการที่ปิดใช้งานแล้วได้",
+      "allowItemDeletion": "เปิดใช้งานปุ่มลบรายการพัสดุ",
+      "allowDirectStockAdjustment": "เปิดใช้งานการแก้ไขสต็อกปัจจุบันโดยตรงบน Master Items",
+      "directStockAdjustmentWarning": "คำเตือน: กรุณาตรวจนับสต็อกจริงก่อนเปิดใช้งานการแก้ไขสต็อกโดยตรง",
+      "saveBtn": "บันทึกกฎการจัดการพัสดุ",
+      "savingBtn": "กำลังบันทึก..."
+    },
+    "smtp": {
+      "serverConfig": "การกำหนดค่าเซิร์ฟเวอร์ SMTP",
+      "testEmailBtn": "ทดสอบส่งอีเมล",
+      "host": "โฮสต์ SMTP (Host)",
+      "hostPlaceholder": "smtp.gmail.com",
+      "port": "พอร์ต SMTP (Port)",
+      "portPlaceholder": "465",
+      "username": "ชื่อผู้ใช้ SMTP (Username)",
+      "userPlaceholder": "user@example.com",
+      "senderEmail": "อีเมลผู้ส่ง (Sender Email)",
+      "senderEmailPlaceholder": "noreply@stockflow.com",
+      "senderName": "ชื่อผู้ส่ง (Sender Name)",
+      "password": "รหัสผ่าน SMTP (Password)",
+      "passwordConfigured": "(ตั้งค่าแล้ว)",
+      "passwordPlaceholderConfigured": "•••••••• (ระบุใหม่เพื่อเปลี่ยน)",
+      "passwordPlaceholderEmpty": "กรอกรหัสผ่าน SMTP",
+      "securityProtocol": "โปรโตคอลความปลอดภัย (Security Protocol)",
+      "implicitTls": "Implicit SSL/TLS (พอร์ต 465)",
+      "startTls": "STARTTLS (พอร์ต 587 / 25)",
+      "implicitTlsDesc": "Implicit TLS: เข้ารหัสการเชื่อมต่อทันทีที่เชื่อมต่อกับเมลเซิร์ฟเวอร์ (แนะนำสำหรับพอร์ต 465)",
+      "startTlsDesc": "STARTTLS: เชื่อมต่อตามปกติแล้วจึงยกระดับเป็นการเข้ารหัส TLS ก่อนส่งข้อมูล (แนะนำสำหรับพอร์ต 587/25)",
+      "verifyTls": "ตรวจสอบใบรับรองความปลอดภัย TLS",
+      "verifyTlsCheckbox": "ตรวจสอบว่าใบรับรองออกโดย CA ที่เชื่อถือได้",
+      "verifyTlsHint": "แนะนำให้เปิดไว้เสมอ การปิดใช้งานจะอนุญาตให้ใช้ใบรับรอง Self-signed ภายในได้",
+      "warnPort465": "คำเตือน: พอร์ต 465 ปกติต้องใช้ Implicit SSL/TLS (secure = true) การเลือก STARTTLS บนพอร์ต 465 อาจทำให้เกิดปัญหา Timeout (ETIMEDOUT)",
+      "warnPort587": "คำเตือน: พอร์ต 587 ปกติต้องใช้ STARTTLS (secure = false) การเลือก Implicit SSL/TLS บนพอร์ต 587 อาจทำให้เกิดข้อผิดพลาด 'Greeting never received'",
+      "warnTlsDisabled": "คำเตือนด้านความปลอดภัย: ควรปิดการตรวจสอบใบรับรอง TLS เฉพาะกรณีที่เมลเซิร์ฟเวอร์ใช้ใบรับรอง Self-signed หรือ CA ภายในองค์กรเท่านั้น",
+      "activeConfig": "การตั้งค่าที่ใช้งานอยู่:",
+      "senderLabel": "ผู้ส่ง:",
+      "tlsCertVerified": "ตรวจสอบแล้ว",
+      "tlsCertDisabled": "ปิดการตรวจสอบ",
+      "tlsCertCheck": "การตรวจใบรับรอง TLS: {{status}}",
+      "saveBtn": "บันทึกการตั้งค่า SMTP",
+      "savingBtn": "กำลังบันทึก..."
+    },
+    "emailTemplates": {
+      "branding": {
+        "title": "อัตลักษณ์แบรนด์ในอีเมล (Global Branding)",
+        "description": "กำหนดโลโก้, สีเน้น (Accent Color) และ URL ฐานสำหรับลิงก์ในอีเมลแจ้งเตือนทุกฉบับ",
+        "unsaved": "มีการเปลี่ยนแปลงที่ยังไม่ได้บันทึก",
+        "senderName": "ชื่อผู้ส่งที่แสดงในอีเมล",
+        "senderNamePlaceholder": "StockFlow",
+        "logoUrl": "URL รูปภาพโลโก้",
+        "logoUrlPlaceholder": "https://domain.com/logo.png",
+        "publicBaseUrl": "URL ฐานสาธารณะ (Public Base URL)",
+        "publicBaseUrlPlaceholder": "https://stockflowth.online",
+        "accentColor": "สีเน้นหลัก (Accent Color)"
+      },
+      "events": {
+        "withdrawal_submitted": {
+          "title": "1. ส่งคำขอเบิกวัสดุ",
+          "desc": "แจ้งเตือนผู้อนุมัติและผู้ดูแลระบบเมื่อมีคำขอเบิกวัสดุใหม่ถูกส่งเข้าระบบ",
+          "primaryRecipient": "ผู้อนุมัติ / ผู้ดูแลระบบ"
+        },
+        "withdrawal_approved": {
+          "title": "2. อนุมัติคำขอเบิกวัสดุ",
+          "desc": "แจ้งเตือนผู้ขอเบิกและเจ้าหน้าที่คลังเมื่อคำขอได้รับการอนุมัติเรียบร้อยแล้ว",
+          "primaryRecipient": "ผู้ขอเบิก"
+        },
+        "withdrawal_rejected": {
+          "title": "3. ไม่อนุมัติคำขอเบิกวัสดุ",
+          "desc": "แจ้งเตือนผู้ขอเบิกเมื่อคำขอไม่ได้รับการอนุมัติพร้อมระบุเหตุผล",
+          "primaryRecipient": "ผู้ขอเบิก"
+        },
+        "withdrawal_completed": {
+          "title": "4. จ่ายวัสดุเสร็จสมบูรณ์",
+          "desc": "แจ้งเตือนเมื่อเจ้าหน้าที่จ่ายวัสดุและตัดยอดสต็อกออกจากระบบเรียบร้อยแล้ว",
+          "primaryRecipient": "ผู้ขอเบิก / ผู้ดูแลระบบ"
+        },
+        "stock_in_created": {
+          "title": "5. บันทึกรับวัสดุเข้าสต็อก",
+          "desc": "แจ้งเตือนเมื่อมีการบันทึกรับวัสดุเข้าสต็อกล็อตใหม่ในโครงการ",
+          "primaryRecipient": "เจ้าหน้าที่คลัง / ผู้ดูแลระบบ"
+        },
+        "low_stock_alert": {
+          "title": "6. แจ้งเตือนวัสดุถึงจุดสั่งซื้อ",
+          "desc": "แจ้งเตือนอัตโนมัติเมื่อยอดคงเหลือของวัสดุในโครงการลดลงจนถึงจุดสั่งซื้อเติมคลัง",
+          "primaryRecipient": "เจ้าหน้าที่คลัง / ผู้อนุมัติ"
+        }
+      },
+      "list": {
+        "title": "เหตุการณ์แจ้งเตือน ({{count}})",
+        "resetAll": "รีเซ็ตทั้งหมด",
+        "resetAllConfirm": "รีเซ็ตเทมเพลตอีเมลทั้งหมดกลับเป็นค่าเริ่มต้นของระบบเรียบร้อยแล้ว",
+        "searchPlaceholder": "ค้นหาเทมเพลต...",
+        "primaryLabel": "ผู้รับหลัก: {{recipient}}",
+        "rolesCount_one": "+{{count}} บทบาท",
+        "rolesCount_other": "+{{count}} บทบาท"
+      },
+      "editor": {
+        "resetCurrent": "รีเซ็ตกลับเป็นค่าเริ่มต้น",
+        "resetCurrentConfirm": "รีเซ็ตเทมเพลต \"{{title}}\" กลับเป็นค่าเริ่มต้นเรียบร้อยแล้ว",
+        "status": "สถานะ:",
+        "enabled": "เปิดใช้งาน",
+        "disabled": "ปิดใช้งาน",
+        "tabs": {
+          "content": "เนื้อหา",
+          "recipients": "ผู้รับอีเมล",
+          "preview": "ตัวอย่างจริง",
+          "test": "ทดสอบส่ง"
+        },
+        "content": {
+          "subjectLine": "หัวข้ออีเมล (Subject Line)",
+          "variableHint": "คลิกตัวแปรเพื่อแทรกลงในหัวข้ออีเมล",
+          "badgeLabel": "ข้อความบนป้ายสถานะ (Badge)",
+          "badgeTheme": "โทนสีของป้ายสถานะ",
+          "themes": {
+            "warning": "สีส้ม / รอพิจารณา (Warning)",
+            "approved": "สีเขียว / อนุมัติแล้ว (Success)",
+            "rejected": "สีแดง / ไม่อนุมัติ (Error)",
+            "info": "สีน้ำเงิน / แจ้งข้อมูล (Info)"
+          },
+          "heading": "หัวข้อหลักของเนื้อหา (Heading)",
+          "intro": "ข้อความเกริ่นนำ (Intro Message)",
+          "ctaLabel": "ข้อความบนปุ่มดำเนินการ (CTA Button)",
+          "ctaUrl": "URL ปลายทางของปุ่มดำเนินการ",
+          "footerNote": "ข้อความหมายเหตุด้านล่าง (Footer Note)"
+        },
+        "recipients": {
+          "primaryTitle": "ผู้รับหลักตามบทบาท (Primary Recipient)",
+          "primaryDesc": "ระบบจะจัดส่งอีเมลไปยัง {{recipient}} ที่เกี่ยวข้องกับคำขอรายการนี้โดยอัตโนมัติ",
+          "ccRoles": "สำเนาถึงบทบาทเพิ่มเติม (CC):",
+          "directTo": "อีเมลผู้รับโดยตรงเพิ่มเติม (To)",
+          "directCc": "อีเมลสำเนาโดยตรงเพิ่มเติม (CC)",
+          "commaHint": "คั่นระหว่างแต่ละอีเมลด้วยเครื่องหมายจุลภาค (,)"
+        },
+        "preview": {
+          "title": "ตัวอย่างการแสดงผลอีเมล HTML แบบสด",
+          "desktop": "เดสก์ท็อป (620px)",
+          "mobile": "มือถือ (375px)"
+        },
+        "test": {
+          "title": "ทดสอบการส่งอีเมล",
+          "description": "ส่งอีเมลทดสอบที่ประมวลผลด้วยอัตลักษณ์แบรนด์ปัจจุบันและข้อมูลตัวอย่างไปยังกล่องจดหมายของคุณ",
+          "recipient": "อีเมลผู้รับทดสอบ *",
+          "recipientPlaceholder": "your-email@company.com",
+          "sendBtn": "ส่งอีเมลทดสอบ",
+          "sendingBtn": "กำลังส่งอีเมลทดสอบ..."
+        },
+        "saveFooterHint": "* การเปลี่ยนแปลงที่บันทึกจะมีผลทันทีกับอีเมลแจ้งเตือนที่จะถูกส่งออกถัดไป",
+        "saveAllBtn": "บันทึกการตั้งค่าและเทมเพลต"
+      }
+    },
+    "securityPolicy": {
+      "passwordPolicyTitle": "นโยบายรหัสผ่าน",
+      "passwordReq1": "รหัสผ่านต้องมีความยาวอย่างน้อย 12 ตัวอักษร และประกอบด้วยตัวพิมพ์ใหญ่, ตัวพิมพ์เล็ก, ตัวเลข และอักขระพิเศษ",
+      "passwordReq2": "รองรับการสร้างรหัสผ่านเริ่มต้นแบบสุ่มที่มีความปลอดภัยสูง (สร้างรหัสผ่านเริ่มต้น) ในหน้าตั้งค่า",
+      "vaultTitle": "การจัดเก็บในระบบตู้นิรภัยความปลอดภัยสูง (Secure Vault):",
+      "vaultDesc": "รหัสผ่านได้รับการเข้ารหัสและจัดเก็บบนฝั่งเซิร์ฟเวอร์ โดยจะไม่มีการส่งกลับมายังฝั่ง Client หรือแสดงผลบนหน้าจอในทุกกรณี",
+      "lifecycleTitle": "วงจรชีวิตและการปกป้องบัญชีผู้ใช้งาน",
+      "inactiveRecommendTitle": "ข้อแนะนำ: สถานะปิดใช้งาน (Inactive):",
+      "inactiveRecommendDesc": "บัญชีผู้ใช้ที่มีประวัติการทำธุรกรรมในระบบควรเปลี่ยนสถานะเป็น Inactive แทนการลบถาวรเพื่อความสมบูรณ์ของข้อมูลย้อนหลัง",
+      "lastAdminTitle": "การป้องกันผู้ดูแลระบบคนสุดท้าย (Last Admin):",
+      "lastAdminDesc": "ระบบไม่อนุญาตให้ลบหรือลดระดับสิทธิ์ของผู้ดูแลระบบ (ADMIN) คนสุดท้าย ทั้งจากหน้าจอ UI และการตรวจสอบระดับฐานข้อมูล"
+    },
     "defaultPassword": {
       "title": "นโยบายรหัสผ่านเริ่มต้น",
       "description": "กำหนดรหัสผ่านชั่วคราวเริ่มต้นสำหรับบัญชีผู้ใช้งานที่สร้างขึ้นใหม่",
       "currentDefault": "รหัสผ่านเริ่มต้นปัจจุบัน",
       "updatePassword": "รหัสผ่านเริ่มต้นใหม่",
-      "saveBtn": "บันทึกนโยบายรหัสผ่าน"
+      "saveBtn": "บันทึกนโยบายรหัสผ่าน",
+      "inputLabel": "รหัสผ่านรีเซ็ตเริ่มต้นใหม่ *",
+      "generateBtn": "สร้างรหัสผ่านปลอดภัย",
+      "placeholderConfigured": "•••••••••••• (ตั้งค่าแล้ว - ระบุใหม่เพื่อเปลี่ยน)",
+      "placeholderEmpty": "กรอกรหัสผ่านเริ่มต้น (อย่างน้อย 12 ตัวอักษร)",
+      "savePasswordBtn": "บันทึกรหัสผ่านเริ่มต้น",
+      "saving": "กำลังบันทึก...",
+      "checklistTitle": "รายการตรวจสอบนโยบายรหัสผ่าน (ตรวจสอบแบบสด):",
+      "reqMinLen": "ความยาวอย่างน้อย 12 ตัวอักษร",
+      "reqUpper": "มีตัวพิมพ์ใหญ่อย่างน้อย 1 ตัว (A-Z)",
+      "reqLower": "มีตัวพิมพ์เล็กอย่างน้อย 1 ตัว (a-z)",
+      "reqDigit": "มีตัวเลขอย่างน้อย 1 ตัว (0-9)",
+      "reqSymbol": "มีอักขระพิเศษอย่างน้อย 1 ตัว (!@#$%^&*)",
+      "reqNoSpace": "ไม่มีช่องว่างหน้าหรือหลังรหัสผ่าน"
+    },
+    "storage": {
+      "provider": "ผู้ให้บริการ",
+      "providerValue": "Cloudflare R2 (S3 API)",
+      "bucketName": "ชื่อ Bucket",
+      "maxFileSize": "ขนาดไฟล์สูงสุด",
+      "maxFileSizeValue": "5 MB (JPG / PNG / WebP)"
+    },
+    "system": {
+      "version": "เวอร์ชัน",
+      "environment": "สภาพแวดล้อม",
+      "database": "ฐานข้อมูล",
+      "connected": "เชื่อมต่อแล้ว",
+      "projects_one": "{{count}} โครงการ",
+      "projects_other": "{{count}} โครงการ",
+      "users_one": "{{count}} ผู้ใช้",
+      "users_other": "{{count}} ผู้ใช้",
+      "roles_one": "{{count}} บทบาท",
+      "roles_other": "{{count}} บทบาท"
+    },
+    "testEmailModal": {
+      "title": "ทดสอบการแจ้งเตือนทางอีเมล",
+      "description": "ส่งข้อความแจ้งเตือนทดสอบผ่านระบบจัดส่ง SMTP ของแอปพลิเคชัน",
+      "recipientLabel": "อีเมลผู้รับทดสอบ *",
+      "recipientPlaceholder": "target@company.com",
+      "cancelBtn": "ยกเลิก",
+      "sendBtn": "ส่งอีเมลทดสอบ",
+      "sendingBtn": "กำลังส่ง..."
     },
     "toasts": {
       "saved": "บันทึกการตั้งค่าเรียบร้อยแล้ว",
-      "saveFailed": "บันทึกการตั้งค่าล้มเหลว"
+      "saveFailed": "บันทึกการตั้งค่าล้มเหลว",
+      "permissionDenied": "ไม่มีสิทธิ์ดำเนินการ จำเป็นต้องมีสิทธิ์ {{perm}}",
+      "appSaved": "บันทึกข้อมูลแอปพลิเคชันและส่วนท้ายเรียบร้อยแล้ว",
+      "migration11Required": "กรุณารัน Migration 11 ใน Supabase SQL Editor เพื่อเปิดใช้งานตารางการตั้งค่า",
+      "inventorySaved": "บันทึกกฎการจัดการพัสดุและการเบิกจ่ายเรียบร้อยแล้ว",
+      "notificationSaved": "บันทึกการตั้งค่าการแจ้งเตือนเรียบร้อยแล้ว",
+      "invalidEmail": "กรุณาระบุอีเมลผู้รับที่ถูกต้อง (เช่น name@domain.com)",
+      "testEmailSent": "ส่งอีเมลทดสอบไปยัง {{email}} สำเร็จ",
+      "testEmailFailed": "ส่งอีเมลทดสอบล้มเหลว",
+      "emailTemplatesSaved": "บันทึกการตั้งค่าอีเมลและเทมเพลตเรียบร้อยแล้ว",
+      "emailTemplatesSaveFailed": "บันทึกเทมเพลตอีเมลล้มเหลว",
+      "generatePasswordSuccess": "สร้างรหัสผ่านที่ปลอดภัยตามนโยบายสำเร็จ",
+      "defaultPasswordSaved": "บันทึกรหัสผ่านรีเซ็ตเริ่มต้นเรียบร้อยแล้ว",
+      "defaultPasswordSaveFailed": "เกิดข้อผิดพลาดในการบันทึกรหัสผ่านรีเซ็ตเริ่มต้น",
+      "fetchError": "โหลดข้อมูลการตั้งค่าระบบล้มเหลว"
     }
   },
   "profile": {

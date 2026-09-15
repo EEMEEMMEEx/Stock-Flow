@@ -175,11 +175,11 @@ const Settings = () => {
       await Promise.all([fetchSettingsFromDb(), fetchRolesCatalog(), fetchStats()]);
     } catch (error) {
       console.error('Fetch Settings Error:', error);
-      toast.error('Failed to load system settings');
+      toast.error(t('settings.toasts.fetchError', 'Failed to load system settings'));
     } finally {
       setLoading(false);
     }
-  }, [fetchSettingsFromDb, fetchRolesCatalog, fetchStats]);
+  }, [fetchSettingsFromDb, fetchRolesCatalog, fetchStats, t]);
 
   useEffect(() => {
     fetchInitialSettings();
@@ -187,7 +187,7 @@ const Settings = () => {
 
   const handleSaveAppSettings = async (e) => {
     e.preventDefault();
-    if (!canUpdate) return toast.error('Permission denied. Requires settings.update');
+    if (!canUpdate) return toast.error(t('settings.toasts.permissionDenied', { perm: 'settings.update', defaultValue: 'Permission denied. Requires settings.update' }));
 
     try {
       setSavingCategory('app');
@@ -204,19 +204,19 @@ const Settings = () => {
 
       if (error) {
         if (error.code === 'PGRST202' || error.status === 404) {
-          toast.error('Please run Migration 11 in Supabase SQL Editor to enable settings table');
+          toast.error(t('settings.toasts.migration11Required', 'Please run Migration 11 in Supabase SQL Editor to enable settings table'));
           return;
         }
         throw error;
       }
 
       if (data?.success) {
-        toast.success('Application and footer settings saved successfully');
+        toast.success(t('settings.toasts.appSaved', 'Application and footer settings saved successfully'));
         window.dispatchEvent(new Event('stockflow:settings-updated'));
       }
     } catch (error) {
       console.error('Save App Settings Error:', error);
-      toast.error(error.message || 'Failed to save settings');
+      toast.error(error.message || t('settings.toasts.saveFailed', 'Failed to save settings'));
     } finally {
       setSavingCategory(null);
     }
@@ -224,7 +224,7 @@ const Settings = () => {
 
   const handleSaveInventorySettings = async (e) => {
     e.preventDefault();
-    if (!canUpdate) return toast.error('Permission denied. Requires settings.update');
+    if (!canUpdate) return toast.error(t('settings.toasts.permissionDenied', { perm: 'settings.update', defaultValue: 'Permission denied. Requires settings.update' }));
 
     try {
       setSavingCategory('inventory');
@@ -243,12 +243,12 @@ const Settings = () => {
 
       if (error) throw error;
       if (data?.success) {
-        toast.success('Inventory and withdrawal rules saved successfully');
+        toast.success(t('settings.toasts.inventorySaved', 'Inventory and withdrawal rules saved successfully'));
         window.dispatchEvent(new Event('stockflow:settings-updated'));
       }
     } catch (error) {
       console.error('Save Inventory Settings Error:', error);
-      toast.error(error.message || 'Failed to save settings');
+      toast.error(error.message || t('settings.toasts.saveFailed', 'Failed to save settings'));
     } finally {
       setSavingCategory(null);
     }
@@ -256,7 +256,7 @@ const Settings = () => {
 
   const handleSaveNotificationSettings = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
-    if (!canUpdate) return toast.error('Permission denied. Requires settings.update');
+    if (!canUpdate) return toast.error(t('settings.toasts.permissionDenied', { perm: 'settings.update', defaultValue: 'Permission denied. Requires settings.update' }));
 
     try {
       setSavingCategory('notification');
@@ -292,7 +292,7 @@ const Settings = () => {
         if (vaultErr) console.warn('[Settings] SMTP Password Vault Error:', vaultErr.message);
       }
 
-      toast.success('Notification settings saved successfully');
+      toast.success(t('settings.toasts.notificationSaved', 'Notification settings saved successfully'));
       setSmtpForm(prev => ({
         ...prev,
         ...smtpPayload,
@@ -303,7 +303,7 @@ const Settings = () => {
       await fetchSettingsFromDb();
     } catch (error) {
       console.error('Save Notification Settings Error:', error);
-      toast.error(error.message || 'Failed to save settings');
+      toast.error(error.message || t('settings.toasts.saveFailed', 'Failed to save settings'));
     } finally {
       setSavingCategory(null);
     }
@@ -313,7 +313,7 @@ const Settings = () => {
     const trimmedEmail = String(testEmailRecipient || '').trim();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!trimmedEmail || !emailRegex.test(trimmedEmail)) {
-      toast.error('Please enter a valid recipient email (e.g., name@domain.com)');
+      toast.error(t('settings.toasts.invalidEmail', 'Please enter a valid recipient email (e.g., name@domain.com)'));
       return;
     }
 
@@ -335,11 +335,11 @@ const Settings = () => {
       }
 
       await sendTestEmail(trimmedEmail, null, customSmtpOverrides);
-      toast.success(`Test email sent to ${trimmedEmail} successfully`);
+      toast.success(t('settings.toasts.testEmailSent', { email: trimmedEmail, defaultValue: `Test email sent to ${trimmedEmail} successfully` }));
       setIsTestEmailOpen(false);
       setTestEmailRecipient('');
     } catch (e) {
-      toast.error(e.message || 'Failed to send test email');
+      toast.error(e.message || t('settings.toasts.testEmailFailed', 'Failed to send test email'));
     } finally {
       setSendingTestEmail(false);
     }
@@ -376,7 +376,7 @@ const Settings = () => {
       {!canUpdate && (
         <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-300 flex items-center gap-2 text-xs">
           <Lock className="w-4 h-4 text-amber-600 shrink-0" />
-          <span>Your account has read-only access to settings (Requires <code className="font-mono bg-amber-200/50 px-1 rounded">settings.update</code> to save changes)</span>
+          <span>{t('settings.readOnlyNotice', { perm: 'settings.update', defaultValue: 'Your account has read-only access to settings (Requires settings.update to save changes)' })}</span>
         </div>
       )}
 
@@ -389,8 +389,8 @@ const Settings = () => {
           <div className="flex items-center gap-2.5">
             <AppWindow className="w-5 h-5 text-primary" />
             <div>
-              <CardTitle className="text-base font-bold">1. Application & Footer</CardTitle>
-              <CardDescription className="text-xs">System name, organization, description, and footer display</CardDescription>
+              <CardTitle className="text-base font-bold">{t('settings.sections.app.title', '1. Application & Footer')}</CardTitle>
+              <CardDescription className="text-xs">{t('settings.sections.app.description', 'System name, organization, description, and footer display')}</CardDescription>
             </div>
           </div>
           {openSections.app ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
@@ -401,7 +401,7 @@ const Settings = () => {
             <form onSubmit={handleSaveAppSettings} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="app_name" className="text-xs font-semibold">Application Name</Label>
+                  <Label htmlFor="app_name" className="text-xs font-semibold">{t('settings.app.appName', 'Application Name')}</Label>
                   <Input
                     id="app_name"
                     required
@@ -413,11 +413,11 @@ const Settings = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="company_name" className="text-xs font-semibold">Company / Organization</Label>
+                  <Label htmlFor="company_name" className="text-xs font-semibold">{t('settings.app.companyName', 'Company / Organization')}</Label>
                   <Input
                     id="company_name"
                     disabled={!canUpdate}
-                    placeholder="e.g. Forth Co., Ltd. (optional)"
+                    placeholder={t('settings.app.companyPlaceholder', 'e.g. Forth Co., Ltd. (optional)')}
                     value={appForm.company_name}
                     onChange={(e) => setAppForm(prev => ({ ...prev, company_name: e.target.value }))}
                     className="mt-1 h-9 text-xs rounded-lg bg-background border border-input"
@@ -426,7 +426,7 @@ const Settings = () => {
               </div>
 
               <div>
-                <Label htmlFor="app_subtitle" className="text-xs font-semibold">Application Subtitle</Label>
+                <Label htmlFor="app_subtitle" className="text-xs font-semibold">{t('settings.app.appSubtitle', 'Application Subtitle')}</Label>
                 <Input
                   id="app_subtitle"
                   disabled={!canUpdate}
@@ -439,7 +439,7 @@ const Settings = () => {
               {/* Version & Build Info (Read-only) */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-xs font-semibold text-muted-foreground">Application Version (Build Metadata)</Label>
+                  <Label className="text-xs font-semibold text-muted-foreground">{t('settings.app.appVersion', 'Application Version (Build Metadata)')}</Label>
                   <Input
                     disabled
                     value={`v${APP_CONFIG.version}`}
@@ -448,7 +448,7 @@ const Settings = () => {
                 </div>
 
                 <div>
-                  <Label className="text-xs font-semibold text-muted-foreground">Environment</Label>
+                  <Label className="text-xs font-semibold text-muted-foreground">{t('settings.app.environment', 'Environment')}</Label>
                   <Input
                     disabled
                     value={import.meta.env.MODE || 'production'}
@@ -462,7 +462,7 @@ const Settings = () => {
                 <div>
                   <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                     <Globe className="w-3.5 h-3.5 text-primary" />
-                    {t('profile.interfaceLanguage', 'Display Language')}
+                    {t('settings.app.displayLanguage', 'Display Language')}
                   </Label>
                   <p className="text-[11px] text-muted-foreground mt-0.5">
                     {t('settings.defaultLangDesc', 'Configure application default display language (Thai / English)')}
@@ -477,7 +477,7 @@ const Settings = () => {
               <div className="p-3.5 rounded-lg bg-muted/30 border border-border/50 space-y-1.5">
                 <div className="flex items-center gap-1.5 text-xs font-semibold text-primary">
                   <Sparkles className="w-3.5 h-3.5" />
-                  <span>Live Footer Preview:</span>
+                  <span>{t('settings.app.liveFooterPreview', 'Live Footer Preview:')}</span>
                 </div>
                 <div className="p-2.5 rounded-lg bg-background border border-border/50 text-xs text-muted-foreground flex flex-wrap items-center gap-2 justify-between">
                   <div className="flex items-center gap-2">
@@ -500,7 +500,7 @@ const Settings = () => {
                 <div className="flex justify-end pt-2">
                   <Button type="submit" disabled={savingCategory === 'app'} className="h-9 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground flex items-center gap-2 text-xs font-semibold cursor-pointer shadow-xs">
                     <Save className="w-3.5 h-3.5" />
-                    {savingCategory === 'app' ? 'Saving...' : 'Save App & Footer Settings'}
+                    {savingCategory === 'app' ? t('settings.app.savingBtn', 'Saving...') : t('settings.app.saveBtn', 'Save App & Footer Settings')}
                   </Button>
                 </div>
               )}
@@ -518,8 +518,8 @@ const Settings = () => {
           <div className="flex items-center gap-2.5">
             <Package className="w-5 h-5 text-amber-600" />
             <div>
-              <CardTitle className="text-base font-bold">2. Inventory & Withdrawal Rules</CardTitle>
-              <CardDescription className="text-xs">Configure low-stock threshold, withdrawal purpose requirements, and transaction policies</CardDescription>
+              <CardTitle className="text-base font-bold">{t('settings.sections.inventory.title', '2. Inventory & Withdrawal Rules')}</CardTitle>
+              <CardDescription className="text-xs">{t('settings.sections.inventory.description', 'Configure low-stock threshold, withdrawal purpose requirements, and transaction policies')}</CardDescription>
             </div>
           </div>
           {openSections.inventory ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
@@ -532,16 +532,16 @@ const Settings = () => {
               <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs space-y-1">
                 <span className="font-bold flex items-center gap-1.5">
                   <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
-                  Approval Policy: All-or-Nothing (Enforced by system to prevent negative stock)
+                  {t('settings.inventory.policyTitle', 'Approval Policy: All-or-Nothing (Enforced by system to prevent negative stock)')}
                 </span>
                 <p className="text-[11px] leading-relaxed opacity-90 pl-5.5">
-                  StockFlow enforces atomic all-or-nothing approvals. If any requested item lacks sufficient stock, approvers cannot partially fulfill the order and must reject the entire request to maintain inventory integrity.
+                  {t('settings.inventory.policyDesc', 'StockFlow enforces atomic all-or-nothing approvals. If any requested item lacks sufficient stock, approvers cannot partially fulfill the order and must reject the entire request to maintain inventory integrity.')}
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="low_stock_threshold" className="text-xs font-semibold">Default Low Stock Threshold</Label>
+                  <Label htmlFor="low_stock_threshold" className="text-xs font-semibold">{t('settings.inventory.lowStockThreshold', 'Default Low Stock Threshold')}</Label>
                   <Input
                     id="low_stock_threshold"
                     type="number"
@@ -552,7 +552,7 @@ const Settings = () => {
                     className="mt-1 h-9 text-xs rounded-lg bg-background border border-input"
                   />
                   <p className="text-[11px] text-muted-foreground mt-1">
-                    * When inventory falls below this threshold, items display a &quot;Low Stock&quot; badge in inventory
+                    {t('settings.inventory.lowStockThresholdHint', '* When inventory falls below this threshold, items display a "Low Stock" badge in inventory')}
                   </p>
                 </div>
 
@@ -565,7 +565,7 @@ const Settings = () => {
                       onChange={(e) => setInventoryForm(prev => ({ ...prev, require_withdrawal_purpose: e.target.checked }))}
                       className="rounded text-primary focus:ring-primary h-4 w-4"
                     />
-                    <span>Require purpose for all withdrawal requests</span>
+                    <span>{t('settings.inventory.requirePurpose', 'Require purpose for all withdrawal requests')}</span>
                   </label>
 
                   <label className="flex items-center gap-2.5 text-xs font-medium cursor-pointer">
@@ -576,7 +576,7 @@ const Settings = () => {
                       onChange={(e) => setInventoryForm(prev => ({ ...prev, allow_inactive_project_view: e.target.checked }))}
                       className="rounded text-primary focus:ring-primary h-4 w-4"
                     />
-                    <span>Allow users to view history and balances from inactive projects</span>
+                    <span>{t('settings.inventory.allowInactiveView', 'Allow users to view history and balances from inactive projects')}</span>
                   </label>
 
                   <label className="flex items-center gap-2.5 text-xs font-medium cursor-pointer">
@@ -587,7 +587,7 @@ const Settings = () => {
                       onChange={(e) => setInventoryForm(prev => ({ ...prev, allow_item_deletion: e.target.checked }))}
                       className="rounded text-primary focus:ring-primary h-4 w-4"
                     />
-                    <span>Enable Item Deletion Button</span>
+                    <span>{t('settings.inventory.allowItemDeletion', 'Enable Item Deletion Button')}</span>
                   </label>
 
                   <div className="space-y-1.5 pt-1 border-t border-border/40">
@@ -599,10 +599,10 @@ const Settings = () => {
                         onChange={(e) => setInventoryForm(prev => ({ ...prev, allow_direct_stock_adjustment: e.target.checked }))}
                         className="rounded text-primary focus:ring-primary h-4 w-4"
                       />
-                      <span>Enable Current Stock Editing on Master Items</span>
+                      <span>{t('settings.inventory.allowDirectStockAdjustment', 'Enable Current Stock Editing on Master Items')}</span>
                     </label>
                     <div className="pl-6.5 text-[11px] text-amber-800 dark:text-amber-300 bg-amber-500/10 border border-amber-500/20 p-2 rounded-lg">
-                      <strong>Warning:</strong> Adjust physical stock before enabling direct stock editing.
+                      {t('settings.inventory.directStockAdjustmentWarning', 'Warning: Adjust physical stock before enabling direct stock editing.')}
                     </div>
                   </div>
                 </div>
@@ -612,7 +612,7 @@ const Settings = () => {
                 <div className="flex justify-end pt-2">
                   <Button type="submit" disabled={savingCategory === 'inventory'} className="h-9 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground flex items-center gap-2 text-xs font-semibold cursor-pointer shadow-xs">
                     <Save className="w-3.5 h-3.5" />
-                    {savingCategory === 'inventory' ? 'Saving...' : 'Save Inventory Rules'}
+                    {savingCategory === 'inventory' ? t('settings.inventory.savingBtn', 'Saving...') : t('settings.inventory.saveBtn', 'Save Inventory Rules')}
                   </Button>
                 </div>
               )}
@@ -630,8 +630,8 @@ const Settings = () => {
           <div className="flex items-center gap-2.5">
             <Mail className="w-5 h-5 text-blue-600" />
             <div>
-              <CardTitle className="text-base font-bold">3. Notification & Email Settings</CardTitle>
-              <CardDescription className="text-xs">Configure SMTP server and recipient roles for event-based notifications</CardDescription>
+              <CardTitle className="text-base font-bold">{t('settings.sections.notification.title', '3. Notification & Email Settings')}</CardTitle>
+              <CardDescription className="text-xs">{t('settings.sections.notification.description', 'Configure SMTP server and recipient roles for event-based notifications')}</CardDescription>
             </div>
           </div>
           {openSections.notification ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
@@ -643,7 +643,7 @@ const Settings = () => {
               {/* SMTP Configuration */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-xs font-bold text-foreground">SMTP Server Configuration</h4>
+                  <h4 className="text-xs font-bold text-foreground">{t('settings.smtp.serverConfig', 'SMTP Server Configuration')}</h4>
                   <Button
                     type="button"
                     variant="outline"
@@ -652,17 +652,17 @@ const Settings = () => {
                     className="h-8 px-2.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 text-blue-600 border-border hover:bg-accent cursor-pointer shadow-xs"
                   >
                     <Send className="w-3 h-3" />
-                    Test Email
+                    {t('settings.smtp.testEmailBtn', 'Test Email')}
                   </Button>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div>
-                    <Label htmlFor="smtp_host" className="text-[11px] font-semibold">SMTP Host</Label>
+                    <Label htmlFor="smtp_host" className="text-[11px] font-semibold">{t('settings.smtp.host', 'SMTP Host')}</Label>
                     <Input
                       id="smtp_host"
                       disabled={!canUpdate}
-                      placeholder="smtp.gmail.com"
+                      placeholder={t('settings.smtp.hostPlaceholder', 'smtp.gmail.com')}
                       value={smtpForm.host ?? ''}
                       onChange={(e) => setSmtpForm(prev => ({ ...prev, host: e.target.value }))}
                       className="mt-1 h-9 text-xs rounded-lg bg-background border border-input"
@@ -670,12 +670,12 @@ const Settings = () => {
                   </div>
 
                   <div>
-                    <Label htmlFor="smtp_port" className="text-[11px] font-semibold">SMTP Port</Label>
+                    <Label htmlFor="smtp_port" className="text-[11px] font-semibold">{t('settings.smtp.port', 'SMTP Port')}</Label>
                     <Input
                       id="smtp_port"
                       type="number"
                       disabled={!canUpdate}
-                      placeholder="465"
+                      placeholder={t('settings.smtp.portPlaceholder', '465')}
                       value={smtpForm.port ?? ''}
                       onChange={(e) => {
                         const val = e.target.value;
@@ -691,12 +691,12 @@ const Settings = () => {
                   </div>
 
                   <div>
-                    <Label htmlFor="smtp_user" className="text-[11px] font-semibold">SMTP Username</Label>
+                    <Label htmlFor="smtp_user" className="text-[11px] font-semibold">{t('settings.smtp.username', 'SMTP Username')}</Label>
                     <Input
                       id="smtp_user"
                       autoComplete="username"
                       disabled={!canUpdate}
-                      placeholder="user@example.com"
+                      placeholder={t('settings.smtp.userPlaceholder', 'user@example.com')}
                       value={smtpForm.user ?? ''}
                       onChange={(e) => setSmtpForm(prev => ({ ...prev, user: e.target.value }))}
                       className="mt-1 h-9 text-xs rounded-lg bg-background border border-input"
@@ -706,12 +706,12 @@ const Settings = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div>
-                    <Label htmlFor="sender_email" className="text-[11px] font-semibold">Sender Email</Label>
+                    <Label htmlFor="sender_email" className="text-[11px] font-semibold">{t('settings.smtp.senderEmail', 'Sender Email')}</Label>
                     <Input
                       id="sender_email"
                       autoComplete="email"
                       disabled={!canUpdate}
-                      placeholder="noreply@stockflow.com"
+                      placeholder={t('settings.smtp.senderEmailPlaceholder', 'noreply@stockflow.com')}
                       value={smtpForm.sender_email ?? ''}
                       onChange={(e) => setSmtpForm(prev => ({ ...prev, sender_email: e.target.value }))}
                       className="mt-1 h-9 text-xs rounded-lg bg-background border border-input"
@@ -719,7 +719,7 @@ const Settings = () => {
                   </div>
 
                   <div>
-                    <Label htmlFor="sender_name" className="text-[11px] font-semibold">Sender Name</Label>
+                    <Label htmlFor="sender_name" className="text-[11px] font-semibold">{t('settings.smtp.senderName', 'Sender Name')}</Label>
                     <Input
                       id="sender_name"
                       autoComplete="off"
@@ -732,14 +732,14 @@ const Settings = () => {
 
                   <div>
                     <Label htmlFor="smtp_pw" className="text-[11px] font-semibold">
-                      SMTP Password {smtpForm.password_set && <span className="text-emerald-600 font-bold ml-1">(Configured)</span>}
+                      {t('settings.smtp.password', 'SMTP Password')} {smtpForm.password_set && <span className="text-emerald-600 font-bold ml-1">{t('settings.smtp.passwordConfigured', '(Configured)')}</span>}
                     </Label>
                     <Input
                       id="smtp_pw"
                       type="password"
                       autoComplete="new-password"
                       disabled={!canUpdate}
-                      placeholder={smtpForm.password_set ? '•••••••• (Enter new to change)' : 'Enter SMTP password'}
+                      placeholder={smtpForm.password_set ? t('settings.smtp.passwordPlaceholderConfigured', '•••••••• (Enter new to change)') : t('settings.smtp.passwordPlaceholderEmpty', 'Enter SMTP password')}
                       value={smtpForm.new_password ?? ''}
                       onChange={(e) => setSmtpForm(prev => ({ ...prev, new_password: e.target.value }))}
                       className="mt-1 h-9 text-xs rounded-lg bg-background border border-input"
@@ -753,7 +753,7 @@ const Settings = () => {
                     <div>
                       <Label htmlFor="smtp_secure" className="text-[11px] font-semibold flex items-center gap-1.5 text-foreground">
                         <Lock className="w-3.5 h-3.5 text-primary" />
-                        Security Protocol
+                        {t('settings.smtp.securityProtocol', 'Security Protocol')}
                       </Label>
                       <select
                         id="smtp_secure"
@@ -762,19 +762,19 @@ const Settings = () => {
                         onChange={(e) => setSmtpForm(prev => ({ ...prev, secure: e.target.value === 'true' }))}
                         className="mt-1.5 w-full rounded-lg border border-input bg-background px-3 py-1.5 text-xs shadow-xs focus:outline-none focus:ring-1 focus:ring-primary"
                       >
-                        <option value="true">Implicit SSL/TLS (Port 465)</option>
-                        <option value="false">STARTTLS (Port 587 / 25)</option>
+                        <option value="true">{t('settings.smtp.implicitTls', 'Implicit SSL/TLS (Port 465)')}</option>
+                        <option value="false">{t('settings.smtp.startTls', 'STARTTLS (Port 587 / 25)')}</option>
                       </select>
                       <p className="mt-1 text-[10px] text-muted-foreground flex items-center gap-1.5">
                         {smtpForm.secure ? (
                           <>
                             <Lock className="w-3 h-3 text-emerald-600 inline shrink-0" />
-                            <span>Implicit TLS: Encrypts socket immediately upon connection to SMTP server (recommended for Port 465)</span>
+                            <span>{t('settings.smtp.implicitTlsDesc', 'Implicit TLS: Encrypts socket immediately upon connection to SMTP server (recommended for Port 465)')}</span>
                           </>
                         ) : (
                           <>
                             <Unlock className="w-3 h-3 text-amber-600 inline shrink-0" />
-                            <span>STARTTLS: Connects normally then upgrades to TLS before sending data (recommended for Port 587/25)</span>
+                            <span>{t('settings.smtp.startTlsDesc', 'STARTTLS: Connects normally then upgrades to TLS before sending data (recommended for Port 587/25)')}</span>
                           </>
                         )}
                       </p>
@@ -783,7 +783,7 @@ const Settings = () => {
                     <div className="space-y-1.5">
                       <Label className="text-[11px] font-semibold flex items-center gap-1.5 text-foreground">
                         <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                        Verify TLS Certificate
+                        {t('settings.smtp.verifyTls', 'Verify TLS Certificate')}
                       </Label>
                       <label className="flex items-center gap-2 pt-1 cursor-pointer select-none">
                         <input
@@ -794,10 +794,10 @@ const Settings = () => {
                           onChange={(e) => setSmtpForm(prev => ({ ...prev, reject_unauthorized: e.target.checked }))}
                           className="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4"
                         />
-                        <span className="text-xs font-medium">Verify certificate is issued by a trusted CA</span>
+                        <span className="text-xs font-medium">{t('settings.smtp.verifyTlsCheckbox', 'Verify certificate is issued by a trusted CA')}</span>
                       </label>
                       <p className="text-[10px] text-muted-foreground">
-                        Always recommended. Disabling allows internal self-signed certificates
+                        {t('settings.smtp.verifyTlsHint', 'Always recommended. Disabling allows internal self-signed certificates')}
                       </p>
                     </div>
                   </div>
@@ -806,53 +806,52 @@ const Settings = () => {
                   {Number(smtpForm.port) === 465 && !smtpForm.secure && (
                     <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-[11px] flex items-center gap-2">
                       <AlertTriangle className="w-4 h-4 shrink-0 text-amber-500" />
-                      <span>Warning: Port 465 typically requires implicit SSL/TLS (secure = true). Selecting STARTTLS on port 465 may cause socket timeouts (ETIMEDOUT)</span>
+                      <span>{t('settings.smtp.warnPort465', 'Warning: Port 465 typically requires implicit SSL/TLS (secure = true). Selecting STARTTLS on port 465 may cause socket timeouts (ETIMEDOUT)')}</span>
                     </div>
                   )}
 
                   {Number(smtpForm.port) === 587 && smtpForm.secure && (
                     <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-[11px] flex items-center gap-2">
                       <AlertTriangle className="w-4 h-4 shrink-0 text-amber-500" />
-                      <span>Warning: Port 587 typically requires STARTTLS (secure = false). Selecting implicit SSL/TLS on port 587 may cause &apos;Greeting never received&apos; errors</span>
+                      <span>{t('settings.smtp.warnPort587', 'Warning: Port 587 typically requires STARTTLS (secure = false). Selecting implicit SSL/TLS on port 587 may cause \'Greeting never received\' errors')}</span>
                     </div>
                   )}
 
                   {smtpForm.reject_unauthorized === false && (
                     <div className="p-2.5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-700 dark:text-red-300 text-[11px] flex items-center gap-2">
                       <AlertTriangle className="w-4 h-4 shrink-0 text-red-500" />
-                      <span>Security Warning: Only disable TLS certificate verification if your SMTP server uses a self-signed certificate or custom internal CA</span>
+                      <span>{t('settings.smtp.warnTlsDisabled', 'Security Warning: Only disable TLS certificate verification if your SMTP server uses a self-signed certificate or custom internal CA')}</span>
                     </div>
                   )}
 
                   {/* Effective Configuration Summary */}
                   <div className="pt-2 border-t border-border/20 flex flex-wrap items-center justify-between text-[11px] text-muted-foreground gap-2">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-semibold text-foreground">Active Config:</span>
+                      <span className="font-semibold text-foreground">{t('settings.smtp.activeConfig', 'Active Config:')}</span>
                       <span className="px-2 py-0.5 rounded bg-primary/10 text-primary font-mono text-[10px]">
                         {smtpForm.host || 'smtp.gmail.com'}:{smtpForm.port || 465}
                       </span>
                       {smtpForm.sender_email && (
                         <span className="px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 font-mono text-[10px]">
-                          Sender: {smtpForm.sender_email}
+                          {t('settings.smtp.senderLabel', 'Sender:')} {smtpForm.sender_email}
                         </span>
                       )}
                       <span className="px-2 py-0.5 rounded bg-secondary text-secondary-foreground font-mono text-[10px]">
-                        {smtpForm.secure ? 'Implicit SSL/TLS' : 'STARTTLS'}
+                        {smtpForm.secure ? t('settings.smtp.implicitTls', 'Implicit SSL/TLS') : t('settings.smtp.startTls', 'STARTTLS')}
                       </span>
                       <span className={`px-2 py-0.5 rounded font-mono text-[10px] ${smtpForm.reject_unauthorized !== false ? 'bg-emerald-500/10 text-emerald-600' : 'bg-amber-500/10 text-amber-600'}`}>
-                        TLS Cert Check: {smtpForm.reject_unauthorized !== false ? 'VERIFIED' : 'DISABLED'}
+                        {t('settings.smtp.tlsCertCheck', { status: smtpForm.reject_unauthorized !== false ? t('settings.smtp.tlsCertVerified', 'VERIFIED') : t('settings.smtp.tlsCertDisabled', 'DISABLED') })}
                       </span>
                     </div>
                   </div>
                 </div>
               </div>
 
-
               {canUpdate && (
                 <div className="flex justify-end pt-2">
                   <Button type="submit" disabled={savingCategory === 'notification'} className="h-9 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground flex items-center gap-2 text-xs font-semibold cursor-pointer shadow-xs">
                     <Save className="w-3.5 h-3.5" />
-                    {savingCategory === 'notification' ? 'Saving...' : 'Save SMTP Settings'}
+                    {savingCategory === 'notification' ? t('settings.smtp.savingBtn', 'Saving...') : t('settings.smtp.saveBtn', 'Save SMTP Settings')}
                   </Button>
                 </div>
               )}
@@ -882,7 +881,7 @@ const Settings = () => {
                     }
                   } catch (err) {
                     console.error('Save Email Templates Error:', err);
-                    toast.error('Failed to save email templates');
+                    toast.error(t('settings.toasts.emailTemplatesSaveFailed', 'Failed to save email templates'));
                   }
                 }}
               />
@@ -901,8 +900,8 @@ const Settings = () => {
           <div className="flex items-center gap-2.5">
             <ShieldCheck className="w-5 h-5 text-purple-600" />
             <div>
-              <CardTitle className="text-base font-bold">4. User & Security Policy</CardTitle>
-              <CardDescription className="text-xs">Password policy, user account management, and application-level security</CardDescription>
+              <CardTitle className="text-base font-bold">{t('settings.sections.security.title', '4. User & Security Policy')}</CardTitle>
+              <CardDescription className="text-xs">{t('settings.sections.security.description', 'Password policy, user account management, and application-level security')}</CardDescription>
             </div>
           </div>
           {openSections.security ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
@@ -915,19 +914,19 @@ const Settings = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
               <div className="p-3.5 rounded-lg bg-muted/30 border border-border/50 space-y-2">
-                <span className="font-bold text-foreground block text-sm">Password Policy</span>
+                <span className="font-bold text-foreground block text-sm">{t('settings.securityPolicy.passwordPolicyTitle', 'Password Policy')}</span>
                 <ul className="list-disc list-inside text-muted-foreground space-y-1">
-                  <li>Passwords must be at least 12 characters and include uppercase, lowercase, numbers, and special characters</li>
-                  <li>Support for generating secure temporary passwords (Set Random Default) in settings</li>
-                  <li><strong className="text-foreground">Secure Vault Storage:</strong> Passwords are encrypted and stored server-side. They are never returned to the client or displayed on screen under any circumstances.</li>
+                  <li>{t('settings.securityPolicy.passwordReq1', 'Passwords must be at least 12 characters and include uppercase, lowercase, numbers, and special characters')}</li>
+                  <li>{t('settings.securityPolicy.passwordReq2', 'Support for generating secure temporary passwords (Set Random Default) in settings')}</li>
+                  <li><strong className="text-foreground">{t('settings.securityPolicy.vaultTitle', 'Secure Vault Storage:')}</strong> {t('settings.securityPolicy.vaultDesc', 'Passwords are encrypted and stored server-side. They are never returned to the client or displayed on screen under any circumstances.')}</li>
                 </ul>
               </div>
 
               <div className="p-3.5 rounded-lg bg-muted/30 border border-border/50 space-y-2">
-                <span className="font-bold text-foreground block text-sm">User Account Lifecycle & Protection</span>
+                <span className="font-bold text-foreground block text-sm">{t('settings.securityPolicy.lifecycleTitle', 'User Account Lifecycle & Protection')}</span>
                 <ul className="list-disc list-inside text-muted-foreground space-y-1">
-                  <li><strong className="text-foreground font-semibold">Recommended: Inactive Status:</strong> Accounts with transaction history should be marked Inactive rather than permanently deleted.</li>
-                  <li><strong className="text-purple-600 font-bold">Last Admin Protection:</strong> Prevents deleting or demoting the last active administrator across both client UI and database triggers.</li>
+                  <li><strong className="text-foreground font-semibold">{t('settings.securityPolicy.inactiveRecommendTitle', 'Recommended: Inactive Status:')}</strong> {t('settings.securityPolicy.inactiveRecommendDesc', 'Accounts with transaction history should be marked Inactive rather than permanently deleted.')}</li>
+                  <li><strong className="text-purple-600 font-bold">{t('settings.securityPolicy.lastAdminTitle', 'Last Admin Protection:')}</strong> {t('settings.securityPolicy.lastAdminDesc', 'Prevents deleting or demoting the last active administrator across both client UI and database triggers.')}</li>
                 </ul>
               </div>
             </div>
@@ -945,8 +944,8 @@ const Settings = () => {
           <div className="flex items-center gap-2.5">
             <Database className="w-5 h-5 text-cyan-600" />
             <div>
-              <CardTitle className="text-base font-bold">5. Storage Status</CardTitle>
-              <CardDescription className="text-xs">Status of Cloudflare R2 Object Storage and image asset policies</CardDescription>
+              <CardTitle className="text-base font-bold">{t('settings.sections.storage.title', '5. Storage Status')}</CardTitle>
+              <CardDescription className="text-xs">{t('settings.sections.storage.description', 'Status of Cloudflare R2 Object Storage and image asset policies')}</CardDescription>
             </div>
           </div>
           {openSections.storage ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
@@ -956,18 +955,18 @@ const Settings = () => {
           <CardContent className="pt-2 pb-6 border-t border-border/40 text-xs">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div className="p-3 rounded-lg bg-muted/30 border border-border/50 space-y-1">
-                <span className="text-muted-foreground text-[11px] block">Provider</span>
-                <span className="font-bold text-sm text-foreground">Cloudflare R2 (S3 API)</span>
+                <span className="text-muted-foreground text-[11px] block">{t('settings.storage.provider', 'Provider')}</span>
+                <span className="font-bold text-sm text-foreground">{t('settings.storage.providerValue', 'Cloudflare R2 (S3 API)')}</span>
               </div>
 
               <div className="p-3 rounded-lg bg-muted/30 border border-border/50 space-y-1">
-                <span className="text-muted-foreground text-[11px] block">Bucket Name</span>
+                <span className="text-muted-foreground text-[11px] block">{t('settings.storage.bucketName', 'Bucket Name')}</span>
                 <span className="font-bold text-sm text-primary font-mono">stockflow-assets</span>
               </div>
 
               <div className="p-3 rounded-lg bg-muted/30 border border-border/50 space-y-1">
-                <span className="text-muted-foreground text-[11px] block">Max File Size</span>
-                <span className="font-bold text-sm text-emerald-600 dark:text-emerald-400">5 MB (JPG / PNG / WebP)</span>
+                <span className="text-muted-foreground text-[11px] block">{t('settings.storage.maxFileSize', 'Max File Size')}</span>
+                <span className="font-bold text-sm text-emerald-600 dark:text-emerald-400">{t('settings.storage.maxFileSizeValue', '5 MB (JPG / PNG / WebP)')}</span>
               </div>
             </div>
           </CardContent>
@@ -983,8 +982,8 @@ const Settings = () => {
           <div className="flex items-center gap-2.5">
             <Server className="w-5 h-5 text-slate-600 dark:text-slate-300" />
             <div>
-              <CardTitle className="text-base font-bold">6. System Information</CardTitle>
-              <CardDescription className="text-xs">Summary of version metadata, environment, and database connectivity</CardDescription>
+              <CardTitle className="text-base font-bold">{t('settings.sections.system.title', '6. System Information')}</CardTitle>
+              <CardDescription className="text-xs">{t('settings.sections.system.description', 'Summary of version metadata, environment, and database connectivity')}</CardDescription>
             </div>
           </div>
           {openSections.system ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
@@ -995,33 +994,39 @@ const Settings = () => {
           <CardContent className="pt-2 pb-6 border-t border-border/40 text-xs space-y-4">
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 text-center">
               <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
-                <span className="text-[10px] text-muted-foreground block">Version</span>
+                <span className="text-[10px] text-muted-foreground block">{t('settings.system.version', 'Version')}</span>
                 <span className="font-mono font-bold text-xs text-primary">v{APP_CONFIG.version}</span>
               </div>
 
               <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
-                <span className="text-[10px] text-muted-foreground block">Environment</span>
+                <span className="text-[10px] text-muted-foreground block">{t('settings.system.environment', 'Environment')}</span>
                 <span className="font-mono font-bold text-xs uppercase">{import.meta.env.MODE || 'production'}</span>
               </div>
 
               <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
-                <span className="text-[10px] text-muted-foreground block">Database</span>
-                <span className="font-bold text-xs text-emerald-600 dark:text-emerald-400">Connected</span>
+                <span className="text-[10px] text-muted-foreground block">{t('settings.system.database', 'Database')}</span>
+                <span className="font-bold text-xs text-emerald-600 dark:text-emerald-400">{t('settings.system.connected', 'Connected')}</span>
               </div>
 
               <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
-                <span className="text-[10px] text-muted-foreground block">Projects</span>
-                <span className="font-bold text-xs text-foreground">{systemStats.projects} {systemStats.projects === 1 ? 'Project' : 'Projects'}</span>
+                <span className="text-[10px] text-muted-foreground block">{t('common.allProjects', 'Projects')}</span>
+                <span className="font-bold text-xs text-foreground">
+                  {t('settings.system.projects', { count: systemStats.projects, defaultValue: `${systemStats.projects} Projects` })}
+                </span>
               </div>
 
               <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
-                <span className="text-[10px] text-muted-foreground block">Users</span>
-                <span className="font-bold text-xs text-foreground">{systemStats.users} {systemStats.users === 1 ? 'User' : 'Users'}</span>
+                <span className="text-[10px] text-muted-foreground block">{t('common.users', 'Users')}</span>
+                <span className="font-bold text-xs text-foreground">
+                  {t('settings.system.users', { count: systemStats.users, defaultValue: `${systemStats.users} Users` })}
+                </span>
               </div>
 
               <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
-                <span className="text-[10px] text-muted-foreground block">Roles</span>
-                <span className="font-bold text-xs text-purple-600 dark:text-purple-400">{systemStats.roles} {systemStats.roles === 1 ? 'Role' : 'Roles'}</span>
+                <span className="text-[10px] text-muted-foreground block">{t('common.allRoles', 'Roles')}</span>
+                <span className="font-bold text-xs text-purple-600 dark:text-purple-400">
+                  {t('settings.system.roles', { count: systemStats.roles, defaultValue: `${systemStats.roles} Roles` })}
+                </span>
               </div>
             </div>
           </CardContent>
@@ -1034,21 +1039,21 @@ const Settings = () => {
           <DialogHeader>
             <DialogTitle className="text-lg font-bold flex items-center gap-2 text-blue-600">
               <Send className="w-5 h-5" />
-              Test Email Notification
+              {t('settings.testEmailModal.title', 'Test Email Notification')}
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground mt-1">
-              Send a test notification message through the application SMTP delivery system
+              {t('settings.testEmailModal.description', 'Send a test notification message through the application SMTP delivery system')}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-3 my-2">
             <div>
-              <Label htmlFor="test_recipient" className="text-xs font-semibold">Test Recipient Email *</Label>
+              <Label htmlFor="test_recipient" className="text-xs font-semibold">{t('settings.testEmailModal.recipientLabel', 'Test Recipient Email *')}</Label>
               <Input
                 id="test_recipient"
                 type="email"
                 required
-                placeholder="target@company.com"
+                placeholder={t('settings.testEmailModal.recipientPlaceholder', 'target@company.com')}
                 value={testEmailRecipient}
                 onChange={(e) => setTestEmailRecipient(e.target.value)}
                 className="mt-1 h-9 text-xs rounded-lg bg-background border border-input"
@@ -1058,14 +1063,14 @@ const Settings = () => {
 
           <DialogFooter>
             <Button variant="ghost" size="sm" onClick={() => setIsTestEmailOpen(false)} className="h-9 px-3 rounded-lg text-xs cursor-pointer">
-              Cancel
+              {t('settings.testEmailModal.cancelBtn', 'Cancel')}
             </Button>
             <Button 
               disabled={sendingTestEmail || !testEmailRecipient} 
               onClick={handleSendTestEmail}
               className="h-9 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold cursor-pointer shadow-xs"
             >
-              {sendingTestEmail ? 'Sending...' : 'Send Test Email'}
+              {sendingTestEmail ? t('settings.testEmailModal.sendingBtn', 'Sending...') : t('settings.testEmailModal.sendBtn', 'Send Test Email')}
             </Button>
           </DialogFooter>
         </DialogContent>

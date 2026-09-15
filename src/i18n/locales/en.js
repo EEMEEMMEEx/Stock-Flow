@@ -1156,29 +1156,291 @@ export default {
   },
   "settings": {
     "title": "System Settings",
-    "subtitle": "System preferences, mail server (SMTP), and security configurations",
+    "subtitle": "Manage system preferences, mail server (SMTP), and security configurations",
     "generalSettings": "General System",
     "notificationSettings": "Email Notifications",
     "smtpSettings": "SMTP Configuration",
     "testConnection": "Test SMTP Connection",
     "saveChanges": "Save Settings",
     "defaultLangDesc": "Configure application default display language (Thai / English)",
+    "readOnlyNotice": "Your account has read-only access to settings (Requires {{perm}} to save changes)",
     "tabs": {
       "general": "General System",
       "smtp": "SMTP Configuration",
       "security": "Security & Access",
       "system": "System Information"
     },
+    "sections": {
+      "app": {
+        "title": "1. Application & Footer",
+        "description": "System name, organization, description, and footer display"
+      },
+      "inventory": {
+        "title": "2. Inventory & Withdrawal Rules",
+        "description": "Configure low-stock threshold, withdrawal purpose requirements, and transaction policies"
+      },
+      "notification": {
+        "title": "3. Notification & Email Settings",
+        "description": "Configure SMTP server and recipient roles for event-based notifications"
+      },
+      "security": {
+        "title": "4. User & Security Policy",
+        "description": "Password policy, user account management, and application-level security"
+      },
+      "storage": {
+        "title": "5. Storage Status",
+        "description": "Status of Cloudflare R2 Object Storage and image asset policies"
+      },
+      "system": {
+        "title": "6. System Information",
+        "description": "Summary of version metadata, environment, and database connectivity"
+      }
+    },
+    "app": {
+      "appName": "Application Name",
+      "companyName": "Company / Organization",
+      "companyPlaceholder": "e.g. Forth Co., Ltd. (optional)",
+      "appSubtitle": "Application Subtitle",
+      "appVersion": "Application Version (Build Metadata)",
+      "environment": "Environment",
+      "displayLanguage": "Display Language",
+      "liveFooterPreview": "Live Footer Preview:",
+      "saveBtn": "Save App & Footer Settings",
+      "savingBtn": "Saving..."
+    },
+    "inventory": {
+      "policyTitle": "Approval Policy: All-or-Nothing (Enforced by system to prevent negative stock)",
+      "policyDesc": "StockFlow enforces atomic all-or-nothing approvals. If any requested item lacks sufficient stock, approvers cannot partially fulfill the order and must reject the entire request to maintain inventory integrity.",
+      "lowStockThreshold": "Default Low Stock Threshold",
+      "lowStockThresholdHint": "* When inventory falls below this threshold, items display a \"Low Stock\" badge in inventory",
+      "requirePurpose": "Require purpose for all withdrawal requests",
+      "allowInactiveView": "Allow users to view history and balances from inactive projects",
+      "allowItemDeletion": "Enable Item Deletion Button",
+      "allowDirectStockAdjustment": "Enable Current Stock Editing on Master Items",
+      "directStockAdjustmentWarning": "Warning: Adjust physical stock before enabling direct stock editing.",
+      "saveBtn": "Save Inventory Rules",
+      "savingBtn": "Saving..."
+    },
+    "smtp": {
+      "serverConfig": "SMTP Server Configuration",
+      "testEmailBtn": "Test Email",
+      "host": "SMTP Host",
+      "hostPlaceholder": "smtp.gmail.com",
+      "port": "SMTP Port",
+      "portPlaceholder": "465",
+      "username": "SMTP Username",
+      "userPlaceholder": "user@example.com",
+      "senderEmail": "Sender Email",
+      "senderEmailPlaceholder": "noreply@stockflow.com",
+      "senderName": "Sender Name",
+      "password": "SMTP Password",
+      "passwordConfigured": "(Configured)",
+      "passwordPlaceholderConfigured": "•••••••• (Enter new to change)",
+      "passwordPlaceholderEmpty": "Enter SMTP password",
+      "securityProtocol": "Security Protocol",
+      "implicitTls": "Implicit SSL/TLS (Port 465)",
+      "startTls": "STARTTLS (Port 587 / 25)",
+      "implicitTlsDesc": "Implicit TLS: Encrypts socket immediately upon connection to SMTP server (recommended for Port 465)",
+      "startTlsDesc": "STARTTLS: Connects normally then upgrades to TLS before sending data (recommended for Port 587/25)",
+      "verifyTls": "Verify TLS Certificate",
+      "verifyTlsCheckbox": "Verify certificate is issued by a trusted CA",
+      "verifyTlsHint": "Always recommended. Disabling allows internal self-signed certificates",
+      "warnPort465": "Warning: Port 465 typically requires implicit SSL/TLS (secure = true). Selecting STARTTLS on port 465 may cause socket timeouts (ETIMEDOUT)",
+      "warnPort587": "Warning: Port 587 typically requires STARTTLS (secure = false). Selecting implicit SSL/TLS on port 587 may cause 'Greeting never received' errors",
+      "warnTlsDisabled": "Security Warning: Only disable TLS certificate verification if your SMTP server uses a self-signed certificate or custom internal CA",
+      "activeConfig": "Active Config:",
+      "senderLabel": "Sender:",
+      "tlsCertVerified": "VERIFIED",
+      "tlsCertDisabled": "DISABLED",
+      "tlsCertCheck": "TLS Cert Check: {{status}}",
+      "saveBtn": "Save SMTP Settings",
+      "savingBtn": "Saving..."
+    },
+    "emailTemplates": {
+      "branding": {
+        "title": "Global Email Branding",
+        "description": "Configure logo, accent color, and public base URL for all email notifications",
+        "unsaved": "Unsaved changes",
+        "senderName": "Sender Display Name",
+        "senderNamePlaceholder": "StockFlow",
+        "logoUrl": "Logo Image URL",
+        "logoUrlPlaceholder": "https://domain.com/logo.png",
+        "publicBaseUrl": "Public Base URL",
+        "publicBaseUrlPlaceholder": "https://stockflowth.online",
+        "accentColor": "Accent Color"
+      },
+      "events": {
+        "withdrawal_submitted": {
+          "title": "1. Withdrawal Submitted",
+          "desc": "Notify approvers and administrators when a new withdrawal request is submitted",
+          "primaryRecipient": "Approver / Administrator"
+        },
+        "withdrawal_approved": {
+          "title": "2. Withdrawal Approved",
+          "desc": "Notify requester and warehouse staff when a request is approved",
+          "primaryRecipient": "Requester"
+        },
+        "withdrawal_rejected": {
+          "title": "3. Withdrawal Rejected",
+          "desc": "Notify requester when a request is rejected with reason",
+          "primaryRecipient": "Requester"
+        },
+        "withdrawal_completed": {
+          "title": "4. Withdrawal Completed",
+          "desc": "Notify when materials have been issued and stock is deducted",
+          "primaryRecipient": "Requester / Administrator"
+        },
+        "stock_in_created": {
+          "title": "5. Stock In Recorded",
+          "desc": "Notify when new material stock-in lot is recorded in a project",
+          "primaryRecipient": "Warehouse Staff / Administrator"
+        },
+        "low_stock_alert": {
+          "title": "6. Low Stock Alert",
+          "desc": "Automatically notify when project material stock reaches reorder point",
+          "primaryRecipient": "Warehouse Staff / Approver"
+        }
+      },
+      "list": {
+        "title": "Notification Events ({{count}})",
+        "resetAll": "Reset All",
+        "resetAllConfirm": "Reset all email templates to system defaults successfully",
+        "searchPlaceholder": "Search templates...",
+        "primaryLabel": "Primary: {{recipient}}",
+        "rolesCount_one": "+{{count}} role",
+        "rolesCount_other": "+{{count}} roles"
+      },
+      "editor": {
+        "resetCurrent": "Reset to Default",
+        "resetCurrentConfirm": "Reset template \"{{title}}\" to default successfully",
+        "status": "Status:",
+        "enabled": "Enabled",
+        "disabled": "Disabled",
+        "tabs": {
+          "content": "Content",
+          "recipients": "Recipients",
+          "preview": "Live Preview",
+          "test": "Test"
+        },
+        "content": {
+          "subjectLine": "Subject Line",
+          "variableHint": "Click variable chips to insert into subject",
+          "badgeLabel": "Badge Label",
+          "badgeTheme": "Badge Color Theme",
+          "themes": {
+            "warning": "Amber / Pending (Warning)",
+            "approved": "Emerald / Approved (Success)",
+            "rejected": "Rose / Rejected (Error)",
+            "info": "Blue / Info"
+          },
+          "heading": "Heading",
+          "intro": "Intro Message",
+          "ctaLabel": "CTA Button Label",
+          "ctaUrl": "CTA Target URL",
+          "footerNote": "Footer Note"
+        },
+        "recipients": {
+          "primaryTitle": "Primary Recipient by Role",
+          "primaryDesc": "The system will automatically send to {{recipient}} associated with the request.",
+          "ccRoles": "CC Additional Roles:",
+          "directTo": "Direct Extra Recipients (To)",
+          "directCc": "Direct Extra CC Recipients",
+          "commaHint": "Separate multiple email addresses with commas (,)"
+        },
+        "preview": {
+          "title": "Live HTML Renderer Preview",
+          "desktop": "Desktop (620px)",
+          "mobile": "Mobile (375px)"
+        },
+        "test": {
+          "title": "Send Test Email",
+          "description": "Send a test email rendered with current branding and sample data to your email address.",
+          "recipient": "Test Recipient Email *",
+          "recipientPlaceholder": "your-email@company.com",
+          "sendBtn": "Send Test Email",
+          "sendingBtn": "Sending test email..."
+        },
+        "saveFooterHint": "* Saved changes take effect immediately for outgoing notification emails",
+        "saveAllBtn": "Save Settings & Templates"
+      }
+    },
+    "securityPolicy": {
+      "passwordPolicyTitle": "Password Policy",
+      "passwordReq1": "Passwords must be at least 12 characters and include uppercase, lowercase, numbers, and special characters",
+      "passwordReq2": "Support for generating secure temporary passwords (Set Random Default) in settings",
+      "vaultTitle": "Secure Vault Storage:",
+      "vaultDesc": "Passwords are encrypted and stored server-side. They are never returned to the client or displayed on screen under any circumstances.",
+      "lifecycleTitle": "User Account Lifecycle & Protection",
+      "inactiveRecommendTitle": "Recommended: Inactive Status:",
+      "inactiveRecommendDesc": "Accounts with transaction history should be marked Inactive rather than permanently deleted.",
+      "lastAdminTitle": "Last Admin Protection:",
+      "lastAdminDesc": "Prevents deleting or demoting the last active administrator across both client UI and database triggers."
+    },
     "defaultPassword": {
       "title": "Default Password Policy",
       "description": "Configure the initial temporary password assigned to newly created user accounts",
       "currentDefault": "Current Default Password",
       "updatePassword": "New Default Password",
-      "saveBtn": "Save Password Policy"
+      "saveBtn": "Save Password Policy",
+      "inputLabel": "New Default Reset Password *",
+      "generateBtn": "Generate Secure Default",
+      "placeholderConfigured": "•••••••••••• (Configured - enter new value to change)",
+      "placeholderEmpty": "Enter default password (minimum 12 characters)",
+      "savePasswordBtn": "Save Default Password",
+      "saving": "Saving...",
+      "checklistTitle": "Password Policy Checklist (Live Validation):",
+      "reqMinLen": "Minimum 12 characters",
+      "reqUpper": "At least 1 uppercase letter (A-Z)",
+      "reqLower": "At least 1 lowercase letter (a-z)",
+      "reqDigit": "At least 1 number (0-9)",
+      "reqSymbol": "At least 1 special character (!@#$%^&*)",
+      "reqNoSpace": "No leading or trailing spaces"
+    },
+    "storage": {
+      "provider": "Provider",
+      "providerValue": "Cloudflare R2 (S3 API)",
+      "bucketName": "Bucket Name",
+      "maxFileSize": "Max File Size",
+      "maxFileSizeValue": "5 MB (JPG / PNG / WebP)"
+    },
+    "system": {
+      "version": "Version",
+      "environment": "Environment",
+      "database": "Database",
+      "connected": "Connected",
+      "projects_one": "{{count}} Project",
+      "projects_other": "{{count}} Projects",
+      "users_one": "{{count}} User",
+      "users_other": "{{count}} Users",
+      "roles_one": "{{count}} Role",
+      "roles_other": "{{count}} Roles"
+    },
+    "testEmailModal": {
+      "title": "Test Email Notification",
+      "description": "Send a test notification message through the application SMTP delivery system",
+      "recipientLabel": "Test Recipient Email *",
+      "recipientPlaceholder": "target@company.com",
+      "cancelBtn": "Cancel",
+      "sendBtn": "Send Test Email",
+      "sendingBtn": "Sending..."
     },
     "toasts": {
       "saved": "Settings saved successfully",
-      "saveFailed": "Failed to save settings"
+      "saveFailed": "Failed to save settings",
+      "permissionDenied": "Permission denied. Requires {{perm}}",
+      "appSaved": "Application and footer settings saved successfully",
+      "migration11Required": "Please run Migration 11 in Supabase SQL Editor to enable settings table",
+      "inventorySaved": "Inventory and withdrawal rules saved successfully",
+      "notificationSaved": "Notification settings saved successfully",
+      "invalidEmail": "Please enter a valid recipient email (e.g., name@domain.com)",
+      "testEmailSent": "Test email sent to {{email}} successfully",
+      "testEmailFailed": "Failed to send test email",
+      "emailTemplatesSaved": "Saved email settings and templates successfully",
+      "emailTemplatesSaveFailed": "Failed to save email templates",
+      "generatePasswordSuccess": "Generated secure password matching policy successfully",
+      "defaultPasswordSaved": "Default reset password saved successfully",
+      "defaultPasswordSaveFailed": "An error occurred while saving default reset password",
+      "fetchError": "Failed to load system settings"
     }
   },
   "profile": {

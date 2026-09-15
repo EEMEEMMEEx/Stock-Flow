@@ -58,13 +58,13 @@ const DefaultPasswordManager = ({ canUpdate }) => {
     const strongPw = generateStrongPassword();
     setPasswordInput(strongPw);
     setShowPassword(true);
-    toast.success('Generated secure password matching policy successfully');
+    toast.success(t('settings.toasts.generatePasswordSuccess', 'Generated secure password matching policy successfully'));
   };
 
   const handleSavePassword = async (e) => {
     e.preventDefault();
     if (!canUpdate) {
-      return toast.error('You do not have permission to update settings (Requires settings.update)');
+      return toast.error(t('settings.toasts.permissionDenied', { perm: 'settings.update', defaultValue: 'You do not have permission to update settings (Requires settings.update)' }));
     }
 
     const policyCheck = validatePasswordPolicy(passwordInput);
@@ -81,14 +81,14 @@ const DefaultPasswordManager = ({ canUpdate }) => {
       if (error) throw error;
 
       if (data?.success) {
-        toast.success('Default reset password saved successfully');
+        toast.success(t('settings.toasts.defaultPasswordSaved', 'Default reset password saved successfully'));
         setStatus({ configured: true, updated_at: data.updated_at || new Date().toISOString() });
         setPasswordInput('');
         setShowPassword(false);
       }
     } catch (err) {
       console.error('Save default password error:', err);
-      toast.error(err.message || 'An error occurred while saving default reset password');
+      toast.error(err.message || t('settings.toasts.defaultPasswordSaveFailed', 'An error occurred while saving default reset password'));
     } finally {
       setSaving(false);
     }
@@ -140,7 +140,7 @@ const DefaultPasswordManager = ({ canUpdate }) => {
           <div className="md:col-span-2 space-y-1.5">
             <div className="flex items-center justify-between">
               <Label htmlFor="default_reset_pw" className="text-xs font-semibold text-foreground">
-                New Default Reset Password *
+                {t('settings.defaultPassword.inputLabel', 'New Default Reset Password *')}
               </Label>
               <Button
                 type="button"
@@ -151,7 +151,7 @@ const DefaultPasswordManager = ({ canUpdate }) => {
                 className="text-[11px] text-purple-600 hover:text-purple-700 dark:text-purple-400 hover:underline h-6 px-2 flex items-center gap-1 cursor-pointer"
               >
                 <RefreshCw className="w-3 h-3" />
-                Generate Secure Default
+                {t('settings.defaultPassword.generateBtn', 'Generate Secure Default')}
               </Button>
             </div>
 
@@ -162,7 +162,7 @@ const DefaultPasswordManager = ({ canUpdate }) => {
                 type={showPassword ? 'text' : 'password'}
                 autoComplete="new-password"
                 disabled={!canUpdate || saving}
-                placeholder={status.configured ? '•••••••••••• (Configured - enter new value to change)' : 'Enter default password (minimum 12 characters)'}
+                placeholder={status.configured ? t('settings.defaultPassword.placeholderConfigured', '•••••••••••• (Configured - enter new value to change)') : t('settings.defaultPassword.placeholderEmpty', 'Enter default password (minimum 12 characters)')}
                 value={passwordInput}
                 onChange={(e) => setPasswordInput(e.target.value)}
                 className="pr-10 h-9 text-xs rounded-lg bg-background border border-input"
@@ -185,7 +185,7 @@ const DefaultPasswordManager = ({ canUpdate }) => {
               className="w-full h-9 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground flex items-center justify-center gap-2 text-xs font-semibold cursor-pointer shadow-xs"
             >
               <Save className="w-3.5 h-3.5" />
-              {saving ? 'Saving...' : 'Save Default Password'}
+              {saving ? t('settings.defaultPassword.saving', 'Saving...') : t('settings.defaultPassword.savePasswordBtn', 'Save Default Password')}
             </Button>
           </div>
         </div>
@@ -193,31 +193,31 @@ const DefaultPasswordManager = ({ canUpdate }) => {
         {/* Live Password Policy Checklist */}
         {passwordInput && (
           <div className="p-3 rounded-lg bg-muted/30 border border-border/50 space-y-2 text-[11px]">
-            <span className="font-bold text-foreground block">Password Policy Checklist (Live Validation):</span>
+            <span className="font-bold text-foreground block">{t('settings.defaultPassword.checklistTitle', 'Password Policy Checklist (Live Validation):')}</span>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
               <span className={`flex items-center gap-1.5 ${reqMinLen ? 'text-emerald-600 font-semibold' : 'text-muted-foreground'}`}>
                 {reqMinLen ? <CheckCircle2 className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
-                Minimum 12 characters
+                {t('settings.defaultPassword.reqMinLen', 'Minimum 12 characters')}
               </span>
               <span className={`flex items-center gap-1.5 ${reqUpper ? 'text-emerald-600 font-semibold' : 'text-muted-foreground'}`}>
                 {reqUpper ? <CheckCircle2 className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
-                At least 1 uppercase letter (A-Z)
+                {t('settings.defaultPassword.reqUpper', 'At least 1 uppercase letter (A-Z)')}
               </span>
               <span className={`flex items-center gap-1.5 ${reqLower ? 'text-emerald-600 font-semibold' : 'text-muted-foreground'}`}>
                 {reqLower ? <CheckCircle2 className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
-                At least 1 lowercase letter (a-z)
+                {t('settings.defaultPassword.reqLower', 'At least 1 lowercase letter (a-z)')}
               </span>
               <span className={`flex items-center gap-1.5 ${reqDigit ? 'text-emerald-600 font-semibold' : 'text-muted-foreground'}`}>
                 {reqDigit ? <CheckCircle2 className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
-                At least 1 number (0-9)
+                {t('settings.defaultPassword.reqDigit', 'At least 1 number (0-9)')}
               </span>
               <span className={`flex items-center gap-1.5 ${reqSymbol ? 'text-emerald-600 font-semibold' : 'text-muted-foreground'}`}>
                 {reqSymbol ? <CheckCircle2 className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
-                At least 1 special character (!@#$%^&*)
+                {t('settings.defaultPassword.reqSymbol', 'At least 1 special character (!@#$%^&*)')}
               </span>
               <span className={`flex items-center gap-1.5 ${reqNoSpace ? 'text-emerald-600 font-semibold' : 'text-muted-foreground'}`}>
                 {reqNoSpace ? <CheckCircle2 className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
-                No leading or trailing spaces
+                {t('settings.defaultPassword.reqNoSpace', 'No leading or trailing spaces')}
               </span>
             </div>
 
