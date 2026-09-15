@@ -1,4 +1,34 @@
 # Changelog
+## [2026-09-15 16:45] - v1.9.5
+- **Files Modified:** `src/components/users/EditUserModal.jsx`, `src/components/users/AvatarUpload.jsx`, `src/i18n/locales/en.js`, `src/i18n/locales/th.js`, `package.json`, `package-lock.json`, `CHANGELOG.md`, `docs/edit-user-rbac-i18n-implementation-plan.md`
+- **Changes:**
+  - แปล UI ข้อความภาษาอังกฤษ 100% ในส่วน **Edit User & RBAC Permissions** (`/users`) เป็นภาษาไทยด้วย `i18next` + `react-i18next`:
+    - เพิ่มคีย์แปลภาษาใหม่ใน namespace `users.avatar` และ `users.editModal` ใน `src/i18n/locales/en.js` และ `src/i18n/locales/th.js` พร้อมรักษาระดับ 100% Key Parity (1,671 keys)
+    - รองรับการแปลทุกแท็บ:
+      - **Tab 1: ข้อมูลผู้ใช้ (User Profile)**: หัวข้อการแก้ไข, คำเตือน Super Admin, ชื่อ-นามสกุล, อีเมล, รหัสผ่านใหม่, ยืนยันรหัสผ่าน, เงื่อนไขรหัสผ่าน 8 ตัวอักษร, ข้อความเตือนแก้ไขรูปประจำตัว
+      - **Tab 2: บทบาทและสิทธิ์ (Roles & Permissions)**: การ์ดบทบาททุกระดับ (Super Admin, Project Manager, Site Engineer, Supervisor, Worker, Auditor, Guest), คำอธิบายหน้าที่ความรับผิดชอบ, ป้ายสถานะ System Role, จำนวนสิทธิ์ RBAC สด (เช่น `สิทธิ์ที่ได้รับ (12)`), สถานะการเปิด/ปิดสิทธิ์ของบทบาท, และการ์ดสถานะบัญชี (Active, Suspended)
+      - **Tab 3: การเข้าถึงโครงการ (Project Access)**: ประเภทสิทธิ์ (เข้าถึงได้ทุกโครงการ, เฉพาะโครงการที่เลือก), คำอธิบาย, ช่องค้นหาโครงการ, ปุ่มเลือกทั้งหมด/ล้างการเลือก, จำนวนโครงการที่เลือก
+    - รองรับการแปลข้อความแจ้งเตือนข้อผิดพลาด (Validation & Error Toasts), สถานะกำลังบันทึก (Saving...), และปุ่มนำทาง Footer
+    - ยกระดับ `AvatarUpload.jsx` ให้อ่านข้อความ tooltips, คำเตือนความจุไฟล์, และประเภทไฟล์จาก i18n
+  - ปรับเวอร์ชันระบบเป็น `v1.9.5`
+- **Reason:** รองรับการใช้งานภาษาไทยเต็มรูปแบบ 100% สำหรับการจัดการแก้ไขข้อมูลผู้ใช้งานและสิทธิ์ RBAC ตามมาตรฐาน i18n ของระบบ
+
+## [2026-09-15 15:40] - v1.9.4
+- **Files Modified:** `src/components/users/EditUserModal.jsx`, `src/components/users/AddUserModal.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`, `docs/assigned-role-selector-fix-implementation-plan.md`
+- **Changes:**
+  - แก้ไขปัญหาตัวเลือก **Assigned Role** ในหน้าจัดการผู้ใช้งาน (`EditUserModal` และ `AddUserModal`):
+    - แก้ไข Root Cause ที่การคลิกเลือก Role ถูก Reset กลับเป็นค่าเดิมทันที เนื่องจาก `availableRoles` อยู่ใน dependency array ของ `useEffect` ที่ initialize `formData`
+    - แยกการ initialize `formData` ให้ทำงานเฉพาะเมื่อเปิดโมดอลหรือสลับผู้ใช้ (`[isOpen, user?.id]`) เพื่อให้ค่าบทบาทที่เลือกถูกบันทึกลงฟอร์มอย่างถูกต้อง
+    - เพิ่มเสถียรภาพให้กับการดึง Role และสิทธิ์ RBAC สดจากฐานข้อมูล โดยไม่ trigger state mutation ซ้ำซ้อน
+    - ส่ง `availableRoles` เข้าสู่ `resolveRoleId(formData.role, formData.role_id, availableRoles)` ในขั้นตอน Submit เพื่อให้ `role_id` ถูกต้องแม่นยำ 100%
+    - ยกระดับการเข้าถึง (Accessibility & Keyboard Navigation) ตามมาตรฐาน WAI-ARIA:
+      - กำหนด `role="radiogroup"` และ `aria-label="Assigned Role"` ให้กับคอนเทนเนอร์
+      - กำหนด `role="radio"`, `aria-checked`, `aria-disabled`, `tabIndex`, และ `onKeyDown` (รองรับปุ่ม Space และ Enter ในการเลือกบทบาท)
+      - เพิ่มเส้นขอบ Focus Ring (`focus-visible:ring-2 focus-visible:ring-primary`)
+    - ซิงค์การทำงานแบบเดียวกันกับ `AddUserModal` ให้รองรับทั้งการคลิก การกดคีย์บอร์ด และการจัดเก็บ `role_id` ที่ถูกต้อง
+  - ปรับเวอร์ชันระบบเป็น `v1.9.4`
+- **Reason:** แก้ไขข้อผิดพลาดที่การ์ดบทบาทผู้ใช้ (Assigned Role) มองเห็นได้แต่ไม่สามารถคลิกเลือกได้ และเพิ่มการรองรับคีย์บอร์ด/การเข้าถึง
+
 ## [2026-09-15 14:30] - v1.9.3
 - **Files Modified:** `src/i18n/locales/th.js`, `scripts/update-locales.mjs`, `package.json`, `package-lock.json`, `CHANGELOG.md`
 - **Changes:**

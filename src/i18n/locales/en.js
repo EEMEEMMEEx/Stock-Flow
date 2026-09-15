@@ -1135,7 +1135,114 @@ export default {
     "resendInvite": "Resend Invitation",
     "changeStatus": "Change Status",
     "permanentDelete": "Delete User Permanently",
-    "noUsersFound": "No users found matching criteria"
+    "noUsersFound": "No users found matching criteria",
+    "avatar": {
+      "unsupportedFormat": "Only JPG and PNG image files are supported",
+      "maxSizeExceeded": "Image file size must not exceed 2 MB",
+      "uploadPhoto": "Upload Photo",
+      "remove": "Remove",
+      "hint": "Supports JPG, PNG up to 2 MB",
+      "clickToUpload": "Click to upload profile photo",
+      "altPreview": "Avatar preview"
+    },
+    "editModal": {
+      "title": "Edit User & RBAC Permissions",
+      "loginEmailDesc": "Login email is the primary identity in Supabase Auth",
+      "avatarTitle": "Profile Avatar",
+      "emailLabel": "Login Email",
+      "fullNameLabel": "Full Name",
+      "fullNamePlaceholder": "e.g. John Doe",
+      "phoneLabel": "Phone Number",
+      "phonePlaceholder": "e.g. 0812345678",
+      "departmentLabel": "Department",
+      "departmentPlaceholder": "e.g. Engineering, Warehouse",
+      "positionLabel": "Position",
+      "positionPlaceholder": "e.g. Site Engineer, Storekeeper",
+      "mustChangePassword": "Must change password on next login",
+      "mustChangePasswordDesc": "When enabled, the user must set a new password before accessing the system.",
+      "assignedRole": "Assigned Role",
+      "manageRolesLink": "Manage roles and permissions at /roles",
+      "systemRole": "System Role",
+      "assignedPermissions": "Assigned RBAC Permissions",
+      "loadingPermissions": "Loading permissions...",
+      "loadingSchema": "Loading live permission schema from database...",
+      "allPermissionsEnabled": "All permissions enabled ({{count}} / {{total}})",
+      "enabledCount": "Enabled: {{count}} / {{total}}",
+      "refreshPermissionsTitle": "Refresh permissions from database",
+      "noPermissions": "No permissions currently enabled for this role in /roles",
+      "noPermissionsHint": "You can configure additional permissions directly in",
+      "roleManagementLink": "Role Management",
+      "fullPrivilegesNotice": "This role has full system privileges, with access to all {{count}} system permissions.",
+      "permissionUnit": "{{count}} permission",
+      "permissionUnit_other": "{{count}} permissions",
+      "accountStatus": "Account Status",
+      "statusActive": "Active",
+      "statusActiveDesc": "Normal login and operations",
+      "statusInactive": "Inactive",
+      "statusInactiveDesc": "Block login access",
+      "statusSuspended": "Suspended",
+      "statusSuspendedDesc": "Temporarily suspended",
+      "projectAccessControl": "Project Access Control",
+      "allProjectsAccess": "All Projects Access",
+      "allProjectsDesc": "The user will automatically have access to view stock, withdraw, and receive items across all projects.",
+      "selectedProjectsOnly": "Selected Projects Only",
+      "selectedProjectsDesc": "Restrict access to view and perform actions only within the selected projects listed below.",
+      "searchProjectsPlaceholder": "Search project name or code...",
+      "selectAll": "Select All ({{count}})",
+      "clearSelection": "Clear Selection",
+      "noMatchingProjects": "No matching projects found",
+      "minProjectRequired": "At least 1 project is required for this access type",
+      "selectedCount": "Selected: {{count}} / {{total}} projects",
+      "tabs": {
+        "profile": "TAB 1: User Profile",
+        "rbac": "TAB 2: Roles & Permissions (RBAC)",
+        "projects": "TAB 3: Project Access"
+      },
+      "nav": {
+        "nextRbac": "Next (TAB 2: Roles & Permissions) →",
+        "backProfile": "← Back (TAB 1)",
+        "nextProjects": "Next (TAB 3: Project Access) →",
+        "backRbac": "← Back (TAB 2)",
+        "cancel": "Cancel",
+        "saving": "Saving...",
+        "saveChanges": "Save Changes",
+        "superAdminTitle": "Only Super Admin can edit this account",
+        "saveChangesTitle": "Save changes"
+      },
+      "notices": {
+        "superAdminTitle": "Security Notice: Super Admin Account",
+        "superAdminProfileDesc": "This account is a system Super Admin. Only Super Admin can modify or save this account.",
+        "superAdminRbacDesc": "This account is a system Super Admin. Only Super Admin can change the role or permissions of this account.",
+        "lastAdminTitle": "Security Notice: Last Active Administrator",
+        "lastAdminDesc": "This account is the only active Administrator. Demoting or suspending this account is not allowed to prevent system lockout."
+      },
+      "validation": {
+        "enterFullName": "Please enter full name",
+        "selectProject": "Please select at least 1 project for selected projects access",
+        "superAdminOnly": "System Security: Only Super Admin can edit this account",
+        "lastAdminProtect": "System Security: Cannot demote or deactivate the last active Administrator",
+        "lastAdminDemote": "Cannot demote the last active Administrator in the system",
+        "lastAdminSuspend": "Cannot suspend or deactivate the last active Administrator in the system"
+      },
+      "roles": {
+        "staff": {
+          "name": "STAFF / REQUESTER",
+          "desc": "Request materials and view stock for assigned projects only"
+        },
+        "supervisor": {
+          "name": "SUPERVISOR / APPROVER",
+          "desc": "Approve withdrawals and view project-level reports"
+        },
+        "admin": {
+          "name": "ADMINISTRATOR",
+          "desc": "Full access: approve withdrawals, manage projects, roles, and users"
+        },
+        "super": {
+          "name": "SUPER ADMIN",
+          "desc": "System-level access: manage everything including admins, permissions, system settings, security, integrations"
+        }
+      }
+    }
   },
   "roles": {
     "title": "Roles & Permission Management",

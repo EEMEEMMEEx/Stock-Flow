@@ -39,6 +39,7 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
     avatar_url: '',
     avatar_file: null,
     role: 'staff',
+    role_id: null,
     status: 'active',
     access_type: 'all', // 'all' | 'selected'
     selected_projects: [],
@@ -73,7 +74,10 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
 
     try {
       setLoading(true);
-      const matchedRole = availableRoles.find(r => (r.code || '').toUpperCase() === (formData.role || '').toUpperCase()) || null;
+      const matchedRole = availableRoles.find(r => 
+        (formData.role_id && r.id === formData.role_id) ||
+        (r.code || '').toUpperCase() === (formData.role || '').toUpperCase()
+      ) || null;
       await onSave({
         email: formData.email.trim(),
         full_name: formData.full_name.trim(),
@@ -107,6 +111,7 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
       avatar_url: '',
       avatar_file: null,
       role: 'staff',
+      role_id: null,
       status: 'active',
       access_type: 'all',
       selected_projects: [],
@@ -246,17 +251,30 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
               {/* Role Selection */}
               <div>
                 <Label className="text-sm font-medium mb-2 block">Assigned Role *</Label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-48 overflow-y-auto p-1">
+                <div 
+                  role="radiogroup"
+                  aria-label="Assigned Role"
+                  className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-48 overflow-y-auto p-1"
+                >
                   {availableRoles.map((r) => {
                     const roleCode = (r.code || r.role || '').toLowerCase();
                     const isSelected = formData.role.toLowerCase() === roleCode;
                     return (
                       <div
                         key={r.id || r.code}
-                        onClick={() => setFormData(prev => ({ ...prev, role: roleCode }))}
-                        className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                        role="radio"
+                        aria-checked={isSelected}
+                        tabIndex={0}
+                        onClick={() => setFormData(prev => ({ ...prev, role: roleCode, role_id: r.id || null }))}
+                        onKeyDown={(e) => {
+                          if (e.key === ' ' || e.key === 'Enter') {
+                            e.preventDefault();
+                            setFormData(prev => ({ ...prev, role: roleCode, role_id: r.id || null }));
+                          }
+                        }}
+                        className={`p-3 rounded-lg border cursor-pointer transition-all focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
                           isSelected
-                            ? 'border-primary bg-primary/10 shadow-xs'
+                            ? 'border-primary bg-primary/10 shadow-xs ring-1 ring-primary'
                             : 'border-border bg-card hover:bg-muted/50'
                         }`}
                       >

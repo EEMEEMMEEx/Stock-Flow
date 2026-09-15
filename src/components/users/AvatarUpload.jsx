@@ -2,6 +2,7 @@ import { useRef, useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Camera, Upload, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useTranslation } from '@/i18n';
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png'];
@@ -24,6 +25,7 @@ const sanitizeImageUrl = (url) => {
 };
 
 const AvatarUpload = ({ value, name = '', onChange, onRemove }) => {
+  const { t } = useTranslation();
   const fileInputRef = useRef(null);
   const [previewUrl, setPreviewUrl] = useState(() => sanitizeImageUrl(value || ''));
 
@@ -53,14 +55,14 @@ const AvatarUpload = ({ value, name = '', onChange, onRemove }) => {
     // 1. Validate File Type
     const lowerType = (file.type || '').toLowerCase();
     if (!ALLOWED_TYPES.includes(lowerType)) {
-      toast.error('Only JPG and PNG image files are supported');
+      toast.error(t('users.avatar.unsupportedFormat', 'Only JPG and PNG image files are supported'));
       e.target.value = '';
       return;
     }
 
     // 2. Validate File Size (Max 2 MB)
     if (file.size > MAX_FILE_SIZE) {
-      toast.error('Image file size must not exceed 2 MB');
+      toast.error(t('users.avatar.maxSizeExceeded', 'Image file size must not exceed 2 MB'));
       e.target.value = '';
       return;
     }
@@ -99,12 +101,12 @@ const AvatarUpload = ({ value, name = '', onChange, onRemove }) => {
       <div 
         onClick={() => fileInputRef.current?.click()}
         className="relative w-[56px] h-[56px] min-w-[56px] min-h-[56px] rounded-full overflow-hidden shadow-xs cursor-pointer group flex items-center justify-center bg-primary/10 border-2 border-primary/20 hover:border-primary transition-all shrink-0"
-        title="Click to upload profile photo"
+        title={t('users.avatar.clickToUpload', 'Click to upload profile photo')}
       >
         {safePreviewSrc ? (
           <img
             src={safePreviewSrc}
-            alt="Avatar preview"
+            alt={t('users.avatar.altPreview', 'Avatar preview')}
             className="w-full h-full object-cover"
             onError={() => setPreviewUrl('')}
           />
@@ -131,7 +133,7 @@ const AvatarUpload = ({ value, name = '', onChange, onRemove }) => {
             className="h-8 px-3 rounded-lg text-xs font-medium flex items-center gap-1.5 text-primary cursor-pointer border border-border shadow-xs hover:bg-accent"
           >
             <Upload className="w-3.5 h-3.5" />
-            Upload Photo
+            {t('users.avatar.uploadPhoto', 'Upload Photo')}
           </Button>
 
           {previewUrl && (
@@ -143,13 +145,13 @@ const AvatarUpload = ({ value, name = '', onChange, onRemove }) => {
               className="text-xs h-8 px-2.5 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50"
             >
               <Trash2 className="w-3.5 h-3.5 mr-1" />
-              Remove
+              {t('users.avatar.remove', 'Remove')}
             </Button>
           )}
         </div>
 
         <p className="text-[11px] text-muted-foreground">
-          Supports JPG, PNG up to 2 MB
+          {t('users.avatar.hint', 'Supports JPG, PNG up to 2 MB')}
         </p>
 
         {/* Hidden Native File Input */}

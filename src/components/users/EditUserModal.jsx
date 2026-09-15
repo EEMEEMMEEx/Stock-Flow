@@ -15,6 +15,7 @@ import RoleBadge from '@/components/ui/RoleBadge';
 import { getRoleLabel } from '@/lib/roleUtils';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTranslation } from '@/i18n';
 
 // Helper to resolve role ID from code/aliases or existing ID
 const resolveRoleId = (roleCode, existingRoleId, roleList = []) => {
@@ -60,6 +61,7 @@ const EditUserModal = ({
   roles = [], 
   allUsers = [] 
 }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { isSuperAdmin } = useAuth();
   const [activeTab, setActiveTab] = useState('profile'); // 'profile' | 'rbac' | 'projects'
@@ -111,7 +113,7 @@ const EditUserModal = ({
   const isTargetSuper = Boolean(user && ((user.role || '').toLowerCase() === 'super' || (user.roles?.code || '').toUpperCase() === 'SUPER' || (user.email || '').toLowerCase() === 'admin@stockflow.com'));
 
   useEffect(() => {
-    if (user) {
+    if (isOpen && user) {
       const userRoleCode = (user.role || 'staff').toLowerCase();
       const resolvedId = resolveRoleId(userRoleCode, user.role_id, availableRoles);
       const hasSpecificProjects = Array.isArray(user.assigned_project_ids) && user.assigned_project_ids.length > 0;
@@ -135,7 +137,8 @@ const EditUserModal = ({
       });
 
     }
-  }, [user, isOpen, availableRoles]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, user?.id]);
 
   // Reset the wizard only when a different user is opened, not when form or
   // live RBAC data changes while the current tab is being viewed.
@@ -157,7 +160,12 @@ const EditUserModal = ({
 
       const dbRolesList = (rolesRes.data && rolesRes.data.length > 0) ? rolesRes.data : [];
       const currentRoles = dbRolesList.length > 0 ? dbRolesList : (roles.length > 0 ? roles : DEFAULT_ROLES);
-      setLiveRoles(currentRoles);
+      setLiveRoles(prev => {
+        if (prev.length === currentRoles.length && prev.every((r, idx) => r.id === currentRoles[idx]?.id && r.code === currentRoles[idx]?.code)) {
+          return prev;
+        }
+        return currentRoles;
+      });
 
       const fullCatalog = (catRes.data && catRes.data.length > 0) ? catRes.data : [];
       const allRolePerms = (rpRes.data && rpRes.data.length > 0) ? rpRes.data : [];
@@ -258,7 +266,7 @@ const EditUserModal = ({
 
   const handleRoleSelect = (roleCode, roleId) => {
     if (isLastActiveAdmin && roleCode.toLowerCase() !== 'admin') {
-      toast.error('Cannot demote the last active Administrator in the system');
+      toast.error(t('users.editModal.validation.lastAdminDemote', 'Cannot demote the last active Administrator in the system'));
       return;
     }
 
@@ -272,7 +280,7 @@ const EditUserModal = ({
 
   const handleStatusChange = (newStatus) => {
     if (isLastActiveAdmin && newStatus !== 'active') {
-      toast.error('Cannot suspend or deactivate the last active Administrator in the system');
+      toast.error(t('users.editModal.validation.lastAdminSuspend', 'Cannot suspend or deactivate the last active Administrator in the system'));
       return;
     }
     setFormData((prev) => ({ ...prev, status: newStatus }));
@@ -308,30 +316,30 @@ const EditUserModal = ({
     e.preventDefault();
 
     if (!formData.full_name.trim()) {
-      toast.error('Please enter full name');
+      toast.error(t('users.editModal.validation.enterFullName', 'Please enter full name'));
       setActiveTab('profile');
       return;
     }
 
     if (formData.access_type === 'selected' && formData.selected_projects.length === 0) {
-      toast.error('Please select at least 1 project for selected projects access');
+      toast.error(t('users.editModal.validation.selectProject', 'Please select at least 1 project for selected projects access'));
       setActiveTab('projects');
       return;
     }
 
     if (isTargetSuper && !isSuperAdmin) {
-      toast.error('System Security: Only Super Admin can edit this account');
+      toast.error(t('users.editModal.validation.superAdminOnly', 'System Security: Only Super Admin can edit this account'));
       return;
     }
 
     if (isLastActiveAdmin && (formData.role !== 'admin' || formData.status !== 'active')) {
-      toast.error('System Security: Cannot demote or deactivate the last active Administrator');
+      toast.error(t('users.editModal.validation.lastAdminProtect', 'System Security: Cannot demote or deactivate the last active Administrator'));
       return;
     }
 
     try {
       setLoading(true);
-      const effectiveRoleId = resolveRoleId(formData.role, formData.role_id);
+      const effectiveRoleId = resolveRoleId(formData.role, formData.role_id, availableRoles);
 
       await onSave(user.id, {
         full_name: formData.full_name.trim(),
@@ -400,7 +408,7 @@ const EditUserModal = ({
                 )}
                 <div>
                   <DialogTitle className="text-xl font-bold flex items-center gap-2 text-foreground">
-                    Edit User & RBAC Permissions
+                    {t('users.editModal.title', 'Edit User & RBAC Permissions')}
                   </DialogTitle>
                   <DialogDescription className="text-xs text-muted-foreground flex items-center gap-2 mt-0.5">
                     <Mail className="w-3.5 h-3.5" />
@@ -426,7 +434,11 @@ const EditUserModal = ({
                   <span className={`w-1.5 h-1.5 rounded-full ${
                     formData.status === 'active' ? 'bg-emerald-500 animate-pulse' : formData.status === 'suspended' ? 'bg-amber-500' : 'bg-red-500'
                   }`}></span>
-                  {formData.status.toUpperCase()}
+                  {formData.status === 'active' 
+                    ? t('users.editModal.statusActive', 'Active').toUpperCase()
+                    : formData.status === 'suspended'
+                    ? t('users.editModal.statusSuspended', 'Suspended').toUpperCase()
+                    : t('users.editModal.statusInactive', 'Inactive').toUpperCase()}
                 </span>
               </div>
             </div>
@@ -444,7 +456,7 @@ const EditUserModal = ({
               }`}
             >
               <User className="w-4 h-4" />
-              TAB 1: User Profile
+              {t('users.editModal.tabs.profile', 'TAB 1: User Profile')}
             </button>
 
             <button
@@ -457,7 +469,7 @@ const EditUserModal = ({
               }`}
             >
               <ShieldCheck className="w-4 h-4" />
-              TAB 2: Roles & Permissions (RBAC)
+              {t('users.editModal.tabs.rbac', 'TAB 2: Roles & Permissions (RBAC)')}
             </button>
 
             <button
@@ -470,7 +482,7 @@ const EditUserModal = ({
               }`}
             >
               <FolderKanban className="w-4 h-4" />
-              TAB 3: Project Access
+              {t('users.editModal.tabs.projects', 'TAB 3: Project Access')}
             </button>
           </div>
         </div>
@@ -486,9 +498,9 @@ const EditUserModal = ({
                   <Lock className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
                   <div>
                     <strong className="font-semibold block text-xs">
-                      Security Notice: Super Admin Account
+                      {t('users.editModal.notices.superAdminTitle', 'Security Notice: Super Admin Account')}
                     </strong>
-                    This account is a system Super Admin. Only Super Admin can modify or save this account.
+                    {t('users.editModal.notices.superAdminProfileDesc', 'This account is a system Super Admin. Only Super Admin can modify or save this account.')}
                   </div>
                 </div>
               )}
@@ -496,7 +508,7 @@ const EditUserModal = ({
               {/* Avatar Upload */}
               <div className="p-4 rounded-lg bg-muted/30 border border-border/50 space-y-2">
                 <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-primary" /> Profile Avatar
+                  <Sparkles className="w-3.5 h-3.5 text-primary" /> {t('users.editModal.avatarTitle', 'Profile Avatar')}
                 </Label>
                 <AvatarUpload
                   value={formData.avatar_url}
@@ -510,7 +522,7 @@ const EditUserModal = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label htmlFor="edit_email" className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
-                    <Lock className="w-3.5 h-3.5" /> Login Email
+                    <Lock className="w-3.5 h-3.5" /> {t('users.editModal.emailLabel', 'Login Email')}
                   </Label>
                   <Input
                     id="edit_email"
@@ -520,18 +532,18 @@ const EditUserModal = ({
                     className="h-9 text-xs rounded-lg bg-muted/40 text-muted-foreground cursor-not-allowed border-dashed border border-input"
                   />
                   <p className="text-[11px] text-muted-foreground">
-                    Login email is the primary identity in Supabase Auth
+                    {t('users.editModal.loginEmailDesc', 'Login email is the primary identity in Supabase Auth')}
                   </p>
                 </div>
 
                 <div className="space-y-1.5">
                   <Label htmlFor="edit_full_name" className="text-xs font-semibold text-foreground flex items-center gap-1">
-                    <User className="w-3.5 h-3.5 text-primary" /> Full Name <span className="text-red-500">*</span>
+                    <User className="w-3.5 h-3.5 text-primary" /> {t('users.editModal.fullNameLabel', 'Full Name')} <span className="text-red-500">*</span>
                   </Label>
                   <Input
                     id="edit_full_name"
                     required
-                    placeholder="e.g. John Doe"
+                    placeholder={t('users.editModal.fullNamePlaceholder', 'e.g. John Doe')}
                     value={formData.full_name}
                     onChange={(e) => setFormData((prev) => ({ ...prev, full_name: e.target.value }))}
                     className="h-9 text-xs rounded-lg bg-background border border-input focus-visible:ring-1 focus-visible:ring-primary"
@@ -543,12 +555,12 @@ const EditUserModal = ({
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="space-y-1.5">
                   <Label htmlFor="edit_phone" className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                    <Phone className="w-3.5 h-3.5 text-muted-foreground" /> Phone Number
+                    <Phone className="w-3.5 h-3.5 text-muted-foreground" /> {t('users.editModal.phoneLabel', 'Phone Number')}
                   </Label>
                   <Input
                     id="edit_phone"
                     type="tel"
-                    placeholder="e.g. 0812345678"
+                    placeholder={t('users.editModal.phonePlaceholder', 'e.g. 0812345678')}
                     value={formData.phone}
                     onChange={(e) => setFormData((prev) => ({ ...prev, phone: e.target.value }))}
                     className="h-9 text-xs rounded-lg bg-background border border-input focus-visible:ring-1 focus-visible:ring-primary"
@@ -557,11 +569,11 @@ const EditUserModal = ({
 
                 <div className="space-y-1.5">
                   <Label htmlFor="edit_department" className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                    <Building2 className="w-3.5 h-3.5 text-muted-foreground" /> Department
+                    <Building2 className="w-3.5 h-3.5 text-muted-foreground" /> {t('users.editModal.departmentLabel', 'Department')}
                   </Label>
                   <Input
                     id="edit_department"
-                    placeholder="e.g. Engineering, Warehouse"
+                    placeholder={t('users.editModal.departmentPlaceholder', 'e.g. Engineering, Warehouse')}
                     value={formData.department}
                     onChange={(e) => setFormData((prev) => ({ ...prev, department: e.target.value }))}
                     className="h-9 text-xs rounded-lg bg-background border border-input focus-visible:ring-1 focus-visible:ring-primary"
@@ -570,11 +582,11 @@ const EditUserModal = ({
 
                 <div className="space-y-1.5">
                   <Label htmlFor="edit_position" className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                    <Briefcase className="w-3.5 h-3.5 text-muted-foreground" /> Position
+                    <Briefcase className="w-3.5 h-3.5 text-muted-foreground" /> {t('users.editModal.positionLabel', 'Position')}
                   </Label>
                   <Input
                     id="edit_position"
-                    placeholder="e.g. Site Engineer, Storekeeper"
+                    placeholder={t('users.editModal.positionPlaceholder', 'e.g. Site Engineer, Storekeeper')}
                     value={formData.position}
                     onChange={(e) => setFormData((prev) => ({ ...prev, position: e.target.value }))}
                     className="h-9 text-xs rounded-lg bg-background border border-input focus-visible:ring-1 focus-visible:ring-primary"
@@ -594,10 +606,10 @@ const EditUserModal = ({
                   <div>
                     <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
                       <KeyRound className="w-3.5 h-3.5 text-primary" />
-                      Must change password on next login
+                      {t('users.editModal.mustChangePassword', 'Must change password on next login')}
                     </span>
                     <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
-                      When enabled, the user must set a new password before accessing the system.
+                      {t('users.editModal.mustChangePasswordDesc', 'When enabled, the user must set a new password before accessing the system.')}
                     </p>
                   </div>
                 </label>
@@ -614,9 +626,9 @@ const EditUserModal = ({
                   <Lock className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
                   <div>
                     <strong className="font-semibold block text-xs">
-                      Security Notice: Super Admin Account
+                      {t('users.editModal.notices.superAdminTitle', 'Security Notice: Super Admin Account')}
                     </strong>
-                    This account is a system Super Admin. Only Super Admin can change the role or permissions of this account.
+                    {t('users.editModal.notices.superAdminRbacDesc', 'This account is a system Super Admin. Only Super Admin can change the role or permissions of this account.')}
                   </div>
                 </div>
               )}
@@ -627,9 +639,9 @@ const EditUserModal = ({
                   <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                   <div>
                     <strong className="font-semibold block text-xs">
-                      Security Notice: Last Active Administrator
+                      {t('users.editModal.notices.lastAdminTitle', 'Security Notice: Last Active Administrator')}
                     </strong>
-                    This account is the only active Administrator. Demoting or suspending this account is not allowed to prevent system lockout.
+                    {t('users.editModal.notices.lastAdminDesc', 'This account is the only active Administrator. Demoting or suspending this account is not allowed to prevent system lockout.')}
                   </div>
                 </div>
               )}
@@ -638,19 +650,23 @@ const EditUserModal = ({
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label className="text-xs font-semibold text-foreground block">
-                    Assigned Role <span className="text-red-500">*</span>
+                    {t('users.editModal.assignedRole', 'Assigned Role')} <span className="text-red-500">*</span>
                   </Label>
                   <button
                     type="button"
                     onClick={() => { onClose(); navigate('/roles'); }}
                     className="text-[11px] text-primary hover:underline flex items-center gap-1"
                   >
-                    <span>Manage roles and permissions at /roles</span>
+                    <span>{t('users.editModal.manageRolesLink', 'Manage roles and permissions at /roles')}</span>
                     <ExternalLink className="w-3 h-3" />
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div 
+                  role="radiogroup"
+                  aria-label={t('users.editModal.assignedRole', 'Assigned Role')}
+                  className="grid grid-cols-1 sm:grid-cols-3 gap-3"
+                >
                   {availableRoles.map((r) => {
                     const roleCode = (r.code || r.role || '').toLowerCase();
                     const isSelected = (formData.role || '').toLowerCase() === roleCode;
@@ -659,8 +675,18 @@ const EditUserModal = ({
                     return (
                       <div
                         key={r.id || r.code}
+                        role="radio"
+                        aria-checked={isSelected}
+                        aria-disabled={isRoleDisabled}
+                        tabIndex={isRoleDisabled ? -1 : 0}
                         onClick={() => !isRoleDisabled && handleRoleSelect(roleCode, r.id)}
-                        className={`p-3.5 rounded-lg border transition-all ${
+                        onKeyDown={(e) => {
+                          if (!isRoleDisabled && (e.key === ' ' || e.key === 'Enter')) {
+                            e.preventDefault();
+                            handleRoleSelect(roleCode, r.id);
+                          }
+                        }}
+                        className={`p-3.5 rounded-lg border transition-all focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
                           isRoleDisabled
                             ? 'opacity-40 cursor-not-allowed border-border bg-muted/30'
                             : 'cursor-pointer'
@@ -673,18 +699,18 @@ const EditUserModal = ({
                         <div className="flex items-center justify-between mb-1.5">
                           <span className="font-bold text-xs flex items-center gap-1.5">
                             <Shield className={`w-3.5 h-3.5 ${isSelected ? 'text-primary' : 'text-muted-foreground'}`} />
-                            {getRoleLabel(r.code, r.name)}
+                            {t(`users.editModal.roles.${roleCode}.name`, getRoleLabel(r.code, r.name))}
                           </span>
                           {isSelected && <Check className="w-4 h-4 text-primary shrink-0" />}
                         </div>
-                        {r.description && (
+                        {(r.description || t(`users.editModal.roles.${roleCode}.desc`, '')) && (
                           <p className="text-[11px] text-muted-foreground leading-tight line-clamp-2">
-                            {r.description}
+                            {t(`users.editModal.roles.${roleCode}.desc`, r.description || '')}
                           </p>
                         )}
                         {r.is_system && (
                           <span className="inline-block text-[9px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground mt-2 font-mono">
-                            System Role
+                            {t('users.editModal.systemRole', 'System Role')}
                           </span>
                         )}
                       </div>
@@ -698,23 +724,29 @@ const EditUserModal = ({
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
                     <ShieldCheck className="w-4 h-4 text-primary" />
-                    Assigned RBAC Permissions
+                    {t('users.editModal.assignedPermissions', 'Assigned RBAC Permissions')}
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-[11px] font-semibold text-primary bg-primary/10 px-2.5 py-0.5 rounded-full">
                       {loadingPerms ? (
-                        'Loading permissions...'
+                        t('users.editModal.loadingPermissions', 'Loading permissions...')
                       ) : rolePermissionsList.length === totalCatalogCount && totalCatalogCount > 0 ? (
-                        `All permissions enabled (${rolePermissionsList.length} / ${totalCatalogCount})`
+                        t('users.editModal.allPermissionsEnabled', 'All permissions enabled ({{count}} / {{total}})', {
+                          count: rolePermissionsList.length,
+                          total: totalCatalogCount
+                        })
                       ) : (
-                        `Enabled: ${rolePermissionsList.length} / ${totalCatalogCount || rolePermissionsList.length}`
+                        t('users.editModal.enabledCount', 'Enabled: {{count}} / {{total}}', {
+                          count: rolePermissionsList.length,
+                          total: totalCatalogCount || rolePermissionsList.length
+                        })
                       )}
                     </span>
                     <button
                       type="button"
                       onClick={() => fetchLiveRolePermissions()}
                       disabled={loadingPerms}
-                      title="Refresh permissions from database"
+                      title={t('users.editModal.refreshPermissionsTitle', 'Refresh permissions from database')}
                       className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50"
                     >
                       <RefreshCw className={`w-3.5 h-3.5 ${loadingPerms ? 'animate-spin' : ''}`} />
@@ -725,14 +757,17 @@ const EditUserModal = ({
                 {loadingPerms ? (
                   <div className="py-6 text-center text-xs text-muted-foreground flex items-center justify-center gap-2">
                     <RefreshCw className="w-4 h-4 animate-spin text-primary" />
-                    Loading live permission schema from database...
+                    {t('users.editModal.loadingSchema', 'Loading live permission schema from database...')}
                   </div>
                 ) : rolePermissionsList.length === 0 ? (
                   <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-200 text-xs text-center space-y-1">
                     <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 mx-auto mb-1" />
-                    <p className="font-semibold">No permissions currently enabled for this role in /roles</p>
+                    <p className="font-semibold">{t('users.editModal.noPermissions', 'No permissions currently enabled for this role in /roles')}</p>
                     <p className="text-[11px] text-muted-foreground">
-                      You can configure additional permissions directly in <button type="button" onClick={() => { onClose(); navigate('/roles'); }} className="text-primary underline">Role Management</button>
+                      {t('users.editModal.noPermissionsHint', 'You can configure additional permissions directly in')}{' '}
+                      <button type="button" onClick={() => { onClose(); navigate('/roles'); }} className="text-primary underline">
+                        {t('users.editModal.roleManagementLink', 'Role Management')}
+                      </button>
                     </p>
                   </div>
                 ) : (
@@ -740,7 +775,11 @@ const EditUserModal = ({
                     {rolePermissionsList.length === totalCatalogCount && totalCatalogCount > 0 && (
                       <div className="p-3 rounded-lg bg-primary/10 border border-primary/20 text-primary text-xs flex items-center gap-2">
                         <Sparkles className="w-4 h-4 text-primary shrink-0" />
-                        <span>This role has full system privileges, with access to all {rolePermissionsList.length} system permissions.</span>
+                        <span>
+                          {t('users.editModal.fullPrivilegesNotice', 'This role has full system privileges, with access to all {{count}} system permissions.', {
+                            count: rolePermissionsList.length
+                          })}
+                        </span>
                       </div>
                     )}
 
@@ -750,7 +789,7 @@ const EditUserModal = ({
                           <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center justify-between">
                             <span>{category}</span>
                             <span className="text-[10px] font-normal text-muted-foreground">
-                              {groupedPermissions[category].length} {groupedPermissions[category].length === 1 ? 'permission' : 'permissions'}
+                              {t('users.editModal.permissionUnit', '{{count}} permissions', { count: groupedPermissions[category].length })}
                             </span>
                           </div>
                           <div className="flex flex-wrap gap-1.5">
@@ -775,7 +814,7 @@ const EditUserModal = ({
               {/* Account Status Radio Cards */}
               <div className="space-y-2">
                 <Label className="text-xs font-semibold text-foreground block">
-                  Account Status <span className="text-red-500">*</span>
+                  {t('users.editModal.accountStatus', 'Account Status')} <span className="text-red-500">*</span>
                 </Label>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {/* ACTIVE */}
@@ -796,8 +835,8 @@ const EditUserModal = ({
                       className="text-emerald-600 focus:ring-emerald-500"
                     />
                     <div>
-                      <span className="text-xs font-bold text-foreground block">Active</span>
-                      <span className="text-[10px] text-muted-foreground">Normal login and operations</span>
+                      <span className="text-xs font-bold text-foreground block">{t('users.editModal.statusActive', 'Active')}</span>
+                      <span className="text-[10px] text-muted-foreground">{t('users.editModal.statusActiveDesc', 'Normal login and operations')}</span>
                     </div>
                   </label>
 
@@ -822,8 +861,8 @@ const EditUserModal = ({
                       className="text-red-600 focus:ring-red-500"
                     />
                     <div>
-                      <span className="text-xs font-bold text-foreground block">Inactive</span>
-                      <span className="text-[10px] text-muted-foreground">Block login access</span>
+                      <span className="text-xs font-bold text-foreground block">{t('users.editModal.statusInactive', 'Inactive')}</span>
+                      <span className="text-[10px] text-muted-foreground">{t('users.editModal.statusInactiveDesc', 'Block login access')}</span>
                     </div>
                   </label>
 
@@ -848,8 +887,8 @@ const EditUserModal = ({
                       className="text-amber-600 focus:ring-amber-500"
                     />
                     <div>
-                      <span className="text-xs font-bold text-foreground block">Suspended</span>
-                      <span className="text-[10px] text-muted-foreground">Temporarily suspended</span>
+                      <span className="text-xs font-bold text-foreground block">{t('users.editModal.statusSuspended', 'Suspended')}</span>
+                      <span className="text-[10px] text-muted-foreground">{t('users.editModal.statusSuspendedDesc', 'Temporarily suspended')}</span>
                     </div>
                   </label>
                 </div>
@@ -862,7 +901,7 @@ const EditUserModal = ({
             <div className="space-y-4">
               <div className="space-y-3">
                 <Label className="text-xs font-semibold text-foreground block">
-                  Project Access Control <span className="text-red-500">*</span>
+                  {t('users.editModal.projectAccessControl', 'Project Access Control')} <span className="text-red-500">*</span>
                 </Label>
 
                 {/* Mode 1: All Projects */}
@@ -884,10 +923,10 @@ const EditUserModal = ({
                   />
                   <div>
                     <span className="text-xs font-bold text-foreground block">
-                      All Projects Access
+                      {t('users.editModal.allProjectsAccess', 'All Projects Access')}
                     </span>
                     <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
-                      The user will automatically have access to view stock, withdraw, and receive items across all projects.
+                      {t('users.editModal.allProjectsDesc', 'The user will automatically have access to view stock, withdraw, and receive items across all projects.')}
                     </p>
                   </div>
                 </label>
@@ -911,10 +950,10 @@ const EditUserModal = ({
                   />
                   <div>
                     <span className="text-xs font-bold text-foreground block">
-                      Selected Projects Only
+                      {t('users.editModal.selectedProjectsOnly', 'Selected Projects Only')}
                     </span>
                     <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
-                      Restrict access to view and perform actions only within the selected projects listed below.
+                      {t('users.editModal.selectedProjectsDesc', 'Restrict access to view and perform actions only within the selected projects listed below.')}
                     </p>
                   </div>
                 </label>
@@ -928,7 +967,7 @@ const EditUserModal = ({
                     <div className="relative flex-1">
                       <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                       <Input
-                        placeholder="Search project name or code..."
+                        placeholder={t('users.editModal.searchProjectsPlaceholder', 'Search project name or code...')}
                         value={projectSearch}
                         onChange={(e) => setProjectSearch(e.target.value)}
                         className="pl-8 text-xs bg-background border border-input h-8 rounded-lg"
@@ -943,7 +982,7 @@ const EditUserModal = ({
                         onClick={handleSelectAllProjects}
                         className="text-[11px] h-7 px-2.5 rounded-lg"
                       >
-                        Select All ({projects.length})
+                        {t('users.editModal.selectAll', { count: projects.length, defaultValue: `Select All (${projects.length})` })}
                       </Button>
                       <Button
                         type="button"
@@ -952,7 +991,7 @@ const EditUserModal = ({
                         onClick={handleDeselectAllProjects}
                         className="text-[11px] h-7 px-2.5 rounded-lg"
                       >
-                        Clear Selection
+                        {t('users.editModal.clearSelection', 'Clear Selection')}
                       </Button>
                     </div>
                   </div>
@@ -961,7 +1000,7 @@ const EditUserModal = ({
                   <div className="max-h-52 overflow-y-auto space-y-1.5 pr-1">
                     {filteredProjects.length === 0 ? (
                       <p className="text-xs text-muted-foreground p-3 text-center">
-                        No matching projects found
+                        {t('users.editModal.noMatchingProjects', 'No matching projects found')}
                       </p>
                     ) : (
                       filteredProjects.map((p) => {
@@ -995,10 +1034,14 @@ const EditUserModal = ({
 
                   <div className="text-[11px] text-muted-foreground flex items-center justify-between pt-1 border-t border-border/40">
                     <span>
-                      At least 1 project is required for this access type
+                      {t('users.editModal.minProjectRequired', 'At least 1 project is required for this access type')}
                     </span>
                     <span className="font-semibold text-foreground">
-                      Selected: {formData.selected_projects.length} / {projects.length} {projects.length === 1 ? 'project' : 'projects'}
+                      {t('users.editModal.selectedCount', {
+                        count: formData.selected_projects.length,
+                        total: projects.length,
+                        defaultValue: `Selected: ${formData.selected_projects.length} / ${projects.length} projects`
+                      })}
                     </span>
                   </div>
                 </div>
@@ -1017,7 +1060,7 @@ const EditUserModal = ({
                   onClick={() => setActiveTab('rbac')}
                   className="text-xs h-9 px-3 rounded-lg"
                 >
-                  Next (TAB 2: Roles & Permissions) →
+                  {t('users.editModal.nav.nextRbac', 'Next (TAB 2: Roles & Permissions) →')}
                 </Button>
               )}
 
@@ -1030,7 +1073,7 @@ const EditUserModal = ({
                     onClick={() => setActiveTab('profile')}
                     className="text-xs h-9 px-3 rounded-lg"
                   >
-                    ← Back (TAB 1)
+                    {t('users.editModal.nav.backProfile', '← Back (TAB 1)')}
                   </Button>
                   <Button
                     type="button"
@@ -1039,7 +1082,7 @@ const EditUserModal = ({
                     onClick={() => setActiveTab('projects')}
                     className="text-xs h-9 px-3 rounded-lg"
                   >
-                    Next (TAB 3: Project Access) →
+                    {t('users.editModal.nav.nextProjects', 'Next (TAB 3: Project Access) →')}
                   </Button>
                 </>
               )}
@@ -1052,30 +1095,30 @@ const EditUserModal = ({
                   onClick={() => setActiveTab('rbac')}
                   className="text-xs h-9 px-3 rounded-lg"
                 >
-                  ← Back (TAB 2)
+                  {t('users.editModal.nav.backRbac', '← Back (TAB 2)')}
                 </Button>
               )}
             </div>
 
             <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
               <Button type="button" variant="ghost" onClick={onClose} className="text-xs h-9 px-4 rounded-lg">
-                Cancel
+                {t('users.editModal.nav.cancel', 'Cancel')}
               </Button>
               <Button
                 type="submit"
                 disabled={loading || (isTargetSuper && !isSuperAdmin)}
-                title={isTargetSuper && !isSuperAdmin ? 'Only Super Admin can edit this account' : 'Save changes'}
+                title={isTargetSuper && !isSuperAdmin ? t('users.editModal.nav.superAdminTitle', 'Only Super Admin can edit this account') : t('users.editModal.nav.saveChangesTitle', 'Save changes')}
                 className="h-9 px-5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs shadow-xs flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
               >
                 {loading ? (
                   <>
                     <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    Saving...
+                    {t('users.editModal.nav.saving', 'Saving...')}
                   </>
                 ) : (
                   <>
                     <Check className="w-3.5 h-3.5" />
-                    Save Changes
+                    {t('users.editModal.nav.saveChanges', 'Save Changes')}
                   </>
                 )}
               </Button>
