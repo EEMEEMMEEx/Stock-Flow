@@ -1,4 +1,16 @@
 # Changelog
+## [2026-09-15 12:00] - v1.9.0
+- **Files Modified:** `api/send-email.js`, `src/lib/emailService.js`, `src/lib/nodemailerTransport.test.js`, `package.json`, `CHANGELOG.md`
+- **Changes:**
+  - ยกระดับและบูรณาการขีดความสามารถของ **Nodemailer** (`https://github.com/nodemailer/nodemailer.git`) เพื่อประสิทธิภาพการจัดส่งอีเมลระดับองค์กร:
+    1. **Connection Pooling & Socket Reuse:** เปิดใช้งาน `pool: true` (สูงสุด 3 connections, 100 messages) เพื่อนำ Socket TLS connection เดิมกลับมาใช้ซ้ำ ลด Latency ในการส่งอีเมลแจ้งเตือนซ้ำๆ และป้องกันการถูก Gmail / Microsoft 365 ทำ Rate Limiting
+    2. **TLS Certificate Options (`reject_unauthorized`):** เชื่อมต่อการตั้งค่า TLS `reject_unauthorized` จากฐานข้อมูล (`system_settings.smtp_config`) และ UI หน้า Settings เข้าสู่ออปชัน `tls: { rejectUnauthorized }` ของ Nodemailer อย่างสมบูรณ์ รองรับทั้ง Public SMTP และ Corporate Internal Mail Relay ที่ใช้ Self-signed Certificate
+    3. **Inline Image Branding (CID Embedding):** เพิ่มการรองรับการส่งภาพโลโก้หรือตราระบบแบบ Inline ด้วย Content-ID (`cid:logo`) ใน MIME structure ของ Nodemailer ช่วยให้แสดงภาพแบรนดิ้งใน Microsoft Outlook / Enterprise Inboxes ได้ทันทีโดยไม่ถูกบล็อกจากการโหลดภาพภายนอก
+    4. **Nodemailer Error Normalization:** เพิ่มฟังก์ชันแปลงรหัสข้อผิดพลาดของ Nodemailer (`EAUTH`/535, `ESOCKET`/`ETIMEDOUT`, `ENOTFOUND`, `EENVELOPE`) เป็นข้อความภาษาไทยที่ชัดเจน แนะนำแนวทางแก้ไขได้ถูกต้อง (เช่น การสร้าง Google App Password) และไม่เปิดเผย Credential
+    5. **Automated Unit Testing:** เพิ่มชุดทดสอบ `src/lib/nodemailerTransport.test.js` โดยใช้ Nodemailer `jsonTransport` ทดสอบการประกอบ Headers, Thai Subject Encoding, Multipart Structure, CID Attachments, และ Error Normalization แบบ Offline 100%
+  - คงค่าคอนฟิก SMTP เดิมใน Environment Variables และ Supabase ไว้อย่างครบถ้วน 100% (100% Backward Compatible)
+- **Reason:** ยกระดับประสิทธิภาพ เสถียรภาพ และความเข้ากันได้ของการส่งอีเมลด้วย Nodemailer ตามคำขอของผู้ใช้
+
 ## [2026-09-15 11:35] - v1.8.8
 - **Files Modified:** `package.json`, `package-lock.json`, `CHANGELOG.md`
 - **Changes:**

@@ -1,7 +1,7 @@
 {
   "name": "stock-flow-app",
   "private": true,
-  "version": "1.8.8",
+  "version": "1.9.0",
   "type": "module",
   "scripts": {
     "dev": "vite --host",
@@ -10,7 +10,7 @@
     "lint": "eslint .",
     "check:i18n": "node scripts/check-i18n-parity.mjs",
     "preview": "vite preview",
-    "test:email": "node --test src/lib/emailRenderer.test.js",
+    "test:email": "node --test src/lib/emailRenderer.test.js src/lib/nodemailerTransport.test.js",
     "migrate:r2": "node scripts/migrate-legacy-images-to-r2.mjs",
     "db:backup": "node scripts/backup-full-database.mjs",
     "wiki:sync": "powershell -ExecutionPolicy Bypass -File scripts/sync-wiki.ps1",

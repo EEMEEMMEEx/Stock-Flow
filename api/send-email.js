@@ -2,6 +2,58 @@ import nodemailer from 'nodemailer';
 import crypto from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 
+/**
+ * Normalize Nodemailer and SMTP errors into clear, actionable responses in Thai/English
+ */
+function normalizeNodemailerError(error) {
+  const code = error?.code || '';
+  const responseCode = error?.responseCode || 0;
+  const rawMessage = error?.message || 'Failed to send email';
+
+  if (code === 'EAUTH' || responseCode === 535) {
+    return {
+      status: 401,
+      code: 'EAUTH',
+      message: 'การยืนยันตัวตน SMTP ล้มเหลว: ชื่อผู้ใช้หรือรหัสผ่าน SMTP ไม่ถูกต้อง (สำหรับ Gmail กรุณาใช้ Google App Password 16 หลัก)',
+      original: rawMessage,
+    };
+  }
+
+  if (code === 'ESOCKET' || code === 'ETIMEDOUT') {
+    return {
+      status: 504,
+      code: 'ETIMEDOUT',
+      message: 'การเชื่อมต่อไปยัง Mail Server หมดเวลา (Timeout): กรุณาตรวจสอบ Host/Port และสถานะ Firewall หรือ Network',
+      original: rawMessage,
+    };
+  }
+
+  if (code === 'ENOTFOUND') {
+    return {
+      status: 502,
+      code: 'ENOTFOUND',
+      message: 'ไม่พบที่อยู่ Mail Server (Host not found): กรุณาตรวจสอบค่า SMTP Host ให้ถูกต้อง',
+      original: rawMessage,
+    };
+  }
+
+  if (code === 'EENVELOPE') {
+    return {
+      status: 400,
+      code: 'EENVELOPE',
+      message: 'รูปแบบข้อมูลผู้ส่งหรือผู้รับใน Envelope ไม่ถูกต้อง (Invalid email address)',
+      original: rawMessage,
+    };
+  }
+
+  return {
+    status: 500,
+    code: code || 'ESEND',
+    message: rawMessage,
+    original: rawMessage,
+  };
+}
+
 export default async function handler(req, res) {
   // Set CORS and Security headers
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -58,9 +110,9 @@ export default async function handler(req, res) {
       });
     }
 
-    const { to, cc, subject, html, text, smtpOverrides } = req.body || {};
+    const { to, cc, bcc, subject, html, text, smtpOverrides, inlineImages } = req.body || {};
 
-    // Parse, trim and deduplicate recipients (to and cc)
+    // Parse, trim and deduplicate recipients (to, cc, bcc)
     const rawTo = Array.isArray(to) ? to : String(to || '').split(',').map(s => s.trim()).filter(Boolean);
     const toList = [...new Set(rawTo)];
 
@@ -70,6 +122,9 @@ export default async function handler(req, res) {
 
     const rawCc = cc ? (Array.isArray(cc) ? cc : String(cc).split(',').map(s => s.trim()).filter(Boolean)) : [];
     const ccList = [...new Set(rawCc)];
+
+    const rawBcc = bcc ? (Array.isArray(bcc) ? bcc : String(bcc).split(',').map(s => s.trim()).filter(Boolean)) : [];
+    const bccList = [...new Set(rawBcc)];
 
     // Check if caller has admin privileges before permitting custom smtpOverrides
     let isCallerAdmin = false;
@@ -111,6 +166,7 @@ export default async function handler(req, res) {
                 host: parsed.host,
                 port: Number(parsed.port || 465),
                 secure: parsed.secure !== false,
+                reject_unauthorized: parsed.reject_unauthorized !== false,
                 user: parsed.user,
                 pass: secretData?.secret_value || '',
                 sender_email: parsed.sender_email || parsed.user,
@@ -130,6 +186,9 @@ export default async function handler(req, res) {
     const isSecure = effectiveSmtpOverrides?.secure !== undefined
       ? Boolean(effectiveSmtpOverrides.secure)
       : (dynamicSmtp.secure !== undefined ? dynamicSmtp.secure : (port === 465));
+    const rejectUnauthorized = effectiveSmtpOverrides?.reject_unauthorized !== undefined
+      ? Boolean(effectiveSmtpOverrides.reject_unauthorized)
+      : (dynamicSmtp.reject_unauthorized !== undefined ? dynamicSmtp.reject_unauthorized : (process.env.SMTP_REJECT_UNAUTHORIZED !== 'false'));
     const user = effectiveSmtpOverrides?.user || dynamicSmtp.user || process.env.SMTP_USER;
     const pass = effectiveSmtpOverrides?.pass || dynamicSmtp.pass || process.env.SMTP_PASS;
     const senderEmail = effectiveSmtpOverrides?.sender_email || dynamicSmtp.sender_email || process.env.SMTP_SENDER_EMAIL || process.env.EMAIL_FROM || user;
@@ -156,7 +215,11 @@ export default async function handler(req, res) {
     // When using Gmail SMTP, Header From address must match authenticated user to pass SPF/DKIM/DMARC on Microsoft 365 / Corporate Inboxes
     const fromAddress = isGmailSmtpHost(host) ? user : senderEmail;
 
+    // Create Nodemailer transporter with connection pooling, socket timeouts and TLS options
     const transporter = nodemailer.createTransport({
+      pool: true,
+      maxConnections: 3,
+      maxMessages: 100,
       host,
       port,
       secure: isSecure,
@@ -164,10 +227,30 @@ export default async function handler(req, res) {
         user,
         pass,
       },
+      tls: {
+        rejectUnauthorized,
+      },
       connectionTimeout: 10000,
       greetingTimeout: 10000,
       socketTimeout: 15000,
     });
+
+    // Process optional inline CID images for branding (e.g. company logo)
+    const attachments = [];
+    if (Array.isArray(inlineImages) && inlineImages.length > 0) {
+      for (const img of inlineImages) {
+        if (img && img.cid && (img.content || img.path)) {
+          attachments.push({
+            filename: img.filename || `${img.cid}.png`,
+            content: img.content,
+            path: img.path,
+            encoding: img.encoding || (typeof img.content === 'string' && img.content.startsWith('data:') ? undefined : 'base64'),
+            cid: img.cid,
+            contentType: img.contentType || 'image/png',
+          });
+        }
+      }
+    }
 
     // Strip HTML tags if text is not provided to ensure multipart/alternative MIME structure (RFC 2046)
     const plainText = text || (html ? html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() : 'StockFlow Notification');
@@ -177,6 +260,7 @@ export default async function handler(req, res) {
       from: `"${senderName}" <${fromAddress}>`,
       to: toList.join(', '),
       ...(ccList.length ? { cc: ccList.join(', ') } : {}),
+      ...(bccList.length ? { bcc: bccList.join(', ') } : {}),
       subject: subject || 'StockFlow Notification',
       text: plainText,
       html: html || `<p>${plainText}</p>`,
@@ -185,12 +269,13 @@ export default async function handler(req, res) {
       // Envelope sender alignment for SPF / DKIM verification on Gmail & Microsoft 365
       envelope: {
         from: user,
-        to: [...toList, ...ccList],
+        to: [...toList, ...ccList, ...bccList],
       },
       replyTo: senderEmail || user,
       headers: {
         'Content-Language': 'th',
       },
+      ...(attachments.length > 0 ? { attachments } : {}),
     };
 
     const info = await transporter.sendMail(mailOptions);
@@ -206,9 +291,12 @@ export default async function handler(req, res) {
     });
   } catch (error) {
     console.error('[Vercel API send-email] Error:', error);
-    return res.status(500).json({
+    const normalized = normalizeNodemailerError(error);
+    return res.status(normalized.status).json({
       success: false,
-      message: error.message || 'Failed to send email'
+      code: normalized.code,
+      message: normalized.message,
+      originalError: normalized.original
     });
   }
 }

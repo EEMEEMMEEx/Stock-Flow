@@ -15,7 +15,7 @@ const viteEnv = import.meta.env || {};
  * Send an email through the StockFlow Vercel API service (/api/send-email)
  * with graceful fallback to Supabase Native Auth
  */
-export async function sendStockFlowEmail({ to, cc, subject, html, text, smtpOverrides }) {
+export async function sendStockFlowEmail({ to, cc, bcc, subject, html, text, smtpOverrides, inlineImages }) {
   if (!to) {
     throw new Error('กรุณาระบุอีเมลผู้รับ (recipient email)');
   }
@@ -50,10 +50,12 @@ export async function sendStockFlowEmail({ to, cc, subject, html, text, smtpOver
       body: JSON.stringify({
         to,
         cc,
+        bcc,
         subject,
         html,
         text,
         smtpOverrides,
+        inlineImages,
       }),
     });
 
