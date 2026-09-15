@@ -1,4 +1,13 @@
 # Changelog
+## [2026-09-15 14:00] - v1.9.2
+- **Files Modified:** `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - แก้ไข Dependabot PR #28 (`chore(deps): bump eslint from 9.39.5 to 10.10.0`) ที่ล้มเหลวบน Vercel จากข้อขัดแย้งของ peer dependency กับ `eslint-plugin-react-hooks@5.2.0` และ `eslint-plugin-react@7.37.5`
+  - เพิ่มการตั้งค่า `overrides` ใน `package.json` สำหรับ `eslint-plugin-react-hooks` ให้ผูกเข้ากับ `$eslint` ร่วมกับ `eslint-plugin-react`
+  - รีเจนเนอเรตและซิงค์ `package-lock.json` ให้สมบูรณ์แบบ รองรับการรัน `npm install` และ `npm ci` บน Vercel โดยไม่ต้องใช้ `--force` หรือ `--legacy-peer-deps`
+  - ตรวจสอบผ่านคำสั่ง `npx eslint --version` (v10.10.0), `npm run lint` (0 errors), `npm run test:email` (PASS 9/9), `npm run check:i18n` (PASS), และ `npm run build` (Vite production bundle built successfully)
+- **Reason:** แก้ไขปัญหา Vercel deployment failure บน Dependabot PR #28 สำหรับ ESLint 10
+
 ## [2026-09-15 13:30] - v1.9.1
 - **Files Modified:** `package.json`, `package-lock.json`, `CHANGELOG.md`
 - **Changes:**
