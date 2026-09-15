@@ -132,9 +132,16 @@ CREATE POLICY "Managers can update withdrawal_items" ON public.withdrawal_items
 -- ------------------------------------------------------------------------------
 
 DROP POLICY IF EXISTS "Allow auth mutate checkout_orders" ON public.checkout_orders;
+DROP POLICY IF EXISTS "Authorized manage checkout_orders" ON public.checkout_orders;
+
 DROP POLICY IF EXISTS "Allow auth mutate checkout_items" ON public.checkout_items;
+DROP POLICY IF EXISTS "Authorized manage checkout_items" ON public.checkout_items;
+
 DROP POLICY IF EXISTS "Allow auth mutate checkout_return_logs" ON public.checkout_return_logs;
+DROP POLICY IF EXISTS "Authorized manage checkout_return_logs" ON public.checkout_return_logs;
+
 DROP POLICY IF EXISTS "Allow auth mutate checkout_extension_logs" ON public.checkout_extension_logs;
+DROP POLICY IF EXISTS "Authorized manage checkout_extension_logs" ON public.checkout_extension_logs;
 
 CREATE POLICY "Authorized manage checkout_orders" ON public.checkout_orders
   FOR ALL TO authenticated

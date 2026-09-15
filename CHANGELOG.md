@@ -1,4 +1,17 @@
 # Changelog
+## [2026-09-15 09:50] - v1.8.7
+- **Files Modified:** `package.json`, `supabase/migrations/65_security_and_reliability_remediation.sql`, `CHANGELOG.md`, `scripts/audit-migration-policies.mjs`
+- **Changes:**
+  - แก้ไขข้อผิดพลาด Supabase Migration: `policy "Authorized manage checkout_orders" already exists (SQLSTATE 42710)`
+  - ปรับปรุงชุดคำสั่ง RLS ใน Migration 65 (`supabase/migrations/65_security_and_reliability_remediation.sql`) ให้เป็น Idempotent 100% โดยการเพิ่มคำสั่ง `DROP POLICY IF EXISTS` สำหรับ Policy กลุ่ม Checkouts ทั้ง 4 รายการก่อนสร้างใหม่:
+    - `"Authorized manage checkout_orders"` ON `public.checkout_orders`
+    - `"Authorized manage checkout_items"` ON `public.checkout_items`
+    - `"Authorized manage checkout_return_logs"` ON `public.checkout_return_logs`
+    - `"Authorized manage checkout_extension_logs"` ON `public.checkout_extension_logs`
+  - คงค่าสิทธิ์และการตรวจสอบสิทธิ์ RLS (Permissions & Authorization Logic) เดิมไว้อย่างครบถ้วนสมบูรณ์ (`checkouts.update`, `checkouts.create`, `checkouts.return`, `checkouts.extend`, `is_super_admin`)
+  - เพิ่มสคริปต์ `scripts/audit-migration-policies.mjs` สำหรับตรวจสอบความ Idempotent ของคำสั่ง `CREATE POLICY` ทั่วทั้งโปรเจกต์ (ผ่านการตรวจสอบทุกไฟล์ 21 ไฟล์ 100%)
+- **Reason:** ป้องกันข้อผิดพลาด `SQLSTATE 42710` เมื่อมีการรันซ้ำ (re-run) หรือ partial execution ของ Migration 65 บน Supabase Database
+
 ## [2026-09-11 17:10] - v1.8.5
 - **Files Modified:** `package.json`, `CHANGELOG.md`, `src/pages/Checkouts.jsx`, `src/components/checkouts/CheckoutActiveList.jsx`, `src/components/checkouts/CheckoutHistoryList.jsx`, `src/components/checkouts/CheckoutReturnModal.jsx`, `src/components/checkouts/CheckoutDetailModal.jsx`, `src/components/checkouts/CheckoutExtendModal.jsx`, `src/components/checkouts/CheckoutPosTerminal.jsx`, `src/pages/Items.jsx`, `src/components/items/TransferItemDialog.jsx`, `src/i18n/locales/en.js`, `src/i18n/locales/th.js`
 - **Changes:**
