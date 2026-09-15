@@ -1,4 +1,16 @@
 # Changelog
+## [2026-09-15 17:40] - v1.9.6
+- **Files Modified:** `src/components/users/EditUserModal.jsx`, `src/components/users/UserActionModal.jsx`, `src/pages/auth/Login.jsx`, `src/i18n/locales/en.js`, `src/i18n/locales/th.js`, `package.json`, `package-lock.json`, `CHANGELOG.md`, `docs/inactive-status-consolidation-implementation-plan.md`
+- **Changes:**
+  - ยุบรวมและจัดระเบียบสถานะผู้ใช้งาน (User Status) ระหว่าง **Inactive** และ **Suspended** ให้เป็นสถานะเดียวที่ชัดเจน:
+    - ตัดตัวเลือกซ้ำซ้อน **Suspended** ออกจากโมดอลแก้ไขผู้ใช้งาน (`EditUserModal.jsx`) เหลือเพียง 2 สถานะมาตรฐาน: **Active (เปิดใช้งาน)** และ **Inactive (ระงับการใช้งาน)**
+    - ปรับปรุง Badge และ Radio cards ใน `EditUserModal.jsx` ให้แสดงผล 2 คอลัมน์ชัดเจน สะอาดตา
+    - ปรับสถานะใน `UserActionModal.jsx` ให้สอดคล้องกันกับตารางจัดการผู้ใช้งาน โดยแสดงป้ายสถานะ `INACTIVE` เมื่อผู้ใช้ถูกระงับสิทธิ์
+    - เสริมความปลอดภัยในขั้นตอน Login (`Login.jsx`): เมื่อผู้ใช้ที่ถูกปิดใช้งาน/ระงับสิทธิ์ (`inactive` หรือ `suspended`) พยายามเข้าสู่ระบบ ระบบจะตรวจสอบโปรไฟล์ทันทีและสั่งตัด Session ทันที พร้อมแสดงการแจ้งเตือน `"บัญชีของคุณถูกปิดใช้งานหรือระงับสิทธิ์ กรุณาติดต่อผู้ดูแลระบบ"` ป้องกันไม่ให้เปลี่ยนหน้าจอไปยัง Dashboard
+    - คงการรองรับค่าเดิม (`suspended`) ใน `AuthProvider.jsx` และ Backend RPCs เพื่อความเข้ากันได้แบบ Backward-Compatibility 100% สำหรับข้อมูลเก่าในฐานข้อมูล
+  - ปรับเวอร์ชันระบบเป็น `v1.9.6`
+- **Reason:** รวมสถานะผู้ใช้ที่ซ้ำซ้อนให้เหลือสถานะเดียวที่ชัดเจน มีพฤติกรรมการบล็อกการเข้าสู่ระบบที่สอดคล้องทั้งหน้าบ้านและหลังบ้าน
+
 ## [2026-09-15 16:45] - v1.9.5
 - **Files Modified:** `src/components/users/EditUserModal.jsx`, `src/components/users/AvatarUpload.jsx`, `src/i18n/locales/en.js`, `src/i18n/locales/th.js`, `package.json`, `package-lock.json`, `CHANGELOG.md`, `docs/edit-user-rbac-i18n-implementation-plan.md`
 - **Changes:**

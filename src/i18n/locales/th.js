@@ -136,6 +136,7 @@ export default {
     "passwordRequirements": "รหัสผ่านต้องมีความยาวอย่างน้อย 8 ตัวอักษร ประกอบด้วยตัวพิมพ์ใหญ่ ตัวพิมพ์เล็ก ตัวเลข และอักขระพิเศษ",
     "signingIn": "กำลังเข้าสู่ระบบ...",
     "invalidCredentials": "อีเมลหรือรหัสผ่านไม่ถูกต้อง",
+    "accountInactive": "บัญชีของคุณถูกปิดใช้งานหรือระงับสิทธิ์ กรุณาติดต่อผู้ดูแลระบบ",
     "accessDenied": "ปฏิเสธการเข้าถึง",
     "noPermissionMessage": "คุณไม่มีสิทธิ์ในการเข้าถึงหรือดูหน้านี้",
     "backToDashboard": "กลับสู่หน้าแดชบอร์ด"
@@ -1178,8 +1179,8 @@ export default {
       "accountStatus": "สถานะบัญชีผู้ใช้",
       "statusActive": "เปิดใช้งาน (Active)",
       "statusActiveDesc": "เข้าสู่ระบบและปฏิบัติงานได้ตามปกติ",
-      "statusInactive": "ปิดใช้งาน (Inactive)",
-      "statusInactiveDesc": "ระงับการเข้าสู่ระบบถาวร",
+      "statusInactive": "ระงับการใช้งาน (Inactive)",
+      "statusInactiveDesc": "ระงับสิทธิ์และบล็อกการเข้าสู่ระบบ",
       "statusSuspended": "ระงับชั่วคราว (Suspended)",
       "statusSuspendedDesc": "ระงับการเข้าสู่ระบบชั่วคราว",
       "projectAccessControl": "การควบคุมการเข้าถึงโครงการ",

@@ -136,6 +136,7 @@ export default {
     "passwordRequirements": "Password must be at least 8 characters and include uppercase, lowercase, number, and special character.",
     "signingIn": "Signing in...",
     "invalidCredentials": "Invalid email or password",
+    "accountInactive": "Your account has been deactivated or suspended. Please contact an administrator.",
     "accessDenied": "Access Denied",
     "noPermissionMessage": "You do not have permission to view or access this page.",
     "backToDashboard": "Back to Dashboard"

@@ -427,17 +427,13 @@ const EditUserModal = ({
                 <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
                   formData.status === 'active'
                     ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                    : formData.status === 'suspended'
-                    ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
                     : 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300'
                 }`}>
                   <span className={`w-1.5 h-1.5 rounded-full ${
-                    formData.status === 'active' ? 'bg-emerald-500 animate-pulse' : formData.status === 'suspended' ? 'bg-amber-500' : 'bg-red-500'
+                    formData.status === 'active' ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'
                   }`}></span>
                   {formData.status === 'active' 
                     ? t('users.editModal.statusActive', 'Active').toUpperCase()
-                    : formData.status === 'suspended'
-                    ? t('users.editModal.statusSuspended', 'Suspended').toUpperCase()
                     : t('users.editModal.statusInactive', 'Inactive').toUpperCase()}
                 </span>
               </div>
@@ -816,7 +812,7 @@ const EditUserModal = ({
                 <Label className="text-xs font-semibold text-foreground block">
                   {t('users.editModal.accountStatus', 'Account Status')} <span className="text-red-500">*</span>
                 </Label>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {/* ACTIVE */}
                   <label
                     onClick={() => handleStatusChange('active')}
@@ -846,7 +842,7 @@ const EditUserModal = ({
                     className={`flex items-center gap-3 p-3 rounded-lg border transition-all ${
                       isLastActiveAdmin ? 'opacity-40 cursor-not-allowed bg-muted/30' : 'cursor-pointer'
                     } ${
-                      formData.status === 'inactive'
+                      formData.status === 'inactive' || formData.status === 'suspended'
                         ? 'border-red-500 bg-red-500/10 shadow-xs ring-1 ring-red-500'
                         : 'border-border bg-card hover:bg-muted/50'
                     }`}
@@ -856,39 +852,13 @@ const EditUserModal = ({
                       name="edit_status"
                       value="inactive"
                       disabled={isLastActiveAdmin}
-                      checked={formData.status === 'inactive'}
+                      checked={formData.status === 'inactive' || formData.status === 'suspended'}
                       onChange={() => handleStatusChange('inactive')}
                       className="text-red-600 focus:ring-red-500"
                     />
                     <div>
                       <span className="text-xs font-bold text-foreground block">{t('users.editModal.statusInactive', 'Inactive')}</span>
                       <span className="text-[10px] text-muted-foreground">{t('users.editModal.statusInactiveDesc', 'Block login access')}</span>
-                    </div>
-                  </label>
-
-                  {/* SUSPENDED */}
-                  <label
-                    onClick={() => !isLastActiveAdmin && handleStatusChange('suspended')}
-                    className={`flex items-center gap-3 p-3 rounded-lg border transition-all ${
-                      isLastActiveAdmin ? 'opacity-40 cursor-not-allowed bg-muted/30' : 'cursor-pointer'
-                    } ${
-                      formData.status === 'suspended'
-                        ? 'border-amber-500 bg-amber-500/10 shadow-xs ring-1 ring-amber-500'
-                        : 'border-border bg-card hover:bg-muted/50'
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="edit_status"
-                      value="suspended"
-                      disabled={isLastActiveAdmin}
-                      checked={formData.status === 'suspended'}
-                      onChange={() => handleStatusChange('suspended')}
-                      className="text-amber-600 focus:ring-amber-500"
-                    />
-                    <div>
-                      <span className="text-xs font-bold text-foreground block">{t('users.editModal.statusSuspended', 'Suspended')}</span>
-                      <span className="text-[10px] text-muted-foreground">{t('users.editModal.statusSuspendedDesc', 'Temporarily suspended')}</span>
                     </div>
                   </label>
                 </div>
