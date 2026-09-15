@@ -406,7 +406,7 @@ const thExtensions = {
     },
   },
   withdrawals: {
-    posTab: 'หน้าจอเบิกพัสดุ (POS)',
+    posTab: 'ทำรายการเบิกพัสดุ',
     requisitionsTab: 'รายการคำขอเบิก',
     systemReady: 'ระบบเบิกจ่ายพร้อมทำงาน',
     itemsCount: '{{count}} รายการ',
@@ -435,7 +435,7 @@ const thExtensions = {
   },
   checkouts: {
     activeTab: 'รายการกำลังยืม',
-    posTab: 'ทำรายการยืม (POS)',
+    posTab: 'ทำรายการยืมพัสดุ',
     historyTab: 'ประวัติการยืม-คืน',
     toasts: {
       loadFailed: 'ไม่สามารถโหลดข้อมูลการยืม-คืนได้',
