@@ -339,6 +339,7 @@ const CheckoutPosTerminal = ({
         expected_return_date: borrowType === 'standard' ? expectedReturnDate : null,
         purpose: purpose.trim() || null,
         notes: notes.trim() || null,
+        created_by: profile?.id || user?.id || null,
         items: expandedItems
       };
 

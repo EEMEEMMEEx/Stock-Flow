@@ -836,6 +836,8 @@ export default {
       "returnReceiptDownloaded": "Return receipt downloaded",
       "returnReceiptPdfFailed": "Failed to generate return receipt PDF"
     },
+    "printCheckoutSlip": "Print Checkout Slip (PDF)",
+    "printReturnReceipt": "Print Return Receipt (PDF)",
     "department": "Department",
     "purpose": "Purpose",
     "itemsInLoan": "Borrowed Items",

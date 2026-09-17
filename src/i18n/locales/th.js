@@ -836,6 +836,8 @@ export default {
       "returnReceiptDownloaded": "ดาวน์โหลดใบรับคืนอุปกรณ์เรียบร้อยแล้ว",
       "returnReceiptPdfFailed": "สร้างไฟล์ PDF ใบรับคืนอุปกรณ์ไม่สำเร็จ"
     },
+    "printCheckoutSlip": "พิมพ์ใบยืมพัสดุ (PDF)",
+    "printReturnReceipt": "พิมพ์ใบรับคืนพัสดุ (PDF)",
     "department": "แผนก",
     "purpose": "วัตถุประสงค์",
     "itemsInLoan": "รายการอุปกรณ์ที่ยืม",
@@ -1572,7 +1574,7 @@ export default {
     "phoneNumber": "เบอร์โทรศัพท์",
     "phonePlaceholder": "เช่น 0812345678",
     "position": "ตำแหน่งงาน",
-    "positionPlaceholder": "เช่น วิศวกรโครงการ / เจ้าหน้าที่คลัง",
+    "positionPlaceholder": "เช่น วิศวกรโครงการ",
     "readOnlySection": "ข้อมูลเฉพาะระบบ (อ่านอย่างเดียว)",
     "username": "ชื่อผู้ใช้ / รหัสเข้าสู่ระบบ",
     "usernameHint": "ชื่อผู้ใช้ระบบไม่สามารถแก้ไขได้",

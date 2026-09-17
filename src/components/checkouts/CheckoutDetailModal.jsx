@@ -26,6 +26,7 @@ const CheckoutDetailModal = ({
   const [returnLogs, setReturnLogs] = useState([]);
   const [extensionLogs, setExtensionLogs] = useState([]);
   const [generatingPdf, setGeneratingPdf] = useState(false);
+  const [staffProfile, setStaffProfile] = useState(null);
 
   useEffect(() => {
     if (order?.id && isOpen) {
@@ -33,6 +34,36 @@ const CheckoutDetailModal = ({
       fetchExtensionLogs(order.id);
     }
   }, [order?.id, isOpen]);
+
+  // Resolve warehouse officer profile for the checkout transaction
+  useEffect(() => {
+    if (!order || !isOpen) {
+      setStaffProfile(null);
+      return;
+    }
+
+    const existingProfile = Array.isArray(order.profiles)
+      ? order.profiles[0]
+      : (order.profiles || order.creator || order.created_by_profile);
+
+    if (existingProfile?.full_name) {
+      setStaffProfile(existingProfile);
+      return;
+    }
+
+    if (order.created_by) {
+      supabase
+        .from('profiles')
+        .select('id, full_name, email, role')
+        .eq('id', order.created_by)
+        .maybeSingle()
+        .then(({ data, error }) => {
+          if (!error && data) {
+            setStaffProfile(data);
+          }
+        });
+    }
+  }, [order, isOpen]);
 
   const fetchExtensionLogs = async (orderId) => {
     try {
@@ -89,7 +120,7 @@ const CheckoutDetailModal = ({
   const handleDownloadCheckoutPDF = async () => {
     try {
       setGeneratingPdf(true);
-      const blob = await pdf(<MaterialCheckoutPDF order={order} />).toBlob();
+      const blob = await pdf(<MaterialCheckoutPDF order={order} staffProfile={staffProfile} />).toBlob();
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -108,7 +139,7 @@ const CheckoutDetailModal = ({
   const handleDownloadReturnPDF = async () => {
     try {
       setGeneratingPdf(true);
-      const blob = await pdf(<MaterialReturnPDF order={order} returnLogs={returnLogs} />).toBlob();
+      const blob = await pdf(<MaterialReturnPDF order={order} returnLogs={returnLogs} staffProfile={staffProfile} />).toBlob();
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -349,10 +380,10 @@ const CheckoutDetailModal = ({
               size="sm"
               disabled={generatingPdf}
               onClick={handleDownloadCheckoutPDF}
-              className="rounded-lg h-9 text-xs gap-1.5 font-semibold shadow-2xs cursor-pointer"
+              className="rounded-lg h-9 text-xs gap-1.5 font-semibold text-indigo-700 dark:text-indigo-400 border-indigo-500/30 hover:bg-indigo-500/10 shadow-2xs cursor-pointer"
             >
-              <Download className="w-3.5 h-3.5" />
-              <span>{t('history.printPdf')}</span>
+              <FileText className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+              <span>{t('checkouts.printCheckoutSlip')}</span>
             </Button>
 
             {returnLogs.length > 0 && (
@@ -364,8 +395,8 @@ const CheckoutDetailModal = ({
                 onClick={handleDownloadReturnPDF}
                 className="rounded-lg h-9 text-xs gap-1.5 font-semibold text-emerald-700 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 shadow-2xs cursor-pointer"
               >
-                <Download className="w-3.5 h-3.5" />
-                <span>{t('history.printPdf')}</span>
+                <RotateCcw className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                <span>{t('checkouts.printReturnReceipt')}</span>
               </Button>
             )}
           </div>

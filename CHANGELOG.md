@@ -1,4 +1,95 @@
 # Changelog
+## [2026-09-17 22:50] - v1.9.14
+- **Files Modified:** `src/components/checkouts/CheckoutDetailModal.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - ปรับปรุงปุ่มพิมพ์ PDF ใน `CheckoutDetailModal.jsx` ให้แยกความแตกต่างและเข้าใจวัตถุประสงค์ได้ทันที:
+    - **ปุ่มพิมพ์ใบยืมพัสดุ (Checkout Slip)**: เปลี่ยนป้ายข้อความเป็น `พิมพ์ใบยืมพัสดุ (PDF)` / `Print Checkout Slip (PDF)` พร้อมเปลี่ยนไอคอนเป็น `FileText` สี Indigo สอดคล้องกับธีมเอกสารการยืม
+    - **ปุ่มพิมพ์ใบรับคืนพัสดุ (Return Receipt)**: เปลี่ยนป้ายข้อความเป็น `พิมพ์ใบรับคืนพัสดุ (PDF)` / `Print Return Receipt (PDF)` พร้อมเปลี่ยนไอคอนเป็น `RotateCcw` สี Emerald สอดคล้องกับธีมการรับคืน
+    - เพิ่มคีย์แปลภาษา `checkouts.printCheckoutSlip` และ `checkouts.printReturnReceipt` ทั้งใน `th.js` และ `en.js`
+  - ปรับเวอร์ชันระบบเป็น `v1.9.14`
+- **Reason:** แก้ไขปัญหาปุ่มพิมพ์ PDF ทั้งสองปุ่มมีข้อความ `พิมพ์ PDF` เหมือนกัน ทำให้ผู้ใช้ไม่สามารถแยกแยะได้ว่าปุ่มใดคือเอกสารใบยืมและปุ่มใดคือเอกสารใบรับคืน
+
+## [2026-09-17 22:45] - v1.9.13
+- **Files Modified:** `src/lib/checkout-pdf-templates.jsx`, `src/components/checkouts/CheckoutDetailModal.jsx`, `src/pages/Checkouts.jsx`, `src/components/checkouts/CheckoutPosTerminal.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`, `docs/checkout-signature-mapping-fix-plan.md`
+- **Changes:**
+  - แก้ไขตรรกะการเชื่อมโยงข้อมูลผู้ลงนามใน `MaterialCheckoutPDF` (ใบยืมพัสดุ) และ `MaterialReturnPDF`:
+    - ปรับปรุงการแสดงผลลายเซ็นฝั่งขวา (`เจ้าหน้าที่ผู้จ่ายพัสดุ`) ให้แสดงชื่อเจ้าหน้าที่คลังที่สร้าง/ทำรายการจ่ายพัสดุ ณ เทอร์มินัลเคาน์เตอร์จริง โดยรองรับโครงสร้างข้อมูลที่ส่งกลับจาก Supabase ทั้งแบบ Object (`order.profiles.full_name`), แบบ Array (`order.profiles[0]?.full_name`), และ Prop เสริม (`staffProfile`)
+    - ปรับปรุงการแสดงผลลายเซ็นฝั่งซ้าย (`ผู้ขอยืมพัสดุ`) ให้อ้างอิงจากชื่อผู้ขอยืมพัสดุจริง (`borrowerDisplayName` จาก `order.borrower_name` หรือโปรไฟล์ผู้ยืม)
+    - คงตำแหน่ง `ผู้ขอยืมพัสดุ` และ `เจ้าหน้าที่ผู้จ่ายพัสดุ` พร้อมฟิลด์วันที่ `วันที่: ....../....../...........` ไว้ตามเดิม
+    - เพิ่มการแนบฟิลด์ `created_by` ใน payload ของ `CheckoutPosTerminal.jsx` เพื่อให้บันทึก ID ของเจ้าหน้าที่ผู้ทำรายการในตาราง `checkout_orders` ทุกครั้งที่สร้างรายการยืม
+    - เพิ่มการ normalize และ enrichment ข้อมูลโปรไฟล์ของผู้สร้างรายการใน `Checkouts.jsx` และ `CheckoutDetailModal.jsx` ป้องกันกรณีที่ Supabase PostgREST ไม่ได้ embed ข้อมูลโปรไฟล์มาด้วย
+  - ปรับเวอร์ชันระบบเป็น `v1.9.13`
+- **Reason:** แก้ไขปัญหาชื่อผู้จ่ายพัสดุไม่แสดงผลและแสดงผลชื่อไม่ถูกต้องให้เชื่อมโยงกับผู้ทำรายการจริงในระบบ `/checkouts`
+
+## [2026-09-17 22:20] - v1.9.12
+- **Files Modified:** `src/lib/pdf-templates.jsx`, `src/lib/checkout-pdf-templates.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - ตรวจสอบและปรับปรุงตรรกะของส่วนลงนาม (Signature Section) ให้สอดคล้องกับ Role และ Workflow จริงของระบบ:
+    - **`MaterialWithdrawalPDF` (ใบเบิกของ)**:
+      - ปรับชื่อช่องฝั่งซ้ายเป็นผู้ขอเบิกจริง (`order.profiles?.full_name || order.requester_name`) และตำแหน่งเป็น `ผู้ขอเบิกพัสดุ` (แก้ไขจากเดิมที่แมปผิดเป็น borrower_name/ผู้ขอยืมพัสดุ)
+      - ปรับชื่อช่องฝั่งขวาเป็นเจ้าหน้าที่ผู้จ่ายพัสดุ (`profile?.full_name` หรือ `order.approver?.full_name`) และตำแหน่งเป็น `เจ้าหน้าที่ผู้จ่ายพัสดุ`
+    - **`MaterialCheckoutPDF` (ใบยืมพัสดุ)**:
+      - ผู้ขอยืม: `order.borrower_name`
+      - เจ้าหน้าที่ผู้จ่ายพัสดุ: `order.profiles?.full_name` (ผู้สร้างรายการยืม)
+    - **`MaterialReturnPDF` (ใบรับคืนพัสดุ)**:
+      - ผู้ส่งคืน: `order.borrower_name`
+      - ผู้ตรวจรับคืน: `returnLogs[0]?.profiles?.full_name || order.profiles?.full_name`
+    - กำหนดฟิลด์วันที่ลงนามเป็น `วันที่: ....../....../...........` สม่ำเสมอทุกเอกสาร เพื่อรองรับขั้นตอนการเซ็นรับมอบพัสดุด้วยปากกาจริง ณ จุดจ่าย/รับคืนพัสดุ
+  - ปรับเวอร์ชันระบบเป็น `v1.9.12`
+- **Reason:** แก้ไขข้อผิดพลาดการแมปชื่อผู้ขอเบิกและปรับฟิลด์ลายเซ็นให้ตรงกับ Workflow หน้างาน
+
+## [2026-09-17 22:06] - v1.9.11
+- **Files Modified:** `src/lib/checkout-pdf-templates.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - ลบการแสดงผลสังกัดแผนก `(${order.borrower_department})` ออกจาก Meta Section ของ `MaterialCheckoutPDF` (ใบยืมพัสดุ) และ `MaterialReturnPDF` (ใบรับคืนพัสดุ)
+  - ปรับการแสดงผลชื่อผู้ยืมและผู้ส่งคืนให้กระชับเหลือเพียงชื่อผู้ยืม/ผู้ส่งคืนตามด้วยชื่อคลัง
+  - ปรับเวอร์ชันระบบเป็น `v1.9.11`
+- **Reason:** ลดความซ้ำซ้อนของข้อมูลแผนกในหัวเอกสารใบยืมและใบรับคืนพัสดุ
+
+## [2026-09-17 21:59] - v1.9.10
+- **Files Modified:** `src/lib/checkout-pdf-templates.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - ลบข้อความ `— คลัง : {warehouseName}` และตัวแปร `warehouseName` ที่ไม่ได้ใช้งานออกจาก Meta Section ของ `MaterialCheckoutPDF` (ใบยืมพัสดุ) และ `MaterialReturnPDF` (ใบรับคืนพัสดุ)
+  - คงชื่อผู้ยืม/ผู้ส่งคืนและสังกัดแผนก พร้อมทั้งเลขที่เอกสารและเลย์เอาต์ส่วนอื่นๆ ไว้สมบูรณ์
+  - ปรับเวอร์ชันระบบเป็น `v1.9.10`
+- **Reason:** จัดระเบียบข้อมูลส่วนหัว Meta ข้อมูลผู้ยืม/ผู้ส่งคืนให้กระชับและไม่แสดงฟิลด์คลังซ้ำซ้อน
+
+## [2026-09-17 21:47] - v1.9.9
+- **Files Modified:** `src/lib/checkout-pdf-templates.jsx`, `src/lib/pdf-templates.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - ปรับปรุงการจัดรูปแบบช่องลงนาม (Signature Sections) ให้เป็นสีดำมาตรฐานทางการ (`#000000`) ใน 3 เทมเพลต PDF หลัก:
+    - `MaterialCheckoutPDF` (ใบยืมพัสดุ)
+    - `MaterialReturnPDF` (ใบรับคืนพัสดุ)
+    - `MaterialWithdrawalPDF` (ใบเบิกของ)
+  - ปรับสีข้อความชื่อผู้ลงนาม (`sigName`), บทบาทตำแหน่ง (`sigRole`), วันที่ (`sigDate`) และเส้นกรอบด้านบน (`signatureBox.borderTopColor`) ให้เป็นสีดำ `#000000` ทั้งหมด
+  - คงรูปแบบโครงสร้าง 2 ฝ่าย (ผู้ขอยืม/ผู้ขอเบิก/ผู้ส่งคืน และ เจ้าหน้าที่ผู้จ่าย/ผู้ตรวจรับ) พร้อมตรรกะ fallback ชื่อผู้ใช้และ data flow เดิมไว้ครบถ้วน
+  - ปรับเวอร์ชันระบบเป็น `v1.9.9`
+- **Reason:** ให้ส่วนลายเซ็นท้ายเอกสาร PDF คมชัด เป็นสีดำทางการตามมาตรฐานเอกสารองค์กร
+
+## [2026-09-17 21:43] - v1.9.8
+- **Files Modified:** `src/lib/pdf-templates.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - ยกระดับและปรับแต่งหัวเอกสาร PDF ของ `MaterialWithdrawalPDF` (ใบเบิกของ / Material Withdrawal) ใน `src/lib/pdf-templates.jsx` เป็นดีไซน์ **Executive Corporate Header**:
+    - เพิ่มโลโก้บริษัท Forth จาก `/images/logo.png`
+    - แสดงข้อมูลบริษัทอย่างเป็นทางการ: บริษัท ฟอร์ท คอร์ปอเรชั่น จำกัด (มหาชน) / FORTH CORPORATION PUBLIC COMPANY LIMITED / 1053/1 ถนนพหลโยธิน แขวงพญาไท เขตพญาไท กรุงเทพมหานคร 10400 โทรศัพท์: 02-265-6700
+    - เพิ่ม Document Badge ทางด้านขวา: `MATERIAL WITHDRAWAL REPORT`
+    - เพิ่มการแสดงวันและเวลาพิมพ์เอกสาร: `พิมพ์เมื่อ: {printDateStr}`
+  - ปรับเวอร์ชันระบบเป็น `v1.9.8`
+- **Reason:** ปรับรูปแบบหัวกระดาษของใบเบิกของให้สวยงามและเป็นมาตรฐานเดียวกันกับ Executive Corporate Header ของระบบ
+
+## [2026-09-17 21:36] - v1.9.7
+- **Files Modified:** `src/lib/checkout-pdf-templates.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - ยกระดับและปรับแต่งหัวเอกสาร PDF ของ `/checkouts` ทั้ง `MaterialCheckoutPDF` (ใบยืมพัสดุ) และ `MaterialReturnPDF` (ใบรับคืนพัสดุ) เป็นดีไซน์ **Executive Corporate Header**:
+    - เพิ่มโลโก้บริษัท Forth จาก `/images/logo.png`
+    - แสดงข้อมูลบริษัทอย่างเป็นทางการ: บริษัท ฟอร์ท คอร์ปอเรชั่น จำกัด (มหาชน) / FORTH CORPORATION PUBLIC COMPANY LIMITED / 1053/1 ถนนพหลโยธิน แขวงพญาไท เขตพญาไท กรุงเทพมหานคร 10400 โทรศัพท์: 02-265-6700
+    - เพิ่ม Document Badge ทางด้านขวา:
+      - `Material Checkout Report` สำหรับ `MaterialCheckoutPDF`
+      - `Material Return Report` สำหรับ `MaterialReturnPDF`
+    - เพิ่มการแสดงวันและเวลาพิมพ์เอกสาร: `พิมพ์เมื่อ: {printDateStr}`
+  - ปรับเวอร์ชันระบบเป็น `v1.9.7`
+- **Reason:** ปรับรูปแบบหัวกระดาษของใบยืมและใบรับคืนพัสดุให้สวยงามและได้มาตรฐานองค์กรเช่นเดียวกับรายงานระบบอื่นๆ
+
 ## [2026-09-15 17:40] - v1.9.6
 - **Files Modified:** `src/components/users/EditUserModal.jsx`, `src/components/users/UserActionModal.jsx`, `src/pages/auth/Login.jsx`, `src/i18n/locales/en.js`, `src/i18n/locales/th.js`, `package.json`, `package-lock.json`, `CHANGELOG.md`, `docs/inactive-status-consolidation-implementation-plan.md`
 - **Changes:**
@@ -2521,7 +2612,7 @@
 - **Details:**
   - `src/lib/checkout-pdf-templates.jsx` & `src/lib/pdf-templates.jsx`:
     - ปรับปรุงโครงสร้าง JSX ส่วนของลายเซ็นท้ายเอกสาร PDF ทั้งหมด (`MaterialCheckoutPDF`, `MaterialReturnPDF`, `MaterialWithdrawalPDF`) ให้ใช้โครงสร้างแบบ Dual Signature Boxes (`signatureSection` และ `signatureBox`)
-    - ใช้เส้นคั่นบนกล่องลายเซ็นสีเทาเรียบหรู (`borderTop: 1 solid #94a3b8`), ชื่อผู้ลงนามในวงเล็บกึ่งกลาง (`sigName`), บทบาทกำกับ (`sigRole`: `ผู้ขอยืมพัสดุ / ช่างผู้เบิก` และ `เจ้าหน้าที่ผู้จ่ายพัสดุ / เจ้าหน้าที่คลัง`), พร้อมวันที่ (`sigDate: วันที่: ....../....../...........`) ตรงตามสเปกที่ผู้ใช้กำหนด
+    - ใช้เส้นคั่นบนกล่องลายเซ็นสีเทาเรียบหรู (`borderTop: 1 solid #94a3b8`), ชื่อผู้ลงนามในวงเล็บกึ่งกลาง (`sigName`), บทบาทกำกับ (`sigRole`: `ผู้ขอยืมพัสดุ` และ `เจ้าหน้าที่ผู้จ่ายพัสดุ`), พร้อมวันที่ (`sigDate: วันที่: ....../....../...........`) ตรงตามสเปกที่ผู้ใช้กำหนด
 - **Reason:** จัดดีไซน์บล็อกลายเซ็นให้สวยงาม กะทัดรัด และเป็นรูปแบบเดียวกันทุกเอกสาร PDF ของระบบ
 
 ## [2026-08-18 09:48] 📄 Standardize Checkout & Return PDF Templates to Match MaterialWithdrawalPDF

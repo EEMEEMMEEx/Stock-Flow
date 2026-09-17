@@ -89,7 +89,53 @@ const Checkouts = () => {
         console.warn('Checkout orders fetch notice:', ordRes.error.message);
         setOrders([]);
       } else {
-        setOrders(ordRes.data || []);
+        let loadedOrders = ordRes.data || [];
+
+        // Enrich creator profiles if PostgREST embedding returned null or empty array
+        const unmappedCreatorIds = [
+          ...new Set(
+            loadedOrders
+              .filter(o => o.created_by && (!o.profiles || (Array.isArray(o.profiles) && o.profiles.length === 0)))
+              .map(o => o.created_by)
+          )
+        ];
+
+        if (unmappedCreatorIds.length > 0) {
+          try {
+            const { data: profs } = await supabase
+              .from('profiles')
+              .select('id, full_name, email, role')
+              .in('id', unmappedCreatorIds);
+
+            if (profs && profs.length > 0) {
+              const profMap = new Map(profs.map(p => [p.id, p]));
+              loadedOrders = loadedOrders.map(o => {
+                if (o.created_by && profMap.has(o.created_by)) {
+                  return {
+                    ...o,
+                    profiles: profMap.get(o.created_by)
+                  };
+                }
+                return o;
+              });
+            }
+          } catch (profErr) {
+            console.warn('Enrich creator profiles notice:', profErr);
+          }
+        }
+
+        // Normalize order.profiles: if it's an array, extract the first object
+        loadedOrders = loadedOrders.map(o => {
+          if (Array.isArray(o.profiles)) {
+            return {
+              ...o,
+              profiles: o.profiles[0] || null
+            };
+          }
+          return o;
+        });
+
+        setOrders(loadedOrders);
       }
     } catch (err) {
       console.error('Error fetching checkout data:', err);
