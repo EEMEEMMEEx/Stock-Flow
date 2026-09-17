@@ -54,7 +54,7 @@ const CheckoutDetailModal = ({
     if (order.created_by) {
       supabase
         .from('profiles')
-        .select('id, full_name, email, role')
+        .select('id, full_name, email, role, signature_url')
         .eq('id', order.created_by)
         .maybeSingle()
         .then(({ data, error }) => {
@@ -95,7 +95,7 @@ const CheckoutDetailModal = ({
             items (name, unit)
           ),
           projects (name, project_code),
-          profiles:received_by (full_name)
+          profiles:received_by (id, full_name, signature_url)
         `)
         .eq('checkout_order_id', orderId)
         .order('returned_at', { ascending: false });

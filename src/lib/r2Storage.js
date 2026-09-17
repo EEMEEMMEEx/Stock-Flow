@@ -1,11 +1,51 @@
 import toast from 'react-hot-toast';
 import { supabase } from './supabase';
 
+export const ALLOWED_R2_FOLDERS = Object.freeze([
+  'avatars',
+  'items',
+  'documents',
+  'receipts',
+  'attachments',
+  'uploads'
+]);
+
+/**
+ * Validates whether a destination folder is in the Cloudflare R2 allowed whitelist
+ * @param {string} folder - Destination folder name
+ * @returns {{ isValid: boolean, cleanFolder: string, error?: string }}
+ */
+export function validateR2Folder(folder) {
+  if (!folder || typeof folder !== 'string') {
+    return {
+      isValid: false,
+      cleanFolder: 'uploads',
+      error: `Destination folder is required. Allowed folders: ${ALLOWED_R2_FOLDERS.join(', ')}`
+    };
+  }
+
+  const rawFolder = String(folder).trim().toLowerCase();
+  const cleanFolder = rawFolder.replace(/[^a-z0-9_-]/g, '');
+
+  if (!ALLOWED_R2_FOLDERS.includes(cleanFolder) || cleanFolder.length === 0) {
+    return {
+      isValid: false,
+      cleanFolder,
+      error: `Invalid destination folder "${folder}". Allowed folders: ${ALLOWED_R2_FOLDERS.join(', ')}`
+    };
+  }
+
+  return {
+    isValid: true,
+    cleanFolder
+  };
+}
+
 /**
  * Upload any File or Blob directly to Cloudflare R2 via Presigned URL
  * 
  * @param {File|Blob} file - The file object to upload
- * @param {string} folder - Destination folder name (e.g. 'avatars', 'items', 'documents')
+ * @param {string} folder - Destination folder name (must be one of ALLOWED_R2_FOLDERS)
  * @param {string} [customFileName] - Optional explicit file name or path
  * @param {boolean} [silent] - If true, do not display error toast (useful when caller has fallback)
  * @returns {Promise<string|null>} - Returns the public CDN URL of the uploaded file
@@ -15,9 +55,23 @@ export async function uploadFileToR2(file, folder = 'uploads', customFileName = 
     throw new Error('No file provided for upload');
   }
 
-  // 1. Generate clean file name
+  // 1. Validate destination folder against whitelist before network request
+  const folderValidation = validateR2Folder(folder);
+  if (!folderValidation.isValid) {
+    const errorMsg = folderValidation.error;
+    console.error('[r2Storage] Destination folder validation error:', errorMsg);
+    if (!silent) {
+      toast.error('Failed to upload file to Cloudflare R2: ' + errorMsg);
+    }
+    return null;
+  }
+  const cleanFolder = folderValidation.cleanFolder;
+
+  // 2. Generate clean file name and prevent path traversal
   const rawFileName = customFileName || file.name || `file_${Date.now()}.png`;
-  const sanitizedFileName = rawFileName.replace(/[^a-zA-Z0-9._\-/]/g, '_');
+  const sanitizedFileName = rawFileName
+    .replace(/[/\\]/g, '_')
+    .replace(/[^a-zA-Z0-9._-]/g, '_');
 
   // Determine API endpoint: prefer local /api endpoint on localhost / full-stack servers
   const isBrowser = typeof window !== 'undefined';
@@ -60,7 +114,7 @@ export async function uploadFileToR2(file, folder = 'uploads', customFileName = 
       body: JSON.stringify({
         fileName: sanitizedFileName,
         contentType: file.type || 'application/octet-stream',
-        folder,
+        folder: cleanFolder,
       }),
     });
 
@@ -79,7 +133,7 @@ export async function uploadFileToR2(file, folder = 'uploads', customFileName = 
             body: JSON.stringify({
               fileName: sanitizedFileName,
               contentType: file.type || 'application/octet-stream',
-              folder,
+              folder: cleanFolder,
             }),
           });
           const fallbackData = await fallbackRes.json().catch(() => ({}));

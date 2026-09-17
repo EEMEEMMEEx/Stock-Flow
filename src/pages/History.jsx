@@ -80,7 +80,13 @@ const History = () => {
           ),
           profiles:requested_by (
             id,
-            full_name
+            full_name,
+            signature_url
+          ),
+          approver:approved_by (
+            id,
+            full_name,
+            signature_url
           ),
           withdrawal_items (
             id,

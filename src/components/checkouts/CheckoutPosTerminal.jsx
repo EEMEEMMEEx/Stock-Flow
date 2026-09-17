@@ -14,6 +14,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n';
 import { ProjectLocationSelector } from '@/components/common/ProjectLocationSelector';
+import SignatureRequiredModal from '@/components/common/SignatureRequiredModal';
 
 const CheckoutPosTerminal = ({
   projects = [],
@@ -56,6 +57,7 @@ const CheckoutPosTerminal = ({
   // Active batch paste input states per item: { [itemId]: string }
   const [batchInputText, setBatchInputText] = useState({});
   const [showBatchInput, setShowBatchInput] = useState({});
+  const [showSigModal, setShowSigModal] = useState(false);
 
   // Keep the default borrower tied to the authenticated profile.
   useEffect(() => {
@@ -263,6 +265,11 @@ const CheckoutPosTerminal = ({
   // Submit checkout order
   const handleCheckoutSubmit = async (e) => {
     e.preventDefault();
+    if (!profile?.signature_url) {
+      toast.error(t('profile.signatureRequired', 'กรุณาเพิ่มลายเซ็นก่อนทำรายการ'));
+      setShowSigModal(true);
+      return;
+    }
     if (!selectedProjectId) {
       return toast.error(t('checkouts.errSelectLocation'));
     }
@@ -917,6 +924,12 @@ const CheckoutPosTerminal = ({
         </div>
 
       </div>
+
+      {/* Signature Required Gate Modal */}
+      <SignatureRequiredModal 
+        isOpen={showSigModal} 
+        onClose={() => setShowSigModal(false)} 
+      />
     </form>
   );
 };

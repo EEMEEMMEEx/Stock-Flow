@@ -1,4 +1,56 @@
 # Changelog
+## [2026-09-17 23:35] - v1.10.3
+- **Files Modified:** `src/lib/checkout-pdf-templates.jsx`, `src/lib/pdf-templates.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - ลบเส้นตรงแนวนอนเหนือส่วนลงนาม (Signature Box Border Line) ในรายงาน PDF ทั้ง 3 ฉบับ:
+    - **`MaterialCheckoutPDF` (ใบยืมพัสดุ)**: ลบ `borderTopWidth: 1` และ `borderTopColor: '#000000'` ออกจากสไตล์ `signatureBox` ใน `checkout-pdf-templates.jsx`
+    - **`MaterialReturnPDF` (ใบรับคืนพัสดุ)**: ลบเส้นขอบบนของ `signatureBox` ใน `checkout-pdf-templates.jsx`
+    - **`MaterialWithdrawalPDF` (ใบเบิกของ)**: ลบ `borderTopWidth: 1` และ `borderTopColor: '#000000'` ออกจากสไตล์ `signatureBox` ใน `pdf-templates.jsx`
+    - ทำให้รูปภาพลายเซ็นดิจิทัลและชื่อผู้ลงนามแสดงผลอย่างสะอาดตาและไม่มีเส้นขวางด้านบน
+  - ปรับเวอร์ชันระบบเป็น `v1.10.3` (PATCH)
+- **Reason:** ลบเส้นตรงแนวนอนเหนือส่วนลงนามออกตามคำขอของผู้ใช้ เพื่อให้พื้นที่ลายเซ็นมีความโปร่ง โล่ง สะอาดตา และไม่ขัดกับภาพลายเซ็นดิจิทัลจริง
+
+## [2026-09-17 23:30] - v1.10.2
+- **Files Modified:** `src/components/profile/SignatureCanvas.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - แก้ไขปัญหาการแสดงผลลายเซ็นในธีมมืด (Dark Theme Visibility Issue) ในหน้าโปรไฟล์:
+    - **ปรับปรุงคอนเทนเนอร์แสดงตัวอย่างลายเซ็น (`ลายเซ็นปัจจุบันของคุณ`)**: ปรับเปลี่ยนพื้นหลังของกล่องแสดงตัวอย่างลายเซ็นจากเดิม `bg-white dark:bg-slate-900/80` ให้เป็นพื้นหลังกระดาษสีขาว `bg-white` คงที่ทั้งในโหมด Light และ Dark พร้อมขอบ `border-slate-300 dark:border-slate-700` ทำให้ภาพลายเซ็นที่เป็นหมึกดำเข้มคมชัดและมี Contrast สูงสุด (17.8:1) ตลอดเวลา
+    - **ปรับปรุงกระดานวาดลายเซ็น (Canvas Drawing Area)**: ปรับพื้นหลังกรอบวาดลายเซ็นให้เป็น `bg-white` เพื่อให้ผู้ใช้มองเห็นเส้นหมึกสีดำได้อย่างชัดเจนขณะวาดบนอุปกรณ์ทั้งในโหมด Light และ Dark
+    - รักษาตรรกะการโหลดไฟล์ภาพจาก Cloudflare R2 และโครงสร้าง Responsive Layout เดิมอย่างสมบูรณ์
+  - ปรับเวอร์ชันระบบเป็น `v1.10.2` (PATCH)
+- **Reason:** แก้ไขปัญหารูปลายเซ็นที่เป็นหมึกสีดำกลืนหายไปกับพื้นหลังสีเข้มในโหมด Dark Theme ให้สามารถมองเห็นลายเซ็นได้อย่างชัดเจนในทุกธีม
+
+## [2026-09-17 23:25] - v1.10.1
+- **Files Modified:** `src/lib/r2Storage.js`, `src/lib/avatarUpload.js`, `src/components/profile/SignatureCanvas.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - แก้ไขปัญหาการอัปโหลดไฟล์ขึ้น Cloudflare R2 ล้มเหลวจากโฟลเดอร์ปลายทางไม่ถูกต้อง (`Invalid destination folder`):
+    - **กำหนดค่า Whitelist โฟลเดอร์มาตรฐาน**: เพิ่ม `ALLOWED_R2_FOLDERS` (`avatars`, `items`, `documents`, `receipts`, `attachments`, `uploads`) และฟังก์ชันตรวจสอบ `validateR2Folder(folder)` ใน `src/lib/r2Storage.js`
+    - **การตรวจสอบก่อนส่งคำขอ**: ตรวจสอบโฟลเดอร์ปลายทางฝั่ง Client ก่อนยิงคำขอไปยัง `/api/r2-upload-url` พร้อมแจ้งเตือนข้อผิดพลาดที่ชัดเจนหากโฟลเดอร์ไม่อยู่ใน Whitelist
+    - **ป้องกัน Path Traversal ในชื่อไฟล์**: ปรับปรุงฟังก์ชันแปลงชื่อไฟล์ใน `r2Storage.js` ให้แทนที่เครื่องหมาย `/` และ `\` ด้วย `_` โดยอัตโนมัติ เพื่อป้องกันข้อผิดพลาด Path Traversal บนเซิร์ฟเวอร์
+    - **แก้ไขโฟลเดอร์ปลายทางลายเซ็น**: ปรับ `SignatureCanvas.jsx` ให้ส่งไฟล์ลายเซ็นไปยังโฟลเดอร์ `documents` แทน `signatures` ที่ไม่มีใน Whitelist
+    - **แก้ไขการสร้าง Path ใน Avatar Upload**: ปรับ `avatarUpload.js` จากเดิมที่ใช้ `${userId}/avatar.png` ให้เป็น `avatar_${safeUserId}_${Date.now()}.png` เพื่อไม่ให้มี Path separator ฝังในชื่อไฟล์
+  - ปรับเวอร์ชันระบบเป็น `v1.10.1` (PATCH)
+- **Reason:** แก้ไขข้อผิดพลาด `Failed to upload file to Cloudflare R2: Invalid destination folder. Allowed folders: avatars, items, documents, receipts, attachments, uploads` และทำให้การอัปโหลดไฟล์ทุกประเภทเป็นไปตาม Whitelist ที่กำหนด
+
+## [2026-09-17 23:15] - v1.10.0
+- **Files Modified:** `supabase/migrations/70_add_signature_url_to_profiles.sql`, `scripts/backup-full-database.mjs`, `src/components/profile/SignatureCanvas.jsx`, `src/components/common/SignatureRequiredModal.jsx`, `src/pages/Profile.jsx`, `src/components/checkouts/CheckoutPosTerminal.jsx`, `src/components/checkouts/CheckoutReturnModal.jsx`, `src/components/checkouts/CheckoutDetailModal.jsx`, `src/pages/Withdrawals.jsx`, `src/pages/History.jsx`, `src/lib/checkout-pdf-templates.jsx`, `src/lib/pdf-templates.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `package.json`, `package-lock.json`, `CHANGELOG.md`, `docs/digital-signature-system-implementation-plan.md`
+- **Changes:**
+  - เพิ่มระบบจัดการลายเซ็นดิจิทัล (Digital Signature System) ครอบคลุมทั้งระบบสำหรับผู้ใช้งานทุกคน:
+    - **หน้าโปรไฟล์ (`/profile`)**: เพิ่มแท็บใหม่ `ลายเซ็น` (Signature) ผ่านคีย์ `?tab=signature` พร้อมคงแท็บเดิม (`ข้อมูลส่วนตัว`, `เปลี่ยนรหัสผ่าน`)
+    - **Signature Canvas Component (`SignatureCanvas.jsx`)**: กระดานวาดลายเซ็นแบบ Responsive รองรับทั้งเมาส์ สไตลัส และหน้าจอสัมผัส (Touch Screen) พร้อมปุ่มล้างกระดาน แสดงสถานะลายเซ็นปัจจุบัน ปุ่มบันทึก และปุ่มลบลายเซ็น
+    - **การจัดเก็บข้อมูล**: เพิ่มคอลัมน์ `signature_url` ในตาราง `public.profiles` จัดเก็บ Data URL / Cloudflare R2 โดยมี RLS อนุญาตให้ผู้ใช้แก้ไขโปรไฟล์ของตนเองได้
+    - **Transaction Validation Gate**: บล็อกการทำธุรกรรมในระบบทันทีหากผู้ใช้ยังไม่มีลายเซ็น (`!profile?.signature_url`):
+      - `/checkouts`: ป้องกันการสร้างรายการยืมพัสดุ และการบันทึกรับคืนพัสดุ
+      - `/withdrawals`: ป้องกันการส่งคำขอเบิกพัสดุ และการอนุมัติคำขอเบิกพัสดุ
+      - แสดงแจ้งเตือน `"กรุณาเพิ่มลายเซ็นก่อนทำรายการ"` พร้อมเปิดโมดัล `SignatureRequiredModal` นำทางไปยัง `/profile?tab=signature`
+    - **PDF Integration**: เชื่อมต่อภาพลายเซ็นจริงลงในเอกสาร PDF ทั้ง 3 รายงาน:
+      - `MaterialCheckoutPDF` (ใบยืมพัสดุ): แสดงลายเซ็นผู้ขอยืม และเจ้าหน้าที่ผู้จ่ายพัสดุ
+      - `MaterialReturnPDF` (ใบรับคืนพัสดุ): แสดงลายเซ็นผู้ส่งคืน และเจ้าหน้าที่ผู้รับคืนพัสดุ
+      - `MaterialWithdrawalPDF` (ใบเบิกของ): แสดงลายเซ็นผู้ขอเบิกพัสดุ และเจ้าหน้าที่ผู้จ่ายพัสดุ
+    - **Internationalization (i18n)**: เพิ่มคีย์แปลภาษาสำหรับระบบลายเซ็นทั้งภาษาไทย (`th.js`) และภาษาอังกฤษ (`en.js`) ครบถ้วน
+  - ปรับเวอร์ชันระบบเป็น `v1.10.0` (MINOR)
+- **Reason:** รองรับข้อกำหนดขององค์กรที่ต้องการให้ธุรกรรมการเบิก ยืม และคืนพัสดุมีลายเซ็นดิจิทัลของผู้ใช้งานกำกับอย่างถูกต้องและปลอดภัย
+
 ## [2026-09-17 22:50] - v1.9.14
 - **Files Modified:** `src/components/checkouts/CheckoutDetailModal.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `package.json`, `package-lock.json`, `CHANGELOG.md`
 - **Changes:**

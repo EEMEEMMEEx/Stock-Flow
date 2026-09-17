@@ -12,6 +12,7 @@ import toast from 'react-hot-toast';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n';
+import SignatureRequiredModal from '@/components/common/SignatureRequiredModal';
 
 const CheckoutReturnModal = ({
   isOpen,
@@ -23,6 +24,7 @@ const CheckoutReturnModal = ({
   const { t } = useTranslation();
   const { profile } = useAuth();
   const [returnItems, setReturnItems] = useState([]);
+  const [showSigModal, setShowSigModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -87,6 +89,12 @@ const CheckoutReturnModal = ({
 
   const handleReturnSubmit = async (e) => {
     e.preventDefault();
+
+    if (!profile?.signature_url) {
+      toast.error(t('profile.signatureRequired', 'กรุณาเพิ่มลายเซ็นก่อนทำรายการ'));
+      setShowSigModal(true);
+      return;
+    }
 
     const itemsToProcess = returnItems.filter(i => Number(i.returned_quantity) > 0);
     if (itemsToProcess.length === 0) {
@@ -356,6 +364,11 @@ const CheckoutReturnModal = ({
           </DialogFooter>
         </form>
       </DialogContent>
+
+      <SignatureRequiredModal
+        isOpen={showSigModal}
+        onClose={() => setShowSigModal(false)}
+      />
     </Dialog>
   );
 };

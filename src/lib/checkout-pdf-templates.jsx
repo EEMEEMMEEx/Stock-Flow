@@ -176,8 +176,6 @@ const styles = StyleSheet.create({
   signatureBox: {
     width: '42%',
     alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: '#000000',
     paddingTop: 8,
   },
   sigName: {
@@ -198,6 +196,16 @@ const styles = StyleSheet.create({
     color: '#000000',
     marginTop: 3,
     textAlign: 'center',
+  },
+  sigImage: {
+    height: 32,
+    width: 90,
+    objectFit: 'contain',
+    marginBottom: 4,
+  },
+  sigSpacer: {
+    height: 32,
+    marginBottom: 4,
   },
 });
 
@@ -261,6 +269,18 @@ export const MaterialCheckoutPDF = ({ order, staffProfile }) => {
     || order?.staff_name
     || (typeof staffProfile === 'string' ? staffProfile : staffProfile?.full_name)
     || '...................................................';
+
+  // Resolve digital signature images
+  const borrowerSignatureUrl = order?.borrower_signature_url
+    || order?.signature_url
+    || (Array.isArray(order?.borrower) ? order.borrower[0]?.signature_url : order?.borrower?.signature_url)
+    || order?.borrower_profile?.signature_url
+    || null;
+
+  const staffSignatureUrl = creatorProfile?.signature_url
+    || staffProfile?.signature_url
+    || order?.staff_signature_url
+    || null;
 
   return (
     <Document>
@@ -353,12 +373,22 @@ export const MaterialCheckoutPDF = ({ order, staffProfile }) => {
         {/* Signatures */}
         <View style={styles.signatureSection} wrap={false}>
           <View style={styles.signatureBox}>
+            {borrowerSignatureUrl ? (
+              <Image src={borrowerSignatureUrl} style={styles.sigImage} />
+            ) : (
+              <View style={styles.sigSpacer} />
+            )}
             <Text style={styles.sigName}>({borrowerDisplayName})</Text>
             <Text style={styles.sigRole}>ผู้ขอยืมพัสดุ</Text>
             <Text style={styles.sigDate}>วันที่: ....../....../...........</Text>
           </View>
 
           <View style={styles.signatureBox}>
+            {staffSignatureUrl ? (
+              <Image src={staffSignatureUrl} style={styles.sigImage} />
+            ) : (
+              <View style={styles.sigSpacer} />
+            )}
             <Text style={styles.sigName}>({staffDisplayName})</Text>
             <Text style={styles.sigRole}>เจ้าหน้าที่ผู้จ่ายพัสดุ</Text>
             <Text style={styles.sigDate}>วันที่: ....../....../...........</Text>
@@ -433,6 +463,17 @@ export const MaterialReturnPDF = ({ order, returnLogs = [], staffProfile }) => {
     || creatorProfile?.name
     || (typeof staffProfile === 'string' ? staffProfile : staffProfile?.full_name)
     || '...................................................';
+
+  // Resolve digital signature images
+  const returnBorrowerSignatureUrl = order?.borrower_signature_url
+    || order?.signature_url
+    || (Array.isArray(order?.borrower) ? order.borrower[0]?.signature_url : order?.borrower?.signature_url)
+    || null;
+
+  const returnReceiverSignatureUrl = returnReceiverProfile?.signature_url
+    || creatorProfile?.signature_url
+    || staffProfile?.signature_url
+    || null;
 
   return (
     <Document>
@@ -533,12 +574,22 @@ export const MaterialReturnPDF = ({ order, returnLogs = [], staffProfile }) => {
         {/* Signatures */}
         <View style={styles.signatureSection} wrap={false}>
           <View style={styles.signatureBox}>
+            {returnBorrowerSignatureUrl ? (
+              <Image src={returnBorrowerSignatureUrl} style={styles.sigImage} />
+            ) : (
+              <View style={styles.sigSpacer} />
+            )}
             <Text style={styles.sigName}>({borrowerDisplayName})</Text>
             <Text style={styles.sigRole}>ผู้ส่งคืนพัสดุ</Text>
             <Text style={styles.sigDate}>วันที่: ....../....../...........</Text>
           </View>
 
           <View style={styles.signatureBox}>
+            {returnReceiverSignatureUrl ? (
+              <Image src={returnReceiverSignatureUrl} style={styles.sigImage} />
+            ) : (
+              <View style={styles.sigSpacer} />
+            )}
             <Text style={styles.sigName}>({returnReceiverName})</Text>
             <Text style={styles.sigRole}>ผู้ตรวจรับคืน</Text>
             <Text style={styles.sigDate}>วันที่: ....../....../...........</Text>

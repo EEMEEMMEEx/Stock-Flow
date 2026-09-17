@@ -169,8 +169,6 @@ const styles = StyleSheet.create({
   signatureBox: {
     width: '42%',
     alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: '#000000',
     paddingTop: 8,
   },
   sigName: {
@@ -191,6 +189,16 @@ const styles = StyleSheet.create({
     color: '#000000',
     marginTop: 3,
     textAlign: 'center',
+  },
+  sigImage: {
+    height: 32,
+    width: 90,
+    objectFit: 'contain',
+    marginBottom: 4,
+  },
+  sigSpacer: {
+    height: 32,
+    marginBottom: 4,
   },
 
   // Report columns
@@ -220,6 +228,17 @@ export const MaterialWithdrawalPDF = ({ order, items, profile }) => {
     hour: '2-digit',
     minute: '2-digit'
   });
+
+  // Resolve digital signature images
+  const requesterSignatureUrl = order?.profiles?.signature_url
+    || order?.requester?.signature_url
+    || order?.requester_signature_url
+    || (order?.requested_by === profile?.id ? profile?.signature_url : null)
+    || null;
+
+  const approverSignatureUrl = (profile?.signature_url && profile?.id !== order?.requested_by ? profile.signature_url : order?.approver?.signature_url)
+    || order?.approved_by_profile?.signature_url
+    || null;
 
   return (
     <Document>
@@ -301,12 +320,22 @@ export const MaterialWithdrawalPDF = ({ order, items, profile }) => {
         {/* Signatures */}
         <View style={styles.signatureSection} wrap={false}>
           <View style={styles.signatureBox}>
+            {requesterSignatureUrl ? (
+              <Image src={requesterSignatureUrl} style={styles.sigImage} />
+            ) : (
+              <View style={styles.sigSpacer} />
+            )}
             <Text style={styles.sigName}>({order?.profiles?.full_name || order?.requester_name || '...................................................'})</Text>
             <Text style={styles.sigRole}>ผู้ขอเบิกพัสดุ</Text>
             <Text style={styles.sigDate}>วันที่: ....../....../...........</Text>
           </View>
 
           <View style={styles.signatureBox}>
+            {approverSignatureUrl ? (
+              <Image src={approverSignatureUrl} style={styles.sigImage} />
+            ) : (
+              <View style={styles.sigSpacer} />
+            )}
             <Text style={styles.sigName}>({(profile?.full_name && profile?.id !== order?.requested_by ? profile.full_name : order?.approver?.full_name) || '...................................................'})</Text>
             <Text style={styles.sigRole}>เจ้าหน้าที่ผู้จ่ายพัสดุ</Text>
             <Text style={styles.sigDate}>วันที่: ....../....../...........</Text>
