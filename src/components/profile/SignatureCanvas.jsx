@@ -285,7 +285,7 @@ const SignatureCanvas = () => {
               </Button>
             </div>
 
-            <div className="p-4 rounded-xl border border-dashed border-slate-300 dark:border-slate-700 bg-white flex items-center justify-center min-h-[110px] shadow-2xs relative">
+            <div className="p-4 rounded-xl border border-dashed border-slate-300 dark:border-slate-700 bg-white flex items-center justify-center min-h-27.5 shadow-2xs relative">
               <img
                 src={savedSignature}
                 alt="User Signature"

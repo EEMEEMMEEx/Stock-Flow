@@ -15,7 +15,7 @@ export const SignatureRequiredModal = ({ isOpen, onClose }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose && onClose()}>
-      <DialogContent className="sm:max-w-[460px] rounded-xl bg-card p-6 border border-border shadow-xl">
+      <DialogContent className="sm:max-w-115 rounded-xl bg-card p-6 border border-border shadow-xl">
         <DialogHeader className="space-y-3 text-center sm:text-left">
           <div className="mx-auto sm:mx-0 w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
             <PenTool className="w-6 h-6" />

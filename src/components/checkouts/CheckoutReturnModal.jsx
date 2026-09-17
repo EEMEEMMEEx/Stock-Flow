@@ -147,7 +147,7 @@ const CheckoutReturnModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[660px] rounded-xl bg-card p-6 border border-border shadow-xl">
+      <DialogContent className="sm:max-w-165 rounded-xl bg-card p-6 border border-border shadow-xl">
         <form onSubmit={handleReturnSubmit} className="space-y-4">
           <DialogHeader className="space-y-2 border-b border-border/40 pb-3">
             <div className="flex items-center gap-3">
@@ -207,7 +207,7 @@ const CheckoutReturnModal = ({
           </div>
 
           {/* Line Items Return List */}
-          <div className="space-y-3 max-h-[380px] overflow-y-auto pr-1">
+          <div className="space-y-3 max-h-95 overflow-y-auto pr-1">
             {filteredReturnItems.length === 0 ? (
               <div className="py-8 text-center text-xs text-muted-foreground">
                 {t('common.notFound')}

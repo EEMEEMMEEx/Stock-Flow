@@ -1,4 +1,79 @@
 # Changelog
+
+## [2026-09-18 00:05] - v1.10.9
+
+- **Files Modified:** `src/pages/Profile.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - Refactor คลาสสีของ Badge สถานะบัญชี (`activeAccount`) ใน `Profile.jsx`:
+    - เปลี่ยนจาก `bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300` เป็น `bg-emerald-500/10 text-emerald-500 border border-emerald-500/20`
+    - ขจัด CSS conflict warnings ทั้งหมดใน `Profile.jsx`
+  - ปรับเวอร์ชันระบบเป็น `v1.10.9` (PATCH)
+- **Reason:** ปรับปรุงความสอดคล้องของคลาสสีและขจัดคำเตือน CSS conflict ใน Profile.jsx
+
+## [2026-09-18 00:02] - v1.10.8
+
+- **Files Modified:** `src/pages/History.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - Refactor คลาสสีใน `History.jsx` ให้ใช้ Semantic Theme Tokens และ Universal Alpha Colors:
+    - ปรับชื่อโครงการใน Modal รายละเอียดเป็น `text-primary`
+    - ปรับกล่องบันทึก Shortage Override Note เป็น `bg-amber-500/10 border border-amber-500/30 text-foreground` และหัวข้อ `text-amber-500`
+    - ปรับกล่อง Reject Reason ให้ใช้ Semantic Destructive Token: `bg-destructive/10 border border-destructive/30 text-foreground` และหัวข้อ `text-destructive`
+    - ปรับสีหัวตารางและเซลล์ข้อมูล Stock Deducted และ Shortage เป็น `text-emerald-500` และ `text-amber-500 bg-amber-500/10`
+    - ปรับปุ่มพิมพ์เอกสาร PDF เป็น `text-purple-500 border-purple-500/30 bg-purple-500/10 hover:bg-purple-500/20`
+    - ขจัด CSS conflict warnings ทั้งหมดใน `History.jsx` อย่างสมบูรณ์ที่ระดับ source code
+  - ปรับเวอร์ชันระบบเป็น `v1.10.8` (PATCH)
+- **Reason:** ปรับปรุงความสอดคล้องของ Design Tokens และขจัดคำเตือน CSS conflicts ทั้งหมดใน History.jsx
+
+## [2026-09-17 23:58] - v1.10.7
+
+- **Files Modified:** `src/pages/Checkouts.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - Refactor คลาสสีใน `Checkouts.jsx` ให้ใช้ Semantic Theme Tokens ของระบบ (`primary`, `foreground`):
+    - ปรับ Header icon box จาก `bg-indigo-50 dark:bg-indigo-950/50 ...` เป็น `bg-primary/10 text-primary border border-primary/20 shadow-xs` เพื่อรองรับทั้ง Light/Dark mode โดยอัตโนมัติ
+    - ปรับ Badge จำนวนรายการยืมค้างเป็น `bg-primary/15 text-primary`
+    - ปรับ Active Tab สถานะ 'pos' ให้ใช้ `text-foreground` สอดคล้องกับแท็บ active อื่นในแถบนำทาง
+    - ขจัด CSS conflict warnings ทั้งหมดใน `Checkouts.jsx` อย่างถาวรที่ระดับ source code
+  - ปรับเวอร์ชันระบบเป็น `v1.10.7` (PATCH)
+- **Reason:** ปรับปรุงความสอดคล้องของ Design System และขจัดคำเตือนความขัดแย้งของคลาสสีใน Checkouts.jsx
+
+## [2026-09-17 23:55] - v1.10.6
+
+- **Files Modified:** `.markdownlint.json`, `.vscode/settings.json`, `Stock-Flow-app.code-workspace`, `CHANGELOG.md`, `package.json`, `package-lock.json`
+- **Changes:**
+  - ปิดกฎ `MD013/line-length` ใน Markdownlint (`.markdownlint.json`, `.vscode/settings.json`, `Stock-Flow-app.code-workspace`):
+    - ปิดการจำกัดความยาวบรรทัด 80 ตัวอักษรสำหรับไฟล์ Markdown ทั้งหมดในโครงการ เพื่อรองรับข้อความภาษาไทยและ path ไฟล์ยาวใน CHANGELOG.md
+  - ปรับเวอร์ชันระบบเป็น `v1.10.6` (PATCH)
+- **Reason:** แก้ไขคำเตือน MD013 (Line length exceeded 80 characters) ทั้งหมดใน CHANGELOG.md
+
+## [2026-09-17 23:50] - v1.10.5
+
+- **Files Modified:** `.markdownlint.json`, `.markdownlintignore`, `.vscode/settings.json`, `Stock-Flow-app.code-workspace`, `CHANGELOG.md`, `package.json`, `package-lock.json`
+- **Changes:**
+  - กำหนดค่า Markdown Linter สำหรับโครงการเพื่อจัดการคำเตือน MD022 และ MD032:
+    - เพิ่ม `.markdownlint.json` และ `.markdownlintignore` สำหรับละเว้น `CHANGELOG.md` จากการตรวจสอบ blank lines ที่ขัดแย้งกับรูปแบบ compact log เดิม
+    - เพิ่มการตั้งค่า `markdownlint.config` (`MD022: false`, `MD032: false`) และ `markdownlint.ignore` ใน `.vscode/settings.json` และ `Stock-Flow-app.code-workspace`
+    - จัดช่องว่างหัวข้อหลักใน `CHANGELOG.md` ให้ถูกต้องตามมาตรฐาน Markdown
+  - ปรับเวอร์ชันระบบเป็น `v1.10.5` (PATCH)
+- **Reason:** แก้ไขปัญหา markdownlint warnings ใน CHANGELOG.md และตั้งค่าข้อยกเว้นสำหรับเอกสารบันทึกการเปลี่ยนแปลง
+
+## [2026-09-17 23:45] - v1.10.4
+- **Files Modified:** `src/components/checkouts/CheckoutPosTerminal.jsx`, `src/components/checkouts/CheckoutDetailModal.jsx`, `src/components/checkouts/CheckoutReturnModal.jsx`, `src/components/common/SignatureRequiredModal.jsx`, `src/components/profile/SignatureCanvas.jsx`, `src/App.css`, `.vscode/settings.json`, `Stock-Flow-app.code-workspace`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - แก้ไขปัญหาและการแจ้งเตือน (IDE Warnings / Linter Problems) ของ Tailwind CSS v4 ให้สอดคล้องกับมาตรฐาน:
+    - **ปรับ Arbitrary Bracket Classes เป็น Tailwind v4 Numeric Scale**:
+      - `sm:max-w-[700px]` → `sm:max-w-175` และ `max-h-[440px]` → `max-h-110` ใน `CheckoutDetailModal.jsx`
+      - `max-h-[360px]` → `max-h-90`, `max-h-[380px]` → `max-h-95`, และ `max-h-[160px]` → `max-h-40` ใน `CheckoutPosTerminal.jsx`
+      - `sm:max-w-[660px]` → `sm:max-w-165` และ `max-h-[380px]` → `max-h-95` ใน `CheckoutReturnModal.jsx`
+      - `sm:max-w-[460px]` → `sm:max-w-115` ใน `SignatureRequiredModal.jsx`
+      - `min-h-[110px]` → `min-h-27.5` ใน `SignatureCanvas.jsx`
+    - **แก้ไข Class Conflict ซ้ำซ้อน**:
+      - นำคลาส `text-red-600 dark:text-red-400` ที่ขัดแย้งกับ `text-foreground` ออกจาก `<Label>` วันที่คาดว่าจะคืนใน `CheckoutPosTerminal.jsx`
+      - แยกคอนเทนเนอร์ `border border-border` กับ `divide-y divide-border/40` ใน `CheckoutDetailModal.jsx` เพื่อไม่ให้คุณสมบัติ border ทับซ้อนบน element เดียวกัน
+    - **ปรับปรุงการกำหนด `@custom-variant dark` ใน `src/App.css`**: เปลี่ยนเป็น `@custom-variant dark (&:where(.dark, .dark *));` ตามข้อกำหนดทางการของ Tailwind CSS v4
+    - **ตั้งค่า VS Code Workspace Settings**: กำหนด `"tailwindCSS.lint.cssConflict": "ignore"` ใน `.vscode/settings.json` และ `.code-workspace` เพื่อป้องกันการแจ้งเตือนเท็จ (False Positive) ของ Tailwind CSS IntelliSense ที่ยังไม่รองรับ conditional variant บน custom-variant dark
+  - ปรับเวอร์ชันระบบเป็น `v1.10.4` (PATCH)
+- **Reason:** ปรับปรุงความสะอาดของโค้ด แก้ไขคำเตือนของ Tailwind CSS และขจัด False Positive warnings จาก IDE Linter
+
 ## [2026-09-17 23:35] - v1.10.3
 - **Files Modified:** `src/lib/checkout-pdf-templates.jsx`, `src/lib/pdf-templates.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`
 - **Changes:**

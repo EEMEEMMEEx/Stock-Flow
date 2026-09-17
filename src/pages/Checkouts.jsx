@@ -213,7 +213,7 @@ const Checkouts = () => {
       {/* Top Header with Quick Actions */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-border pb-4">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/60 shadow-xs">
+          <div className="p-2.5 rounded-xl bg-primary/10 text-primary border border-primary/20 shadow-xs">
             <RotateCcw className="w-6 h-6" />
           </div>
           <div>
@@ -266,7 +266,7 @@ const Checkouts = () => {
           <Clock className="w-3.5 h-3.5" />
           <span>{t('checkouts.activeTab')}</span>
           {orders.filter(o => o.status !== 'completed').length > 0 && (
-            <span className="px-1.5 py-0.2 rounded-md bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 text-[10px] font-mono font-bold">
+            <span className="px-1.5 py-0.2 rounded-md bg-primary/15 text-primary text-[10px] font-mono font-bold">
               {orders.filter(o => o.status !== 'completed').length}
             </span>
           )}
@@ -277,7 +277,7 @@ const Checkouts = () => {
             type="button"
             onClick={() => setActiveTab('pos')}
             className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md text-xs font-semibold transition-colors cursor-pointer select-none ${activeTab === 'pos'
-                ? 'bg-background text-indigo-600 dark:text-indigo-400 shadow-xs'
+                ? 'bg-background text-foreground shadow-xs'
                 : 'text-muted-foreground hover:text-foreground'
               }`}
           >

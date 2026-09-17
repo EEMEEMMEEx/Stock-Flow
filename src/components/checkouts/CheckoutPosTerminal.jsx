@@ -461,7 +461,7 @@ const CheckoutPosTerminal = ({
                   <p className="text-[11px]">{t('checkouts.noItemsInWarehouseDesc')}</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[360px] overflow-y-auto pr-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-90 overflow-y-auto pr-1">
                   {filteredItems.map(item => {
                     const cartItem = cart.find(c => c.item_id === item.id);
                     const isAdded = Boolean(cartItem);
@@ -630,7 +630,7 @@ const CheckoutPosTerminal = ({
 
                 {borrowType === 'standard' ? (
                   <div className="space-y-1">
-                    <Label className="text-xs font-semibold text-foreground flex items-center gap-1 text-red-600 dark:text-red-400">
+                    <Label className="text-xs font-semibold text-foreground flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
                       <span>{t('checkouts.expectedReturnDate')} <span className="text-destructive">*</span></span>
                     </Label>
@@ -709,7 +709,7 @@ const CheckoutPosTerminal = ({
                   {t('checkouts.noItemsSelected')}
                 </div>
               ) : (
-                <div className="space-y-3.5 max-h-[380px] overflow-y-auto pr-1">
+                <div className="space-y-3.5 max-h-95 overflow-y-auto pr-1">
                   {cart.map((item) => {
                     const sns = item.serial_numbers || [''];
                     const filledSNCount = sns.filter(s => s && s.trim()).length;
@@ -879,7 +879,7 @@ const CheckoutPosTerminal = ({
                             )}
 
                             {/* Individual Unit S/N Input Slots */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[160px] overflow-y-auto pr-1">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-40 overflow-y-auto pr-1">
                               {sns.map((snVal, sIdx) => (
                                 <div key={sIdx} className="flex items-center gap-1.5 bg-muted/20 p-1.5 rounded-lg border border-border/40">
                                   <span className="text-[10px] font-semibold text-muted-foreground w-12 shrink-0 text-right">
