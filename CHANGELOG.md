@@ -1,5 +1,18 @@
 # Changelog
 
+## [2026-09-18 00:08] - v1.10.10
+
+- **Files Modified:** `.gitignore`, `.gitattributes`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - อัปเดตและจัดระเบียบไฟล์ `.gitignore` ใหม่ทั้งหมดให้ครอบคลุม 13 หมวดหมู่มาตรฐานสำหรับ Modern JavaScript Application:
+    - ยกเลิกการ track และละเว้นโฟลเดอร์ database migrations (`supabase/`), ไฟล์ SQL (`*.sql`, `*.psql`), database dumps และ logs เพื่อไม่ให้ถูกนับในสถิติ GitHub Language (PLpgSQL ~10%)
+    - เพิ่มกฎการละเว้นโฟลเดอร์ build/dist, tooling caches (`.vite/`, `.turbo/`, etc.), test coverage, environment secrets (`.env*`, `*.pem`, `*.key`), editor/IDE configs, OS metadata, PDF/CSV/Excel exports และ documentation specs
+  - เพิ่มไฟล์ `.gitattributes` พร้อมการตั้งค่า GitHub Linguist:
+    - กำหนด `linguist-detectable=false` และ `linguist-vendored` ให้กับ `*.sql`, `supabase/**`, shell scripts, configs (`*.json`, `*.csv`) และ internal scripts
+    - กำหนด `linguist-documentation` ให้กับ `*.md`, `*.html`, `*.css` เพื่อให้สถิติภาษาบน GitHub แสดงเป็น **JavaScript 100%**
+  - ปรับเวอร์ชันระบบเป็น `v1.10.10` (PATCH)
+- **Reason:** ทำความสะอาด GitHub repository language statistics กำจัด PLpgSQL (~10%) และ Other (~0.6%) ให้คงเหลือเฉพาะ JavaScript 100%
+
 ## [2026-09-18 00:05] - v1.10.9
 
 - **Files Modified:** `src/pages/Profile.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`
