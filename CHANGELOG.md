@@ -1,5 +1,18 @@
 # Changelog
 
+## [2026-09-18 10:25] - v1.10.17
+
+- **Files Modified:** `supabase/migrations/72_resolve_complete_inventory_request_overload.sql`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **Fix Column "remarks" Does Not Exist in `complete_inventory_request` (Error 42703):**
+    - แก้ไขข้อผิดพลาด `column "remarks" does not exist` ในตาราง `public.withdrawal_orders` เมื่อเรียกฟังก์ชัน `public.complete_inventory_request`
+    - ตรวจสอบโครงสร้างตารางจริงพบว่าเดิมมีเฉพาะคอลัมน์ `notes` และไม่มีคอลัมน์ `updated_at`
+    - เพิ่มคอลัมน์ `remarks TEXT` ลงในตาราง `public.withdrawal_orders` ผ่านคำสั่ง `ALTER TABLE public.withdrawal_orders ADD COLUMN IF NOT EXISTS remarks TEXT;` เพื่อความเข้ากันได้
+    - ปรับคำสั่ง UPDATE ในฟังก์ชัน `complete_inventory_request` ให้อัปเดตทั้ง `notes = COALESCE(p_remarks, notes)` และ `remarks = COALESCE(p_remarks, remarks, notes)` พร้อมนำ `updated_at` ที่ไม่มีอยู่ออก
+    - ทดสอบการรันฟังก์ชันทั้งแบบระบุ remarks และไม่ระบุ remarks สำเร็จ 100% โดยไม่พบข้อผิดพลาด `42703`, `PGRST203` หรือ `400 Bad Request`
+  - **Version Bump:**
+    - ปรับเวอร์ชันระบบเป็น `v1.10.17` (PATCH)
+
 ## [2026-09-18 10:10] - v1.10.16
 
 - **Files Modified:** `supabase/migrations/72_resolve_complete_inventory_request_overload.sql`, `scripts/apply-migration-72.mjs`, `src/pages/Withdrawals.jsx`, `index.html`, `package.json`, `package-lock.json`, `CHANGELOG.md`, `docs/resolve-complete-inventory-request-overload-plan.md`
