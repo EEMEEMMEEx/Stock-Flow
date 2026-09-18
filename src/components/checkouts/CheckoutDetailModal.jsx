@@ -114,7 +114,8 @@ const CheckoutDetailModal = ({
   const totalBorrowed = checkoutItems.reduce((s, i) => s + Number(i.quantity_borrowed || 0), 0);
   const totalReturned = checkoutItems.reduce((s, i) => s + Number(i.quantity_returned || 0), 0);
   const totalDamaged = checkoutItems.reduce((s, i) => s + Number(i.quantity_damaged || 0) + Number(i.quantity_lost || 0), 0);
-  const remaining = totalBorrowed - (totalReturned + totalDamaged);
+  const remaining = Math.max(0, totalBorrowed - (totalReturned + totalDamaged));
+  const isOrderCompleted = order.status === 'completed' || Boolean(order.actual_returned_date) || remaining <= 0;
 
   // PDF Export Handlers
   const handleDownloadCheckoutPDF = async () => {
@@ -184,12 +185,12 @@ const CheckoutDetailModal = ({
             </div>
 
             {/* Status Badge */}
-            {order.status === 'completed' ? (
+            {isOrderCompleted ? (
               <span className="px-3 py-1 rounded-xl text-xs font-bold bg-emerald-500/15 text-emerald-600 border border-emerald-500/30 flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4" />
                 {t('common.completed')}
               </span>
-            ) : order.status === 'partial_returned' ? (
+            ) : order.status === 'partial_returned' || totalReturned > 0 ? (
               <span className="px-3 py-1 rounded-xl text-xs font-bold bg-blue-500/15 text-blue-600 border border-blue-500/30 flex items-center gap-1.5">
                 <Clock className="w-4 h-4" />
                 {t('checkouts.processing')} ({totalReturned}/{totalBorrowed})
@@ -410,7 +411,7 @@ const CheckoutDetailModal = ({
                 <span>{t('checkouts.indefiniteLoan')}</span>
               </div>
             ) : (
-              remaining > 0 && order.status !== 'completed' && onOpenExtendModal && canExtend && (
+              !isOrderCompleted && remaining > 0 && onOpenExtendModal && canExtend && (
                 <Button
                   type="button"
                   variant="outline"
@@ -427,7 +428,7 @@ const CheckoutDetailModal = ({
               )
             )}
 
-            {remaining > 0 && onOpenReturnModal && canReturn && (
+            {!isOrderCompleted && remaining > 0 && onOpenReturnModal && canReturn && (
               <Button
                 type="button"
                 size="sm"

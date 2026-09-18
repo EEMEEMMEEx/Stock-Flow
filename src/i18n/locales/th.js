@@ -834,8 +834,10 @@ export default {
       "checkoutSlipDownloaded": "ดาวน์โหลดใบยืมอุปกรณ์เรียบร้อยแล้ว",
       "checkoutSlipPdfFailed": "สร้างไฟล์ PDF ใบยืมอุปกรณ์ไม่สำเร็จ",
       "returnReceiptDownloaded": "ดาวน์โหลดใบรับคืนอุปกรณ์เรียบร้อยแล้ว",
-      "returnReceiptPdfFailed": "สร้างไฟล์ PDF ใบรับคืนอุปกรณ์ไม่สำเร็จ"
+      "returnReceiptPdfFailed": "สร้างไฟล์ PDF ใบรับคืนอุปกรณ์ไม่สำเร็จ",
+      "alreadyReturned": "รายการนี้ส่งคืนครบถ้วนแล้ว ไม่สามารถทำรายการคืนซ้ำได้"
     },
+    "fullyReturnedDesc": "อุปกรณ์ในรายการนี้ได้รับการส่งคืนครบถ้วนแล้ว",
     "printCheckoutSlip": "พิมพ์ใบยืมพัสดุ (PDF)",
     "printReturnReceipt": "พิมพ์ใบรับคืนพัสดุ (PDF)",
     "department": "แผนก",

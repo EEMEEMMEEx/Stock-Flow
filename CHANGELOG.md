@@ -1,5 +1,30 @@
 # Changelog
 
+## [2026-09-18 08:35] - v1.10.11
+
+- **Files Modified:** `src/components/checkouts/CheckoutActiveList.jsx`, `src/components/checkouts/CheckoutDetailModal.jsx`, `src/components/checkouts/CheckoutReturnModal.jsx`, `src/components/checkouts/CheckoutHistoryList.jsx`, `src/components/checkouts/CheckoutExtendModal.jsx`, `src/pages/Checkouts.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `package.json`, `package-lock.json`, `CHANGELOG.md`, `docs/return-workflow-logic-implementation-plan.md`
+- **Changes:**
+  - **CheckoutActiveList (`src/components/checkouts/CheckoutActiveList.jsx`):**
+    - แก้ไขตัวกรอง `filteredOrders` ให้คัดกรองรายการที่ส่งคืนครบถ้วนแล้ว (`order.status === 'completed'` หรือ `order.actual_returned_date` หรือ `remainingUnits <= 0`) ออกจากแถบ Active Loans โดยอัตโนมัติ เพื่อไม่ให้แสดงปะปนกับรายการที่ยังไม่คืน
+    - ซ่อนปุ่ม "รับคืนอุปกรณ์และเครื่องมือ" (`<button>รับคืนอุปกรณ์และเครื่องมือ</button>`) ทันทีเมื่อรายการถูกส่งคืนครบถ้วนแล้ว โดยเพิ่มเงื่อนไข `!order.isCompleted && order.remainingUnits > 0`
+    - ซ่อนปุ่ม "ขยายกำหนดวันส่งคืน" บนรายการที่ส่งคืนครบถ้วนแล้วเช่นเดียวกัน
+    - ปรับการคำนวณ KPI Cards (Active Loans, Overdue, Due Soon) ให้นับเฉพาะรายการที่ยังคงค้างส่งคืนจริง
+  - **CheckoutDetailModal (`src/components/checkouts/CheckoutDetailModal.jsx`):**
+    - เพิ่มการตรวจสอบ `isOrderCompleted = order.status === 'completed' || Boolean(order.actual_returned_date) || remaining <= 0`
+    - ซ่อนปุ่ม "รับคืนอุปกรณ์และเครื่องมือ" และปุ่ม "ขยายเวลาการยืม" เมื่อรายการเสร็จสิ้นแล้ว
+    - ปรับ Badge สถานะในส่วนหัวให้แสดง "เสร็จสมบูรณ์" (Completed สีเขียว) อย่างถูกต้องเมื่อส่งคืนครบถ้วน
+  - **CheckoutReturnModal (`src/components/checkouts/CheckoutReturnModal.jsx`):**
+    - เพิ่ม Pre-flight check ใน `handleReturnSubmit` ป้องกันการทำรายการรับคืนซ้ำ (Prevent Duplicate Return Actions)
+    - ปิดการทำงาน (`disabled`) ของปุ่มกดยืนยันการรับคืนเมื่อรายการส่งคืนครบแล้ว
+    - แสดง Alert Banner "ส่งคืนครบถ้วนแล้ว" เมื่อเปิดดูรายการที่เสร็จสมบูรณ์
+  - **CheckoutHistoryList & Checkouts (`src/components/checkouts/CheckoutHistoryList.jsx`, `src/pages/Checkouts.jsx`):**
+    - ปรับปรุงการตรวจสอบ `completedOrders` ในหน้าประวัติให้ครอบคลุมรายการที่ `remainingUnits <= 0`
+    - ปรับตัวนับ Badge บนแท็บ "รายการยืมที่ยังไม่คืน" ใน `Checkouts.jsx` ให้นับเฉพาะรายการที่ยังมียอดคงค้างจริง
+  - **Internationalization & Versioning:**
+    - เพิ่ม Translation Keys: `checkouts.toasts.alreadyReturned`, `checkouts.fullyReturnedDesc` ทั้งภาษาไทยและภาษาอังกฤษ
+    - ปรับเวอร์ชันระบบเป็น `v1.10.11` (PATCH)
+- **Reason:** แก้ไขข้อผิดพลาดที่ปุ่ม "รับคืนอุปกรณ์และเครื่องมือ" ยังคงแสดงผลแม้จะส่งคืนอุปกรณ์ไปแล้ว และปรับปรุง Lifecycle State ให้สะท้อนสถานะความเป็นจริงของอุปกรณ์
+
 ## [2026-09-18 00:08] - v1.10.10
 
 - **Files Modified:** `.gitignore`, `.gitattributes`, `package.json`, `package-lock.json`, `CHANGELOG.md`

@@ -41,6 +41,12 @@ const CheckoutExtendModal = ({
 
   // Initialize dates when order changes
   useEffect(() => {
+    if (order && (order.status === 'completed' || order.actual_returned_date) && isOpen) {
+      toast.error(t('checkouts.toasts.alreadyReturned'));
+      onClose();
+      return;
+    }
+
     if (order && (order.borrow_type === 'indefinite' || !order.expected_return_date) && isOpen) {
       toast.error(t('checkouts.indefiniteCannotExtend'));
       onClose();

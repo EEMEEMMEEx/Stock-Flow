@@ -90,6 +90,12 @@ const CheckoutReturnModal = ({
   const handleReturnSubmit = async (e) => {
     e.preventDefault();
 
+    if (isOrderAlreadyCompleted) {
+      toast.error(t('checkouts.toasts.alreadyReturned'));
+      onClose();
+      return;
+    }
+
     if (!profile?.signature_url) {
       toast.error(t('profile.signatureRequired', 'กรุณาเพิ่มลายเซ็นก่อนทำรายการ'));
       setShowSigModal(true);
@@ -144,6 +150,7 @@ const CheckoutReturnModal = ({
 
   const totalUnitsToReturn = returnItems.reduce((sum, i) => sum + (Number(i.returned_quantity) || 0), 0);
   const totalRemainingInOrder = returnItems.reduce((sum, i) => sum + (Number(i.remaining_to_return) || 0), 0);
+  const isOrderAlreadyCompleted = order?.status === 'completed' || Boolean(order?.actual_returned_date) || totalRemainingInOrder <= 0;
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -170,6 +177,17 @@ const CheckoutReturnModal = ({
               </div>
             </div>
           </DialogHeader>
+
+          {/* Already Returned Alert Banner */}
+          {isOrderAlreadyCompleted && (
+            <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs flex items-center gap-2.5">
+              <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+              <div>
+                <p className="font-bold">{t('checkouts.fullyReturned')}</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">{t('checkouts.fullyReturnedDesc')}</p>
+              </div>
+            </div>
+          )}
 
           {/* Search & Quick Action Toolbar */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 bg-muted/20 p-2.5 rounded-xl border border-border/40">
@@ -355,8 +373,8 @@ const CheckoutReturnModal = ({
 
             <Button
               type="submit"
-              disabled={submitting || totalUnitsToReturn === 0}
-              className="rounded-lg h-9 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold gap-1.5 shadow-xs cursor-pointer"
+              disabled={submitting || totalUnitsToReturn === 0 || isOrderAlreadyCompleted}
+              className="rounded-lg h-9 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold gap-1.5 shadow-xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <CheckCircle2 className="w-4 h-4" />
               <span>{submitting ? t('common.pleaseWait') : `${t('checkouts.confirmReturn')} (${totalUnitsToReturn} ${totalUnitsToReturn === 1 ? t('checkouts.unitCount_one') : t('checkouts.unitCount_other')})`}</span>

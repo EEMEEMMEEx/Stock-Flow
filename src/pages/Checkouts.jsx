@@ -208,6 +208,17 @@ const Checkouts = () => {
     setIsDetailModalOpen(true);
   };
 
+  const activeOrdersCount = useMemo(() => {
+    return orders.filter(o => {
+      if (o.status === 'completed' || o.actual_returned_date) return false;
+      const items = o.checkout_items || [];
+      if (items.length === 0) return true;
+      const totalBorrowed = items.reduce((s, i) => s + Number(i.quantity_borrowed || 0), 0);
+      const totalReturned = items.reduce((s, i) => s + Number(i.quantity_returned || 0) + Number(i.quantity_damaged || 0) + Number(i.quantity_lost || 0), 0);
+      return (totalBorrowed - totalReturned) > 0;
+    }).length;
+  }, [orders]);
+
   return (
     <div className="space-y-6">
       {/* Top Header with Quick Actions */}
@@ -265,9 +276,9 @@ const Checkouts = () => {
         >
           <Clock className="w-3.5 h-3.5" />
           <span>{t('checkouts.activeTab')}</span>
-          {orders.filter(o => o.status !== 'completed').length > 0 && (
+          {activeOrdersCount > 0 && (
             <span className="px-1.5 py-0.2 rounded-md bg-primary/15 text-primary text-[10px] font-mono font-bold">
-              {orders.filter(o => o.status !== 'completed').length}
+              {activeOrdersCount}
             </span>
           )}
         </button>

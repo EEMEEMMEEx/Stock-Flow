@@ -18,7 +18,14 @@ const CheckoutHistoryList = ({
   const [searchQuery, setSearchQuery] = useState('');
 
   const completedOrders = useMemo(() => {
-    return orders.filter(o => o.status === 'completed' || o.actual_returned_date);
+    return orders.filter(o => {
+      if (o.status === 'completed' || o.actual_returned_date) return true;
+      const items = o.checkout_items || [];
+      if (items.length === 0) return false;
+      const totalBorrowed = items.reduce((s, i) => s + Number(i.quantity_borrowed || 0), 0);
+      const totalReturned = items.reduce((s, i) => s + Number(i.quantity_returned || 0) + Number(i.quantity_damaged || 0) + Number(i.quantity_lost || 0), 0);
+      return totalBorrowed > 0 && (totalBorrowed - totalReturned) <= 0;
+    });
   }, [orders]);
 
   const filteredOrders = useMemo(() => {

@@ -834,8 +834,10 @@ export default {
       "checkoutSlipDownloaded": "Checkout slip downloaded",
       "checkoutSlipPdfFailed": "Failed to generate checkout slip PDF",
       "returnReceiptDownloaded": "Return receipt downloaded",
-      "returnReceiptPdfFailed": "Failed to generate return receipt PDF"
+      "returnReceiptPdfFailed": "Failed to generate return receipt PDF",
+      "alreadyReturned": "This order has already been fully returned. Duplicate returns are not permitted."
     },
+    "fullyReturnedDesc": "All equipment in this order has already been fully returned.",
     "printCheckoutSlip": "Print Checkout Slip (PDF)",
     "printReturnReceipt": "Print Return Receipt (PDF)",
     "department": "Department",

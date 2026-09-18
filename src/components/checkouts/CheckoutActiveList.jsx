@@ -32,17 +32,18 @@ const CheckoutActiveList = ({
       let isDueSoon = false;
       let daysDiff = null;
 
+      const totalBorrowed = (order.checkout_items || []).reduce((sum, i) => sum + Number(i.quantity_borrowed || 0), 0);
+      const totalReturned = (order.checkout_items || []).reduce((sum, i) => sum + Number(i.quantity_returned || 0) + Number(i.quantity_damaged || 0) + Number(i.quantity_lost || 0), 0);
+      const remainingUnits = Math.max(0, totalBorrowed - totalReturned);
+      const isCompleted = order.status === 'completed' || Boolean(order.actual_returned_date) || remainingUnits <= 0;
+
       if (!isIndefinite && order.expected_return_date) {
         const dueDate = new Date(order.expected_return_date);
         dueDate.setHours(0, 0, 0, 0);
-        isOverdue = dueDate < today && order.status !== 'completed';
+        isOverdue = dueDate < today && !isCompleted;
         daysDiff = differenceInDays(dueDate, today);
-        isDueSoon = daysDiff >= 0 && daysDiff <= 2 && order.status !== 'completed';
+        isDueSoon = daysDiff >= 0 && daysDiff <= 2 && !isCompleted;
       }
-
-      const totalBorrowed = (order.checkout_items || []).reduce((sum, i) => sum + Number(i.quantity_borrowed || 0), 0);
-      const totalReturned = (order.checkout_items || []).reduce((sum, i) => sum + Number(i.quantity_returned || 0) + Number(i.quantity_damaged || 0) + Number(i.quantity_lost || 0), 0);
-      const remainingUnits = totalBorrowed - totalReturned;
 
       return {
         ...order,
@@ -52,17 +53,22 @@ const CheckoutActiveList = ({
         daysDiff,
         totalBorrowed,
         totalReturned,
-        remainingUnits
+        remainingUnits,
+        isCompleted
       };
     });
   }, [orders]);
 
   const filteredOrders = useMemo(() => {
     return enrichedOrders.filter(order => {
+      // CheckoutActiveList is exclusively for active (uncompleted) loans with remaining items.
+      // Fully returned orders belong to CheckoutHistoryList.
+      if (order.isCompleted) return false;
+
       // Filter by status
       if (statusFilter === 'overdue' && !order.isOverdue) return false;
       if (statusFilter === 'due_soon' && !order.isDueSoon) return false;
-      if (statusFilter === 'active' && (order.isOverdue || order.status === 'completed')) return false;
+      if (statusFilter === 'active' && order.isOverdue) return false;
 
       // Filter by search query
       if (!searchQuery.trim()) return true;
@@ -78,11 +84,12 @@ const CheckoutActiveList = ({
     });
   }, [enrichedOrders, statusFilter, searchQuery]);
 
-  // Overall KPI metrics
-  const overdueCount = enrichedOrders.filter(o => o.isOverdue).length;
-  const dueSoonCount = enrichedOrders.filter(o => o.isDueSoon).length;
-  const activeLoansCount = enrichedOrders.filter(o => o.status !== 'completed').length;
-  const totalUnitsBorrowed = enrichedOrders.reduce((sum, o) => sum + o.remainingUnits, 0);
+  // Overall KPI metrics (calculated strictly from active loans)
+  const activeOrders = enrichedOrders.filter(o => !o.isCompleted);
+  const overdueCount = activeOrders.filter(o => o.isOverdue).length;
+  const dueSoonCount = activeOrders.filter(o => o.isDueSoon).length;
+  const activeLoansCount = activeOrders.length;
+  const totalUnitsBorrowed = activeOrders.reduce((sum, o) => sum + o.remainingUnits, 0);
 
   return (
     <div className="space-y-6">
@@ -314,7 +321,7 @@ const CheckoutActiveList = ({
                           <span className="hidden sm:inline">{t('checkouts.indefiniteLoan')}</span>
                         </div>
                       ) : (
-                        canExtend && onOpenExtendModal && order.status !== 'completed' && (
+                        canExtend && onOpenExtendModal && !order.isCompleted && order.remainingUnits > 0 && (
                           <Button
                             variant="outline"
                             size="sm"
@@ -328,7 +335,7 @@ const CheckoutActiveList = ({
                         )
                       )}
 
-                      {canReturn && (
+                      {canReturn && !order.isCompleted && order.remainingUnits > 0 && (
                         <Button
                           size="sm"
                           onClick={() => onOpenReturnModal(order)}
