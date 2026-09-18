@@ -1,5 +1,16 @@
 # Changelog
 
+## [2026-09-18 10:30] - v1.10.18
+
+- **Files Modified:** `src/pages/Checkouts.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **Fix Missing `useMemo` Import in `Checkouts.jsx`:**
+    - แก้ไขข้อผิดพลาด `Uncaught ReferenceError: useMemo is not defined` ในหน้า Checkouts (`/checkouts`)
+    - นำเข้า `useMemo` จาก `'react'` ใน `src/pages/Checkouts.jsx` เพื่อใช้งานกับการคำนวณ `activeOrdersCount`
+    - ตรวจสอบการใช้งาน React Hooks เป็นไปตามกฎ Rules of Hooks ครบถ้วน
+  - **Version Bump:**
+    - ปรับเวอร์ชันระบบเป็น `v1.10.18` (PATCH)
+
 ## [2026-09-18 10:25] - v1.10.17
 
 - **Files Modified:** `supabase/migrations/72_resolve_complete_inventory_request_overload.sql`, `package.json`, `package-lock.json`, `CHANGELOG.md`
