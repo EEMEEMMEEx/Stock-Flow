@@ -16,9 +16,33 @@
         var theme = savedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
         document.documentElement.classList.add(theme === 'dark' ? 'dark' : 'light');
 
-        // Prevent third-party browser extension content script disconnection errors from polluting the console
+        // Defensive error isolation for external browser extensions, injected scripts, and DevTools Live Metrics (Soft Navs)
+        function shouldSuppressExternalError(msg, stack) {
+          if (!msg && !stack) return false;
+          var text = (String(msg) + ' ' + String(stack || '')).toLowerCase();
+          return (
+            text.includes("cannot read properties of undefined (reading 'onmessage')") ||
+            text.includes("cannot read properties of undefined (reading 'starttime')") ||
+            text.includes('reportallchanges') ||
+            text.includes('devtoolsreportsoftnavs')
+          );
+        }
+
         window.addEventListener('error', function (event) {
-          if (event && event.message && event.message.includes("Cannot read properties of undefined (reading 'onMessage')")) {
+          var msg = event ? (event.message || (event.error && event.error.message) || '') : '';
+          var stack = event && event.error && event.error.stack ? event.error.stack : '';
+          if (shouldSuppressExternalError(msg, stack)) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+          }
+        }, true);
+
+        window.addEventListener('unhandledrejection', function (event) {
+          var reason = event ? event.reason : null;
+          var msg = reason ? (reason.message || String(reason)) : '';
+          var stack = reason && reason.stack ? reason.stack : '';
+          if (shouldSuppressExternalError(msg, stack)) {
+            event.preventDefault();
             event.stopImmediatePropagation();
           }
         }, true);

@@ -560,13 +560,14 @@ const Withdrawals = () => {
   };
 
   // Complete Order via Supabase RPC
-  const handleCompleteOrder = async (orderId) => {
+  const handleCompleteOrder = async (orderId, remarks = null) => {
     if (isProcessing) return;
     setIsProcessing(true);
     const toastId = toast.loading(t('withdrawals.toasts.completing'));
     try {
       const { error } = await supabase.rpc('complete_inventory_request', {
-        p_request_id: orderId
+        p_request_id: orderId,
+        p_remarks: remarks || null
       });
       if (error) throw error;
 

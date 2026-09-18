@@ -1,5 +1,20 @@
 # Changelog
 
+## [2026-09-18 10:10] - v1.10.16
+
+- **Files Modified:** `supabase/migrations/72_resolve_complete_inventory_request_overload.sql`, `scripts/apply-migration-72.mjs`, `src/pages/Withdrawals.jsx`, `index.html`, `package.json`, `package-lock.json`, `CHANGELOG.md`, `docs/resolve-complete-inventory-request-overload-plan.md`
+- **Changes:**
+  - **Database & Supabase RPC Overload Resolution (`complete_inventory_request`):**
+    - แก้ไขข้อผิดพลาด `PGRST203` ("Could not choose the best candidate function between: public.complete_inventory_request(p_request_id => uuid), public.complete_inventory_request(p_request_id => uuid, p_remarks => text)")
+    - สร้าง Migration 72 (`72_resolve_complete_inventory_request_overload.sql`) โดยลบฟังก์ชัน overload เก่าทั้งหมด และรวมศูนย์เป็น single canonical function signature: `public.complete_inventory_request(p_request_id UUID, p_remarks TEXT DEFAULT NULL)`
+    - ปรับปรุง `Withdrawals.jsx` (`handleCompleteOrder`) ให้ส่ง parameters อย่างชัดเจนทั้ง `p_request_id` และ `p_remarks: remarks || null` กำจัดความคลุมเครือของ PostgREST
+    - รักษาตรรกะการตรวจสอบสิทธิ์ความปลอดภัย (Requester, Admin, Supervisor, Permissions) และการบันทึก `audit_logs` ครบถ้วน
+  - **Browser Runtime Error Isolation (`startTime` / `reportAllChanges`):**
+    - ระบุที่มาของข้อผิดพลาด `Uncaught TypeError: Cannot read properties of undefined (reading 'startTime') at et.reportAllChanges` ซึ่งเป็นปัญหาของ Injected Script จาก Chromium DevTools Live Metrics (Soft Navigation) / Web Vitals Extension ภายนอก ที่เข้าถึง `.startTime` โดยไม่มีการ null-check
+    - เพิ่ม Defensive Error Isolation ใน `<head>` ของ `index.html` เพื่อดักจับและ isolate ข้อผิดพลาดดังกล่าวผ่าน Capturing Phase โดยไม่ส่งผลกระทบต่อ HMR, Development tooling หรือการทำงานปกติของแอปพลิเคชัน
+  - **Version Bump:**
+    - ปรับเวอร์ชันระบบเป็น `v1.10.16` (PATCH)
+
 ## [2026-09-18 09:42] - v1.10.15
 
 - **Files Modified:** `src/components/ui/StatusBadge.jsx`, `src/components/history/HistoryDataTable.jsx`, `src/components/withdrawals/WithdrawalOrdersList.jsx`, `src/components/withdrawals/WithdrawalDetailModal.jsx`, `src/components/reports/ReportDataTable.jsx`, `src/components/checkouts/CheckoutDetailModal.jsx`, `src/components/checkouts/CheckoutReturnModal.jsx`, `src/pages/Dashboard.jsx`, `src/pages/Withdrawals.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`, `docs/status-icon-display-system-plan.md`
