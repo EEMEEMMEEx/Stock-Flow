@@ -219,7 +219,7 @@ const UserManagement = () => {
             await sendUserInvitationEmail({
               recipientEmail: userPayload.email,
               userName: userPayload.full_name,
-              roleName: userPayload.role,
+              roleName: userPayload.roleName || getRoleLabel(userPayload.role),
               projectAccessSummary: userPayload.all_projects ? 'All Projects' : `${userPayload.project_ids?.length || 0} selected projects`,
               actionUrl: window.location.origin
             });
@@ -273,9 +273,10 @@ const UserManagement = () => {
         const normalizedRole = userPayload.role.toUpperCase().trim();
         const found = dbRoles.find(r => 
           (r.code || '').toUpperCase().trim() === normalizedRole ||
-          (r.code === 'STAFF' && ['STAFF', 'OPERATOR', 'REQUESTER'].includes(normalizedRole)) ||
+          (['STAFF', 'REQUESTER'].includes(r.code) && ['STAFF', 'OPERATOR', 'REQUESTER'].includes(normalizedRole)) ||
           (r.code === 'SUPERVISOR' && ['SUPERVISOR', 'APPROVER', 'MANAGER'].includes(normalizedRole)) ||
-          (r.code === 'ADMIN' && ['ADMIN', 'ADMINISTRATOR'].includes(normalizedRole))
+          (r.code === 'ADMIN' && ['ADMIN', 'ADMINISTRATOR'].includes(normalizedRole)) ||
+          (r.code === 'SUPER' && ['SUPER', 'SUPERADMIN', 'SUPER_ADMIN'].includes(normalizedRole))
         );
         matchedRoleId = found?.id || null;
       }
@@ -380,7 +381,7 @@ const UserManagement = () => {
   const handleToggleStatus = async (userObj) => {
     const isTargetSuper = (userObj.role || '').toLowerCase() === 'super' || (userObj.roles?.code || '').toUpperCase() === 'SUPER' || (userObj.email || '').toLowerCase() === 'admin@stockflow.com';
     if (isTargetSuper && !isSuperAdmin) {
-      toast.error('System Security: Only Super Admin can change Super Admin account status');
+      toast.error('System Security: Only System Administrator can change System Administrator account status');
       return;
     }
 
@@ -405,7 +406,7 @@ const UserManagement = () => {
     if (!selectedUserForDelete) return;
     const isTargetSuper = (selectedUserForDelete.role || '').toLowerCase() === 'super' || (selectedUserForDelete.roles?.code || '').toUpperCase() === 'SUPER' || (selectedUserForDelete.email || '').toLowerCase() === 'admin@stockflow.com';
     if (isTargetSuper) {
-      toast.error('System Security: Cannot delete Super Admin account');
+      toast.error('System Security: Cannot delete System Administrator account');
       setSelectedUserForDelete(null);
       return;
     }
@@ -434,7 +435,7 @@ const UserManagement = () => {
   const handleDeleteUserAttempt = (userObj) => {
     const isTargetSuper = (userObj.role || '').toLowerCase() === 'super' || (userObj.roles?.code || '').toUpperCase() === 'SUPER' || (userObj.email || '').toLowerCase() === 'admin@stockflow.com';
     if (isTargetSuper) {
-      toast.error('System Security: Cannot delete Super Admin account');
+      toast.error('System Security: Cannot delete System Administrator account');
       return;
     }
 
@@ -454,7 +455,7 @@ const UserManagement = () => {
     const matchedRole = dbRoles.find(r => 
       (u.role_id && r.id === u.role_id) ||
       (r.code || '').toUpperCase().trim() === userRoleStr ||
-      (r.code === 'STAFF' && ['STAFF', 'OPERATOR', 'REQUESTER'].includes(userRoleStr)) ||
+      (['STAFF', 'REQUESTER'].includes(r.code) && ['STAFF', 'OPERATOR', 'REQUESTER'].includes(userRoleStr)) ||
       (r.code === 'SUPERVISOR' && ['SUPERVISOR', 'APPROVER', 'MANAGER'].includes(userRoleStr)) ||
       (r.code === 'ADMIN' && ['ADMIN', 'ADMINISTRATOR'].includes(userRoleStr)) ||
       (r.code === 'SUPER' && ['SUPER', 'SUPERADMIN', 'SUPER_ADMIN'].includes(userRoleStr))
@@ -485,7 +486,7 @@ const UserManagement = () => {
     const filterLower = roleFilter.toLowerCase().trim();
     const matchesRole = filterLower === 'all' || 
       userRoleLower === filterLower ||
-      (filterLower === 'staff' && ['staff', 'operator', 'requester'].includes(userRoleLower)) ||
+      (['staff', 'requester'].includes(filterLower) && ['staff', 'operator', 'requester'].includes(userRoleLower)) ||
       (filterLower === 'supervisor' && ['supervisor', 'approver', 'manager'].includes(userRoleLower)) ||
       (filterLower === 'admin' && ['admin', 'administrator'].includes(userRoleLower));
 
@@ -591,15 +592,15 @@ const UserManagement = () => {
               {dbRoles.length > 0 ? (
                 dbRoles.map((r) => (
                   <option key={r.id || r.code} value={(r.code || '').toLowerCase()}>
-                    {getRoleLabel(r.code, r.name)}
+                    {r.name || getRoleLabel(r.code)}
                   </option>
                 ))
               ) : (
                 <>
-                  <option value="super">SUPER ADMIN</option>
-                  <option value="admin">ADMINISTRATOR</option>
-                  <option value="supervisor">SUPERVISOR / APPROVER</option>
-                  <option value="staff">STAFF / REQUESTER</option>
+                  <option value="super">System Administrator</option>
+                  <option value="admin">Administrator</option>
+                  <option value="supervisor">Supervisor / Approver</option>
+                  <option value="staff">Staff / Requester</option>
                 </>
               )}
             </select>
@@ -676,7 +677,7 @@ const UserManagement = () => {
                     const isTargetSuper = u.role === 'super' || u.role === 'SUPER' || u.roles?.code === 'SUPER' || (u.email || '').toLowerCase() === 'admin@stockflow.com';
                     const isLastActiveAdmin = isTargetAdmin && u.status === 'active' && activeAdminsCount <= 1;
 
-                    // RBAC Permission checks with Super Admin hierarchy enforcement
+                    // RBAC Permission checks with System Administrator hierarchy enforcement
                     const canEditUser = (!isTargetSuper || isSuperAdmin) && can('users.update');
                     const canResendInvite = (!isTargetSuper || isSuperAdmin) && can('users.create');
                     const canResetPassword = (!isTargetSuper || isSuperAdmin) && can('users.reset_password');
@@ -684,14 +685,14 @@ const UserManagement = () => {
                     const canDeleteUser = !isTargetSuper && isSuperAdmin && can('users.delete') && !isSelf && !isLastActiveAdmin;
 
                     const getEditTitle = () => {
-                      if (isTargetSuper && !isSuperAdmin) return 'Only Super Admin can edit the Super Admin account';
+                      if (isTargetSuper && !isSuperAdmin) return 'Only System Administrator can edit the System Administrator account';
                       if (!can('users.update')) return 'Missing permission to edit users (requires users.update)';
                       return 'Edit User';
                     };
 
                     const getDeactivateTitle = () => {
                       if (isSelf) return 'Cannot deactivate your own account';
-                      if (isTargetSuper && !isSuperAdmin) return 'Only Super Admin can deactivate a Super Admin account';
+                      if (isTargetSuper && !isSuperAdmin) return 'Only System Administrator can deactivate a System Administrator account';
                       if (isLastActiveAdmin) return 'Cannot deactivate the last Administrator in the system';
                       if (!can('users.deactivate')) return 'Missing permission to deactivate account (requires users.deactivate)';
                       return u.status === 'active' ? 'Deactivate Account' : 'Activate Account';
@@ -699,9 +700,9 @@ const UserManagement = () => {
 
                     const getDeleteTitle = () => {
                       if (isSelf) return 'Cannot delete your own account';
-                      if (isTargetSuper) return 'Cannot delete Super Admin account';
+                      if (isTargetSuper) return 'Cannot delete System Administrator account';
                       if (isLastActiveAdmin) return 'Cannot delete the last Administrator in the system';
-                      if (!isSuperAdmin) return 'Only Super Admin can delete user accounts';
+                      if (!isSuperAdmin) return 'Only System Administrator can delete user accounts';
                       if (!can('users.delete')) return 'Missing permission to delete user (requires users.delete)';
                       return 'Permanently Delete User';
                     };

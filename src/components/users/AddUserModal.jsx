@@ -18,10 +18,10 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
   const [projectSearch, setProjectSearch] = useState('');
 
   const defaultRoles = [
-    { code: 'STAFF', name: 'STAFF / REQUESTER', description: 'Withdraw items, view stock for assigned projects only' },
-    { code: 'SUPERVISOR', name: 'SUPERVISOR / APPROVER', description: 'Approve withdrawal requests and view project-level reports' },
-    { code: 'ADMIN', name: 'ADMINISTRATOR', description: 'Full permissions: approve withdrawals, manage projects and users' },
-    { code: 'SUPER', name: 'SUPER ADMIN', description: 'System-level access: manage everything including admins, permissions, system settings, security, integrations' }
+    { code: 'STAFF', name: 'Staff / Requester', description: 'Withdraw items, view stock for assigned projects only' },
+    { code: 'SUPERVISOR', name: 'Supervisor / Approver', description: 'Approve withdrawal requests and view project-level reports' },
+    { code: 'ADMIN', name: 'Administrator', description: 'Full permissions: approve withdrawals, manage projects and users' },
+    { code: 'SUPER', name: 'System Administrator', description: 'System-level access: manage everything including admins, permissions, system settings, security, integrations' }
   ];
 
   const rawRoles = roles.length > 0 ? roles : defaultRoles;
@@ -60,23 +60,39 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
     });
   };
 
+  const handleSelectAllProjects = () => {
+    setFormData(prev => ({
+      ...prev,
+      selected_projects: projects.map(p => p.id)
+    }));
+  };
+
+  const handleClearAllProjects = () => {
+    setFormData(prev => ({
+      ...prev,
+      selected_projects: []
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.email || !formData.full_name) {
-      toast.error('Please fill in required fields (*)');
+      toast.error('Please enter email and full name');
       return;
     }
 
     if (formData.access_type === 'selected' && formData.selected_projects.length === 0) {
-      toast.error('Please select at least one project for selected projects access');
+      toast.error('Please select at least 1 project for selected projects access');
+      setActiveTab('access');
       return;
     }
 
     try {
       setLoading(true);
       const matchedRole = availableRoles.find(r => 
-        (formData.role_id && r.id === formData.role_id) ||
-        (r.code || '').toUpperCase() === (formData.role || '').toUpperCase()
+        (formData.role_id && r.id === formData.role_id) || 
+        (r.code || '').toLowerCase() === (formData.role || '').toLowerCase() ||
+        (['STAFF', 'REQUESTER'].includes(r.code) && ['staff', 'operator', 'requester'].includes(formData.role?.toLowerCase()))
       ) || null;
       await onSave({
         email: formData.email.trim(),
@@ -87,6 +103,7 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
         avatar_file: formData.avatar_file || null,
         role: formData.role,
         role_id: matchedRole?.id || null,
+        roleName: matchedRole?.name || getRoleLabel(formData.role),
         status: formData.status,
         all_projects: formData.access_type === 'all',
         project_ids: formData.access_type === 'all' ? [] : formData.selected_projects,

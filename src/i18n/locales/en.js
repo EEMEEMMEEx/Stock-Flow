@@ -1211,39 +1211,39 @@ export default {
         "cancel": "Cancel",
         "saving": "Saving...",
         "saveChanges": "Save Changes",
-        "superAdminTitle": "Only Super Admin can edit this account",
+        "superAdminTitle": "Only System Administrator can edit this account",
         "saveChangesTitle": "Save changes"
       },
       "notices": {
-        "superAdminTitle": "Security Notice: Super Admin Account",
-        "superAdminProfileDesc": "This account is a system Super Admin. Only Super Admin can modify or save this account.",
-        "superAdminRbacDesc": "This account is a system Super Admin. Only Super Admin can change the role or permissions of this account.",
+        "superAdminTitle": "Security Notice: System Administrator Account",
+        "superAdminProfileDesc": "This account is a System Administrator. Only System Administrator can modify or save this account.",
+        "superAdminRbacDesc": "This account is a System Administrator. Only System Administrator can change the role or permissions of this account.",
         "lastAdminTitle": "Security Notice: Last Active Administrator",
         "lastAdminDesc": "This account is the only active Administrator. Demoting or suspending this account is not allowed to prevent system lockout."
       },
       "validation": {
         "enterFullName": "Please enter full name",
         "selectProject": "Please select at least 1 project for selected projects access",
-        "superAdminOnly": "System Security: Only Super Admin can edit this account",
+        "superAdminOnly": "System Security: Only System Administrator can edit this account",
         "lastAdminProtect": "System Security: Cannot demote or deactivate the last active Administrator",
         "lastAdminDemote": "Cannot demote the last active Administrator in the system",
         "lastAdminSuspend": "Cannot suspend or deactivate the last active Administrator in the system"
       },
       "roles": {
         "staff": {
-          "name": "STAFF / REQUESTER",
+          "name": "Staff / Requester",
           "desc": "Request materials and view stock for assigned projects only"
         },
         "supervisor": {
-          "name": "SUPERVISOR / APPROVER",
+          "name": "Supervisor / Approver",
           "desc": "Approve withdrawals and view project-level reports"
         },
         "admin": {
-          "name": "ADMINISTRATOR",
+          "name": "Administrator",
           "desc": "Full access: approve withdrawals, manage projects, roles, and users"
         },
         "super": {
-          "name": "SUPER ADMIN",
+          "name": "System Administrator",
           "desc": "System-level access: manage everything including admins, permissions, system settings, security, integrations"
         }
       }

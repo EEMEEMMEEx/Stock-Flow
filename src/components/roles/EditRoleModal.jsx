@@ -109,7 +109,7 @@ const EditRoleModal = ({ isOpen, onClose, onSave, role }) => {
                 <span>Live Preview:</span>
                 <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold ${formData.badge_background} ${formData.badge_text_color}`}>
                   {formData.badge_background.includes('gradient') ? <Sparkles className="w-3 h-3 text-amber-500 shrink-0" /> : <Shield className="w-3 h-3 shrink-0" />}
-                  {role?.code || 'ROLE'}
+                  {formData.name || role?.name || role?.code || 'ROLE'}
                 </span>
               </div>
             </div>

@@ -1,5 +1,51 @@
 # Changelog
 
+## [2026-09-18 09:15] - v1.10.13
+
+- **Files Modified:** `src/lib/roleUtils.js`, `src/components/ui/RoleBadge.jsx`, `src/pages/UserManagement.jsx`, `src/pages/RoleManagement.jsx`, `src/components/users/AddUserModal.jsx`, `src/components/users/EditUserModal.jsx`, `src/contexts/AuthProvider.jsx`, `src/i18n/locales/en.js`, `src/i18n/locales/th.js`, `supabase/migrations/71_update_role_display_names.sql`, `scripts/apply-migration-71.mjs`, `package.json`, `package-lock.json`, `CHANGELOG.md`, `docs/role-naming-system-implementation-plan.md`
+- **Changes:**
+  - **Role Naming System Update (`Super Admin` -> `System Administrator`):**
+    - กำหนดให้ระบบ `/roles` (ตาราง `public.roles`) เป็น Single Source of Truth สำหรับชื่อบทบาท
+    - ปรับชื่อแสดงผล (Display Name) ของบทบาท `SUPER` จาก `Super Admin` เป็น `System Administrator` ทั่วทั้งระบบ
+    - อัปเดตตารางฐานข้อมูล `public.roles` ให้บันทึก `name = 'System Administrator'` สำหรับบทบาท `SUPER`
+    - ปรับปรุง `roleUtils.js` ให้ Fallback สำหรับ `isSuperRole()` คืนค่า `System Administrator` และ Map ชื่อ Legacy (`SUPER ADMIN` / `Super Admin`) สู่ `System Administrator` อย่างราบรื่น
+    - ปรับปรุง UI ทั้งหมด: Toast messages, Security Protection Banners, Tooltip titles, Modal Fallbacks ใน `UserManagement.jsx`, `RoleManagement.jsx`, `AddUserModal.jsx`, `EditUserModal.jsx`
+    - อัปเดตภาษาทั้งไทยและอังกฤษใน `en.js` และ `th.js` ให้สอดคล้องกัน 100%
+    - รักษา Internal Role Identifier (`SUPER`, `SUPER_ADMIN`, `SUPERADMIN`), ฟังก์ชันตรวจสอบสิทธิ์ (`can()`, `isSuperAdmin`), และ Database RPCs / RLS ทั้งหมดไว้ตามเดิม ไม่ให้กระทบต่อโครงสร้างความปลอดภัย
+  - **Version Bump:**
+    - ปรับเวอร์ชันระบบเป็น `v1.10.13` (PATCH)
+
+## [2026-09-18 09:10] - v1.10.12
+
+- **Files Modified:** `src/lib/roleUtils.js`, `src/components/ui/RoleBadge.jsx`, `src/pages/UserManagement.jsx`, `src/components/users/AddUserModal.jsx`, `src/components/users/EditUserModal.jsx`, `src/components/layout/Topbar.jsx`, `src/pages/Profile.jsx`, `src/components/roles/EditRoleModal.jsx`, `src/pages/RoleManagement.jsx`, `src/i18n/locales/en.js`, `supabase/migrations/71_update_role_display_names.sql`, `scripts/apply-migration-71.mjs`, `package.json`, `package-lock.json`, `CHANGELOG.md`, `docs/role-naming-system-implementation-plan.md`
+- **Changes:**
+  - **Dynamic Role Naming Architecture (`src/lib/roleUtils.js`):**
+    - กำหนดให้ระบบ `/roles` (ตาราง `public.roles`) เป็น Single Source of Truth สำหรับชื่อบทบาทและชุดสี
+    - ปรับปรุง `getRoleLabel(roleInput, roleNameInput)` ให้คืนค่า `roleNameInput` ที่ได้จากฐานข้อมูลเป็นอันดับแรก ยกเลิกการ Override ทับด้วย Hardcoded string
+    - ปรับปรุง Fallback กรณีไม่มีชื่อเฉพาะให้ใช้มาตรฐาน Enterprise Title Case: `Staff / Requester`, `Supervisor / Approver`, `Administrator`, `Super Admin`
+    - แยก **Internal Role Key** (`STAFF`, `REQUESTER`, `OPERATOR`) ออกจาก **Display Name** โดยรองรับทั้ง `STAFF` และ `REQUESTER` เป็น Key ในระดับสิทธิ์เดียวกัน
+    - เพิ่ม Helper functions: `normalizeRoleCode()`, `isRequesterRole()`, `isSupervisorRole()`, `isAdminRole()`, `isSuperRole()`
+  - **Role Badge & Custom Themes (`src/components/ui/RoleBadge.jsx`):**
+    - รองรับการดึง `badge_background` และ `badge_text_color` ที่ปรับแต่งผ่าน `/roles` มาแสดงผลโดยตรง
+    - ถอดคลาส CSS `uppercase` ออก เพื่อให้แสดงผลรูปแบบตัวอักษร Title Case หรือภาษาไทยได้อย่างเป็นธรรมชาติ
+  - **User Management Synchronization (`src/pages/UserManagement.jsx`):**
+    - ปรับ `getUserRoleBadge` ให้จับคู่บทบาททั้ง `role_id` และ normalized codes (`STAFF` / `REQUESTER`) พร้อมส่ง `roleObj` ที่สมบูรณ์
+    - ปรับ Dropdown ตัวกรองบทบาทให้ดึงชื่อ `r.name` จากฐานข้อมูล และปรับ Default Fallback เป็น Title Case
+    - ปรับการส่งอีเมลคำเชิญผู้ใช้ (`sendUserInvitationEmail`) ให้ส่งชื่อบทบาทที่อ่านง่าย (`roleName`) แทนรหัสโค้ด
+  - **User Modals Dynamic Roles (`AddUserModal.jsx`, `EditUserModal.jsx`):**
+    - ปรับชุด `defaultRoles` และ `DEFAULT_ROLES` เป็น Enterprise naming (`Staff / Requester`)
+    - แสดงผลชื่อบทบาทในกล่องตัวเลือกจาก `r.name || getRoleLabel(r.code, r.name)`
+  - **Topbar & Profile (`Topbar.jsx`, `Profile.jsx`):**
+    - นำคลาส `uppercase` ออกจาก Role Label ในส่วนหัวของผู้ใช้งาน
+    - ส่ง `roleObj={profile?.roles}` ไปยัง Role Badge และแสดงผลชื่อบทบาทตามที่กำหนดใน `/roles`
+  - **Role Management & Live Preview (`EditRoleModal.jsx`, `RoleManagement.jsx`):**
+    - ปรับ Live Preview ใน `EditRoleModal` ให้แสดงชื่อบทบาทที่พิมพ์สด (`formData.name`)
+    - ปรับการตรวจสอบจำนวนผู้ใช้ในแต่ละบทบาท (`matchesRole`) ให้ครอบคลุม `REQUESTER`
+  - **Database Migration (`supabase/migrations/71_update_role_display_names.sql` & `scripts/apply-migration-71.mjs`):**
+    - จัดทำ SQL Migration ปรับชื่อตั้งต้นของ System Roles ในฐานข้อมูลให้เป็น Enterprise Title Case
+  - **Version Bump:**
+    - ปรับเวอร์ชันระบบเป็น `v1.10.12` (PATCH)
+
 ## [2026-09-18 08:35] - v1.10.11
 
 - **Files Modified:** `src/components/checkouts/CheckoutActiveList.jsx`, `src/components/checkouts/CheckoutDetailModal.jsx`, `src/components/checkouts/CheckoutReturnModal.jsx`, `src/components/checkouts/CheckoutHistoryList.jsx`, `src/components/checkouts/CheckoutExtendModal.jsx`, `src/pages/Checkouts.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `package.json`, `package-lock.json`, `CHANGELOG.md`, `docs/return-workflow-logic-implementation-plan.md`

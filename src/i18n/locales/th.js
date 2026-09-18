@@ -1211,20 +1211,20 @@ export default {
         "cancel": "ยกเลิก",
         "saving": "กำลังบันทึก...",
         "saveChanges": "บันทึกการเปลี่ยนแปลง",
-        "superAdminTitle": "เฉพาะ Super Admin เท่านั้นที่สามารถแก้ไขบัญชีนี้ได้",
+        "superAdminTitle": "เฉพาะ System Administrator เท่านั้นที่สามารถแก้ไขบัญชีนี้ได้",
         "saveChangesTitle": "บันทึกการเปลี่ยนแปลง"
       },
       "notices": {
-        "superAdminTitle": "ประกาศความปลอดภัย: บัญชีผู้ดูแลระบบสูงสุด (Super Admin)",
-        "superAdminProfileDesc": "บัญชีนี้เป็น Super Admin ของระบบ เฉพาะ Super Admin เท่านั้นที่สามารถแก้ไขหรือบันทึกข้อมูลบัญชีนี้ได้",
-        "superAdminRbacDesc": "บัญชีนี้เป็น Super Admin ของระบบ เฉพาะ Super Admin เท่านั้นที่สามารถเปลี่ยนบทบาทหรือสิทธิ์ของบัญชีนี้ได้",
+        "superAdminTitle": "ประกาศความปลอดภัย: บัญชีผู้ดูแลระบบสูงสุด (System Administrator)",
+        "superAdminProfileDesc": "บัญชีนี้เป็น System Administrator ของระบบ เฉพาะ System Administrator เท่านั้นที่สามารถแก้ไขหรือบันทึกข้อมูลบัญชีนี้ได้",
+        "superAdminRbacDesc": "บัญชีนี้เป็น System Administrator ของระบบ เฉพาะ System Administrator เท่านั้นที่สามารถเปลี่ยนบทบาทหรือสิทธิ์ของบัญชีนี้ได้",
         "lastAdminTitle": "ประกาศความปลอดภัย: บัญชีผู้ดูแลระบบคนสุดท้าย (Last Active Admin)",
         "lastAdminDesc": "บัญชีนี้เป็น Administrator คนเดียวที่ยังเปิดใช้งานอยู่ ไม่อนุญาตให้ลดระดับบทบาทหรือระงับบัญชีเพื่อป้องกันระบบถูกล็อก"
       },
       "validation": {
         "enterFullName": "กรุณาระบุชื่อ-นามสกุล",
         "selectProject": "กรุณาเลือกอย่างน้อย 1 โครงการสำหรับสิทธิ์เฉพาะโครงการ",
-        "superAdminOnly": "ความปลอดภัยของระบบ: เฉพาะ Super Admin เท่านั้นที่สามารถแก้ไขบัญชีนี้ได้",
+        "superAdminOnly": "ความปลอดภัยของระบบ: เฉพาะ System Administrator เท่านั้นที่สามารถแก้ไขบัญชีนี้ได้",
         "lastAdminProtect": "ความปลอดภัยของระบบ: ไม่สามารถลดระดับบทบาทหรือระงับบัญชี Administrator คนสุดท้ายได้",
         "lastAdminDemote": "ไม่สามารถลดระดับบทบาทของผู้ดูแลระบบ (Administrator) คนสุดท้ายในระบบได้",
         "lastAdminSuspend": "ไม่สามารถระงับหรือปิดใช้งานบัญชีผู้ดูแลระบบ (Administrator) คนสุดท้ายในระบบได้"
@@ -1243,7 +1243,7 @@ export default {
           "desc": "สิทธิ์เต็มรูปแบบ: อนุมัติการเบิก, จัดการโครงการ, บทบาท และผู้ใช้งาน"
         },
         "super": {
-          "name": "ผู้ดูแลระบบสูงสุด (SUPER ADMIN)",
+          "name": "ผู้ดูแลระบบสูงสุด (SYSTEM ADMINISTRATOR)",
           "desc": "สิทธิ์ระดับสูงสุดของระบบ: จัดการทุกส่วนรวมถึงแอดมิน, สิทธิ์การใช้งาน, การตั้งค่าระบบ, ความปลอดภัย และการเชื่อมต่อภายนอก"
         }
       }

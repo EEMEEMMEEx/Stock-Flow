@@ -425,7 +425,7 @@ export const AuthProvider = ({ children }) => {
   const can = (permCode) => {
     if (!profile || profile.status !== 'active') return false;
     if (!permCode) return true; // Public / unrestricted route for all logged-in active users
-    if (isSuperAdmin) return true; // Super Admin master bypass ONLY
+    if (isSuperAdmin) return true; // System Administrator master bypass ONLY
     return permissions.includes(permCode);
   };
 

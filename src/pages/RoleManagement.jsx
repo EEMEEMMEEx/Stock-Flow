@@ -77,9 +77,10 @@ const fetchRoles = useCallback(async () => {
         const roleCode = (roleRecord.code || '').toUpperCase().trim();
 
         if (userRole === roleCode) return true;
-        if ((roleCode === 'STAFF' || roleCode === 'OPERATOR') && ['STAFF', 'OPERATOR', 'REQUESTER'].includes(userRole)) return true;
+        if (['STAFF', 'OPERATOR', 'REQUESTER'].includes(roleCode) && ['STAFF', 'OPERATOR', 'REQUESTER'].includes(userRole)) return true;
         if (roleCode === 'SUPERVISOR' && ['SUPERVISOR', 'APPROVER', 'MANAGER'].includes(userRole)) return true;
         if (roleCode === 'ADMIN' && ['ADMIN', 'ADMINISTRATOR'].includes(userRole)) return true;
+        if (roleCode === 'SUPER' && ['SUPER', 'SUPERADMIN', 'SUPER_ADMIN'].includes(userRole)) return true;
         return false;
       };
 
@@ -174,7 +175,7 @@ const fetchRoles = useCallback(async () => {
   const handleSaveRolePermissions = async (roleId, permissionIds) => {
     try {
       if (selectedRoleForPerms?.code === 'SUPER' && !isSuperAdmin) {
-        toast.error('Only Super Admins can manage Super Admin permissions');
+        toast.error('Only System Administrators can manage System Administrator permissions');
         return;
       }
 
@@ -271,7 +272,7 @@ const fetchRoles = useCallback(async () => {
   const handleUpdateRole = async (roleId, rolePayload) => {
     try {
       if (selectedRoleForEdit?.code === 'SUPER' && !isSuperAdmin) {
-        toast.error('Only Super Admins can edit Super Admin role');
+        toast.error('Only System Administrators can edit System Administrator role');
         return;
       }
 
@@ -507,7 +508,7 @@ const fetchRoles = useCallback(async () => {
                       variant="outline"
                       size="sm"
                       disabled={roleObj.code === 'SUPER' && !isSuperAdmin}
-                      title={roleObj.code === 'SUPER' && !isSuperAdmin ? 'Only Super Admins can manage Super Admin permissions' : t('roles.managePermissions', 'Permissions')}
+                      title={roleObj.code === 'SUPER' && !isSuperAdmin ? 'Only System Administrators can manage System Administrator permissions' : t('roles.managePermissions', 'Permissions')}
                       onClick={() => handleOpenPermissionModal(roleObj)}
                       className={`h-8 px-2.5 text-xs font-semibold flex items-center gap-1.5 rounded-lg ${
                         roleObj.code === 'SUPER' && !isSuperAdmin 
@@ -535,7 +536,7 @@ const fetchRoles = useCallback(async () => {
                         disabled={roleObj.code === 'SUPER' && !isSuperAdmin}
                         title={
                           roleObj.code === 'SUPER' && !isSuperAdmin 
-                            ? 'Only Super Admins can edit Super Admin role' 
+                            ? 'Only System Administrators can edit System Administrator role' 
                             : 'Edit Role'
                         }
                         onClick={() => setSelectedRoleForEdit(roleObj)}
@@ -561,7 +562,7 @@ const fetchRoles = useCallback(async () => {
                         disabled={roleObj.code === 'SUPER'}
                         title={
                           roleObj.code === 'SUPER'
-                            ? 'Cannot delete Super Admin role'
+                            ? 'Cannot delete System Administrator role'
                             : roleObj.is_system
                             ? 'Cannot delete system role'
                             : roleObj.user_count > 0

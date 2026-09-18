@@ -40,7 +40,7 @@ const Topbar = ({ onMenuClick, menuButtonRef, isMobileMenuOpen }) => {
   const { t } = useTranslation();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const roleLabel = getRoleLabel(profile?.roles?.code || profile?.role || 'STAFF', profile?.roles?.name);
-  const roleColorClass = getRoleTextColorClass(profile?.roles?.code || profile?.role || 'STAFF', profile?.roles?.name);
+  const roleColorClass = getRoleTextColorClass(profile?.roles?.code || profile?.role || 'STAFF', profile?.roles?.name, profile?.roles);
   const themeLabel = resolvedTheme === 'dark' ? t('nav.lightMode') : t('nav.darkMode');
 
   const toggleTheme = () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
@@ -107,7 +107,7 @@ const Topbar = ({ onMenuClick, menuButtonRef, isMobileMenuOpen }) => {
               <Avatar profile={profile} user={user} className="h-7 w-7 shrink-0 text-xs" />
               <span className="hidden min-w-0 flex-1 lg:block">
                 <span className="block truncate text-xs font-semibold">{profile?.full_name || user?.email || 'User'}</span>
-                <span className={cn("mt-0.5 block truncate text-[10px] uppercase tracking-wide font-bold", roleColorClass)}>{roleLabel}</span>
+                <span className={cn("mt-0.5 block truncate text-[10px] tracking-wide font-bold", roleColorClass)}>{roleLabel}</span>
               </span>
               <ChevronDown className={cn('hidden h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 sm:block', userMenuOpen && 'rotate-180')} />
             </button>

@@ -46,10 +46,10 @@ const resolveRoleId = (roleCode, existingRoleId, roleList = []) => {
 };
 
 const DEFAULT_ROLES = [
-  { code: 'STAFF', name: 'STAFF / REQUESTER', description: 'Request materials and view stock for assigned projects only' },
-  { code: 'SUPERVISOR', name: 'SUPERVISOR / APPROVER', description: 'Approve withdrawals and view project-level reports' },
-  { code: 'ADMIN', name: 'ADMINISTRATOR', description: 'Full access: approve withdrawals, manage projects, roles, and users' },
-  { code: 'SUPER', name: 'SUPER ADMIN', description: 'System-level access: manage everything including admins, permissions, system settings, security, integrations' }
+  { code: 'STAFF', name: 'Staff / Requester', description: 'Request materials and view stock for assigned projects only' },
+  { code: 'SUPERVISOR', name: 'Supervisor / Approver', description: 'Approve withdrawals and view project-level reports' },
+  { code: 'ADMIN', name: 'Administrator', description: 'Full access: approve withdrawals, manage projects, roles, and users' },
+  { code: 'SUPER', name: 'System Administrator', description: 'System-level access: manage everything including admins, permissions, system settings, security, integrations' }
 ];
 
 const EditUserModal = ({ 
@@ -328,7 +328,7 @@ const EditUserModal = ({
     }
 
     if (isTargetSuper && !isSuperAdmin) {
-      toast.error(t('users.editModal.validation.superAdminOnly', 'System Security: Only Super Admin can edit this account'));
+      toast.error(t('users.editModal.validation.superAdminOnly', 'System Security: Only System Administrator can edit this account'));
       return;
     }
 
@@ -421,7 +421,11 @@ const EditUserModal = ({
               <div className="flex items-center gap-2">
                 <RoleBadge 
                   role={formData.role} 
-                  roleObj={availableRoles.find(r => (formData.role_id && r.id === formData.role_id) || (r.code || '').toLowerCase() === (formData.role || '').toLowerCase())}
+                  roleObj={availableRoles.find(r => 
+                    (formData.role_id && r.id === formData.role_id) || 
+                    (r.code || '').toLowerCase() === (formData.role || '').toLowerCase() ||
+                    (['STAFF', 'REQUESTER'].includes(r.code) && ['staff', 'operator', 'requester'].includes(formData.role?.toLowerCase()))
+                  )}
                 />
 
                 <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
@@ -488,15 +492,15 @@ const EditUserModal = ({
           {/* TAB 1: Profile Information */}
           {activeTab === 'profile' && (
             <div className="space-y-5">
-              {/* Super Admin Security Protection Banner */}
+              {/* System Administrator Security Protection Banner */}
               {isTargetSuper && !isSuperAdmin && (
                 <div className="p-3.5 rounded-lg bg-blue-500/10 border border-blue-500/30 text-blue-900 dark:text-blue-200 text-xs flex items-start gap-2.5">
                   <Lock className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
                   <div>
                     <strong className="font-semibold block text-xs">
-                      {t('users.editModal.notices.superAdminTitle', 'Security Notice: Super Admin Account')}
+                      {t('users.editModal.notices.superAdminTitle', 'Security Notice: System Administrator Account')}
                     </strong>
-                    {t('users.editModal.notices.superAdminProfileDesc', 'This account is a system Super Admin. Only Super Admin can modify or save this account.')}
+                    {t('users.editModal.notices.superAdminProfileDesc', 'This account is a System Administrator. Only System Administrator can modify or save this account.')}
                   </div>
                 </div>
               )}
@@ -616,15 +620,15 @@ const EditUserModal = ({
           {/* TAB 2: Roles, RBAC Permissions Preview & Account Status */}
           {activeTab === 'rbac' && (
             <div className="space-y-5">
-              {/* Super Admin Security Protection Banner */}
+              {/* System Administrator Security Protection Banner */}
               {isTargetSuper && !isSuperAdmin && (
                 <div className="p-3.5 rounded-lg bg-blue-500/10 border border-blue-500/30 text-blue-900 dark:text-blue-200 text-xs flex items-start gap-2.5">
                   <Lock className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
                   <div>
                     <strong className="font-semibold block text-xs">
-                      {t('users.editModal.notices.superAdminTitle', 'Security Notice: Super Admin Account')}
+                      {t('users.editModal.notices.superAdminTitle', 'Security Notice: System Administrator Account')}
                     </strong>
-                    {t('users.editModal.notices.superAdminRbacDesc', 'This account is a system Super Admin. Only Super Admin can change the role or permissions of this account.')}
+                    {t('users.editModal.notices.superAdminRbacDesc', 'This account is a System Administrator. Only System Administrator can change the role or permissions of this account.')}
                   </div>
                 </div>
               )}
@@ -695,7 +699,7 @@ const EditUserModal = ({
                         <div className="flex items-center justify-between mb-1.5">
                           <span className="font-bold text-xs flex items-center gap-1.5">
                             <Shield className={`w-3.5 h-3.5 ${isSelected ? 'text-primary' : 'text-muted-foreground'}`} />
-                            {t(`users.editModal.roles.${roleCode}.name`, getRoleLabel(r.code, r.name))}
+                            {r.name || getRoleLabel(r.code, r.name)}
                           </span>
                           {isSelected && <Check className="w-4 h-4 text-primary shrink-0" />}
                         </div>
@@ -1077,7 +1081,7 @@ const EditUserModal = ({
               <Button
                 type="submit"
                 disabled={loading || (isTargetSuper && !isSuperAdmin)}
-                title={isTargetSuper && !isSuperAdmin ? t('users.editModal.nav.superAdminTitle', 'Only Super Admin can edit this account') : t('users.editModal.nav.saveChangesTitle', 'Save changes')}
+                title={isTargetSuper && !isSuperAdmin ? t('users.editModal.nav.superAdminTitle', 'Only System Administrator can edit this account') : t('users.editModal.nav.saveChangesTitle', 'Save changes')}
                 className="h-9 px-5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs shadow-xs flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
               >
                 {loading ? (
