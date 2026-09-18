@@ -12,6 +12,7 @@ import {
 import toast from 'react-hot-toast';
 import AvatarUpload from '@/components/users/AvatarUpload';
 import RoleBadge from '@/components/ui/RoleBadge';
+import UserStatusDot from '@/components/ui/UserStatusDot';
 import { getRoleLabel } from '@/lib/roleUtils';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
@@ -428,18 +429,7 @@ const EditUserModal = ({
                   )}
                 />
 
-                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
-                  formData.status === 'active'
-                    ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                    : 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300'
-                }`}>
-                  <span className={`w-1.5 h-1.5 rounded-full ${
-                    formData.status === 'active' ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'
-                  }`}></span>
-                  {formData.status === 'active' 
-                    ? t('users.editModal.statusActive', 'Active').toUpperCase()
-                    : t('users.editModal.statusInactive', 'Inactive').toUpperCase()}
-                </span>
+                <UserStatusDot status={formData.status} />
               </div>
             </div>
           </DialogHeader>

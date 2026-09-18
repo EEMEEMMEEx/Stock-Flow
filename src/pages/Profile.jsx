@@ -13,6 +13,7 @@ import {
 import toast from 'react-hot-toast';
 import { uploadAvatarImage } from '@/lib/avatarUpload';
 import RoleBadge from '@/components/ui/RoleBadge';
+import UserStatusDot from '@/components/ui/UserStatusDot';
 import SignatureCanvas from '@/components/profile/SignatureCanvas';
 import { getRoleLabel } from '@/lib/roleUtils';
 import { useTranslation } from '@/i18n';
@@ -352,9 +353,7 @@ const Profile = () => {
                   roleObj={profile?.roles} 
                 />
 
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> {t('profile.activeAccount')}
-                </span>
+                <UserStatusDot status={profile?.status || 'active'} />
               </div>
             </div>
           </div>

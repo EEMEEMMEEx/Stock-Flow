@@ -16,6 +16,7 @@ import EditUserModal from '@/components/users/EditUserModal';
 import ResetPasswordModal from '@/components/users/ResetPasswordModal';
 import UserActionModal from '@/components/users/UserActionModal';
 import RoleBadge from '@/components/ui/RoleBadge';
+import UserStatusDot from '@/components/ui/UserStatusDot';
 import { getRoleLabel } from '@/lib/roleUtils';
 import { uploadAvatarImage } from '@/lib/avatarUpload';
 import { sendUserInvitationEmail } from '@/lib/emailService';
@@ -766,17 +767,9 @@ const UserManagement = () => {
                           )}
                         </td>
 
-                        {/* Account Status Badge */}
+                        {/* Account Status Indicator Dot */}
                         <td className="px-4 py-4 whitespace-nowrap">
-                          {u.status === 'active' ? (
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-                              <span className="w-2 h-2 rounded-full bg-emerald-500"></span> {t('common.active', 'ACTIVE')}
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300">
-                              <span className="w-2 h-2 rounded-full bg-red-500"></span> {t('common.inactive', 'INACTIVE')}
-                            </span>
-                          )}
+                          <UserStatusDot status={u.status} />
                         </td>
 
                         {/* Created Date */}

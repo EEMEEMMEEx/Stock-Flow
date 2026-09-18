@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import RoleBadge from '@/components/ui/RoleBadge';
+import UserStatusDot from '@/components/ui/UserStatusDot';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -238,16 +239,8 @@ const UserActionModal = ({
                   size="sm"
                 />
 
-                {/* Status Badge */}
-                {isActive ? (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> ACTIVE
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300">
-                    <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span> INACTIVE
-                  </span>
-                )}
+                {/* Status Indicator Dot */}
+                <UserStatusDot status={user.status} />
               </div>
             </div>
           </div>

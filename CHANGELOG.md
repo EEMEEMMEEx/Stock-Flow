@@ -1,5 +1,21 @@
 # Changelog
 
+## [2026-09-18 09:25] - v1.10.14
+
+- **Files Modified:** `src/components/ui/UserStatusDot.jsx`, `src/pages/UserManagement.jsx`, `src/components/users/EditUserModal.jsx`, `src/components/users/UserActionModal.jsx`, `src/pages/Profile.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`, `docs/user-status-indicator-dot-plan.md`
+- **Changes:**
+  - **User Status Indicator Dot Display System (`UserStatusDot.jsx`):**
+    - สร้าง Shared Component `UserStatusDot` แสดงผลเฉพาะจุดสถานะ (Colored Dot) โดยไม่มีป้ายข้อความกำกับ (`Active`, `Inactive`) ตามที่กำหนด
+    - กำหนด Color Mapping และ Halo Effect:
+      - `active`: จุดสีเขียว (`bg-emerald-500`) พร้อมแอนิเมชัน Pulse และ Halo เรืองแสง
+      - `inactive`: จุดสีแดง (`bg-red-500`)
+      - `suspended`: จุดสีส้ม/เหลืองอำพัน (`bg-amber-500`)
+    - รองรับการเข้าถึง (Accessibility / a11y) อย่างสมบูรณ์ผ่าน `aria-label`, `role="status"`, `title` tooltip และ `<span className="sr-only">`
+    - แทนที่ป้ายสถานะเดิมใน `UserManagement.jsx`, `EditUserModal.jsx`, `UserActionModal.jsx`, และ `Profile.jsx` ด้วย `UserStatusDot`
+    - รักษาตรรกะการตรวจสอบสิทธิ์และสถานะบัญชี (`active` / `inactive` / `suspended`), Single Source of Truth จาก `/roles` และความปลอดภัยเดิมไว้ทั้งหมด 100%
+  - **Version Bump:**
+    - ปรับเวอร์ชันระบบเป็น `v1.10.14` (PATCH)
+
 ## [2026-09-18 09:15] - v1.10.13
 
 - **Files Modified:** `src/lib/roleUtils.js`, `src/components/ui/RoleBadge.jsx`, `src/pages/UserManagement.jsx`, `src/pages/RoleManagement.jsx`, `src/components/users/AddUserModal.jsx`, `src/components/users/EditUserModal.jsx`, `src/contexts/AuthProvider.jsx`, `src/i18n/locales/en.js`, `src/i18n/locales/th.js`, `supabase/migrations/71_update_role_display_names.sql`, `scripts/apply-migration-71.mjs`, `package.json`, `package-lock.json`, `CHANGELOG.md`, `docs/role-naming-system-implementation-plan.md`
