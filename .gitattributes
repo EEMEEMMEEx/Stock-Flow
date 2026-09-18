@@ -1,0 +1,30 @@
+# ==============================================================================
+# GitHub Linguist Language Detection Configuration
+# Ensures GitHub Language Statistics show 100% JavaScript for the application
+# ==============================================================================
+
+# Exclude all database migrations and SQL/PLpgSQL scripts
+*.sql linguist-detectable=false
+*.sql linguist-vendored
+supabase/** linguist-detectable=false
+supabase/** linguist-vendored
+
+# Exclude documentation, diagrams, and design specifications
+*.md linguist-documentation
+docs/** linguist-documentation
+wiki/** linguist-documentation
+*.html linguist-documentation
+*.css linguist-documentation
+
+# Exclude configuration, shell scripts, and data files
+*.json linguist-detectable=false
+*.jsonc linguist-detectable=false
+*.csv linguist-detectable=false
+*.xlsx linguist-detectable=false
+*.toml linguist-detectable=false
+*.ps1 linguist-detectable=false
+
+# Exclude internal agent frameworks and helper scripts
+scripts/** linguist-vendored
+.agents/** linguist-vendored
+.agents/** linguist-detectable=false

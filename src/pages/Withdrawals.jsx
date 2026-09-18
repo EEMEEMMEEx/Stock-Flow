@@ -14,6 +14,7 @@ import WithdrawalOrdersList from '@/components/withdrawals/WithdrawalOrdersList'
 import WithdrawalDetailModal from '@/components/withdrawals/WithdrawalDetailModal';
 import WithdrawalShortageModal from '@/components/withdrawals/WithdrawalShortageModal';
 import WithdrawalRejectModal from '@/components/withdrawals/WithdrawalRejectModal';
+import SignatureRequiredModal from '@/components/common/SignatureRequiredModal';
 
 const Withdrawals = () => {
   const { isAdmin, can, profile } = useAuth();
@@ -58,6 +59,7 @@ const Withdrawals = () => {
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
   const [orderToReject, setOrderToReject] = useState(null);
   const [rejectReason, setRejectReason] = useState('');
+  const [showSigModal, setShowSigModal] = useState(false);
 
   // Aggregate item balances based on selected project location
   const mapItemsForProject = (allItems, allBalances, projectId) => {
@@ -123,6 +125,7 @@ const Withdrawals = () => {
           *,
           projects (*),
           profiles:requested_by (*),
+          approver:approved_by (id, full_name, signature_url),
           withdrawal_items (
             *,
             items (*)
@@ -358,6 +361,12 @@ const Withdrawals = () => {
   const handleSubmitOrder = async ({ projectId, purpose, deliveryAddress }) => {
     if (cart.length === 0) return;
 
+    if (!profile?.signature_url) {
+      toast.error(t('profile.signatureRequired', 'กรุณาเพิ่มลายเซ็นก่อนทำรายการ'));
+      setShowSigModal(true);
+      return;
+    }
+
     if (!projectId || projectId === 'all') {
       toast.error(t('withdrawals.toasts.selectLocation'));
       return;
@@ -423,6 +432,13 @@ const Withdrawals = () => {
   // Atomic Approve via Supabase RPC with Shortage Override support
   const handleApproveOrder = async (orderId, allowShortage = false, overrideReason = '') => {
     if (!canApprove || isProcessing) return;
+
+    if (!profile?.signature_url) {
+      toast.error(t('profile.signatureRequired', 'กรุณาเพิ่มลายเซ็นก่อนทำรายการ'));
+      setShowSigModal(true);
+      return;
+    }
+
     setIsProcessing(true);
     const toastId = toast.loading(t('withdrawals.toasts.approving'));
     try {
@@ -766,6 +782,12 @@ const Withdrawals = () => {
         onRejectReasonChange={setRejectReason}
         onConfirmReject={handleRejectSubmit}
         isProcessing={isProcessing}
+      />
+
+      {/* Signature Required Gate Modal */}
+      <SignatureRequiredModal
+        isOpen={showSigModal}
+        onClose={() => setShowSigModal(false)}
       />
     </div>
   );

@@ -1,14 +1,38 @@
-# Dependencies
+# ==============================================================================
+# Stock-Flow-app — Git Ignore Rules
+# Optimized for Modern JavaScript/Vite Application & Clean Language Statistics
+# ==============================================================================
+
+# 1. Dependencies
 node_modules/
 .pnpm-store/
 
-# Production & Build Outputs
+# 2. Build & Production Outputs
 dist/
 dist-ssr/
 build/
+out/
 *.local
 
-# Environment Variables & Secrets
+# 3. Framework & Tooling Caches
+.cache/
+.parcel-cache/
+.turbo/
+.eslintcache
+.stylelintcache
+.vite/
+node_modules/.vite/
+vite.config.js.timestamp-*
+*.timestamp-*.mjs
+
+# 4. Test Coverage & Output
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
+blob-report/
+
+# 5. Environment Variables & Secrets
 .env
 .env.local
 .env.development.local
@@ -27,27 +51,44 @@ firebase*.json
 google-services*.json
 *.credentials.json
 
+# 6. Database Scripts, Dumps & Migrations (Excludes PLpgSQL from Language Stats)
+supabase/
+*.sql
+*.psql
+*.dump
+*.dump.gz
+*.sql.gz
+*.tar
+backups/
+supabase_logs*.json
 
-# Logs & Diagnostics
+# 7. Logs & Diagnostics
 *.log
+logs/
 npm-debug.log*
 yarn-debug.log*
+yarn-error.log*
 pnpm-debug.log*
-logs/
-supabase_logs.json
-backups/
+lerna-debug.log*
+.pnpm-debug.log*
 
-# IDE & Editor Files
+# 8. IDE & Editor Files
 .idea/
 .vscode/
 *.code-workspace
+*.sublime-project
+*.sublime-workspace
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+*.bak
+*.tmp
+.mcp.json
+opencode.jsonc
 
-# Operating System Files
+# 9. Operating System Files
 .DS_Store
 .DS_Store?
 ._*
@@ -55,63 +96,44 @@ backups/
 .Trashes
 ehthumbs.db
 Thumbs.db
+Thumbs.db:encryptable
 Desktop.ini
 
-# Temporary Test Exports & Reports
+# 10. Data Exports, Office Documents & PDFs
+*.csv
+*.xlsx
+*.pdf
 *_Report_*.xlsx
 *_Report_*.pdf
 MaterialWithdrawal_*.pdf
 DeliveryNote_*.pdf
 stock_in_Report_*.pdf
+stock_in_canonical_template.csv
+Balance Stock_*.xlsx
 
-# AI Agent Local Logs & Caches
-.gemini/
-.agents/logs/
-.qoder/
-# Added by code-review-graph
-.code-review-graph/
-
-# Vite Temporary Build Artifacts
-vite.config.js.timestamp-*
-*.timestamp-*.mjs
-
-# Browser Temporary Downloads & Scratch Files
+# 11. Browser Temporary Downloads & Scratch Files
 *.crdownload
 Unconfirmed *.crdownload
-
-# Local scratch/test scripts (may contain credentials)
 test_auth_simple.js
 
-# Machine-specific IDE/Tool Configuration (contains local absolute paths)
-.mcp.json
-opencode.jsonc
-
-# Internal Workflow Diagrams (move to private documentation system)
+# 12. Internal Workflow Diagrams & Architecture Specs
 rbac-workflow.html
 stock-in-vs-items-workflow.html
 stock-flow-atomic-transaction-workflow.*
-
-# Export reports, data files, and documents
-*.sql
-*.csv
-*.xlsx
-*.pdf
-
-# Local directories to exclude from Git tracking
 /PDF Template/
 /request-agent/
 /.agents/
 /docs/
 /docs
+/wiki/
 .freebuff/
-
-# Keep deployment migrations tracked; ignore other local Supabase artifacts
-supabase/*
-!supabase/migrations/
-supabase/migrations/archive/
-!supabase/migrations/*.sql
 .ua/
+.gemini/
+.qoder/
+.code-review-graph/
 
-# Project context and internal development notes
+# 13. Project Internal Context Notes & Documentation Plans
 memory.md
 CONTEXT.md
+Portal UI-UX Design Specification.md
+UI-UX-Migration-Plan-Enterprise.md

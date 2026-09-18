@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Package, Lock, Mail } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n';
 import { Button } from '@/components/ui/button';
@@ -26,14 +27,34 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const { error } = await signIn(email, password);
+      const { data, error } = await signIn(email, password);
       if (error) throw error;
+
+      // Verification check: Validate user profile active status immediately
+      const loggedInUserId = data?.user?.id;
+      if (loggedInUserId) {
+        const { data: userProfile } = await supabase
+          .from('profiles')
+          .select('status')
+          .eq('id', loggedInUserId)
+          .maybeSingle();
+
+        if (userProfile && (userProfile.status === 'inactive' || userProfile.status === 'suspended')) {
+          await supabase.auth.signOut().catch(() => {});
+          const inactiveErr = new Error('ACCOUNT_INACTIVE');
+          inactiveErr.code = 'ACCOUNT_INACTIVE';
+          throw inactiveErr;
+        }
+      }
+
       navigate(returnTo, { replace: true });
       toast.success(t('common.success'));
     } catch (error) {
       console.error('[Login Error]:', error);
       let msg = error.message || t('common.error');
-      if (
+      if (error?.code === 'ACCOUNT_INACTIVE' || msg === 'ACCOUNT_INACTIVE') {
+        msg = t('auth.accountInactive', 'Your account has been deactivated or suspended. Please contact an administrator.');
+      } else if (
         error?.status === 500 || 
         String(error?.status) === '500' || 
         error?.name === 'AuthRetryableFetchError' ||

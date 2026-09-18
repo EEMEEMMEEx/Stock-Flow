@@ -12,6 +12,7 @@ import toast from 'react-hot-toast';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n';
+import SignatureRequiredModal from '@/components/common/SignatureRequiredModal';
 
 const CheckoutReturnModal = ({
   isOpen,
@@ -23,6 +24,7 @@ const CheckoutReturnModal = ({
   const { t } = useTranslation();
   const { profile } = useAuth();
   const [returnItems, setReturnItems] = useState([]);
+  const [showSigModal, setShowSigModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -88,6 +90,12 @@ const CheckoutReturnModal = ({
   const handleReturnSubmit = async (e) => {
     e.preventDefault();
 
+    if (!profile?.signature_url) {
+      toast.error(t('profile.signatureRequired', 'กรุณาเพิ่มลายเซ็นก่อนทำรายการ'));
+      setShowSigModal(true);
+      return;
+    }
+
     const itemsToProcess = returnItems.filter(i => Number(i.returned_quantity) > 0);
     if (itemsToProcess.length === 0) {
       return toast.error(t('checkouts.toasts.specifyReturnQty'));
@@ -139,7 +147,7 @@ const CheckoutReturnModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[660px] rounded-xl bg-card p-6 border border-border shadow-xl">
+      <DialogContent className="sm:max-w-165 rounded-xl bg-card p-6 border border-border shadow-xl">
         <form onSubmit={handleReturnSubmit} className="space-y-4">
           <DialogHeader className="space-y-2 border-b border-border/40 pb-3">
             <div className="flex items-center gap-3">
@@ -199,7 +207,7 @@ const CheckoutReturnModal = ({
           </div>
 
           {/* Line Items Return List */}
-          <div className="space-y-3 max-h-[380px] overflow-y-auto pr-1">
+          <div className="space-y-3 max-h-95 overflow-y-auto pr-1">
             {filteredReturnItems.length === 0 ? (
               <div className="py-8 text-center text-xs text-muted-foreground">
                 {t('common.notFound')}
@@ -356,6 +364,11 @@ const CheckoutReturnModal = ({
           </DialogFooter>
         </form>
       </DialogContent>
+
+      <SignatureRequiredModal
+        isOpen={showSigModal}
+        onClose={() => setShowSigModal(false)}
+      />
     </Dialog>
   );
 };

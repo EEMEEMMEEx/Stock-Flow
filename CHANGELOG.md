@@ -1,4 +1,296 @@
 # Changelog
+
+## [2026-09-18 00:08] - v1.10.10
+
+- **Files Modified:** `.gitignore`, `.gitattributes`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - อัปเดตและจัดระเบียบไฟล์ `.gitignore` ใหม่ทั้งหมดให้ครอบคลุม 13 หมวดหมู่มาตรฐานสำหรับ Modern JavaScript Application:
+    - ยกเลิกการ track และละเว้นโฟลเดอร์ database migrations (`supabase/`), ไฟล์ SQL (`*.sql`, `*.psql`), database dumps และ logs เพื่อไม่ให้ถูกนับในสถิติ GitHub Language (PLpgSQL ~10%)
+    - เพิ่มกฎการละเว้นโฟลเดอร์ build/dist, tooling caches (`.vite/`, `.turbo/`, etc.), test coverage, environment secrets (`.env*`, `*.pem`, `*.key`), editor/IDE configs, OS metadata, PDF/CSV/Excel exports และ documentation specs
+  - เพิ่มไฟล์ `.gitattributes` พร้อมการตั้งค่า GitHub Linguist:
+    - กำหนด `linguist-detectable=false` และ `linguist-vendored` ให้กับ `*.sql`, `supabase/**`, shell scripts, configs (`*.json`, `*.csv`) และ internal scripts
+    - กำหนด `linguist-documentation` ให้กับ `*.md`, `*.html`, `*.css` เพื่อให้สถิติภาษาบน GitHub แสดงเป็น **JavaScript 100%**
+  - ปรับเวอร์ชันระบบเป็น `v1.10.10` (PATCH)
+- **Reason:** ทำความสะอาด GitHub repository language statistics กำจัด PLpgSQL (~10%) และ Other (~0.6%) ให้คงเหลือเฉพาะ JavaScript 100%
+
+## [2026-09-18 00:05] - v1.10.9
+
+- **Files Modified:** `src/pages/Profile.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - Refactor คลาสสีของ Badge สถานะบัญชี (`activeAccount`) ใน `Profile.jsx`:
+    - เปลี่ยนจาก `bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300` เป็น `bg-emerald-500/10 text-emerald-500 border border-emerald-500/20`
+    - ขจัด CSS conflict warnings ทั้งหมดใน `Profile.jsx`
+  - ปรับเวอร์ชันระบบเป็น `v1.10.9` (PATCH)
+- **Reason:** ปรับปรุงความสอดคล้องของคลาสสีและขจัดคำเตือน CSS conflict ใน Profile.jsx
+
+## [2026-09-18 00:02] - v1.10.8
+
+- **Files Modified:** `src/pages/History.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - Refactor คลาสสีใน `History.jsx` ให้ใช้ Semantic Theme Tokens และ Universal Alpha Colors:
+    - ปรับชื่อโครงการใน Modal รายละเอียดเป็น `text-primary`
+    - ปรับกล่องบันทึก Shortage Override Note เป็น `bg-amber-500/10 border border-amber-500/30 text-foreground` และหัวข้อ `text-amber-500`
+    - ปรับกล่อง Reject Reason ให้ใช้ Semantic Destructive Token: `bg-destructive/10 border border-destructive/30 text-foreground` และหัวข้อ `text-destructive`
+    - ปรับสีหัวตารางและเซลล์ข้อมูล Stock Deducted และ Shortage เป็น `text-emerald-500` และ `text-amber-500 bg-amber-500/10`
+    - ปรับปุ่มพิมพ์เอกสาร PDF เป็น `text-purple-500 border-purple-500/30 bg-purple-500/10 hover:bg-purple-500/20`
+    - ขจัด CSS conflict warnings ทั้งหมดใน `History.jsx` อย่างสมบูรณ์ที่ระดับ source code
+  - ปรับเวอร์ชันระบบเป็น `v1.10.8` (PATCH)
+- **Reason:** ปรับปรุงความสอดคล้องของ Design Tokens และขจัดคำเตือน CSS conflicts ทั้งหมดใน History.jsx
+
+## [2026-09-17 23:58] - v1.10.7
+
+- **Files Modified:** `src/pages/Checkouts.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - Refactor คลาสสีใน `Checkouts.jsx` ให้ใช้ Semantic Theme Tokens ของระบบ (`primary`, `foreground`):
+    - ปรับ Header icon box จาก `bg-indigo-50 dark:bg-indigo-950/50 ...` เป็น `bg-primary/10 text-primary border border-primary/20 shadow-xs` เพื่อรองรับทั้ง Light/Dark mode โดยอัตโนมัติ
+    - ปรับ Badge จำนวนรายการยืมค้างเป็น `bg-primary/15 text-primary`
+    - ปรับ Active Tab สถานะ 'pos' ให้ใช้ `text-foreground` สอดคล้องกับแท็บ active อื่นในแถบนำทาง
+    - ขจัด CSS conflict warnings ทั้งหมดใน `Checkouts.jsx` อย่างถาวรที่ระดับ source code
+  - ปรับเวอร์ชันระบบเป็น `v1.10.7` (PATCH)
+- **Reason:** ปรับปรุงความสอดคล้องของ Design System และขจัดคำเตือนความขัดแย้งของคลาสสีใน Checkouts.jsx
+
+## [2026-09-17 23:55] - v1.10.6
+
+- **Files Modified:** `.markdownlint.json`, `.vscode/settings.json`, `Stock-Flow-app.code-workspace`, `CHANGELOG.md`, `package.json`, `package-lock.json`
+- **Changes:**
+  - ปิดกฎ `MD013/line-length` ใน Markdownlint (`.markdownlint.json`, `.vscode/settings.json`, `Stock-Flow-app.code-workspace`):
+    - ปิดการจำกัดความยาวบรรทัด 80 ตัวอักษรสำหรับไฟล์ Markdown ทั้งหมดในโครงการ เพื่อรองรับข้อความภาษาไทยและ path ไฟล์ยาวใน CHANGELOG.md
+  - ปรับเวอร์ชันระบบเป็น `v1.10.6` (PATCH)
+- **Reason:** แก้ไขคำเตือน MD013 (Line length exceeded 80 characters) ทั้งหมดใน CHANGELOG.md
+
+## [2026-09-17 23:50] - v1.10.5
+
+- **Files Modified:** `.markdownlint.json`, `.markdownlintignore`, `.vscode/settings.json`, `Stock-Flow-app.code-workspace`, `CHANGELOG.md`, `package.json`, `package-lock.json`
+- **Changes:**
+  - กำหนดค่า Markdown Linter สำหรับโครงการเพื่อจัดการคำเตือน MD022 และ MD032:
+    - เพิ่ม `.markdownlint.json` และ `.markdownlintignore` สำหรับละเว้น `CHANGELOG.md` จากการตรวจสอบ blank lines ที่ขัดแย้งกับรูปแบบ compact log เดิม
+    - เพิ่มการตั้งค่า `markdownlint.config` (`MD022: false`, `MD032: false`) และ `markdownlint.ignore` ใน `.vscode/settings.json` และ `Stock-Flow-app.code-workspace`
+    - จัดช่องว่างหัวข้อหลักใน `CHANGELOG.md` ให้ถูกต้องตามมาตรฐาน Markdown
+  - ปรับเวอร์ชันระบบเป็น `v1.10.5` (PATCH)
+- **Reason:** แก้ไขปัญหา markdownlint warnings ใน CHANGELOG.md และตั้งค่าข้อยกเว้นสำหรับเอกสารบันทึกการเปลี่ยนแปลง
+
+## [2026-09-17 23:45] - v1.10.4
+- **Files Modified:** `src/components/checkouts/CheckoutPosTerminal.jsx`, `src/components/checkouts/CheckoutDetailModal.jsx`, `src/components/checkouts/CheckoutReturnModal.jsx`, `src/components/common/SignatureRequiredModal.jsx`, `src/components/profile/SignatureCanvas.jsx`, `src/App.css`, `.vscode/settings.json`, `Stock-Flow-app.code-workspace`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - แก้ไขปัญหาและการแจ้งเตือน (IDE Warnings / Linter Problems) ของ Tailwind CSS v4 ให้สอดคล้องกับมาตรฐาน:
+    - **ปรับ Arbitrary Bracket Classes เป็น Tailwind v4 Numeric Scale**:
+      - `sm:max-w-[700px]` → `sm:max-w-175` และ `max-h-[440px]` → `max-h-110` ใน `CheckoutDetailModal.jsx`
+      - `max-h-[360px]` → `max-h-90`, `max-h-[380px]` → `max-h-95`, และ `max-h-[160px]` → `max-h-40` ใน `CheckoutPosTerminal.jsx`
+      - `sm:max-w-[660px]` → `sm:max-w-165` และ `max-h-[380px]` → `max-h-95` ใน `CheckoutReturnModal.jsx`
+      - `sm:max-w-[460px]` → `sm:max-w-115` ใน `SignatureRequiredModal.jsx`
+      - `min-h-[110px]` → `min-h-27.5` ใน `SignatureCanvas.jsx`
+    - **แก้ไข Class Conflict ซ้ำซ้อน**:
+      - นำคลาส `text-red-600 dark:text-red-400` ที่ขัดแย้งกับ `text-foreground` ออกจาก `<Label>` วันที่คาดว่าจะคืนใน `CheckoutPosTerminal.jsx`
+      - แยกคอนเทนเนอร์ `border border-border` กับ `divide-y divide-border/40` ใน `CheckoutDetailModal.jsx` เพื่อไม่ให้คุณสมบัติ border ทับซ้อนบน element เดียวกัน
+    - **ปรับปรุงการกำหนด `@custom-variant dark` ใน `src/App.css`**: เปลี่ยนเป็น `@custom-variant dark (&:where(.dark, .dark *));` ตามข้อกำหนดทางการของ Tailwind CSS v4
+    - **ตั้งค่า VS Code Workspace Settings**: กำหนด `"tailwindCSS.lint.cssConflict": "ignore"` ใน `.vscode/settings.json` และ `.code-workspace` เพื่อป้องกันการแจ้งเตือนเท็จ (False Positive) ของ Tailwind CSS IntelliSense ที่ยังไม่รองรับ conditional variant บน custom-variant dark
+  - ปรับเวอร์ชันระบบเป็น `v1.10.4` (PATCH)
+- **Reason:** ปรับปรุงความสะอาดของโค้ด แก้ไขคำเตือนของ Tailwind CSS และขจัด False Positive warnings จาก IDE Linter
+
+## [2026-09-17 23:35] - v1.10.3
+- **Files Modified:** `src/lib/checkout-pdf-templates.jsx`, `src/lib/pdf-templates.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - ลบเส้นตรงแนวนอนเหนือส่วนลงนาม (Signature Box Border Line) ในรายงาน PDF ทั้ง 3 ฉบับ:
+    - **`MaterialCheckoutPDF` (ใบยืมพัสดุ)**: ลบ `borderTopWidth: 1` และ `borderTopColor: '#000000'` ออกจากสไตล์ `signatureBox` ใน `checkout-pdf-templates.jsx`
+    - **`MaterialReturnPDF` (ใบรับคืนพัสดุ)**: ลบเส้นขอบบนของ `signatureBox` ใน `checkout-pdf-templates.jsx`
+    - **`MaterialWithdrawalPDF` (ใบเบิกของ)**: ลบ `borderTopWidth: 1` และ `borderTopColor: '#000000'` ออกจากสไตล์ `signatureBox` ใน `pdf-templates.jsx`
+    - ทำให้รูปภาพลายเซ็นดิจิทัลและชื่อผู้ลงนามแสดงผลอย่างสะอาดตาและไม่มีเส้นขวางด้านบน
+  - ปรับเวอร์ชันระบบเป็น `v1.10.3` (PATCH)
+- **Reason:** ลบเส้นตรงแนวนอนเหนือส่วนลงนามออกตามคำขอของผู้ใช้ เพื่อให้พื้นที่ลายเซ็นมีความโปร่ง โล่ง สะอาดตา และไม่ขัดกับภาพลายเซ็นดิจิทัลจริง
+
+## [2026-09-17 23:30] - v1.10.2
+- **Files Modified:** `src/components/profile/SignatureCanvas.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - แก้ไขปัญหาการแสดงผลลายเซ็นในธีมมืด (Dark Theme Visibility Issue) ในหน้าโปรไฟล์:
+    - **ปรับปรุงคอนเทนเนอร์แสดงตัวอย่างลายเซ็น (`ลายเซ็นปัจจุบันของคุณ`)**: ปรับเปลี่ยนพื้นหลังของกล่องแสดงตัวอย่างลายเซ็นจากเดิม `bg-white dark:bg-slate-900/80` ให้เป็นพื้นหลังกระดาษสีขาว `bg-white` คงที่ทั้งในโหมด Light และ Dark พร้อมขอบ `border-slate-300 dark:border-slate-700` ทำให้ภาพลายเซ็นที่เป็นหมึกดำเข้มคมชัดและมี Contrast สูงสุด (17.8:1) ตลอดเวลา
+    - **ปรับปรุงกระดานวาดลายเซ็น (Canvas Drawing Area)**: ปรับพื้นหลังกรอบวาดลายเซ็นให้เป็น `bg-white` เพื่อให้ผู้ใช้มองเห็นเส้นหมึกสีดำได้อย่างชัดเจนขณะวาดบนอุปกรณ์ทั้งในโหมด Light และ Dark
+    - รักษาตรรกะการโหลดไฟล์ภาพจาก Cloudflare R2 และโครงสร้าง Responsive Layout เดิมอย่างสมบูรณ์
+  - ปรับเวอร์ชันระบบเป็น `v1.10.2` (PATCH)
+- **Reason:** แก้ไขปัญหารูปลายเซ็นที่เป็นหมึกสีดำกลืนหายไปกับพื้นหลังสีเข้มในโหมด Dark Theme ให้สามารถมองเห็นลายเซ็นได้อย่างชัดเจนในทุกธีม
+
+## [2026-09-17 23:25] - v1.10.1
+- **Files Modified:** `src/lib/r2Storage.js`, `src/lib/avatarUpload.js`, `src/components/profile/SignatureCanvas.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - แก้ไขปัญหาการอัปโหลดไฟล์ขึ้น Cloudflare R2 ล้มเหลวจากโฟลเดอร์ปลายทางไม่ถูกต้อง (`Invalid destination folder`):
+    - **กำหนดค่า Whitelist โฟลเดอร์มาตรฐาน**: เพิ่ม `ALLOWED_R2_FOLDERS` (`avatars`, `items`, `documents`, `receipts`, `attachments`, `uploads`) และฟังก์ชันตรวจสอบ `validateR2Folder(folder)` ใน `src/lib/r2Storage.js`
+    - **การตรวจสอบก่อนส่งคำขอ**: ตรวจสอบโฟลเดอร์ปลายทางฝั่ง Client ก่อนยิงคำขอไปยัง `/api/r2-upload-url` พร้อมแจ้งเตือนข้อผิดพลาดที่ชัดเจนหากโฟลเดอร์ไม่อยู่ใน Whitelist
+    - **ป้องกัน Path Traversal ในชื่อไฟล์**: ปรับปรุงฟังก์ชันแปลงชื่อไฟล์ใน `r2Storage.js` ให้แทนที่เครื่องหมาย `/` และ `\` ด้วย `_` โดยอัตโนมัติ เพื่อป้องกันข้อผิดพลาด Path Traversal บนเซิร์ฟเวอร์
+    - **แก้ไขโฟลเดอร์ปลายทางลายเซ็น**: ปรับ `SignatureCanvas.jsx` ให้ส่งไฟล์ลายเซ็นไปยังโฟลเดอร์ `documents` แทน `signatures` ที่ไม่มีใน Whitelist
+    - **แก้ไขการสร้าง Path ใน Avatar Upload**: ปรับ `avatarUpload.js` จากเดิมที่ใช้ `${userId}/avatar.png` ให้เป็น `avatar_${safeUserId}_${Date.now()}.png` เพื่อไม่ให้มี Path separator ฝังในชื่อไฟล์
+  - ปรับเวอร์ชันระบบเป็น `v1.10.1` (PATCH)
+- **Reason:** แก้ไขข้อผิดพลาด `Failed to upload file to Cloudflare R2: Invalid destination folder. Allowed folders: avatars, items, documents, receipts, attachments, uploads` และทำให้การอัปโหลดไฟล์ทุกประเภทเป็นไปตาม Whitelist ที่กำหนด
+
+## [2026-09-17 23:15] - v1.10.0
+- **Files Modified:** `supabase/migrations/70_add_signature_url_to_profiles.sql`, `scripts/backup-full-database.mjs`, `src/components/profile/SignatureCanvas.jsx`, `src/components/common/SignatureRequiredModal.jsx`, `src/pages/Profile.jsx`, `src/components/checkouts/CheckoutPosTerminal.jsx`, `src/components/checkouts/CheckoutReturnModal.jsx`, `src/components/checkouts/CheckoutDetailModal.jsx`, `src/pages/Withdrawals.jsx`, `src/pages/History.jsx`, `src/lib/checkout-pdf-templates.jsx`, `src/lib/pdf-templates.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `package.json`, `package-lock.json`, `CHANGELOG.md`, `docs/digital-signature-system-implementation-plan.md`
+- **Changes:**
+  - เพิ่มระบบจัดการลายเซ็นดิจิทัล (Digital Signature System) ครอบคลุมทั้งระบบสำหรับผู้ใช้งานทุกคน:
+    - **หน้าโปรไฟล์ (`/profile`)**: เพิ่มแท็บใหม่ `ลายเซ็น` (Signature) ผ่านคีย์ `?tab=signature` พร้อมคงแท็บเดิม (`ข้อมูลส่วนตัว`, `เปลี่ยนรหัสผ่าน`)
+    - **Signature Canvas Component (`SignatureCanvas.jsx`)**: กระดานวาดลายเซ็นแบบ Responsive รองรับทั้งเมาส์ สไตลัส และหน้าจอสัมผัส (Touch Screen) พร้อมปุ่มล้างกระดาน แสดงสถานะลายเซ็นปัจจุบัน ปุ่มบันทึก และปุ่มลบลายเซ็น
+    - **การจัดเก็บข้อมูล**: เพิ่มคอลัมน์ `signature_url` ในตาราง `public.profiles` จัดเก็บ Data URL / Cloudflare R2 โดยมี RLS อนุญาตให้ผู้ใช้แก้ไขโปรไฟล์ของตนเองได้
+    - **Transaction Validation Gate**: บล็อกการทำธุรกรรมในระบบทันทีหากผู้ใช้ยังไม่มีลายเซ็น (`!profile?.signature_url`):
+      - `/checkouts`: ป้องกันการสร้างรายการยืมพัสดุ และการบันทึกรับคืนพัสดุ
+      - `/withdrawals`: ป้องกันการส่งคำขอเบิกพัสดุ และการอนุมัติคำขอเบิกพัสดุ
+      - แสดงแจ้งเตือน `"กรุณาเพิ่มลายเซ็นก่อนทำรายการ"` พร้อมเปิดโมดัล `SignatureRequiredModal` นำทางไปยัง `/profile?tab=signature`
+    - **PDF Integration**: เชื่อมต่อภาพลายเซ็นจริงลงในเอกสาร PDF ทั้ง 3 รายงาน:
+      - `MaterialCheckoutPDF` (ใบยืมพัสดุ): แสดงลายเซ็นผู้ขอยืม และเจ้าหน้าที่ผู้จ่ายพัสดุ
+      - `MaterialReturnPDF` (ใบรับคืนพัสดุ): แสดงลายเซ็นผู้ส่งคืน และเจ้าหน้าที่ผู้รับคืนพัสดุ
+      - `MaterialWithdrawalPDF` (ใบเบิกของ): แสดงลายเซ็นผู้ขอเบิกพัสดุ และเจ้าหน้าที่ผู้จ่ายพัสดุ
+    - **Internationalization (i18n)**: เพิ่มคีย์แปลภาษาสำหรับระบบลายเซ็นทั้งภาษาไทย (`th.js`) และภาษาอังกฤษ (`en.js`) ครบถ้วน
+  - ปรับเวอร์ชันระบบเป็น `v1.10.0` (MINOR)
+- **Reason:** รองรับข้อกำหนดขององค์กรที่ต้องการให้ธุรกรรมการเบิก ยืม และคืนพัสดุมีลายเซ็นดิจิทัลของผู้ใช้งานกำกับอย่างถูกต้องและปลอดภัย
+
+## [2026-09-17 22:50] - v1.9.14
+- **Files Modified:** `src/components/checkouts/CheckoutDetailModal.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - ปรับปรุงปุ่มพิมพ์ PDF ใน `CheckoutDetailModal.jsx` ให้แยกความแตกต่างและเข้าใจวัตถุประสงค์ได้ทันที:
+    - **ปุ่มพิมพ์ใบยืมพัสดุ (Checkout Slip)**: เปลี่ยนป้ายข้อความเป็น `พิมพ์ใบยืมพัสดุ (PDF)` / `Print Checkout Slip (PDF)` พร้อมเปลี่ยนไอคอนเป็น `FileText` สี Indigo สอดคล้องกับธีมเอกสารการยืม
+    - **ปุ่มพิมพ์ใบรับคืนพัสดุ (Return Receipt)**: เปลี่ยนป้ายข้อความเป็น `พิมพ์ใบรับคืนพัสดุ (PDF)` / `Print Return Receipt (PDF)` พร้อมเปลี่ยนไอคอนเป็น `RotateCcw` สี Emerald สอดคล้องกับธีมการรับคืน
+    - เพิ่มคีย์แปลภาษา `checkouts.printCheckoutSlip` และ `checkouts.printReturnReceipt` ทั้งใน `th.js` และ `en.js`
+  - ปรับเวอร์ชันระบบเป็น `v1.9.14`
+- **Reason:** แก้ไขปัญหาปุ่มพิมพ์ PDF ทั้งสองปุ่มมีข้อความ `พิมพ์ PDF` เหมือนกัน ทำให้ผู้ใช้ไม่สามารถแยกแยะได้ว่าปุ่มใดคือเอกสารใบยืมและปุ่มใดคือเอกสารใบรับคืน
+
+## [2026-09-17 22:45] - v1.9.13
+- **Files Modified:** `src/lib/checkout-pdf-templates.jsx`, `src/components/checkouts/CheckoutDetailModal.jsx`, `src/pages/Checkouts.jsx`, `src/components/checkouts/CheckoutPosTerminal.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`, `docs/checkout-signature-mapping-fix-plan.md`
+- **Changes:**
+  - แก้ไขตรรกะการเชื่อมโยงข้อมูลผู้ลงนามใน `MaterialCheckoutPDF` (ใบยืมพัสดุ) และ `MaterialReturnPDF`:
+    - ปรับปรุงการแสดงผลลายเซ็นฝั่งขวา (`เจ้าหน้าที่ผู้จ่ายพัสดุ`) ให้แสดงชื่อเจ้าหน้าที่คลังที่สร้าง/ทำรายการจ่ายพัสดุ ณ เทอร์มินัลเคาน์เตอร์จริง โดยรองรับโครงสร้างข้อมูลที่ส่งกลับจาก Supabase ทั้งแบบ Object (`order.profiles.full_name`), แบบ Array (`order.profiles[0]?.full_name`), และ Prop เสริม (`staffProfile`)
+    - ปรับปรุงการแสดงผลลายเซ็นฝั่งซ้าย (`ผู้ขอยืมพัสดุ`) ให้อ้างอิงจากชื่อผู้ขอยืมพัสดุจริง (`borrowerDisplayName` จาก `order.borrower_name` หรือโปรไฟล์ผู้ยืม)
+    - คงตำแหน่ง `ผู้ขอยืมพัสดุ` และ `เจ้าหน้าที่ผู้จ่ายพัสดุ` พร้อมฟิลด์วันที่ `วันที่: ....../....../...........` ไว้ตามเดิม
+    - เพิ่มการแนบฟิลด์ `created_by` ใน payload ของ `CheckoutPosTerminal.jsx` เพื่อให้บันทึก ID ของเจ้าหน้าที่ผู้ทำรายการในตาราง `checkout_orders` ทุกครั้งที่สร้างรายการยืม
+    - เพิ่มการ normalize และ enrichment ข้อมูลโปรไฟล์ของผู้สร้างรายการใน `Checkouts.jsx` และ `CheckoutDetailModal.jsx` ป้องกันกรณีที่ Supabase PostgREST ไม่ได้ embed ข้อมูลโปรไฟล์มาด้วย
+  - ปรับเวอร์ชันระบบเป็น `v1.9.13`
+- **Reason:** แก้ไขปัญหาชื่อผู้จ่ายพัสดุไม่แสดงผลและแสดงผลชื่อไม่ถูกต้องให้เชื่อมโยงกับผู้ทำรายการจริงในระบบ `/checkouts`
+
+## [2026-09-17 22:20] - v1.9.12
+- **Files Modified:** `src/lib/pdf-templates.jsx`, `src/lib/checkout-pdf-templates.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - ตรวจสอบและปรับปรุงตรรกะของส่วนลงนาม (Signature Section) ให้สอดคล้องกับ Role และ Workflow จริงของระบบ:
+    - **`MaterialWithdrawalPDF` (ใบเบิกของ)**:
+      - ปรับชื่อช่องฝั่งซ้ายเป็นผู้ขอเบิกจริง (`order.profiles?.full_name || order.requester_name`) และตำแหน่งเป็น `ผู้ขอเบิกพัสดุ` (แก้ไขจากเดิมที่แมปผิดเป็น borrower_name/ผู้ขอยืมพัสดุ)
+      - ปรับชื่อช่องฝั่งขวาเป็นเจ้าหน้าที่ผู้จ่ายพัสดุ (`profile?.full_name` หรือ `order.approver?.full_name`) และตำแหน่งเป็น `เจ้าหน้าที่ผู้จ่ายพัสดุ`
+    - **`MaterialCheckoutPDF` (ใบยืมพัสดุ)**:
+      - ผู้ขอยืม: `order.borrower_name`
+      - เจ้าหน้าที่ผู้จ่ายพัสดุ: `order.profiles?.full_name` (ผู้สร้างรายการยืม)
+    - **`MaterialReturnPDF` (ใบรับคืนพัสดุ)**:
+      - ผู้ส่งคืน: `order.borrower_name`
+      - ผู้ตรวจรับคืน: `returnLogs[0]?.profiles?.full_name || order.profiles?.full_name`
+    - กำหนดฟิลด์วันที่ลงนามเป็น `วันที่: ....../....../...........` สม่ำเสมอทุกเอกสาร เพื่อรองรับขั้นตอนการเซ็นรับมอบพัสดุด้วยปากกาจริง ณ จุดจ่าย/รับคืนพัสดุ
+  - ปรับเวอร์ชันระบบเป็น `v1.9.12`
+- **Reason:** แก้ไขข้อผิดพลาดการแมปชื่อผู้ขอเบิกและปรับฟิลด์ลายเซ็นให้ตรงกับ Workflow หน้างาน
+
+## [2026-09-17 22:06] - v1.9.11
+- **Files Modified:** `src/lib/checkout-pdf-templates.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - ลบการแสดงผลสังกัดแผนก `(${order.borrower_department})` ออกจาก Meta Section ของ `MaterialCheckoutPDF` (ใบยืมพัสดุ) และ `MaterialReturnPDF` (ใบรับคืนพัสดุ)
+  - ปรับการแสดงผลชื่อผู้ยืมและผู้ส่งคืนให้กระชับเหลือเพียงชื่อผู้ยืม/ผู้ส่งคืนตามด้วยชื่อคลัง
+  - ปรับเวอร์ชันระบบเป็น `v1.9.11`
+- **Reason:** ลดความซ้ำซ้อนของข้อมูลแผนกในหัวเอกสารใบยืมและใบรับคืนพัสดุ
+
+## [2026-09-17 21:59] - v1.9.10
+- **Files Modified:** `src/lib/checkout-pdf-templates.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - ลบข้อความ `— คลัง : {warehouseName}` และตัวแปร `warehouseName` ที่ไม่ได้ใช้งานออกจาก Meta Section ของ `MaterialCheckoutPDF` (ใบยืมพัสดุ) และ `MaterialReturnPDF` (ใบรับคืนพัสดุ)
+  - คงชื่อผู้ยืม/ผู้ส่งคืนและสังกัดแผนก พร้อมทั้งเลขที่เอกสารและเลย์เอาต์ส่วนอื่นๆ ไว้สมบูรณ์
+  - ปรับเวอร์ชันระบบเป็น `v1.9.10`
+- **Reason:** จัดระเบียบข้อมูลส่วนหัว Meta ข้อมูลผู้ยืม/ผู้ส่งคืนให้กระชับและไม่แสดงฟิลด์คลังซ้ำซ้อน
+
+## [2026-09-17 21:47] - v1.9.9
+- **Files Modified:** `src/lib/checkout-pdf-templates.jsx`, `src/lib/pdf-templates.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - ปรับปรุงการจัดรูปแบบช่องลงนาม (Signature Sections) ให้เป็นสีดำมาตรฐานทางการ (`#000000`) ใน 3 เทมเพลต PDF หลัก:
+    - `MaterialCheckoutPDF` (ใบยืมพัสดุ)
+    - `MaterialReturnPDF` (ใบรับคืนพัสดุ)
+    - `MaterialWithdrawalPDF` (ใบเบิกของ)
+  - ปรับสีข้อความชื่อผู้ลงนาม (`sigName`), บทบาทตำแหน่ง (`sigRole`), วันที่ (`sigDate`) และเส้นกรอบด้านบน (`signatureBox.borderTopColor`) ให้เป็นสีดำ `#000000` ทั้งหมด
+  - คงรูปแบบโครงสร้าง 2 ฝ่าย (ผู้ขอยืม/ผู้ขอเบิก/ผู้ส่งคืน และ เจ้าหน้าที่ผู้จ่าย/ผู้ตรวจรับ) พร้อมตรรกะ fallback ชื่อผู้ใช้และ data flow เดิมไว้ครบถ้วน
+  - ปรับเวอร์ชันระบบเป็น `v1.9.9`
+- **Reason:** ให้ส่วนลายเซ็นท้ายเอกสาร PDF คมชัด เป็นสีดำทางการตามมาตรฐานเอกสารองค์กร
+
+## [2026-09-17 21:43] - v1.9.8
+- **Files Modified:** `src/lib/pdf-templates.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - ยกระดับและปรับแต่งหัวเอกสาร PDF ของ `MaterialWithdrawalPDF` (ใบเบิกของ / Material Withdrawal) ใน `src/lib/pdf-templates.jsx` เป็นดีไซน์ **Executive Corporate Header**:
+    - เพิ่มโลโก้บริษัท Forth จาก `/images/logo.png`
+    - แสดงข้อมูลบริษัทอย่างเป็นทางการ: บริษัท ฟอร์ท คอร์ปอเรชั่น จำกัด (มหาชน) / FORTH CORPORATION PUBLIC COMPANY LIMITED / 1053/1 ถนนพหลโยธิน แขวงพญาไท เขตพญาไท กรุงเทพมหานคร 10400 โทรศัพท์: 02-265-6700
+    - เพิ่ม Document Badge ทางด้านขวา: `MATERIAL WITHDRAWAL REPORT`
+    - เพิ่มการแสดงวันและเวลาพิมพ์เอกสาร: `พิมพ์เมื่อ: {printDateStr}`
+  - ปรับเวอร์ชันระบบเป็น `v1.9.8`
+- **Reason:** ปรับรูปแบบหัวกระดาษของใบเบิกของให้สวยงามและเป็นมาตรฐานเดียวกันกับ Executive Corporate Header ของระบบ
+
+## [2026-09-17 21:36] - v1.9.7
+- **Files Modified:** `src/lib/checkout-pdf-templates.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - ยกระดับและปรับแต่งหัวเอกสาร PDF ของ `/checkouts` ทั้ง `MaterialCheckoutPDF` (ใบยืมพัสดุ) และ `MaterialReturnPDF` (ใบรับคืนพัสดุ) เป็นดีไซน์ **Executive Corporate Header**:
+    - เพิ่มโลโก้บริษัท Forth จาก `/images/logo.png`
+    - แสดงข้อมูลบริษัทอย่างเป็นทางการ: บริษัท ฟอร์ท คอร์ปอเรชั่น จำกัด (มหาชน) / FORTH CORPORATION PUBLIC COMPANY LIMITED / 1053/1 ถนนพหลโยธิน แขวงพญาไท เขตพญาไท กรุงเทพมหานคร 10400 โทรศัพท์: 02-265-6700
+    - เพิ่ม Document Badge ทางด้านขวา:
+      - `Material Checkout Report` สำหรับ `MaterialCheckoutPDF`
+      - `Material Return Report` สำหรับ `MaterialReturnPDF`
+    - เพิ่มการแสดงวันและเวลาพิมพ์เอกสาร: `พิมพ์เมื่อ: {printDateStr}`
+  - ปรับเวอร์ชันระบบเป็น `v1.9.7`
+- **Reason:** ปรับรูปแบบหัวกระดาษของใบยืมและใบรับคืนพัสดุให้สวยงามและได้มาตรฐานองค์กรเช่นเดียวกับรายงานระบบอื่นๆ
+
+## [2026-09-15 17:40] - v1.9.6
+- **Files Modified:** `src/components/users/EditUserModal.jsx`, `src/components/users/UserActionModal.jsx`, `src/pages/auth/Login.jsx`, `src/i18n/locales/en.js`, `src/i18n/locales/th.js`, `package.json`, `package-lock.json`, `CHANGELOG.md`, `docs/inactive-status-consolidation-implementation-plan.md`
+- **Changes:**
+  - ยุบรวมและจัดระเบียบสถานะผู้ใช้งาน (User Status) ระหว่าง **Inactive** และ **Suspended** ให้เป็นสถานะเดียวที่ชัดเจน:
+    - ตัดตัวเลือกซ้ำซ้อน **Suspended** ออกจากโมดอลแก้ไขผู้ใช้งาน (`EditUserModal.jsx`) เหลือเพียง 2 สถานะมาตรฐาน: **Active (เปิดใช้งาน)** และ **Inactive (ระงับการใช้งาน)**
+    - ปรับปรุง Badge และ Radio cards ใน `EditUserModal.jsx` ให้แสดงผล 2 คอลัมน์ชัดเจน สะอาดตา
+    - ปรับสถานะใน `UserActionModal.jsx` ให้สอดคล้องกันกับตารางจัดการผู้ใช้งาน โดยแสดงป้ายสถานะ `INACTIVE` เมื่อผู้ใช้ถูกระงับสิทธิ์
+    - เสริมความปลอดภัยในขั้นตอน Login (`Login.jsx`): เมื่อผู้ใช้ที่ถูกปิดใช้งาน/ระงับสิทธิ์ (`inactive` หรือ `suspended`) พยายามเข้าสู่ระบบ ระบบจะตรวจสอบโปรไฟล์ทันทีและสั่งตัด Session ทันที พร้อมแสดงการแจ้งเตือน `"บัญชีของคุณถูกปิดใช้งานหรือระงับสิทธิ์ กรุณาติดต่อผู้ดูแลระบบ"` ป้องกันไม่ให้เปลี่ยนหน้าจอไปยัง Dashboard
+    - คงการรองรับค่าเดิม (`suspended`) ใน `AuthProvider.jsx` และ Backend RPCs เพื่อความเข้ากันได้แบบ Backward-Compatibility 100% สำหรับข้อมูลเก่าในฐานข้อมูล
+  - ปรับเวอร์ชันระบบเป็น `v1.9.6`
+- **Reason:** รวมสถานะผู้ใช้ที่ซ้ำซ้อนให้เหลือสถานะเดียวที่ชัดเจน มีพฤติกรรมการบล็อกการเข้าสู่ระบบที่สอดคล้องทั้งหน้าบ้านและหลังบ้าน
+
+## [2026-09-15 16:45] - v1.9.5
+- **Files Modified:** `src/components/users/EditUserModal.jsx`, `src/components/users/AvatarUpload.jsx`, `src/i18n/locales/en.js`, `src/i18n/locales/th.js`, `package.json`, `package-lock.json`, `CHANGELOG.md`, `docs/edit-user-rbac-i18n-implementation-plan.md`
+- **Changes:**
+  - แปล UI ข้อความภาษาอังกฤษ 100% ในส่วน **Edit User & RBAC Permissions** (`/users`) เป็นภาษาไทยด้วย `i18next` + `react-i18next`:
+    - เพิ่มคีย์แปลภาษาใหม่ใน namespace `users.avatar` และ `users.editModal` ใน `src/i18n/locales/en.js` และ `src/i18n/locales/th.js` พร้อมรักษาระดับ 100% Key Parity (1,671 keys)
+    - รองรับการแปลทุกแท็บ:
+      - **Tab 1: ข้อมูลผู้ใช้ (User Profile)**: หัวข้อการแก้ไข, คำเตือน Super Admin, ชื่อ-นามสกุล, อีเมล, รหัสผ่านใหม่, ยืนยันรหัสผ่าน, เงื่อนไขรหัสผ่าน 8 ตัวอักษร, ข้อความเตือนแก้ไขรูปประจำตัว
+      - **Tab 2: บทบาทและสิทธิ์ (Roles & Permissions)**: การ์ดบทบาททุกระดับ (Super Admin, Project Manager, Site Engineer, Supervisor, Worker, Auditor, Guest), คำอธิบายหน้าที่ความรับผิดชอบ, ป้ายสถานะ System Role, จำนวนสิทธิ์ RBAC สด (เช่น `สิทธิ์ที่ได้รับ (12)`), สถานะการเปิด/ปิดสิทธิ์ของบทบาท, และการ์ดสถานะบัญชี (Active, Suspended)
+      - **Tab 3: การเข้าถึงโครงการ (Project Access)**: ประเภทสิทธิ์ (เข้าถึงได้ทุกโครงการ, เฉพาะโครงการที่เลือก), คำอธิบาย, ช่องค้นหาโครงการ, ปุ่มเลือกทั้งหมด/ล้างการเลือก, จำนวนโครงการที่เลือก
+    - รองรับการแปลข้อความแจ้งเตือนข้อผิดพลาด (Validation & Error Toasts), สถานะกำลังบันทึก (Saving...), และปุ่มนำทาง Footer
+    - ยกระดับ `AvatarUpload.jsx` ให้อ่านข้อความ tooltips, คำเตือนความจุไฟล์, และประเภทไฟล์จาก i18n
+  - ปรับเวอร์ชันระบบเป็น `v1.9.5`
+- **Reason:** รองรับการใช้งานภาษาไทยเต็มรูปแบบ 100% สำหรับการจัดการแก้ไขข้อมูลผู้ใช้งานและสิทธิ์ RBAC ตามมาตรฐาน i18n ของระบบ
+
+## [2026-09-15 15:40] - v1.9.4
+- **Files Modified:** `src/components/users/EditUserModal.jsx`, `src/components/users/AddUserModal.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`, `docs/assigned-role-selector-fix-implementation-plan.md`
+- **Changes:**
+  - แก้ไขปัญหาตัวเลือก **Assigned Role** ในหน้าจัดการผู้ใช้งาน (`EditUserModal` และ `AddUserModal`):
+    - แก้ไข Root Cause ที่การคลิกเลือก Role ถูก Reset กลับเป็นค่าเดิมทันที เนื่องจาก `availableRoles` อยู่ใน dependency array ของ `useEffect` ที่ initialize `formData`
+    - แยกการ initialize `formData` ให้ทำงานเฉพาะเมื่อเปิดโมดอลหรือสลับผู้ใช้ (`[isOpen, user?.id]`) เพื่อให้ค่าบทบาทที่เลือกถูกบันทึกลงฟอร์มอย่างถูกต้อง
+    - เพิ่มเสถียรภาพให้กับการดึง Role และสิทธิ์ RBAC สดจากฐานข้อมูล โดยไม่ trigger state mutation ซ้ำซ้อน
+    - ส่ง `availableRoles` เข้าสู่ `resolveRoleId(formData.role, formData.role_id, availableRoles)` ในขั้นตอน Submit เพื่อให้ `role_id` ถูกต้องแม่นยำ 100%
+    - ยกระดับการเข้าถึง (Accessibility & Keyboard Navigation) ตามมาตรฐาน WAI-ARIA:
+      - กำหนด `role="radiogroup"` และ `aria-label="Assigned Role"` ให้กับคอนเทนเนอร์
+      - กำหนด `role="radio"`, `aria-checked`, `aria-disabled`, `tabIndex`, และ `onKeyDown` (รองรับปุ่ม Space และ Enter ในการเลือกบทบาท)
+      - เพิ่มเส้นขอบ Focus Ring (`focus-visible:ring-2 focus-visible:ring-primary`)
+    - ซิงค์การทำงานแบบเดียวกันกับ `AddUserModal` ให้รองรับทั้งการคลิก การกดคีย์บอร์ด และการจัดเก็บ `role_id` ที่ถูกต้อง
+  - ปรับเวอร์ชันระบบเป็น `v1.9.4`
+- **Reason:** แก้ไขข้อผิดพลาดที่การ์ดบทบาทผู้ใช้ (Assigned Role) มองเห็นได้แต่ไม่สามารถคลิกเลือกได้ และเพิ่มการรองรับคีย์บอร์ด/การเข้าถึง
+
+## [2026-09-15 14:30] - v1.9.3
+- **Files Modified:** `src/i18n/locales/th.js`, `scripts/update-locales.mjs`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - ปรับข้อความแท็บในระบบเบิกพัสดุและยืมพัสดุภาษาไทยเพื่อความชัดเจน ไม่สับสนกับระบบคิดเงินหน้าร้าน:
+    - เปลี่ยน `"posTab"` ในหน้าเบิกพัสดุ (Withdrawals) จาก `"หน้าจอเบิกพัสดุ (POS)"` เป็น `"ทำรายการเบิกพัสดุ"` สอดคล้องกับแท็บคู่กัน `"รายการคำขอเบิก"`
+    - เปลี่ยน `"posTab"` ในหน้ายืมพัสดุ (Checkouts) จาก `"ทำรายการยืม (POS)"` เป็น `"ทำรายการยืมพัสดุ"`
+  - อัปเดตชุดข้อมูลใน `scripts/update-locales.mjs` ให้ตรงกัน
+  - อัปเดตเวอร์ชันระบบเป็น `v1.9.3`
+- **Reason:** คำว่า "POS" ในระบบเบิกพัสดุสร้างความสับสนแก่ผู้ใช้งาน ปรับให้เป็นภาษาทางการที่สื่อถึงการทำรายการเบิกจ่ายพัสดุอย่างชัดเจน
+
+## [2026-09-15 14:00] - v1.9.2
+- **Files Modified:** `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - แก้ไข Dependabot PR #28 (`chore(deps): bump eslint from 9.39.5 to 10.10.0`) ที่ล้มเหลวบน Vercel จากข้อขัดแย้งของ peer dependency กับ `eslint-plugin-react-hooks@5.2.0` และ `eslint-plugin-react@7.37.5`
+  - เพิ่มการตั้งค่า `overrides` ใน `package.json` สำหรับ `eslint-plugin-react-hooks` ให้ผูกเข้ากับ `$eslint` ร่วมกับ `eslint-plugin-react`
+  - รีเจนเนอเรตและซิงค์ `package-lock.json` ให้สมบูรณ์แบบ รองรับการรัน `npm install` และ `npm ci` บน Vercel โดยไม่ต้องใช้ `--force` หรือ `--legacy-peer-deps`
+  - ตรวจสอบผ่านคำสั่ง `npx eslint --version` (v10.10.0), `npm run lint` (0 errors), `npm run test:email` (PASS 9/9), `npm run check:i18n` (PASS), และ `npm run build` (Vite production bundle built successfully)
+- **Reason:** แก้ไขปัญหา Vercel deployment failure บน Dependabot PR #28 สำหรับ ESLint 10
+
 ## [2026-09-15 13:30] - v1.9.1
 - **Files Modified:** `package.json`, `package-lock.json`, `CHANGELOG.md`
 - **Changes:**
@@ -2460,7 +2752,7 @@
 - **Details:**
   - `src/lib/checkout-pdf-templates.jsx` & `src/lib/pdf-templates.jsx`:
     - ปรับปรุงโครงสร้าง JSX ส่วนของลายเซ็นท้ายเอกสาร PDF ทั้งหมด (`MaterialCheckoutPDF`, `MaterialReturnPDF`, `MaterialWithdrawalPDF`) ให้ใช้โครงสร้างแบบ Dual Signature Boxes (`signatureSection` และ `signatureBox`)
-    - ใช้เส้นคั่นบนกล่องลายเซ็นสีเทาเรียบหรู (`borderTop: 1 solid #94a3b8`), ชื่อผู้ลงนามในวงเล็บกึ่งกลาง (`sigName`), บทบาทกำกับ (`sigRole`: `ผู้ขอยืมพัสดุ / ช่างผู้เบิก` และ `เจ้าหน้าที่ผู้จ่ายพัสดุ / เจ้าหน้าที่คลัง`), พร้อมวันที่ (`sigDate: วันที่: ....../....../...........`) ตรงตามสเปกที่ผู้ใช้กำหนด
+    - ใช้เส้นคั่นบนกล่องลายเซ็นสีเทาเรียบหรู (`borderTop: 1 solid #94a3b8`), ชื่อผู้ลงนามในวงเล็บกึ่งกลาง (`sigName`), บทบาทกำกับ (`sigRole`: `ผู้ขอยืมพัสดุ` และ `เจ้าหน้าที่ผู้จ่ายพัสดุ`), พร้อมวันที่ (`sigDate: วันที่: ....../....../...........`) ตรงตามสเปกที่ผู้ใช้กำหนด
 - **Reason:** จัดดีไซน์บล็อกลายเซ็นให้สวยงาม กะทัดรัด และเป็นรูปแบบเดียวกันทุกเอกสาร PDF ของระบบ
 
 ## [2026-08-18 09:48] 📄 Standardize Checkout & Return PDF Templates to Match MaterialWithdrawalPDF

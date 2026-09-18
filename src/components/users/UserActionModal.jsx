@@ -244,8 +244,8 @@ const UserActionModal = ({
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> ACTIVE
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span> SUSPENDED
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300">
+                    <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span> INACTIVE
                   </span>
                 )}
               </div>

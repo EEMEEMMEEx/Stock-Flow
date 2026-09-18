@@ -5,8 +5,9 @@ export const uploadAvatarImage = async (userId, file) => {
   if (!file || !userId) return null;
 
   try {
-    const fileExt = file.name.split('.').pop().toLowerCase();
-    const fileName = `${userId}/avatar.${fileExt || 'png'}`;
+    const fileExt = file.name.split('.').pop()?.toLowerCase() || 'png';
+    const safeUserId = String(userId).replace(/[^a-zA-Z0-9_-]/g, '_');
+    const fileName = `avatar_${safeUserId}_${Date.now()}.${fileExt}`;
 
     // Upload directly to Cloudflare R2 (Zero Egress Object Storage)
     const r2Url = await uploadFileToR2(file, 'avatars', fileName, false);

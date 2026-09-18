@@ -136,6 +136,7 @@ export default {
     "passwordRequirements": "รหัสผ่านต้องมีความยาวอย่างน้อย 8 ตัวอักษร ประกอบด้วยตัวพิมพ์ใหญ่ ตัวพิมพ์เล็ก ตัวเลข และอักขระพิเศษ",
     "signingIn": "กำลังเข้าสู่ระบบ...",
     "invalidCredentials": "อีเมลหรือรหัสผ่านไม่ถูกต้อง",
+    "accountInactive": "บัญชีของคุณถูกปิดใช้งานหรือระงับสิทธิ์ กรุณาติดต่อผู้ดูแลระบบ",
     "accessDenied": "ปฏิเสธการเข้าถึง",
     "noPermissionMessage": "คุณไม่มีสิทธิ์ในการเข้าถึงหรือดูหน้านี้",
     "backToDashboard": "กลับสู่หน้าแดชบอร์ด"
@@ -610,7 +611,7 @@ export default {
     "outOfStockInAllLocations": "สินค้าหมดทุกคลังจัดเก็บ (0 {{unit}})",
     "systemTotal": "รวมทั้งระบบ:",
     "selectedBadge": "เลือกอยู่",
-    "posTab": "หน้าจอเบิกพัสดุ (POS)",
+    "posTab": "ทำรายการเบิกพัสดุ",
     "requisitionsTab": "รายการคำขอเบิก",
     "systemReady": "ระบบเบิกจ่ายพร้อมทำงาน",
     "itemsCount": "{{count}} รายการ",
@@ -762,7 +763,7 @@ export default {
     "checkoutOrderCreated": "สร้างรายการยืม {{orderNo}} สำเร็จเรียบร้อย",
     "checkoutOrderFailed": "ไม่สามารถสร้างรายการยืมได้",
     "activeTab": "รายการกำลังยืม",
-    "posTab": "ทำรายการยืม (POS)",
+    "posTab": "ทำรายการยืมพัสดุ",
     "historyTab": "ประวัติการยืม-คืน",
     "ordersCount": "{{count}} รายการ",
     "ordersCount_one": "{{count}} รายการ",
@@ -835,6 +836,8 @@ export default {
       "returnReceiptDownloaded": "ดาวน์โหลดใบรับคืนอุปกรณ์เรียบร้อยแล้ว",
       "returnReceiptPdfFailed": "สร้างไฟล์ PDF ใบรับคืนอุปกรณ์ไม่สำเร็จ"
     },
+    "printCheckoutSlip": "พิมพ์ใบยืมพัสดุ (PDF)",
+    "printReturnReceipt": "พิมพ์ใบรับคืนพัสดุ (PDF)",
     "department": "แผนก",
     "purpose": "วัตถุประสงค์",
     "itemsInLoan": "รายการอุปกรณ์ที่ยืม",
@@ -1135,7 +1138,114 @@ export default {
     "resendInvite": "ส่งคำเชิญซ้ำ",
     "changeStatus": "เปลี่ยนสถานะ",
     "permanentDelete": "ลบบัญชีถาวร",
-    "noUsersFound": "ไม่พบบัญชีผู้ใช้ที่ค้นหา"
+    "noUsersFound": "ไม่พบบัญชีผู้ใช้ที่ค้นหา",
+    "avatar": {
+      "unsupportedFormat": "รองรับเฉพาะไฟล์รูปภาพ JPG และ PNG เท่านั้น",
+      "maxSizeExceeded": "ขนาดไฟล์รูปภาพต้องไม่เกิน 2 MB",
+      "uploadPhoto": "อัปโหลดรูปภาพ",
+      "remove": "ลบรูปภาพ",
+      "hint": "รองรับไฟล์ JPG, PNG ขนาดไม่เกิน 2 MB",
+      "clickToUpload": "คลิกเพื่ออัปโหลดรูปประจำตัว",
+      "altPreview": "ตัวอย่างรูปประจำตัว"
+    },
+    "editModal": {
+      "title": "แก้ไขข้อมูลผู้ใช้และกำหนดสิทธิ์ (RBAC)",
+      "loginEmailDesc": "อีเมลล็อกอินเป็นข้อมูลระบุตัวตนหลักในระบบยืนยันตัวตน (Supabase Auth)",
+      "avatarTitle": "รูปประจำตัวผู้ใช้",
+      "emailLabel": "อีเมลเข้าสู่ระบบ",
+      "fullNameLabel": "ชื่อ-นามสกุล",
+      "fullNamePlaceholder": "เช่น สมชาย ใจดี",
+      "phoneLabel": "เบอร์โทรศัพท์",
+      "phonePlaceholder": "เช่น 0812345678",
+      "departmentLabel": "แผนก / ฝ่าย",
+      "departmentPlaceholder": "เช่น ฝ่ายวิศวกรรม, ฝ่ายคลังพัสดุ",
+      "positionLabel": "ตำแหน่งงาน",
+      "positionPlaceholder": "เช่น วิศวกรโครงการ, เจ้าหน้าที่พัสดุ",
+      "mustChangePassword": "บังคับเปลี่ยนรหัสผ่านเมื่อเข้าสู่ระบบครั้งถัดไป",
+      "mustChangePasswordDesc": "เมื่อเปิดใช้งาน ผู้ใช้จะต้องตั้งรหัสผ่านใหม่ก่อนจึงจะสามารถเข้าใช้งานระบบได้",
+      "assignedRole": "บทบาทที่มอบหมาย (Assigned Role)",
+      "manageRolesLink": "จัดการบทบาทและสิทธิ์การใช้งานที่ /roles",
+      "systemRole": "บทบาทระบบ",
+      "assignedPermissions": "สิทธิ์การใช้งานที่ได้รับมอบหมาย (RBAC)",
+      "loadingPermissions": "กำลังโหลดสิทธิ์การใช้งาน...",
+      "loadingSchema": "กำลังโหลดโครงสร้างสิทธิ์สดจากฐานข้อมูล...",
+      "allPermissionsEnabled": "เปิดใช้งานสิทธิ์ทั้งหมดแล้ว ({{count}} / {{total}})",
+      "enabledCount": "เปิดใช้งาน: {{count}} / {{total}}",
+      "refreshPermissionsTitle": "รีเฟรชสิทธิ์จากฐานข้อมูล",
+      "noPermissions": "ยังไม่มีสิทธิ์เปิดใช้งานสำหรับบทบาทนี้ในระบบ",
+      "noPermissionsHint": "คุณสามารถกำหนดสิทธิ์เพิ่มเติมได้โดยตรงที่หน้า",
+      "roleManagementLink": "จัดการบทบาทและสิทธิ์",
+      "fullPrivilegesNotice": "บทบาทนี้มีอภิสิทธิ์สูงสุด สามารถเข้าถึงสิทธิ์ทั้งหมดของระบบได้ครบทั้ง {{count}} รายการ",
+      "permissionUnit": "{{count}} สิทธิ์",
+      "permissionUnit_other": "{{count}} สิทธิ์",
+      "accountStatus": "สถานะบัญชีผู้ใช้",
+      "statusActive": "เปิดใช้งาน (Active)",
+      "statusActiveDesc": "เข้าสู่ระบบและปฏิบัติงานได้ตามปกติ",
+      "statusInactive": "ระงับการใช้งาน (Inactive)",
+      "statusInactiveDesc": "ระงับสิทธิ์และบล็อกการเข้าสู่ระบบ",
+      "statusSuspended": "ระงับชั่วคราว (Suspended)",
+      "statusSuspendedDesc": "ระงับการเข้าสู่ระบบชั่วคราว",
+      "projectAccessControl": "การควบคุมการเข้าถึงโครงการ",
+      "allProjectsAccess": "เข้าถึงได้ทุกโครงการ (All Projects)",
+      "allProjectsDesc": "ผู้ใช้จะได้รับสิทธิ์ดูสต็อก ขอเบิก และรับเข้าพัสดุในทุกโครงการโดยอัตโนมัติ",
+      "selectedProjectsOnly": "เฉพาะโครงการที่เลือก (Selected Projects)",
+      "selectedProjectsDesc": "จำกัดสิทธิ์ให้ดูและทำรายการได้เฉพาะโครงการที่ระบุไว้ด้านล่างเท่านั้น",
+      "searchProjectsPlaceholder": "ค้นหาชื่อหรือรหัสโครงการ...",
+      "selectAll": "เลือกทั้งหมด ({{count}})",
+      "clearSelection": "ล้างการเลือก",
+      "noMatchingProjects": "ไม่พบโครงการที่ตรงกับเงื่อนไขการค้นหา",
+      "minProjectRequired": "ต้องเลือกอย่างน้อย 1 โครงการสำหรับสิทธิ์ประเภทนี้",
+      "selectedCount": "เลือกแล้ว: {{count}} / {{total}} โครงการ",
+      "tabs": {
+        "profile": "แท็บ 1: ข้อมูลผู้ใช้",
+        "rbac": "แท็บ 2: บทบาทและสิทธิ์ (RBAC)",
+        "projects": "แท็บ 3: การเข้าถึงโครงการ"
+      },
+      "nav": {
+        "nextRbac": "ถัดไป (แท็บ 2: บทบาทและสิทธิ์) →",
+        "backProfile": "← ย้อนกลับ (แท็บ 1)",
+        "nextProjects": "ถัดไป (แท็บ 3: การเข้าถึงโครงการ) →",
+        "backRbac": "← ย้อนกลับ (แท็บ 2)",
+        "cancel": "ยกเลิก",
+        "saving": "กำลังบันทึก...",
+        "saveChanges": "บันทึกการเปลี่ยนแปลง",
+        "superAdminTitle": "เฉพาะ Super Admin เท่านั้นที่สามารถแก้ไขบัญชีนี้ได้",
+        "saveChangesTitle": "บันทึกการเปลี่ยนแปลง"
+      },
+      "notices": {
+        "superAdminTitle": "ประกาศความปลอดภัย: บัญชีผู้ดูแลระบบสูงสุด (Super Admin)",
+        "superAdminProfileDesc": "บัญชีนี้เป็น Super Admin ของระบบ เฉพาะ Super Admin เท่านั้นที่สามารถแก้ไขหรือบันทึกข้อมูลบัญชีนี้ได้",
+        "superAdminRbacDesc": "บัญชีนี้เป็น Super Admin ของระบบ เฉพาะ Super Admin เท่านั้นที่สามารถเปลี่ยนบทบาทหรือสิทธิ์ของบัญชีนี้ได้",
+        "lastAdminTitle": "ประกาศความปลอดภัย: บัญชีผู้ดูแลระบบคนสุดท้าย (Last Active Admin)",
+        "lastAdminDesc": "บัญชีนี้เป็น Administrator คนเดียวที่ยังเปิดใช้งานอยู่ ไม่อนุญาตให้ลดระดับบทบาทหรือระงับบัญชีเพื่อป้องกันระบบถูกล็อก"
+      },
+      "validation": {
+        "enterFullName": "กรุณาระบุชื่อ-นามสกุล",
+        "selectProject": "กรุณาเลือกอย่างน้อย 1 โครงการสำหรับสิทธิ์เฉพาะโครงการ",
+        "superAdminOnly": "ความปลอดภัยของระบบ: เฉพาะ Super Admin เท่านั้นที่สามารถแก้ไขบัญชีนี้ได้",
+        "lastAdminProtect": "ความปลอดภัยของระบบ: ไม่สามารถลดระดับบทบาทหรือระงับบัญชี Administrator คนสุดท้ายได้",
+        "lastAdminDemote": "ไม่สามารถลดระดับบทบาทของผู้ดูแลระบบ (Administrator) คนสุดท้ายในระบบได้",
+        "lastAdminSuspend": "ไม่สามารถระงับหรือปิดใช้งานบัญชีผู้ดูแลระบบ (Administrator) คนสุดท้ายในระบบได้"
+      },
+      "roles": {
+        "staff": {
+          "name": "เจ้าหน้าที่ / ผู้ขอเบิก (STAFF)",
+          "desc": "ขอเบิกพัสดุและดูยอดสต็อกเฉพาะโครงการที่ได้รับมอบหมาย"
+        },
+        "supervisor": {
+          "name": "ผู้จัดการ / ผู้อนุมัติ (SUPERVISOR)",
+          "desc": "อนุมัติคำขอเบิกพัสดุและดูรายงานสรุปในระดับโครงการ"
+        },
+        "admin": {
+          "name": "ผู้ดูแลระบบ (ADMINISTRATOR)",
+          "desc": "สิทธิ์เต็มรูปแบบ: อนุมัติการเบิก, จัดการโครงการ, บทบาท และผู้ใช้งาน"
+        },
+        "super": {
+          "name": "ผู้ดูแลระบบสูงสุด (SUPER ADMIN)",
+          "desc": "สิทธิ์ระดับสูงสุดของระบบ: จัดการทุกส่วนรวมถึงแอดมิน, สิทธิ์การใช้งาน, การตั้งค่าระบบ, ความปลอดภัย และการเชื่อมต่อภายนอก"
+        }
+      }
+    }
   },
   "roles": {
     "title": "จัดการบทบาทและสิทธิ์",
@@ -1464,7 +1574,7 @@ export default {
     "phoneNumber": "เบอร์โทรศัพท์",
     "phonePlaceholder": "เช่น 0812345678",
     "position": "ตำแหน่งงาน",
-    "positionPlaceholder": "เช่น วิศวกรโครงการ / เจ้าหน้าที่คลัง",
+    "positionPlaceholder": "เช่น วิศวกรโครงการ",
     "readOnlySection": "ข้อมูลเฉพาะระบบ (อ่านอย่างเดียว)",
     "username": "ชื่อผู้ใช้ / รหัสเข้าสู่ระบบ",
     "usernameHint": "ชื่อผู้ใช้ระบบไม่สามารถแก้ไขได้",
@@ -1483,6 +1593,26 @@ export default {
     "confirmPasswordPlaceholder": "กรอกรหัสผ่านใหม่อีกครั้ง",
     "updatingPassword": "กำลังเปลี่ยนรหัสผ่าน...",
     "updatePasswordBtn": "เปลี่ยนรหัสผ่าน",
+    "signatureTab": "ลายเซ็น",
+    "signatureTitle": "ลายเซ็นเจ้าหน้าที่",
+    "signatureSubtitle": "ต้องมีลายเซ็นก่อนทำธุรกรรมในระบบ",
+    "signatureRequired": "กรุณาเพิ่มลายเซ็นก่อนทำรายการ",
+    "signatureActiveBadge": "มีลายเซ็นในระบบแล้ว",
+    "signatureRequiredBadge": "ยังไม่มีลายเซ็น — จำเป็นต้องสร้าง",
+    "signatureNoticeHeader": "ข้อกำหนดความปลอดภัย:",
+    "signatureNoticeBody": "ลายเซ็นดิจิทัลของคุณจะถูกประทับลงในเอกสารใบเบิกพัสดุ (Withdrawal Voucher) ใบยืมพัสดุ (Checkout Slip) และใบรับคืนพัสดุ (Return Receipt) โดยอัตโนมัติ เพื่อยืนยันความถูกต้องของธุรกรรม",
+    "currentSignatureLabel": "ลายเซ็นปัจจุบันของคุณ",
+    "removeSignatureBtn": "ลบลายเซ็น",
+    "updateSignatureLabel": "วาดลายเซ็นใหม่เพื่ออัปเดต",
+    "drawSignatureLabel": "วาดลายเซ็นของคุณ",
+    "signatureDrawTip": "ใช้นิ้วหรือเมาส์วาดลงบนกรอบ",
+    "canvasWatermark": "วาดลายเซ็นที่นี่...",
+    "clearCanvasBtn": "ล้างกระดาน",
+    "saveSignatureBtn": "บันทึกลายเซ็น",
+    "signatureRequiredModalTitle": "จำเป็นต้องมีลายเซ็นก่อนทำรายการ",
+    "signatureRequiredModalDesc": "เพื่อความถูกต้องและความปลอดภัยของเอกสารคลังพัสดุ ระบบกำหนดให้ผู้ใช้ต้องสร้างและบันทึกลายเซ็นดิจิทัลในหน้าโปรไฟล์ก่อนทำธุรกรรม (เบิก, ยืม, หรืออนุมัติพัสดุ)",
+    "signatureNoticeShort": "กรุณาเพิ่มลายเซ็นก่อนทำรายการ",
+    "goToSignatureTab": "ไปที่หน้าสร้างลายเซ็น",
     "toasts": {
       "unsupportedImage": "รองรับเฉพาะไฟล์รูปภาพ JPG, PNG หรือ WebP เท่านั้น",
       "imageTooLarge": "ขนาดไฟล์รูปภาพต้องไม่เกิน 3MB",
@@ -1496,7 +1626,12 @@ export default {
       "passwordTooShort": "รหัสผ่านใหม่ต้องมีความยาวอย่างน้อย 6 ตัวอักษร",
       "passwordsDoNotMatch": "รหัสผ่านใหม่และการยืนยันไม่ตรงกัน",
       "passwordChanged": "เปลี่ยนรหัสผ่านเรียบร้อยแล้ว",
-      "passwordChangeFailed": "ไม่สามารถเปลี่ยนรหัสผ่านได้"
+      "passwordChangeFailed": "ไม่สามารถเปลี่ยนรหัสผ่านได้",
+      "signatureSaved": "บันทึกลายเซ็นเรียบร้อยแล้ว",
+      "signatureSaveFailed": "ไม่สามารถบันทึกลายเซ็นได้",
+      "signatureRemoved": "ลบลายเซ็นเรียบร้อยแล้ว",
+      "signatureRemoveFailed": "ไม่สามารถลบลายเซ็นได้",
+      "signatureEmptyError": "กรุณาวาดลายเซ็นก่อนบันทึก"
     }
   },
   "manual": {

@@ -21,40 +21,69 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     position: 'relative'
   },
-  // Header
-  headerSection: {
+  // Executive Corporate Header
+  headerContainer: {
     flexDirection: 'row',
-    marginBottom: 0,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingBottom: 6,
+    borderBottomWidth: 1.5,
+    borderBottomColor: '#0284c7', // Forth Blue
+    marginBottom: 6
+  },
+  headerLeft: {
+    flexDirection: 'row',
     alignItems: 'center'
   },
-  logoContainer: {
-    marginRight: 10,
-  },
   logo: {
-    height: 80,
-    width: 160,
-    objectFit: 'contain'
+    height: 38,
+    width: 90,
+    objectFit: 'contain',
+    marginRight: 8
   },
-  companyNames: {
-    flexDirection: 'column',
+  companyDetails: {
+    flexDirection: 'column'
+  },
+  companyNameTh: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: '#0f172a',
+    lineHeight: 1.1
+  },
+  companyNameEn: {
+    fontFamily: 'Helvetica',
+    fontSize: 7.5,
+    color: '#0284c7',
+    letterSpacing: 0.5,
+    marginTop: 1
+  },
+  companyAddress: {
+    fontSize: 7.5,
+    color: '#64748b',
+    marginTop: 2,
+    lineHeight: 1.15
+  },
+  headerRight: {
+    alignItems: 'flex-end',
     justifyContent: 'center'
   },
-  companyTh: {
-    fontSize: 28,
-    color: '#5b9bd5',
-    marginBottom: -3,
+  docBadge: {
+    backgroundColor: '#f0f9ff',
+    borderWidth: 1,
+    borderColor: '#bae6fd',
+    borderRadius: 3,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    marginBottom: 3
   },
-  companyEn: {
-    fontFamily: 'Helvetica',
-    fontSize: 12,
-    color: '#5b9bd5',
-    letterSpacing: 0.5,
+  docBadgeText: {
+    fontSize: 8.5,
+    fontWeight: 'bold',
+    color: '#0369a1'
   },
-  addressText: {
-    fontSize: 11,
-    color: '#5d9cec',
-    marginTop: -10,
-    lineHeight: 1.2,
+  printDateText: {
+    fontSize: 8,
+    color: '#64748b'
   },
   // Document Title
   docTitleContainer: {
@@ -147,28 +176,36 @@ const styles = StyleSheet.create({
   signatureBox: {
     width: '42%',
     alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: '#94a3b8',
     paddingTop: 8,
   },
   sigName: {
     fontSize: 11,
     fontWeight: 'bold',
-    color: '#0f172a',
+    color: '#000000',
     textAlign: 'center',
     marginTop: 2,
   },
   sigRole: {
     fontSize: 10,
-    color: '#64748b',
+    color: '#000000',
     marginTop: 2,
     textAlign: 'center',
   },
   sigDate: {
     fontSize: 10,
-    color: '#94a3b8',
+    color: '#000000',
     marginTop: 3,
     textAlign: 'center',
+  },
+  sigImage: {
+    height: 32,
+    width: 90,
+    objectFit: 'contain',
+    marginBottom: 4,
+  },
+  sigSpacer: {
+    height: 32,
+    marginBottom: 4,
   },
 });
 
@@ -176,7 +213,7 @@ const styles = StyleSheet.create({
  * Material Checkout Voucher (ใบยืมพัสดุ / ใบยืมเครื่องมือ)
  * Strictly standardized to match MaterialWithdrawalPDF layout, typography, and styling
  */
-export const MaterialCheckoutPDF = ({ order }) => {
+export const MaterialCheckoutPDF = ({ order, staffProfile }) => {
   if (!order) return null;
 
   const rawItems = order.checkout_items || [];
@@ -197,31 +234,78 @@ export const MaterialCheckoutPDF = ({ order }) => {
     ? 'ไม่มีกำหนดคืน (Indefinite)'
     : (order?.expected_return_date ? new Date(order.expected_return_date).toLocaleDateString('th-TH') : '—');
 
-  const warehouseName = order?.warehouse_name || order?.projects?.name || order?.projects?.location || '—';
+  const printDateStr = new Date().toLocaleDateString('th-TH', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
 
   // Suppress Remark if notes are empty or exact duplicate of purpose
   const effectiveRemark = order?.notes?.trim() && order?.notes?.trim() !== order?.purpose?.trim()
     ? order.notes.trim()
     : null;
 
+  // Resolve borrower name dynamically from order data
+  const borrowerDisplayName = order?.borrower_name
+    || (Array.isArray(order?.borrower) ? order.borrower[0]?.full_name : order?.borrower?.full_name)
+    || order?.borrower_profile?.full_name
+    || '...................................................';
+
+  // Resolve warehouse officer (staff) who created/processed the checkout transaction at the terminal
+  // Resiliently handles:
+  // 1) order.profiles as an object { full_name }
+  // 2) order.profiles as an array [{ full_name }] (Supabase PostgREST 1-to-many embedding)
+  // 3) order.creator / order.created_by_profile / order.staff
+  // 4) explicit staffProfile prop passed from checkout detail modal / workflow
+  const creatorProfile = Array.isArray(order?.profiles)
+    ? order.profiles[0]
+    : (order?.profiles || order?.creator || order?.created_by_profile || order?.staff || staffProfile);
+
+  const staffDisplayName = creatorProfile?.full_name
+    || creatorProfile?.name
+    || order?.created_by_name
+    || order?.staff_name
+    || (typeof staffProfile === 'string' ? staffProfile : staffProfile?.full_name)
+    || '...................................................';
+
+  // Resolve digital signature images
+  const borrowerSignatureUrl = order?.borrower_signature_url
+    || order?.signature_url
+    || (Array.isArray(order?.borrower) ? order.borrower[0]?.signature_url : order?.borrower?.signature_url)
+    || order?.borrower_profile?.signature_url
+    || null;
+
+  const staffSignatureUrl = creatorProfile?.signature_url
+    || staffProfile?.signature_url
+    || order?.staff_signature_url
+    || null;
+
   return (
     <Document>
       <Page size="A4" style={styles.page}>
 
-        {/* Standard Corporate Header */}
-        <View style={styles.headerSection}>
-          <View style={styles.logoContainer}>
+        {/* Executive Corporate Header */}
+        <View style={styles.headerContainer}>
+          <View style={styles.headerLeft}>
             <Image src="/images/logo.png" style={styles.logo} />
+            <View style={styles.companyDetails}>
+              <Text style={styles.companyNameTh}>บริษัท ฟอร์ท คอร์ปอเรชั่น จำกัด (มหาชน)</Text>
+              <Text style={styles.companyNameEn}>FORTH CORPORATION PUBLIC COMPANY LIMITED</Text>
+              <Text style={styles.companyAddress}>
+                1053/1 ถนนพหลโยธิน แขวงพญาไท เขตพญาไท กรุงเทพมหานคร 10400 โทรศัพท์: 02-265-6700
+              </Text>
+            </View>
           </View>
-          <View style={styles.companyNames}>
-            <Text style={styles.companyTh}>บริษัท ฟอร์ท คอร์ปอเรชั่น จำกัด (มหาชน)</Text>
-            <Text style={styles.companyEn}>FORTH CORPORATION PUBLIC COMPANY LIMITED</Text>
+
+          <View style={styles.headerRight}>
+            <View style={styles.docBadge}>
+              <Text style={styles.docBadgeText}>Material Checkout Report</Text>
+            </View>
+            <Text style={styles.printDateText}>พิมพ์เมื่อ: {printDateStr}</Text>
           </View>
         </View>
-        <Text style={styles.addressText}>
-          1053/1 ถนนพหลโยธิน แขวงพญาไท เขตพญาไท กรุงเทพมหานคร 10400 โทรศัพท์ : 02-265-6700 แฟกซ์ : 02-265-6799 เลขประจำตัวผู้เสียภาษี : 0107548000471{"\n"}
-          1053/1 Phaholyothin Road, Phayathai Subdistrict, Phayathai District, Bangkok 10400 Tel: +662-265-6700 Fax: +662-265-6799 Tax ID : 0107548000471
-        </Text>
 
         {/* Document Title */}
         <View style={styles.docTitleContainer}>
@@ -231,7 +315,7 @@ export const MaterialCheckoutPDF = ({ order }) => {
 
         {/* Meta Section */}
         <View style={styles.metaSection}>
-          <Text>ผู้ยืม : {order?.borrower_name || '—'} {order?.borrower_department ? `(${order.borrower_department})` : ''} — คลัง : {warehouseName}</Text>
+          <Text>ผู้ยืม : {order?.borrower_name || '—'}</Text>
           <Text>เลขที่ : {order?.order_number || '—'}</Text>
         </View>
         <View style={[styles.metaSection, { marginBottom: 10 }]}>
@@ -289,14 +373,24 @@ export const MaterialCheckoutPDF = ({ order }) => {
         {/* Signatures */}
         <View style={styles.signatureSection} wrap={false}>
           <View style={styles.signatureBox}>
-            <Text style={styles.sigName}>({order.borrower_name || '...................................................'})</Text>
-            <Text style={styles.sigRole}>ผู้ขอยืมพัสดุ / ช่างผู้เบิก</Text>
+            {borrowerSignatureUrl ? (
+              <Image src={borrowerSignatureUrl} style={styles.sigImage} />
+            ) : (
+              <View style={styles.sigSpacer} />
+            )}
+            <Text style={styles.sigName}>({borrowerDisplayName})</Text>
+            <Text style={styles.sigRole}>ผู้ขอยืมพัสดุ</Text>
             <Text style={styles.sigDate}>วันที่: ....../....../...........</Text>
           </View>
 
           <View style={styles.signatureBox}>
-            <Text style={styles.sigName}>({order.profiles?.full_name || '...................................................'})</Text>
-            <Text style={styles.sigRole}>เจ้าหน้าที่ผู้จ่ายพัสดุ / เจ้าหน้าที่คลัง</Text>
+            {staffSignatureUrl ? (
+              <Image src={staffSignatureUrl} style={styles.sigImage} />
+            ) : (
+              <View style={styles.sigSpacer} />
+            )}
+            <Text style={styles.sigName}>({staffDisplayName})</Text>
+            <Text style={styles.sigRole}>เจ้าหน้าที่ผู้จ่ายพัสดุ</Text>
             <Text style={styles.sigDate}>วันที่: ....../....../...........</Text>
           </View>
         </View>
@@ -310,7 +404,7 @@ export const MaterialCheckoutPDF = ({ order }) => {
  * Material Return Receipt (ใบรับคืนพัสดุ / ใบรับคืนเครื่องมือ)
  * Strictly standardized to match MaterialWithdrawalPDF layout, typography, and styling
  */
-export const MaterialReturnPDF = ({ order, returnLogs: _returnLogs = [] }) => {
+export const MaterialReturnPDF = ({ order, returnLogs = [], staffProfile }) => {
   if (!order) return null;
 
   const rawItems = order.checkout_items || [];
@@ -330,7 +424,13 @@ export const MaterialReturnPDF = ({ order, returnLogs: _returnLogs = [] }) => {
     ? new Date(order.actual_returned_date).toLocaleDateString('th-TH')
     : new Date().toLocaleDateString('th-TH');
 
-  const warehouseName = order?.warehouse_name || order?.projects?.name || order?.projects?.location || '—';
+  const printDateStr = new Date().toLocaleDateString('th-TH', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
 
   // Suppress Remark if notes are empty or exact duplicate of purpose
   const effectiveRemark = order?.notes?.trim() && order?.notes?.trim() !== order?.purpose?.trim()
@@ -341,24 +441,64 @@ export const MaterialReturnPDF = ({ order, returnLogs: _returnLogs = [] }) => {
     ? 'คืนครบถ้วน (Completed)' 
     : 'คืนบางส่วน (Partial)';
 
+  // Resolve borrower/returner name
+  const borrowerDisplayName = order?.borrower_name
+    || (Array.isArray(order?.borrower) ? order.borrower[0]?.full_name : order?.borrower?.full_name)
+    || order?.borrower_profile?.full_name
+    || '...................................................';
+
+  // Resolve return receiver officer from returnLogs or creator/staffProfile
+  const firstReturnLog = returnLogs?.[0];
+  const returnReceiverProfile = Array.isArray(firstReturnLog?.profiles)
+    ? firstReturnLog.profiles[0]
+    : firstReturnLog?.profiles;
+
+  const creatorProfile = Array.isArray(order?.profiles)
+    ? order.profiles[0]
+    : (order?.profiles || order?.creator || order?.created_by_profile || order?.staff || staffProfile);
+
+  const returnReceiverName = returnReceiverProfile?.full_name
+    || returnReceiverProfile?.name
+    || creatorProfile?.full_name
+    || creatorProfile?.name
+    || (typeof staffProfile === 'string' ? staffProfile : staffProfile?.full_name)
+    || '...................................................';
+
+  // Resolve digital signature images
+  const returnBorrowerSignatureUrl = order?.borrower_signature_url
+    || order?.signature_url
+    || (Array.isArray(order?.borrower) ? order.borrower[0]?.signature_url : order?.borrower?.signature_url)
+    || null;
+
+  const returnReceiverSignatureUrl = returnReceiverProfile?.signature_url
+    || creatorProfile?.signature_url
+    || staffProfile?.signature_url
+    || null;
+
   return (
     <Document>
       <Page size="A4" style={styles.page}>
 
-        {/* Standard Corporate Header */}
-        <View style={styles.headerSection}>
-          <View style={styles.logoContainer}>
+        {/* Executive Corporate Header */}
+        <View style={styles.headerContainer}>
+          <View style={styles.headerLeft}>
             <Image src="/images/logo.png" style={styles.logo} />
+            <View style={styles.companyDetails}>
+              <Text style={styles.companyNameTh}>บริษัท ฟอร์ท คอร์ปอเรชั่น จำกัด (มหาชน)</Text>
+              <Text style={styles.companyNameEn}>FORTH CORPORATION PUBLIC COMPANY LIMITED</Text>
+              <Text style={styles.companyAddress}>
+                1053/1 ถนนพหลโยธิน แขวงพญาไท เขตพญาไท กรุงเทพมหานคร 10400 โทรศัพท์: 02-265-6700
+              </Text>
+            </View>
           </View>
-          <View style={styles.companyNames}>
-            <Text style={styles.companyTh}>บริษัท ฟอร์ท คอร์ปอเรชั่น จำกัด (มหาชน)</Text>
-            <Text style={styles.companyEn}>FORTH CORPORATION PUBLIC COMPANY LIMITED</Text>
+
+          <View style={styles.headerRight}>
+            <View style={styles.docBadge}>
+              <Text style={styles.docBadgeText}>Material Return Report</Text>
+            </View>
+            <Text style={styles.printDateText}>พิมพ์เมื่อ: {printDateStr}</Text>
           </View>
         </View>
-        <Text style={styles.addressText}>
-          1053/1 ถนนพหลโยธิน แขวงพญาไท เขตพญาไท กรุงเทพมหานคร 10400 โทรศัพท์ : 02-265-6700 แฟกซ์ : 02-265-6799 เลขประจำตัวผู้เสียภาษี : 0107548000471{"\n"}
-          1053/1 Phaholyothin Road, Phayathai Subdistrict, Phayathai District, Bangkok 10400 Tel: +662-265-6700 Fax: +662-265-6799 Tax ID : 0107548000471
-        </Text>
 
         {/* Document Title */}
         <View style={styles.docTitleContainer}>
@@ -368,7 +508,7 @@ export const MaterialReturnPDF = ({ order, returnLogs: _returnLogs = [] }) => {
 
         {/* Meta Section */}
         <View style={styles.metaSection}>
-          <Text>ผู้ส่งคืน : {order?.borrower_name || '—'} {order?.borrower_department ? `(${order.borrower_department})` : ''} — คลัง : {warehouseName}</Text>
+          <Text>ผู้ส่งคืน : {order?.borrower_name || '—'}</Text>
           <Text>อ้างอิงใบยืม : {order?.order_number || '—'}</Text>
         </View>
         <View style={[styles.metaSection, { marginBottom: 10 }]}>
@@ -434,14 +574,24 @@ export const MaterialReturnPDF = ({ order, returnLogs: _returnLogs = [] }) => {
         {/* Signatures */}
         <View style={styles.signatureSection} wrap={false}>
           <View style={styles.signatureBox}>
-            <Text style={styles.sigName}>({order.borrower_name || '...................................................'})</Text>
-            <Text style={styles.sigRole}>ผู้ส่งคืนพัสดุ / ช่างผู้คืน</Text>
+            {returnBorrowerSignatureUrl ? (
+              <Image src={returnBorrowerSignatureUrl} style={styles.sigImage} />
+            ) : (
+              <View style={styles.sigSpacer} />
+            )}
+            <Text style={styles.sigName}>({borrowerDisplayName})</Text>
+            <Text style={styles.sigRole}>ผู้ส่งคืนพัสดุ</Text>
             <Text style={styles.sigDate}>วันที่: ....../....../...........</Text>
           </View>
 
           <View style={styles.signatureBox}>
-            <Text style={styles.sigName}>({order.profiles?.full_name || '...................................................'})</Text>
-            <Text style={styles.sigRole}>ผู้ตรวจรับคืน / เจ้าหน้าที่คลัง</Text>
+            {returnReceiverSignatureUrl ? (
+              <Image src={returnReceiverSignatureUrl} style={styles.sigImage} />
+            ) : (
+              <View style={styles.sigSpacer} />
+            )}
+            <Text style={styles.sigName}>({returnReceiverName})</Text>
+            <Text style={styles.sigRole}>ผู้ตรวจรับคืน</Text>
             <Text style={styles.sigDate}>วันที่: ....../....../...........</Text>
           </View>
         </View>

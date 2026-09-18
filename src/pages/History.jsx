@@ -80,7 +80,13 @@ const History = () => {
           ),
           profiles:requested_by (
             id,
-            full_name
+            full_name,
+            signature_url
+          ),
+          approver:approved_by (
+            id,
+            full_name,
+            signature_url
           ),
           withdrawal_items (
             id,
@@ -352,7 +358,7 @@ const History = () => {
                 <Building2 className="w-4 h-4 text-indigo-500 shrink-0" />
                 <div>
                   <span className="text-muted-foreground block">{t('history.project', 'Project')}:</span>
-                  <span className="font-bold text-indigo-600 dark:text-indigo-300">
+                  <span className="font-bold text-primary">
                     {selectedOrder?.projects?.project_code ? `[${selectedOrder.projects.project_code}] ` : ''}
                     {selectedOrder?.projects?.name || '—'}
                   </span>
@@ -396,18 +402,18 @@ const History = () => {
               )}
 
               {(selectedOrder?.is_shortage_override || selectedOrder?.override_reason) && (
-                <div className="col-span-1 sm:col-span-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 p-3 rounded-lg text-amber-800 dark:text-amber-300">
-                  <p className="font-bold flex items-center gap-1.5 text-xs">
+                <div className="col-span-1 sm:col-span-2 bg-amber-500/10 border border-amber-500/30 p-3 rounded-lg text-foreground">
+                  <p className="font-bold flex items-center gap-1.5 text-xs text-amber-500">
                     {t('withdrawals.overrideReason', 'Shortage Override Note')}:
                   </p>
-                  <p className="mt-1 text-xs">{selectedOrder.override_reason || t('withdrawals.overrideReasonDefault', 'Approved with shortage per administrator decision')}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{selectedOrder.override_reason || t('withdrawals.overrideReasonDefault', 'Approved with shortage per administrator decision')}</p>
                 </div>
               )}
 
               {selectedOrder?.reject_reason && (
-                <div className="col-span-1 sm:col-span-2 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 p-3 rounded-lg text-rose-800 dark:text-rose-300">
-                  <p className="font-bold text-xs">{t('withdrawals.rejectReason', 'Reject Reason')}:</p>
-                  <p className="mt-1 text-xs">{selectedOrder.reject_reason}</p>
+                <div className="col-span-1 sm:col-span-2 bg-destructive/10 border border-destructive/30 p-3 rounded-lg text-foreground">
+                  <p className="font-bold text-xs text-destructive">{t('withdrawals.rejectReason', 'Reject Reason')}:</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{selectedOrder.reject_reason}</p>
                 </div>
               )}
             </div>
@@ -430,8 +436,8 @@ const History = () => {
                     <TableRow className="text-xs">
                       <TableHead className="font-bold">{t('items.itemName', 'Item Name')}</TableHead>
                       <TableHead className="text-center font-bold">{t('withdrawals.requested', 'Requested')}</TableHead>
-                      <TableHead className="text-center text-emerald-600 dark:text-emerald-400 font-bold">{t('history.stockDeducted', 'Stock Deducted')}</TableHead>
-                      <TableHead className="text-center text-amber-600 dark:text-amber-400 font-bold">{t('history.shortage', 'Shortage')}</TableHead>
+                      <TableHead className="text-center text-emerald-500 font-bold">{t('history.stockDeducted', 'Stock Deducted')}</TableHead>
+                      <TableHead className="text-center text-amber-500 font-bold">{t('history.shortage', 'Shortage')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody className="text-xs">
@@ -460,12 +466,12 @@ const History = () => {
                             {isPending ? (
                               <span className="text-muted-foreground italic font-normal">{t('history.pendingLabel', '- (Pending)')}</span>
                             ) : isApprovedOrCompleted ? (
-                              <span className="font-bold text-emerald-600 dark:text-emerald-400">{deducted} {item.items?.unit || ''}</span>
+                              <span className="font-bold text-emerald-500">{deducted} {item.items?.unit || ''}</span>
                             ) : (
                               <span className="text-muted-foreground italic font-normal">-</span>
                             )}
                           </TableCell>
-                          <TableCell className="text-center font-bold text-amber-600 dark:text-amber-400 bg-amber-50/50 dark:bg-amber-950/20">
+                          <TableCell className="text-center font-bold text-amber-500 bg-amber-500/10">
                             {shortage > 0 ? `${shortage} ${item.items?.unit || ''}` : '-'}
                           </TableCell>
                         </TableRow>
@@ -484,9 +490,9 @@ const History = () => {
               variant="outline"
               size="sm"
               onClick={() => handleDownloadPDF(selectedOrder)}
-              className="text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-900/60 hover:bg-purple-50 dark:hover:bg-purple-950/40 font-semibold cursor-pointer gap-1.5"
+              className="text-purple-500 border-purple-500/30 bg-purple-500/10 hover:bg-purple-500/20 font-semibold cursor-pointer gap-1.5"
             >
-              <FileText className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+              <FileText className="w-4 h-4 text-purple-500" />
               <span>{t('history.printPdf', 'Print / Download PDF')}</span>
             </Button>
             <Button

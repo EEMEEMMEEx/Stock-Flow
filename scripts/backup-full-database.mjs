@@ -151,6 +151,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   department TEXT,
   "position" TEXT,
   avatar_url TEXT,
+  signature_url TEXT,
   all_projects BOOLEAN DEFAULT TRUE,
   must_change_password BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMPTZ DEFAULT NOW(),

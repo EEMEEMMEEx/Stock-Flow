@@ -8,11 +8,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { 
   User, Mail, KeyRound, Save, Camera, 
-  RefreshCw, CheckCircle2, Lock, FolderKanban, Sparkles, Globe
+  RefreshCw, CheckCircle2, Lock, FolderKanban, Sparkles, Globe, PenTool
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { uploadAvatarImage } from '@/lib/avatarUpload';
 import RoleBadge from '@/components/ui/RoleBadge';
+import SignatureCanvas from '@/components/profile/SignatureCanvas';
 import { getRoleLabel } from '@/lib/roleUtils';
 import { useTranslation } from '@/i18n';
 import LanguageSwitcher from '@/components/common/LanguageSwitcher';
@@ -22,12 +23,18 @@ const Profile = () => {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   
-  // Tab state: 'info' | 'password'
+  // Tab state: 'info' | 'password' | 'signature'
   const [activeTab, setActiveTab] = useState('info');
 
   useEffect(() => {
     const requestedTab = searchParams.get('tab');
-    setActiveTab(requestedTab === 'password' ? 'password' : 'info');
+    if (requestedTab === 'password') {
+      setActiveTab('password');
+    } else if (requestedTab === 'signature') {
+      setActiveTab('signature');
+    } else {
+      setActiveTab('info');
+    }
   }, [searchParams]);
 
   // Form State
@@ -345,7 +352,7 @@ const Profile = () => {
                   roleObj={profile?.roles} 
                 />
 
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> {t('profile.activeAccount')}
                 </span>
               </div>
@@ -380,6 +387,19 @@ const Profile = () => {
         >
           <KeyRound className="w-4 h-4" />
           {t('profile.changePasswordTab')}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('signature')}
+          className={`px-3.5 py-2 rounded-lg font-semibold text-xs transition-all cursor-pointer flex items-center gap-2 ${
+            activeTab === 'signature'
+              ? 'bg-primary text-primary-foreground shadow-xs'
+              : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+          }`}
+        >
+          <PenTool className="w-4 h-4" />
+          {t('profile.signatureTab', 'ลายเซ็น')}
         </button>
       </div>
 
@@ -619,6 +639,11 @@ const Profile = () => {
             </CardContent>
           </Card>
         </form>
+      )}
+
+      {/* TAB 3: Digital Signature Management */}
+      {activeTab === 'signature' && (
+        <SignatureCanvas />
       )}
     </div>
   );

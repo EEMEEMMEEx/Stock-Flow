@@ -26,6 +26,7 @@ const CheckoutDetailModal = ({
   const [returnLogs, setReturnLogs] = useState([]);
   const [extensionLogs, setExtensionLogs] = useState([]);
   const [generatingPdf, setGeneratingPdf] = useState(false);
+  const [staffProfile, setStaffProfile] = useState(null);
 
   useEffect(() => {
     if (order?.id && isOpen) {
@@ -33,6 +34,36 @@ const CheckoutDetailModal = ({
       fetchExtensionLogs(order.id);
     }
   }, [order?.id, isOpen]);
+
+  // Resolve warehouse officer profile for the checkout transaction
+  useEffect(() => {
+    if (!order || !isOpen) {
+      setStaffProfile(null);
+      return;
+    }
+
+    const existingProfile = Array.isArray(order.profiles)
+      ? order.profiles[0]
+      : (order.profiles || order.creator || order.created_by_profile);
+
+    if (existingProfile?.full_name) {
+      setStaffProfile(existingProfile);
+      return;
+    }
+
+    if (order.created_by) {
+      supabase
+        .from('profiles')
+        .select('id, full_name, email, role, signature_url')
+        .eq('id', order.created_by)
+        .maybeSingle()
+        .then(({ data, error }) => {
+          if (!error && data) {
+            setStaffProfile(data);
+          }
+        });
+    }
+  }, [order, isOpen]);
 
   const fetchExtensionLogs = async (orderId) => {
     try {
@@ -64,7 +95,7 @@ const CheckoutDetailModal = ({
             items (name, unit)
           ),
           projects (name, project_code),
-          profiles:received_by (full_name)
+          profiles:received_by (id, full_name, signature_url)
         `)
         .eq('checkout_order_id', orderId)
         .order('returned_at', { ascending: false });
@@ -89,7 +120,7 @@ const CheckoutDetailModal = ({
   const handleDownloadCheckoutPDF = async () => {
     try {
       setGeneratingPdf(true);
-      const blob = await pdf(<MaterialCheckoutPDF order={order} />).toBlob();
+      const blob = await pdf(<MaterialCheckoutPDF order={order} staffProfile={staffProfile} />).toBlob();
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -108,7 +139,7 @@ const CheckoutDetailModal = ({
   const handleDownloadReturnPDF = async () => {
     try {
       setGeneratingPdf(true);
-      const blob = await pdf(<MaterialReturnPDF order={order} returnLogs={returnLogs} />).toBlob();
+      const blob = await pdf(<MaterialReturnPDF order={order} returnLogs={returnLogs} staffProfile={staffProfile} />).toBlob();
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -126,7 +157,7 @@ const CheckoutDetailModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[700px] rounded-xl bg-card p-6 border border-border shadow-xl">
+      <DialogContent className="sm:max-w-175 rounded-xl bg-card p-6 border border-border shadow-xl">
         <DialogHeader className="space-y-2 border-b border-border/40 pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -172,7 +203,7 @@ const CheckoutDetailModal = ({
           </div>
         </DialogHeader>
 
-        <div className="space-y-4 max-h-[440px] overflow-y-auto pr-1">
+        <div className="space-y-4 max-h-110 overflow-y-auto pr-1">
           {/* Info Card */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 rounded-xl bg-muted/30 border border-border text-xs">
             <div className="space-y-1.5">
@@ -218,38 +249,40 @@ const CheckoutDetailModal = ({
               <span>{t('checkouts.itemsInLoan')} ({checkoutItems.length} {t('common.piece')})</span>
             </h4>
 
-            <div className="rounded-lg border border-border overflow-hidden divide-y divide-border/40">
-              <div className="bg-muted/50 p-2.5 grid grid-cols-12 text-[11px] font-bold text-muted-foreground">
-                <div className="col-span-6">{t('items.itemName')}</div>
-                <div className="col-span-2 text-center">{t('checkouts.borrowQty')}</div>
-                <div className="col-span-2 text-center">{t('checkouts.returnQty')}</div>
-                <div className="col-span-2 text-center">{t('stockIn.qtySourceRemaining')}</div>
-              </div>
+            <div className="rounded-lg border border-border overflow-hidden">
+              <div className="divide-y divide-border/40">
+                <div className="bg-muted/50 p-2.5 grid grid-cols-12 text-[11px] font-bold text-muted-foreground">
+                  <div className="col-span-6">{t('items.itemName')}</div>
+                  <div className="col-span-2 text-center">{t('checkouts.borrowQty')}</div>
+                  <div className="col-span-2 text-center">{t('checkouts.returnQty')}</div>
+                  <div className="col-span-2 text-center">{t('stockIn.qtySourceRemaining')}</div>
+                </div>
 
-              {checkoutItems.map((item, idx) => {
-                const rem = item.quantity_borrowed - (item.quantity_returned + item.quantity_damaged + item.quantity_lost);
-                return (
-                  <div key={item.id || idx} className="p-2.5 grid grid-cols-12 text-xs items-center">
-                    <div className="col-span-6 space-y-0.5">
-                      <p className="font-bold text-foreground line-clamp-1">{item.items?.name || t('dashboard.item')}</p>
-                      {item.serial_number && (
-                        <p className="text-[10px] text-indigo-600 dark:text-indigo-400 font-mono">S/N: {item.serial_number}</p>
-                      )}
+                {checkoutItems.map((item, idx) => {
+                  const rem = item.quantity_borrowed - (item.quantity_returned + item.quantity_damaged + item.quantity_lost);
+                  return (
+                    <div key={item.id || idx} className="p-2.5 grid grid-cols-12 text-xs items-center">
+                      <div className="col-span-6 space-y-0.5">
+                        <p className="font-bold text-foreground line-clamp-1">{item.items?.name || t('dashboard.item')}</p>
+                        {item.serial_number && (
+                          <p className="text-[10px] text-indigo-600 dark:text-indigo-400 font-mono">S/N: {item.serial_number}</p>
+                        )}
+                      </div>
+                      <div className="col-span-2 text-center font-mono font-semibold">
+                        {item.quantity_borrowed} {item.items?.unit || t('common.piece')}
+                      </div>
+                      <div className="col-span-2 text-center font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                        {item.quantity_returned}
+                      </div>
+                      <div className="col-span-2 text-center font-mono font-bold">
+                        <span className={rem > 0 ? 'text-indigo-600 dark:text-indigo-400' : 'text-muted-foreground'}>
+                          {rem}
+                        </span>
+                      </div>
                     </div>
-                    <div className="col-span-2 text-center font-mono font-semibold">
-                      {item.quantity_borrowed} {item.items?.unit || t('common.piece')}
-                    </div>
-                    <div className="col-span-2 text-center font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                      {item.quantity_returned}
-                    </div>
-                    <div className="col-span-2 text-center font-mono font-bold">
-                      <span className={rem > 0 ? 'text-indigo-600 dark:text-indigo-400' : 'text-muted-foreground'}>
-                        {rem}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           </div>
 
@@ -349,10 +382,10 @@ const CheckoutDetailModal = ({
               size="sm"
               disabled={generatingPdf}
               onClick={handleDownloadCheckoutPDF}
-              className="rounded-lg h-9 text-xs gap-1.5 font-semibold shadow-2xs cursor-pointer"
+              className="rounded-lg h-9 text-xs gap-1.5 font-semibold text-indigo-700 dark:text-indigo-400 border-indigo-500/30 hover:bg-indigo-500/10 shadow-2xs cursor-pointer"
             >
-              <Download className="w-3.5 h-3.5" />
-              <span>{t('history.printPdf')}</span>
+              <FileText className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+              <span>{t('checkouts.printCheckoutSlip')}</span>
             </Button>
 
             {returnLogs.length > 0 && (
@@ -364,8 +397,8 @@ const CheckoutDetailModal = ({
                 onClick={handleDownloadReturnPDF}
                 className="rounded-lg h-9 text-xs gap-1.5 font-semibold text-emerald-700 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 shadow-2xs cursor-pointer"
               >
-                <Download className="w-3.5 h-3.5" />
-                <span>{t('history.printPdf')}</span>
+                <RotateCcw className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                <span>{t('checkouts.printReturnReceipt')}</span>
               </Button>
             )}
           </div>

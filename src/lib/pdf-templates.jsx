@@ -21,40 +21,69 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     position: 'relative'
   },
-  // Header
-  headerSection: {
+  // Executive Corporate Header
+  headerContainer: {
     flexDirection: 'row',
-    marginBottom: 0,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingBottom: 6,
+    borderBottomWidth: 1.5,
+    borderBottomColor: '#0284c7', // Forth Blue
+    marginBottom: 6
+  },
+  headerLeft: {
+    flexDirection: 'row',
     alignItems: 'center'
   },
-  logoContainer: {
-    marginRight: 10,
-  },
   logo: {
-    height: 80,
-    width: 160,
-    objectFit: 'contain'
+    height: 38,
+    width: 90,
+    objectFit: 'contain',
+    marginRight: 8
   },
-  companyNames: {
-    flexDirection: 'column',
+  companyDetails: {
+    flexDirection: 'column'
+  },
+  companyNameTh: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: '#0f172a',
+    lineHeight: 1.1
+  },
+  companyNameEn: {
+    fontFamily: 'Helvetica',
+    fontSize: 7.5,
+    color: '#0284c7',
+    letterSpacing: 0.5,
+    marginTop: 1
+  },
+  companyAddress: {
+    fontSize: 7.5,
+    color: '#64748b',
+    marginTop: 2,
+    lineHeight: 1.15
+  },
+  headerRight: {
+    alignItems: 'flex-end',
     justifyContent: 'center'
   },
-  companyTh: {
-    fontSize: 28,
-    color: '#5b9bd5', // เปลี่ยนสีให้ฟ้าอ่อนและนวลขึ้นเหมือนต้นฉบับ
-    marginBottom: -3, // บีบช่องว่างระหว่างบรรทัดไทยกับอังกฤษ
+  docBadge: {
+    backgroundColor: '#f0f9ff',
+    borderWidth: 1,
+    borderColor: '#bae6fd',
+    borderRadius: 3,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    marginBottom: 3
   },
-  companyEn: {
-    fontFamily: 'Helvetica', // ตัวอังกฤษในต้นฉบับไม่ใช่ Sarabun แต่เป็นฟอนต์ตระกูล Sans-Serif ที่กลมและกว้าง
-    fontSize: 12,
-    color: '#5b9bd5',
-    letterSpacing: 0.5, // ขยายระยะห่างตัวอักษรเล็กน้อยให้กว้างเท่าภาษาไทย
+  docBadgeText: {
+    fontSize: 8.5,
+    fontWeight: 'bold',
+    color: '#0369a1'
   },
-  addressText: {
-    fontSize: 11, // ขนาดฟอนต์ที่อยู่และเลขผู้เสียภาษี (14pt)
-    color: '#5d9cec',
-    marginTop: -10, // ขยับขึ้นไปชิดกับชื่อบริษัท
-    lineHeight: 1.2,
+  printDateText: {
+    fontSize: 8,
+    color: '#64748b'
   },
   // Document Title
   docTitleContainer: {
@@ -140,28 +169,36 @@ const styles = StyleSheet.create({
   signatureBox: {
     width: '42%',
     alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: '#94a3b8',
     paddingTop: 8,
   },
   sigName: {
     fontSize: 11,
     fontWeight: 'bold',
-    color: '#0f172a',
+    color: '#000000',
     textAlign: 'center',
     marginTop: 2,
   },
   sigRole: {
     fontSize: 10,
-    color: '#64748b',
+    color: '#000000',
     marginTop: 2,
     textAlign: 'center',
   },
   sigDate: {
     fontSize: 10,
-    color: '#94a3b8',
+    color: '#000000',
     marginTop: 3,
     textAlign: 'center',
+  },
+  sigImage: {
+    height: 32,
+    width: 90,
+    objectFit: 'contain',
+    marginBottom: 4,
+  },
+  sigSpacer: {
+    height: 32,
+    marginBottom: 4,
   },
 
   // Report columns
@@ -184,24 +221,49 @@ export const MaterialWithdrawalPDF = ({ order, items, profile }) => {
     ? new Date(order.requested_at).toLocaleDateString('th-TH')
     : new Date().toLocaleDateString('th-TH');
 
+  const printDateStr = new Date().toLocaleDateString('th-TH', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+
+  // Resolve digital signature images
+  const requesterSignatureUrl = order?.profiles?.signature_url
+    || order?.requester?.signature_url
+    || order?.requester_signature_url
+    || (order?.requested_by === profile?.id ? profile?.signature_url : null)
+    || null;
+
+  const approverSignatureUrl = (profile?.signature_url && profile?.id !== order?.requested_by ? profile.signature_url : order?.approver?.signature_url)
+    || order?.approved_by_profile?.signature_url
+    || null;
+
   return (
     <Document>
       <Page size="A4" style={styles.page}>
 
-        {/* Header */}
-        <View style={styles.headerSection}>
-          <View style={styles.logoContainer}>
+        {/* Executive Corporate Header */}
+        <View style={styles.headerContainer}>
+          <View style={styles.headerLeft}>
             <Image src="/images/logo.png" style={styles.logo} />
+            <View style={styles.companyDetails}>
+              <Text style={styles.companyNameTh}>บริษัท ฟอร์ท คอร์ปอเรชั่น จำกัด (มหาชน)</Text>
+              <Text style={styles.companyNameEn}>FORTH CORPORATION PUBLIC COMPANY LIMITED</Text>
+              <Text style={styles.companyAddress}>
+                1053/1 ถนนพหลโยธิน แขวงพญาไท เขตพญาไท กรุงเทพมหานคร 10400 โทรศัพท์: 02-265-6700
+              </Text>
+            </View>
           </View>
-          <View style={styles.companyNames}>
-            <Text style={styles.companyTh}>บริษัท ฟอร์ท คอร์ปอเรชั่น จำกัด (มหาชน)</Text>
-            <Text style={styles.companyEn}>FORTH CORPORATION PUBLIC COMPANY LIMITED</Text>
+
+          <View style={styles.headerRight}>
+            <View style={styles.docBadge}>
+              <Text style={styles.docBadgeText}>MATERIAL WITHDRAWAL REPORT</Text>
+            </View>
+            <Text style={styles.printDateText}>พิมพ์เมื่อ: {printDateStr}</Text>
           </View>
         </View>
-        <Text style={styles.addressText}>
-          1053/1 ถนนพหลโยธิน แขวงพญาไท เขตพญาไท กรุงเทพมหานคร 10400 โทรศัพท์ : 02-265-6700 แฟกซ์ : 02-265-6799 เลขประจำตัวผู้เสียภาษี : 0107548000471{"\n"}
-          1053/1 Phaholyothin Road, Phayathai Subdistrict, Phayathai District, Bangkok 10400 Tel: +662-265-6700 Fax: +662-265-6799 Tax ID : 0107548000471
-        </Text>
 
         {/* Document Title */}
         <View style={styles.docTitleContainer}>
@@ -258,14 +320,24 @@ export const MaterialWithdrawalPDF = ({ order, items, profile }) => {
         {/* Signatures */}
         <View style={styles.signatureSection} wrap={false}>
           <View style={styles.signatureBox}>
-            <Text style={styles.sigName}>({order?.borrower_name || order?.requester_name || order?.projects?.name || '...................................................'})</Text>
-            <Text style={styles.sigRole}>ผู้ขอยืมพัสดุ / ช่างผู้เบิก</Text>
+            {requesterSignatureUrl ? (
+              <Image src={requesterSignatureUrl} style={styles.sigImage} />
+            ) : (
+              <View style={styles.sigSpacer} />
+            )}
+            <Text style={styles.sigName}>({order?.profiles?.full_name || order?.requester_name || '...................................................'})</Text>
+            <Text style={styles.sigRole}>ผู้ขอเบิกพัสดุ</Text>
             <Text style={styles.sigDate}>วันที่: ....../....../...........</Text>
           </View>
 
           <View style={styles.signatureBox}>
-            <Text style={styles.sigName}>({order?.profiles?.full_name || profile?.full_name || '...................................................'})</Text>
-            <Text style={styles.sigRole}>เจ้าหน้าที่ผู้จ่ายพัสดุ / เจ้าหน้าที่คลัง</Text>
+            {approverSignatureUrl ? (
+              <Image src={approverSignatureUrl} style={styles.sigImage} />
+            ) : (
+              <View style={styles.sigSpacer} />
+            )}
+            <Text style={styles.sigName}>({(profile?.full_name && profile?.id !== order?.requested_by ? profile.full_name : order?.approver?.full_name) || '...................................................'})</Text>
+            <Text style={styles.sigRole}>เจ้าหน้าที่ผู้จ่ายพัสดุ</Text>
             <Text style={styles.sigDate}>วันที่: ....../....../...........</Text>
           </View>
         </View>
@@ -802,7 +874,7 @@ export const StockReportPDF = ({
               <Text style={reportStyles.companyNameTh}>บริษัท ฟอร์ท คอร์ปอเรชั่น จำกัด (มหาชน)</Text>
               <Text style={reportStyles.companyNameEn}>FORTH CORPORATION PUBLIC COMPANY LIMITED</Text>
               <Text style={reportStyles.companyAddress}>
-                1053/1 ถนนพหลโยธิน แขวงพญาไท เขตพญาไท กรุงเทพมหานคร 10400 โทรศัพท์ : 02-265-6700
+                1053/1 ถนนพหลโยธิน แขวงพญาไท เขตพญาไท กรุงเทพมหานคร 10400 โทรศัพท์: 02-265-6700
               </Text>
             </View>
           </View>
@@ -929,7 +1001,7 @@ export const SiteKitsReportPDF = ({
               <Text style={reportStyles.companyNameTh}>บริษัท ฟอร์ท คอร์ปอเรชั่น จำกัด (มหาชน)</Text>
               <Text style={reportStyles.companyNameEn}>FORTH CORPORATION PUBLIC COMPANY LIMITED</Text>
               <Text style={reportStyles.companyAddress}>
-                1053/1 ถนนพหลโยธิน แขวงพญาไท เขตพญาไท กรุงเทพมหานคร 10400 โทรศัพท์ : 02-265-6700
+                1053/1 ถนนพหลโยธิน แขวงพญาไท เขตพญาไท กรุงเทพมหานคร 10400 โทรศัพท์: 02-265-6700
               </Text>
             </View>
           </View>
