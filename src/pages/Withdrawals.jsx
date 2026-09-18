@@ -685,8 +685,12 @@ const Withdrawals = () => {
             <ClipboardList className="w-3.5 h-3.5 text-emerald-400" />
             <span>{t('withdrawals.requisitionsTab')}</span>
             {pendingOrdersCount > 0 && (
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-extrabold bg-amber-500 text-slate-950 animate-pulse">
-                {pendingOrdersCount} {t('common.pending')}
+              <span
+                className="px-2 py-0.5 rounded-full text-[10px] font-mono font-extrabold bg-amber-500 text-slate-950 animate-pulse"
+                title={`${pendingOrdersCount} ${t('common.pending')}`}
+                aria-label={`${pendingOrdersCount} ${t('common.pending')}`}
+              >
+                {pendingOrdersCount}
               </span>
             )}
           </button>

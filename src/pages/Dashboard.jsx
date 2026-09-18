@@ -19,6 +19,7 @@ import { useTranslation } from '@/i18n';
 import DashboardStatCard from '@/components/dashboard/DashboardStatCard';
 import SiteKitAvailabilityCards from '@/components/dashboard/SiteKitAvailabilityCards';
 import { fetchSiteKitsAvailability } from '@/lib/siteKits';
+import StatusBadge from '@/components/ui/StatusBadge';
 
 // Custom Rotated & Truncated X-Axis Tick Component
 const CustomXAxisTick = ({ x, y, payload, isItemMode, theme }) => {
@@ -312,15 +313,7 @@ const Dashboard = () => {
     },
   ], [t, stats.pendingCount, stats.projectCount, stats.logicalProjectCount, stats.itemCount, stats.totalStockUnits, stats.todayWithdrawals]);
 
-  const getStatusLabel = (status) => {
-    switch (status) {
-      case 'pending': return { text: t('common.pending', 'Pending'), cls: 'text-amber-700 bg-amber-500/10 border-amber-500/30 dark:text-amber-300 dark:bg-amber-400/15' };
-      case 'approved': return { text: t('common.approved', 'Approved'), cls: 'text-blue-700 bg-blue-500/10 border-blue-500/30 dark:text-blue-300 dark:bg-blue-400/15' };
-      case 'completed': return { text: t('common.completed', 'Completed'), cls: 'text-emerald-700 bg-emerald-500/10 border-emerald-500/30 dark:text-emerald-300 dark:bg-emerald-400/15' };
-      case 'rejected': return { text: t('common.rejected', 'Rejected'), cls: 'text-red-700 bg-red-500/10 border-red-500/30 dark:text-red-300 dark:bg-red-400/15' };
-      default: return { text: status, cls: 'text-muted-foreground bg-muted/70 border-border' };
-    }
-  };
+
 
   const chartTheme = useMemo(() => (
     resolvedTheme === 'dark'
@@ -541,17 +534,13 @@ const Dashboard = () => {
           <CardContent className="flex-1 p-0">
             {recentActivity.length > 0 ? (
               <div className="flex flex-col divide-y divide-border/40">
-                {recentActivity.map((item, i) => {
-                  const statusInfo = getStatusLabel(item.status);
-                  return (
-                    <div key={i} className="flex flex-col p-4 hover:bg-muted/10 transition-colors">
+                {recentActivity.map((item, i) => (
+                  <div key={i} className="flex flex-col p-4 hover:bg-muted/10 transition-colors">
                       <div className="flex justify-between items-start mb-1.5">
                         <span className="text-[11px] font-mono font-medium text-muted-foreground/80">
                           {format(new Date(item.requested_at), 'dd/MM HH:mm')}
                         </span>
-                        <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider border rounded-md shadow-2xs ${statusInfo.cls}`}>
-                          {statusInfo.text}
-                        </span>
+                        <StatusBadge status={item.status} size="sm" />
                       </div>
                       <p className="text-xs font-bold text-foreground leading-snug mb-1">
                         {t('dashboard.withdrewItem', {
@@ -567,9 +556,8 @@ const Dashboard = () => {
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                         {item.projects?.name || t('dashboard.centralWarehouse', 'Central Warehouse')}
                       </p>
-                    </div>
-                  );
-                })}
+                  </div>
+                ))}
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center h-full min-h-[350px] text-muted-foreground p-6">

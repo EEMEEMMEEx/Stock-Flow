@@ -4,6 +4,7 @@ import { ArrowUpDown, ArrowUp, ArrowDown, AlertCircle, CheckCircle2, Clock, XCir
 import ReportEmptyState from './ReportEmptyState';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTranslation } from '@/i18n';
+import StatusBadge from '@/components/ui/StatusBadge';
 
 const ReportDataTable = ({
   activeTab,
@@ -275,39 +276,11 @@ const ReportDataTable = ({
                     <TableCell className="text-muted-foreground">{row.profiles?.full_name || '-'}</TableCell>
 
                     <TableCell className="text-center">
-                      <span
-                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold border ${
-                          row.has_shortage
-                            ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800'
-                            : row.status === 'approved' || row.status === 'completed'
-                            ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
-                            : row.status === 'rejected'
-                            ? 'bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800'
-                            : 'bg-yellow-50 dark:bg-yellow-950/60 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800'
-                        }`}
-                      >
-                        {row.has_shortage ? (
-                          <>
-                            <AlertCircle className="w-3 h-3 text-amber-600 shrink-0" />
-                            <span>{t(`status.${row.status}`)} {t('reports.table.shortageSuffix', { shortage: t('reports.charts.shortage') })}</span>
-                          </>
-                        ) : row.status === 'approved' || row.status === 'completed' ? (
-                          <>
-                            <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
-                            <span>{t(`status.${row.status}`)}</span>
-                          </>
-                        ) : row.status === 'rejected' ? (
-                          <>
-                            <XCircle className="w-3 h-3 text-rose-600 shrink-0" />
-                            <span>{t(`status.${row.status}`)}</span>
-                          </>
-                        ) : (
-                          <>
-                            <Clock className="w-3 h-3 text-yellow-600 shrink-0" />
-                            <span>{t(`status.${row.status}`)}</span>
-                          </>
-                        )}
-                      </span>
+                      <StatusBadge
+                        status={row.status}
+                        has_shortage={row.has_shortage}
+                        size="sm"
+                      />
                     </TableCell>
 
                     <TableCell className="text-center font-semibold text-foreground">

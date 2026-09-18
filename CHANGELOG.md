@@ -1,5 +1,23 @@
 # Changelog
 
+## [2026-09-18 09:42] - v1.10.15
+
+- **Files Modified:** `src/components/ui/StatusBadge.jsx`, `src/components/history/HistoryDataTable.jsx`, `src/components/withdrawals/WithdrawalOrdersList.jsx`, `src/components/withdrawals/WithdrawalDetailModal.jsx`, `src/components/reports/ReportDataTable.jsx`, `src/components/checkouts/CheckoutDetailModal.jsx`, `src/components/checkouts/CheckoutReturnModal.jsx`, `src/pages/Dashboard.jsx`, `src/pages/Withdrawals.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`, `docs/status-icon-display-system-plan.md`
+- **Changes:**
+  - **Status Icon-Only Display System (`StatusBadge.jsx`):**
+    - ปรับปรุงการแสดงสถานะรายการคำขอและการทำรายการทั่วทั้งโปรเจกต์ โดยนำข้อความแสดงชื่อสถานะออกทั้งหมด (`✕ Rejected`, `✓ Approved`, `✓ Completed`, `⏱ Pending`) เหลือเพียง **ไอคอนสถานะ (Icon Only)**
+    - กำหนด Icon และ Color Mapping ตามมาตรฐาน:
+      - `Rejected` ➔ ไอคอนกากบาทสีแดง (`XCircle`, `text-rose-600 dark:text-rose-400 bg-rose-500/10`)
+      - `Approved` ➔ ไอคอนเครื่องหมายถูกสีเขียว (`CheckCircle2`, `text-emerald-600 dark:text-emerald-400 bg-emerald-500/10`)
+      - `Completed` ➔ ไอคอนสำเร็จสีเขียว (`CheckCircle2`, `text-emerald-600 dark:text-emerald-400 bg-emerald-500/10`)
+      - `Pending` ➔ ไอคอนรอดำเนินการสีเหลือง/ส้ม (`Clock`, `text-amber-600 dark:text-amber-400 bg-amber-500/10 animate-pulse`)
+      - `Shortage` ➔ ไอคอนเตือน (`AlertTriangle`, `text-amber-600 dark:text-amber-400 bg-amber-500/15`)
+    - รองรับ Accessibility (a11y) ครบถ้วนด้วย `role="status"`, `aria-label`, Tooltip `title` และ Screen Reader text (`sr-only`)
+    - แทนที่ป้ายสถานะเดิมใน `HistoryDataTable.jsx`, `WithdrawalOrdersList.jsx`, `WithdrawalDetailModal.jsx`, `ReportDataTable.jsx`, `CheckoutDetailModal.jsx`, `CheckoutReturnModal.jsx`, และ `Dashboard.jsx` ด้วย `StatusBadge` รวมศูนย์
+    - รักษาตรรกะสิทธิ์และความปลอดภัยจาก `/roles` เป็น Single Source of Truth
+  - **Version Bump:**
+    - ปรับเวอร์ชันระบบเป็น `v1.10.15` (PATCH)
+
 ## [2026-09-18 09:25] - v1.10.14
 
 - **Files Modified:** `src/components/ui/UserStatusDot.jsx`, `src/pages/UserManagement.jsx`, `src/components/users/EditUserModal.jsx`, `src/components/users/UserActionModal.jsx`, `src/pages/Profile.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`, `docs/user-status-indicator-dot-plan.md`

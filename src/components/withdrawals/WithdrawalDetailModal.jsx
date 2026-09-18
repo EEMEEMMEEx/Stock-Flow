@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useTranslation } from '@/i18n';
+import StatusBadge from '@/components/ui/StatusBadge';
 
 const WithdrawalDetailModal = ({
   order,
@@ -50,29 +51,13 @@ const WithdrawalDetailModal = ({
               </div>
             </div>
 
-            {/* Status Pill */}
+            {/* Status Icon Badge */}
             <div className="shrink-0">
-              {isPending && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
-                  <Clock className="w-3.5 h-3.5" /> {t('withdrawals.pendingApproval', 'Pending Admin Approval')}
-                </span>
-              )}
-              {isApproved && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30">
-                  <CheckCircle2 className="w-3.5 h-3.5" /> {t('withdrawals.approvedPendingDelivery', 'Approved (Pending Delivery)')}
-                  {hasShortage && <span className="text-amber-500 font-extrabold">*{t('withdrawals.shortage', 'Shortage')}</span>}
-                </span>
-              )}
-              {isCompleted && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
-                  <CheckCircle2 className="w-3.5 h-3.5" /> {t('withdrawals.receiptCompleted', 'Receipt Completed')}
-                </span>
-              )}
-              {isRejected && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30">
-                  <XCircle className="w-3.5 h-3.5" /> {t('withdrawals.requestRejected', 'Request Rejected')}
-                </span>
-              )}
+              <StatusBadge
+                status={order.status}
+                has_shortage={hasShortage}
+                size="lg"
+              />
             </div>
           </div>
 

@@ -12,6 +12,7 @@ import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 import { supabase } from '@/lib/supabase';
 import { useTranslation } from '@/i18n';
+import StatusBadge from '@/components/ui/StatusBadge';
 
 const CheckoutDetailModal = ({
   isOpen,
@@ -186,20 +187,11 @@ const CheckoutDetailModal = ({
 
             {/* Status Badge */}
             {isOrderCompleted ? (
-              <span className="px-3 py-1 rounded-xl text-xs font-bold bg-emerald-500/15 text-emerald-600 border border-emerald-500/30 flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4" />
-                {t('common.completed')}
-              </span>
+              <StatusBadge status="completed" size="lg" />
             ) : order.status === 'partial_returned' || totalReturned > 0 ? (
-              <span className="px-3 py-1 rounded-xl text-xs font-bold bg-blue-500/15 text-blue-600 border border-blue-500/30 flex items-center gap-1.5">
-                <Clock className="w-4 h-4" />
-                {t('checkouts.processing')} ({totalReturned}/{totalBorrowed})
-              </span>
+              <StatusBadge status="pending" size="lg" title={`${t('checkouts.processing')} (${totalReturned}/${totalBorrowed})`} />
             ) : (
-              <span className="px-3 py-1 rounded-xl text-xs font-bold bg-amber-500/15 text-amber-700 border border-amber-500/30 flex items-center gap-1.5">
-                <Clock className="w-4 h-4" />
-                {t('common.active')}
-              </span>
+              <StatusBadge status="approved" size="lg" title={t('common.active')} />
             )}
           </div>
         </DialogHeader>

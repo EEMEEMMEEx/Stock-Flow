@@ -13,6 +13,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n';
 import SignatureRequiredModal from '@/components/common/SignatureRequiredModal';
+import StatusBadge from '@/components/ui/StatusBadge';
 
 const CheckoutReturnModal = ({
   isOpen,
@@ -263,9 +264,7 @@ const CheckoutReturnModal = ({
                       </div>
 
                       {item.remaining_to_return === 0 ? (
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/15 text-emerald-600">
-                          {t('common.completed')}
-                        </span>
+                        <StatusBadge status="completed" size="sm" />
                       ) : (
                         <Button
                           type="button"

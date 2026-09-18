@@ -1,55 +1,12 @@
 import { Card } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { FileText, Eye, Clock, CheckCircle2, AlertTriangle, XCircle, ArrowUpDown, Building2 } from 'lucide-react';
+import { FileText, Eye, ArrowUpDown, Building2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useTranslation } from '@/i18n';
+import StatusBadge from '@/components/ui/StatusBadge';
 
-export const StatusBadge = ({ status, has_shortage, is_shortage_override }) => {
-  const { t } = useTranslation();
-  switch (status) {
-    case 'pending':
-      return (
-        <span className="inline-flex items-center gap-1 text-amber-600 bg-amber-500/10 px-2.5 py-1 rounded-full text-xs font-semibold border border-amber-500/20">
-          <Clock className="w-3.5 h-3.5" /> {t('common.pending', 'Pending')}
-        </span>
-      );
-    case 'approved':
-      if (has_shortage || is_shortage_override) {
-        return (
-          <span className="inline-flex items-center gap-1 text-amber-700 dark:text-amber-300 bg-amber-500/15 px-2.5 py-1 rounded-full text-xs font-bold border border-amber-500/30">
-            <AlertTriangle className="w-3.5 h-3.5" /> {t('withdrawals.approvedShortage', 'Approved (Shortage)')}
-          </span>
-        );
-      }
-      return (
-        <span className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded-full text-xs font-semibold border border-blue-500/20">
-          <CheckCircle2 className="w-3.5 h-3.5" /> {t('common.approved', 'Approved')}
-        </span>
-      );
-    case 'completed':
-      if (has_shortage || is_shortage_override) {
-        return (
-          <span className="inline-flex items-center gap-1 text-amber-700 dark:text-amber-300 bg-amber-500/15 px-2.5 py-1 rounded-full text-xs font-bold border border-amber-500/30">
-            <AlertTriangle className="w-3.5 h-3.5" /> {t('withdrawals.completedShortage', 'Completed (Shortage)')}
-          </span>
-        );
-      }
-      return (
-        <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full text-xs font-semibold border border-emerald-500/20">
-          <CheckCircle2 className="w-3.5 h-3.5" /> {t('common.completed', 'Completed')}
-        </span>
-      );
-    case 'rejected':
-      return (
-        <span className="inline-flex items-center gap-1 text-rose-600 dark:text-rose-400 bg-rose-500/10 px-2.5 py-1 rounded-full text-xs font-semibold border border-rose-500/20">
-          <XCircle className="w-3.5 h-3.5" /> {t('common.rejected', 'Rejected')}
-        </span>
-      );
-    default:
-      return null;
-  }
-};
+export { StatusBadge };
 
 const HistoryDataTable = ({
   data = [],

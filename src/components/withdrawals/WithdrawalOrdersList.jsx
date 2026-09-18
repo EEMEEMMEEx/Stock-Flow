@@ -11,6 +11,7 @@ import {
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 import { useTranslation } from '@/i18n';
+import StatusBadge from '@/components/ui/StatusBadge';
 
 const WithdrawalOrdersList = ({
   orders = [],
@@ -65,43 +66,7 @@ const WithdrawalOrdersList = ({
   const completedOrdersCount = orders.filter(o => o.status === 'completed').length;
   const rejectedOrdersCount = orders.filter(o => o.status === 'rejected').length;
 
-  const StatusBadge = ({ status, has_shortage, is_shortage_override }) => {
-    switch (status) {
-      case 'pending':
-        return (
-          <span className="inline-flex items-center gap-1.5 text-amber-600 dark:text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full text-xs font-bold border border-amber-500/30 animate-pulse">
-            <Clock className="w-3.5 h-3.5" /> {t('common.pending', 'Pending Approval')}
-          </span>
-        );
-      case 'approved':
-        if (has_shortage || is_shortage_override) {
-          return (
-            <span className="inline-flex items-center gap-1.5 text-amber-600 dark:text-amber-400 bg-amber-500/15 px-3 py-1 rounded-full text-xs font-extrabold border border-amber-500/40">
-              <AlertTriangle className="w-3.5 h-3.5" /> {t('withdrawals.approvedShortage', 'Approved (Shortage)')}
-            </span>
-          );
-        }
-        return (
-          <span className="inline-flex items-center gap-1.5 text-blue-600 dark:text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full text-xs font-bold border border-blue-500/30">
-            <CheckCircle2 className="w-3.5 h-3.5" /> {t('common.approved', 'Approved')}
-          </span>
-        );
-      case 'completed':
-        return (
-          <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full text-xs font-bold border border-emerald-500/30">
-            <CheckCircle2 className="w-3.5 h-3.5" /> {t('common.completed', 'Completed')}
-          </span>
-        );
-      case 'rejected':
-        return (
-          <span className="inline-flex items-center gap-1.5 text-red-600 dark:text-red-400 bg-red-500/10 px-3 py-1 rounded-full text-xs font-bold border border-red-500/30">
-            <XCircle className="w-3.5 h-3.5" /> {t('common.rejected', 'Rejected')}
-          </span>
-        );
-      default:
-        return null;
-    }
-  };
+
 
   return (
     <div className="space-y-6 animate-in fade-in-50 duration-200">
