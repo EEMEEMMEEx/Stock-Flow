@@ -90,6 +90,7 @@ const CheckoutActiveList = ({
   const dueSoonCount = activeOrders.filter(o => o.isDueSoon).length;
   const activeLoansCount = activeOrders.length;
   const totalUnitsBorrowed = activeOrders.reduce((sum, o) => sum + o.remainingUnits, 0);
+  const onScheduleCount = Math.max(0, activeLoansCount - overdueCount);
 
   return (
     <div className="space-y-6">
@@ -111,7 +112,7 @@ const CheckoutActiveList = ({
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-xl font-bold tracking-tight text-foreground">{activeLoansCount}</span>
             <span className="text-xs text-muted-foreground font-medium">
-              {t('checkouts.ordersCount', { count: activeLoansCount })} ({t('checkouts.unitsCount', { count: totalUnitsBorrowed })})
+              {activeLoansCount === 1 ? t('checkouts.order', 'order') : t('checkouts.orders', 'orders')} ({t('checkouts.unitsCount', { count: totalUnitsBorrowed })})
             </span>
           </div>
         </Card>
@@ -131,7 +132,7 @@ const CheckoutActiveList = ({
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-xl font-bold tracking-tight text-amber-600 dark:text-amber-400">{dueSoonCount}</span>
             <span className="text-xs text-muted-foreground font-medium">
-              {t('checkouts.ordersCount', { count: dueSoonCount })}
+              {dueSoonCount === 1 ? t('checkouts.order', 'order') : t('checkouts.orders', 'orders')}
             </span>
           </div>
         </Card>
@@ -151,7 +152,7 @@ const CheckoutActiveList = ({
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-xl font-bold tracking-tight text-red-600 dark:text-red-400">{overdueCount}</span>
             <span className="text-xs text-muted-foreground font-medium">
-              {t('checkouts.ordersCount', { count: overdueCount })}
+              {overdueCount === 1 ? t('checkouts.order', 'order') : t('checkouts.orders', 'orders')}
             </span>
           </div>
         </Card>
@@ -170,10 +171,10 @@ const CheckoutActiveList = ({
           </div>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
-              {activeLoansCount - overdueCount}
+              {onScheduleCount}
             </span>
             <span className="text-xs text-muted-foreground font-medium">
-              {t('checkouts.ordersCount', { count: activeLoansCount - overdueCount })}
+              {onScheduleCount === 1 ? t('checkouts.order', 'order') : t('checkouts.orders', 'orders')}
             </span>
           </div>
         </Card>

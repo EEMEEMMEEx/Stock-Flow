@@ -1,5 +1,20 @@
 # Changelog
 
+## [2026-09-18 10:35] - v1.10.19
+
+- **Files Modified:** `src/components/checkouts/CheckoutActiveList.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **Update Checkouts Summary Cards Secondary Text UI:**
+    - ปรับปรุงการแสดงผลข้อความรอง (secondary text) ของการ์ดสรุปภาพรวม (Summary KPI Cards) ทั้ง 4 ใบในแท็บรายการกำลังยืม (`CheckoutActiveList.jsx`)
+    - นำตัวเลขจำนวนซ้ำซ้อนออกจากข้อความรอง ให้แสดงเฉพาะชื่อหน่วย `รายการ` / `order(s)` โดยคงตัวเลขหลักไว้ที่ main value:
+      - รายการที่กำลังยืมอยู่: `1 รายการ (1 หน่วย)` → `รายการ (1 หน่วย)`
+      - ใกล้ครบกำหนด (≤ 2 วัน): `1 รายการ` / `0 รายการ` → `รายการ`
+      - เกินกำหนดส่ง: `1 รายการ` / `0 รายการ` → `รายการ`
+      - ตรงตามกำหนด: `1 รายการ` / `0 รายการ` → `รายการ`
+    - รองรับ i18n สำหรับทั้งภาษาไทยและอังกฤษอย่างถูกต้อง
+  - **Version Bump:**
+    - ปรับเวอร์ชันระบบเป็น `v1.10.19` (PATCH)
+
 ## [2026-09-18 10:30] - v1.10.18
 
 - **Files Modified:** `src/pages/Checkouts.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`
