@@ -16,9 +16,9 @@ const filesToExtract = [
   'supabase/migrations/archive/32_harden_smtp_password_rpc_search_path.sql',
 
   // 3. User Operations & Password Management
-  'supabase/migrations/archive/08_rbac_and_user_management.sql',
   'supabase/migrations/archive/16_auto_default_password_and_force_change.sql',
   'supabase/migrations/archive/19_universal_user_deletion_repair.sql',
+  'supabase/migrations/73_resolve_admin_create_user_overload.sql',
 
   // 4. Operational & Transaction RPCs
   'supabase/migrations/archive/35_add_parent_child_hierarchy_to_stock_in.sql',
@@ -31,7 +31,8 @@ const filesToExtract = [
   'supabase/migrations/archive/44_material_checkout_and_return_system.sql',
   'supabase/migrations/55_checkout_due_date_extension.sql',
   'supabase/migrations/53_editable_bom_selection_rbac.sql',
-  'supabase/migrations/archive/51_site_installation_kits_rpc.sql'
+  'supabase/migrations/archive/51_site_installation_kits_rpc.sql',
+  'supabase/migrations/72_resolve_complete_inventory_request_overload.sql'
 ];
 
 let masterSql = `-- ==============================================================================

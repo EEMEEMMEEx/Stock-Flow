@@ -1,5 +1,19 @@
 # Changelog
 
+## [2026-09-21 14:55] - v1.10.20
+
+- **Files Modified:** `supabase/migrations/73_resolve_admin_create_user_overload.sql`, `scripts/apply-migration-73.mjs`, `scripts/test-admin-create-user.mjs`, `scripts/backup-full-database.mjs`, `scripts/bundle-all-rpcs.mjs`, `src/pages/UserManagement.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **Resolve `admin_create_user` RPC Overload Conflict (PGRST203):**
+    - แก้ไขข้อผิดพลาด PostgreSQL / Supabase RPC `PGRST203` ("Could not choose the best candidate function between: public.admin_create_user(...)")
+    - ลบฟังก์ชัน overload เดิม (9 พารามิเตอร์) ออกจากฐานข้อมูล และกำหนดมาตรฐานฟังก์ชันเดี่ยว (Canonical Signature) รองรับครบ 11 พารามิเตอร์: `p_email`, `p_password`, `p_full_name`, `p_role`, `p_phone`, `p_position`, `p_department`, `p_all_projects`, `p_project_ids`, `p_avatar_url`, `p_role_id`
+    - สร้างไมเกรชัน `73_resolve_admin_create_user_overload.sql` ด้วย dynamic PL/pgSQL DO block ทำการค้นหาและ DROP ทุก Overload ใน `pg_proc` ก่อนสร้างฟังก์ชัน Canonical ใหม่อย่างปลอดภัย
+    - ผสานการทำงาน atomic user creation ครอบคลุม: การตรวจสอบสิทธิ์ (`users.create` / `is_super_admin`), ลำดับชั้น Super Admin, ตรวจสอบอีเมลซ้ำ, รหัสผ่านเริ่มต้นจาก `system_secrets`, ความเข้ากันได้กับ GoTrue Auth (`auth.users` + `auth.identities`), บันทึก `profiles`, ผูกโครงการ `user_project_assignments` และบันทึก `audit_logs`
+    - อัปเดต `src/pages/UserManagement.jsx` ให้ส่งพารามิเตอร์ครบทั้ง 11 ตัวอย่างชัดเจน ขจัดปัญหาความคลุมเครือ 100%
+    - อัปเดตสคริปต์แบ็กอัป DDL (`scripts/backup-full-database.mjs`) และสคริปต์บันเดิล RPC (`scripts/bundle-all-rpcs.mjs`) ให้ใช้ Canonical Signature เดียวกัน
+  - **Version Bump:**
+    - ปรับเวอร์ชันระบบเป็น `v1.10.20` (PATCH)
+
 ## [2026-09-18 10:35] - v1.10.19
 
 - **Files Modified:** `src/components/checkouts/CheckoutActiveList.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`

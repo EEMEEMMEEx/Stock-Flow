@@ -185,17 +185,19 @@ const UserManagement = () => {
         p_password: userPayload.password || 'F0rth2026@dtrs',
         p_full_name: userPayload.full_name,
         p_role: userPayload.role,
-        p_department: userPayload.department || null,
         p_phone: userPayload.phone || null,
         p_position: userPayload.position || null,
-        p_all_projects: userPayload.all_projects,
-        p_project_ids: userPayload.project_ids
+        p_department: userPayload.department || null,
+        p_all_projects: userPayload.all_projects ?? true,
+        p_project_ids: userPayload.project_ids || [],
+        p_avatar_url: userPayload.avatar_url || null,
+        p_role_id: userPayload.role_id || null
       });
 
       if (error) {
         // Fallback for fallback creation directly in profiles if RPC not installed
         if (error.code === 'PGRST202' || error.status === 404) {
-          toast.error('Please run Migration 40 in Supabase SQL Editor to enable RPC auth user creation');
+          toast.error('Please run Migration 73 in Supabase SQL Editor to enable RPC auth user creation');
           return;
         }
         throw error;
