@@ -1,5 +1,16 @@
 # Changelog
 
+## [2026-09-22 16:04] - v1.10.21
+
+- **Files Modified:** `supabase/migrations/20260922090133_inventory_transfer_rbac_permissions.sql`, `supabase/migrations/20260922090230_restrict_inventory_transfer_rpc_execute.sql`, `src/pages/Items.jsx`, `src/contexts/AuthProvider.jsx`, `src/components/roles/PermissionManagementModal.jsx`, `src/pages/Manual.jsx`, `src/i18n/locales/en.js`, `src/i18n/locales/th.js`, `package.json`, `package-lock.json`, `README.md`, `src/landing/data/landing-translations.js`, `CHANGELOG.md`
+- **Changes:**
+  - แก้การกำหนดสิทธิ์ `process_item_transfer` ให้ใช้ `inventory.transfer` หรือ `inventory.manage` ตาม RBAC contract เดิม โดยไม่ bypass authorization
+  - เพิ่ม permission catalog และย้าย mapping เดิมจาก `items.transfer` ไป `inventory.transfer`; กำหนด SUPERVISOR ให้โอนได้ และ ADMIN/SUPER ให้จัดการ inventory ได้
+  - จำกัดสิทธิ์เรียก transfer RPC เหลือเฉพาะ `authenticated` และ `service_role`; ปิดการเรียกจาก `anon`
+  - ปรับ frontend, permission dependency, fallback permissions และข้อความ error ให้ใช้ permission contract เดียวกัน
+  - ตรวจสอบ flow ด้วยผู้มี `inventory.transfer`, ผู้มี `inventory.manage` และผู้ไม่มีสิทธิ์ โดยทดสอบใน transaction ที่ rollback
+  - ปรับ version เป็น `v1.10.21` (PATCH)
+
 ## [2026-09-21 14:55] - v1.10.20
 
 - **Files Modified:** `supabase/migrations/73_resolve_admin_create_user_overload.sql`, `scripts/apply-migration-73.mjs`, `scripts/test-admin-create-user.mjs`, `scripts/backup-full-database.mjs`, `scripts/bundle-all-rpcs.mjs`, `src/pages/UserManagement.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`

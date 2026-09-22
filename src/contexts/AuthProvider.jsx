@@ -18,7 +18,7 @@ const getSafeBaselinePermissions = (roleStr, emailStr = '') => {
 
   if (isSuperOrAdmin) {
     return [
-      'dashboard.view', 'items.view', 'items.create', 'items.update', 'items.delete', 'items.adjust_stock', 'items.transfer',
+      'dashboard.view', 'items.view', 'items.create', 'items.update', 'items.delete', 'items.adjust_stock', 'inventory.transfer', 'inventory.manage',
       'stock_in.view', 'stock_in.create', 'withdrawals.view', 'withdrawals.create', 'withdrawals.approve', 'withdrawals.reject', 'withdrawals.complete',
       'checkouts.view', 'checkouts.create', 'checkouts.extend', 'checkouts.return', 'history.view', 'reports.view', 'reports.export',
       'projects.view', 'projects.create', 'projects.update', 'projects.delete', 'users.view', 'users.create', 'users.update', 'users.deactivate', 'users.reset_password',
@@ -27,7 +27,7 @@ const getSafeBaselinePermissions = (roleStr, emailStr = '') => {
   }
   if (['supervisor', 'approver', 'manager'].includes(normalizedRole)) {
     return [
-      'dashboard.view', 'items.view', 'stock_in.view', 'withdrawals.view', 'withdrawals.create', 'withdrawals.approve', 'withdrawals.reject', 'withdrawals.complete',
+      'dashboard.view', 'items.view', 'inventory.transfer', 'withdrawals.view', 'withdrawals.create', 'withdrawals.approve', 'withdrawals.reject', 'withdrawals.complete',
       'checkouts.view', 'checkouts.create', 'checkouts.extend', 'checkouts.return', 'history.view', 'reports.view', 'reports.export', 'projects.view'
     ];
   }

@@ -491,7 +491,7 @@ export default {
       "deleteItemError": "An error occurred while deleting item",
       "requiresEditPermission": "You do not have permission to edit items (requires items.update)",
       "requiresDeletePermission": "You do not have permission to delete items (requires items.delete)",
-      "requiresTransferPermission": "You do not have permission to transfer stock (requires items.transfer)"
+      "requiresTransferPermission": "You do not have permission to transfer stock (requires inventory.transfer or inventory.manage)"
     },
     "transfer": {
       "title": "Transfer Stock Between Warehouses",

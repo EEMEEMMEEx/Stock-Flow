@@ -23,7 +23,7 @@ import { uploadFileToR2 } from '@/lib/r2Storage';
 import { useTranslation } from '@/i18n';
 
 const Items = () => {
-  const { can, profile } = useAuth();
+  const { can, canAny, profile } = useAuth();
   const { t } = useTranslation();
   const [items, setItems] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -74,6 +74,7 @@ const Items = () => {
   const [loadingHistoryLogs, setLoadingHistoryLogs] = useState(false);
 
   const canAdjustStock = can('items.adjust_stock') && allowDirectStockAdjustment;
+  const canTransferInventory = canAny(['inventory.transfer', 'inventory.manage']);
 
   const fetchSettings = useCallback(async () => {
     try {
@@ -609,7 +610,7 @@ const Items = () => {
   };
 
   const openTransferDialog = (item) => {
-    if (!can('items.transfer')) {
+    if (!canTransferInventory) {
       toast.error(t('items.toasts.requiresTransferPermission'));
       return;
     }
@@ -1459,7 +1460,7 @@ const Items = () => {
                           >
                             <History className="w-4 h-4" />
                           </Button>
-                          {can('items.transfer') && (
+                          {canTransferInventory && (
                             <Button 
                               variant="ghost" 
                               size="icon" 
@@ -1599,7 +1600,7 @@ const Items = () => {
                     >
                       <History className="w-3.5 h-3.5" />
                     </Button>
-                    {can('items.transfer') && (
+                    {canTransferInventory && (
                       <Button 
                         variant="ghost" 
                         size="icon" 

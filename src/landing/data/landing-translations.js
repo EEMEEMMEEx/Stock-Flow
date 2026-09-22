@@ -25,7 +25,7 @@ export const landingTranslations = {
       architecture: 'สถาปัตยกรรม',
       security: 'ความปลอดภัย & สิทธิ์',
       launchApp: 'เข้าสู่เว็บแอป',
-      versionBadge: 'v1.4 พร้อมใช้งาน',
+      versionBadge: 'v1.10.21 พร้อมใช้งาน',
     },
     hero: {
       pill: 'NEXT-GEN INVENTORY & POS OS',
@@ -170,7 +170,7 @@ export const landingTranslations = {
       architecture: 'Architecture',
       security: 'Security & RBAC',
       launchApp: 'Launch Web App',
-      versionBadge: 'v1.4 Ready',
+      versionBadge: 'v1.10.21 Ready',
     },
     hero: {
       pill: 'NEXT-GEN INVENTORY & POS OS',

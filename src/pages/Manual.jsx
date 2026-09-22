@@ -89,7 +89,7 @@ const SECTION_CONFIGS = [
     badgeColor: 'border-l-indigo-500',
     path: '/items',
     roles: ['SUPERVISOR', 'ADMIN'],
-    permissions: ['items.adjust_stock', 'items.transfer'],
+    permissions: ['items.adjust_stock', 'inventory.transfer'],
   },
   {
     id: 'projects-and-items-master',

@@ -491,7 +491,7 @@ export default {
       "deleteItemError": "เกิดข้อผิดพลาดขณะลบรายการพัสดุ",
       "requiresEditPermission": "คุณไม่มีสิทธิ์แก้ไขพัสดุ (ต้องการสิทธิ์ items.update)",
       "requiresDeletePermission": "คุณไม่มีสิทธิ์ลบพัสดุ (ต้องการสิทธิ์ items.delete)",
-      "requiresTransferPermission": "คุณไม่มีสิทธิ์โอนย้ายสต็อก (ต้องการสิทธิ์ items.transfer)"
+      "requiresTransferPermission": "คุณไม่มีสิทธิ์โอนย้ายสต็อก (ต้องการสิทธิ์ inventory.transfer หรือ inventory.manage)"
     },
     "transfer": {
       "title": "โอนย้ายพัสดุระหว่างคลัง",
