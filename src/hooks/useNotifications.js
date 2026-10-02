@@ -174,6 +174,9 @@ export const useNotifications = (userId) => {
     unreadCount,
     loading,
     error,
+    // Surfaced so the bell can show an explicit "not installed" state instead of
+    // silently looking like "no notifications" when public.notifications is absent.
+    tableMissing: !tableExists,
     reload: loadNotifications,
     markAsRead,
     markAllAsRead,

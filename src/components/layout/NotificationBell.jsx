@@ -2,8 +2,8 @@ import { useMemo, useState } from 'react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { useNavigate } from 'react-router-dom';
 import {
-  Bell, CheckCheck, CircleAlert, ClipboardCheck, ClipboardPlus,
-  FileClock, PackageCheck, RefreshCw, Check, ArrowRight,
+  Bell, CheckCheck, CircleAlert, ClipboardCheck, ClipboardList, ClipboardPlus,
+  FileClock, PackageCheck, PackagePlus, RefreshCw, Check, ArrowRight,
   RotateCcw, AlertTriangle, Package, Trash2, ShieldCheck, Clock
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -66,6 +66,38 @@ const notificationPresentation = (eventType, t) => {
         badge: t('notifications.badges.completed'),
         badgeClass: 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
       };
+    case 'checkout.submitted':
+    case 'checkout_submitted':
+      return {
+        icon: ClipboardList,
+        className: 'bg-sky-500/15 text-sky-700 dark:text-sky-300 border-sky-500/20',
+        badge: t('notifications.badges.newCheckout'),
+        badgeClass: 'bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300'
+      };
+    case 'checkout.approved':
+    case 'checkout_approved':
+      return {
+        icon: ClipboardCheck,
+        className: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/20',
+        badge: t('notifications.badges.approved'),
+        badgeClass: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
+      };
+    case 'checkout.rejected':
+    case 'checkout_rejected':
+      return {
+        icon: CircleAlert,
+        className: 'bg-destructive/15 text-destructive border-destructive/20',
+        badge: t('notifications.badges.rejected'),
+        badgeClass: 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300'
+      };
+    case 'checkout.completed':
+    case 'checkout_completed':
+      return {
+        icon: PackageCheck,
+        className: 'bg-primary/15 text-primary border-primary/20',
+        badge: t('notifications.badges.completed'),
+        badgeClass: 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
+      };
     case 'checkout.overdue':
     case 'checkout_overdue':
       return { 
@@ -73,6 +105,14 @@ const notificationPresentation = (eventType, t) => {
         className: 'bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/20',
         badge: t('notifications.badges.overdue'),
         badgeClass: 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300'
+      };
+    case 'stock.received':
+    case 'stock_received':
+      return {
+        icon: PackagePlus,
+        className: 'bg-teal-500/15 text-teal-700 dark:text-teal-300 border-teal-500/20',
+        badge: t('notifications.badges.stockReceived'),
+        badgeClass: 'bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-300'
       };
     case 'stock.low_stock':
     case 'low_stock_alert':
@@ -97,7 +137,7 @@ const NotificationBell = () => {
   const navigate = useNavigate();
   const { user, profile, can } = useAuth();
   const {
-    notifications, unreadCount, loading, error, reload, markAsRead, markAllAsRead,
+    notifications, unreadCount, loading, error, tableMissing, reload, markAsRead, markAllAsRead,
     approveQuickWithdrawal, deleteNotification
   } = useNotifications(user?.id);
 
@@ -106,6 +146,7 @@ const NotificationBell = () => {
   const [approvingId, setApprovingId] = useState(null);
 
   const canApproveWithdrawals = can('withdrawals.approve');
+  const canApproveCheckouts = can('checkouts.approve');
   const unreadLabel = unreadCount > 99 ? '99+' : String(unreadCount);
 
   // Filter notifications based on active tab
@@ -342,7 +383,16 @@ const NotificationBell = () => {
               </div>
             )}
 
-            {!loading && !error && filteredNotifications.length === 0 && (
+            {!loading && !error && tableMissing && (
+              <div className="py-8 text-center px-4 space-y-2">
+                <div className="mx-auto w-10 h-10 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                  <AlertTriangle className="w-5 h-5" />
+                </div>
+                <p className="text-xs font-medium text-foreground">{t('notifications.tableMissing')}</p>
+              </div>
+            )}
+
+            {!loading && !error && !tableMissing && filteredNotifications.length === 0 && (
               <div className="py-10 text-center text-xs text-muted-foreground flex flex-col items-center gap-2">
                 <div className="w-10 h-10 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
                   <ShieldCheck className="w-5 h-5" />
@@ -356,9 +406,14 @@ const NotificationBell = () => {
               const presentation = notificationPresentation(notification.event_type, t);
               const Icon = presentation.icon;
               const isUnread = !notification.read_at;
-              const isSubmitted = notification.event_type?.includes('submitted');
+              // Quick-approve is withdrawal-only: the inline RPC is approve_inventory_request.
+              const isWithdrawalSubmitted = notification.event_type === 'withdrawal.submitted'
+                || notification.event_type === 'withdrawal_submitted';
+              const isCheckoutSubmitted = notification.event_type === 'checkout.submitted'
+                || notification.event_type === 'checkout_submitted';
               const isOverdue = notification.event_type?.includes('overdue');
-              const isApproved = notification.event_type?.includes('approved');
+              const isWithdrawalApproved = notification.event_type?.startsWith('withdrawal') && notification.event_type?.includes('approved');
+              const isCheckoutApproved = notification.event_type?.startsWith('checkout') && notification.event_type?.includes('approved');
               const isLowStock = notification.event_type?.includes('low_stock');
               const isApproving = approvingId === notification.id;
 
@@ -425,7 +480,7 @@ const NotificationBell = () => {
                       {/* Interactive Quick Actions Toolbar */}
                       <div className="pt-1 flex flex-wrap items-center gap-1.5 mt-1.5 border-t border-border/20">
                         {/* 1. Quick Instant Approve for Supervisor / Admin */}
-                        {isSubmitted && canApproveWithdrawals && (
+                        {isWithdrawalSubmitted && canApproveWithdrawals && (
                           <>
                             <Button
                               type="button"
@@ -457,8 +512,24 @@ const NotificationBell = () => {
                           </>
                         )}
 
+                        {/* 1.1 Checkout requisition awaiting approval: navigate to the approval modal */}
+                        {isCheckoutSubmitted && canApproveCheckouts && (
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleNotificationClick(notification);
+                            }}
+                            className="h-7 px-2.5 text-[11px] font-semibold bg-sky-600 hover:bg-sky-700 text-white rounded-lg flex items-center gap-1 shadow-xs"
+                          >
+                            <span>{t('notifications.goApprove')}</span>
+                            <ArrowRight className="w-3 h-3" />
+                          </Button>
+                        )}
+
                         {/* 2. Staff view voucher button when approved */}
-                        {isApproved && (
+                        {isWithdrawalApproved && (
                           <Button
                             type="button"
                             size="sm"
@@ -469,6 +540,22 @@ const NotificationBell = () => {
                             className="h-7 px-2.5 text-[11px] font-semibold bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg flex items-center gap-1 shadow-xs"
                           >
                             <span>{t('notifications.viewVoucher')}</span>
+                            <ArrowRight className="w-3 h-3" />
+                          </Button>
+                        )}
+
+                        {/* 2.1 Checkout approved / issued */}
+                        {isCheckoutApproved && (
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleNotificationClick(notification);
+                            }}
+                            className="h-7 px-2.5 text-[11px] font-semibold bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg flex items-center gap-1 shadow-xs"
+                          >
+                            <span>{t('notifications.viewCheckout')}</span>
                             <ArrowRight className="w-3 h-3" />
                           </Button>
                         )}

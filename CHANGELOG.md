@@ -1,5 +1,18 @@
 # Changelog
 
+## [2026-10-02 17:50] - v1.12.0
+
+- **Files Modified:** `supabase/migrations/20261002174500_restore_and_extend_notification_producers.sql`, `src/hooks/useNotifications.js`, `src/components/layout/NotificationBell.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **Root cause (ระบบแจ้งเตือนไม่ทำงาน):** ตรวจฐานข้อมูลจริงพบว่าตาราง `public.notifications` มีข้อมูลเพียง 7 แถว โดยแถวใหม่สุดคือ **2026-08-27** ขณะที่ยังมีกิจกรรมจริงต่อเนื่อง (คำขอเบิกถูกปฏิเสธเมื่อ 2026-09-15, มี stock_in 41 ใบ, checkout 31 ใบ) แต่ **ไม่มีแถว notification เกิดขึ้นเลย** — พิสูจน์ว่า trigger ผู้สร้าง notification (ด้วยฟังก์ชัน `create_withdrawal_notifications`) หายไปจากฐานข้อมูลจริง เพราะ DDL ของ trigger อยู่ในไฟล์ `supabase/migrations/archive/20260809163000_create_user_notifications.sql` ซึ่ง **ไม่อยู่ในชุด migration ที่ apply จริง** (baseline/ และ 52–75 ไม่ได้สร้างตาราง/trigger เหล่านี้) และ DDL สำหรับ disaster recovery ใน `scripts/backup-full-database.mjs` ก็ไม่มี trigger เหล่านี้เช่นกัน (มีเพียง `trg_sync_profile_role` ตัวเดียว)
+  - **Migration ใหม่:** สร้าง `20261002174500_restore_and_extend_notification_producers.sql` เพื่อ (1) สร้างตาราง `notifications` + index + RLS + grant แบบ idempotent ครบถ้วนในตัว (2) ฟื้นฟู trigger ฝั่งคำขอเบิก (submitted / approved / rejected / completed) (3) เพิ่ม trigger ฝั่งการยืม-คืนพัสดุ (checkout.submitted / approved / rejected / completed / overdue) (4) เพิ่ม trigger รับพัสดุเข้าคลัง (stock.received) (5) ผูกตารางเข้ากับ publication `supabase_realtime` เพื่อให้ push แบบเรียลไทม์ทำงาน และ (6) เพิ่มนโยบาย/grant `DELETE` ที่ขาดหายไป เพื่อให้ปุ่มลบการแจ้งเตือนบนกระดิ่งทำงานได้จริง (เดิมกดแล้วรายการกลับมาเสมอ)
+  - **ผู้รับการแจ้งเตือนอ้างอิงสิทธิ์จริงในฐานข้อมูล:** คำขอเบิกใหม่ → ผู้มี `withdrawals.approve` (ADMIN/SUPER/SUPERVISOR) ยกเว้นผู้ขอ, คำขอยืมใหม่ → ผู้มี `checkouts.approve` หรือ `is_checkout_delegate` (ตรงกับเงื่อนไขใน `approve_checkout_order`) ยกเว้นผู้ขอยืม, รับพัสดุเข้าคลัง → ผู้มี `inventory.manage` หรือ `stock_in.create` ยกเว้นผู้รับเข้า, ส่วนการเปลี่ยนสถานะจะแจ้งกลับไปยังผู้ขอ/ผู้ยืม
+  - **Shared writer:** เพิ่มฟังก์ชัน `public.push_notifications(...)` แบบ `SECURITY DEFINER` ทำ fan-out และ dedupe ด้วย `ON CONFLICT (user_id, event_type, reference_id)` เพื่อให้ทุก trigger เขียนแจ้งเตือนรูปแบบเดียวกัน ลดความซ้ำซ้อนและข้อผิดพลาด และตรวจสอบให้ index ดังกล่าวเป็น `UNIQUE` จริงก่อนใช้งาน
+  - **Frontend (NotificationBell):** ยังคงโครงสร้าง Radix UI, Tailwind และ `aria-*` เดิมไว้ทั้งหมด เพิ่มการแสดงผล event ใหม่ (`checkout.submitted/approved/rejected/completed`, `stock.received`) พร้อมไอคอนและป้ายกำกับภาษาไทย และ **แก้บั๊กสำคัญ**: เดิมปุ่ม "อนุมัติทันที" แสดงกับทุก event ที่มีคำว่า `submitted` ซึ่งจะเรียก `approve_inventory_request` (RPC ของการเบิก ไม่ใช่การยืม) — ตอนนี้จำกัดให้แสดงเฉพาะ `withdrawal.submitted` และเพิ่มปุ่ม "ไปอนุมัติ" สำหรับคำขอยืมที่นำทางไปหน้า `/checkouts` แทน
+  - **Frontend (useNotifications):** เดิมเมื่อไม่พบตาราง `notifications` ฮุกจะกลืน error แล้วแสดงผลเป็น "ไม่มีการแจ้งเตือน" เงียบ ๆ ซึ่งทำให้สาเหตุที่แท้จริงมองไม่เห็น ตอนนี้ส่งค่า `tableMissing` ออกมาให้ UI แสดงสถานะแจ้งเตือนยังไม่พร้อมใช้งานอย่างชัดเจน
+  - เพิ่มคีย์ภาษาใหม่ 5 คีย์ (`notifications.tableMissing`, `notifications.goApprove`, `notifications.viewCheckout`, `notifications.badges.newCheckout`, `notifications.badges.stockReceived`) ผ่าน `npm run check:i18n` 100% Key Parity
+  - ปรับ version ของระบบเป็น `v1.12.0` (MINOR)
+
 ## [2026-10-02 16:20] - v1.11.7
 
 - **Files Modified:** `supabase/migrations/20261002161500_fix_approve_checkout_order_locking_on_view.sql`, `package.json`, `package-lock.json`, `CHANGELOG.md`
