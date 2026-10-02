@@ -254,6 +254,13 @@ const History = () => {
   // PDF Export Handler
   const handleDownloadPDF = async (order) => {
     if (!order) return;
+
+    // Strict Policy: PDF is generated only for approved or completed requests
+    if (order.status !== 'approved' && order.status !== 'completed') {
+      toast.error(t('withdrawals.toasts.pdfNotAllowed', 'PDF is available only for approved or completed requests'));
+      return;
+    }
+
     const toastId = toast.loading('Generating withdrawal PDF document...');
     try {
       const itemsList = order.withdrawal_items || [];
@@ -276,6 +283,8 @@ const History = () => {
       toast.error('Failed to download withdrawal PDF', { id: toastId });
     }
   };
+
+  const canPrintSelected = selectedOrder?.status === 'approved' || selectedOrder?.status === 'completed';
 
   return (
     <div className="space-y-5 pb-10">
@@ -485,21 +494,23 @@ const History = () => {
 
           {/* Dialog Footer Actions */}
           <div className="flex justify-between items-center mt-4 pt-3 border-t border-border/50">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => handleDownloadPDF(selectedOrder)}
-              className="text-purple-500 border-purple-500/30 bg-purple-500/10 hover:bg-purple-500/20 font-semibold cursor-pointer gap-1.5"
-            >
-              <FileText className="w-4 h-4 text-purple-500" />
-              <span>{t('history.printPdf', 'Print / Download PDF')}</span>
-            </Button>
+            {canPrintSelected && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => handleDownloadPDF(selectedOrder)}
+                className="text-purple-500 border-purple-500/30 bg-purple-500/10 hover:bg-purple-500/20 font-semibold cursor-pointer gap-1.5"
+              >
+                <FileText className="w-4 h-4 text-purple-500" />
+                <span>{t('history.printPdf', 'Print / Download PDF')}</span>
+              </Button>
+            )}
             <Button
               variant="outline"
               size="sm"
               onClick={() => setSelectedOrder(null)}
-              className="rounded-xl cursor-pointer"
+              className="rounded-xl cursor-pointer ml-auto"
             >
               {t('common.close', 'Close')}
             </Button>

@@ -1,5 +1,21 @@
 # Changelog
 
+## [2026-10-02 23:50] - v1.12.7
+
+- **Files Modified:** `src/components/withdrawals/WithdrawalOrdersList.jsx`, `src/components/withdrawals/WithdrawalDetailModal.jsx`, `src/components/history/HistoryDataTable.jsx`, `src/pages/History.jsx`, `src/pages/Withdrawals.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `package.json`, `package-lock.json`, `CHANGELOG.md`, `docs/hide-rejected-withdrawal-pdf-button-plan.md`
+- **Changes:**
+  - **Strict Policy: ปุ่ม "PDF" แสดงเฉพาะรายการสถานะ `approved` และ `completed`** — เดิมปุ่มถูกเรนเดอร์โดยไม่มีเงื่อนไขสถานะ ทำให้รายการ `pending` และ `rejected` พิมพ์ใบเบิกซึ่งมีหัวกระดาษ "ใบเบิกของ / ต้นฉบับ" และช่องลายเซ็นเจ้าหน้าที่ผู้จ่ายพัสดุได้
+    - `WithdrawalOrdersList.jsx` ครอบปุ่มในคอลัมน์ Actions ด้วย `order.status === 'approved' || order.status === 'completed'`
+    - `WithdrawalDetailModal.jsx` ใช้ตัวแปร `isApproved`/`isCompleted` ที่มีอยู่แล้วในคอมโพเนนต์
+    - `HistoryDataTable.jsx` และ `History.jsx` (โมดัลรายละเอียด) ใช้เงื่อนไขเดียวกัน — หน้า `/history` โหลดเฉพาะ `completed, rejected, approved` จึงมีผลจริงกับรายการที่ถูกปฏิเสธ
+  - **เพิ่ม Guard ใน handler สร้าง PDF (defense in depth)**: `Withdrawals.jsx` `handleDownloadPDF` และ `History.jsx` `handleDownloadPDF` ตรวจสถานะก่อนสร้าง blob และแจ้ง toast เมื่อไม่อนุญาต (กันการเรียกผ่าน DevTools console)
+  - **คง layout ของ footer**: เมื่อซ่อนปุ่มซ้ายสุด `justify-between` ทำให้ปุ่ม Close เลื่อนไปชิดซ้าย → เพิ่ม `sm:ml-auto` (โมดัลเบิกพัสดุ) และ `ml-auto` (โมดัลประวัติ)
+  - เพิ่มคีย์ i18n `withdrawals.toasts.pdfNotAllowed` ครบ `th`/`en` (วางตาม namespace toast เดิมของโมดูลเบิกพัสดุ)
+  - **ไม่มีการเปลี่ยนสคีมา/RPC/migration และไม่เปลี่ยนสัญญาของ props/handler** — เป็นการเพิ่มเงื่อนไขการแสดงผลและ guard ฝั่ง client เท่านั้น
+  - **ข้อจำกัดที่ทราบ**: การซ่อนปุ่มเป็นเพียง UI gating ไม่ใช่ขอบเขตความปลอดภัย — ผู้ใช้ที่ดึงข้อมูล order ได้ยังสร้าง PDF เองได้ (ไม่มี endpoint ฝั่ง server ให้ล็อกเพิ่ม)
+  - อัปเดตสถานะใน `docs/hide-rejected-withdrawal-pdf-button-plan.md` เป็น "ดำเนินการแล้ว" พร้อมบันทึกส่วนที่ปรับจากแผนเดิม
+  - ปรับ version ของระบบเป็น `v1.12.7` (PATCH)
+
 ## [2026-10-02 21:56] - v1.12.6
 
 - **Files Modified:** `src/lib/notificationDispatcher.js`, `src/lib/emailSettings.js` (ใหม่), `src/lib/emailSettings.test.js` (ใหม่), `src/pages/Withdrawals.jsx`, `src/pages/StockIn.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `package.json`, `package-lock.json`, `CHANGELOG.md`

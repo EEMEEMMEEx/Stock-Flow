@@ -643,6 +643,7 @@ export default {
       "pdfGenerating": "Generating requisition PDF...",
       "pdfSuccess": "Requisition form PDF generated",
       "pdfFailed": "Failed to generate requisition PDF",
+      "pdfNotAllowed": "PDF is available only for approved or completed requests",
       "insufficientStock": "Insufficient inventory in this project",
       "lowStockAlerted": "Reorder point alert sent: {{item}}",
       "lowStockAlertFailed": "Failed to send the reorder point alert email"

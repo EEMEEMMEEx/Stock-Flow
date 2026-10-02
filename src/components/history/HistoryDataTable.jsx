@@ -154,16 +154,18 @@ const HistoryDataTable = ({
                         <span className="hidden xl:inline">{t('history.details', 'Details')}</span>
                       </Button>
 
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => onDownloadPDF(order)}
-                        className="h-8 px-2.5 rounded-lg text-xs font-semibold text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-900/60 hover:bg-purple-50 dark:hover:bg-purple-950/40 cursor-pointer gap-1"
-                        title="Print / Download PDF"
-                      >
-                        <FileText className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
-                        <span>{t('history.pdf', 'PDF')}</span>
-                      </Button>
+                      {(order.status === 'approved' || order.status === 'completed') && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => onDownloadPDF(order)}
+                          className="h-8 px-2.5 rounded-lg text-xs font-semibold text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-900/60 hover:bg-purple-50 dark:hover:bg-purple-950/40 cursor-pointer gap-1"
+                          title="Print / Download PDF"
+                        >
+                          <FileText className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+                          <span>{t('history.pdf', 'PDF')}</span>
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>

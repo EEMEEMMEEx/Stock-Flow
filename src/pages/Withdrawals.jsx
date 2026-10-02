@@ -691,6 +691,13 @@ const Withdrawals = () => {
   // Download PDF
   const handleDownloadPDF = async (order, existingItems = null) => {
     if (!order) return;
+
+    // Strict Policy: PDF is generated only for approved or completed requests
+    if (order.status !== 'approved' && order.status !== 'completed') {
+      toast.error(t('withdrawals.toasts.pdfNotAllowed', 'PDF is available only for approved or completed requests'));
+      return;
+    }
+
     const toastId = toast.loading('Generating requisition PDF document...');
     try {
       let itemsList = existingItems;

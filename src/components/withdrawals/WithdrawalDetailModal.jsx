@@ -234,18 +234,20 @@ const WithdrawalDetailModal = ({
         </div>
 
         <DialogFooter className="border-t border-border/40 pt-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => onDownloadPDF(order, orderDetails)}
-            className="rounded-lg text-xs font-semibold text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 gap-1.5 cursor-pointer h-9 px-4"
-          >
-            <FileText className="w-4 h-4 text-indigo-600" />
-            <span>{t('withdrawals.printDownloadPDF', 'Print / Download Issue Slip (PDF)')}</span>
-          </Button>
+          {(isApproved || isCompleted) && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => onDownloadPDF(order, orderDetails)}
+              className="rounded-lg text-xs font-semibold text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 gap-1.5 cursor-pointer h-9 px-4"
+            >
+              <FileText className="w-4 h-4 text-indigo-600" />
+              <span>{t('withdrawals.printDownloadPDF', 'Print / Download Issue Slip (PDF)')}</span>
+            </Button>
+          )}
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 sm:ml-auto">
             {isPending && (
               <>
                 {canReject && (
