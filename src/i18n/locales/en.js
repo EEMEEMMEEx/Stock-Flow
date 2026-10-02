@@ -128,6 +128,8 @@ export default {
     "confirmPassword": "Confirm New Password",
     "enterEmail": "Enter your email",
     "enterPassword": "Enter your password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
     "rememberMe": "Remember me",
     "forgotPassword": "Forgot password?",
     "changePassword": "Change Password",

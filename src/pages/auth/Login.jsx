@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Package, Lock, Mail } from 'lucide-react';
+import { Package, Lock, Mail, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n';
@@ -13,6 +13,7 @@ import toast from 'react-hot-toast';
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const { signIn } = useAuth();
   const { t } = useTranslation();
@@ -102,7 +103,7 @@ const Login = () => {
                   type="email"
                   placeholder={t('auth.email')}
                   autoComplete="email"
-                  className="pl-10 h-12 bg-background/50 border-white/10 focus:border-primary"
+                  className="pl-10 h-12 bg-background/50 border-white/10 text-foreground caret-primary focus:border-primary"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -113,14 +114,24 @@ const Login = () => {
               <div className="relative">
                 <Lock className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
                 <Input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   placeholder={t('auth.password')}
                   autoComplete="current-password"
-                  className="pl-10 h-12 bg-slate-50 border-slate-200 focus:border-primary"
+                  className="pl-10 pr-12 h-12 bg-background/50 border-white/10 text-foreground caret-primary focus:border-primary"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((visible) => !visible)}
+                  aria-label={showPassword ? t('auth.hidePassword') : t('auth.showPassword')}
+                  aria-pressed={showPassword}
+                  title={showPassword ? t('auth.hidePassword') : t('auth.showPassword')}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background cursor-pointer"
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
               </div>
             </div>
             <Button 

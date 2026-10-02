@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-10-02 19:40] - v1.12.2
+
+- **Files Modified:** `src/pages/auth/Login.jsx`, `src/App.css`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **Root cause (ช่องรหัสผ่านอ่านไม่ได้ในโหมดมืด):** ไม่ใช่ browser autofill อย่างที่สันนิษฐาน แต่เป็นคลาสที่ hardcode สีสว่างไว้ที่ช่องรหัสผ่านโดยตรง — `Login.jsx` ใช้ `bg-slate-50 border-slate-200` กับช่องรหัสผ่าน ขณะที่ช่องอีเมลใช้โทเคนของธีม `bg-background/50 border-white/10` ทำให้ช่องรหัสผ่านเป็นพื้นเกือบขาวตลอดเวลา (ไม่เกี่ยวกับ autofill และไม่ได้ขึ้นกับว่ามีค่าหรือไม่) ขณะที่โหมดมืดกำหนดตัวอักษรเป็น `--foreground` = `hsl(210 40% 98%)` = `#f8fafc` ซึ่งเป็นสีเดียวกับ `slate-50` (#f8fafc) → คอนทราสต์ **1.00:1** ตัวอักษรและจุด masking มองไม่เห็นเลย (ในโหมดสว่างคอนทราสต์ 17.06:1 จึงดูปกติ สอดคล้องกับที่ผู้ใช้พบปัญหาเฉพาะโหมดมืด)
+  - ปรับช่องรหัสผ่านให้ใช้คลาสชุดเดียวกับช่องอีเมลทุกประการ (`bg-background/50 border-white/10 text-foreground caret-primary focus:border-primary`, `h-12`) และเพิ่ม `pr-12` เพื่อกันข้อความทับปุ่มตา → คอนทราสต์หลังแก้ **17.23:1** (ข้อความ), **17.23:1** (caret), วงโฟกัส `--ring` **4.78:1** เทียบพื้นช่องกรอก ผ่านเกณฑ์ WCAG 2.1 AA (≥4.5:1 สำหรับข้อความ, ≥3:1 สำหรับ focus indicator)
+  - **Autofill hardening (สาเหตุที่สอง ซึ่งเป็นของจริงและยังไม่มีในโปรเจกต์):** Chromium/Edge/Safari บังคับพื้นสว่างและตัวอักษรเข้มบนช่องที่ autofill ผ่านสไตล์ภายในที่ `background-color` ทับไม่ได้ จึงเพิ่มกฎกลางใน `src/App.css` (`@layer base`) ใช้ `-webkit-box-shadow: 0 0 0 1000px inset` + `-webkit-text-fill-color` + `caret-color` โดยอ้าง `hsl(var(--background))` / `hsl(var(--foreground))` ซึ่งเป็นโทเคนเดิมของธีม (ไม่เพิ่มสีใหม่) และครอบคลุม `input`/`textarea`/`select` ทั้งแอปในกฎเดียว เพื่อไม่ให้ bug กลับมาที่ฟอร์มอื่น (registration, reset password, change password, search, modal)
+  - **เพิ่มปุ่มแสดง/ซ่อนรหัสผ่าน:** ใช้ไอคอน `Eye`/`EyeOff` จาก lucide-react ตามชุดไอคอนเดิม, `type="button"` (ไม่ submit ฟอร์ม), `aria-label` เป็นข้อความจากไฟล์แปล (`auth.showPassword` / `auth.hidePassword`), `aria-pressed` สะท้อนสถานะ, เข้าถึงได้ด้วยคีย์บอร์ด (ไม่ตั้ง `tabIndex={-1}`) พร้อม focus ring, ค่าเริ่มต้นเป็นซ่อนรหัสผ่าน (`type="password"`)
+  - **Caret มองเห็นชัด:** เพิ่ม `caret-primary` ให้ทั้งช่องอีเมลและช่องรหัสผ่านเท่ากัน และกำหนด `caret-color` ในกฎ autofill
+  - ไม่แตะ layout, ขนาดการ์ด, ปุ่ม Sign In, ระบบดีไซน์, RLS หรือ `autoComplete` ใด ๆ (password manager ยังทำงานปกติ) — คง `autoComplete="current-password"` และ `autoComplete="email"` ไว้
+  - ปรับ version ของระบบเป็น `v1.12.2` (PATCH)
+
 ## [2026-10-02 19:05] - v1.12.1
 
 - **Files Modified:** `supabase/migrations/20261002190000_add_get_user_emails_rpc.sql`, `src/components/checkouts/CheckoutDetailModal.jsx`, `src/pages/Checkouts.jsx`, `src/pages/Profile.jsx`, `src/lib/notificationDispatcher.js`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `package.json`, `package-lock.json`, `CHANGELOG.md`
