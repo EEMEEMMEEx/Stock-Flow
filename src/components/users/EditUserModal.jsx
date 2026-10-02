@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { 
   User, Shield, ShieldCheck, Check, FolderKanban, 
   Phone, Mail, Briefcase, Building2, Lock, AlertCircle, AlertTriangle, 
-  Search, RefreshCw, KeyRound, Sparkles, ExternalLink
+  Search, RefreshCw, KeyRound, Sparkles, ExternalLink, ArrowRight
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import AvatarUpload from '@/components/users/AvatarUpload';
@@ -115,7 +115,8 @@ const EditUserModal = ({
 
   useEffect(() => {
     if (isOpen && user) {
-      const userRoleCode = (user.role || 'staff').toLowerCase();
+      const rawRole = (user.role || 'staff').toLowerCase();
+      const userRoleCode = ['staff', 'operator', 'requester'].includes(rawRole) ? 'staff' : rawRole;
       const resolvedId = resolveRoleId(userRoleCode, user.role_id, availableRoles);
       const hasSpecificProjects = Array.isArray(user.assigned_project_ids) && user.assigned_project_ids.length > 0;
       const isAllProjects = user.all_projects === true || (!hasSpecificProjects && userRoleCode === 'admin');
@@ -603,6 +604,26 @@ const EditUserModal = ({
                     </p>
                   </div>
                 </label>
+              </div>
+
+              {/* Quick Link Hint to RBAC Tab */}
+              <div className="flex items-center justify-between p-3.5 rounded-lg border border-primary/20 bg-primary/5 text-xs">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <ShieldCheck className="w-4 h-4 text-primary shrink-0" />
+                  <span>
+                    {t('users.editModal.hints.roleTabPrompt', 'Looking to change user role, permissions, or account status?')}
+                  </span>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setActiveTab('rbac')}
+                  className="h-7 text-xs gap-1 border-primary/30 text-primary hover:bg-primary/10 cursor-pointer"
+                >
+                  <span>{t('users.editModal.hints.goToRbacTab', 'Go to Roles & RBAC Tab')}</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Button>
               </div>
             </div>
           )}

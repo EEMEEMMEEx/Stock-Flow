@@ -1,5 +1,18 @@
 # Changelog
 
+## [2026-10-02 13:20] - v1.11.2
+
+- **Files Modified:** `supabase/migrations/75_fix_rbac_privilege_escalation_and_role_assignment.sql`, `src/components/users/EditUserModal.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `docs/admin-role-assignment-fix-implementation-plan.md`, `scripts/apply-migration-75.mjs`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - ปลดล็อกให้ Administrator ที่มีสิทธิ์ `users.update` สามารถเปลี่ยนบทบาทผู้ใช้ (Staff / Supervisor / Admin) และโปรไฟล์ได้สำเร็จ
+  - แก้ไข Database Trigger `trg_check_profile_privilege_escalation()` ใน `public.profiles` ให้ตรวจสอบสิทธิ์ `users.update` และ `users.deactivate` (แทนการตรวจ `users.manage` ซึ่งไม่มีอยู่ในแคตตาล็อกสิทธิ์ RBAC)
+  - ปรับปรุง RPC `admin_reset_user_password` และ `admin_toggle_user_status` ให้ยอมรับสิทธิ์ตามมาตรฐาน พร้อมการปกป้องความปลอดภัยระดับสูงสุด: ห้ามผู้ใช้ที่ไม่ใช่ Super Admin แตะต้องบัญชี Super Admin และห้ามระงับบัญชี Administrator คนสุดท้าย
+  - รัน Data Migration ปรับปรุงค่าบทบาทผู้ใช้เดิมจาก `'operator'` ให้เป็น `'staff'` อย่างสม่ำเสมอในตาราง `public.profiles`
+  - ปรับปรุง `EditUserModal.jsx` ให้ Normalize ค่าบทบาทเดิม `'operator'` เป็น `'staff'` เมื่อเปิด Modal เพื่อให้การ์ด Staff / Requester ถูกเลือก (Checked) อัตโนมัติ
+  - เพิ่ม Quick Hint Banner ในแท็บ Profile (แท็บ 1) เพื่อแนะนำและมีปุ่มลัดนำทางไปยังแท็บสิทธิ์การเข้าถึง / RBAC (แท็บ 2) ลดความสับสนของผู้ดูแลระบบ
+  - เพิ่มคีย์ภาษา i18n สำหรับ Hint นำทางใน `th.js` และ `en.js`
+  - ปรับ version ของระบบเป็น `v1.11.2` (PATCH)
+
 ## [2026-10-02 13:02] - v1.11.1
 
 - **Files Modified:** `.gitignore`, `supabase/config.toml`, `supabase/migrations/*.sql`, `scripts/apply-migration-72.mjs`, `scripts/apply-migration-73.mjs`, `scripts/apply-migration-74.mjs`, `package.json`, `package-lock.json`, `CHANGELOG.md`

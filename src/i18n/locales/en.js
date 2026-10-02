@@ -1251,6 +1251,10 @@ export default {
         "rbac": "TAB 2: Roles & Permissions (RBAC)",
         "projects": "TAB 3: Project Access"
       },
+      "hints": {
+        "roleTabPrompt": "Looking to change user role, permissions, or account status?",
+        "goToRbacTab": "Go to Roles & RBAC Tab"
+      },
       "nav": {
         "nextRbac": "Next (TAB 2: Roles & Permissions) →",
         "backProfile": "← Back (TAB 1)",
