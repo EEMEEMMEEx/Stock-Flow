@@ -123,6 +123,125 @@ const DEFAULT_EVENTS_CONFIG = {
     roles: ['ADMIN', 'SUPERVISOR'],
     to_extra: '',
     cc_extra: ''
+  },
+  checkout_submitted: {
+    enabled: true,
+    title: '7. Checkout Request Submitted',
+    desc: 'Notify approvers and administrators when a new equipment borrow request is submitted',
+    primary_recipient: 'Approver / Administrator',
+    subject: '[StockFlow] คำขอยืมอุปกรณ์ {{request_no}} รอการอนุมัติ — {{project_name}}',
+    status_label: 'รออนุมัติ',
+    status_type: 'warning',
+    heading: 'มีคำขอยืมอุปกรณ์ใหม่เข้าระบบ รอการพิจารณาอนุมัติ',
+    intro: 'มีคำขอยืมพัสดุและอุปกรณ์เลขที่ {{checkout_id}} โดยคุณ {{borrower_name}} สำหรับใช้งานในโครงการ {{project_name}} กรุณาตรวจสอบรายการอุปกรณ์และกำหนดวันส่งคืนเพื่อพิจารณาอนุมัติ',
+    cta_label: 'ตรวจสอบและพิจารณาคำขอยืม',
+    cta_url: '{{action_url}}',
+    footer_note: 'กรุณาพิจารณาอนุมัติผ่านระบบ StockFlow เพื่อให้เจ้าหน้าที่คลังดำเนินการจัดเตรียมอุปกรณ์ต่อไป',
+    roles: ['ADMIN', 'SUPERVISOR'],
+    to_extra: '',
+    cc_extra: ''
+  },
+  checkout_approved: {
+    enabled: true,
+    title: '8. Checkout Request Approved',
+    desc: 'Notify the borrower when their equipment borrow request is approved',
+    primary_recipient: 'Borrower',
+    subject: '[StockFlow] คำขอยืมอุปกรณ์ {{request_no}} ได้รับการอนุมัติแล้ว — {{project_name}}',
+    status_label: 'อนุมัติแล้ว',
+    status_type: 'approved',
+    heading: 'คำขอยืมอุปกรณ์ของคุณได้รับการอนุมัติเรียบร้อยแล้ว',
+    intro: 'เรียน คุณ {{borrower_name}} คำขอยืมอุปกรณ์เลขที่ {{checkout_id}} สำหรับโครงการ {{project_name}} ได้รับการอนุมัติโดย {{approver_name}} เรียบร้อยแล้ว กรุณาติดต่อเจ้าหน้าที่คลังเพื่อรับมอบอุปกรณ์ตามเวลาที่กำหนด',
+    cta_label: 'ดูรายละเอียดและเตรียมนัดหมายรับอุปกรณ์',
+    cta_url: '{{action_url}}',
+    footer_note: 'โปรดตรวจสอบสภาพอุปกรณ์และลงนามรับมอบต่อหน้าเจ้าหน้าที่คลังในวันที่มารับอุปกรณ์',
+    roles: ['STAFF', 'ADMIN'],
+    to_extra: '',
+    cc_extra: ''
+  },
+  checkout_rejected: {
+    enabled: true,
+    title: '9. Checkout Request Rejected',
+    desc: 'Notify the borrower when their equipment borrow request is rejected with reason',
+    primary_recipient: 'Borrower',
+    subject: '[StockFlow] คำขอยืมอุปกรณ์ {{request_no}} ไม่ได้รับการอนุมัติ — {{project_name}}',
+    status_label: 'ไม่ได้รับการอนุมัติ',
+    status_type: 'rejected',
+    heading: 'คำขอยืมอุปกรณ์ไม่ได้รับการอนุมัติ',
+    intro: 'เรียน คุณ {{borrower_name}} คำขอยืมอุปกรณ์เลขที่ {{checkout_id}} สำหรับโครงการ {{project_name}} ไม่ได้รับการอนุมัติ กรุณาตรวจสอบเหตุผลด้านล่าง หากมีข้อสงสัยสามารถติดต่อผู้อนุมัติโครงการได้โดยตรง',
+    cta_label: 'ดูรายละเอียดคำขอยืม',
+    cta_url: '{{action_url}}',
+    footer_note: 'หากต้องการแก้ไขข้อมูลหรือเลือกอุปกรณ์สำรองรุ่นอื่น สามารถสร้างคำขอยืมใหม่ได้จากระบบ',
+    roles: ['STAFF'],
+    to_extra: '',
+    cc_extra: ''
+  },
+  checkout_handed_over: {
+    enabled: true,
+    title: '10. Equipment Handed Over',
+    desc: 'Notify the borrower when equipment is physically handed over (handover receipt)',
+    primary_recipient: 'Borrower / Administrator',
+    subject: '[StockFlow] ใบส่งมอบอุปกรณ์เลขที่ {{request_no}} — กำหนดส่งคืน {{due_date}}',
+    status_label: 'ส่งมอบอุปกรณ์แล้ว',
+    status_type: 'info',
+    heading: 'บันทึกการรับมอบอุปกรณ์เรียบร้อยแล้ว (Handover Receipt)',
+    intro: 'เรียน คุณ {{borrower_name}} เจ้าหน้าที่คลังได้ทำการส่งมอบอุปกรณ์ตามรายการเลขที่ {{checkout_id}} ให้แก่ท่านเรียบร้อยแล้ว โปรดเก็บรักษาอุปกรณ์ให้อยู่ในสภาพสมบูรณ์และนำส่งคืนภายในกำหนดเวลา',
+    cta_label: 'ตรวจสอบรายการอุปกรณ์และกำหนดคืน',
+    cta_url: '{{action_url}}',
+    footer_note: 'เมื่อใช้งานเสร็จสิ้น กรุณานำส่งคืนที่คลังอุปกรณ์เดิมเพื่อตรวจรับสภาพและปิดรายการยืม',
+    roles: ['STAFF', 'ADMIN'],
+    to_extra: '',
+    cc_extra: ''
+  },
+  checkout_due_soon: {
+    enabled: true,
+    title: '11. Return Due Reminder',
+    desc: 'Scheduled reminder sent one day before the equipment return due date',
+    primary_recipient: 'Borrower',
+    subject: '[StockFlow] แจ้งเตือน: อุปกรณ์ตามคำขอยืม {{request_no}} ใกล้ถึงกำหนดส่งคืน',
+    status_label: 'ใกล้ถึงกำหนดส่งคืน',
+    status_type: 'warning',
+    heading: 'แจ้งเตือนกำหนดส่งคืนอุปกรณ์ (Return Due Reminder)',
+    intro: 'เรียน คุณ {{borrower_name}} อุปกรณ์ตามรายการยืมเลขที่ {{checkout_id}} สำหรับโครงการ {{project_name}} จะครบกำหนดส่งคืนในวันพรุ่งนี้ ({{due_date}}) กรุณาเตรียมนำส่งคืนเจ้าหน้าที่คลังตามกำหนดเวลา',
+    cta_label: 'ดูรายการอุปกรณ์ที่ต้องส่งคืน',
+    cta_url: '{{action_url}}',
+    footer_note: 'หากมีความจำเป็นต้องขยายเวลาการใช้งาน สามารถทำเรื่องขอขยายกำหนดเวลาส่งคืนผ่านระบบก่อนถึงกำหนดได้',
+    roles: ['STAFF'],
+    to_extra: '',
+    cc_extra: ''
+  },
+  checkout_overdue: {
+    enabled: true,
+    title: '12. Overdue Return Alert',
+    desc: 'Scheduled alert when equipment is past its return due date, with administrators in CC',
+    primary_recipient: 'Borrower + CC Administrator',
+    subject: '[StockFlow] ด่วน: รายการยืมอุปกรณ์ {{request_no}} เกินกำหนดส่งคืน (เลยกำหนด {{days_overdue}})',
+    status_label: 'เกินกำหนดส่งคืน',
+    status_type: 'rejected',
+    heading: 'แจ้งเตือนเกินกำหนดส่งคืนอุปกรณ์ (Overdue Notice)',
+    intro: 'เรียน คุณ {{borrower_name}} (สำเนาถึงผู้ดูแลระบบ) รายการยืมอุปกรณ์เลขที่ {{checkout_id}} สำหรับโครงการ {{project_name}} ได้ล่วงเลยกำหนดส่งคืน ({{due_date}}) มาแล้วเป็นเวลา {{days_overdue}} กรุณาติดต่อส่งคืนอุปกรณ์หรือชี้แจงสถานะต่อเจ้าหน้าที่คลังโดยด่วน',
+    cta_label: 'ดูรายละเอียดและติดต่อส่งคืน',
+    cta_url: '{{action_url}}',
+    footer_note: 'การครอบครองอุปกรณ์เกินกำหนดโดยไม่ได้รับอนุญาตอาจส่งผลกระทบต่อการจัดสรรอุปกรณ์ในโครงการอื่น',
+    roles: ['ADMIN', 'SUPERVISOR'],
+    to_extra: '',
+    cc_extra: ''
+  },
+  checkout_returned: {
+    enabled: true,
+    title: '13. Equipment Returned',
+    desc: 'Notify the borrower when returned equipment is inspected and recorded',
+    primary_recipient: 'Borrower / Administrator',
+    subject: '[StockFlow] บันทึกรับคืนอุปกรณ์ {{request_no}} เรียบร้อยแล้ว (สภาพ: {{condition}})',
+    status_label: 'คืนอุปกรณ์เรียบร้อย',
+    status_type: 'approved',
+    heading: 'เจ้าหน้าที่คลังตรวจสอบและรับคืนอุปกรณ์เรียบร้อยแล้ว',
+    intro: 'เรียน คุณ {{borrower_name}} เจ้าหน้าที่คลังได้ทำการตรวจรับอุปกรณ์ตามรายการเลขที่ {{checkout_id}} สำหรับโครงการ {{project_name}} ส่งคืนเข้าระบบเรียบร้อยแล้วในวันที่ {{return_date}} สภาพอุปกรณ์โดยรวม: {{condition}}',
+    cta_label: 'ดูประวัติและหลักฐานการคืน',
+    cta_url: '{{action_url}}',
+    footer_note: 'ขอขอบคุณที่ให้ความร่วมมือในการส่งคืนอุปกรณ์ตามระเบียบของระบบ StockFlow',
+    roles: ['STAFF', 'ADMIN'],
+    to_extra: '',
+    cc_extra: ''
   }
 };
 
@@ -299,7 +418,15 @@ const EmailTemplateManager = ({
       const localizedDesc = String(getEventDesc(key, item.desc) || '').toLowerCase();
       const rawTitle = String(item.title || '').toLowerCase();
       const rawDesc = String(item.desc || '').toLowerCase();
-      return !q || localizedTitle.includes(q) || localizedDesc.includes(q) || rawTitle.includes(q) || rawDesc.includes(q);
+      const rawKey = String(key || '').toLowerCase();
+      const primaryRecipient = String(item.primary_recipient || '').toLowerCase();
+      return !q
+        || localizedTitle.includes(q)
+        || localizedDesc.includes(q)
+        || rawTitle.includes(q)
+        || rawDesc.includes(q)
+        || rawKey.includes(q)
+        || primaryRecipient.includes(q);
     });
   }, [events, searchQuery, t]);
 

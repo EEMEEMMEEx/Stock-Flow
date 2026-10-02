@@ -8,6 +8,41 @@ const THAI_MONTHS = [
   'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
 ];
 
+/**
+ * Format a DATE-only value ('2026-10-09') as '9 ตุลาคม 2569'.
+ * Calendar-only values must not invent a time ('เวลา 00:00 น.').
+ */
+export const formatThaiDate = (dateValue) => {
+  if (!dateValue) return '';
+  const raw = String(dateValue);
+  const isDateOnly = /^\d{4}-\d{2}-\d{2}$/.test(raw);
+  const date = isDateOnly ? new Date(`${raw}T00:00:00+07:00`) : new Date(dateValue);
+  if (Number.isNaN(date.getTime())) return raw;
+
+  try {
+    const parts = new Intl.DateTimeFormat('th-TH-u-ca-buddhist', {
+      timeZone: 'Asia/Bangkok',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    }).formatToParts(date);
+    const value = (type) => parts.find((part) => part.type === type)?.value || '';
+    return `${value('day')} ${value('month')} ${value('year')}`;
+  } catch {
+    return `${date.getUTCDate()} ${THAI_MONTHS[date.getUTCMonth()]} ${date.getUTCFullYear() + 543}`;
+  }
+};
+
+/**
+ * Date + time for timestamp columns, date only for calendar columns.
+ */
+export const formatThaiDateOrDateTime = (dateValue) => {
+  if (!dateValue) return '';
+  return /^\d{4}-\d{2}-\d{2}$/.test(String(dateValue))
+    ? formatThaiDate(dateValue)
+    : formatThaiDateTime(dateValue);
+};
+
 export const formatThaiDateTime = (dateValue) => {
   if (!dateValue) return '';
   const date = new Date(dateValue);
@@ -178,6 +213,226 @@ export const SAMPLE_EMAIL_DATA_BY_EVENT = {
       }
     ],
   },
+  checkout_submitted: {
+    event_type: 'checkout_submitted',
+    app_name: 'StockFlow',
+    checkout_id: 'CHK-2026-0089',
+    request_no: 'CHK-2026-0089',
+    borrower_name: 'วัชระ มานะดี',
+    borrower_department: 'วิศวกรรมระบบและเครือข่าย (DTRS Network)',
+    borrower_phone: '081-987-6543',
+    requester_name: 'วัชระ มานะดี',
+    requester_email: 'watchara@example.com',
+    project_name: 'โครงการติดตั้งระบบสื่อสาร DTRS-DOPA ระยะที่ 2',
+    project_code: 'DTRS-DOPA-02',
+    equipment_name: 'วิทยุสื่อสารดิจิทัล Motorola XiR P8668i TIA',
+    asset_code: 'ASSET-DOPA-0482 (S/N: 78945612)',
+    quantity: '2 เครื่อง',
+    checkout_date: '2 ตุลาคม 2569 เวลา 14:30 น.',
+    due_date: '9 ตุลาคม 2569',
+    purpose: 'ใช้สำหรับทดสอบสัญญาณวิทยุภาคสนามในพื้นที่อำเภอแม่ริม',
+    status: 'รอตรวจสอบและอนุมัติ',
+    status_badge: 'รออนุมัติ',
+    fulfillment_status: 'รอพิจารณาอนุมัติ',
+    item_count: '2 รายการ',
+    total_quantity: '2 เครื่อง',
+    action_url: 'https://stockflowth.online/checkouts?order_id=CHK-2026-0089',
+    public_base_url: 'https://stockflowth.online',
+    items: [
+      { name: 'วิทยุสื่อสารดิจิทัล Motorola XiR P8668i TIA', sku: 'ASSET-DOPA-0482 (S/N: 78945612)', unit: 'เครื่อง', requested_qty: 1, approved_qty: 1, available_stock: 4 },
+      { name: 'แท่นชาร์จแบตเตอรี่วิทยุ Motorola PMPN4527A', sku: 'ASSET-DOPA-0517 (S/N: 51230987)', unit: 'ชุด', requested_qty: 1, approved_qty: 1, available_stock: 6 },
+    ],
+  },
+  checkout_approved: {
+    event_type: 'checkout_approved',
+    app_name: 'StockFlow',
+    checkout_id: 'CHK-2026-0089',
+    request_no: 'CHK-2026-0089',
+    borrower_name: 'วัชระ มานะดี',
+    borrower_department: 'วิศวกรรมระบบและเครือข่าย (DTRS Network)',
+    borrower_phone: '081-987-6543',
+    requester_name: 'วัชระ มานะดี',
+    requester_email: 'watchara@example.com',
+    project_name: 'โครงการติดตั้งระบบสื่อสาร DTRS-DOPA ระยะที่ 2',
+    project_code: 'DTRS-DOPA-02',
+    equipment_name: 'วิทยุสื่อสารดิจิทัล Motorola XiR P8668i TIA',
+    asset_code: 'ASSET-DOPA-0482 (S/N: 78945612)',
+    quantity: '2 เครื่อง',
+    checkout_date: '2 ตุลาคม 2569 เวลา 14:30 น.',
+    approved_date: '2 ตุลาคม 2569 เวลา 15:05 น.',
+    due_date: '9 ตุลาคม 2569',
+    approver_name: 'ประเสริฐ ชัยชนะ (หัวหน้างานคลัง)',
+    purpose: 'ใช้สำหรับทดสอบสัญญาณวิทยุภาคสนามในพื้นที่อำเภอแม่ริม',
+    status: 'อนุมัติแล้ว',
+    status_badge: 'อนุมัติแล้ว',
+    fulfillment_status: 'อนุมัติและจ่ายอุปกรณ์แล้ว',
+    item_count: '2 รายการ',
+    total_quantity: '2 เครื่อง',
+    action_url: 'https://stockflowth.online/checkouts?order_id=CHK-2026-0089',
+    public_base_url: 'https://stockflowth.online',
+    items: [
+      { name: 'วิทยุสื่อสารดิจิทัล Motorola XiR P8668i TIA', sku: 'ASSET-DOPA-0482 (S/N: 78945612)', unit: 'เครื่อง', requested_qty: 1, approved_qty: 1, available_stock: 4 },
+      { name: 'แท่นชาร์จแบตเตอรี่วิทยุ Motorola PMPN4527A', sku: 'ASSET-DOPA-0517 (S/N: 51230987)', unit: 'ชุด', requested_qty: 1, approved_qty: 1, available_stock: 6 },
+    ],
+  },
+  checkout_rejected: {
+    event_type: 'checkout_rejected',
+    app_name: 'StockFlow',
+    checkout_id: 'CHK-2026-0089',
+    request_no: 'CHK-2026-0089',
+    borrower_name: 'วัชระ มานะดี',
+    borrower_department: 'วิศวกรรมระบบและเครือข่าย (DTRS Network)',
+    borrower_phone: '081-987-6543',
+    requester_name: 'วัชระ มานะดี',
+    requester_email: 'watchara@example.com',
+    project_name: 'โครงการติดตั้งระบบสื่อสาร DTRS-DOPA ระยะที่ 2',
+    project_code: 'DTRS-DOPA-02',
+    equipment_name: 'วิทยุสื่อสารดิจิทัล Motorola XiR P8668i TIA',
+    asset_code: 'ASSET-DOPA-0482 (S/N: 78945612)',
+    quantity: '2 เครื่อง',
+    checkout_date: '2 ตุลาคม 2569 เวลา 14:30 น.',
+    rejected_date: '2 ตุลาคม 2569 เวลา 15:20 น.',
+    due_date: '9 ตุลาคม 2569',
+    approver_name: 'ประเสริฐ ชัยชนะ (หัวหน้างานคลัง)',
+    reject_reason: 'อุปกรณ์รุ่นนี้ถูกจัดสรรสำหรับงานฉุกเฉิน กรุณาประสานงานเพื่อเลือกอุปกรณ์สำรองรุ่นอื่น',
+    purpose: 'ใช้สำหรับทดสอบสัญญาณวิทยุภาคสนามในพื้นที่อำเภอแม่ริม',
+    status: 'ไม่ได้รับการอนุมัติ',
+    status_badge: 'ไม่ได้รับการอนุมัติ',
+    fulfillment_status: 'ยกเลิกคำขอยืม',
+    item_count: '2 รายการ',
+    total_quantity: '2 เครื่อง',
+    action_url: 'https://stockflowth.online/checkouts?order_id=CHK-2026-0089',
+    public_base_url: 'https://stockflowth.online',
+    items: [
+      { name: 'วิทยุสื่อสารดิจิทัล Motorola XiR P8668i TIA', sku: 'ASSET-DOPA-0482 (S/N: 78945612)', unit: 'เครื่อง', requested_qty: 1, approved_qty: 1, available_stock: 4 },
+      { name: 'แท่นชาร์จแบตเตอรี่วิทยุ Motorola PMPN4527A', sku: 'ASSET-DOPA-0517 (S/N: 51230987)', unit: 'ชุด', requested_qty: 1, approved_qty: 1, available_stock: 6 },
+    ],
+  },
+  checkout_handed_over: {
+    event_type: 'checkout_handed_over',
+    app_name: 'StockFlow',
+    checkout_id: 'CHK-2026-0089',
+    request_no: 'CHK-2026-0089',
+    borrower_name: 'วัชระ มานะดี',
+    borrower_department: 'วิศวกรรมระบบและเครือข่าย (DTRS Network)',
+    borrower_phone: '081-987-6543',
+    requester_name: 'วัชระ มานะดี',
+    requester_email: 'watchara@example.com',
+    project_name: 'โครงการติดตั้งระบบสื่อสาร DTRS-DOPA ระยะที่ 2',
+    project_code: 'DTRS-DOPA-02',
+    equipment_name: 'วิทยุสื่อสารดิจิทัล Motorola XiR P8668i TIA',
+    asset_code: 'ASSET-DOPA-0482 (S/N: 78945612)',
+    quantity: '2 เครื่อง',
+    checkout_date: '2 ตุลาคม 2569 เวลา 14:30 น.',
+    due_date: '9 ตุลาคม 2569',
+    approver_name: 'ประเสริฐ ชัยชนะ (หัวหน้างานคลัง)',
+    purpose: 'ใช้สำหรับทดสอบสัญญาณวิทยุภาคสนามในพื้นที่อำเภอแม่ริม',
+    status: 'ส่งมอบอุปกรณ์แล้ว',
+    status_badge: 'ส่งมอบอุปกรณ์แล้ว',
+    fulfillment_status: 'อยู่ระหว่างการยืม',
+    item_count: '2 รายการ',
+    total_quantity: '2 เครื่อง',
+    action_url: 'https://stockflowth.online/checkouts?order_id=CHK-2026-0089',
+    public_base_url: 'https://stockflowth.online',
+    items: [
+      { name: 'วิทยุสื่อสารดิจิทัล Motorola XiR P8668i TIA', sku: 'ASSET-DOPA-0482 (S/N: 78945612)', unit: 'เครื่อง', requested_qty: 1, approved_qty: 1, available_stock: 4 },
+      { name: 'แท่นชาร์จแบตเตอรี่วิทยุ Motorola PMPN4527A', sku: 'ASSET-DOPA-0517 (S/N: 51230987)', unit: 'ชุด', requested_qty: 1, approved_qty: 1, available_stock: 6 },
+    ],
+  },
+  checkout_due_soon: {
+    event_type: 'checkout_due_soon',
+    app_name: 'StockFlow',
+    checkout_id: 'CHK-2026-0089',
+    request_no: 'CHK-2026-0089',
+    borrower_name: 'วัชระ มานะดี',
+    borrower_department: 'วิศวกรรมระบบและเครือข่าย (DTRS Network)',
+    borrower_phone: '081-987-6543',
+    requester_name: 'วัชระ มานะดี',
+    requester_email: 'watchara@example.com',
+    project_name: 'โครงการติดตั้งระบบสื่อสาร DTRS-DOPA ระยะที่ 2',
+    project_code: 'DTRS-DOPA-02',
+    equipment_name: 'วิทยุสื่อสารดิจิทัล Motorola XiR P8668i TIA',
+    asset_code: 'ASSET-DOPA-0482 (S/N: 78945612)',
+    quantity: '2 เครื่อง',
+    checkout_date: '2 ตุลาคม 2569 เวลา 14:30 น.',
+    due_date: '9 ตุลาคม 2569',
+    purpose: 'ใช้สำหรับทดสอบสัญญาณวิทยุภาคสนามในพื้นที่อำเภอแม่ริม',
+    status: 'ใกล้ถึงกำหนดส่งคืน',
+    status_badge: 'ใกล้ถึงกำหนดส่งคืน',
+    fulfillment_status: 'อยู่ระหว่างการยืม',
+    item_count: '2 รายการ',
+    total_quantity: '2 เครื่อง',
+    action_url: 'https://stockflowth.online/checkouts?order_id=CHK-2026-0089',
+    public_base_url: 'https://stockflowth.online',
+    items: [
+      { name: 'วิทยุสื่อสารดิจิทัล Motorola XiR P8668i TIA', sku: 'ASSET-DOPA-0482 (S/N: 78945612)', unit: 'เครื่อง', requested_qty: 1, approved_qty: 1, available_stock: 4 },
+      { name: 'แท่นชาร์จแบตเตอรี่วิทยุ Motorola PMPN4527A', sku: 'ASSET-DOPA-0517 (S/N: 51230987)', unit: 'ชุด', requested_qty: 1, approved_qty: 1, available_stock: 6 },
+    ],
+  },
+  checkout_overdue: {
+    event_type: 'checkout_overdue',
+    app_name: 'StockFlow',
+    checkout_id: 'CHK-2026-0089',
+    request_no: 'CHK-2026-0089',
+    borrower_name: 'วัชระ มานะดี',
+    borrower_department: 'วิศวกรรมระบบและเครือข่าย (DTRS Network)',
+    borrower_phone: '081-987-6543',
+    requester_name: 'วัชระ มานะดี',
+    requester_email: 'watchara@example.com',
+    project_name: 'โครงการติดตั้งระบบสื่อสาร DTRS-DOPA ระยะที่ 2',
+    project_code: 'DTRS-DOPA-02',
+    equipment_name: 'วิทยุสื่อสารดิจิทัล Motorola XiR P8668i TIA',
+    asset_code: 'ASSET-DOPA-0482 (S/N: 78945612)',
+    quantity: '2 เครื่อง',
+    checkout_date: '2 ตุลาคม 2569 เวลา 14:30 น.',
+    due_date: '9 ตุลาคม 2569',
+    days_overdue: '3 วัน',
+    purpose: 'ใช้สำหรับทดสอบสัญญาณวิทยุภาคสนามในพื้นที่อำเภอแม่ริม',
+    status: 'เกินกำหนดส่งคืน',
+    status_badge: 'เกินกำหนดส่งคืน',
+    fulfillment_status: 'เกินกำหนดส่งคืน',
+    item_count: '2 รายการ',
+    total_quantity: '2 เครื่อง',
+    action_url: 'https://stockflowth.online/checkouts?order_id=CHK-2026-0089',
+    public_base_url: 'https://stockflowth.online',
+    items: [
+      { name: 'วิทยุสื่อสารดิจิทัล Motorola XiR P8668i TIA', sku: 'ASSET-DOPA-0482 (S/N: 78945612)', unit: 'เครื่อง', requested_qty: 1, approved_qty: 1, available_stock: 4 },
+      { name: 'แท่นชาร์จแบตเตอรี่วิทยุ Motorola PMPN4527A', sku: 'ASSET-DOPA-0517 (S/N: 51230987)', unit: 'ชุด', requested_qty: 1, approved_qty: 1, available_stock: 6 },
+    ],
+  },
+  checkout_returned: {
+    event_type: 'checkout_returned',
+    app_name: 'StockFlow',
+    checkout_id: 'CHK-2026-0089',
+    request_no: 'CHK-2026-0089',
+    borrower_name: 'วัชระ มานะดี',
+    borrower_department: 'วิศวกรรมระบบและเครือข่าย (DTRS Network)',
+    borrower_phone: '081-987-6543',
+    requester_name: 'วัชระ มานะดี',
+    requester_email: 'watchara@example.com',
+    project_name: 'โครงการติดตั้งระบบสื่อสาร DTRS-DOPA ระยะที่ 2',
+    project_code: 'DTRS-DOPA-02',
+    equipment_name: 'วิทยุสื่อสารดิจิทัล Motorola XiR P8668i TIA',
+    asset_code: 'ASSET-DOPA-0482 (S/N: 78945612)',
+    quantity: '2 เครื่อง',
+    checkout_date: '2 ตุลาคม 2569 เวลา 14:30 น.',
+    due_date: '9 ตุลาคม 2569',
+    return_date: '8 ตุลาคม 2569 เวลา 16:15 น.',
+    condition: 'ปกติ สมบูรณ์',
+    condition_details: 'ตัวเครื่องสภาพสมบูรณ์ แบตเตอรี่และเสาอากาศครบถ้วน',
+    purpose: 'ใช้สำหรับทดสอบสัญญาณวิทยุภาคสนามในพื้นที่อำเภอแม่ริม',
+    status: 'คืนอุปกรณ์เรียบร้อย',
+    status_badge: 'คืนอุปกรณ์เรียบร้อย',
+    fulfillment_status: 'คืนอุปกรณ์ครบถ้วน',
+    item_count: '2 รายการ',
+    total_quantity: '2 เครื่อง',
+    action_url: 'https://stockflowth.online/checkouts?order_id=CHK-2026-0089',
+    public_base_url: 'https://stockflowth.online',
+    items: [
+      { name: 'วิทยุสื่อสารดิจิทัล Motorola XiR P8668i TIA', sku: 'ASSET-DOPA-0482 (S/N: 78945612)', unit: 'เครื่อง', requested_qty: 1, approved_qty: 1, issued_qty: 1, available_stock: 5 },
+      { name: 'แท่นชาร์จแบตเตอรี่วิทยุ Motorola PMPN4527A', sku: 'ASSET-DOPA-0517 (S/N: 51230987)', unit: 'ชุด', requested_qty: 1, approved_qty: 1, issued_qty: 1, available_stock: 7 },
+    ],
+  },
 };
 
 export const SAMPLE_EMAIL_DATA = {
@@ -223,6 +478,42 @@ export const SUPPORTED_EVENT_VARIABLES = {
     ['item_name', 'ชื่อวัสดุ'], ['item_code', 'รหัสวัสดุ'], ['project_name', 'ชื่อโครงการ'],
     ['project_code', 'รหัสโครงการ'], ['warehouse_name', 'คลังจัดเก็บ'], ['current_stock', 'คงเหลือปัจจุบัน'],
     ['threshold', 'เกณฑ์แจ้งเตือน'], ['action_url', 'ลิงก์เปิดรายการ']
+  ],
+  checkout_submitted: [
+    ['checkout_id', 'เลขที่คำขอยืม'], ['borrower_name', 'ชื่อผู้ขอยืม'], ['borrower_department', 'แผนกผู้ขอยืม'],
+    ['borrower_phone', 'เบอร์ติดต่อ'], ['project_name', 'ชื่อโครงการ'], ['project_code', 'รหัสโครงการ'],
+    ['equipment_name', 'ชื่ออุปกรณ์'], ['asset_code', 'รหัสทรัพย์สิน / S/N'], ['quantity', 'จำนวน'],
+    ['checkout_date', 'วันที่ขอยืม'], ['due_date', 'กำหนดส่งคืน'], ['purpose', 'วัตถุประสงค์'], ['action_url', 'ลิงก์เปิดรายการ']
+  ],
+  checkout_approved: [
+    ['checkout_id', 'เลขที่คำขอยืม'], ['borrower_name', 'ชื่อผู้ขอยืม'], ['project_name', 'ชื่อโครงการ'],
+    ['equipment_name', 'ชื่ออุปกรณ์'], ['asset_code', 'รหัสทรัพย์สิน / S/N'], ['quantity', 'จำนวน'],
+    ['approver_name', 'ผู้อนุมัติ'], ['checkout_date', 'วันที่ขอยืม'], ['due_date', 'กำหนดส่งคืน'], ['action_url', 'ลิงก์เปิดรายการ']
+  ],
+  checkout_rejected: [
+    ['checkout_id', 'เลขที่คำขอยืม'], ['borrower_name', 'ชื่อผู้ขอยืม'], ['project_name', 'ชื่อโครงการ'],
+    ['equipment_name', 'ชื่ออุปกรณ์'], ['asset_code', 'รหัสทรัพย์สิน / S/N'], ['quantity', 'จำนวน'],
+    ['approver_name', 'ผู้ปฏิเสธ'], ['reject_reason', 'เหตุผลที่ไม่อนุมัติ'], ['action_url', 'ลิงก์เปิดรายการ']
+  ],
+  checkout_handed_over: [
+    ['checkout_id', 'เลขที่คำขอยืม'], ['borrower_name', 'ชื่อผู้ขอยืม'], ['project_name', 'ชื่อโครงการ'],
+    ['equipment_name', 'ชื่ออุปกรณ์'], ['asset_code', 'รหัสทรัพย์สิน / S/N'], ['quantity', 'จำนวน'],
+    ['approver_name', 'เจ้าหน้าที่ผู้จ่ายอุปกรณ์'], ['due_date', 'กำหนดส่งคืน'], ['purpose', 'วัตถุประสงค์'], ['action_url', 'ลิงก์เปิดรายการ']
+  ],
+  checkout_due_soon: [
+    ['checkout_id', 'เลขที่คำขอยืม'], ['borrower_name', 'ชื่อผู้ขอยืม'], ['project_name', 'ชื่อโครงการ'],
+    ['equipment_name', 'ชื่ออุปกรณ์'], ['asset_code', 'รหัสทรัพย์สิน / S/N'], ['quantity', 'จำนวน'],
+    ['due_date', 'กำหนดส่งคืน'], ['action_url', 'ลิงก์เปิดรายการ']
+  ],
+  checkout_overdue: [
+    ['checkout_id', 'เลขที่คำขอยืม'], ['borrower_name', 'ชื่อผู้ขอยืม'], ['project_name', 'ชื่อโครงการ'],
+    ['equipment_name', 'ชื่ออุปกรณ์'], ['asset_code', 'รหัสทรัพย์สิน / S/N'], ['quantity', 'จำนวน'],
+    ['due_date', 'กำหนดส่งคืน'], ['days_overdue', 'จำนวนวันที่เกินกำหนด'], ['action_url', 'ลิงก์เปิดรายการ']
+  ],
+  checkout_returned: [
+    ['checkout_id', 'เลขที่คำขอยืม'], ['borrower_name', 'ชื่อผู้ขอยืม'], ['project_name', 'ชื่อโครงการ'],
+    ['equipment_name', 'ชื่ออุปกรณ์'], ['asset_code', 'รหัสทรัพย์สิน / S/N'], ['quantity', 'จำนวน'],
+    ['return_date', 'วันที่ส่งคืน'], ['condition', 'สภาพอุปกรณ์'], ['condition_details', 'หมายเหตุสภาพ'], ['action_url', 'ลิงก์เปิดรายการ']
   ],
 };
 
@@ -272,6 +563,55 @@ const EVENT_DEFAULTS = {
     intro: 'รายการวัสดุ "{{item_name}}" ในโครงการ {{project_name}} มียอดคงเหลือปัจจุบัน {{current_stock}} ซึ่งต่ำกว่าเกณฑ์การสั่งซื้อเติมคลัง ({{threshold}})',
     cta: 'ดูรายการวัสดุและวางแผนสั่งซื้อ',
     helper: 'กรุณาตรวจสอบยอดคงเหลือและวางแผนจัดซื้อเพื่อความต่อเนื่องของโครงการ'
+  },
+  checkout_submitted: {
+    badge: 'รออนุมัติ', type: 'warning',
+    heading: 'มีคำขอยืมอุปกรณ์ใหม่เข้าระบบ รอการพิจารณาอนุมัติ',
+    intro: 'มีคำขอยืมพัสดุและอุปกรณ์เลขที่ {{checkout_id}} โดยคุณ {{borrower_name}} สำหรับใช้งานในโครงการ {{project_name}} กรุณาตรวจสอบรายการอุปกรณ์และกำหนดวันส่งคืนเพื่อพิจารณาอนุมัติ',
+    cta: 'ตรวจสอบและพิจารณาคำขอยืม',
+    helper: 'กรุณาพิจารณาอนุมัติผ่านระบบ StockFlow เพื่อให้เจ้าหน้าที่คลังดำเนินการจัดเตรียมอุปกรณ์ต่อไป'
+  },
+  checkout_approved: {
+    badge: 'อนุมัติแล้ว', type: 'approved',
+    heading: 'คำขอยืมอุปกรณ์ของคุณได้รับการอนุมัติเรียบร้อยแล้ว',
+    intro: 'เรียน คุณ {{borrower_name}} คำขอยืมอุปกรณ์เลขที่ {{checkout_id}} สำหรับโครงการ {{project_name}} ได้รับการอนุมัติโดย {{approver_name}} เรียบร้อยแล้ว กรุณาติดต่อเจ้าหน้าที่คลังเพื่อรับมอบอุปกรณ์ตามเวลาที่กำหนด',
+    cta: 'ดูรายละเอียดและเตรียมนัดหมายรับอุปกรณ์',
+    helper: 'โปรดตรวจสอบสภาพอุปกรณ์และลงนามรับมอบต่อหน้าเจ้าหน้าที่คลังในวันที่มารับอุปกรณ์'
+  },
+  checkout_rejected: {
+    badge: 'ไม่ได้รับการอนุมัติ', type: 'rejected',
+    heading: 'คำขอยืมอุปกรณ์ไม่ได้รับการอนุมัติ',
+    intro: 'เรียน คุณ {{borrower_name}} คำขอยืมอุปกรณ์เลขที่ {{checkout_id}} สำหรับโครงการ {{project_name}} ไม่ได้รับการอนุมัติ กรุณาตรวจสอบเหตุผลด้านล่าง หากมีข้อสงสัยสามารถติดต่อผู้อนุมัติโครงการได้โดยตรง',
+    cta: 'ดูรายละเอียดคำขอยืม',
+    helper: 'หากต้องการแก้ไขข้อมูลหรือเลือกอุปกรณ์สำรองรุ่นอื่น สามารถสร้างคำขอยืมใหม่ได้จากระบบ'
+  },
+  checkout_handed_over: {
+    badge: 'ส่งมอบอุปกรณ์แล้ว', type: 'info',
+    heading: 'บันทึกการรับมอบอุปกรณ์เรียบร้อยแล้ว (Handover Receipt)',
+    intro: 'เรียน คุณ {{borrower_name}} เจ้าหน้าที่คลังได้ทำการส่งมอบอุปกรณ์ตามรายการเลขที่ {{checkout_id}} ให้แก่ท่านเรียบร้อยแล้ว โปรดเก็บรักษาอุปกรณ์ให้อยู่ในสภาพสมบูรณ์และนำส่งคืนภายในกำหนดเวลา',
+    cta: 'ตรวจสอบรายการอุปกรณ์และกำหนดคืน',
+    helper: 'เมื่อใช้งานเสร็จสิ้น กรุณานำส่งคืนที่คลังอุปกรณ์เดิมเพื่อตรวจรับสภาพและปิดรายการยืม'
+  },
+  checkout_due_soon: {
+    badge: 'ใกล้ถึงกำหนดส่งคืน', type: 'warning',
+    heading: 'แจ้งเตือนกำหนดส่งคืนอุปกรณ์ (Return Due Reminder)',
+    intro: 'เรียน คุณ {{borrower_name}} อุปกรณ์ตามรายการยืมเลขที่ {{checkout_id}} สำหรับโครงการ {{project_name}} จะครบกำหนดส่งคืนในวันพรุ่งนี้ ({{due_date}}) กรุณาเตรียมนำส่งคืนเจ้าหน้าที่คลังตามกำหนดเวลา',
+    cta: 'ดูรายการอุปกรณ์ที่ต้องส่งคืน',
+    helper: 'หากมีความจำเป็นต้องขยายเวลาการใช้งาน สามารถทำเรื่องขอขยายกำหนดเวลาส่งคืนผ่านระบบก่อนถึงกำหนดได้'
+  },
+  checkout_overdue: {
+    badge: 'เกินกำหนดส่งคืน', type: 'rejected',
+    heading: 'แจ้งเตือนเกินกำหนดส่งคืนอุปกรณ์ (Overdue Notice)',
+    intro: 'เรียน คุณ {{borrower_name}} (สำเนาถึงผู้ดูแลระบบ) รายการยืมอุปกรณ์เลขที่ {{checkout_id}} สำหรับโครงการ {{project_name}} ได้ล่วงเลยกำหนดส่งคืน ({{due_date}}) มาแล้วเป็นเวลา {{days_overdue}} กรุณาติดต่อส่งคืนอุปกรณ์หรือชี้แจงสถานะต่อเจ้าหน้าที่คลังโดยด่วน',
+    cta: 'ดูรายละเอียดและติดต่อส่งคืน',
+    helper: 'การครอบครองอุปกรณ์เกินกำหนดโดยไม่ได้รับอนุญาตอาจส่งผลกระทบต่อการจัดสรรอุปกรณ์ในโครงการอื่น'
+  },
+  checkout_returned: {
+    badge: 'คืนอุปกรณ์เรียบร้อย', type: 'approved',
+    heading: 'เจ้าหน้าที่คลังตรวจสอบและรับคืนอุปกรณ์เรียบร้อยแล้ว',
+    intro: 'เรียน คุณ {{borrower_name}} เจ้าหน้าที่คลังได้ทำการตรวจรับอุปกรณ์ตามรายการเลขที่ {{checkout_id}} สำหรับโครงการ {{project_name}} ส่งคืนเข้าระบบเรียบร้อยแล้วในวันที่ {{return_date}} สภาพอุปกรณ์โดยรวม: {{condition}}',
+    cta: 'ดูประวัติและหลักฐานการคืน',
+    helper: 'ขอขอบคุณที่ให้ความร่วมมือในการส่งคืนอุปกรณ์ตามระเบียบของระบบ StockFlow'
   }
 };
 
@@ -342,11 +682,14 @@ const renderRow = (label, value, { emphasis = false } = {}) => hasValue(value) ?
 
 const formatQuantity = (quantity, unit) => `${escapeHtml(quantity)} ${escapeHtml(unit || 'หน่วย')}`;
 
+const CHECKOUT_EQUIPMENT_HEADING_MATCH = 'อุปกรณ์';
+
 const renderMaterialDetails = (items = [], heading = 'รายการวัสดุที่ขอเบิก') => {
   if (!Array.isArray(items) || items.length === 0) return '';
 
   const isStockIn = heading.includes('รับเข้า');
   const isLowStock = heading.includes('เติมสต็อก') || heading.includes('จุดสั่งซื้อ') || heading.includes('สต็อกต่ำ');
+  const isEquipment = !isStockIn && !isLowStock && heading.includes(CHECKOUT_EQUIPMENT_HEADING_MATCH);
 
   const cards = items.map((item, index) => {
     const requested = item.requested_qty ?? item.quantity;
@@ -364,12 +707,23 @@ const renderMaterialDetails = (items = [], heading = 'รายการวั�
       renderRow('คงเหลือปัจจุบัน:', hasValue(item.available_stock ?? requested) ? formatQuantity(item.available_stock ?? requested, unit) : '', { emphasis: true }),
       renderRow('เกณฑ์แจ้งเตือนสต็อกต่ำ:', hasValue(item.threshold || item.min_quantity) ? formatQuantity(item.threshold || item.min_quantity, unit) : ''),
       renderRow('สถานะ:', item.status_label || 'ต้องเติมสต็อก', { emphasis: true })
+    ].filter(Boolean).join('') : isEquipment ? [
+      renderRow('จำนวนที่ยืม:', hasValue(requested) ? formatQuantity(requested, unit) : '', { emphasis: true }),
+      renderRow('กำหนดส่งคืน:', item.due_date || ''),
+      hasValue(item.condition) ? renderRow('สภาพการตรวจรับ:', `<span style="display: inline-block; padding: 2px 8px; border-radius: 999px; background-color: #dcfce7; color: #166534; font-size: 11px; font-weight: 700;">${escapeHtml(item.condition)}</span>`) : ''
     ].filter(Boolean).join('') : [
       renderRow('จำนวนที่ขอ:', hasValue(requested) ? formatQuantity(requested, unit) : ''),
       hasApproved ? renderRow('จำนวนที่อนุมัติ:', `${formatQuantity(approved, unit)}${approvedDiffers ? ' <span style="display: inline-block; margin-left: 5px; padding: 1px 6px; border-radius: 999px; background-color: #fef3c7; color: #92400e; font-size: 11px; font-weight: 700;">ต่างจากที่ขอ</span>' : ''}`, { emphasis: true }) : '',
       hasIssued ? renderRow('จำนวนที่จ่าย:', `${formatQuantity(issued, unit)}${issuedDiffers ? ' <span style="display: inline-block; margin-left: 5px; padding: 1px 6px; border-radius: 999px; background-color: #dbeafe; color: #1d4ed8; font-size: 11px; font-weight: 700;">ต่างจากที่ขอ</span>' : ''}`, { emphasis: true }) : '',
       renderRow(item.available_stock_label || 'คงเหลือขณะขอเบิก:', hasValue(item.available_stock) ? formatQuantity(item.available_stock, unit) : '')
     ].filter(Boolean).join('');
+
+    const identityLine = isEquipment
+      ? `รหัสทรัพย์สิน: ${escapeHtml(item.asset_code || item.sku || item.item_sku || item.item_code || '-')}`
+      : `รหัสวัสดุ: ${escapeHtml(item.sku || item.item_sku || item.item_code)}`;
+    const identityValue = isEquipment
+      ? (item.asset_code || item.sku || item.item_sku || item.item_code)
+      : (item.sku || item.item_sku || item.item_code);
 
     return `
       <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top: ${index ? '12px' : '0'}; border: 1px solid #dbe4f0; border-radius: 10px; background-color: #ffffff;">
@@ -378,7 +732,7 @@ const renderMaterialDetails = (items = [], heading = 'รายการวั�
             <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr>
                 <td width="30" style="vertical-align: top; padding-right: 8px;"><span style="display: inline-block; width: 22px; height: 22px; border-radius: 50%; background-color: #eff6ff; color: #1d4ed8; font-size: 12px; line-height: 22px; text-align: center; font-weight: 700;">${index + 1}</span></td>
-                <td style="vertical-align: top; font-size: 14px; line-height: 20px; font-weight: 700; color: #0f172a; overflow-wrap: anywhere; word-break: break-word;">${escapeHtml(item.name || item.item_name || 'วัสดุไม่ระบุชื่อ')}<br />${hasValue(item.sku || item.item_sku || item.item_code) ? `<span style="font-family: Consolas, 'Courier New', monospace; font-size: 11px; line-height: 17px; font-weight: 600; color: #64748b;">รหัสวัสดุ: ${escapeHtml(item.sku || item.item_sku || item.item_code)}</span>` : ''}</td>
+                <td style="vertical-align: top; font-size: 14px; line-height: 20px; font-weight: 700; color: #0f172a; overflow-wrap: anywhere; word-break: break-word;">${escapeHtml(item.name || item.item_name || 'วัสดุไม่ระบุชื่อ')}<br />${hasValue(identityValue) ? `<span style="font-family: Consolas, 'Courier New', monospace; font-size: 11px; line-height: 17px; font-weight: 600; color: #64748b;">${identityLine}</span>` : ''}</td>
               </tr>
             </table>
           </td>
@@ -435,13 +789,56 @@ const renderWorkflow = (data, event) => {
       renderRow('วันที่รับเข้า:', data.received_date),
     ],
     low_stock_alert: [],
+    checkout_submitted: [
+      renderRow('สถานะปัจจุบัน:', data.fulfillment_status || data.status, { emphasis: true }),
+      renderRow('ผู้ขอยืม:', data.borrower_name),
+      renderRow('แผนก:', data.borrower_department),
+      renderRow('เบอร์ติดต่อ:', data.borrower_phone),
+      renderRow('วันที่ขอยืม:', data.checkout_date),
+      renderRow('กำหนดส่งคืน:', data.due_date, { emphasis: true }),
+    ],
+    checkout_approved: [
+      renderRow('สถานะปัจจุบัน:', data.fulfillment_status || data.status, { emphasis: true }),
+      renderRow('ผู้อนุมัติ:', data.approver_name),
+      renderRow('วันที่อนุมัติ:', data.approved_date),
+      renderRow('กำหนดส่งคืน:', data.due_date, { emphasis: true }),
+    ],
+    checkout_rejected: [
+      renderRow('สถานะปัจจุบัน:', data.fulfillment_status || data.status, { emphasis: true }),
+      renderRow('ผู้ปฏิเสธ:', data.approver_name || data.rejected_by),
+      renderRow('วันที่ปฏิเสธ:', data.rejected_date),
+    ],
+    checkout_handed_over: [
+      renderRow('สถานะปัจจุบัน:', data.fulfillment_status || data.status, { emphasis: true }),
+      renderRow('เจ้าหน้าที่ผู้จ่ายอุปกรณ์:', data.approver_name),
+      renderRow('วันที่จ่ายอุปกรณ์:', data.checkout_date),
+      renderRow('กำหนดส่งคืน:', data.due_date, { emphasis: true }),
+    ],
+    checkout_due_soon: [
+      renderRow('สถานะปัจจุบัน:', data.fulfillment_status || data.status, { emphasis: true }),
+      renderRow('กำหนดส่งคืน:', data.due_date, { emphasis: true }),
+      renderRow('ผู้ขอยืม:', data.borrower_name),
+    ],
+    checkout_overdue: [
+      renderRow('สถานะปัจจุบัน:', data.fulfillment_status || data.status, { emphasis: true }),
+      renderRow('กำหนดส่งคืน:', data.due_date),
+      renderRow('เกินกำหนดมาแล้ว:', data.days_overdue, { emphasis: true }),
+      renderRow('ผู้ขอยืม:', data.borrower_name),
+    ],
+    checkout_returned: [
+      renderRow('สถานะปัจจุบัน:', data.fulfillment_status || data.status, { emphasis: true }),
+      renderRow('วันที่ส่งคืน:', data.return_date),
+      renderRow('สภาพอุปกรณ์:', data.condition, { emphasis: true }),
+      renderRow('หมายเหตุสภาพ:', data.condition_details),
+    ],
   };
-  const rows = (rowsByEvent[event] || rowsByEvent.withdrawal_submitted).join('');
-  const reason = hasValue(data.rejection_reason) ? `
+  const rows = (rowsByEvent[event] ?? rowsByEvent.withdrawal_submitted).join('');
+  const rejectReason = data.rejection_reason || (event.startsWith('checkout_') ? data.reject_reason : '');
+  const reason = hasValue(rejectReason) ? `
     <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top: 12px; border: 1px solid #fed7aa; border-radius: 8px; background-color: #fff7ed;">
       <tr><td style="padding: 12px 13px;">
         <div style="font-size: 13px; line-height: 19px; font-weight: 700; color: #9a3412;">เหตุผลการไม่อนุมัติ / ข้อเสนอแนะ:</div>
-        <div style="padding-top: 4px; font-size: 13px; line-height: 20px; color: #7c2d12; overflow-wrap: anywhere; word-break: break-word;">${data.rejection_reason}</div>
+        <div style="padding-top: 4px; font-size: 13px; line-height: 20px; color: #7c2d12; overflow-wrap: anywhere; word-break: break-word;">${rejectReason}</div>
       </td></tr>
     </table>` : '';
   if (!rows && !reason) return '';
@@ -507,12 +904,31 @@ export const renderEmailHtml = ({ branding = {}, template = {}, data = SAMPLE_EM
     rejected_by: escapeHtml(data.rejected_by || '-'),
     completed_by: escapeHtml(data.completed_by || '-'),
     rejection_reason: escapeHtml(data.rejection_reason || ''),
+    checkout_id: escapeHtml(data.checkout_id || data.request_no || '-'),
+    borrower_name: escapeHtml(data.borrower_name || data.requester_name || 'ผู้ขอยืม'),
+    borrower_department: escapeHtml(data.borrower_department || '-'),
+    borrower_phone: escapeHtml(data.borrower_phone || '-'),
+    equipment_name: escapeHtml(data.equipment_name || '-'),
+    asset_code: escapeHtml(data.asset_code || '-'),
+    quantity: escapeHtml(data.quantity || '-'),
+    checkout_date: escapeHtml(data.checkout_date || '-'),
+    due_date: escapeHtml(data.due_date || '-'),
+    return_date: escapeHtml(data.return_date || '-'),
+    days_overdue: escapeHtml(data.days_overdue || '-'),
+    approver_name: escapeHtml(data.approver_name || data.approved_by || '-'),
+    reject_reason: escapeHtml(data.reject_reason || data.rejection_reason || ''),
+    condition: escapeHtml(data.condition || '-'),
+    condition_details: escapeHtml(data.condition_details || ''),
+    public_base_url: escapeHtml(data.public_base_url || ''),
     year: escapeHtml(data.year || String(new Date().getFullYear()))
   };
   const accentColor = sanitizeColor(branding.accent_color);
   const appName = escapeHtml(branding.app_name || data.app_name || 'StockFlow');
   const logoUrl = sanitizeHttpUrl(branding.logo_url, '');
-  const actionUrl = sanitizeHttpUrl(resolveEmailVariables(template.cta_url || data.action_url || '', data), 'https://stockflowth.online/withdrawals');
+  const actionUrl = sanitizeHttpUrl(
+    resolveEmailVariables(template.cta_url || data.action_url || '', data),
+    event.startsWith('checkout_') ? 'https://stockflowth.online/checkouts' : 'https://stockflowth.online/withdrawals'
+  );
   const statusType = template.status_type || defaults.type;
   const status = statusColors(statusType);
   const heading = renderText(template.heading || defaults.heading, safeData);
@@ -528,6 +944,13 @@ export const renderEmailHtml = ({ branding = {}, template = {}, data = SAMPLE_EM
     withdrawal_completed: `คำขอเบิก ${safeData.request_no} สำหรับโครงการ ${safeData.project_name} จ่ายวัสดุเรียบร้อยแล้ว`,
     stock_in_created: `บันทึกรับเข้า Stock ${safeData.stock_in_no} สำหรับโครงการ ${safeData.project_name} จำนวน ${safeData.item_count || 'พัสดุ'} เรียบร้อยแล้ว`,
     low_stock_alert: `แจ้งเตือนวัสดุ ${safeData.item_name} ในโครงการ ${safeData.project_name} คงเหลือ ${safeData.current_stock} ต่ำกว่าเกณฑ์ ${safeData.threshold}`,
+    checkout_submitted: `มีคำขอยืมอุปกรณ์ ${safeData.checkout_id} โดย ${safeData.borrower_name} สำหรับโครงการ ${safeData.project_name} รอการพิจารณาอนุมัติ`,
+    checkout_approved: `คำขอยืมอุปกรณ์ ${safeData.checkout_id} สำหรับโครงการ ${safeData.project_name} ได้รับการอนุมัติแล้ว`,
+    checkout_rejected: `คำขอยืมอุปกรณ์ ${safeData.checkout_id} สำหรับโครงการ ${safeData.project_name} ไม่ได้รับการอนุมัติ`,
+    checkout_handed_over: `บันทึกการรับมอบอุปกรณ์ ${safeData.checkout_id} เรียบร้อยแล้ว กำหนดส่งคืน ${safeData.due_date}`,
+    checkout_due_soon: `อุปกรณ์ตามคำขอยืม ${safeData.checkout_id} ใกล้ถึงกำหนดส่งคืน (${safeData.due_date})`,
+    checkout_overdue: `รายการยืมอุปกรณ์ ${safeData.checkout_id} เกินกำหนดส่งคืนมาแล้ว ${safeData.days_overdue}`,
+    checkout_returned: `รับคืนอุปกรณ์ ${safeData.checkout_id} เรียบร้อยแล้ว สภาพ: ${safeData.condition}`,
   };
   const preheader = renderText(template.preheader || defaultPreheaders[event] || `แจ้งเตือนจากระบบ ${appName}`, safeData);
 
@@ -616,6 +1039,103 @@ export const renderEmailHtml = ({ branding = {}, template = {}, data = SAMPLE_EM
         renderRow('สถานะ:', safeData.status || badge, { emphasis: true }),
       ],
     },
+    checkout_submitted: {
+      title: 'สรุปคำขอยืมอุปกรณ์',
+      rows: [
+        renderRow('เลขที่คำขอยืม:', safeData.checkout_id, { emphasis: true }),
+        renderRow('โครงการ:', safeData.project_name, { emphasis: true }),
+        renderRow('รหัสโครงการ:', safeData.project_code),
+        renderRow('ผู้ขอยืม:', safeData.borrower_name),
+        renderRow('แผนก:', safeData.borrower_department),
+        renderRow('เบอร์ติดต่อ:', safeData.borrower_phone),
+        renderRow('วันที่ขอยืม:', safeData.checkout_date),
+        renderRow('กำหนดส่งคืน:', safeData.due_date, { emphasis: true }),
+        renderRow('จำนวนรายการ:', safeData.item_count || (rawItems.length ? `${rawItems.length} รายการ` : '')),
+        renderRow('สถานะ:', safeData.status || badge, { emphasis: true }),
+      ],
+    },
+    checkout_approved: {
+      title: 'สรุปคำขอยืมอุปกรณ์',
+      rows: [
+        renderRow('เลขที่คำขอยืม:', safeData.checkout_id, { emphasis: true }),
+        renderRow('โครงการ:', safeData.project_name, { emphasis: true }),
+        renderRow('ผู้ขอยืม:', safeData.borrower_name),
+        renderRow('แผนก:', safeData.borrower_department),
+        renderRow('ผู้อนุมัติ:', safeData.approver_name),
+        renderRow('วันที่อนุมัติ:', safeData.approved_date),
+        renderRow('กำหนดส่งคืน:', safeData.due_date, { emphasis: true }),
+        renderRow('จำนวนรายการ:', safeData.item_count || (rawItems.length ? `${rawItems.length} รายการ` : '')),
+        renderRow('สถานะ:', safeData.status || badge, { emphasis: true }),
+      ],
+    },
+    checkout_rejected: {
+      title: 'สรุปคำขอยืมอุปกรณ์',
+      rows: [
+        renderRow('เลขที่คำขอยืม:', safeData.checkout_id, { emphasis: true }),
+        renderRow('โครงการ:', safeData.project_name, { emphasis: true }),
+        renderRow('ผู้ขอยืม:', safeData.borrower_name),
+        renderRow('แผนก:', safeData.borrower_department),
+        renderRow('ผู้ปฏิเสธ:', safeData.approver_name),
+        renderRow('วันที่ปฏิเสธ:', safeData.rejected_date),
+        renderRow('จำนวนรายการ:', safeData.item_count || (rawItems.length ? `${rawItems.length} รายการ` : '')),
+        renderRow('สถานะ:', safeData.status || badge, { emphasis: true }),
+      ],
+    },
+    checkout_handed_over: {
+      title: 'สรุปใบส่งมอบอุปกรณ์',
+      rows: [
+        renderRow('เลขที่คำขอยืม:', safeData.checkout_id, { emphasis: true }),
+        renderRow('โครงการ:', safeData.project_name, { emphasis: true }),
+        renderRow('ผู้รับมอบ:', safeData.borrower_name),
+        renderRow('แผนก:', safeData.borrower_department),
+        renderRow('เจ้าหน้าที่ผู้จ่ายอุปกรณ์:', safeData.approver_name),
+        renderRow('วันที่จ่ายอุปกรณ์:', safeData.checkout_date),
+        renderRow('กำหนดส่งคืน:', safeData.due_date, { emphasis: true }),
+        renderRow('จำนวนรายการ:', safeData.item_count || (rawItems.length ? `${rawItems.length} รายการ` : '')),
+        renderRow('สถานะ:', safeData.status || badge, { emphasis: true }),
+      ],
+    },
+    checkout_due_soon: {
+      title: 'สรุปการแจ้งเตือนกำหนดส่งคืน',
+      rows: [
+        renderRow('เลขที่คำขอยืม:', safeData.checkout_id, { emphasis: true }),
+        renderRow('โครงการ:', safeData.project_name, { emphasis: true }),
+        renderRow('ผู้ขอยืม:', safeData.borrower_name),
+        renderRow('แผนก:', safeData.borrower_department),
+        renderRow('เบอร์ติดต่อ:', safeData.borrower_phone),
+        renderRow('กำหนดส่งคืน:', safeData.due_date, { emphasis: true }),
+        renderRow('จำนวนรายการ:', safeData.item_count || (rawItems.length ? `${rawItems.length} รายการ` : '')),
+        renderRow('สถานะ:', safeData.status || badge, { emphasis: true }),
+      ],
+    },
+    checkout_overdue: {
+      title: 'สรุปการแจ้งเตือนเกินกำหนด',
+      rows: [
+        renderRow('เลขที่คำขอยืม:', safeData.checkout_id, { emphasis: true }),
+        renderRow('โครงการ:', safeData.project_name, { emphasis: true }),
+        renderRow('ผู้ขอยืม:', safeData.borrower_name),
+        renderRow('แผนก:', safeData.borrower_department),
+        renderRow('เบอร์ติดต่อ:', safeData.borrower_phone),
+        renderRow('กำหนดส่งคืน:', safeData.due_date),
+        renderRow('เกินกำหนดมาแล้ว:', safeData.days_overdue, { emphasis: true }),
+        renderRow('จำนวนรายการ:', safeData.item_count || (rawItems.length ? `${rawItems.length} รายการ` : '')),
+        renderRow('สถานะ:', safeData.status || badge, { emphasis: true }),
+      ],
+    },
+    checkout_returned: {
+      title: 'สรุปการรับคืนอุปกรณ์',
+      rows: [
+        renderRow('เลขที่คำขอยืม:', safeData.checkout_id, { emphasis: true }),
+        renderRow('โครงการ:', safeData.project_name, { emphasis: true }),
+        renderRow('ผู้ส่งคืน:', safeData.borrower_name),
+        renderRow('แผนก:', safeData.borrower_department),
+        renderRow('วันที่ส่งคืน:', safeData.return_date),
+        renderRow('สภาพอุปกรณ์:', safeData.condition, { emphasis: true }),
+        renderRow('หมายเหตุสภาพ:', safeData.condition_details),
+        renderRow('จำนวนรายการ:', safeData.item_count || (rawItems.length ? `${rawItems.length} รายการ` : '')),
+        renderRow('สถานะ:', safeData.status || badge, { emphasis: true }),
+      ],
+    },
   };
   const summary = summaryByEvent[event] || summaryByEvent.withdrawal_submitted;
   const summaryRows = summary.rows.join('');
@@ -627,7 +1147,7 @@ export const renderEmailHtml = ({ branding = {}, template = {}, data = SAMPLE_EM
 
   const materialHeading = event === 'stock_in_created'
     ? 'รายการวัสดุที่รับเข้า'
-    : (event === 'low_stock_alert' ? 'รายการวัสดุที่ต้องเติมสต็อก' : 'รายการวัสดุที่ขอเบิก');
+    : (event === 'low_stock_alert' ? 'รายการวัสดุที่ต้องเติมสต็อก' : (event.startsWith('checkout_') ? 'รายการอุปกรณ์ที่ยืม' : 'รายการวัสดุที่ขอเบิก'));
 
   return `<!DOCTYPE html>
 <html lang="th">
@@ -710,7 +1230,10 @@ export const renderEmailText = ({ branding = {}, template = {}, data = SAMPLE_EM
   const event = template.event_type || data.event_type || 'withdrawal_submitted';
   const defaults = EVENT_DEFAULTS[event] || EVENT_DEFAULTS.withdrawal_submitted;
   const appName = branding.app_name || data.app_name || 'StockFlow';
-  const actionUrl = sanitizeHttpUrl(resolveEmailVariables(template.cta_url || data.action_url || '', data), 'https://stockflowth.online/withdrawals');
+  const actionUrl = sanitizeHttpUrl(
+    resolveEmailVariables(template.cta_url || data.action_url || '', data),
+    event.startsWith('checkout_') ? 'https://stockflowth.online/checkouts' : 'https://stockflowth.online/withdrawals'
+  );
   const heading = resolveEmailVariables(template.heading || defaults.heading, data);
   const intro = resolveEmailVariables(template.intro || defaults.intro, data).replace(/<br\s*\/?>/gi, '\n');
 
@@ -719,6 +1242,23 @@ export const renderEmailText = ({ branding = {}, template = {}, data = SAMPLE_EM
     bodyDetails = `เลขที่รับเข้า: ${data.stock_in_no || '-'}\nโครงการ: ${data.project_name || '-'}\nผู้รับเข้า: ${data.received_by || '-'}\nวันที่รับเข้า: ${data.received_date || '-'}\nจำนวนรายการ: ${data.item_count || '-'}`;
   } else if (event === 'low_stock_alert') {
     bodyDetails = `วัสดุ: ${data.item_name || '-'}\nรหัสวัสดุ: ${data.item_code || '-'}\nโครงการ: ${data.project_name || '-'}\nคลังจัดเก็บ: ${data.warehouse_name || '-'}\nคงเหลือปัจจุบัน: ${data.current_stock || '-'}\nเกณฑ์แจ้งเตือน: ${data.threshold || '-'}`;
+  } else if (event.startsWith('checkout_')) {
+    bodyDetails = [
+      `เลขที่คำขอยืม: ${data.checkout_id || data.request_no || '-'}`,
+      `โครงการ: ${data.project_name || '-'}`,
+      `ผู้ขอยืม: ${data.borrower_name || data.requester_name || data.user_name || '-'}`,
+      `อุปกรณ์: ${data.equipment_name || '-'}`,
+      `รหัสทรัพย์สิน: ${data.asset_code || '-'}`,
+      `จำนวน: ${data.quantity || data.total_quantity || '-'}`,
+      `กำหนดส่งคืน: ${data.due_date || '-'}`,
+      hasValue(data.days_overdue) ? `เกินกำหนด: ${data.days_overdue}` : '',
+      hasValue(data.return_date) ? `วันที่ส่งคืน: ${data.return_date}` : '',
+      hasValue(data.condition) ? `สภาพอุปกรณ์: ${data.condition}` : '',
+      hasValue(data.condition_details) ? `หมายเหตุสภาพ: ${data.condition_details}` : '',
+      hasValue(data.reject_reason) ? `เหตุผลที่ไม่อนุมัติ: ${data.reject_reason}` : '',
+      `สถานะ: ${data.status || defaults.badge}`,
+      `จำนวนรายการ: ${data.item_count || '-'}`,
+    ].filter(Boolean).join('\n');
   } else {
     bodyDetails = `เลขที่คำขอ: ${data.request_no || '-'}\nโครงการ: ${data.project_name || '-'}\nผู้ขอเบิก: ${data.requester_name || data.user_name || '-'}\nสถานะ: ${data.status || defaults.badge}\nจำนวนรายการ: ${data.item_count || '-'}`;
   }
@@ -827,4 +1367,140 @@ export const renderUserInvitationEmailHtml = ({
   </table>
 </body>
 </html>`;
+};
+
+/* ---------------------------------------------------------------------------
+ * Checkout (/checkouts) shared helpers
+ * Pure functions — safe to import from Node (api/checkouts-cron.js), the browser
+ * dispatcher, and the template preview, so all three render identical values.
+ * ------------------------------------------------------------------------ */
+
+export const CHECKOUT_EVENT_TYPES = [
+  'checkout_submitted',
+  'checkout_approved',
+  'checkout_rejected',
+  'checkout_handed_over',
+  'checkout_due_soon',
+  'checkout_overdue',
+  'checkout_returned',
+];
+
+const RETURN_CONDITION_LABELS = {
+  normal: 'ปกติ (สมบูรณ์พร้อมใช้งาน)',
+  damaged: 'ชำรุด (ต้องซ่อมแซม)',
+  needs_repair: 'ต้องซ่อมแซม',
+  lost: 'สูญหาย',
+  good: 'ปกติ (สมบูรณ์พร้อมใช้งาน)',
+};
+
+/**
+ * Map a checkout_return_logs.item_condition code to its Thai display label.
+ * Unknown codes are returned as-is so nothing is silently hidden.
+ */
+export const formatReturnCondition = (condition) => {
+  const key = String(condition || '').trim().toLowerCase();
+  if (!key) return '-';
+  return RETURN_CONDITION_LABELS[key] || String(condition);
+};
+
+/**
+ * Normalize a checkout_items row (with embedded items) into the item shape
+ * renderMaterialDetails expects. Tolerates the POS payload shape too.
+ */
+export const buildCheckoutEmailItems = (rows = [], { dueDate = '', condition = '' } = {}) => (
+  (Array.isArray(rows) ? rows : [])
+    .filter(Boolean)
+    .map((row) => {
+      const item = row.items || row.item || {};
+      const serial = row.serial_number || item.serial_number || '';
+      const sku = item.sku ? String(item.sku) : '';
+      const assetCode = sku && serial ? `${sku} (S/N: ${serial})` : (sku || serial || row.asset_code || '');
+      return {
+        name: item.name || row.item_name || 'วัสดุ/อุปกรณ์',
+        sku: sku || serial || '-',
+        asset_code: assetCode || '-',
+        unit: item.unit || row.unit || 'ชิ้น',
+        requested_qty: row.quantity_borrowed ?? row.quantity ?? row.requested_qty ?? 0,
+        approved_qty: row.quantity_borrowed ?? row.quantity,
+        issued_qty: row.quantity_returned,
+        available_stock: '-',
+        due_date: dueDate,
+        condition: condition,
+      };
+    })
+);
+
+/**
+ * Build the complete variable payload for a checkout notification email.
+ * Maps both the legacy withdrawal-style keys (kept for backward compatibility)
+ * and the checkout-specific keys advertised in SUPPORTED_EVENT_VARIABLES.
+ */
+export const buildCheckoutEmailData = ({
+  eventType,
+  order = {},
+  project = null,
+  items = [],
+  status = '',
+  fulfillmentStatus = '',
+  approverName = '',
+  rejectReason = '',
+  returnDate = '',
+  condition = '',
+  conditionDetails = '',
+  daysOverdue = '',
+  publicBaseUrl = '',
+  appName = 'StockFlow',
+} = {}) => {
+  const checkoutId = order.order_number || `CHK-${String(order.id || '').slice(0, 8).toUpperCase()}`;
+  const dueDate = formatThaiDateOrDateTime(order.expected_return_date);
+  const checkoutDate = formatThaiDateTime(order.checkout_date || order.created_at || new Date().toISOString());
+  const projectName = project?.name || order.project_name || 'โครงการทั่วไป';
+  const projectCode = project?.project_code || project?.code || '-';
+  const baseUrl = String(publicBaseUrl || '').replace(/\/+$/, '');
+  const primaryItem = items[0] || {};
+  const totalQty = items.reduce((sum, item) => sum + (Number(item.requested_qty) || 0), 0);
+  const unitLabel = primaryItem.unit || 'ชิ้น';
+
+  return {
+    event_type: eventType,
+    app_name: appName,
+    // Checkout-specific keys
+    checkout_id: checkoutId,
+    borrower_name: order.borrower_name || 'ผู้ขอยืม',
+    borrower_department: order.borrower_department || '-',
+    borrower_phone: order.borrower_phone || '-',
+    project_name: projectName,
+    project_code: projectCode,
+    equipment_name: primaryItem.name || '-',
+    asset_code: primaryItem.asset_code || primaryItem.sku || '-',
+    quantity: `${totalQty} ${unitLabel}`,
+    checkout_date: checkoutDate,
+    due_date: dueDate,
+    return_date: returnDate || '-',
+    days_overdue: daysOverdue || '',
+    approver_name: approverName || '-',
+    reject_reason: rejectReason || '',
+    condition: condition || '',
+    condition_details: conditionDetails || '',
+    public_base_url: baseUrl,
+    // Legacy withdrawal-style aliases (templates and subject lines reuse them)
+    request_no: checkoutId,
+    requester_name: order.borrower_name || 'ผู้ขอยืม',
+    requester_email: order.borrower_email || '',
+    user_name: order.borrower_name || 'ผู้ขอยืม',
+    approved_by: approverName || '-',
+    rejected_by: approverName || '-',
+    completed_by: approverName || '-',
+    rejection_reason: rejectReason || '',
+    approved_date: formatThaiDateTime(order.approved_at || new Date().toISOString()),
+    rejected_date: formatThaiDateTime(order.rejected_at || new Date().toISOString()),
+    status,
+    fulfillment_status: fulfillmentStatus || order.status || '',
+    item_count: `${items.length} รายการ`,
+    total_quantity: `${totalQty} ${unitLabel}`,
+    purpose: order.purpose || '-',
+    note: order.notes || '',
+    action_url: baseUrl ? `${baseUrl}/checkouts?order_id=${encodeURIComponent(checkoutId)}` : 'https://stockflowth.online/checkouts',
+    items,
+  };
 };

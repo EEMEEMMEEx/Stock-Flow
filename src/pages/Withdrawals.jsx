@@ -6,7 +6,7 @@ import { MaterialWithdrawalPDF } from '@/lib/pdf-templates';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n';
 import toast from 'react-hot-toast';
-import { dispatchWithdrawalNotification } from '@/lib/notificationDispatcher';
+import { dispatchWithdrawalNotification, dispatchLowStockAlertNotification } from '@/lib/notificationDispatcher';
 
 // Modular Withdrawal Subcomponents
 import WithdrawalPosTerminal from '@/components/withdrawals/WithdrawalPosTerminal';
@@ -357,6 +357,76 @@ const Withdrawals = () => {
     setCart(prev => prev.map(item => item.id === id ? { ...item, [field]: value } : item));
   };
 
+  /**
+   * Reorder-point alert (event 6).
+   *
+   * Stock is deducted when a requisition is APPROVED (not when it is later
+   * completed), so this runs right after a successful approve. It reads the
+   * post-deduction project balance and compares it against the item reorder point
+   * (`items.min_stock`), falling back to the global `low_stock_threshold` when the
+   * item has none. Items with no balance row are skipped rather than treated as 0.
+   */
+  const notifyLowStockItems = async ({ projectId, cartItems, approvedByName }) => {
+    const candidateItems = (cartItems || []).filter(item => item?.id);
+    if (!projectId || !candidateItems.length) return;
+
+    try {
+      const itemIds = candidateItems.map(item => item.id);
+      const [balanceRes, itemRes, thresholdRes] = await Promise.all([
+        supabase
+          .from('stock_balance')
+          .select('project_id, item_id, balance, project_name, unit')
+          .eq('project_id', projectId)
+          .in('item_id', itemIds),
+        supabase
+          .from('items')
+          .select('id, name, sku, unit, min_stock')
+          .in('id', itemIds),
+        supabase
+          .from('system_settings')
+          .select('value')
+          .eq('key', 'low_stock_threshold')
+          .maybeSingle()
+      ]);
+
+      const balanceByItem = new Map((balanceRes.data || []).map(row => [row.item_id, row]));
+      const itemById = new Map((itemRes.data || []).map(row => [row.id, row]));
+      const globalThreshold = Number(thresholdRes.data?.value);
+      const fallbackThreshold = Number.isFinite(globalThreshold) ? globalThreshold : 10;
+
+      for (const cartItem of candidateItems) {
+        const balanceRow = balanceByItem.get(cartItem.id);
+        if (!balanceRow || balanceRow.balance === null || balanceRow.balance === undefined) continue;
+
+        const itemRow = itemById.get(cartItem.id) || {};
+        const itemThreshold = Number(itemRow.min_stock);
+        const effectiveThreshold = itemThreshold > 0 ? itemThreshold : fallbackThreshold;
+        const currentStock = Number(balanceRow.balance);
+
+        if (!(currentStock <= effectiveThreshold)) continue;
+
+        const result = await dispatchLowStockAlertNotification({
+          itemId: cartItem.id,
+          itemName: itemRow.name || cartItem.name || 'วัสดุ',
+          itemCode: itemRow.sku || cartItem.sku || '-',
+          currentStock,
+          threshold: effectiveThreshold,
+          projectName: balanceRow.project_name || projects.find(p => p.id === projectId)?.name || 'โครงการทั่วไป',
+          warehouseName: balanceRow.project_name || 'คลังโครงการ',
+          projectId,
+          triggeredBy: approvedByName
+        });
+
+        if (result?.dispatched) {
+          toast.success(t('withdrawals.toasts.lowStockAlerted', { item: itemRow.name || cartItem.name || '' }));
+        }
+      }
+    } catch (lowStockError) {
+      console.warn('[Withdrawals] Low stock alert notice:', lowStockError?.message);
+      toast.error(t('withdrawals.toasts.lowStockAlertFailed'));
+    }
+  };
+
   // Submit Requisition Order
   const handleSubmitOrder = async ({ projectId, purpose, deliveryAddress }) => {
     if (cart.length === 0) return;
@@ -459,6 +529,13 @@ const Withdrawals = () => {
         overrideReason: overrideReason
       }).catch(err => console.warn('[Notification Dispatch Warning]:', err));
 
+      // Reorder-point alerts for items that just fell to/below their threshold
+      notifyLowStockItems({
+        projectId: selectedProjectId || selectedOrder?.project_id,
+        cartItems: cart,
+        approvedByName: profile?.full_name || 'Admin'
+      }).catch(err => console.warn('[Low Stock Notification Warning]:', err));
+
       setIsShortageModalOpen(false);
       setShortageData(null);
       setShortageOverrideReason('');
@@ -537,6 +614,7 @@ const Withdrawals = () => {
       dispatchWithdrawalNotification({
         eventType: 'withdrawal_rejected',
         orderId: orderToReject.id,
+        approverName: profile?.full_name || 'Admin',
         rejectionReason: rejectReason.trim()
       }).catch(err => console.warn('[Notification Dispatch Warning]:', err));
 
@@ -575,7 +653,8 @@ const Withdrawals = () => {
 
       dispatchWithdrawalNotification({
         eventType: 'withdrawal_completed',
-        orderId
+        orderId,
+        approverName: profile?.full_name || 'Admin'
       }).catch(err => console.warn('[Notification Dispatch Warning]:', err));
 
       fetchData();

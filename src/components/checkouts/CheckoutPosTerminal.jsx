@@ -357,19 +357,32 @@ const CheckoutPosTerminal = ({
 
       if (error) throw error;
 
-      // If order is pending requisition (submitted by staff), dispatch email notification to Admins
-      if (data?.status === 'pending' || (!isAdmin && !isSuperAdmin)) {
+      // Pending requisition by staff -> notify approvers for a decision.
+      if (data?.status === 'pending') {
         dispatchCheckoutNotification({
           eventType: 'checkout_submitted',
           orderId: data?.order_id,
           orderData: {
-            ...payload,
             id: data?.order_id,
             order_number: data?.order_number,
-            projects: projects.find(p => p.id === selectedProjectId),
-            checkout_items: expandedItems
+            projects: projects.find(p => p.id === selectedProjectId)
           }
         }).catch(err => console.warn('Checkout submitted notification notice:', err));
+      }
+
+      // Direct checkout by an approver -> equipment is handed over immediately
+      // (no approval step ever runs), so send the handover receipt now.
+      if (data?.status === 'active') {
+        dispatchCheckoutNotification({
+          eventType: 'checkout_handed_over',
+          orderId: data?.order_id,
+          approverName: profile?.full_name || user?.email || 'เจ้าหน้าที่คลัง',
+          orderData: {
+            id: data?.order_id,
+            order_number: data?.order_number,
+            projects: projects.find(p => p.id === selectedProjectId)
+          }
+        }).catch(err => console.warn('Checkout handover notification notice:', err));
       }
 
       toast.success(data?.message || t('checkouts.checkoutOrderCreated', {

@@ -57,6 +57,7 @@ const TABLES_IN_DEPENDENCY_ORDER = [
   'checkout_items',
   'checkout_return_logs',
   'checkout_extension_logs',
+  'email_dispatch_logs',
   'stock_transactions',
   'stock_adjustment_logs',
   'user_project_assignments',
@@ -384,6 +385,20 @@ CREATE TABLE IF NOT EXISTS public.checkout_extension_logs (
   extended_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Idempotency ledger for scheduled checkout reminder emails (cron)
+CREATE TABLE IF NOT EXISTS public.email_dispatch_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  order_id UUID NOT NULL REFERENCES public.checkout_orders(id) ON DELETE CASCADE,
+  event_type TEXT NOT NULL,
+  dispatched_date DATE NOT NULL DEFAULT CURRENT_DATE,
+  recipient_email TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT uq_email_dispatch_daily UNIQUE (order_id, event_type, dispatched_date, recipient_email)
+);
+
+CREATE INDEX IF NOT EXISTS idx_email_dispatch_logs_lookup
+  ON public.email_dispatch_logs (order_id, event_type, dispatched_date);
 
 -- 3.10 Stock Transactions Ledger & Adjustment Logs
 CREATE TABLE IF NOT EXISTS public.stock_transactions (
@@ -1766,6 +1781,7 @@ ALTER TABLE public.checkout_orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.checkout_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.checkout_return_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.checkout_extension_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.email_dispatch_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.stock_transactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.stock_adjustment_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.system_settings ENABLE ROW LEVEL SECURITY;

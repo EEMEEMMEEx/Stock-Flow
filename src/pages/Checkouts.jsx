@@ -260,13 +260,28 @@ const Checkouts = () => {
       setIsApproveModalOpen(false);
       setSelectedOrderForApprove(null);
 
-      // Async notification dispatch
+      // Async notification dispatch: approval decision, plus a handover receipt
+      // because approving dispenses the equipment in the same transaction.
+      const approverLabel = profile?.full_name || user?.email || 'Admin';
+      const suppressHandover = Boolean(order.borrower_id) && order.borrower_id === profile?.id;
+      // Keep the persisted approver name in the preloaded order so the dispatcher
+      // prefers the real name over its fallback label on the first dispatch.
+      const orderForNotification = { ...order, approved_by_name: approverLabel };
+
       dispatchCheckoutNotification({
         eventType: 'checkout_approved',
         orderId: order.id,
-        orderData: order,
-        approverName: profile?.full_name || user?.email || 'Admin'
+        orderData: orderForNotification,
+        approverName: approverLabel
       }).catch(err => console.warn('Checkout approval notification notice:', err));
+
+      dispatchCheckoutNotification({
+        eventType: 'checkout_handed_over',
+        orderId: order.id,
+        orderData: orderForNotification,
+        approverName: approverLabel,
+        extraData: { suppress: suppressHandover }
+      }).catch(err => console.warn('Checkout handover notification notice:', err));
 
       await fetchCheckoutData();
     } catch (err) {

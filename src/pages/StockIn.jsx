@@ -453,7 +453,9 @@ const StockIn = () => {
         orderId: orderId,
         projectId,
         items: payloadItems,
-        receivedBy: user?.user_metadata?.full_name || user?.email || 'Warehouse Admin'
+        receivedBy: user?.user_metadata?.full_name || user?.email || 'Warehouse Admin',
+        supplier: formData.supplier || '',
+        poNumber: formData.po_number || ''
       }).catch(err => console.warn('[StockIn Notification Warning]:', err));
 
       setIsCreateDialogOpen(false);

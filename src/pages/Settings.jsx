@@ -77,7 +77,14 @@ const Settings = () => {
     withdrawal_approved: { enabled: true, roles: ['STAFF'] },
     withdrawal_rejected: { enabled: true, roles: ['STAFF'] },
     withdrawal_completed: { enabled: true, roles: ['ADMIN'] },
-    low_stock_alert: { enabled: true, roles: ['ADMIN', 'SUPERVISOR'] }
+    low_stock_alert: { enabled: true, roles: ['ADMIN', 'SUPERVISOR'] },
+    checkout_submitted: { enabled: true, roles: ['ADMIN', 'SUPERVISOR'] },
+    checkout_approved: { enabled: true, roles: ['STAFF', 'ADMIN'] },
+    checkout_rejected: { enabled: true, roles: ['STAFF'] },
+    checkout_handed_over: { enabled: true, roles: ['STAFF', 'ADMIN'] },
+    checkout_due_soon: { enabled: true, roles: ['STAFF'] },
+    checkout_overdue: { enabled: true, roles: ['STAFF', 'ADMIN', 'SUPERVISOR'] },
+    checkout_returned: { enabled: true, roles: ['STAFF', 'ADMIN'] }
   });
   const [emailBranding, setEmailBranding] = useState({});
 

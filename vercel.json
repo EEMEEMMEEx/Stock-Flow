@@ -3,6 +3,12 @@
   "installCommand": "npm install",
   "outputDirectory": "dist",
   "framework": "vite",
+  "crons": [
+    {
+      "path": "/api/checkouts-cron",
+      "schedule": "0 1 * * *"
+    }
+  ],
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]

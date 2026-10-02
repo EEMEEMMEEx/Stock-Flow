@@ -643,7 +643,9 @@ export default {
       "pdfGenerating": "Generating requisition PDF...",
       "pdfSuccess": "Requisition form PDF generated",
       "pdfFailed": "Failed to generate requisition PDF",
-      "insufficientStock": "Insufficient inventory in this project"
+      "insufficientStock": "Insufficient inventory in this project",
+      "lowStockAlerted": "Reorder point alert sent: {{item}}",
+      "lowStockAlertFailed": "Failed to send the reorder point alert email"
     }
   },
   "checkouts": {
@@ -1472,6 +1474,41 @@ export default {
           "title": "6. Low Stock Alert",
           "desc": "Automatically notify when project material stock reaches reorder point",
           "primaryRecipient": "Warehouse Staff / Approver"
+        },
+        "checkout_submitted": {
+          "title": "7. Checkout Request Submitted",
+          "desc": "Notify approvers and administrators when a new equipment borrow request is submitted",
+          "primaryRecipient": "Approver / Administrator"
+        },
+        "checkout_approved": {
+          "title": "8. Checkout Request Approved",
+          "desc": "Notify the borrower when their equipment borrow request is approved",
+          "primaryRecipient": "Borrower"
+        },
+        "checkout_rejected": {
+          "title": "9. Checkout Request Rejected",
+          "desc": "Notify the borrower when their equipment borrow request is rejected with reason",
+          "primaryRecipient": "Borrower"
+        },
+        "checkout_handed_over": {
+          "title": "10. Equipment Handed Over",
+          "desc": "Notify the borrower when equipment is physically handed over (handover receipt)",
+          "primaryRecipient": "Borrower / Administrator"
+        },
+        "checkout_due_soon": {
+          "title": "11. Return Due Reminder",
+          "desc": "Scheduled reminder sent one day before the equipment return due date",
+          "primaryRecipient": "Borrower"
+        },
+        "checkout_overdue": {
+          "title": "12. Overdue Return Alert",
+          "desc": "Scheduled alert when equipment is past its return due date, with administrators in CC",
+          "primaryRecipient": "Borrower + CC Administrator"
+        },
+        "checkout_returned": {
+          "title": "13. Equipment Returned",
+          "desc": "Notify the borrower when returned equipment is inspected and recorded",
+          "primaryRecipient": "Borrower / Administrator"
         }
       },
       "list": {
