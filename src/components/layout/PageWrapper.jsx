@@ -67,7 +67,7 @@ const PageWrapper = () => {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <div className="flex h-dvh overflow-hidden bg-background">
       <Sidebar 
         isOpen={isMobileMenuOpen} 
         onClose={closeMobileMenu}
@@ -82,7 +82,7 @@ const PageWrapper = () => {
           onMenuClick={handleMenuClick}
         />
         <main className="flex-1 overflow-y-auto flex flex-col justify-between">
-          <div className="p-4 md:p-6 lg:p-8 flex-1">
+          <div className="p-3 sm:p-4 md:p-6 lg:p-8 flex-1">
             <div className="mx-auto max-w-7xl">
               <Outlet />
             </div>

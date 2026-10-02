@@ -76,10 +76,13 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
     const closeOnEscape = (event) => {
       if (event.key === 'Escape') onClose();
     };
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
     document.body.dataset.mobileMenuOpen = 'true';
     document.addEventListener('keydown', closeOnEscape);
     closeButtonRef.current?.focus();
     return () => {
+      document.body.style.overflow = prevOverflow;
       delete document.body.dataset.mobileMenuOpen;
       document.removeEventListener('keydown', closeOnEscape);
     };
@@ -92,7 +95,10 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
 
   const isSettingsActive = location.pathname.startsWith('/settings');
 
-  const renderNavItem = (item, isDesktopCollapsed) => {
+  // On mobile drawer (isOpen === true), navigation must ALWAYS be expanded with full labels
+  const isNavCollapsed = isCollapsed && !isOpen;
+
+  const renderNavItem = (item) => {
     const isActive = item.path === '/' 
       ? location.pathname === '/' 
       : location.pathname.startsWith(item.path);
@@ -106,7 +112,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
         onClick={onClose}
         className={cn(
           "flex items-center gap-3 py-2.5 rounded-lg transition-colors duration-150 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring overflow-hidden whitespace-nowrap shrink-0",
-          isDesktopCollapsed ? "justify-center px-0 w-10 h-10 mx-auto" : "px-3 w-full",
+          isNavCollapsed ? "justify-center px-0 w-10 h-10 mx-auto" : "px-3 w-full",
           isActive
             ? "bg-primary/10 text-primary font-semibold border-l-2 border-primary shadow-xs"
             : "text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -116,7 +122,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
         <span 
           className={cn(
             "truncate transition-opacity duration-200 whitespace-nowrap",
-            isDesktopCollapsed ? "hidden" : "block"
+            isNavCollapsed ? "hidden" : "block"
           )}
         >
           {itemName}
@@ -124,7 +130,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
       </NavLink>
     );
 
-    if (isDesktopCollapsed) {
+    if (isNavCollapsed) {
       return (
         <Tooltip key={item.id} delayDuration={100}>
           <TooltipTrigger asChild>
@@ -157,9 +163,9 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
         id="stockflow-sidebar"
         aria-label="Main navigation"
         className={cn(
-          "fixed top-0 z-50 flex h-screen flex-shrink-0 flex-col border-r border-border bg-card shadow-lg md:shadow-none transition-[width,transform] duration-200 ease-out md:sticky md:z-20 md:translate-x-0 md:opacity-100 overflow-x-hidden",
+          "fixed top-0 z-50 flex h-dvh flex-shrink-0 flex-col border-r border-border bg-card shadow-lg md:shadow-none transition-[width,transform] duration-200 ease-out md:sticky md:z-20 md:translate-x-0 md:opacity-100 overflow-x-hidden",
           isCollapsed ? "md:w-20" : "md:w-64",
-          isOpen ? "w-64 translate-x-0 opacity-100" : "w-64 pointer-events-none -translate-x-full opacity-0 md:pointer-events-auto"
+          isOpen ? "w-[85vw] max-w-[320px] sm:w-80 md:w-64 translate-x-0 opacity-100" : "w-[85vw] max-w-[320px] sm:w-80 md:w-64 pointer-events-none -translate-x-full opacity-0 md:pointer-events-auto"
         )}
       >
         {/* App Brand Header & Toggle Control */}
@@ -188,7 +194,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
           </div>
         ) : (
           /* Expanded Header: Logo on left, collapse button on right */
-          <div className="h-16 flex items-center justify-between px-5 border-b border-border/40 shrink-0">
+          <div className="h-16 flex items-center justify-between px-5 border-b border-border/40 shrink-0 pt-[env(safe-area-inset-top)]">
             <div className="flex items-center gap-2.5 min-w-0">
               <div className="p-2 rounded-lg bg-primary/10 text-primary shrink-0">
                 <Package className="w-5 h-5" />
@@ -217,7 +223,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
               title="Close navigation"
               aria-expanded={isOpen}
               aria-controls="stockflow-sidebar"
-              className="flex md:hidden h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0 cursor-pointer"
+              className="flex md:hidden h-10 w-10 min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0 cursor-pointer"
               onClick={onClose}
             >
               <X className="w-5 h-5" />
@@ -226,19 +232,19 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
         )}
 
         {/* Navigation Items Area */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden py-4">
-          <nav className={cn("space-y-4", isCollapsed ? "px-2" : "px-3")}>
+        <div className="flex-1 overflow-y-auto overflow-x-hidden py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+          <nav className={cn("space-y-4", isNavCollapsed ? "px-2" : "px-3")}>
             {loading ? (
               Array.from({ length: 6 }).map((_, idx) => (
                 <div 
                   key={idx} 
                   className={cn(
                     "h-10 rounded-xl bg-black/5 dark:bg-white/5 animate-pulse flex items-center gap-3 px-3 py-2.5",
-                    isCollapsed && "w-11 h-11 p-0 justify-center mx-auto"
+                    isNavCollapsed && "w-11 h-11 p-0 justify-center mx-auto"
                   )}
                 >
                   <div className="w-5 h-5 rounded bg-black/10 dark:bg-white/10 shrink-0" />
-                  {!isCollapsed && <div className="h-4 w-32 rounded bg-black/10 dark:bg-white/10" />}
+                  {!isNavCollapsed && <div className="h-4 w-32 rounded bg-black/10 dark:bg-white/10" />}
                 </div>
               ))
             ) : (
@@ -251,17 +257,17 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
                 return (
                   <div key={group.id} className="space-y-1">
                     {groupIdx > 0 && (
-                      <div className={cn("my-2 border-t border-border/30", isCollapsed ? "mx-1" : "mx-2")} />
+                      <div className={cn("my-2 border-t border-border/30", isNavCollapsed ? "mx-1" : "mx-2")} />
                     )}
                     <div 
                       className={cn(
                         "px-3 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 transition-all duration-200 whitespace-nowrap",
-                        isCollapsed ? "hidden" : "block"
+                        isNavCollapsed ? "hidden" : "block"
                       )}
                     >
                       {group.titleKey ? t(group.titleKey) : group.title}
                     </div>
-                    {visibleItems.map((item) => renderNavItem(item, isCollapsed))}
+                    {visibleItems.map((item) => renderNavItem(item))}
                   </div>
                 );
               })
@@ -271,8 +277,8 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
 
         {/* Settings Menu Footer */}
         {!loading && can('settings.view') && (
-          <div className={cn("p-3 border-t border-border/40 shrink-0", isCollapsed && "px-2 text-center")}>
-            {isCollapsed ? (
+          <div className={cn("p-3 border-t border-border/40 shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))]", isNavCollapsed && "px-2 text-center")}>
+            {isNavCollapsed ? (
               <Tooltip delayDuration={100}>
                 <TooltipTrigger asChild>
                   <NavLink

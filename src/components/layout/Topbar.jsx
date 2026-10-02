@@ -15,7 +15,7 @@ import LanguageSwitcher from '@/components/common/LanguageSwitcher';
 import RoleBadge from '@/components/ui/RoleBadge';
 import { getRoleLabel, getRoleTextColorClass } from '@/lib/roleUtils';
 
-const controlClassName = 'h-9 w-9 shrink-0 rounded-lg border border-input bg-background text-foreground shadow-xs transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 cursor-pointer';
+const controlClassName = 'h-10 w-10 min-h-[44px] min-w-[44px] sm:h-9 sm:w-9 sm:min-h-0 sm:min-w-0 shrink-0 inline-flex items-center justify-center rounded-lg border border-input bg-background text-foreground shadow-xs transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 cursor-pointer';
 const menuContentClassName = 'z-50 w-[min(20rem,calc(100vw-1.5rem))] overflow-hidden rounded-xl border border-border bg-popover p-1.5 text-popover-foreground shadow-xl outline-none data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0';
 const menuItemClassName = 'flex w-full cursor-pointer select-none items-center gap-2.5 rounded-lg px-3 py-2 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50';
 
@@ -52,7 +52,7 @@ const Topbar = ({ onMenuClick, menuButtonRef, isMobileMenuOpen }) => {
   };
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-card/95 px-3 shadow-xs transition-colors sm:px-4 md:px-6">
+    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-card/95 px-3 shadow-xs transition-colors sm:px-4 md:px-6 pt-[env(safe-area-inset-top)]">
       {/* Left side: Mobile Navigation Drawer Trigger (Visible ONLY on Mobile < md) */}
       <div className="flex items-center gap-2 md:hidden">
         <Button
@@ -99,7 +99,7 @@ const Topbar = ({ onMenuClick, menuButtonRef, isMobileMenuOpen }) => {
           <DropdownMenu.Trigger asChild>
             <button
               type="button"
-              className="flex h-9 max-w-[13rem] items-center gap-2 rounded-lg border border-input bg-background px-2 text-left text-foreground shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 cursor-pointer"
+              className="flex h-10 min-h-[44px] sm:h-9 sm:min-h-0 max-w-[13rem] items-center gap-2 rounded-lg border border-input bg-background px-2 text-left text-foreground shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 cursor-pointer"
               aria-label={t('nav.userMenu')}
               aria-haspopup="menu"
               aria-expanded={userMenuOpen}

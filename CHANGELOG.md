@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-10-02 14:05] - v1.11.3
+
+- **Files Modified:** `src/components/layout/Sidebar.jsx`, `src/components/layout/Topbar.jsx`, `src/components/layout/AppFooter.jsx`, `src/components/layout/PageWrapper.jsx`, `docs/mobile-responsive-overhaul-plan.md`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - แก้ไขปัญหาเร่งด่วนใน Mobile Drawer Navigation (ตามภาพหน้าจอจริง): ปลดล็อกให้แสดงชื่อเมนูภาษาไทย/อังกฤษและหัวข้อกลุ่มเมนูครบถ้วนเสมอ เมื่อเปิดลิ้นชักบนมือถือ (`isNavCollapsed = isCollapsed && !isOpen`) แก้ปัญหาไอคอนลอยเปล่าๆ ขนาด 40px
+  - ปรับความกว้างของ Drawer บนมือถือให้เหมาะสมกับหน้าจอ `w-[85vw] max-w-[320px] sm:w-80 md:w-64` และปรับความสูงเป็น `h-dvh` รองรับ Dynamic Viewport Height ของ iOS Safari และ Android Chrome
+  - เพิ่ม Body Scroll Lock บนมือถือเมื่อ Drawer กำลังเปิด เพื่อป้องกันการเลื่อนทะลุของเนื้อหาหน้าจอด้านหลัง
+  - ขยาย Touch Target ของปุ่มปิด (X) ใน Drawer และปุ่มควบคุมบน Topbar (`controlClassName`, Avatar Trigger) ให้ได้ขนาดขั้นต่ำ `min-h-[44px] min-w-[44px]` ตามมาตรฐาน WCAG 2.5.5
+  - เพิ่ม Safe-Area Inset (`env(safe-area-inset-top)` และ `env(safe-area-inset-bottom)`) ใน Sidebar, Topbar และ AppFooter
+  - ปรับปรุงการจัดเรียง AppFooter บนจอมือถือเล็กให้เป็นระเบียบ และปรับ Main Container Padding เป็น `p-3 sm:p-4`
+  - ปรับ version ของระบบเป็น `v1.11.3` (PATCH)
+
 ## [2026-10-02 13:20] - v1.11.2
 
 - **Files Modified:** `supabase/migrations/75_fix_rbac_privilege_escalation_and_role_assignment.sql`, `src/components/users/EditUserModal.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `docs/admin-role-assignment-fix-implementation-plan.md`, `scripts/apply-migration-75.mjs`, `package.json`, `package-lock.json`, `CHANGELOG.md`
