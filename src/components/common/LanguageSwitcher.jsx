@@ -18,7 +18,7 @@ export default function LanguageSwitcher({ className = '', variant = 'button' })
         title={t('nav.switchLanguage', 'Language')}
         aria-label={t('nav.switchLanguage', 'Language')}
         className={cn(
-          'inline-flex h-9 items-center gap-1.5 rounded-lg border border-input bg-background px-2.5 text-xs font-semibold text-foreground shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 cursor-pointer',
+          'inline-flex h-10 items-center gap-1.5 rounded-lg border border-input bg-background px-2.5 text-xs font-semibold text-foreground shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 cursor-pointer',
           className
         )}
       >
@@ -38,7 +38,7 @@ export default function LanguageSwitcher({ className = '', variant = 'button' })
           title={t('nav.switchLanguage', 'Language')}
           aria-label={t('nav.switchLanguage', 'Language')}
           className={cn(
-            'inline-flex h-9 items-center gap-1.5 rounded-lg border border-input bg-background px-2.5 text-xs font-semibold text-foreground shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 cursor-pointer',
+            'inline-flex h-10 items-center gap-1.5 rounded-lg border border-input bg-background px-2.5 text-xs font-semibold text-foreground shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 cursor-pointer',
             className
           )}
         >

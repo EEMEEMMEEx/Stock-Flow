@@ -116,6 +116,12 @@ export default {
     "mainOperations": "การดำเนินงานหลัก",
     "administration": "การดูแลระบบ",
     "accountHelp": "บัญชีและความช่วยเหลือ",
+    "mainNavigation": "เมนูนำทางหลัก",
+    "sidebar": "แถบเมนูด้านข้าง",
+    "expandSidebar": "ขยายแถบเมนู",
+    "collapseSidebar": "ย่อแถบเมนู",
+    "openNavigation": "เปิดเมนูนำทาง",
+    "closeNavigation": "ปิดเมนูนำทาง",
     "switchLanguage": "เปลี่ยนภาษา"
   },
   "auth": {

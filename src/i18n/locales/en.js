@@ -116,6 +116,12 @@ export default {
     "mainOperations": "Main Operations",
     "administration": "Administration",
     "accountHelp": "Account & Help",
+    "mainNavigation": "Main navigation",
+    "sidebar": "Sidebar",
+    "expandSidebar": "Expand sidebar",
+    "collapseSidebar": "Collapse sidebar",
+    "openNavigation": "Open navigation",
+    "closeNavigation": "Close navigation",
     "switchLanguage": "Language"
   },
   "auth": {

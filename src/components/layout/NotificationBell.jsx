@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import { useTranslation } from '@/i18n';
 
-const controlClassName = 'h-9 w-9 shrink-0 rounded-lg border border-input bg-background text-foreground shadow-xs transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 cursor-pointer';
+const controlClassName = 'h-10 w-10 shrink-0 rounded-lg border border-input bg-background text-foreground shadow-xs transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 cursor-pointer';
 const menuContentClassName = 'z-50 w-[min(26rem,calc(100vw-1.5rem))] overflow-hidden rounded-xl border border-border bg-popover p-2 text-popover-foreground shadow-xl outline-none data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0';
 
 const formatRelativeTime = (timestamp, t) => {

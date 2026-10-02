@@ -1,5 +1,33 @@
 # Changelog
 
+## [2026-10-02 21:05] - v1.12.4
+
+- **Files Modified:** `src/components/layout/Sidebar.jsx`, `src/components/layout/Topbar.jsx`, `src/components/layout/PageWrapper.jsx`, `src/components/layout/AppFooter.jsx`, `src/components/layout/NotificationBell.jsx`, `src/components/common/LanguageSwitcher.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **Root cause ของ "rail กว้างผิดปกติ":** คลาสความกว้างของ Sidebar ขัดกันเองในระดับ CSS cascade — โหมดย่อใส่ `md:w-20` (80px) แต่ในสตริงคลาสเดียวกันมี `md:w-64` (256px) แบบไม่มีเงื่อนไขอยู่ด้วย และ Tailwind emit `.md\:w-64` (byte 153423) **หลัง** `.md\:w-20` (153318) ในสไตล์ชีตเดียวกัน (specificity เท่ากัน) → **`md:w-64` ชนะเสมอ** ไอคอนลอยอยู่กลางรางกว้าง 256px เต็มไปด้วยพื้นที่ว่าง (ตัวเลข ~330px ที่รายงานใกล้เคียงกับ `sm:w-80` = 320px ที่มีผลในช่วง 640–767px) ปุ่มขยาย/ย่อจึงดูเหมือน "ไม่ทำงาน" ทั้งที่โค้ดสั่งไว้ถูก
+  - แก้ให้ความกว้างมาจากแหล่งเดียว: `const railWidthClass = isNavCollapsed ? 'md:w-16' : 'md:w-64'` และแนบ **คลาสเดียว** เข้ากับ `<aside>` (ถอด `md:w-64` ที่ฝังแบบไม่มีเงื่อนไขออกทั้งสองสาขา) → โหมดย่อ = **64px** (ช่วงเป้าหมาย 64–72px) ไอคอน 40px อยู่กลางพอดี เผื่อขอบข้างละ 12px สมมาตร
+  - **ระยะห่างแนวตั้ง:** ระยะระหว่างรายการเป็น `space-y-1` = 4px อยู่แล้ว (อยู่ในช่วง 4–8px ที่กำหนด) จึงไม่แก้ — ที่ลดคือระยะระหว่าง "กลุ่ม" จาก `space-y-4` + `my-2` (≈33px) → `space-y-2` + `my-1.5` (≈21px) โดยยังคงเส้นคั่นบาง 1px และหัวข้อกลุ่มไว้ตามเดิม
+  - **Topbar:** ลดความสูง `h-16` (64px) → `h-14` (56px) พร้อมปรับหัว Sidebar (ทั้งสองสถานะ) เป็น `h-14` ให้เส้นขอบล่างตรงกัน · ปุ่มควบคุมเดิมสูงเพียง `sm:h-9` = **36px ซึ่งต่ำกว่าเกณฑ์ 40px** → ปรับเป็น `h-10 w-10` (40px) เท่ากับไอเทมเมนู Sidebar (Topbar, NotificationBell, LanguageSwitcher) โดยคงขั้นต่ำ 44px บนมือถือ
+  - **User profile block:** ปุ่มจาก 36px → 40px สูง, ความกว้างสูงสุด `max-w-[13rem]` (208px) → `max-w-48` (192px), padding `px-2`/`gap-2` → `px-1.5`/`gap-1.5`, อวตาร `h-7 w-7` (28px) → `h-6 w-6` (24px) — ส่วนการย่อเหลือเฉพาะอวตารบนจอเล็กกว่า 1024px มีอยู่แล้ว (`hidden lg:block`) จึงคงไว้
+  - **พื้นที่เนื้อหา:** ปลดเพดานคอนเทนเนอร์จาก `max-w-7xl` (1280px) → `max-w-384` (1536px) ทั้งใน `PageWrapper` และ `AppFooter` (ให้ขอบซ้าย–ขวาตรงกัน) ทำให้พื้นที่ที่คืนมาจาก Sidebar ถูกใช้จริงบนจอกว้าง ไม่กลายเป็นขอบว่างเฉย ๆ
+  - **ไม่ได้แก้:** ชุดสี ไอคอน Lucide, `rounded-lg`, ลำดับ/การจัดกลุ่มเมนู, รายการนำทาง, ปุ่ม/คอนโทรลใด ๆ ใน Topbar (มีครบทุกตัว), tooltip, การบันทึกสถานะลง `localStorage`, โครงสร้าง ARIA และ keyboard navigation
+  - ปรับ version ของระบบเป็น `v1.12.4` (PATCH)
+
+## [2026-10-02 20:15] - v1.12.3
+
+- **Files Modified:** `src/components/layout/Sidebar.jsx`, `src/components/layout/Topbar.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **Re-audit ผลลัพธ์:** ตรวจ [`Sidebar.jsx`](src/components/layout/Sidebar.jsx) และ [`PageWrapper.jsx`](src/components/layout/PageWrapper.jsx) ใหม่ทั้งหมด พบว่า **3 ใน 6 ปัญหาที่รายงานไม่เป็นความจริงแล้ว** — (1) ป้ายชื่อมีอยู่และแสดงเมื่อขยาย (2) tooltip ถูกต่อไว้ครบทุกไอคอนในโหมดย่อ (Radix Tooltip, delay 100ms, `side="right"`, portal + `z-50` จึงไม่ถูก clipping) (3) ปุ่มขยาย/ย่อมีอยู่ 2 ตำแหน่งและบันทึกสถานะลง `localStorage['stockflow.sidebar.collapsed']` แล้ว จึงไม่ได้แก้ส่วนเหล่านี้
+  - **ปัญหาที่ยืนยันว่าจริงและแก้ในรอบนี้:**
+    - **A11y (ยืนยัน):** ลิงก์ในโหมดย่อไม่มีชื่อที่โปรแกรมอ่านหน้าจอเข้าถึงได้ เพราะป้ายชื่อถูกซ่อนด้วย `display:none` (`hidden`) → เพิ่ม `aria-label` เฉพาะโหมดย่อ และ `aria-hidden="true"` ให้ไอคอนทุกตัว
+    - **A11y (ยืนยัน):** `<nav>` ไม่มีชื่อที่เข้าถึงได้ และ `<aside>` ใช้ `aria-label="Main navigation"` แบบ hardcode → กำหนด `<nav aria-label={t('nav.mainNavigation')}>` และ `<aside aria-label={t('nav.sidebar')}>` พร้อม `aria-current="page"` ที่ผูกกับ active state จริง (เดิมพึ่งการคำนวณภายในของ React Router เท่านั้น)
+    - **Group semantics (ยืนยันบางส่วน):** หัวข้อกลุ่มถูกซ่อนด้วย `hidden` ในโหมดย่อ ทำให้เทคโนโลยีสิ่งอำนวยความสะดวกไม่เห็นชื่อหมวดเลย → เปลี่ยนเป็น `sr-only` (ซ่อนเฉพาะสายตา ยังอยู่ใน accessibility tree) และผูก `role="group"` + `aria-labelledby` ให้แต่ละกลุ่ม
+    - **State styling (ยืนยัน):** `hover:bg-muted` ทับ `bg-primary/10` ของรายการที่ active ทำให้ "active + hover" ดูเหมือนรายการปกติ และ `border-l-2` ทำให้เกิด layout shift 2px (ไอคอนในโหมดย่อเยื้องศูนย์) → แยกสาขา active/hover ไม่ให้ทับกัน (`hover:bg-primary/25` สำหรับ active) และเปลี่ยนตัวบ่งชี้เป็นแถบ `absolute` ที่ไม่ดัน layout
+    - **i18n (ยืนยัน):** ข้อความ aria-label/title แบบ hardcode อังกฤษ ("Expand sidebar", "Collapse sidebar", "Close navigation", "Open navigation", "Main navigation") → ย้ายเข้าไฟล์แปลทั้งหมด เพิ่ม 6 คีย์ (`nav.mainNavigation`, `nav.sidebar`, `nav.expandSidebar`, `nav.collapseSidebar`, `nav.openNavigation`, `nav.closeNavigation`) ครบทั้ง th/en
+    - **Keyboard (ยืนยัน):** บนมือถือเมื่อปิด drawer องค์ประกอบยังอยู่ใน tab order (แค่ `opacity-0` + `-translate-x-full`) ทำให้ Tab เข้าไปโฟกัสสิ่งที่มองไม่เห็น → เพิ่ม `max-md:invisible` + `visibility` ใน transition list ทำให้ปิดแล้วออกจาก tab order และ accessibility tree เฉพาะจอเล็ก โดยตรวจใน CSS ที่ build แล้วว่าเป็น `@media not all and (min-width:48rem)` จึงไม่กระทบ desktop
+  - ไม่เปลี่ยน route, ชุดไอคอน (Lucide), สีแบรนด์, ความกว้าง rail (`md:w-20` = 80px เท่าเดิม), ลำดับ/การจัดกลุ่มเมนู หรือ layout เนื้อหาหลัก
+  - ปรับ version ของระบบเป็น `v1.12.3` (PATCH)
+
 ## [2026-10-02 19:40] - v1.12.2
 
 - **Files Modified:** `src/pages/auth/Login.jsx`, `src/App.css`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `package.json`, `package-lock.json`, `CHANGELOG.md`
