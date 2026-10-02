@@ -7,6 +7,7 @@ import {
   RotateCcw, AlertTriangle, Package, Trash2, ShieldCheck, Clock
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { resolveNotificationTarget } from '@/lib/notificationTargets';
 import { useNotifications } from '@/hooks/useNotifications';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -187,13 +188,9 @@ const NotificationBell = () => {
     }
     setIsOpen(false);
 
-    if (notification.target_path) {
-      navigate(notification.target_path);
-    } else if (notification.event_type?.includes('withdrawal')) {
-      navigate('/withdrawals');
-    } else if (notification.event_type?.includes('checkout')) {
-      navigate('/checkouts');
-    }
+    // Deep-link to the tab that actually contains the referenced record.
+    const targetUrl = resolveNotificationTarget(notification);
+    if (targetUrl) navigate(targetUrl);
   };
 
   // Quick Action Handler: Instant Approve from Notification Popover
@@ -214,7 +211,7 @@ const NotificationBell = () => {
         if (errorMsg.includes('SHORTAGE_DETECTED')) {
           toast.error(t('notifications.shortageToast'));
           setIsOpen(false);
-          navigate('/withdrawals');
+          navigate(resolveNotificationTarget(notification) || '/withdrawals?tab=orders');
           return;
         }
         toast.error(errorMsg || t('notifications.approveFailed'));

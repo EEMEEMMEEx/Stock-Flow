@@ -1,5 +1,18 @@
 # Changelog
 
+## [2026-10-03 01:36] - v1.13.3
+
+- **Files Modified:** `src/lib/notificationTargets.js` (ใหม่), `scripts/verify-notification-targets.mjs` (ใหม่), `src/components/layout/NotificationBell.jsx`, `src/pages/Checkouts.jsx`, `src/pages/Withdrawals.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`, `docs/fix-notification-checkout-approval-tab-plan.md`
+- **Changes:**
+  - **แก้ปุ่ม "ไปอนุมัติ" ใน Notification ให้เปิดแท็บที่ถูกต้อง**: เดิม `handleNotificationClick` เรียก `navigate(notification.target_path)` ซึ่งใน DB เก็บเป็น `'/checkouts'` / `'/withdrawals'` ล้วน ไม่มี query → เปิดหน้า `/checkouts` ที่แท็บ "รายการกำลังยืม" (hardcode `useState('active')`) เสมอ และถ้าอยู่หน้าเดิมอยู่แล้วก็ไม่มีอะไรเกิดขึ้น
+  - เพิ่มโมดูล pure `src/lib/notificationTargets.js` (`resolveNotificationTarget`) แปลง event → deep-link: `checkout.submitted → ?tab=pending`, `checkout.approved/overdue → ?tab=active`, `checkout.completed/**rejected** → ?tab=history` (rejected อยู่ในลิสต์ประวัติ — ยืนยันจากตัวกรองของ `CheckoutHistoryList`), `withdrawal.* → /withdrawals?tab=orders`; แนบ `&id=<reference_id>` (fallback `metadata.request_no`) และ **คง path อื่นไว้เหมือนเดิม** (`/stock-in` ฯลฯ) พร้อมรองรับชื่อ event ทั้งแบบ dotted และ underscore
+  - **เปลี่ยน `activeTab` ของทั้งสองหน้าให้อ่านจาก URL เป็นแหล่งความจริงเดียว** แทนกลไก state+effect ของแผนเดิม — เพื่อกันบั๊ก "แท็บดีดกลับ" เมื่อ `setActiveTab` ถูกเรียกนอกแถบแท็บ (เช่นหลัง checkout สำเร็จ [Checkouts.jsx:525-527] และหลังส่งใบเบิก [Withdrawals.jsx:505]); จุดเรียกเดิมทั้งหมดไม่ต้องแก้ และการสลับแท็บด้วยมือจะลบ `id` ออกและใช้ `replace: true` (ไม่ถม history)
+  - **Deep-link เปิด modal อัตโนมัติ**: `/checkouts?tab=pending&id=<order>` เปิด Modal อนุมัติ (เฉพาะเมื่อมีสิทธิ์ `checkouts.approve` และ order นั้นยัง `pending`) และ `/withdrawals?tab=orders&id=<order>` เปิด Modal รายละเอียด — มี `useRef` guard กันการเปิดซ้ำเมื่อ `orders` ถูก refetch (Realtime/Refresh) และไม่ crash ถ้าไม่พบ order (ถูกอนุมัติไปแล้ว)
+  - เพิ่มสคริปต์ `npm run verify:notifications` (`scripts/verify-notification-targets.mjs`, node ธรรมดา รันได้ใน sandbox) — **17 เคส ผ่านทั้งหมด** ครอบคลุมทุก event, การแนบ id/encode, pass-through ของ target_path อื่น และ fallback
+  - **ไม่มีการเปลี่ยนสคีมา/RPC/RLS**, ไม่แตะ `notificationDispatcher` (อีเมล), ไม่แตะ i18n (ไม่มีข้อความใหม่), ไม่เพิ่ม dependency
+  - **ข้อจำกัดที่ทราบ**: การทดสอบเชิงปฏิสัมพันธ์ (Case 1-5 ของแผน) ต้องทำในเบราว์เซอร์จริง — ยังไม่ได้รันในสภาพแวดล้อมนี้ (ไม่มี Playwright)
+  - ปรับ version ของระบบเป็น `v1.13.3` (PATCH)
+
 ## [2026-10-03 01:12] - v1.13.2
 
 - **Files Modified:** `src/lib/checkout-pdf-templates.jsx`, `src/lib/pdf-templates.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`, `docs/checkout-pdf-purpose-overlap-plan.md`

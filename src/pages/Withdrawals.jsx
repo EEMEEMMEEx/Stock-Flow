@@ -1,4 +1,5 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { Zap, ClipboardList } from 'lucide-react';
 import { pdf } from '@react-pdf/renderer';
@@ -28,6 +29,8 @@ const resolveWithdrawalItems = async (order, existingItems = null) => {
   return data || [];
 };
 
+const WITHDRAWAL_TABS = ['pos', 'orders'];
+
 const Withdrawals = () => {
   const { isAdmin, can, profile } = useAuth();
   const { t } = useTranslation();
@@ -38,7 +41,21 @@ const Withdrawals = () => {
   const canComplete = can('withdrawals.complete');
 
   // Navigation Tab: 'pos' (Terminal) | 'orders' (Requisition Tracking)
-  const [activeTab, setActiveTab] = useState(() => (canCreate ? 'pos' : 'orders'));
+  // The URL query string drives the tab; the permission-based default is captured
+  // once so the tab does not jump when permissions finish loading.
+  const [initialTab] = useState(() => (canCreate ? 'pos' : 'orders'));
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get('tab');
+  const idParam = searchParams.get('id');
+  const activeTab = WITHDRAWAL_TABS.includes(tabParam) ? tabParam : initialTab;
+  const setActiveTab = useCallback((nextTab) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set('tab', nextTab);
+      next.delete('id');
+      return next;
+    }, { replace: true });
+  }, [setSearchParams]);
 
   // Core Data States
   const [orders, setOrders] = useState([]);
@@ -685,7 +702,7 @@ const Withdrawals = () => {
   };
 
   // View Order Details
-  const viewOrderDetails = async (order) => {
+  const viewOrderDetails = useCallback(async (order) => {
     try {
       const { data, error } = await supabase
         .from('withdrawal_items')
@@ -698,7 +715,20 @@ const Withdrawals = () => {
     } catch {
       toast.error('Failed to load requisition details');
     }
-  };
+  }, []);
+
+  // Deep-link support: open the detail modal for ?tab=orders&id=<order>
+  const handledNotificationIdRef = useRef(null);
+  useEffect(() => {
+    if (!idParam || orders.length === 0) return;
+    if (handledNotificationIdRef.current === idParam) return;
+
+    const targetOrder = orders.find(o => o.id === idParam || o.work_order_no === idParam);
+    if (!targetOrder) return;
+
+    handledNotificationIdRef.current = idParam;
+    viewOrderDetails(targetOrder);
+  }, [idParam, orders, viewOrderDetails]);
 
   // Download PDF
   const handleDownloadPDF = async (order, existingItems = null) => {

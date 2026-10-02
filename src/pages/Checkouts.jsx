@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import {
   RotateCcw, Plus, Clock, History, RefreshCw,
@@ -20,6 +21,8 @@ import CheckoutApproveModal from '@/components/checkouts/CheckoutApproveModal';
 import CheckoutRejectModal from '@/components/checkouts/CheckoutRejectModal';
 import { dispatchCheckoutNotification } from '@/lib/notificationDispatcher';
 
+const CHECKOUT_TABS = ['pending', 'active', 'pos', 'history'];
+
 const Checkouts = () => {
   const { can, user, profile, isAdmin, isSuperAdmin } = useAuth();
   const { t } = useTranslation();
@@ -29,8 +32,21 @@ const Checkouts = () => {
   const canExtend = can('checkouts.extend') || can('checkouts.update');
   const canApprove = can('checkouts.approve') || isAdmin || isSuperAdmin;
 
-  // Navigation Tabs: 'active' | 'pos' | 'history'
-  const [activeTab, setActiveTab] = useState('active');
+  // Navigation Tabs: 'pending' | 'active' | 'pos' | 'history'
+  // The URL query string is the single source of truth for the active tab, so
+  // notification deep-links (?tab=pending&id=...) cannot leave stale state behind.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get('tab');
+  const idParam = searchParams.get('id');
+  const activeTab = CHECKOUT_TABS.includes(tabParam) ? tabParam : 'active';
+  const setActiveTab = useCallback((nextTab) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set('tab', nextTab);
+      next.delete('id');
+      return next;
+    }, { replace: true });
+  }, [setSearchParams]);
   const [loading, setLoading] = useState(true);
 
   // Master Data
@@ -55,6 +71,20 @@ const Checkouts = () => {
   const [selectedOrderForReject, setSelectedOrderForReject] = useState(null);
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
   const [rejecting, setRejecting] = useState(false);
+
+  // Deep-link support: open the approval modal for ?tab=pending&id=<order>
+  const handledNotificationIdRef = useRef(null);
+  useEffect(() => {
+    if (!idParam || !canApprove || activeTab !== 'pending' || orders.length === 0) return;
+    if (handledNotificationIdRef.current === idParam) return;
+
+    const targetOrder = orders.find(o => o.id === idParam || o.order_number === idParam);
+    if (!targetOrder || targetOrder.status !== 'pending') return;
+
+    handledNotificationIdRef.current = idParam;
+    setSelectedOrderForApprove(targetOrder);
+    setIsApproveModalOpen(true);
+  }, [idParam, orders, activeTab, canApprove]);
 
   // Fetch all checkout orders with line items
   const fetchCheckoutData = useCallback(async () => {
