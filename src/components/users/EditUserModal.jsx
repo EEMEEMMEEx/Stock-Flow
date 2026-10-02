@@ -392,7 +392,7 @@ const EditUserModal = ({
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
       <DialogContent className="max-w-3xl max-h-[92vh] overflow-y-auto bg-card text-card-foreground border border-border shadow-xl p-0 sm:rounded-xl">
         {/* Header Section with User Summary Badge */}
-        <div className="p-6 border-b border-border bg-muted/30">
+        <div className="p-4 sm:p-6 border-b border-border bg-muted/30">
           <DialogHeader>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-center gap-3">
@@ -436,11 +436,11 @@ const EditUserModal = ({
           </DialogHeader>
 
           {/* Tab Navigation Selector */}
-          <div className="flex border-b border-border mt-5 -mb-6">
+          <div className="flex border-b border-border mt-4 sm:mt-5 -mb-4 sm:-mb-6 overflow-x-auto scrollbar-none">
             <button
               type="button"
               onClick={() => setActiveTab('profile')}
-              className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
+              className={`shrink-0 flex items-center gap-2 px-3 sm:px-4 py-2.5 text-xs font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap min-h-[40px] ${
                 activeTab === 'profile'
                   ? 'border-primary text-primary font-bold'
                   : 'border-transparent text-muted-foreground hover:text-foreground'
@@ -453,7 +453,7 @@ const EditUserModal = ({
             <button
               type="button"
               onClick={() => setActiveTab('rbac')}
-              className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
+              className={`shrink-0 flex items-center gap-2 px-3 sm:px-4 py-2.5 text-xs font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap min-h-[40px] ${
                 activeTab === 'rbac'
                   ? 'border-primary text-primary font-bold'
                   : 'border-transparent text-muted-foreground hover:text-foreground'
@@ -466,7 +466,7 @@ const EditUserModal = ({
             <button
               type="button"
               onClick={() => setActiveTab('projects')}
-              className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
+              className={`shrink-0 flex items-center gap-2 px-3 sm:px-4 py-2.5 text-xs font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap min-h-[40px] ${
                 activeTab === 'projects'
                   ? 'border-primary text-primary font-bold'
                   : 'border-transparent text-muted-foreground hover:text-foreground'
@@ -479,7 +479,7 @@ const EditUserModal = ({
         </div>
 
         {/* Modal Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-6">
           {/* TAB 1: Profile Information */}
           {activeTab === 'profile' && (
             <div className="space-y-5">

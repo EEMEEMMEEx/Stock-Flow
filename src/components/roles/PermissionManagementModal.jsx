@@ -150,7 +150,7 @@ const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = []
               variant="outline"
               size="sm"
               onClick={() => setSelectedIds(catalog.map(p => p.id))}
-              className="text-xs h-7 px-2.5 rounded-lg"
+              className="text-xs h-9 sm:h-7 px-3 sm:px-2.5 min-h-[36px] sm:min-h-0 rounded-lg cursor-pointer"
             >
               Select All
             </Button>
@@ -159,7 +159,7 @@ const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = []
               variant="outline"
               size="sm"
               onClick={() => setSelectedIds([])}
-              className="text-xs h-7 px-2.5 rounded-lg"
+              className="text-xs h-9 sm:h-7 px-3 sm:px-2.5 min-h-[36px] sm:min-h-0 rounded-lg cursor-pointer"
             >
               Clear All
             </Button>

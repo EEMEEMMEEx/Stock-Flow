@@ -510,7 +510,7 @@ const fetchRoles = useCallback(async () => {
                       disabled={roleObj.code === 'SUPER' && !isSuperAdmin}
                       title={roleObj.code === 'SUPER' && !isSuperAdmin ? 'Only System Administrators can manage System Administrator permissions' : t('roles.managePermissions', 'Permissions')}
                       onClick={() => handleOpenPermissionModal(roleObj)}
-                      className={`h-8 px-2.5 text-xs font-semibold flex items-center gap-1.5 rounded-lg ${
+                      className={`h-9 sm:h-8 px-3 sm:px-2.5 text-xs font-semibold flex items-center gap-1.5 rounded-lg cursor-pointer ${
                         roleObj.code === 'SUPER' && !isSuperAdmin 
                           ? 'opacity-40 cursor-not-allowed text-muted-foreground' 
                           : 'text-primary hover:bg-primary/10'
@@ -540,7 +540,7 @@ const fetchRoles = useCallback(async () => {
                             : 'Edit Role'
                         }
                         onClick={() => setSelectedRoleForEdit(roleObj)}
-                        className={`h-8 w-8 transition-colors ${
+                        className={`h-9 w-9 sm:h-8 sm:w-8 transition-colors cursor-pointer ${
                           roleObj.code === 'SUPER' && !isSuperAdmin
                             ? 'opacity-40 cursor-not-allowed text-muted-foreground'
                             : 'text-slate-600 hover:text-primary hover:bg-primary/10'
@@ -570,7 +570,7 @@ const fetchRoles = useCallback(async () => {
                             : 'Delete Role'
                         }
                         onClick={() => handleDeleteRole(roleObj)}
-                        className={`h-8 w-8 transition-colors ${
+                        className={`h-9 w-9 sm:h-8 sm:w-8 transition-colors cursor-pointer ${
                           roleObj.code === 'SUPER'
                             ? 'opacity-30 cursor-not-allowed text-muted-foreground'
                             : roleObj.is_system || roleObj.user_count > 0

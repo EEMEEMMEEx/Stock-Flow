@@ -288,7 +288,7 @@ const Profile = () => {
 
       {/* 1. User Identity Header Card */}
       <Card className="rounded-xl bg-card border border-border shadow-xs overflow-hidden">
-        <CardContent className="p-6">
+        <CardContent className="p-4 sm:p-6">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
             {/* Avatar Container with Upload Overlay */}
             <div className="relative group shrink-0">
@@ -361,11 +361,11 @@ const Profile = () => {
       </Card>
 
       {/* 2. Navigation Tabs */}
-      <div className="flex items-center gap-2 border-b border-border pb-2">
+      <div className="flex items-center gap-2 border-b border-border pb-2 overflow-x-auto scrollbar-none">
         <button
           type="button"
           onClick={() => setActiveTab('info')}
-          className={`px-3.5 py-2 rounded-lg font-semibold text-xs transition-all cursor-pointer flex items-center gap-2 ${
+          className={`shrink-0 min-h-[40px] px-3.5 py-2 rounded-lg font-semibold text-xs transition-all cursor-pointer flex items-center gap-2 whitespace-nowrap ${
             activeTab === 'info'
               ? 'bg-primary text-primary-foreground shadow-xs'
               : 'text-muted-foreground hover:bg-muted hover:text-foreground'
@@ -378,7 +378,7 @@ const Profile = () => {
         <button
           type="button"
           onClick={() => setActiveTab('password')}
-          className={`px-3.5 py-2 rounded-lg font-semibold text-xs transition-all cursor-pointer flex items-center gap-2 ${
+          className={`shrink-0 min-h-[40px] px-3.5 py-2 rounded-lg font-semibold text-xs transition-all cursor-pointer flex items-center gap-2 whitespace-nowrap ${
             activeTab === 'password'
               ? 'bg-primary text-primary-foreground shadow-xs'
               : 'text-muted-foreground hover:bg-muted hover:text-foreground'
@@ -391,7 +391,7 @@ const Profile = () => {
         <button
           type="button"
           onClick={() => setActiveTab('signature')}
-          className={`px-3.5 py-2 rounded-lg font-semibold text-xs transition-all cursor-pointer flex items-center gap-2 ${
+          className={`shrink-0 min-h-[40px] px-3.5 py-2 rounded-lg font-semibold text-xs transition-all cursor-pointer flex items-center gap-2 whitespace-nowrap ${
             activeTab === 'signature'
               ? 'bg-primary text-primary-foreground shadow-xs'
               : 'text-muted-foreground hover:bg-muted hover:text-foreground'
@@ -406,7 +406,7 @@ const Profile = () => {
       {activeTab === 'info' && (
         <form onSubmit={handleSaveProfile}>
           <Card className="rounded-xl bg-card border border-border shadow-xs">
-            <CardContent className="p-6 space-y-6">
+            <CardContent className="p-4 sm:p-6 space-y-6">
               <div className="font-bold text-sm text-foreground flex items-center gap-2 pb-2 border-b border-border">
                 <Sparkles className="w-4 h-4 text-primary" />
                 {t('profile.editPersonalInfo')}
@@ -547,7 +547,7 @@ const Profile = () => {
                 <Button
                   type="submit"
                   disabled={!isFormDirty || savingProfile || uploadingAvatar}
-                  className="h-9 px-5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs shadow-xs flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                  className="w-full sm:w-auto h-10 sm:h-9 px-5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs shadow-xs flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >
                   {savingProfile || uploadingAvatar ? (
                     <>
@@ -571,7 +571,7 @@ const Profile = () => {
       {activeTab === 'password' && (
         <form onSubmit={handleUpdatePassword}>
           <Card className="rounded-xl bg-card border border-border shadow-xs">
-            <CardContent className="p-6 space-y-6">
+            <CardContent className="p-4 sm:p-6 space-y-6">
               <div className="font-bold text-sm text-foreground flex items-center gap-2 pb-2 border-b border-border">
                 <Lock className="w-4 h-4 text-primary" />
                 {t('profile.changePasswordTitle')}
@@ -620,7 +620,7 @@ const Profile = () => {
                 <Button
                   type="submit"
                   disabled={updatingPassword || !passwordForm.newPassword}
-                  className="h-9 px-5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs shadow-xs flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                  className="w-full sm:w-auto h-10 sm:h-9 px-5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs shadow-xs flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >
                   {updatingPassword ? (
                     <>

@@ -266,7 +266,7 @@ const SignatureCanvas = () => {
       {/* 2. Current Saved Signature Preview */}
       {savedSignature && (
         <Card className="rounded-xl bg-card border border-border shadow-xs">
-          <CardContent className="p-6 space-y-3">
+          <CardContent className="p-4 sm:p-6 space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
                 <Eye className="w-3.5 h-3.5 text-primary" />
@@ -298,7 +298,7 @@ const SignatureCanvas = () => {
 
       {/* 3. Drawing Canvas Section */}
       <Card className="rounded-xl bg-card border border-border shadow-xs">
-        <CardContent className="p-6 space-y-4">
+        <CardContent className="p-4 sm:p-6 space-y-4">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
               <PenTool className="w-3.5 h-3.5 text-primary" />
@@ -347,14 +347,14 @@ const SignatureCanvas = () => {
           </div>
 
           {/* Canvas Action Buttons */}
-          <div className="flex items-center justify-between pt-1 gap-2 flex-wrap">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between pt-1 gap-2">
             <Button
               type="button"
               variant="outline"
               size="sm"
               disabled={isEmpty || saving}
               onClick={handleClear}
-              className="h-9 px-3.5 text-xs gap-1.5 font-semibold rounded-lg shadow-2xs cursor-pointer"
+              className="w-full sm:w-auto h-10 sm:h-9 px-3.5 text-xs gap-1.5 font-semibold rounded-lg shadow-2xs cursor-pointer inline-flex items-center justify-center"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>{t('profile.clearCanvasBtn', 'ล้างกระดาน')}</span>
@@ -365,7 +365,7 @@ const SignatureCanvas = () => {
               size="sm"
               disabled={isEmpty || saving}
               onClick={handleSaveSignature}
-              className="h-9 px-4 text-xs gap-1.5 font-semibold rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs cursor-pointer"
+              className="w-full sm:w-auto h-10 sm:h-9 px-4 text-xs gap-1.5 font-semibold rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs cursor-pointer inline-flex items-center justify-center"
             >
               <Save className="w-3.5 h-3.5" />
               <span>{saving ? t('common.saving', 'กำลังบันทึก...') : t('profile.saveSignatureBtn', 'บันทึกลายเซ็น')}</span>

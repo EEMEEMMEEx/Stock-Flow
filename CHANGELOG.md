@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-10-02 14:36] - v1.11.6
+
+- **Files Modified:** `src/pages/UserManagement.jsx`, `src/components/users/EditUserModal.jsx`, `src/components/users/AddUserModal.jsx`, `src/pages/RoleManagement.jsx`, `src/components/roles/PermissionManagementModal.jsx`, `src/pages/Profile.jsx`, `src/components/profile/SignatureCanvas.jsx`, `docs/mobile-responsive-overhaul-plan.md`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **User Management (Phase 4):** เพิ่ม Dual-View ให้กับหน้าจัดการผู้ใช้ โดยคงตาราง Desktop 6 คอลัมน์เดิม 100% (`hidden md:block`) และแสดง Mobile Card List View ที่สวยงามบนมือถือ (`block md:hidden`) แสดงรูปโปรไฟล์, ตำแหน่ง, รหัสอีเมล, ป้ายบทบาท RoleBadge, สถานะ UserStatusDot, โครงการที่ได้รับมอบหมาย และแถบปุ่ม Action Buttons แถวล่างขนาดสัมผัส `h-9 w-9` (แก้ไข, ส่งคำเชิญซ้ำ, รีเซ็ตรหัสผ่าน, สลับสถานะเปิด/ปิด, ลบบัญชี) หมดปัญหาตารางล้นจอ
+  - **User Modals (EditUserModal & AddUserModal):** ปรับปรุงแท็บเลือกหมวดหมู่ข้อมูล (Account, RBAC Roles, Project Access) ให้เป็น Swipeable Tab Bar เลื่อนแนวนอนได้คล่องตัว (`overflow-x-auto scrollbar-none whitespace-nowrap min-h-[40px]`), ปรับขนาด Padding กรอบ Modal บนมือถือให้เป็น `p-4 sm:p-6` ป้องกันการล้นขอบจอ
+  - **Role & Permission Management (Phase 4):** ขยายพื้นที่สัมผัสปุ่มควบคุมการ์ดบทบาท (จัดการสิทธิ์, แก้ไขบทบาท, ลบบทบาท) ให้มีขนาดขั้นต่ำ `h-9 sm:h-8` และ `h-9 w-9 sm:h-8 sm:w-8`, ปรับปรุงปุ่ม Select All / Clear All ใน PermissionManagementModal ให้แตะง่ายด้วยนิ้วสัมผัส `h-9 sm:h-7 min-h-[36px] sm:min-h-0`
+  - **Profile & Digital Signature (Phase 4):** ปรับปรุงแท็บข้อมูลโปรไฟล์ให้เลื่อนแนวนอนได้ (`overflow-x-auto min-h-[40px]`), ขยายปุ่มบันทึกข้อมูลส่วนตัวและเปลี่ยนรหัสผ่านให้เต็มความกว้างบนมือถือ (`w-full sm:w-auto h-10 sm:h-9`), ปรับปรุง Digital Signature Canvas ให้รองรับการวาดบนหน้าจอสัมผัสได้อย่างลื่นไหลไร้การกระตุก (`touch-action: none`) พร้อมปุ่มล้างกระดานและบันทึกลายเซ็นขนาดใหญ่เต็มความกว้าง
+  - ปรับ version ของระบบเป็น `v1.11.6` (PATCH)
+
 ## [2026-10-02 14:26] - v1.11.5
 
 - **Files Modified:** `src/pages/Dashboard.jsx`, `src/components/dashboard/SiteKitCategoryCard.jsx`, `src/components/dashboard/SiteKitAvailabilityCards.jsx`, `src/components/reports/ReportHeader.jsx`, `src/components/reports/ReportFilterBar.jsx`, `src/pages/Projects.jsx`, `docs/mobile-responsive-overhaul-plan.md`, `package.json`, `package-lock.json`, `CHANGELOG.md`

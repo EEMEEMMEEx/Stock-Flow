@@ -572,15 +572,15 @@ const UserManagement = () => {
 
       {/* Filter Toolbar Card */}
       <Card className="rounded-xl bg-card border border-border shadow-xs">
-        <CardContent className="p-4 space-y-3 sm:space-y-0 sm:flex sm:items-center sm:gap-4">
+        <CardContent className="p-3 sm:p-4 space-y-3 sm:space-y-0 sm:flex sm:items-center sm:gap-4 flex-wrap">
           {/* Search Input */}
-          <div className="relative flex-1">
+          <div className="relative flex-1 min-w-[200px]">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder={t('common.search', 'Search by name, email, position...')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 h-9 text-xs rounded-lg bg-background border border-input"
+              className="pl-9 h-9 text-base sm:text-xs rounded-lg bg-background border border-input"
             />
           </div>
 
@@ -589,7 +589,7 @@ const UserManagement = () => {
             <select
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value)}
-              className="w-full h-9 px-3 text-xs rounded-lg bg-background text-foreground border border-input focus:ring-1 focus:ring-primary focus:outline-none shadow-xs"
+              className="w-full h-9 px-3 text-base sm:text-xs rounded-lg bg-background text-foreground border border-input focus:ring-1 focus:ring-primary focus:outline-none shadow-xs"
             >
               <option value="all">{t('users.allRoles', 'Role: All')}</option>
               {dbRoles.length > 0 ? (
@@ -614,7 +614,7 @@ const UserManagement = () => {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full h-9 px-3 text-xs rounded-lg bg-background text-foreground border border-input focus:ring-1 focus:ring-primary focus:outline-none shadow-xs"
+              className="w-full h-9 px-3 text-base sm:text-xs rounded-lg bg-background text-foreground border border-input focus:ring-1 focus:ring-primary focus:outline-none shadow-xs"
             >
               <option value="all">{t('users.allStatuses', 'Status: All')}</option>
               <option value="active">{t('users.activeStatus', 'Active')}</option>
@@ -627,7 +627,7 @@ const UserManagement = () => {
             <select
               value={projectFilter}
               onChange={(e) => setProjectFilter(e.target.value)}
-              className="w-full h-9 px-3 text-xs rounded-lg bg-background text-foreground border border-input focus:ring-1 focus:ring-primary focus:outline-none shadow-xs"
+              className="w-full h-9 px-3 text-base sm:text-xs rounded-lg bg-background text-foreground border border-input focus:ring-1 focus:ring-primary focus:outline-none shadow-xs"
             >
               <option value="all">{t('users.allProjects', 'Project: All')}</option>
               {projects.map(p => (
@@ -641,7 +641,8 @@ const UserManagement = () => {
       {/* Users Table Card */}
       <Card className="rounded-xl bg-card border border-border shadow-xs overflow-hidden">
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
+          {/* Desktop Table View (hidden md:block) */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-sm text-left">
               <thead className="text-xs text-muted-foreground uppercase bg-muted/50 border-b border-border">
                 <tr>
@@ -789,7 +790,7 @@ const UserManagement = () => {
                               title={getEditTitle()}
                               onClick={() => setSelectedUserForEdit(u)}
                               disabled={!canEditUser}
-                              className="h-8 w-8 text-slate-600 hover:text-primary hover:bg-primary/10 disabled:opacity-30 disabled:cursor-not-allowed"
+                              className="h-9 w-9 sm:h-8 sm:w-8 text-slate-600 hover:text-primary hover:bg-primary/10 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                             >
                               <Edit className="w-4 h-4" />
                             </Button>
@@ -805,7 +806,7 @@ const UserManagement = () => {
                               }
                               onClick={() => handleResendInvitation(u)}
                               disabled={resendingInvitationId === u.id || !canResendInvite}
-                              className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950 disabled:opacity-30 disabled:cursor-not-allowed"
+                              className="h-9 w-9 sm:h-8 sm:w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                             >
                               {resendingInvitationId === u.id ? (
                                 <RefreshCw className="w-4 h-4 animate-spin text-blue-600" />
@@ -825,7 +826,7 @@ const UserManagement = () => {
                               }
                               onClick={() => setSelectedUserForResetPw(u)}
                               disabled={!canResetPassword}
-                              className="h-8 w-8 text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950 disabled:opacity-30 disabled:cursor-not-allowed"
+                              className="h-9 w-9 sm:h-8 sm:w-8 text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                             >
                               <KeyRound className="w-4 h-4" />
                             </Button>
@@ -837,7 +838,7 @@ const UserManagement = () => {
                               title={getDeactivateTitle()}
                               onClick={() => handleToggleStatus(u)}
                               disabled={!canDeactivate}
-                              className={`h-8 w-8 ${
+                              className={`h-9 w-9 sm:h-8 sm:w-8 cursor-pointer ${
                                 u.status === 'active' 
                                   ? 'text-amber-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950' 
                                   : 'text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950'
@@ -853,7 +854,7 @@ const UserManagement = () => {
                               title={getDeleteTitle()}
                               onClick={() => handleDeleteUserAttempt(u)}
                               disabled={!canDeleteUser}
-                              className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950 disabled:opacity-30 disabled:cursor-not-allowed"
+                              className="h-9 w-9 sm:h-8 sm:w-8 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                             >
                               <Trash2 className="w-4 h-4" />
                             </Button>
@@ -865,6 +866,205 @@ const UserManagement = () => {
                 )}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Card List View (block md:hidden) */}
+          <div className="block md:hidden divide-y divide-border/60">
+            {loading ? (
+              <div className="p-8 text-center text-muted-foreground flex flex-col items-center gap-2">
+                <RefreshCw className="w-5 h-5 animate-spin text-primary" />
+                <span className="text-xs">{t('common.loading', 'Loading users...')}</span>
+              </div>
+            ) : filteredUsers.length === 0 ? (
+              <div className="p-8 text-center text-xs text-muted-foreground">
+                {t('users.noUsersFound', 'No users found matching the filter criteria')}
+              </div>
+            ) : (
+              filteredUsers.map((u) => {
+                const activeAdminsCount = users.filter(
+                  (item) => (item.role === 'admin' || item.role === 'ADMIN' || item.roles?.code === 'ADMIN') && item.status === 'active'
+                ).length;
+
+                const isSelf = u.id === user?.id;
+                const isTargetAdmin = u.role === 'admin' || u.role === 'ADMIN' || u.roles?.code === 'ADMIN';
+                const isTargetSuper = u.role === 'super' || u.role === 'SUPER' || u.roles?.code === 'SUPER' || (u.email || '').toLowerCase() === 'admin@stockflow.com';
+                const isLastActiveAdmin = isTargetAdmin && u.status === 'active' && activeAdminsCount <= 1;
+
+                const canEditUser = (!isTargetSuper || isSuperAdmin) && can('users.update');
+                const canResendInvite = (!isTargetSuper || isSuperAdmin) && can('users.create');
+                const canResetPassword = (!isTargetSuper || isSuperAdmin) && can('users.reset_password');
+                const canDeactivate = (!isTargetSuper || isSuperAdmin) && can('users.deactivate') && !isSelf && !isLastActiveAdmin;
+                const canDeleteUser = !isTargetSuper && isSuperAdmin && can('users.delete') && !isSelf && !isLastActiveAdmin;
+
+                const getEditTitle = () => {
+                  if (isTargetSuper && !isSuperAdmin) return 'Only System Administrator can edit the System Administrator account';
+                  if (!can('users.update')) return 'Missing permission to edit users (requires users.update)';
+                  return 'Edit User';
+                };
+
+                const getDeactivateTitle = () => {
+                  if (isSelf) return 'Cannot deactivate your own account';
+                  if (isTargetSuper && !isSuperAdmin) return 'Only System Administrator can deactivate a System Administrator account';
+                  if (isLastActiveAdmin) return 'Cannot deactivate the last Administrator in the system';
+                  if (!can('users.deactivate')) return 'Missing permission to deactivate account (requires users.deactivate)';
+                  return u.status === 'active' ? 'Deactivate Account' : 'Activate Account';
+                };
+
+                const getDeleteTitle = () => {
+                  if (isSelf) return 'Cannot delete your own account';
+                  if (isTargetSuper) return 'Cannot delete System Administrator account';
+                  if (isLastActiveAdmin) return 'Cannot delete the last Administrator in the system';
+                  if (!isSuperAdmin) return 'Only System Administrator can delete user accounts';
+                  if (!can('users.delete')) return 'Missing permission to delete user (requires users.delete)';
+                  return 'Permanently Delete User';
+                };
+
+                return (
+                  <div key={`mobile-user-${u.id}`} className="p-4 space-y-3 bg-card">
+                    {/* Header Row: Avatar, Name, Email, Status */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        {u.avatar_url ? (
+                          <img 
+                            src={u.avatar_url} 
+                            alt={u.full_name} 
+                            className="w-10 h-10 rounded-full object-cover shadow-xs border border-border shrink-0"
+                            onError={(e) => { e.target.onerror = null; e.target.src = ''; }}
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-xs shrink-0">
+                            {getInitials(u.full_name)}
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <div className="font-semibold text-sm text-foreground flex items-center gap-1.5 flex-wrap">
+                            <span>{u.full_name}</span>
+                            {u.position && (
+                              <span className="text-[10px] font-normal text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                                {u.position}
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-xs text-muted-foreground flex items-center gap-2 mt-0.5">
+                            <Mail className="w-3 h-3 shrink-0" />
+                            <span className="truncate">{u.email}</span>
+                          </div>
+                          {u.phone && (
+                            <div className="text-xs text-muted-foreground flex items-center gap-2 mt-0.5">
+                              <Phone className="w-3 h-3 shrink-0" />
+                              <span>{u.phone}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <UserStatusDot status={u.status} />
+                    </div>
+
+                    {/* Role & Projects Row */}
+                    <div className="flex flex-wrap items-center gap-2 text-xs pt-1 border-t border-border/40">
+                      {getUserRoleBadge(u)}
+
+                      {u.all_projects ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-medium bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
+                          <FolderKanban className="w-3 h-3" /> {t('users.allProjects', 'All Projects')}
+                        </span>
+                      ) : u.assigned_project_ids && u.assigned_project_ids.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {u.assigned_project_ids.map(pid => (
+                            <span key={pid} className="inline-block px-2 py-0.5 rounded text-[10px] bg-muted font-medium">
+                              {getProjectName(pid)}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-[11px] text-muted-foreground italic">
+                          {t('users.noProjectsAssigned', 'No projects assigned')}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Mobile Action Buttons Bar */}
+                    <div className="flex items-center justify-between pt-2 border-t border-border/50">
+                      <span className="text-[11px] text-muted-foreground">
+                        {u.created_at ? format(new Date(u.created_at), 'dd/MM/yyyy') : '-'}
+                      </span>
+
+                      <div className="flex items-center gap-1">
+                        {canEditUser && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            title={getEditTitle()}
+                            onClick={() => setSelectedUserForEdit(u)}
+                            className="h-9 w-9 text-slate-600 hover:text-primary hover:bg-primary/10 rounded-lg cursor-pointer"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                        )}
+
+                        {canResendInvite && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            title="Resend Invitation"
+                            onClick={() => handleResendInvitation(u)}
+                            disabled={resendingInvitationId === u.id}
+                            className="h-9 w-9 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950 rounded-lg cursor-pointer"
+                          >
+                            {resendingInvitationId === u.id ? (
+                              <RefreshCw className="w-4 h-4 animate-spin text-blue-600" />
+                            ) : (
+                              <Mail className="w-4 h-4" />
+                            )}
+                          </Button>
+                        )}
+
+                        {canResetPassword && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            title="Reset Password"
+                            onClick={() => setSelectedUserForResetPw(u)}
+                            className="h-9 w-9 text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950 rounded-lg cursor-pointer"
+                          >
+                            <KeyRound className="w-4 h-4" />
+                          </Button>
+                        )}
+
+                        {canDeactivate && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            title={getDeactivateTitle()}
+                            onClick={() => handleToggleStatus(u)}
+                            className={`h-9 w-9 rounded-lg cursor-pointer ${
+                              u.status === 'active' 
+                                ? 'text-amber-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950' 
+                                : 'text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950'
+                            }`}
+                          >
+                            {u.status === 'active' ? <UserX className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
+                          </Button>
+                        )}
+
+                        {canDeleteUser && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            title={getDeleteTitle()}
+                            onClick={() => handleDeleteUserAttempt(u)}
+                            className="h-9 w-9 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950 rounded-lg cursor-pointer"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </div>
         </CardContent>
       </Card>

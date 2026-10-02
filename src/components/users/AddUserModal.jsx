@@ -158,11 +158,11 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
         </DialogHeader>
 
         {/* Tab Selector */}
-        <div className="flex border-b border-border mb-4">
+        <div className="flex border-b border-border mb-4 overflow-x-auto scrollbar-none">
           <button
             type="button"
             onClick={() => setActiveTab('account')}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+            className={`shrink-0 flex items-center gap-2 px-3.5 sm:px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap min-h-[40px] cursor-pointer ${
               activeTab === 'account'
                 ? 'border-primary text-primary font-semibold'
                 : 'border-transparent text-muted-foreground hover:text-foreground'
@@ -174,7 +174,7 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
           <button
             type="button"
             onClick={() => setActiveTab('access')}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+            className={`shrink-0 flex items-center gap-2 px-3.5 sm:px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap min-h-[40px] cursor-pointer ${
               activeTab === 'access'
                 ? 'border-primary text-primary font-semibold'
                 : 'border-transparent text-muted-foreground hover:text-foreground'
