@@ -1,5 +1,16 @@
 # Changelog
 
+## [2026-10-02 16:20] - v1.11.7
+
+- **Files Modified:** `supabase/migrations/20261002161500_fix_approve_checkout_order_locking_on_view.sql`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **Database Fix (SQLSTATE 0A000):** แก้ไข RPC `approve_checkout_order` ที่เรียกไม่สำเร็จด้วย HTTP 400 พร้อมข้อความ `FOR UPDATE is not allowed with GROUP BY clause` เนื่องจากคำสั่ง `PERFORM 1 FROM public.stock_balance ... FOR UPDATE` ใน migration 74 พยายามล็อกแถวบน `public.stock_balance` ซึ่งเป็น **VIEW ที่มีการรวมกลุ่มข้อมูล (GROUP BY + SUM)** — PostgreSQL ไม่อนุญาตให้ใช้ locking clause กับ query ที่มี aggregation (feature_not_supported / 0A000) ทำให้การอนุมัติคำขอยืมล้มเหลวทุกครั้งตั้งแต่ยังไม่ตัดสต็อก
+  - แยกคำสั่งออกเป็น 2 ขั้นตามหลัก Step A/Step B: **Step A** ล็อกเฉพาะแถวตารางฐานจริง (`checkout_orders` → `checkout_items` → `items` ตามลำดับ id เพื่อกัน deadlock) และ **Step B** อ่านค่า aggregate จาก `stock_balance` โดยไม่มี locking clause ทั้งสองขั้นอยู่ใน transaction เดียวกัน ล็อกยังคงถูกถือจนจบ
+  - คงความปลอดภัยเชิง concurrency เดิมไว้ครบถ้วน: แถว `checkout_orders` ยังถูกล็อกแบบ `FOR UPDATE` เพื่อกัน double-approval และเพิ่มการ serialize ระดับรายการผ่านการล็อกแถว `public.items` ซึ่งเป็นรูปแบบเดียวกับ `approve_withdrawal_order` และ `process_item_transfer`
+  - เพิ่มการจัดการข้อผิดพลาดแบบ typed exception: ข้อผิดพลาดทางธุรกิจยังคงเป็น `P0001` พร้อมข้อความภาษาไทยตามเดิม ส่วนข้อผิดพลาดระดับระบบจะถูกแปลงเป็นข้อความไทยที่อ่านเข้าใจได้ โดยเก็บ SQLSTATE เดิมไว้ใน `DETAIL` เพื่อการตรวจสอบ
+  - ไม่แก้ไข migration 74 ที่ apply ไปแล้ว จึงสร้าง migration ใหม่ `20261002161500_fix_approve_checkout_order_locking_on_view.sql` ด้วย `CREATE OR REPLACE FUNCTION` โดยคง signature `(p_payload JSONB)`, return type `JSONB`, `SECURITY DEFINER`, `SET search_path = public, auth, pg_temp` และสิทธิ์ `REVOKE/GRANT` เดิมไว้ทั้งหมด (frontend และ RLS ไม่กระทบ)
+  - ปรับ version ของระบบเป็น `v1.11.7` (PATCH)
+
 ## [2026-10-02 14:36] - v1.11.6
 
 - **Files Modified:** `src/pages/UserManagement.jsx`, `src/components/users/EditUserModal.jsx`, `src/components/users/AddUserModal.jsx`, `src/pages/RoleManagement.jsx`, `src/components/roles/PermissionManagementModal.jsx`, `src/pages/Profile.jsx`, `src/components/profile/SignatureCanvas.jsx`, `docs/mobile-responsive-overhaul-plan.md`, `package.json`, `package-lock.json`, `CHANGELOG.md`
