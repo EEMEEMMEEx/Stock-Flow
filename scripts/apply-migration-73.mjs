@@ -5,7 +5,7 @@ import path from 'path';
 
 dotenv.config();
 
-const projectRef = 'fhzvrgyjarmqnacamkop';
+const projectRef = process.env.VITE_SUPABASE_URL ? new URL(process.env.VITE_SUPABASE_URL).hostname.split('.')[0] : 'vrnutseacyejnzwcfamv';
 const sqlFile = path.resolve('supabase/migrations/73_resolve_admin_create_user_overload.sql');
 
 console.log('🚀 Applying Migration 73 to Supabase project...');

@@ -51,16 +51,18 @@ firebase*.json
 google-services*.json
 *.credentials.json
 
-# 6. Database Scripts, Dumps & Migrations (Excludes PLpgSQL from Language Stats)
-supabase/
-*.sql
-*.psql
+# 6. Database Dumps & Local Artifacts (Migrations tracked; PL/pgSQL excluded from language stats via .gitattributes)
+supabase/.temp/
+supabase/.branches/
+supabase/dump*.sql
+backups/
 *.dump
 *.dump.gz
 *.sql.gz
 *.tar
-backups/
+*.psql
 supabase_logs*.json
+docs/q/*.sql
 
 # 7. Logs & Diagnostics
 *.log
@@ -115,6 +117,7 @@ Balance Stock_*.xlsx
 *.crdownload
 Unconfirmed *.crdownload
 test_auth_simple.js
+scripts/scratch-*.mjs
 
 # 12. Internal Workflow Diagrams & Architecture Specs
 rbac-workflow.html

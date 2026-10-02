@@ -1,5 +1,16 @@
 # Changelog
 
+## [2026-10-02 13:02] - v1.11.1
+
+- **Files Modified:** `.gitignore`, `supabase/config.toml`, `supabase/migrations/*.sql`, `scripts/apply-migration-72.mjs`, `scripts/apply-migration-73.mjs`, `scripts/apply-migration-74.mjs`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - แก้ไขปัญหา Supabase Preview Deployment Failure ("Remote migration versions not found in local migrations directory")
+  - ตรวจสอบสาเหตุพบว่าใน commit ก่อนหน้า (`2d8d703d`) มีการลบไฟล์ไมเกรชันออกจาก Git และใส่ `supabase/` กับ `*.sql` ลงใน `.gitignore` ทำให้ไฟล์ไมเกรชันทั้งหมด 26 ไฟล์ (52 ถึง 74 และ 202609...) หายไปจาก Git repository บน GitHub ในขณะที่ฐานข้อมูลรีโมทมีประวัติบันทึกไว้ใน `schema_migrations`
+  - ปรับปรุง `.gitignore` ให้ติดตาม `supabase/migrations/` และ `supabase/config.toml` อย่างถูกต้อง โดยยังคงยกเว้น artifact ชั่วคราว (`.temp/`, `.branches/`, `dump*.sql`) และภาษา PL/pgSQL ยังคงถูกซ่อนจาก GitHub Language Stats 100% ผ่าน `.gitattributes`
+  - ซิงค์ไฟล์ไมเกรชันฐานข้อมูลทั้งหมด 28 ไฟล์ และคลังอาร์ไคฟ์ประวัติ เพื่อให้ Supabase Preview และ GitHub Actions สามารถตรวจสอบประวัติไมเกรชันตรงกับ remote database ได้อย่างสมบูรณ์
+  - ปรับปรุงสคริปต์ไมเกรชัน (`scripts/apply-migration-72.mjs`, `73.mjs`, `74.mjs`) ให้อ่าน projectRef อัตโนมัติจาก `VITE_SUPABASE_URL`
+  - ปรับ version ของระบบเป็น `v1.11.1` (PATCH)
+
 ## [2026-10-02 07:31] - v1.11.0
 
 - **Files Modified:** `supabase/migrations/74_checkout_approval_workflow.sql`, `src/pages/Checkouts.jsx`, `src/components/checkouts/CheckoutPendingList.jsx`, `src/components/checkouts/CheckoutApproveModal.jsx`, `src/components/checkouts/CheckoutRejectModal.jsx`, `src/components/checkouts/CheckoutActiveList.jsx`, `src/components/checkouts/CheckoutHistoryList.jsx`, `src/components/checkouts/CheckoutDetailModal.jsx`, `src/lib/checkout-pdf-templates.jsx`, `src/components/checkouts/CheckoutPosTerminal.jsx`, `src/lib/notificationDispatcher.js`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `package.json`, `CHANGELOG.md`

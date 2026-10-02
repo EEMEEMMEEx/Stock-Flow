@@ -5,7 +5,7 @@ import path from 'path';
 
 dotenv.config();
 
-const projectRef = 'fhzvrgyjarmqnacamkop';
+const projectRef = process.env.VITE_SUPABASE_URL ? new URL(process.env.VITE_SUPABASE_URL).hostname.split('.')[0] : 'vrnutseacyejnzwcfamv';
 const sqlFile = path.resolve('supabase/migrations/74_checkout_approval_workflow.sql');
 
 console.log('🚀 Applying Migration 74 to Supabase project...');
