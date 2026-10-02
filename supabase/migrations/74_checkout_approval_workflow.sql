@@ -42,7 +42,7 @@ ALTER TABLE public.checkout_items
 -- 2. RBAC: REGISTER 'checkouts.approve' PERMISSION
 -- ------------------------------------------------------------------------------
 
-INSERT INTO public.permissions (code, name, description, module, action, category)
+INSERT INTO public.permissions (code, name, description, resource, action, category)
 VALUES (
   'checkouts.approve',
   'อนุมัติและจ่ายพัสดุยืม',
@@ -54,7 +54,7 @@ VALUES (
 ON CONFLICT (code) DO UPDATE 
 SET name = EXCLUDED.name,
     description = EXCLUDED.description,
-    module = EXCLUDED.module,
+    resource = EXCLUDED.resource,
     action = EXCLUDED.action,
     category = EXCLUDED.category;
 
