@@ -835,7 +835,8 @@ export default {
       "checkoutSlipPdfFailed": "Failed to generate checkout slip PDF",
       "returnReceiptDownloaded": "Return receipt downloaded",
       "returnReceiptPdfFailed": "Failed to generate return receipt PDF",
-      "alreadyReturned": "This order has already been fully returned. Duplicate returns are not permitted."
+      "alreadyReturned": "This order has already been fully returned. Duplicate returns are not permitted.",
+      "officerProfileLoadFailed": "Unable to load the dispensing officer profile. Signature details in the document may be incomplete."
     },
     "fullyReturnedDesc": "All equipment in this order has already been fully returned.",
     "printCheckoutSlip": "Print Checkout Slip (PDF)",

@@ -1,5 +1,19 @@
 # Changelog
 
+## [2026-10-02 19:05] - v1.12.1
+
+- **Files Modified:** `supabase/migrations/20261002190000_add_get_user_emails_rpc.sql`, `src/components/checkouts/CheckoutDetailModal.jsx`, `src/pages/Checkouts.jsx`, `src/pages/Profile.jsx`, `src/lib/notificationDispatcher.js`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **Root cause (HTTP 400 จาก profiles SELECT):** capture error body จริงได้ `{"code":"42703","message":"column profiles.email does not exist"}` — ตัวการคือคอลัมน์ **`email`** ไม่ใช่ `signature_url` (ทดสอบแล้ว `signature_url` คืน 200 ปกติ) โดย `public.profiles` **ไม่มีคอลัมน์ email ตามการออกแบบ** อีเมลเข้าสู่ระบบเก็บที่ `auth.users.email` เท่านั้น (ระบุไว้ในคอมเมนต์ของ `archive/38_fix_admin_create_user_profiles_pkey_conflict.sql`)
+  - แก้ query ที่อ้าง `profiles.email` ครบทุกจุดในโค้ดเบส: `CheckoutDetailModal` (โปรไฟล์ผู้อนุมัติ + เจ้าหน้าที่คลัง), `Checkouts` (enrich โปรไฟล์ผู้สร้าง) และ `notificationDispatcher` อีก 6 จุด (4 role query + 2 embedded join `profiles:requested_by (id, email, …)` และ `borrower:borrower_id (id, email, …)`) ซึ่งทำให้ **กระบวนการส่งอีเมลแจ้งเตือนทั้งหมดล้มเหลวก่อนเริ่ม** (คืน `ORDER_NOT_FOUND` เงียบ ๆ)
+  - **ไม่เพิ่มคอลัมน์ email ซ้ำลงใน `profiles`** ตามหลัก "อีเมลอยู่ที่อื่นให้ไปดึงจากที่ถูกต้อง" จึงเพิ่ม RPC `public.get_user_emails(p_user_ids UUID[], p_roles TEXT[])` แบบ `SECURITY DEFINER` + `search_path` ตรึงค่า เรียกได้เฉพาะผู้ใช้ที่ล็อกอินแล้ว, บังคับให้ระบุเงื่อนไขอย่างน้อยหนึ่งอย่าง (กันการดึงอีเมลทั้งระบบ), คืนเฉพาะผู้ใช้สถานะ `active` และ REVOKE จาก `PUBLIC`/`anon`
+  - จุดที่ต้องใช้อีเมล (ผู้ขอเบิก, ผู้ขอยืม, ผู้รับพัสดุ, ผู้รับตามบทบาท) เปลี่ยนมาดึงผ่าน RPC นี้แทน
+  - **Harden ฝั่ง frontend:** ทุกจุดที่โหลดโปรไฟล์มีการ log `error.code`, `error.message`, `error.details`, `error.hint` ครบถ้วน (เดิมกลืน error เงียบ) พร้อมแปลงเป็นข้อความไทยบน UI ผ่านคีย์ใหม่ `checkouts.toasts.officerProfileLoadFailed` และแสดงแบนเนอร์เตือนในโมดัลรายละเอียดแทนการปล่อยให้ข้อมูลลายเซ็นหายไปเงียบ ๆ
+  - **แก้บั๊กที่สองจากการ align schema:** หน้า Profile เดิมเขียน `email` ลงตาราง `profiles` ในจังหวะที่ Supabase Auth อัปเดตอีเมลสำเร็จทันที → ทั้งการบันทึกโปรไฟล์ (ชื่อ/เบอร์/ตำแหน่ง/รูป) ล้มเหลวด้วย HTTP 400 ตอนนี้ตัดการเขียนนั้นออก ใช้อีเมลจาก `auth.users` ผ่าน `supabase.auth.updateUser()` ตามเดิม
+  - ตรวจ RLS ของ `profiles` แล้ว: นโยบาย SELECT เป็น `USING (true)` และทดสอบด้วย anon key ได้ HTTP 200 → RLS ไม่ได้เป็นสาเหตุของ 400 และจะไม่บล็อกผลลัพธ์หลังแก้ (ไม่มีการแตะนโยบาย RLS ใด ๆ)
+  - ตรวจ `.single()` ทั้งหมดในโค้ดเบส (5 จุด: Items, Projects, StockIn ×2, Withdrawals) พบว่าเป็นการใช้กับ `INSERT … .select().single()` ที่แถวต้องมีเสมอ จึงคงไว้อย่างถูกต้อง ส่วนการโหลดโปรไฟล์ในเส้นทางที่แถวอาจไม่มีใช้ `.maybeSingle()` อยู่แล้ว พร้อมเพิ่มคีย์ภาษาไทย/อังกฤษและตรวจ parity ครบ 100%
+  - ปรับ version ของระบบเป็น `v1.12.1` (PATCH)
+
 ## [2026-10-02 17:50] - v1.12.0
 
 - **Files Modified:** `supabase/migrations/20261002174500_restore_and_extend_notification_producers.sql`, `src/hooks/useNotifications.js`, `src/components/layout/NotificationBell.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `package.json`, `package-lock.json`, `CHANGELOG.md`

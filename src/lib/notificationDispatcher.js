@@ -5,6 +5,39 @@ import { sendStockFlowEmail } from './emailService';
 const dispatchedEventsCache = new Set();
 
 /**
+ * Resolve user emails from auth.users through the guarded public.get_user_emails RPC.
+ * public.profiles intentionally has NO email column (canonical login emails live only
+ * in auth.users.email), so selecting `email` from profiles returns HTTP 400 / 42703.
+ */
+const resolveUserEmails = async ({ userIds = null, roles = null } = {}) => {
+  const cleanIds = (userIds || []).filter(Boolean);
+  const cleanRoles = (roles || []).map((r) => String(r || '').trim()).filter(Boolean);
+  if (!cleanIds.length && !cleanRoles.length) return [];
+
+  const { data, error } = await supabase.rpc('get_user_emails', {
+    p_user_ids: cleanIds.length ? cleanIds : null,
+    p_roles: cleanRoles.length ? cleanRoles : null,
+  });
+
+  if (error) {
+    console.warn(
+      '[NotificationDispatcher] Recipient email lookup failed:',
+      `code=${error.code}`,
+      `message=${error.message}`,
+      `details=${error.details}`,
+      `hint=${error.hint}`
+    );
+    return [];
+  }
+  return data || [];
+};
+
+const emailsForRoles = (users, roles) => {
+  const wanted = (roles || []).map((r) => String(r || '').toLowerCase());
+  return (users || []).filter((u) => u.email && wanted.includes(String(u.role || '').toLowerCase()));
+};
+
+/**
  * Dispatches transactional email notifications for withdrawal workflow events.
  */
 export const dispatchWithdrawalNotification = async ({
@@ -42,7 +75,7 @@ export const dispatchWithdrawalNotification = async ({
         .select(`
           *,
           projects:project_id (id, name, code),
-          profiles:requested_by (id, email, full_name, role)
+          profiles:requested_by (id, full_name, role)
         `)
         .eq('id', orderId)
         .maybeSingle();
@@ -77,29 +110,27 @@ export const dispatchWithdrawalNotification = async ({
       }
     }
 
-    // 4. Resolve recipient emails
+    // 4. Resolve recipient emails (auth.users via RPC; profiles has no email column)
     const targetRoles = eventConfig?.roles || [];
     const recipientEmails = new Set();
 
+    const adminRoles = targetRoles.filter(r => r !== 'STAFF');
+    const resolvedUsers = await resolveUserEmails({
+      userIds: order.requested_by ? [order.requested_by] : null,
+      roles: adminRoles
+    });
+    const requesterEmail = resolvedUsers.find(u => u.user_id === order.requested_by)?.email || '';
+
     // Include requester if role matches or event is directed to staff
-    const requesterEmail = order.profiles?.email;
     if (requesterEmail && (targetRoles.includes('STAFF') || ['withdrawal_approved', 'withdrawal_rejected'].includes(eventType))) {
       recipientEmails.add(requesterEmail.trim());
     }
 
     // Include role-based recipients (e.g. ADMIN, SUPERVISOR)
-    const adminRoles = targetRoles.filter(r => r !== 'STAFF');
     if (adminRoles.length > 0) {
-      const { data: roleUsers } = await supabase
-        .from('profiles')
-        .select('email, role')
-        .in('role', adminRoles);
-
-      if (roleUsers?.length) {
-        roleUsers.forEach(u => {
-          if (u.email) recipientEmails.add(u.email.trim());
-        });
-      }
+      emailsForRoles(resolvedUsers, adminRoles).forEach(u => {
+        recipientEmails.add(u.email.trim());
+      });
     }
 
     // Include explicit to_extra and cc_extra
@@ -122,9 +153,9 @@ export const dispatchWithdrawalNotification = async ({
     const emailData = {
       event_type: eventType,
       app_name: branding.app_name || 'StockFlow',
-      user_name: order.profiles?.full_name || order.profiles?.email || 'ผู้ขอเบิก',
-      requester_name: order.profiles?.full_name || order.profiles?.email || 'ผู้ขอเบิก',
-      requester_email: order.profiles?.email || '',
+      user_name: order.profiles?.full_name || requesterEmail || 'ผู้ขอเบิก',
+      requester_name: order.profiles?.full_name || requesterEmail || 'ผู้ขอเบิก',
+      requester_email: requesterEmail || '',
       request_no: order.order_no || order.request_no || `WO-${order.id?.slice(0, 8).toUpperCase()}`,
       project_name: order.projects?.name || 'โครงการทั่วไป',
       project_code: order.projects?.code || '-',
@@ -229,16 +260,10 @@ export const dispatchStockInNotification = async ({
     const recipientEmails = new Set();
 
     if (targetRoles.length > 0) {
-      const { data: roleUsers } = await supabase
-        .from('profiles')
-        .select('email, role')
-        .in('role', targetRoles);
-
-      if (roleUsers?.length) {
-        roleUsers.forEach(u => {
-          if (u.email) recipientEmails.add(u.email.trim());
-        });
-      }
+      const roleUsers = await resolveUserEmails({ roles: targetRoles });
+      roleUsers.forEach(u => {
+        if (u.email) recipientEmails.add(u.email.trim());
+      });
     }
 
     if (eventConfig?.to_extra) {
@@ -338,16 +363,10 @@ export const dispatchLowStockAlertNotification = async ({
     const recipientEmails = new Set();
 
     if (targetRoles.length > 0) {
-      const { data: roleUsers } = await supabase
-        .from('profiles')
-        .select('email, role')
-        .in('role', targetRoles);
-
-      if (roleUsers?.length) {
-        roleUsers.forEach(u => {
-          if (u.email) recipientEmails.add(u.email.trim());
-        });
-      }
+      const roleUsers = await resolveUserEmails({ roles: targetRoles });
+      roleUsers.forEach(u => {
+        if (u.email) recipientEmails.add(u.email.trim());
+      });
     }
 
     if (eventConfig?.to_extra) {
@@ -452,7 +471,7 @@ export const dispatchCheckoutNotification = async ({
         .select(`
           *,
           projects:project_id (id, name, project_code),
-          borrower:borrower_id (id, email, full_name, role),
+          borrower:borrower_id (id, full_name, role),
           checkout_items (
             id, quantity_borrowed, serial_number, condition_on_checkout,
             items:item_id (id, name, sku, unit)
@@ -479,30 +498,33 @@ export const dispatchCheckoutNotification = async ({
       available_stock: '-'
     }));
 
-    // 4. Resolve recipient emails
+    // 4. Resolve recipient emails (auth.users via RPC; profiles has no email column)
     const targetRoles = eventConfig?.roles || [];
     const recipientEmails = new Set();
 
+    // Include Admin/Supervisor recipients for submitted events or role targets
+    const adminRoles = targetRoles.filter(r => r !== 'STAFF');
+    const searchRoles = (adminRoles.length > 0 || eventType === 'checkout_submitted')
+      ? (adminRoles.length > 0 ? adminRoles : ['ADMIN', 'SUPERVISOR', 'SUPER'])
+      : [];
+
+    const resolvedUsers = await resolveUserEmails({
+      userIds: order.borrower_id ? [order.borrower_id] : null,
+      roles: searchRoles
+    });
+    const borrowerEmail = order.borrower?.email
+      || resolvedUsers.find(u => u.user_id === order.borrower_id)?.email
+      || '';
+
     // Include borrower email for approval / rejection events
-    const borrowerEmail = order.borrower?.email || order.borrower_email;
     if (borrowerEmail && ['checkout_approved', 'checkout_rejected'].includes(eventType)) {
       recipientEmails.add(borrowerEmail.trim());
     }
 
-    // Include Admin/Supervisor recipients for submitted events or role targets
-    const adminRoles = targetRoles.filter(r => r !== 'STAFF');
-    if (adminRoles.length > 0 || eventType === 'checkout_submitted') {
-      const searchRoles = adminRoles.length > 0 ? adminRoles : ['ADMIN', 'SUPERVISOR', 'SUPER'];
-      const { data: roleUsers } = await supabase
-        .from('profiles')
-        .select('email, role')
-        .in('role', searchRoles);
-
-      if (roleUsers?.length) {
-        roleUsers.forEach(u => {
-          if (u.email) recipientEmails.add(u.email.trim());
-        });
-      }
+    if (searchRoles.length > 0) {
+      emailsForRoles(resolvedUsers, searchRoles).forEach(u => {
+        recipientEmails.add(u.email.trim());
+      });
     }
 
     if (eventConfig?.to_extra) {
@@ -526,7 +548,7 @@ export const dispatchCheckoutNotification = async ({
       app_name: branding.app_name || 'StockFlow',
       user_name: order.borrower_name || 'ผู้ขอยืม',
       requester_name: order.borrower_name || 'ผู้ขอยืม',
-      requester_email: order.borrower?.email || '',
+      requester_email: borrowerEmail || '',
       request_no: order.order_number || `CHK-${order.id?.slice(0, 8).toUpperCase()}`,
       project_name: order.projects?.name || 'โครงการทั่วไป',
       project_code: order.projects?.project_code || '-',

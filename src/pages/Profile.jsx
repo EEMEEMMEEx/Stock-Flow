@@ -170,6 +170,7 @@ const Profile = () => {
       const editedEmail = formData.email.trim().toLowerCase();
       const isEmailChanged = editedEmail !== '' && editedEmail !== currentAuthEmail;
       let emailNotice = null;
+      let emailApplied = false;
 
       if (isEmailChanged) {
         const { data: authData, error: emailAuthErr } = await supabase.auth.updateUser({ email: editedEmail });
@@ -190,7 +191,10 @@ const Profile = () => {
           if (pendingEmail) {
             emailNotice = t('profile.toasts.emailConfirmationSent', { email: editedEmail });
           } else {
-            updatePayload.email = editedEmail;
+            // NOTE: the login email lives in auth.users only — public.profiles has no
+            // `email` column, so writing it here fails the whole profile update with
+            // HTTP 400 / PGRST204. The auth update above is the only write needed.
+            emailApplied = true;
           }
         }
       }
@@ -206,7 +210,7 @@ const Profile = () => {
       // 5. Sync AuthContext to refresh Topbar, Sidebar, & Profile state without page reload
       await refreshProfile();
 
-      const newSavedEmail = isEmailChanged && updatePayload.email ? editedEmail : (formData.email.trim() || user?.email || '');
+      const newSavedEmail = isEmailChanged && emailApplied ? editedEmail : (formData.email.trim() || user?.email || '');
 
       setInitialData({
         full_name: trimmedName,

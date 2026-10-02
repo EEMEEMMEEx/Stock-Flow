@@ -116,10 +116,22 @@ const Checkouts = () => {
 
         if (unmappedCreatorIds.length > 0) {
           try {
-            const { data: profs } = await supabase
+            // NOTE: public.profiles has NO email column (emails live in auth.users only),
+            // so `email` must never be part of this select list.
+            const { data: profs, error: profErr } = await supabase
               .from('profiles')
-              .select('id, full_name, email, role')
+              .select('id, full_name, role')
               .in('id', unmappedCreatorIds);
+
+            if (profErr) {
+              console.error(
+                '[Checkouts] Creator profile enrichment failed:',
+                `code=${profErr.code}`,
+                `message=${profErr.message}`,
+                `details=${profErr.details}`,
+                `hint=${profErr.hint}`
+              );
+            }
 
             if (profs && profs.length > 0) {
               const profMap = new Map(profs.map(p => [p.id, p]));

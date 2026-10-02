@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { 
   FileText, Clock, 
   User, Building2, Calendar, Phone, Layers, RotateCcw,
-  CalendarClock, ArrowRight, Infinity as InfinityIcon, XCircle
+  CalendarClock, ArrowRight, Infinity as InfinityIcon, XCircle, AlertTriangle
 } from 'lucide-react';
 import { pdf } from '@react-pdf/renderer';
 import { MaterialCheckoutPDF, MaterialReturnPDF } from '@/lib/checkout-pdf-templates';
@@ -13,6 +13,22 @@ import { format } from 'date-fns';
 import { supabase } from '@/lib/supabase';
 import { useTranslation } from '@/i18n';
 import StatusBadge from '@/components/ui/StatusBadge';
+
+/**
+ * public.profiles has NO email column (canonical emails live in auth.users only),
+ * so selecting `email` from profiles fails with HTTP 400 / SQLSTATE 42703.
+ * Log the full PostgREST error payload so the cause is never swallowed again.
+ */
+const logProfileFetchError = (scope, error) => {
+  if (!error || error.code === 'PGRST116') return;
+  console.error(
+    `[CheckoutDetailModal] ${scope} profile fetch failed:`,
+    `code=${error.code}`,
+    `message=${error.message}`,
+    `details=${error.details}`,
+    `hint=${error.hint}`
+  );
+};
 
 const CheckoutDetailModal = ({
   isOpen,
@@ -29,6 +45,7 @@ const CheckoutDetailModal = ({
   const [generatingPdf, setGeneratingPdf] = useState(false);
   const [staffProfile, setStaffProfile] = useState(null);
   const [approverProfile, setApproverProfile] = useState(null);
+  const [profileLoadError, setProfileLoadError] = useState('');
 
   useEffect(() => {
     if (order?.id && isOpen) {
@@ -41,25 +58,44 @@ const CheckoutDetailModal = ({
   useEffect(() => {
     if (!order?.approved_by || !isOpen) {
       setApproverProfile(null);
-      return;
+      return undefined;
     }
-    supabase
-      .from('profiles')
-      .select('id, full_name, email, role, signature_url')
-      .eq('id', order.approved_by)
-      .maybeSingle()
-      .then(({ data, error }) => {
-        if (!error && data) {
-          setApproverProfile(data);
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('id, full_name, role, signature_url')
+          .eq('id', order.approved_by)
+          .maybeSingle();
+
+        if (cancelled) return;
+        if (error) {
+          logProfileFetchError('approver', error);
+          setProfileLoadError(t('checkouts.toasts.officerProfileLoadFailed'));
+          return;
         }
-      });
-  }, [order?.approved_by, isOpen]);
+        if (data) {
+          setApproverProfile(data);
+          setProfileLoadError('');
+        }
+      } catch (err) {
+        if (!cancelled) {
+          logProfileFetchError('approver', err);
+          setProfileLoadError(t('checkouts.toasts.officerProfileLoadFailed'));
+        }
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [order?.approved_by, isOpen, t]);
 
   // Resolve warehouse officer profile for the checkout transaction
   useEffect(() => {
     if (!order || !isOpen) {
       setStaffProfile(null);
-      return;
+      return undefined;
     }
 
     const existingProfile = Array.isArray(order.profiles)
@@ -68,22 +104,41 @@ const CheckoutDetailModal = ({
 
     if (existingProfile?.full_name) {
       setStaffProfile(existingProfile);
-      return;
+      return undefined;
     }
 
-    if (order.created_by) {
-      supabase
-        .from('profiles')
-        .select('id, full_name, email, role, signature_url')
-        .eq('id', order.created_by)
-        .maybeSingle()
-        .then(({ data, error }) => {
-          if (!error && data) {
-            setStaffProfile(data);
-          }
-        });
-    }
-  }, [order, isOpen]);
+    if (!order.created_by) return undefined;
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('id, full_name, role, signature_url')
+          .eq('id', order.created_by)
+          .maybeSingle();
+
+        if (cancelled) return;
+        if (error) {
+          logProfileFetchError('warehouse officer', error);
+          setProfileLoadError(t('checkouts.toasts.officerProfileLoadFailed'));
+          return;
+        }
+        if (data) {
+          setStaffProfile(data);
+          setProfileLoadError('');
+        }
+      } catch (err) {
+        if (!cancelled) {
+          logProfileFetchError('warehouse officer', err);
+          setProfileLoadError(t('checkouts.toasts.officerProfileLoadFailed'));
+        }
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [order, isOpen, t]);
 
   const fetchExtensionLogs = async (orderId) => {
     try {
@@ -255,6 +310,13 @@ const CheckoutDetailModal = ({
               )}
             </div>
           )}
+          {profileLoadError && (
+            <div className="flex items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-[11px] text-amber-700 dark:text-amber-300">
+              <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+              <span>{profileLoadError}</span>
+            </div>
+          )}
+
           {/* Info Card */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 rounded-xl bg-muted/30 border border-border text-xs">
             <div className="space-y-1.5">
