@@ -1,4 +1,5 @@
 import { Document, Page, Text, View, StyleSheet, Font, Image } from '@react-pdf/renderer';
+import { resolveWithdrawalRequester, resolveCheckoutBorrower, resolveDocumentNumber } from '@/lib/pdf-signatures';
 
 // Register Thai Font (THSarabunNew)
 Font.register({
@@ -109,6 +110,18 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     fontWeight: 'bold',
     fontSize: 12, // ขนาดฟอนต์บรรทัด "ส่งของที่" และ "Date" (16pt)
+  },
+  metaColLeft: {
+    flex: 1,
+    paddingRight: 10,
+  },
+  metaColRight: {
+    flexShrink: 0,
+    textAlign: 'right',
+  },
+  metaValue: {
+    fontWeight: 'normal',
+    color: '#0f172a',
   },
   // Table
   table: {
@@ -229,12 +242,9 @@ export const MaterialWithdrawalPDF = ({ order, items, profile }) => {
     minute: '2-digit'
   });
 
-  // Resolve digital signature images
-  const requesterSignatureUrl = order?.profiles?.signature_url
-    || order?.requester?.signature_url
-    || order?.requester_signature_url
-    || (order?.requested_by === profile?.id ? profile?.signature_url : null)
-    || null;
+  // Resolve requester identity + digital signature (array/object/null safe)
+  const { name: requesterName, signatureUrl: requesterSignatureUrl } = resolveWithdrawalRequester(order, profile);
+  const docNumber = resolveDocumentNumber(order);
 
   const approverSignatureUrl = (profile?.signature_url && profile?.id !== order?.requested_by ? profile.signature_url : order?.approver?.signature_url)
     || order?.approved_by_profile?.signature_url
@@ -272,13 +282,25 @@ export const MaterialWithdrawalPDF = ({ order, items, profile }) => {
         </View>
 
         <View style={styles.metaSection}>
-          <Text>ส่งของที่ : {order?.delivery_address || order?.projects?.name || '—'}</Text>
-          <Text>Date. {dateStr}</Text>
+          <View style={styles.metaColLeft}>
+            <Text>ส่งของที่ : <Text style={styles.metaValue}>{order?.delivery_address || order?.projects?.name || '—'}</Text></Text>
+          </View>
+          <View style={styles.metaColRight}>
+            <Text>เลขที่ใบเบิก : <Text style={styles.metaValue}>{docNumber}</Text></Text>
+          </View>
+        </View>
+        <View style={styles.metaSection}>
+          <View style={styles.metaColLeft}>
+            <Text>ผู้ขอเบิก : <Text style={styles.metaValue}>{requesterName}</Text></Text>
+          </View>
+          <View style={styles.metaColRight}>
+            <Text>Date. <Text style={styles.metaValue}>{dateStr}</Text></Text>
+          </View>
         </View>
 
         {/* Items Table */}
         <View style={styles.table}>
-          <View style={styles.tableHeader}>
+          <View style={styles.tableHeader} fixed>
             <View style={[styles.th, styles.colNo]}><Text style={styles.thText}>ลำดับ</Text></View>
             <View style={[styles.th, styles.colDesc]}><Text style={styles.thText}>รายการ</Text></View>
             <View style={[styles.th, styles.colQty]}><Text style={styles.thText}>จำนวน</Text></View>
@@ -325,7 +347,7 @@ export const MaterialWithdrawalPDF = ({ order, items, profile }) => {
             ) : (
               <View style={styles.sigSpacer} />
             )}
-            <Text style={styles.sigName}>({order?.profiles?.full_name || order?.requester_name || '...................................................'})</Text>
+            <Text style={styles.sigName}>({requesterName})</Text>
             <Text style={styles.sigRole}>ผู้ขอเบิกพัสดุ</Text>
             <Text style={styles.sigDate}>วันที่: ....../....../...........</Text>
           </View>
@@ -337,6 +359,172 @@ export const MaterialWithdrawalPDF = ({ order, items, profile }) => {
               <View style={styles.sigSpacer} />
             )}
             <Text style={styles.sigName}>({(profile?.full_name && profile?.id !== order?.requested_by ? profile.full_name : order?.approver?.full_name) || '...................................................'})</Text>
+            <Text style={styles.sigRole}>เจ้าหน้าที่ผู้จ่ายพัสดุ</Text>
+            <Text style={styles.sigDate}>วันที่: ....../....../...........</Text>
+          </View>
+        </View>
+
+      </Page>
+    </Document>
+  );
+};
+
+// ---------------------------------------------------------------------------
+// Material Dispatch Note (ใบนำส่งเบิกของ) — รองรับทั้งใบเบิกพัสดุและใบยืม-คืน
+// ---------------------------------------------------------------------------
+export const MaterialDispatchPDF = ({ order, items = [], profile = null, mode = 'withdrawal' }) => {
+  if (!order) return null;
+
+  const isCheckout = mode === 'checkout';
+
+  // Pad items to at least 15 rows to keep the standardized dispatch paper layout
+  const MIN_ROWS = 15;
+  const paddedItems = [...items];
+  while (paddedItems.length < MIN_ROWS) {
+    paddedItems.push({});
+  }
+
+  const docDate = isCheckout ? (order?.checkout_date || order?.created_at) : order?.requested_at;
+  const dateStr = docDate
+    ? new Date(docDate).toLocaleDateString('th-TH')
+    : new Date().toLocaleDateString('th-TH');
+
+  const printDateStr = new Date().toLocaleDateString('th-TH', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+
+  // Requester identity + signature (borrower for checkouts, requisitioner for withdrawals)
+  const { name: requesterName, signatureUrl: requesterSignatureUrl } = isCheckout
+    ? resolveCheckoutBorrower(order)
+    : resolveWithdrawalRequester(order, profile);
+
+  const docNumber = resolveDocumentNumber(order, isCheckout ? 'checkout' : 'withdrawal');
+
+  const destination = isCheckout
+    ? (order?.projects?.name || order?.purpose || '—')
+    : (order?.delivery_address || order?.projects?.name || order?.purpose || '—');
+
+  const roleLabel = isCheckout ? 'ผู้ขอยืมพัสดุ' : 'ผู้ขอเบิกพัสดุ';
+
+  return (
+    <Document>
+      <Page size="A4" style={styles.page}>
+
+        {/* Executive Corporate Header */}
+        <View style={styles.headerContainer}>
+          <View style={styles.headerLeft}>
+            <Image src="/images/logo.png" style={styles.logo} />
+            <View style={styles.companyDetails}>
+              <Text style={styles.companyNameTh}>บริษัท ฟอร์ท คอร์ปอเรชั่น จำกัด (มหาชน)</Text>
+              <Text style={styles.companyNameEn}>FORTH CORPORATION PUBLIC COMPANY LIMITED</Text>
+              <Text style={styles.companyAddress}>
+                1053/1 ถนนพหลโยธิน แขวงพญาไท เขตพญาไท กรุงเทพมหานคร 10400 โทรศัพท์: 02-265-6700
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.headerRight}>
+            <View style={styles.docBadge}>
+              <Text style={styles.docBadgeText}>MATERIAL DISPATCH NOTE</Text>
+            </View>
+            <Text style={styles.printDateText}>พิมพ์เมื่อ: {printDateStr}</Text>
+          </View>
+        </View>
+
+        {/* Document Title */}
+        <View style={styles.docTitleContainer}>
+          <Text style={styles.docTitle}>ใบนำส่งเบิกของ</Text>
+          <Text style={styles.docCopy}>ต้นฉบับนำส่ง</Text>
+        </View>
+
+        <View style={styles.metaSection}>
+          <View style={styles.metaColLeft}>
+            <Text>ส่งของที่ / โครงการ : <Text style={styles.metaValue}>{destination}</Text></Text>
+          </View>
+          <View style={styles.metaColRight}>
+            <Text>เลขที่ : <Text style={styles.metaValue}>{docNumber}</Text></Text>
+          </View>
+        </View>
+        <View style={[styles.metaSection, { marginBottom: 10 }]}>
+          <View style={styles.metaColLeft}>
+            <Text>{isCheckout ? 'ผู้ขอยืม' : 'ผู้ขอเบิก'} : <Text style={styles.metaValue}>{requesterName}</Text></Text>
+          </View>
+          <View style={styles.metaColRight}>
+            <Text>Date. <Text style={styles.metaValue}>{dateStr}</Text></Text>
+          </View>
+        </View>
+
+        {/* Items Table */}
+        <View style={styles.table}>
+          <View style={styles.tableHeader} fixed>
+            <View style={[styles.th, styles.colNo]}><Text style={styles.thText}>ลำดับ</Text></View>
+            <View style={[styles.th, styles.colDesc]}><Text style={styles.thText}>รายการ</Text></View>
+            <View style={[styles.th, styles.colQty]}><Text style={styles.thText}>จำนวน</Text></View>
+            <View style={[styles.th, styles.colSn]}><Text style={styles.thText}>Serial Number / หมายเหตุ</Text></View>
+          </View>
+
+          {paddedItems.map((item, index) => {
+            const isEmpty = isCheckout
+              ? (!item.item_id && !item.items && !item.quantity_borrowed)
+              : !item.items;
+            const itemName = item.items?.name || item.item_name || '';
+            const qty = isCheckout ? item.quantity_borrowed : item.quantity;
+            const unit = item.items?.unit || (isCheckout ? 'ชิ้น' : '');
+            const serialNotes = [
+              item.serial_number,
+              item.part_number,
+              item.condition_on_checkout && item.condition_on_checkout !== 'normal' ? `(${item.condition_on_checkout})` : null,
+              item.notes
+            ].filter(Boolean).join(' / ');
+
+            return (
+              <View key={index} style={[styles.tableRow, index === paddedItems.length - 1 && { borderBottomWidth: 0 }]}>
+                <View style={[styles.td, styles.colNo]}>
+                  <Text style={styles.tdTextCenter}>{isEmpty ? '' : index + 1}</Text>
+                </View>
+                <View style={[styles.td, styles.colDesc]}>
+                  <Text style={styles.tdText}>{isEmpty ? '' : itemName}</Text>
+                </View>
+                <View style={[styles.td, styles.colQty]}>
+                  <Text style={styles.tdTextCenter}>{isEmpty ? '' : `${qty} ${unit}`.trim()}</Text>
+                </View>
+                <View style={[styles.td, styles.colSn]}>
+                  <Text style={styles.tdTextCenter}>{isEmpty ? '' : (serialNotes || '—')}</Text>
+                </View>
+              </View>
+            );
+          })}
+        </View>
+
+        {/* Remark Section (Only if not empty) */}
+        {(order?.notes?.trim() || order?.purpose?.trim()) && (
+          <View style={{ marginTop: 10, paddingLeft: 10 }} wrap={false}>
+            <Text style={{ fontSize: 14, fontWeight: 'bold' }}>
+              Remark: <Text style={{ fontWeight: 'normal' }}>{order?.notes?.trim() || order?.purpose?.trim()}</Text>
+            </Text>
+          </View>
+        )}
+
+        {/* Signatures: right box stays blank for a wet signature at the source warehouse */}
+        <View style={styles.signatureSection} wrap={false}>
+          <View style={styles.signatureBox}>
+            {requesterSignatureUrl ? (
+              <Image src={requesterSignatureUrl} style={styles.sigImage} />
+            ) : (
+              <View style={styles.sigSpacer} />
+            )}
+            <Text style={styles.sigName}>({requesterName})</Text>
+            <Text style={styles.sigRole}>{roleLabel}</Text>
+            <Text style={styles.sigDate}>วันที่: ....../....../...........</Text>
+          </View>
+
+          <View style={styles.signatureBox}>
+            <View style={styles.sigSpacer} />
+            <Text style={styles.sigName}>(...................................................)</Text>
             <Text style={styles.sigRole}>เจ้าหน้าที่ผู้จ่ายพัสดุ</Text>
             <Text style={styles.sigDate}>วันที่: ....../....../...........</Text>
           </View>

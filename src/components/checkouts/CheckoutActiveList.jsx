@@ -4,9 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 
   Search, Clock, AlertTriangle, CheckCircle2, RotateCcw, 
-  Eye, User, Building2, Phone, Layers, CalendarClock, Infinity as InfinityIcon
+  Eye, User, Building2, Phone, Layers, CalendarClock, Infinity as InfinityIcon, FileSpreadsheet
 } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
+import { pdf } from '@react-pdf/renderer';
+import { MaterialDispatchPDF } from '@/lib/pdf-templates';
+import { CHECKOUT_DISPATCH_STATUSES, toSafeFileToken } from '@/lib/utils';
+import toast from 'react-hot-toast';
 import { useTranslation } from '@/i18n';
 
 const CheckoutActiveList = ({
@@ -21,6 +25,31 @@ const CheckoutActiveList = ({
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all'); // 'all' | 'overdue' | 'due_soon' | 'active'
+  const [generatingPdf, setGeneratingPdf] = useState(false);
+
+  const handleDownloadDispatchPDF = async (order) => {
+    if (!CHECKOUT_DISPATCH_STATUSES.includes(order.status)) {
+      toast.error(t('checkouts.toasts.dispatchNoteNotAllowed', 'Dispatch note is available only for approved or dispensed loans'));
+      return;
+    }
+
+    try {
+      setGeneratingPdf(true);
+      const blob = await pdf(<MaterialDispatchPDF order={order} items={order.checkout_items || []} mode="checkout" />).toBlob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Dispatch_Note_${toSafeFileToken(order.order_number)}.pdf`;
+      link.click();
+      URL.revokeObjectURL(url);
+      toast.success(t('checkouts.toasts.dispatchNoteDownloaded', 'Dispatch note downloaded'));
+    } catch (err) {
+      console.error('PDF Error:', err);
+      toast.error(t('checkouts.toasts.dispatchNotePdfFailed', 'Failed to generate dispatch note PDF'));
+    } finally {
+      setGeneratingPdf(false);
+    }
+  };
 
   const enrichedOrders = useMemo(() => {
     const today = new Date();
@@ -315,6 +344,20 @@ const CheckoutActiveList = ({
                         <Eye className="w-3.5 h-3.5" />
                         <span className="hidden sm:inline">{t('common.viewDetails')}</span>
                       </Button>
+
+                      {CHECKOUT_DISPATCH_STATUSES.includes(order.status) && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={generatingPdf}
+                          onClick={() => handleDownloadDispatchPDF(order)}
+                          className="rounded-lg h-9 text-xs gap-1.5 font-semibold text-sky-700 dark:text-sky-400 border-sky-500/30 hover:bg-sky-500/10 shadow-2xs cursor-pointer"
+                          title={t('checkouts.printDispatchPdf', 'พิมพ์ใบนำส่งเบิกของ (PDF)')}
+                        >
+                          <FileSpreadsheet className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+                          <span className="hidden sm:inline">{t('checkouts.printDispatchPdf', 'พิมพ์ใบนำส่งเบิกของ')}</span>
+                        </Button>
+                      )}
 
                       {order.isIndefinite ? (
                         <div className="inline-flex items-center gap-1 px-2.5 rounded-lg h-9 bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-500/30 text-xs font-semibold select-none" title={t('checkouts.indefiniteLoan')}>

@@ -64,6 +64,7 @@ const History = () => {
           purpose,
           notes,
           delivery_address,
+          work_order_no,
           requested_by,
           approved_by,
           reject_reason,

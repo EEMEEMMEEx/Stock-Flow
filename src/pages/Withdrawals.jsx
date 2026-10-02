@@ -2,9 +2,10 @@ import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Zap, ClipboardList } from 'lucide-react';
 import { pdf } from '@react-pdf/renderer';
-import { MaterialWithdrawalPDF } from '@/lib/pdf-templates';
+import { MaterialWithdrawalPDF, MaterialDispatchPDF } from '@/lib/pdf-templates';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n';
+import { toSafeFileToken } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import { dispatchWithdrawalNotification, dispatchLowStockAlertNotification } from '@/lib/notificationDispatcher';
 
@@ -15,6 +16,17 @@ import WithdrawalDetailModal from '@/components/withdrawals/WithdrawalDetailModa
 import WithdrawalShortageModal from '@/components/withdrawals/WithdrawalShortageModal';
 import WithdrawalRejectModal from '@/components/withdrawals/WithdrawalRejectModal';
 import SignatureRequiredModal from '@/components/common/SignatureRequiredModal';
+
+// Shared helpers for withdrawal PDF documents
+const resolveWithdrawalItems = async (order, existingItems = null) => {
+  if (existingItems?.length) return existingItems;
+  const { data, error } = await supabase
+    .from('withdrawal_items')
+    .select('*, items(name, unit, sku)')
+    .eq('order_id', order.id);
+  if (error) throw error;
+  return data || [];
+};
 
 const Withdrawals = () => {
   const { isAdmin, can, profile } = useAuth();
@@ -700,15 +712,7 @@ const Withdrawals = () => {
 
     const toastId = toast.loading('Generating requisition PDF document...');
     try {
-      let itemsList = existingItems;
-      if (!itemsList || itemsList.length === 0) {
-        const { data, error } = await supabase
-          .from('withdrawal_items')
-          .select('*, items(name, unit, sku)')
-          .eq('order_id', order.id);
-        if (error) throw error;
-        itemsList = data || [];
-      }
+      const itemsList = await resolveWithdrawalItems(order, existingItems);
 
       const docBlob = await pdf(
         <MaterialWithdrawalPDF order={order} items={itemsList} profile={profile} />
@@ -727,6 +731,40 @@ const Withdrawals = () => {
     } catch (err) {
       console.error('PDF Download Error:', err);
       toast.error('Failed to download PDF document', { id: toastId });
+    }
+  };
+
+  // Download Material Dispatch Note (ใบนำส่งเบิกของ)
+  const handleDownloadDispatchPDF = async (order, existingItems = null) => {
+    if (!order) return;
+
+    // Strict Policy: dispatch notes are generated only for approved or completed requests
+    if (order.status !== 'approved' && order.status !== 'completed') {
+      toast.error(t('withdrawals.toasts.pdfNotAllowed', 'PDF is available only for approved or completed requests'));
+      return;
+    }
+
+    const toastId = toast.loading(t('withdrawals.toasts.dispatchNoteGenerating', 'Generating dispatch note PDF...'));
+    try {
+      const itemsList = await resolveWithdrawalItems(order, existingItems);
+
+      const docBlob = await pdf(
+        <MaterialDispatchPDF order={order} items={itemsList} profile={profile} mode="withdrawal" />
+      ).toBlob();
+
+      const url = URL.createObjectURL(docBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Dispatch_Note_${toSafeFileToken(order.work_order_no || order.id?.slice(0, 8))}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      toast.success(t('withdrawals.toasts.dispatchNoteDownloaded', 'Dispatch note downloaded'), { id: toastId });
+    } catch (err) {
+      console.error('Dispatch Note PDF Error:', err);
+      toast.error(t('withdrawals.toasts.dispatchNotePdfFailed', 'Failed to generate dispatch note PDF'), { id: toastId });
     }
   };
 
@@ -823,6 +861,7 @@ const Withdrawals = () => {
           onOpenPosMode={() => setActiveTab('pos')}
           onViewOrderDetails={viewOrderDetails}
           onDownloadPDF={handleDownloadPDF}
+          onDownloadDispatchPDF={handleDownloadDispatchPDF}
           onApproveOrder={handleApproveOrder}
           onOpenRejectModal={openRejectModal}
           onCompleteOrder={handleCompleteOrder}
@@ -852,6 +891,7 @@ const Withdrawals = () => {
           setIsDetailsModalOpen(false);
         }}
         onDownloadPDF={handleDownloadPDF}
+        onDownloadDispatchPDF={handleDownloadDispatchPDF}
       />
 
       {/* Shortage Warning & Override Modal */}

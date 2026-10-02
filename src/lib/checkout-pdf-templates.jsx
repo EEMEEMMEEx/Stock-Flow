@@ -1,4 +1,5 @@
 import { Document, Page, Text, View, StyleSheet, Font, Image } from '@react-pdf/renderer';
+import { resolveCheckoutBorrower } from '@/lib/pdf-signatures';
 
 // Register Thai Font (THSarabunNew) - Identical to MaterialWithdrawalPDF
 Font.register({
@@ -106,9 +107,37 @@ const styles = StyleSheet.create({
   metaSection: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 6,
+    marginBottom: 4,
     fontWeight: 'bold',
     fontSize: 12,
+  },
+  metaColLeft: {
+    flex: 1,
+    paddingRight: 10,
+  },
+  metaColRight: {
+    flexShrink: 0,
+    textAlign: 'right',
+  },
+  metaValue: {
+    fontWeight: 'normal',
+    color: '#0f172a',
+  },
+  // Full-width purpose block (wrap-safe for long text)
+  purposeContainer: {
+    width: '100%',
+    marginTop: 2,
+    marginBottom: 10,
+    fontSize: 11,
+    lineHeight: 1.3,
+  },
+  purposeLabel: {
+    fontWeight: 'bold',
+    color: '#000000',
+  },
+  purposeValue: {
+    fontWeight: 'normal',
+    color: '#0f172a',
   },
   // Table
   table: {
@@ -247,11 +276,8 @@ export const MaterialCheckoutPDF = ({ order, staffProfile }) => {
     ? order.notes.trim()
     : null;
 
-  // Resolve borrower name dynamically from order data
-  const borrowerDisplayName = order?.borrower_name
-    || (Array.isArray(order?.borrower) ? order.borrower[0]?.full_name : order?.borrower?.full_name)
-    || order?.borrower_profile?.full_name
-    || '...................................................';
+  // Resolve borrower identity + digital signature (array/object/null safe)
+  const { name: borrowerDisplayName, signatureUrl: borrowerSignatureUrl } = resolveCheckoutBorrower(order);
 
   // Resolve warehouse officer (staff) who approved and dispensed the checkout items
   // Resiliently handles:
@@ -273,13 +299,7 @@ export const MaterialCheckoutPDF = ({ order, staffProfile }) => {
     || (typeof staffProfile === 'string' ? staffProfile : null)
     || '...................................................';
 
-  // Resolve digital signature images
-  const borrowerSignatureUrl = order?.borrower_signature_url
-    || order?.signature_url
-    || (Array.isArray(order?.borrower) ? order.borrower[0]?.signature_url : order?.borrower?.signature_url)
-    || order?.borrower_profile?.signature_url
-    || null;
-
+  // Resolve dispensing officer digital signature
   const staffSignatureUrl = isApproved
     ? (officerProfile?.signature_url || (staffProfile && typeof staffProfile === 'object' ? staffProfile.signature_url : null))
     : null;
@@ -317,17 +337,32 @@ export const MaterialCheckoutPDF = ({ order, staffProfile }) => {
 
         {/* Meta Section */}
         <View style={styles.metaSection}>
-          <Text>ผู้ยืม : {order?.borrower_name || '—'}</Text>
-          <Text>เลขที่ : {order?.order_number || '—'}</Text>
+          <View style={styles.metaColLeft}>
+            <Text>ผู้ยืม : <Text style={styles.metaValue}>{borrowerDisplayName}</Text></Text>
+          </View>
+          <View style={styles.metaColRight}>
+            <Text>เลขที่ : <Text style={styles.metaValue}>{order?.order_number || '—'}</Text></Text>
+          </View>
         </View>
-        <View style={[styles.metaSection, { marginBottom: 10 }]}>
-          <Text>วัตถุประสงค์ : {order?.purpose || '—'}</Text>
-          <Text>วันที่ยืม : {checkoutDateStr}    กำหนดคืน : {expectedReturnDateStr}</Text>
+        <View style={styles.metaSection}>
+          <View style={styles.metaColLeft}>
+            <Text>วันที่ยืม : <Text style={styles.metaValue}>{checkoutDateStr}</Text></Text>
+          </View>
+          <View style={styles.metaColRight}>
+            <Text>กำหนดคืน : <Text style={styles.metaValue}>{expectedReturnDateStr}</Text></Text>
+          </View>
+        </View>
+
+        {/* Dedicated Purpose Block (full width, wrap-safe) */}
+        <View style={styles.purposeContainer}>
+          <Text style={styles.purposeLabel}>
+            วัตถุประสงค์ : <Text style={styles.purposeValue}>{order?.purpose?.trim() || '—'}</Text>
+          </Text>
         </View>
 
         {/* Standard 4-Column Table */}
         <View style={styles.table}>
-          <View style={styles.tableHeader}>
+          <View style={styles.tableHeader} fixed>
             <View style={[styles.th, styles.colNo]}><Text style={styles.thText}>ลำดับ</Text></View>
             <View style={[styles.th, styles.colDesc]}><Text style={styles.thText}>รายการ</Text></View>
             <View style={[styles.th, styles.colQty]}><Text style={styles.thText}>จำนวน</Text></View>
@@ -510,17 +545,25 @@ export const MaterialReturnPDF = ({ order, returnLogs = [], staffProfile }) => {
 
         {/* Meta Section */}
         <View style={styles.metaSection}>
-          <Text>ผู้ส่งคืน : {order?.borrower_name || '—'}</Text>
-          <Text>อ้างอิงใบยืม : {order?.order_number || '—'}</Text>
+          <View style={styles.metaColLeft}>
+            <Text>ผู้ส่งคืน : <Text style={styles.metaValue}>{order?.borrower_name || '—'}</Text></Text>
+          </View>
+          <View style={styles.metaColRight}>
+            <Text>อ้างอิงใบยืม : <Text style={styles.metaValue}>{order?.order_number || '—'}</Text></Text>
+          </View>
         </View>
         <View style={[styles.metaSection, { marginBottom: 10 }]}>
-          <Text>สถานะการส่งคืน : {returnStatusText}</Text>
-          <Text>วันที่ยืม : {checkoutDateStr}    วันที่รับคืน : {actualReturnedDateStr}</Text>
+          <View style={styles.metaColLeft}>
+            <Text>สถานะการส่งคืน : <Text style={styles.metaValue}>{returnStatusText}</Text></Text>
+          </View>
+          <View style={styles.metaColRight}>
+            <Text>วันที่ยืม : <Text style={styles.metaValue}>{checkoutDateStr}</Text>    วันที่รับคืน : <Text style={styles.metaValue}>{actualReturnedDateStr}</Text></Text>
+          </View>
         </View>
 
         {/* Return Items Table */}
         <View style={styles.table}>
-          <View style={styles.tableHeader}>
+          <View style={styles.tableHeader} fixed>
             <View style={[styles.th, styles.rColNo]}><Text style={styles.thText}>ลำดับ</Text></View>
             <View style={[styles.th, styles.rColDesc]}><Text style={styles.thText}>รายการ</Text></View>
             <View style={[styles.th, styles.rColQty]}><Text style={styles.thText}>จำนวนรับคืน</Text></View>

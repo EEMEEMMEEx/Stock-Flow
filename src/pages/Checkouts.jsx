@@ -150,6 +150,47 @@ const Checkouts = () => {
           }
         }
 
+        // Enrich borrower profiles (digital signature of the borrower).
+        // checkout_orders has no populated signature_url column, so the borrower
+        // signature can only come from public.profiles via borrower_id.
+        const unmappedBorrowerIds = [
+          ...new Set(
+            loadedOrders
+              .filter(o => o.borrower_id && !o.borrower)
+              .map(o => o.borrower_id)
+          )
+        ];
+
+        if (unmappedBorrowerIds.length > 0) {
+          try {
+            const { data: borrowers, error: borrowerErr } = await supabase
+              .from('profiles')
+              .select('id, full_name, signature_url')
+              .in('id', unmappedBorrowerIds);
+
+            if (borrowerErr) {
+              console.error(
+                '[Checkouts] Borrower profile enrichment failed:',
+                `code=${borrowerErr.code}`,
+                `message=${borrowerErr.message}`,
+                `details=${borrowerErr.details}`,
+                `hint=${borrowerErr.hint}`
+              );
+            }
+
+            if (borrowers && borrowers.length > 0) {
+              const borrowerMap = new Map(borrowers.map(p => [p.id, p]));
+              loadedOrders = loadedOrders.map(o => (
+                o.borrower_id && borrowerMap.has(o.borrower_id)
+                  ? { ...o, borrower: borrowerMap.get(o.borrower_id) }
+                  : o
+              ));
+            }
+          } catch (borrowerErr) {
+            console.warn('Enrich borrower profiles notice:', borrowerErr);
+          }
+        }
+
         // Normalize order.profiles: if it's an array, extract the first object
         loadedOrders = loadedOrders.map(o => {
           if (Array.isArray(o.profiles)) {

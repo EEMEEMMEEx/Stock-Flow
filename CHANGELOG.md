@@ -1,5 +1,48 @@
 # Changelog
 
+## [2026-10-03 01:12] - v1.13.2
+
+- **Files Modified:** `src/lib/checkout-pdf-templates.jsx`, `src/lib/pdf-templates.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`, `docs/checkout-pdf-purpose-overlap-plan.md`
+- **Changes:**
+  - **แก้ข้อความซ้อนทับในใบยืมพัสดุ (`MaterialCheckoutPDF`)**: "วัตถุประสงค์ :" เดิมอยู่ใน flex row เดียวกับ "วันที่ยืม :/กำหนดคืน :" — ใน Yoga/react-pdf ค่า default `flexShrink` = 0 (ต่างจาก CSS ที่เป็น 1) ข้อความยาวจึงไม่หดและลากไปทับคอลัมน์ขวา → จัดใหม่เป็น **3 แถว**: (1) ผู้ยืม | เลขที่ (2) วันที่ยืม | กำหนดคืน (แยกเป็นคนละคอลัมน์) (3) **วัตถุประสงค์เต็มความกว้าง 100%** ด้วย `purposeContainer` ที่ `lineHeight: 1.3` รองรับการ wrap หลายบรรทัดและดันตารางลงล่างตามความสูงจริง
+  - **กันปัญหาเดียวกันในอีก 3 เอกสาร** (ตามข้อ 4 ของแผน): `MaterialReturnPDF`, `MaterialWithdrawalPDF`, `MaterialDispatchPDF` — ทุกแถว Meta เปลี่ยนจากการวาง `<Text>` 2 ตัวใน flex row ตรง ๆ เป็นคอลัมน์ซ้าย `metaColLeft: { flex: 1, paddingRight: 10 }` และขวา `metaColRight: { flexShrink: 0, textAlign: 'right' }` (ข้อความยาวตัดบรรทัดภายในคอลัมน์ตัวเอง ไม่ลากไปทับอีกฝั่ง)
+  - เพิ่ม style `metaValue` (label ตัวหนา / ค่า ตัวปกติ สี `#0f172a`) และปรับ `metaSection.marginBottom` ของไฟล์ checkout จาก 6 → 4 ตาม §3.2 ของแผน
+  - **ไม่แตะ**: ข้อความ/ข้อมูลในเอกสารทุกตัว, ตรรกะลายเซ็นและเลขที่เอกสาร (v1.13.1), `fixed` table header, กล่องลายเซ็น 2 ฝั่ง, i18n, สคีมา/RPC — และไม่แตะเทมเพลตรายงาน (`StockReportPDF`/`SiteKitsReportPDF`) ซึ่งอยู่นอกขอบเขต
+  - **ข้อจำกัดที่ทราบ (Case 4 ของแผน)**: react-pdf v4 ไม่มี `wordBreak`/`overflowWrap` (grep ใน `node_modules/@react-pdf` = 0 ผลลัพธ์) ข้อความยาวติดกันโดยไม่มีเว้นวรรคจึงยังล้นได้ — ทางเลือกในอนาคตคือ `Font.registerHyphenationCallback` (global, ต้องทดสอบผลกับทุกเอกสาร)
+  - **การตรวจสอบ**: `npm run verify:pdf` (regression ของตรรกะ) + `npm run lint` + `npm run build` ผ่าน; การตรวจด้วยตา (Test Matrix §5 ของแผน) ยังไม่ได้รันในสภาพแวดล้อมนี้ (ไม่มี Playwright/Puppeteer และเทมเพลตอ้าง public URL ของฟอนต์/โลโก้ จึง render PDF ใน Node ไม่ได้)
+  - ปรับ version ของระบบเป็น `v1.13.2` (PATCH)
+
+## [2026-10-03 00:59] - v1.13.1
+
+- **Files Modified:** `src/lib/pdf-signatures.js` (ใหม่), `scripts/verify-pdf-signatures.mjs` (ใหม่), `src/lib/pdf-templates.jsx`, `src/lib/checkout-pdf-templates.jsx`, `src/pages/Checkouts.jsx`, `src/pages/History.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`, `docs/pdf-signature-verification-plan.md`
+- **Changes:**
+  - **แก้บั๊กลายเซ็นผู้ขอยืมหายทั้งระบบ `/checkouts` (CRITICAL)** — ตรวจสอบยืนยันแล้วว่า `borrowerSignatureUrl` เป็น `null` 100% เพราะ (ก) query `checkout_orders` ไม่ join `profiles` ผ่าน `borrower_id` (ข) `checkout_orders.signature_url` ไม่ถูกเขียนโดย RPC สร้างออเดอร์ทุกตัว (migration 65 / 74) (ค) ไม่มีที่ใดใน `src` แนบ `order.borrower`/`borrower_profile` → แก้โดย enrich `order.borrower` จาก `profiles(id, full_name, signature_url)` แบบ batch ใน `Checkouts.jsx` (รูปแบบเดียวกับ creator enrichment เดิม) ครอบคลุมพร้อมกัน 3 เอกสาร — ใบยืม, ใบรับคืน และใบนำส่ง — โดยไม่ต้องแก้ fallback chain ของแต่ละเทมเพลต และไม่เกิด N+1 query
+  - **Hardening ลายเซ็น/ชื่อผู้ขอเบิกของ `/withdrawals`**: เพิ่มโมดูล pure JS `src/lib/pdf-signatures.js` (`resolveWithdrawalRequester`, `resolveCheckoutBorrower`, `resolveDocumentNumber`) ให้ทน object/array/null และคงลำดับ fallback เดิมทั้งหมด — ผู้พิมพ์จะได้ลายเซ็นของตัวเองเฉพาะเมื่อ `requested_by === profile.id` เท่านั้น (กันการยืมลายเซ็นผิดคน)
+  - **เพิ่มเลขที่เอกสารในใบเบิกของ** (`MaterialWithdrawalPDF`): แสดง `เลขที่ใบเบิก : work_order_no` (fallback `#<id 8 ตัวแรก>`) และเพิ่มบรรทัด `ผู้ขอเบิก : <ชื่อ>`; เพิ่ม `work_order_no` ใน select ของ `History.jsx` เพื่อให้หน้า `/history` แสดงเลขที่เอกสารได้จริง (เดิม select ระบุคอลัมน์และไม่มีฟิลด์นี้)
+  - **หัวตารางซ้ำเมื่อขึ้นหน้าใหม่**: ใส่ `fixed` ให้ table header ของตาราง voucher 4 จุด (ใบเบิก, ใบนำส่ง, ใบยืม, ใบรับคืน) — ขยายจาก 2 จุดที่เอกสารระบุ เพราะเป็น layout ตระกูลเดียวกัน
+  - **เพิ่มสคริปต์พิสูจน์พฤติกรรม** `npm run verify:pdf` (`scripts/verify-pdf-signatures.mjs`, node ธรรมดา ไม่ spawn process จึงรันได้ในโหมด sandbox): 20 เคส ครอบคลุม object/array/null/legacy `signature_url`/เลขที่เอกสาร — ผลรันจริง 20/20 PASS
+  - **ไม่ใช้แนวทางในเอกสารข้อ 2.2 (ให้ modal โหลด `borrowerProfile`)**: แก้ที่ระดับหน้าแทน เพราะปุ่ม "ใบนำส่ง" ใน `CheckoutActiveList` ไม่ผ่าน modal และ `MaterialReturnPDF` มีบั๊กเดียวกัน
+  - **ไม่มีการเปลี่ยนสคีมา/RPC/RLS/migration**; ไม่แตะตรรกะลายเซ็นเจ้าหน้าที่ (กล่องขวา), ไม่แตะ logic ของ `MaterialReturnPDF`, ไม่แตะ i18n
+  - **ข้อจำกัดที่ทราบ**: สคริปต์พิสูจน์ได้เฉพาะตรรกะการเลือกชื่อ/ลายเซ็น/เลขที่ — ไม่ได้พิสูจน์ตำแหน่ง/สเกล/ฟอนต์ไทย/การตัดหน้า (ต้องตรวจด้วยตาในเบราว์เซอร์) และ `npm run test:email` (`node --test`) ยังรันไม่ได้ใน sandbox เพราะ `spawn EPERM`
+  - ปรับ version ของระบบเป็น `v1.13.1` (PATCH)
+
+## [2026-10-03 00:36] - v1.13.0
+
+- **Files Modified:** `src/lib/pdf-templates.jsx`, `src/lib/utils.js`, `src/pages/Withdrawals.jsx`, `src/components/withdrawals/WithdrawalOrdersList.jsx`, `src/components/withdrawals/WithdrawalDetailModal.jsx`, `src/components/checkouts/CheckoutDetailModal.jsx`, `src/components/checkouts/CheckoutActiveList.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **ฟีเจอร์ใหม่: เอกสาร "ใบนำส่งเบิกของ" (Material Dispatch Note)** สำหรับนำส่งที่ต้นทางโกดัง
+    - เพิ่ม `MaterialDispatchPDF` ใน `src/lib/pdf-templates.jsx` (ใช้ `styles` ชุดเดียวกับ `MaterialWithdrawalPDF`): หัวเอกสาร "ใบนำส่งเบิกของ" / badge `MATERIAL DISPATCH NOTE` / สำเนา "ต้นฉบับนำส่ง" / ตาราง 15 แถวมาตรฐาน / รองรับ 2 โหมดผ่าน prop `mode` (`withdrawal` | `checkout`)
+    - **กล่องลายเซ็นเจ้าหน้าที่ผู้จ่ายพัสดุเว้นว่างตามสเปก** — แสดง `(...................................................)` และ `วันที่: ....../....../...........` โดยไม่ใส่ชื่อและไม่ใส่รูปลายเซ็นดิจิทัล เพื่อให้เซ็นสดที่ต้นทาง (ช่องผู้ขอยืม/ผู้ขอเบิกยังแสดงชื่อและลายเซ็นปกติ)
+    - Normalize รายการ 2 โดเมนในเทมเพลตเดียว: ใบเบิกพัสดุใช้ `quantity`/`items.unit`; ใบยืมใช้ `quantity_borrowed`/`items.unit || 'ชิ้น'` + `serial_number`/`condition_on_checkout`/`notes`
+    - **แก้จุดที่แผนต้นทางคลาดเคลื่อน**: ใบเบิกพัสดุไม่มีคอลัมน์ `order_number` → ใช้ `work_order_no` (fallback `#<id 8 ตัว>` ให้ตรงกับเลขที่บนจอ); ฝั่ง checkout `order.profiles` คือ `created_by` ไม่ใช่ผู้ยืม → ใช้ `borrower_name` + `order.signature_url` ตาม `MaterialCheckoutPDF`
+  - **ปุ่มพิมพ์ใน UI**: `/withdrawals` ตาราง + โมดัลรายละเอียด และ `/checkouts` โมดัลรายละเอียด + รายการ Active — ธีม Sky + ไอคอน `FileSpreadsheet` ตามสเปก
+  - **Strict Policy (default-deny)**: ใบเบิกพัสดุ = `approved`/`completed`; ใบยืม = `active`/`partial_returned`/`overdue`/`completed` (สถานะ checkout ไม่มีค่า `approved` — การอนุมัติ+j่ายพัสดุเปลี่ยนสถานะเป็น `active` ตาม migration 74) → ค่าคงที่ `CHECKOUT_DISPATCH_STATUSES` ใน `src/lib/utils.js`; handler ทุกตัวมี guard ก่อนสร้าง PDF (กันเรียกผ่าน DevTools)
+  - ไฟล์ดาวน์โหลดชื่อ `Dispatch_Note_<เลขที่เอกสาร>.pdf` ผ่าน helper `toSafeFileToken` ใน `src/lib/utils.js` (ตัดอักขระต้องห้ามในชื่อไฟล์)
+  - `Withdrawals.jsx`: แยก `resolveWithdrawalItems()` ใช้ร่วมระหว่าง handler ใบเบิกเดิมกับใบนำส่ง (พฤติกรรม/ข้อความ toast เดิมไม่เปลี่ยน) และเพิ่มคีย์ i18n ฝั่งเบิก 5 คีย์ + ฝั่งยืม 4 คีย์ ครบ th/en
+  - **ไม่มีการเปลี่ยนสคีมา/RPC/migration/RLS** และไม่แตะ `MaterialWithdrawalPDF`/`MaterialCheckoutPDF`/`MaterialReturnPDF`/ระบบอีเมล
+  - **ข้อจำกัดที่ทราบ**: ปุ่ม/เทมเพลตนี้ยังไม่มีในหน้า `/history` (นอกขอบเขตของแผน); การซ่อนปุ่มเป็นเพียง UI gating ไม่ใช่ขอบเขตความปลอดภัย
+  - ปรับ version ของระบบเป็น `v1.13.0` (MINOR — ฟีเจอร์ใหม่ backward-compatible)
+
 ## [2026-10-02 23:50] - v1.12.7
 
 - **Files Modified:** `src/components/withdrawals/WithdrawalOrdersList.jsx`, `src/components/withdrawals/WithdrawalDetailModal.jsx`, `src/components/history/HistoryDataTable.jsx`, `src/pages/History.jsx`, `src/pages/Withdrawals.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `package.json`, `package-lock.json`, `CHANGELOG.md`, `docs/hide-rejected-withdrawal-pdf-button-plan.md`

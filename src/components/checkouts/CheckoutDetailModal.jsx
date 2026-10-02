@@ -4,10 +4,12 @@ import { Button } from '@/components/ui/button';
 import { 
   FileText, Clock, 
   User, Building2, Calendar, Phone, Layers, RotateCcw,
-  CalendarClock, ArrowRight, Infinity as InfinityIcon, XCircle, AlertTriangle
+  CalendarClock, ArrowRight, Infinity as InfinityIcon, XCircle, AlertTriangle, FileSpreadsheet
 } from 'lucide-react';
 import { pdf } from '@react-pdf/renderer';
 import { MaterialCheckoutPDF, MaterialReturnPDF } from '@/lib/checkout-pdf-templates';
+import { MaterialDispatchPDF } from '@/lib/pdf-templates';
+import { CHECKOUT_DISPATCH_STATUSES, toSafeFileToken } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 import { supabase } from '@/lib/supabase';
@@ -226,6 +228,30 @@ const CheckoutDetailModal = ({
     } catch (err) {
       console.error('PDF Error:', err);
       toast.error(t('checkouts.toasts.returnReceiptPdfFailed'));
+    } finally {
+      setGeneratingPdf(false);
+    }
+  };
+
+  const handleDownloadDispatchPDF = async () => {
+    if (!CHECKOUT_DISPATCH_STATUSES.includes(order.status)) {
+      toast.error(t('checkouts.toasts.dispatchNoteNotAllowed', 'Dispatch note is available only for approved or dispensed loans'));
+      return;
+    }
+
+    try {
+      setGeneratingPdf(true);
+      const blob = await pdf(<MaterialDispatchPDF order={order} items={checkoutItems} mode="checkout" />).toBlob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Dispatch_Note_${toSafeFileToken(order.order_number)}.pdf`;
+      link.click();
+      URL.revokeObjectURL(url);
+      toast.success(t('checkouts.toasts.dispatchNoteDownloaded', 'Dispatch note downloaded'));
+    } catch (err) {
+      console.error('PDF Error:', err);
+      toast.error(t('checkouts.toasts.dispatchNotePdfFailed', 'Failed to generate dispatch note PDF'));
     } finally {
       setGeneratingPdf(false);
     }
@@ -509,6 +535,20 @@ const CheckoutDetailModal = ({
               <FileText className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
               <span>{t('checkouts.printCheckoutSlip')}</span>
             </Button>
+
+            {CHECKOUT_DISPATCH_STATUSES.includes(order.status) && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={generatingPdf}
+                onClick={handleDownloadDispatchPDF}
+                className="rounded-lg h-9 text-xs gap-1.5 font-semibold text-sky-700 dark:text-sky-400 border-sky-500/30 hover:bg-sky-500/10 shadow-2xs cursor-pointer"
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+                <span className="hidden sm:inline">{t('checkouts.printDispatchPdf', 'พิมพ์ใบนำส่งเบิกของ (PDF)')}</span>
+              </Button>
+            )}
 
             {returnLogs.length > 0 && (
               <Button

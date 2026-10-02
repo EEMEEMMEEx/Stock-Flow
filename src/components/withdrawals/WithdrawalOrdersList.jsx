@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { 
   ArrowUpFromLine, CheckCircle2, XCircle, Clock, 
   AlertTriangle, FileText, Search, Copy, 
-  Check, Eye, Download, RotateCcw
+  Check, Eye, Download, RotateCcw, FileSpreadsheet
 } from 'lucide-react';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
@@ -23,6 +23,7 @@ const WithdrawalOrdersList = ({
   onOpenPosMode,
   onViewOrderDetails,
   onDownloadPDF,
+  onDownloadDispatchPDF,
   onApproveOrder,
   onOpenRejectModal,
   onCompleteOrder
@@ -344,17 +345,31 @@ const WithdrawalOrdersList = ({
                       </Button>
 
                       {(order.status === 'approved' || order.status === 'completed') && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="xs"
-                          title={t('withdrawals.printPdf', 'Print / Download Issue Slip (PDF)')}
-                          onClick={() => onDownloadPDF(order)}
-                          className="h-8 px-2.5 rounded-lg text-xs font-semibold text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 gap-1 cursor-pointer"
-                        >
-                          <Download className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-                          <span>PDF</span>
-                        </Button>
+                        <>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="xs"
+                            title={t('withdrawals.printPdf', 'Print / Download Issue Slip (PDF)')}
+                            onClick={() => onDownloadPDF(order)}
+                            className="h-8 px-2.5 rounded-lg text-xs font-semibold text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 gap-1 cursor-pointer"
+                          >
+                            <Download className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                            <span>PDF</span>
+                          </Button>
+
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="xs"
+                            title={t('withdrawals.printDispatchPdf', 'พิมพ์ใบนำส่งเบิกของ (PDF)')}
+                            onClick={() => onDownloadDispatchPDF(order)}
+                            className="h-8 px-2.5 rounded-lg text-xs font-semibold text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-800 hover:bg-sky-50 dark:hover:bg-sky-950/40 gap-1 cursor-pointer"
+                          >
+                            <FileSpreadsheet className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+                            <span>{t('withdrawals.dispatchNote', 'ใบนำส่ง')}</span>
+                          </Button>
+                        </>
                       )}
 
                       {order.status === 'pending' && (
