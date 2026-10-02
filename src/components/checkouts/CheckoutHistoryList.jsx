@@ -20,6 +20,7 @@ const CheckoutHistoryList = ({
   const completedOrders = useMemo(() => {
     return orders.filter(o => {
       if (o.status === 'completed' || o.actual_returned_date) return true;
+      if (o.status === 'rejected' || o.status === 'cancelled') return true;
       const items = o.checkout_items || [];
       if (items.length === 0) return false;
       const totalBorrowed = items.reduce((s, i) => s + Number(i.quantity_borrowed || 0), 0);
@@ -37,6 +38,7 @@ const CheckoutHistoryList = ({
       order.borrower_department?.toLowerCase().includes(q) ||
       order.projects?.name?.toLowerCase().includes(q) ||
       order.projects?.project_code?.toLowerCase().includes(q) ||
+      order.rejection_reason?.toLowerCase().includes(q) ||
       order.checkout_items?.some(i => i.items?.name?.toLowerCase().includes(q) || i.serial_number?.toLowerCase().includes(q))
     ));
   }, [completedOrders, searchQuery]);
@@ -83,6 +85,7 @@ const CheckoutHistoryList = ({
                 : (order.projects?.name || '-');
 
               const totalBorrowed = (order.checkout_items || []).reduce((s, i) => s + Number(i.quantity_borrowed || 0), 0);
+              const isRejected = order.status === 'rejected';
 
               return (
                 <div 
@@ -100,10 +103,17 @@ const CheckoutHistoryList = ({
                           {t('checkouts.noReturnDate')}
                         </span>
                       )}
-                      <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-emerald-500/15 text-emerald-600 border border-emerald-500/30 flex items-center gap-1">
-                        <CheckCircle2 className="w-3 h-3" />
-                        {t('checkouts.fullyReturned')} ({totalBorrowed} {totalBorrowed === 1 ? t('checkouts.unitCount_one') : t('checkouts.unitCount_other')})
-                      </span>
+                      {isRejected ? (
+                        <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-destructive/15 text-destructive border border-destructive/30 flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3 text-destructive" />
+                          {t('checkouts.statusRejected', 'ถูกปฏิเสธ')}
+                        </span>
+                      ) : (
+                        <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-emerald-500/15 text-emerald-600 border border-emerald-500/30 flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3" />
+                          {t('checkouts.fullyReturned')} ({totalBorrowed} {totalBorrowed === 1 ? t('checkouts.unitCount_one') : t('checkouts.unitCount_other')})
+                        </span>
+                      )}
                     </div>
 
                     <div className="flex flex-wrap items-center gap-3 text-xs text-foreground font-semibold">
@@ -117,24 +127,37 @@ const CheckoutHistoryList = ({
                       </span>
                     </div>
 
-                      <div className="text-[11px] text-muted-foreground pt-1 flex flex-wrap gap-1.5">
-                        {order.checkout_items?.map((item, idx) => (
-                          <span key={item.id || idx} className="bg-muted/60 px-2 py-0.5 rounded-md border border-border/40 font-mono text-[10px]">
-                            {item.items?.name || t('common.item')} ×{item.quantity_borrowed} {item.items?.unit || t('common.defaultUnit')}
-                            {item.serial_number && <span className="text-indigo-600 dark:text-indigo-400 font-semibold"> (S/N: {item.serial_number})</span>}
-                          </span>
-                        ))}
+                    {isRejected && order.rejection_reason && (
+                      <div className="p-2 rounded-lg bg-destructive/10 text-destructive text-[11px] font-medium border border-destructive/20">
+                        <span className="font-semibold mr-1">{t('checkouts.rejectionReasonLabel', 'เหตุผลที่ปฏิเสธ')}:</span>
+                        {order.rejection_reason}
                       </div>
+                    )}
+
+                    <div className="text-[11px] text-muted-foreground pt-1 flex flex-wrap gap-1.5">
+                      {order.checkout_items?.map((item, idx) => (
+                        <span key={item.id || idx} className="bg-muted/60 px-2 py-0.5 rounded-md border border-border/40 font-mono text-[10px]">
+                          {item.items?.name || t('common.item')} ×{item.quantity_borrowed} {item.items?.unit || t('common.defaultUnit')}
+                          {item.serial_number && <span className="text-indigo-600 dark:text-indigo-400 font-semibold"> (S/N: {item.serial_number})</span>}
+                        </span>
+                      ))}
+                    </div>
                   </div>
 
-                    <div className="flex items-center gap-3 shrink-0 self-end md:self-center">
+                  <div className="flex items-center gap-3 shrink-0 self-end md:self-center">
                     <div className="text-right text-xs">
                       <div className="text-muted-foreground text-[11px]">
                         {t('checkouts.borrowed')}: {order.checkout_date ? format(new Date(order.checkout_date), 'dd/MM/yyyy') : '-'}
                       </div>
-                      <div className="font-bold text-emerald-600 dark:text-emerald-400">
-                        {t('checkouts.returned')}: {order.actual_returned_date ? format(new Date(order.actual_returned_date), 'dd/MM/yyyy') : '-'}
-                      </div>
+                      {isRejected ? (
+                        <div className="font-semibold text-destructive text-[11px]">
+                          {t('checkouts.rejectedAt', 'ปฏิเสธเมื่อ')}: {order.rejected_at ? format(new Date(order.rejected_at), 'dd/MM/yyyy') : '-'}
+                        </div>
+                      ) : (
+                        <div className="font-bold text-emerald-600 dark:text-emerald-400">
+                          {t('checkouts.returned')}: {order.actual_returned_date ? format(new Date(order.actual_returned_date), 'dd/MM/yyyy') : '-'}
+                        </div>
+                      )}
                     </div>
 
                     <Button

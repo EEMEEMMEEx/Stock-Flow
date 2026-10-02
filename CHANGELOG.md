@@ -1,5 +1,56 @@
 # Changelog
 
+## [2026-10-02 07:31] - v1.11.0
+
+- **Files Modified:** `supabase/migrations/74_checkout_approval_workflow.sql`, `src/pages/Checkouts.jsx`, `src/components/checkouts/CheckoutPendingList.jsx`, `src/components/checkouts/CheckoutApproveModal.jsx`, `src/components/checkouts/CheckoutRejectModal.jsx`, `src/components/checkouts/CheckoutActiveList.jsx`, `src/components/checkouts/CheckoutHistoryList.jsx`, `src/components/checkouts/CheckoutDetailModal.jsx`, `src/lib/checkout-pdf-templates.jsx`, `src/components/checkouts/CheckoutPosTerminal.jsx`, `src/lib/notificationDispatcher.js`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `package.json`, `CHANGELOG.md`
+- **Changes:**
+  - เพิ่มระบบควบคุมและอนุมัติการยืมพัสดุ (Checkout Requisition & Approval Control Workflow) แยกการยื่นขอยืมตนเองกับการจ่ายเคาน์เตอร์ POS
+  - พนักงานทั่วไปสร้างรายการขอยืมพัสดุเป็นสถานะ `'pending'` (ยังไม่ตัดยอดสต็อกคงค้างทันที)
+  - เพิ่มแท็บ "รออนุมัติ" (`pendingTab`) พร้อมตัวนับแจ้งเตือน badge บนหน้า `/checkouts` สำหรับผู้ดูแล/หัวหน้างาน
+  - สร้างโมดอล `CheckoutApproveModal` เพื่อตรวจสอบรายการคงเหลือและกดยืนยันจ่ายของ พร้อมบันทึกหมายเหตุ
+  - สร้างโมดอล `CheckoutRejectModal` สำหรับระบุเหตุผลการปฏิเสธคำขอและแจ้งเตือนผู้ยืม
+  - สร้าง Atomic PostgreSQL RPC `approve_checkout_order` พร้อม `SELECT ... FOR UPDATE` แถวคำขอและ `stock_balance` เพื่อตัดสต็อก `checkout_out` และบันทึก `approved_by`, `approved_at`
+  - สร้าง Atomic PostgreSQL RPC `reject_checkout_order` บันทึก `rejected_by`, `rejected_at`, `rejection_reason`
+  - ปรับปรุง PDF ใบยืมพัสดุ (`MaterialCheckoutPDF`) แสดงชื่อและลายเซ็นดิจิทัลของผู้อนุมัติ/ผู้จ่ายพัสดุจริง (หากยังไม่อนุมัติจะแสดงเส้นประว่างรอลงนาม)
+  - เพิ่มระบบแจ้งเตือนอีเมลอัตโนมัติ (`dispatchCheckoutNotification`) รองรับ `checkout_submitted`, `checkout_approved`, และ `checkout_rejected`
+  - ปรับปรุงการแสดงผลใน `CheckoutActiveList`, `CheckoutHistoryList` และ `CheckoutDetailModal` ให้รองรับสถานะ `pending` และ `rejected`
+  - เพิ่มชุดคีย์ภาษา i18n จำนวน 48 คีย์ใน `src/i18n/locales/th.js` และ `src/i18n/locales/en.js` ผ่านการตรวจสอบ 100% Key Parity
+  - ปรับ version ของระบบเป็น `v1.11.0` (MINOR)
+
+## [2026-10-02 07:07] - v1.10.24
+
+- **Files Modified:** `AGENTS.md`, `~/.gemini/GEMINI.md`, `package.json`, `docs/rules-deduplication-plan.md`, `CHANGELOG.md`
+- **Changes:**
+  - ตรวจสอบและขจัดข้อกำหนด/กฎที่ซ้ำซ้อน (redundant rules) ระหว่าง Global Rules (`GEMINI.md`) และ Repo Operating Manual (`AGENTS.md`)
+  - ตัดการนิยาม SemVer (PATCH/MINOR/MAJOR) ออกจาก `AGENTS.md` โดยให้อ้างอิง Global Rules §10 เพื่อลดความซ้ำซ้อน
+  - ปรับปรุงข้อกำหนด UI Icons: ตัดการห้าม Emoji ซ้ำซ้อนใน `AGENTS.md` และคงเฉพาะไอคอนสแต็กของระบบ (`lucide-react`) พร้อมปรับ Global Rule §9 ให้ครอบคลุมทุกโปรเจกต์
+  - ปรับปรุง Critical Safety Rules ใน `AGENTS.md` ให้เน้นเฉพาะ Workspace Path Restriction และ Deletion Protocol ของ repo โดยอ้างอิงข้อห้ามทำลายล้างทั่วไปจาก Global Rules §2/§8
+  - ปรับปรุง Security Gate และ Database Concurrency ใน `AGENTS.md` ให้กระชับ มุ่งเน้น implementation และ named secrets ภายใน repo เท่านั้น
+  - ปรับ version ของระบบเป็น `v1.10.24` (PATCH)
+
+## [2026-10-02 07:05] - v1.10.23
+
+- **Files Modified:** `AGENTS.md`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - ปรับปรุงและปรับแต่งเอกสาร `AGENTS.md` ให้สอดคล้องกับสถาปัตยกรรมและมาตรฐานของโปรเจกต์ `Stock-Flow` อย่างสมบูรณ์
+  - ขจัดข้อมูลและกฎของระบบเดิม (`dtrs-app`, NestJS, Prisma/MySQL, MinIO) และแทนที่ด้วยมาตรฐานที่ถูกต้องของ Stock-Flow:
+    - ขอบเขตความปลอดภัยและ Path Restriction เฉพาะภายใน `Stock-Flow-app/`
+    - กฎความปลอดภัยด้านฐานข้อมูล Supabase: บังคับใช้ PostgreSQL Atomic RPCs (`SELECT ... FOR UPDATE`), Row Level Security (RLS) และ Concurrency Control ป้องกันการตัดสต็อกซ้ำซ้อน
+    - กฎการจัดการ Object Storage: บังคับใช้งาน Cloudflare R2 ผ่าน S3 Presigned URLs (Zero Egress) ห้ามเก็บ Base64 ลงฐานข้อมูล
+    - มาตรฐาน UI/UX: Tailwind CSS v4, Radix UI Primitives (`@/components/ui/*`), Strict Vector SVG Iconography (`lucide-react`) โดยปราศจาก Unicode Emojis
+    - มาตรฐาน i18n: ข้อความทุกจุดรองรับ TH/EN ผ่าน `useTranslation()` พร้อมคำสั่งตรวจ Parity
+    - รายการคำสั่ง Verification: `npm run lint`, `npm run build`, `npm run check:i18n`, `npm run test:email`, `npm run db:backup`
+  - ปรับ version ของระบบเป็น `v1.10.23` (PATCH)
+
+## [2026-09-22 16:52] - v1.10.22
+
+- **Files Modified:** `index.html`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - ตรวจสอบแล้วว่า `et.reportAllChanges` / `requestIdleCallback` ไม่ได้อยู่ใน source, dependency หรือ performance monitor ของแอป แต่เป็น injected script ของ Chrome DevTools Live Metrics / Soft Navigation ที่ทำงานใน `VM...` ระหว่าง runtime
+  - ลบ global `error` และ `unhandledrejection` suppressor ที่ดักคำว่า `startTime`/`reportAllChanges` ออก เพื่อไม่กลบ runtime error จริงของแอปและไม่สร้าง race-condition เพิ่มใน lifecycle ของหน้าเว็บ
+  - ยืนยันว่าแอปไม่มีจุดที่อ่าน `startTime` จาก performance entry เอง จึงไม่มี object ภายในที่ต้องเติม null-check; การแก้ต้นเหตุของ stack นี้ต้องอัปเดต DevTools/Chrome หรือปิด Soft Navigation Heuristics ในสภาพแวดล้อมพัฒนา
+  - ปรับ version เป็น `v1.10.22` (PATCH)
+
 ## [2026-09-22 16:04] - v1.10.21
 
 - **Files Modified:** `supabase/migrations/20260922090133_inventory_transfer_rbac_permissions.sql`, `supabase/migrations/20260922090230_restrict_inventory_transfer_rpc_execute.sql`, `src/pages/Items.jsx`, `src/contexts/AuthProvider.jsx`, `src/components/roles/PermissionManagementModal.jsx`, `src/pages/Manual.jsx`, `src/i18n/locales/en.js`, `src/i18n/locales/th.js`, `package.json`, `package-lock.json`, `README.md`, `src/landing/data/landing-translations.js`, `CHANGELOG.md`

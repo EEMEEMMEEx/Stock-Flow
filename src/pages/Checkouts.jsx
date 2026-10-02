@@ -11,18 +11,23 @@ import { useTranslation } from '@/i18n';
 
 import CheckoutPosTerminal from '@/components/checkouts/CheckoutPosTerminal';
 import CheckoutActiveList from '@/components/checkouts/CheckoutActiveList';
+import CheckoutPendingList from '@/components/checkouts/CheckoutPendingList';
 import CheckoutReturnModal from '@/components/checkouts/CheckoutReturnModal';
 import CheckoutDetailModal from '@/components/checkouts/CheckoutDetailModal';
 import CheckoutExtendModal from '@/components/checkouts/CheckoutExtendModal';
 import CheckoutHistoryList from '@/components/checkouts/CheckoutHistoryList';
+import CheckoutApproveModal from '@/components/checkouts/CheckoutApproveModal';
+import CheckoutRejectModal from '@/components/checkouts/CheckoutRejectModal';
+import { dispatchCheckoutNotification } from '@/lib/notificationDispatcher';
 
 const Checkouts = () => {
-  const { can } = useAuth();
+  const { can, user, profile, isAdmin, isSuperAdmin } = useAuth();
   const { t } = useTranslation();
 
   const canCreate = can('checkouts.create');
   const canReturn = can('checkouts.return');
   const canExtend = can('checkouts.extend') || can('checkouts.update');
+  const canApprove = can('checkouts.approve') || isAdmin || isSuperAdmin;
 
   // Navigation Tabs: 'active' | 'pos' | 'history'
   const [activeTab, setActiveTab] = useState('active');
@@ -41,6 +46,15 @@ const Checkouts = () => {
   const [isExtendModalOpen, setIsExtendModalOpen] = useState(false);
   const [selectedOrderForDetail, setSelectedOrderForDetail] = useState(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+
+  // Approval & Rejection states
+  const [selectedOrderForApprove, setSelectedOrderForApprove] = useState(null);
+  const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
+  const [approving, setApproving] = useState(false);
+
+  const [selectedOrderForReject, setSelectedOrderForReject] = useState(null);
+  const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+  const [rejecting, setRejecting] = useState(false);
 
   // Fetch all checkout orders with line items
   const fetchCheckoutData = useCallback(async () => {
@@ -208,9 +222,90 @@ const Checkouts = () => {
     setIsDetailModalOpen(true);
   };
 
+  const handleOpenApproveModal = (order) => {
+    setSelectedOrderForApprove(order);
+    setIsApproveModalOpen(true);
+  };
+
+  const handleOpenRejectModal = (order) => {
+    setSelectedOrderForReject(order);
+    setIsRejectModalOpen(true);
+  };
+
+  const handleConfirmApprove = async (order, notes) => {
+    try {
+      setApproving(true);
+      const { data, error } = await supabase.rpc('approve_checkout_order', {
+        p_payload: {
+          order_id: order.id,
+          notes: notes || null
+        }
+      });
+
+      if (error) throw error;
+
+      toast.success(data?.message || t('checkouts.approveSuccess', 'อนุมัติและจ่ายพัสดุเรียบร้อยแล้ว'));
+      setIsApproveModalOpen(false);
+      setSelectedOrderForApprove(null);
+
+      // Async notification dispatch
+      dispatchCheckoutNotification({
+        eventType: 'checkout_approved',
+        orderId: order.id,
+        orderData: order,
+        approverName: profile?.full_name || user?.email || 'Admin'
+      }).catch(err => console.warn('Checkout approval notification notice:', err));
+
+      await fetchCheckoutData();
+    } catch (err) {
+      console.error('Approve checkout error:', err);
+      toast.error(err.message || t('checkouts.approveFailed', 'เกิดข้อผิดพลาดในการอนุมัติคำขอ'));
+    } finally {
+      setApproving(false);
+    }
+  };
+
+  const handleConfirmReject = async (order, rejectionReason) => {
+    try {
+      setRejecting(true);
+      const { data, error } = await supabase.rpc('reject_checkout_order', {
+        p_payload: {
+          order_id: order.id,
+          rejection_reason: rejectionReason
+        }
+      });
+
+      if (error) throw error;
+
+      toast.success(data?.message || t('checkouts.rejectSuccess', 'ปฏิเสธคำขอยืมเรียบร้อยแล้ว'));
+      setIsRejectModalOpen(false);
+      setSelectedOrderForReject(null);
+
+      // Async notification dispatch
+      dispatchCheckoutNotification({
+        eventType: 'checkout_rejected',
+        orderId: order.id,
+        orderData: order,
+        approverName: profile?.full_name || user?.email || 'Admin',
+        rejectionReason
+      }).catch(err => console.warn('Checkout rejection notification notice:', err));
+
+      await fetchCheckoutData();
+    } catch (err) {
+      console.error('Reject checkout error:', err);
+      toast.error(err.message || t('checkouts.rejectFailed', 'เกิดข้อผิดพลาดในการปฏิเสธคำขอ'));
+    } finally {
+      setRejecting(false);
+    }
+  };
+
+  const pendingOrdersCount = useMemo(() => {
+    return orders.filter(o => o.status === 'pending').length;
+  }, [orders]);
+
   const activeOrdersCount = useMemo(() => {
     return orders.filter(o => {
-      if (o.status === 'completed' || o.actual_returned_date) return false;
+      if (o.status === 'completed' || o.status === 'pending' || o.status === 'rejected' || o.status === 'cancelled' || o.actual_returned_date) return false;
       const items = o.checkout_items || [];
       if (items.length === 0) return true;
       const totalBorrowed = items.reduce((s, i) => s + Number(i.quantity_borrowed || 0), 0);
@@ -265,7 +360,24 @@ const Checkouts = () => {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="flex items-center p-1 bg-muted/50 rounded-lg border border-border w-fit">
+      <div className="flex items-center p-1 bg-muted/50 rounded-lg border border-border w-fit flex-wrap gap-1">
+        <button
+          type="button"
+          onClick={() => setActiveTab('pending')}
+          className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md text-xs font-semibold transition-colors cursor-pointer select-none ${activeTab === 'pending'
+              ? 'bg-background text-foreground shadow-xs'
+              : 'text-muted-foreground hover:text-foreground'
+            }`}
+        >
+          <Clock className="w-3.5 h-3.5 text-amber-500" />
+          <span>{t('checkouts.pendingTab', 'รออนุมัติ')}</span>
+          {pendingOrdersCount > 0 && (
+            <span className="px-1.5 py-0.2 rounded-md bg-amber-500/20 text-amber-700 dark:text-amber-300 text-[10px] font-mono font-bold">
+              {pendingOrdersCount}
+            </span>
+          )}
+        </button>
+
         <button
           type="button"
           onClick={() => setActiveTab('active')}
@@ -274,7 +386,7 @@ const Checkouts = () => {
               : 'text-muted-foreground hover:text-foreground'
             }`}
         >
-          <Clock className="w-3.5 h-3.5" />
+          <RotateCcw className="w-3.5 h-3.5" />
           <span>{t('checkouts.activeTab')}</span>
           {activeOrdersCount > 0 && (
             <span className="px-1.5 py-0.2 rounded-md bg-primary/15 text-primary text-[10px] font-mono font-bold">
@@ -311,6 +423,17 @@ const Checkouts = () => {
       </div>
 
       {/* Tab Content */}
+      {activeTab === 'pending' && (
+        <CheckoutPendingList
+          orders={orders}
+          loading={loading}
+          canApprove={canApprove}
+          onOpenApproveModal={handleOpenApproveModal}
+          onOpenRejectModal={handleOpenRejectModal}
+          onOpenDetailModal={handleOpenDetailModal}
+        />
+      )}
+
       {activeTab === 'active' && (
         <CheckoutActiveList
           orders={orders}
@@ -328,9 +451,13 @@ const Checkouts = () => {
           projects={projects}
           items={items}
           rawBalances={rawBalances}
-          onCheckoutSuccess={() => {
+          onCheckoutSuccess={(data) => {
             fetchCheckoutData();
-            setActiveTab('active');
+            if (data?.status === 'pending') {
+              setActiveTab('pending');
+            } else {
+              setActiveTab('active');
+            }
           }}
         />
       )}
@@ -342,6 +469,30 @@ const Checkouts = () => {
           onOpenDetailModal={handleOpenDetailModal}
         />
       )}
+
+      {/* Approve Modal */}
+      <CheckoutApproveModal
+        isOpen={isApproveModalOpen}
+        onClose={() => {
+          setIsApproveModalOpen(false);
+          setSelectedOrderForApprove(null);
+        }}
+        order={selectedOrderForApprove}
+        onConfirmApprove={handleConfirmApprove}
+        loading={approving}
+      />
+
+      {/* Reject Modal */}
+      <CheckoutRejectModal
+        isOpen={isRejectModalOpen}
+        onClose={() => {
+          setIsRejectModalOpen(false);
+          setSelectedOrderForReject(null);
+        }}
+        order={selectedOrderForReject}
+        onConfirmReject={handleConfirmReject}
+        loading={rejecting}
+      />
 
       {/* Return Modal */}
       <CheckoutReturnModal

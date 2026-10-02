@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { 
-  FileText, Download, CheckCircle2, Clock, 
+  FileText, Clock, 
   User, Building2, Calendar, Phone, Layers, RotateCcw,
-  CalendarClock, ArrowRight, Infinity as InfinityIcon
+  CalendarClock, ArrowRight, Infinity as InfinityIcon, XCircle
 } from 'lucide-react';
 import { pdf } from '@react-pdf/renderer';
 import { MaterialCheckoutPDF, MaterialReturnPDF } from '@/lib/checkout-pdf-templates';
@@ -28,6 +28,7 @@ const CheckoutDetailModal = ({
   const [extensionLogs, setExtensionLogs] = useState([]);
   const [generatingPdf, setGeneratingPdf] = useState(false);
   const [staffProfile, setStaffProfile] = useState(null);
+  const [approverProfile, setApproverProfile] = useState(null);
 
   useEffect(() => {
     if (order?.id && isOpen) {
@@ -35,6 +36,24 @@ const CheckoutDetailModal = ({
       fetchExtensionLogs(order.id);
     }
   }, [order?.id, isOpen]);
+
+  // Resolve approver profile (officer who dispensed equipment)
+  useEffect(() => {
+    if (!order?.approved_by || !isOpen) {
+      setApproverProfile(null);
+      return;
+    }
+    supabase
+      .from('profiles')
+      .select('id, full_name, email, role, signature_url')
+      .eq('id', order.approved_by)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (!error && data) {
+          setApproverProfile(data);
+        }
+      });
+  }, [order?.approved_by, isOpen]);
 
   // Resolve warehouse officer profile for the checkout transaction
   useEffect(() => {
@@ -122,7 +141,7 @@ const CheckoutDetailModal = ({
   const handleDownloadCheckoutPDF = async () => {
     try {
       setGeneratingPdf(true);
-      const blob = await pdf(<MaterialCheckoutPDF order={order} staffProfile={staffProfile} />).toBlob();
+      const blob = await pdf(<MaterialCheckoutPDF order={order} staffProfile={approverProfile || staffProfile} />).toBlob();
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -186,7 +205,17 @@ const CheckoutDetailModal = ({
             </div>
 
             {/* Status Badge */}
-            {isOrderCompleted ? (
+            {order.status === 'pending' ? (
+              <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5" />
+                <span>{t('checkouts.statusPending', 'รอตรวจสอบ')}</span>
+              </span>
+            ) : order.status === 'rejected' ? (
+              <span className="px-3 py-1 rounded-full text-xs font-bold bg-destructive/15 text-destructive border border-destructive/30 flex items-center gap-1.5">
+                <XCircle className="w-3.5 h-3.5" />
+                <span>{t('checkouts.statusRejected', 'ถูกปฏิเสธ')}</span>
+              </span>
+            ) : isOrderCompleted ? (
               <StatusBadge status="completed" size="lg" />
             ) : order.status === 'partial_returned' || totalReturned > 0 ? (
               <StatusBadge status="pending" size="lg" title={`${t('checkouts.processing')} (${totalReturned}/${totalBorrowed})`} />
@@ -197,6 +226,35 @@ const CheckoutDetailModal = ({
         </DialogHeader>
 
         <div className="space-y-4 max-h-110 overflow-y-auto pr-1">
+          {/* Pending / Rejection Alert Banners */}
+          {order.status === 'pending' && (
+            <div className="p-3 rounded-xl bg-amber-500/10 text-amber-800 dark:text-amber-300 border border-amber-500/20 text-xs flex items-center gap-2.5">
+              <Clock className="w-4 h-4 shrink-0 text-amber-600" />
+              <div>
+                <span className="font-semibold block">{t('checkouts.pendingApprovalNotice', 'คำขอยืมพัสดุนี้อยู่ระหว่างรอเจ้าหน้าที่ตรวจสอบและอนุมัติจ่ายของ')}</span>
+                <span className="text-[11px] text-amber-700/80 dark:text-amber-400/80">{t('checkouts.pendingStockNotice', 'สต็อกคงเหลือจะถูกตัดเมื่อเจ้าหน้าที่คลังตรวจสอบและยืนยันจ่ายพัสดุ')}</span>
+              </div>
+            </div>
+          )}
+
+          {order.status === 'rejected' && (
+            <div className="p-3 rounded-xl bg-destructive/10 text-destructive border border-destructive/20 text-xs space-y-1">
+              <div className="flex items-center gap-2 font-semibold">
+                <XCircle className="w-4 h-4 shrink-0" />
+                <span>{t('checkouts.rejectedNotice', 'คำขอนี้ถูกปฏิเสธ')}</span>
+                {order.rejected_at && (
+                  <span className="text-[11px] font-normal text-muted-foreground">
+                    ({format(new Date(order.rejected_at), 'dd/MM/yyyy HH:mm')})
+                  </span>
+                )}
+              </div>
+              {order.rejection_reason && (
+                <p className="text-xs pl-6 text-foreground font-medium">
+                  <span className="text-muted-foreground">{t('checkouts.rejectionReasonLabel', 'เหตุผล')}:</span> {order.rejection_reason}
+                </p>
+              )}
+            </div>
+          )}
           {/* Info Card */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 rounded-xl bg-muted/30 border border-border text-xs">
             <div className="space-y-1.5">
@@ -211,6 +269,15 @@ const CheckoutDetailModal = ({
               {order.borrower_phone && (
                 <div className="text-muted-foreground pl-5.5 flex items-center gap-1">
                   <Phone className="w-3 h-3" /> {order.borrower_phone}
+                </div>
+              )}
+              {order.approved_by && (
+                <div className="text-muted-foreground pl-5.5 flex items-center gap-1">
+                  <span>{t('checkouts.approvedBy')}:</span>
+                  <strong className="text-foreground">{approverProfile?.full_name || 'Admin'}</strong>
+                  {order.approved_at && (
+                    <span className="text-[10px] text-muted-foreground">({format(new Date(order.approved_at), 'dd/MM/yyyy HH:mm')})</span>
+                  )}
                 </div>
               )}
             </div>
@@ -403,7 +470,7 @@ const CheckoutDetailModal = ({
                 <span>{t('checkouts.indefiniteLoan')}</span>
               </div>
             ) : (
-              !isOrderCompleted && remaining > 0 && onOpenExtendModal && canExtend && (
+              !isOrderCompleted && remaining > 0 && order.status !== 'pending' && order.status !== 'rejected' && onOpenExtendModal && canExtend && (
                 <Button
                   type="button"
                   variant="outline"
@@ -420,7 +487,7 @@ const CheckoutDetailModal = ({
               )
             )}
 
-            {!isOrderCompleted && remaining > 0 && onOpenReturnModal && canReturn && (
+            {!isOrderCompleted && remaining > 0 && order.status !== 'pending' && order.status !== 'rejected' && onOpenReturnModal && canReturn && (
               <Button
                 type="button"
                 size="sm"

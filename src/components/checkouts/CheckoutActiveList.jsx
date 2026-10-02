@@ -62,8 +62,8 @@ const CheckoutActiveList = ({
   const filteredOrders = useMemo(() => {
     return enrichedOrders.filter(order => {
       // CheckoutActiveList is exclusively for active (uncompleted) loans with remaining items.
-      // Fully returned orders belong to CheckoutHistoryList.
-      if (order.isCompleted) return false;
+      // Pending requisitions belong to CheckoutPendingList, and completed/rejected to CheckoutHistoryList.
+      if (order.isCompleted || order.status === 'pending' || order.status === 'rejected' || order.status === 'cancelled') return false;
 
       // Filter by status
       if (statusFilter === 'overdue' && !order.isOverdue) return false;
@@ -85,7 +85,7 @@ const CheckoutActiveList = ({
   }, [enrichedOrders, statusFilter, searchQuery]);
 
   // Overall KPI metrics (calculated strictly from active loans)
-  const activeOrders = enrichedOrders.filter(o => !o.isCompleted);
+  const activeOrders = enrichedOrders.filter(o => !o.isCompleted && o.status !== 'pending' && o.status !== 'rejected' && o.status !== 'cancelled');
   const overdueCount = activeOrders.filter(o => o.isOverdue).length;
   const dueSoonCount = activeOrders.filter(o => o.isDueSoon).length;
   const activeLoansCount = activeOrders.length;

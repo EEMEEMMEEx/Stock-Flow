@@ -15,6 +15,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n';
 import { ProjectLocationSelector } from '@/components/common/ProjectLocationSelector';
 import SignatureRequiredModal from '@/components/common/SignatureRequiredModal';
+import { dispatchCheckoutNotification } from '@/lib/notificationDispatcher';
 
 const CheckoutPosTerminal = ({
   projects = [],
@@ -356,7 +357,22 @@ const CheckoutPosTerminal = ({
 
       if (error) throw error;
 
-      toast.success(t('checkouts.checkoutOrderCreated', {
+      // If order is pending requisition (submitted by staff), dispatch email notification to Admins
+      if (data?.status === 'pending' || (!isAdmin && !isSuperAdmin)) {
+        dispatchCheckoutNotification({
+          eventType: 'checkout_submitted',
+          orderId: data?.order_id,
+          orderData: {
+            ...payload,
+            id: data?.order_id,
+            order_number: data?.order_number,
+            projects: projects.find(p => p.id === selectedProjectId),
+            checkout_items: expandedItems
+          }
+        }).catch(err => console.warn('Checkout submitted notification notice:', err));
+      }
+
+      toast.success(data?.message || t('checkouts.checkoutOrderCreated', {
         orderNo: data?.order_number || ''
       }));
       setCart([]);

@@ -253,21 +253,24 @@ export const MaterialCheckoutPDF = ({ order, staffProfile }) => {
     || order?.borrower_profile?.full_name
     || '...................................................';
 
-  // Resolve warehouse officer (staff) who created/processed the checkout transaction at the terminal
+  // Resolve warehouse officer (staff) who approved and dispensed the checkout items
   // Resiliently handles:
-  // 1) order.profiles as an object { full_name }
-  // 2) order.profiles as an array [{ full_name }] (Supabase PostgREST 1-to-many embedding)
-  // 3) order.creator / order.created_by_profile / order.staff
-  // 4) explicit staffProfile prop passed from checkout detail modal / workflow
+  // 1) order.approved_by and approver profile passed via staffProfile or order.approver
+  // 2) fallback to creatorProfile if order is active/direct checkout
+  // 3) if pending/unapproved, shows empty underline for manual signature
+  const isApproved = Boolean(order?.approved_by || order?.status === 'active' || order?.status === 'completed' || order?.status === 'partial_returned');
+
   const creatorProfile = Array.isArray(order?.profiles)
     ? order.profiles[0]
-    : (order?.profiles || order?.creator || order?.created_by_profile || order?.staff || staffProfile);
+    : (order?.profiles || order?.creator || order?.created_by_profile || order?.staff);
 
-  const staffDisplayName = creatorProfile?.full_name
-    || creatorProfile?.name
-    || order?.created_by_name
-    || order?.staff_name
-    || (typeof staffProfile === 'string' ? staffProfile : staffProfile?.full_name)
+  const officerProfile = isApproved
+    ? (staffProfile || order?.approver || order?.approver_profile || creatorProfile)
+    : (order?.status === 'pending' || order?.status === 'rejected' ? null : staffProfile);
+
+  const staffDisplayName = officerProfile?.full_name
+    || officerProfile?.name
+    || (typeof staffProfile === 'string' ? staffProfile : null)
     || '...................................................';
 
   // Resolve digital signature images
@@ -277,10 +280,9 @@ export const MaterialCheckoutPDF = ({ order, staffProfile }) => {
     || order?.borrower_profile?.signature_url
     || null;
 
-  const staffSignatureUrl = creatorProfile?.signature_url
-    || staffProfile?.signature_url
-    || order?.staff_signature_url
-    || null;
+  const staffSignatureUrl = isApproved
+    ? (officerProfile?.signature_url || (staffProfile && typeof staffProfile === 'object' ? staffProfile.signature_url : null))
+    : null;
 
   return (
     <Document>

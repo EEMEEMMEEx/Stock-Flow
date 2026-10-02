@@ -410,3 +410,175 @@ export const dispatchLowStockAlertNotification = async ({
     return { success: false, error: err.message };
   }
 };
+
+/**
+ * Dispatches transactional email notifications for material checkout workflow events:
+ * - checkout_submitted: Notify Admin/Supervisor when a staff submits a new pending checkout request
+ * - checkout_approved: Notify borrower when their checkout request is approved & dispensed
+ * - checkout_rejected: Notify borrower when their checkout request is rejected
+ */
+export const dispatchCheckoutNotification = async ({
+  eventType,
+  orderId,
+  orderData: preloadedOrder = null,
+  approverName = '',
+  rejectionReason = ''
+}) => {
+  if (!eventType || !orderId) {
+    return { success: false, reason: 'INVALID_ARGUMENTS' };
+  }
+
+  const cacheKey = `${eventType}:${orderId}`;
+  if (dispatchedEventsCache.has(cacheKey)) {
+    return { success: true, deduplicated: true };
+  }
+
+  try {
+    // 1. Fetch system settings
+    const { data: settingsData } = await supabase.rpc('admin_get_system_settings');
+    const notificationEvents = settingsData?.notification_events || {};
+    const branding = settingsData?.branding || {};
+
+    const eventConfig = notificationEvents[eventType];
+    if (eventConfig && eventConfig.enabled === false) {
+      return { success: true, skipped: 'EVENT_DISABLED' };
+    }
+
+    // 2. Fetch full checkout order details if not preloaded
+    let order = preloadedOrder;
+    if (!order || !order.projects || !order.checkout_items) {
+      const { data: fetchedOrder, error: orderErr } = await supabase
+        .from('checkout_orders')
+        .select(`
+          *,
+          projects:project_id (id, name, project_code),
+          borrower:borrower_id (id, email, full_name, role),
+          checkout_items (
+            id, quantity_borrowed, serial_number, condition_on_checkout,
+            items:item_id (id, name, sku, unit)
+          )
+        `)
+        .eq('id', orderId)
+        .maybeSingle();
+
+      if (orderErr || !fetchedOrder) {
+        console.warn('[NotificationDispatcher] Checkout order fetch error:', orderErr?.message);
+        return { success: false, reason: 'ORDER_NOT_FOUND' };
+      }
+      order = fetchedOrder;
+    }
+
+    // 3. Format line items
+    const rawItems = order.checkout_items || [];
+    const items = rawItems.map(ci => ({
+      name: ci.items?.name || 'วัสดุ/อุปกรณ์',
+      sku: ci.items?.sku || ci.serial_number || '-',
+      unit: ci.items?.unit || 'ชิ้น',
+      requested_qty: ci.quantity_borrowed,
+      approved_qty: ci.quantity_borrowed,
+      available_stock: '-'
+    }));
+
+    // 4. Resolve recipient emails
+    const targetRoles = eventConfig?.roles || [];
+    const recipientEmails = new Set();
+
+    // Include borrower email for approval / rejection events
+    const borrowerEmail = order.borrower?.email || order.borrower_email;
+    if (borrowerEmail && ['checkout_approved', 'checkout_rejected'].includes(eventType)) {
+      recipientEmails.add(borrowerEmail.trim());
+    }
+
+    // Include Admin/Supervisor recipients for submitted events or role targets
+    const adminRoles = targetRoles.filter(r => r !== 'STAFF');
+    if (adminRoles.length > 0 || eventType === 'checkout_submitted') {
+      const searchRoles = adminRoles.length > 0 ? adminRoles : ['ADMIN', 'SUPERVISOR', 'SUPER'];
+      const { data: roleUsers } = await supabase
+        .from('profiles')
+        .select('email, role')
+        .in('role', searchRoles);
+
+      if (roleUsers?.length) {
+        roleUsers.forEach(u => {
+          if (u.email) recipientEmails.add(u.email.trim());
+        });
+      }
+    }
+
+    if (eventConfig?.to_extra) {
+      String(eventConfig.to_extra).split(',').forEach(e => {
+        const trimmed = e.trim();
+        if (trimmed) recipientEmails.add(trimmed);
+      });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const validRecipients = [...recipientEmails].filter(e => emailRegex.test(e));
+
+    if (!validRecipients.length) {
+      return { success: true, skipped: 'NO_VALID_RECIPIENTS' };
+    }
+
+    // 5. Build template data payload
+    const totalQuantity = items.reduce((sum, item) => sum + (Number(item.requested_qty) || 0), 0);
+    const emailData = {
+      event_type: eventType,
+      app_name: branding.app_name || 'StockFlow',
+      user_name: order.borrower_name || 'ผู้ขอยืม',
+      requester_name: order.borrower_name || 'ผู้ขอยืม',
+      requester_email: order.borrower?.email || '',
+      request_no: order.order_number || `CHK-${order.id?.slice(0, 8).toUpperCase()}`,
+      project_name: order.projects?.name || 'โครงการทั่วไป',
+      project_code: order.projects?.project_code || '-',
+      request_date: formatThaiDateTime(order.checkout_date || order.created_at),
+      approved_date: formatThaiDateTime(order.approved_at || new Date().toISOString()),
+      rejected_date: formatThaiDateTime(order.rejected_at || new Date().toISOString()),
+      status: eventType === 'checkout_approved' ? 'อนุมัติจ่ายพัสดุแล้ว' : (eventType === 'checkout_rejected' ? 'ไม่ได้รับการอนุมัติ' : 'รอตรวจสอบและอนุมัติ'),
+      fulfillment_status: order.status || 'รอพิจารณา',
+      item_count: `${items.length} รายการ`,
+      total_quantity: `${totalQuantity} หน่วย`,
+      purpose: order.purpose || order.notes || '-',
+      note: order.notes || '',
+      approved_by: approverName || order.approved_by_name || 'เจ้าหน้าที่ผู้จ่ายพัสดุ',
+      rejected_by: approverName || order.rejected_by_name || 'เจ้าหน้าที่',
+      rejection_reason: rejectionReason || order.rejection_reason || '',
+      action_url: branding.public_base_url ? `${branding.public_base_url}/checkouts` : 'https://stockflowth.online/checkouts',
+      items
+    };
+
+    const html = renderEmailHtml({
+      branding,
+      template: eventConfig || {},
+      data: emailData
+    });
+
+    const plainText = `[${emailData.app_name}] แจ้งเตือนรายการคำขอยืมอุปกรณ์ ${emailData.request_no}\nโครงการ: ${emailData.project_name}\nผู้ขอยืม: ${emailData.requester_name}\nสถานะ: ${emailData.status}\nจำนวน: ${emailData.item_count}\nเปิดดูรายละเอียด: ${emailData.action_url}`;
+
+    const defaultSubject = eventType === 'checkout_approved'
+      ? `[${emailData.app_name}] คำขอยืม ${emailData.request_no} ได้รับการอนุมัติจ่ายของแล้ว (${emailData.project_name})`
+      : (eventType === 'checkout_rejected'
+        ? `[${emailData.app_name}] คำขอยืม ${emailData.request_no} ไม่ได้รับการอนุมัติ (${emailData.project_name})`
+        : `[${emailData.app_name}] มีคำขอยืมใหม่ ${emailData.request_no} รอการอนุมัติ (${emailData.project_name})`);
+
+    const subject = eventConfig?.subject
+      ? eventConfig.subject.replace(/\{\{\s*request_no\s*\}\}/g, emailData.request_no).replace(/\{\{\s*project_name\s*\}\}/g, emailData.project_name)
+      : defaultSubject;
+
+    const ccList = eventConfig?.cc_extra ? String(eventConfig.cc_extra).split(',').map(s => s.trim()).filter(e => emailRegex.test(e)) : [];
+
+    await sendStockFlowEmail({
+      to: validRecipients,
+      cc: ccList.length ? ccList : undefined,
+      subject,
+      html,
+      text: plainText,
+      actionUrl: emailData.action_url
+    });
+
+    dispatchedEventsCache.add(cacheKey);
+    return { success: true, dispatched: true, recipientCount: validRecipients.length };
+  } catch (err) {
+    console.error('[NotificationDispatcher] dispatchCheckoutNotification error:', err);
+    return { success: false, error: err.message };
+  }
+};
