@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-10-02 14:15] - v1.11.4
+
+- **Files Modified:** `src/pages/Items.jsx`, `src/pages/Withdrawals.jsx`, `src/components/withdrawals/WithdrawalPosTerminal.jsx`, `src/components/withdrawals/WithdrawalItemCard.jsx`, `src/pages/Checkouts.jsx`, `src/components/checkouts/CheckoutPosTerminal.jsx`, `docs/mobile-responsive-overhaul-plan.md`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **Items Management (Phase 2):** เพิ่ม Responsive Dual-View ให้กับหน้าพัสดุ โดยคงตาราง 8 คอลัมน์แบบเดิม 100% บน Desktop (`hidden md:block`) และแสดงผลในรูปแบบ Mobile Card List View ที่สวยงามบน Mobile (`block md:hidden`) พร้อม Thumbnail 48x48px, รหัส SKU/Model, Badge คลัง/หมวดหมู่ และ Action Buttons แถวล่างขนาดสัมผัส ≥44px ไร้การเลื่อนแนวนอน
+  - **Withdrawals & POS Terminal (Phase 2):** ปรับปรุง Floating Cart Bar ให้แนบชิดขอบล่างของหน้าจอพร้อม Safe-Area Inset (`bottom-0` + `pb-[max(1rem,env(safe-area-inset-bottom))]` + `backdrop-blur-md`), เพิ่ม Padding ล่าง `pb-28 lg:pb-0` ป้องกันแถบตะกร้าลอยบังรายการสินค้า, ขยายปุ่ม Stepper บวก-ลบ และ Pills ตัวกรองสถานะสต็อกให้แตะได้สะดวกด้วยนิ้วหัวแม่มือ
+  - **Checkouts & Loans (Phase 2):** ปรับปรุงแถบแท็บการยืม-คืนพัสดุบนมือถือให้เป็น 2x2 Segmented Grid เต็มความกว้างหน้าจอ โดยมีพื้นที่สัมผัสปุ่ม `min-h-[44px]`, ปรับปรุง Stepper บวก-ลบ และปุ่มนำส่งคำขอใน POS Terminal ให้รองรับ Mobile Touch Target
+  - **iOS Safari Auto-Zoom Prevention:** ปรับปรุงขนาดฟอนต์ของช่องค้นหาและอินพุตบนมือถือให้เป็น `text-base sm:text-xs` ป้องกันเบราว์เซอร์ iOS ซูมหน้าจออัตโนมัติขณะกรอกข้อมูล
+  - ปรับ version ของระบบเป็น `v1.11.4` (PATCH)
+
 ## [2026-10-02 14:05] - v1.11.3
 
 - **Files Modified:** `src/components/layout/Sidebar.jsx`, `src/components/layout/Topbar.jsx`, `src/components/layout/AppFooter.jsx`, `src/components/layout/PageWrapper.jsx`, `docs/mobile-responsive-overhaul-plan.md`, `package.json`, `package-lock.json`, `CHANGELOG.md`

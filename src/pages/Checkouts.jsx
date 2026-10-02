@@ -360,11 +360,11 @@ const Checkouts = () => {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="flex items-center p-1 bg-muted/50 rounded-lg border border-border w-fit flex-wrap gap-1">
+      <div className="w-full sm:w-fit grid grid-cols-2 sm:flex sm:items-center p-1 bg-muted/50 rounded-xl border border-border gap-1">
         <button
           type="button"
           onClick={() => setActiveTab('pending')}
-          className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md text-xs font-semibold transition-colors cursor-pointer select-none ${activeTab === 'pending'
+          className={`flex items-center justify-center sm:justify-start gap-2 px-3.5 py-2 sm:py-1.5 min-h-[44px] sm:min-h-[36px] rounded-lg text-xs font-semibold transition-colors cursor-pointer select-none ${activeTab === 'pending'
               ? 'bg-background text-foreground shadow-xs'
               : 'text-muted-foreground hover:text-foreground'
             }`}
@@ -381,7 +381,7 @@ const Checkouts = () => {
         <button
           type="button"
           onClick={() => setActiveTab('active')}
-          className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md text-xs font-semibold transition-colors cursor-pointer select-none ${activeTab === 'active'
+          className={`flex items-center justify-center sm:justify-start gap-2 px-3.5 py-2 sm:py-1.5 min-h-[44px] sm:min-h-[36px] rounded-lg text-xs font-semibold transition-colors cursor-pointer select-none ${activeTab === 'active'
               ? 'bg-background text-foreground shadow-xs'
               : 'text-muted-foreground hover:text-foreground'
             }`}
@@ -399,7 +399,7 @@ const Checkouts = () => {
           <button
             type="button"
             onClick={() => setActiveTab('pos')}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md text-xs font-semibold transition-colors cursor-pointer select-none ${activeTab === 'pos'
+            className={`flex items-center justify-center sm:justify-start gap-2 px-3.5 py-2 sm:py-1.5 min-h-[44px] sm:min-h-[36px] rounded-lg text-xs font-semibold transition-colors cursor-pointer select-none ${activeTab === 'pos'
                 ? 'bg-background text-foreground shadow-xs'
                 : 'text-muted-foreground hover:text-foreground'
               }`}
@@ -412,7 +412,7 @@ const Checkouts = () => {
         <button
           type="button"
           onClick={() => setActiveTab('history')}
-          className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md text-xs font-semibold transition-colors cursor-pointer select-none ${activeTab === 'history'
+          className={`flex items-center justify-center sm:justify-start gap-2 px-3.5 py-2 sm:py-1.5 min-h-[44px] sm:min-h-[36px] rounded-lg text-xs font-semibold transition-colors cursor-pointer select-none ${activeTab === 'history'
               ? 'bg-background text-foreground shadow-xs'
               : 'text-muted-foreground hover:text-foreground'
             }`}

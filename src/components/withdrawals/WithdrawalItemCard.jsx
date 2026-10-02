@@ -128,7 +128,7 @@ const WithdrawalItemCard = React.memo(({
               variant="ghost"
               size="icon"
               onClick={() => onUpdateQuantity(item.id, -1)}
-              className="h-7 w-7 rounded hover:bg-background text-foreground shrink-0 cursor-pointer"
+              className="h-9 w-9 min-h-[36px] min-w-[36px] sm:h-7 sm:w-7 sm:min-h-0 sm:min-w-0 rounded-md hover:bg-background text-foreground shrink-0 cursor-pointer flex items-center justify-center"
             >
               <Minus className="w-3.5 h-3.5" />
             </Button>
@@ -143,7 +143,7 @@ const WithdrawalItemCard = React.memo(({
               size="icon"
               disabled={cartQuantity >= availableStock}
               onClick={() => onUpdateQuantity(item.id, 1)}
-              className="h-7 w-7 rounded hover:bg-background text-foreground shrink-0 disabled:opacity-30 cursor-pointer"
+              className="h-9 w-9 min-h-[36px] min-w-[36px] sm:h-7 sm:w-7 sm:min-h-0 sm:min-w-0 rounded-md hover:bg-background text-foreground shrink-0 disabled:opacity-30 cursor-pointer flex items-center justify-center"
             >
               <Plus className="w-3.5 h-3.5" />
             </Button>
@@ -159,7 +159,7 @@ const WithdrawalItemCard = React.memo(({
                 onAddToCart(item);
               }
             }}
-            className={`w-full h-8 rounded-lg text-xs font-semibold gap-1.5 transition-all shadow-2xs cursor-pointer ${
+            className={`w-full h-9 sm:h-8 min-h-[36px] sm:min-h-0 rounded-lg text-xs font-semibold gap-1.5 transition-all shadow-2xs cursor-pointer ${
               isOutOfStock && hasStockInOtherWarehouse
                 ? 'bg-blue-600 hover:bg-blue-700 text-white'
                 : completelyEmpty

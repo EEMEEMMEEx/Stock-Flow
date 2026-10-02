@@ -748,7 +748,7 @@ const CheckoutPosTerminal = ({
                             variant="ghost"
                             size="icon"
                             onClick={() => handleRemoveFromCart(item.item_id)}
-                            className="h-6 w-6 text-muted-foreground hover:text-destructive rounded-lg shrink-0 cursor-pointer"
+                            className="h-9 w-9 sm:h-6 sm:w-6 min-h-[36px] min-w-[36px] sm:min-h-0 sm:min-w-0 flex items-center justify-center text-muted-foreground hover:text-destructive rounded-lg shrink-0 cursor-pointer"
                             title={t('common.delete')}
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -769,7 +769,7 @@ const CheckoutPosTerminal = ({
                               size="icon"
                               disabled={item.quantity <= 1}
                               onClick={() => handleUpdateQuantity(item.item_id, item.quantity - 1)}
-                              className="h-7 w-7 rounded-lg text-xs"
+                              className="h-9 w-9 sm:h-7 sm:w-7 min-h-[36px] min-w-[36px] sm:min-h-0 sm:min-w-0 rounded-lg text-xs flex items-center justify-center cursor-pointer"
                             >
                               <Minus className="w-3 h-3" />
                             </Button>
@@ -780,7 +780,7 @@ const CheckoutPosTerminal = ({
                               max={item.availableStock}
                               value={item.quantity}
                               onChange={(e) => handleUpdateQuantity(item.item_id, e.target.value)}
-                              className="h-7 w-16 text-center text-xs font-semibold font-mono rounded-lg p-0"
+                              className="h-9 sm:h-7 w-16 text-center text-sm sm:text-xs font-semibold font-mono rounded-lg p-0"
                             />
 
                             <Button
@@ -789,7 +789,7 @@ const CheckoutPosTerminal = ({
                               size="icon"
                               disabled={item.quantity >= item.availableStock}
                               onClick={() => handleUpdateQuantity(item.item_id, item.quantity + 1)}
-                              className="h-7 w-7 rounded-lg text-xs"
+                              className="h-9 w-9 sm:h-7 sm:w-7 min-h-[36px] min-w-[36px] sm:min-h-0 sm:min-w-0 rounded-lg text-xs flex items-center justify-center cursor-pointer"
                             >
                               <Plus className="w-3 h-3" />
                             </Button>
@@ -905,7 +905,7 @@ const CheckoutPosTerminal = ({
                                     placeholder={t('checkouts.snSlotPlaceholder', { index: sIdx + 1 })}
                                     value={snVal}
                                     onChange={(e) => handleUpdateItemSN(item.item_id, sIdx, e.target.value)}
-                                    className="h-7 text-[11px] rounded-lg font-mono flex-1 p-1.5"
+                                    className="h-9 sm:h-7 text-xs sm:text-[11px] rounded-lg font-mono flex-1 p-2 sm:p-1.5"
                                   />
                                 </div>
                               ))}
@@ -922,7 +922,7 @@ const CheckoutPosTerminal = ({
               <Button
                 type="submit"
                 disabled={submitting || cart.length === 0 || !selectedProjectId}
-                className="w-full h-10 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs gap-2 cursor-pointer shadow-xs transition-colors"
+                className="w-full h-12 sm:h-10 min-h-[44px] rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm sm:text-xs gap-2 cursor-pointer shadow-xs transition-colors"
               >
                 <Send className="w-4 h-4" />
                 <span>

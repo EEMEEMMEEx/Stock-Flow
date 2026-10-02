@@ -152,7 +152,7 @@ const WithdrawalPosTerminal = ({
   const inStockCount = items.filter(i => (i.balance || 0) > 0).length;
 
   return (
-    <div className="flex flex-col lg:flex-row items-start gap-6 animate-in fade-in-50 duration-200">
+    <div className="flex flex-col lg:flex-row items-start gap-6 pb-28 lg:pb-0 animate-in fade-in-50 duration-200">
       {/* Left: Product Catalog & Controls */}
       <div className="flex-1 min-w-0 space-y-4 w-full">
         {/* Context Header: Target Project Selector */}
@@ -178,7 +178,7 @@ const WithdrawalPosTerminal = ({
               <Input
                 ref={searchInputRef}
                 placeholder={t('withdrawals.searchItemsFocusHint', 'Search items... (Name, SKU, Model) Press / to focus')}
-                className="pl-9 pr-8 h-9 rounded-lg bg-background border-border text-xs shadow-2xs"
+                className="pl-9 pr-8 h-9 rounded-lg bg-background border-border text-base sm:text-xs shadow-2xs"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
@@ -200,7 +200,7 @@ const WithdrawalPosTerminal = ({
                 variant={viewMode === 'grid' ? 'default' : 'ghost'}
                 size="xs"
                 onClick={() => setViewMode('grid')}
-                className={`h-7 px-2.5 rounded-md text-xs font-semibold gap-1.5 transition-all cursor-pointer ${
+                className={`h-9 sm:h-7 px-3 sm:px-2.5 rounded-md text-xs font-semibold gap-1.5 transition-all cursor-pointer ${
                   viewMode === 'grid'
                     ? 'bg-background text-foreground shadow-xs border border-border/60'
                     : 'text-muted-foreground hover:text-foreground'
@@ -215,7 +215,7 @@ const WithdrawalPosTerminal = ({
                 variant={viewMode === 'table' ? 'default' : 'ghost'}
                 size="xs"
                 onClick={() => setViewMode('table')}
-                className={`h-7 px-2.5 rounded-md text-xs font-semibold gap-1.5 transition-all cursor-pointer ${
+                className={`h-9 sm:h-7 px-3 sm:px-2.5 rounded-md text-xs font-semibold gap-1.5 transition-all cursor-pointer ${
                   viewMode === 'table'
                     ? 'bg-background text-foreground shadow-xs border border-border/60'
                     : 'text-muted-foreground hover:text-foreground'
@@ -239,7 +239,7 @@ const WithdrawalPosTerminal = ({
               variant={stockStatusFilter === 'all' ? 'default' : 'outline'}
               size="xs"
               onClick={() => setStockStatusFilter('all')}
-              className={`h-7 px-2.5 rounded-xl text-[11px] font-bold whitespace-nowrap transition-all cursor-pointer ${
+              className={`h-9 sm:h-7 min-h-[36px] sm:min-h-[28px] px-3 sm:px-2.5 rounded-xl text-xs sm:text-[11px] font-bold whitespace-nowrap transition-all cursor-pointer ${
                 stockStatusFilter === 'all'
                   ? 'bg-slate-900 text-slate-50 dark:bg-slate-50 dark:text-slate-900'
                   : 'border-border/60 text-muted-foreground hover:bg-accent'
@@ -253,7 +253,7 @@ const WithdrawalPosTerminal = ({
               variant={stockStatusFilter === 'in_stock' ? 'default' : 'outline'}
               size="xs"
               onClick={() => setStockStatusFilter('in_stock')}
-              className={`h-7 px-2.5 rounded-xl text-[11px] font-bold whitespace-nowrap transition-all cursor-pointer ${
+              className={`h-9 sm:h-7 min-h-[36px] sm:min-h-[28px] px-3 sm:px-2.5 rounded-xl text-xs sm:text-[11px] font-bold whitespace-nowrap transition-all cursor-pointer ${
                 stockStatusFilter === 'in_stock'
                   ? 'bg-emerald-600 text-white shadow-2xs'
                   : 'border-emerald-500/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/10'
@@ -267,7 +267,7 @@ const WithdrawalPosTerminal = ({
               variant={stockStatusFilter === 'low_stock' ? 'default' : 'outline'}
               size="xs"
               onClick={() => setStockStatusFilter('low_stock')}
-              className={`h-7 px-2.5 rounded-xl text-[11px] font-bold whitespace-nowrap transition-all cursor-pointer ${
+              className={`h-9 sm:h-7 min-h-[36px] sm:min-h-[28px] px-3 sm:px-2.5 rounded-xl text-xs sm:text-[11px] font-bold whitespace-nowrap transition-all cursor-pointer ${
                 stockStatusFilter === 'low_stock'
                   ? 'bg-amber-600 text-white shadow-2xs'
                   : 'border-amber-500/30 text-amber-700 dark:text-amber-300 hover:bg-amber-500/10'
@@ -281,7 +281,7 @@ const WithdrawalPosTerminal = ({
               variant={stockStatusFilter === 'cross_warehouse' ? 'default' : 'outline'}
               size="xs"
               onClick={() => setStockStatusFilter('cross_warehouse')}
-              className={`h-7 px-2.5 rounded-xl text-[11px] font-bold whitespace-nowrap transition-all cursor-pointer ${
+              className={`h-9 sm:h-7 min-h-[36px] sm:min-h-[28px] px-3 sm:px-2.5 rounded-xl text-xs sm:text-[11px] font-bold whitespace-nowrap transition-all cursor-pointer ${
                 stockStatusFilter === 'cross_warehouse'
                   ? 'bg-blue-600 text-white shadow-2xs'
                   : 'border-blue-500/30 text-blue-700 dark:text-blue-300 hover:bg-blue-500/10'
@@ -295,7 +295,7 @@ const WithdrawalPosTerminal = ({
               variant={stockStatusFilter === 'out_of_stock' ? 'default' : 'outline'}
               size="xs"
               onClick={() => setStockStatusFilter('out_of_stock')}
-              className={`h-7 px-2.5 rounded-xl text-[11px] font-bold whitespace-nowrap transition-all cursor-pointer ${
+              className={`h-9 sm:h-7 min-h-[36px] sm:min-h-[28px] px-3 sm:px-2.5 rounded-xl text-xs sm:text-[11px] font-bold whitespace-nowrap transition-all cursor-pointer ${
                 stockStatusFilter === 'out_of_stock'
                   ? 'bg-slate-600 text-white shadow-2xs'
                   : 'border-slate-300 text-slate-600 dark:text-slate-400 hover:bg-slate-100'
@@ -316,7 +316,7 @@ const WithdrawalPosTerminal = ({
                 variant={selectedCategory === 'all' ? 'default' : 'outline'}
                 size="xs"
                 onClick={() => setSelectedCategory('all')}
-                className={`h-7 px-2.5 rounded-xl text-[11px] font-bold whitespace-nowrap transition-all cursor-pointer ${
+                className={`h-9 sm:h-7 min-h-[36px] sm:min-h-[28px] px-3 sm:px-2.5 rounded-xl text-xs sm:text-[11px] font-bold whitespace-nowrap transition-all cursor-pointer ${
                   selectedCategory === 'all'
                     ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-2xs'
                     : 'border-border/60 hover:bg-accent text-muted-foreground'
@@ -331,7 +331,7 @@ const WithdrawalPosTerminal = ({
                   variant={selectedCategory === cat.id ? 'default' : 'outline'}
                   size="xs"
                   onClick={() => setSelectedCategory(cat.id)}
-                  className={`h-7 px-2.5 rounded-xl text-[11px] font-bold whitespace-nowrap transition-all cursor-pointer ${
+                  className={`h-9 sm:h-7 min-h-[36px] sm:min-h-[28px] px-3 sm:px-2.5 rounded-xl text-xs sm:text-[11px] font-bold whitespace-nowrap transition-all cursor-pointer ${
                     selectedCategory === cat.id
                       ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-2xs'
                       : 'border-border/60 hover:bg-accent text-muted-foreground'
@@ -634,11 +634,11 @@ const WithdrawalPosTerminal = ({
 
       {/* Mobile/Tablet Floating Bottom Cart Bar */}
       {cart.length > 0 && (
-        <div className="lg:hidden fixed bottom-4 left-4 right-4 z-40">
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 p-3 sm:p-4 pb-[max(1rem,env(safe-area-inset-bottom))] z-40 bg-background/95 backdrop-blur-md border-t border-border shadow-2xl">
           <Button
             type="button"
             onClick={() => setIsMobileCartOpen(true)}
-            className="w-full h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-lg flex items-center justify-between px-4 gap-2 border border-indigo-500 cursor-pointer"
+            className="w-full h-12 min-h-[48px] rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-lg flex items-center justify-between px-4 gap-2 border border-indigo-500 cursor-pointer"
           >
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-white/20">

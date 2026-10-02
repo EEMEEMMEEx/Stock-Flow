@@ -1082,7 +1082,7 @@ const Items = () => {
             <Input
               type="search"
               placeholder={t('items.filters.searchPlaceholder')}
-              className="pl-9 pr-4 h-9 rounded-lg text-xs bg-background border-input shadow-xs"
+              className="pl-9 pr-4 h-9 rounded-lg text-base sm:text-xs bg-background border-input shadow-xs"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -1091,7 +1091,7 @@ const Items = () => {
           {/* Filter Dropdowns */}
           <div className="flex flex-wrap items-center gap-2">
             {/* Category Filter */}
-            <div className="flex items-center gap-1.5 min-w-[150px]">
+            <div className="flex items-center gap-1.5 min-w-[150px] flex-1 sm:flex-initial">
               <Tag className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
               <select
                 className="h-9 w-full rounded-lg border border-input bg-background px-3 py-1 text-xs font-medium focus:ring-2 focus:ring-primary transition-colors cursor-pointer shadow-xs"
@@ -1126,7 +1126,7 @@ const Items = () => {
                 variant={viewMode === 'table' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setViewMode('table')}
-                className={`h-8 px-2.5 rounded-md text-xs gap-1 font-medium cursor-pointer ${viewMode === 'table' ? 'bg-background text-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground'}`}
+                className={`h-9 sm:h-8 px-3 sm:px-2.5 rounded-md text-xs gap-1 font-medium cursor-pointer ${viewMode === 'table' ? 'bg-background text-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground'}`}
               >
                 <List className="w-3.5 h-3.5" /> {t('items.filters.table')}
               </Button>
@@ -1135,7 +1135,7 @@ const Items = () => {
                 variant={viewMode === 'grid' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setViewMode('grid')}
-                className={`h-8 px-2.5 rounded-md text-xs gap-1 font-medium cursor-pointer ${viewMode === 'grid' ? 'bg-background text-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground'}`}
+                className={`h-9 sm:h-8 px-3 sm:px-2.5 rounded-md text-xs gap-1 font-medium cursor-pointer ${viewMode === 'grid' ? 'bg-background text-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground'}`}
               >
                 <LayoutGrid className="w-3.5 h-3.5" /> {t('items.filters.grid')}
               </Button>
@@ -1205,9 +1205,10 @@ const Items = () => {
           </p>
         </Card>
       ) : viewMode === 'table' ? (
-        /* Table View */
-        <Card className="overflow-hidden rounded-xl border border-border bg-card shadow-xs">
-          <div className="overflow-x-auto">
+        <>
+          {/* Desktop Table View (Hidden on mobile < md) */}
+          <Card className="hidden md:block overflow-hidden rounded-xl border border-border bg-card shadow-xs">
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader className="bg-muted/40 select-none">
                 <TableRow className="text-xs hover:bg-transparent">
@@ -1507,6 +1508,137 @@ const Items = () => {
             </Table>
           </div>
         </Card>
+
+        {/* Mobile Card List View (Visible only on mobile < md) */}
+        <div className="block md:hidden space-y-3">
+          {paginatedItems.map((item) => {
+            const isChild = item.isChildRow;
+            return (
+              <Card
+                key={item.recordKey}
+                className={`p-3.5 rounded-xl bg-card border border-border shadow-xs flex flex-col justify-between space-y-3 relative overflow-hidden ${
+                  isChild ? "bg-blue-500/5 dark:bg-blue-950/20" : ""
+                }`}
+              >
+                <div className="space-y-2">
+                  {/* Top Badges */}
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-muted text-[10px] font-medium text-muted-foreground border">
+                      <Tag className="w-2.5 h-2.5" />
+                      {item.category_name}
+                    </span>
+
+                    {isChild ? (
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-500/10 text-blue-600 border border-blue-500/20 flex items-center gap-1">
+                        <CornerDownRight className="w-3 h-3" />
+                        {t('items.table.child')} ({item.parentSku || item.parentName})
+                      </span>
+                    ) : item.hasChildren ? (
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/25 flex items-center gap-1">
+                        <FolderTree className="w-3 h-3" />
+                        {t('items.table.parentWithChildren', { count: item.childCount })}
+                      </span>
+                    ) : null}
+                  </div>
+
+                  {/* Image & Main Info */}
+                  <div className="flex items-start gap-3">
+                    {item.image_url ? (
+                      <img src={item.image_url} alt={item.name} className="w-12 h-12 object-cover rounded-lg border border-border shadow-xs shrink-0" />
+                    ) : (
+                      <div className="w-12 h-12 bg-muted/60 rounded-lg flex items-center justify-center border border-border/60 text-muted-foreground/60 shrink-0">
+                        <ImageIcon className="w-5 h-5" />
+                      </div>
+                    )}
+
+                    <div className="min-w-0 flex-1">
+                      <h4 className="font-bold text-sm text-foreground line-clamp-2 leading-tight">
+                        {item.name}
+                      </h4>
+                      <div className="flex flex-wrap items-center gap-2 mt-1 text-xs text-muted-foreground font-mono">
+                        {item.model && item.model !== '-' && <span>{t('items.table.model')}: {item.model}</span>}
+                        {item.sku && item.sku !== '-' && <span>SKU: {item.sku}</span>}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Location & Stock Summary */}
+                  <div className="flex items-center justify-between gap-2 p-2 rounded-lg bg-muted/40 border border-border/60 text-xs">
+                    <div className="flex items-center gap-1.5 truncate">
+                      <Building2 className="w-3.5 h-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                      <span className="truncate font-semibold text-foreground">
+                        {item.project_location || t('items.table.noLocation')}
+                      </span>
+                    </div>
+                    <span className={`px-2 py-0.5 rounded-md text-xs font-bold font-mono shrink-0 ${
+                      item.balance > 0
+                        ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30'
+                        : 'bg-muted text-muted-foreground border border-border'
+                    }`}>
+                      {item.balance} {item.unit}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Mobile Action Bar - Touch Targets (>= 44px) */}
+                <div className="pt-2 border-t border-border/40 flex items-center justify-end gap-1.5">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-10 min-w-[44px] px-2.5 rounded-lg text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950/40 gap-1 text-xs font-semibold cursor-pointer"
+                    onClick={() => openAdjustmentHistoryDialog(item)}
+                    title={t('items.table.stockHistoryTitle')}
+                  >
+                    <History className="w-4 h-4" />
+                    <span className="hidden xs:inline">{t('items.table.stockHistoryTitle')}</span>
+                  </Button>
+                  {canTransferInventory && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-10 min-w-[44px] px-2.5 rounded-lg text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 disabled:opacity-30 disabled:cursor-not-allowed gap-1 text-xs font-semibold cursor-pointer"
+                      onClick={() => openTransferDialog(item)}
+                      disabled={!item.project_id || (parseInt(item.balance, 10) || 0) <= 0}
+                      title={
+                        !item.project_id || (parseInt(item.balance, 10) || 0) <= 0
+                          ? t('items.table.cannotTransferNoStock')
+                          : t('items.table.transferLocationTitle')
+                      }
+                    >
+                      <ArrowRightLeft className="w-4 h-4" />
+                      <span className="hidden xs:inline">{t('items.table.transferLocationTitle')}</span>
+                    </Button>
+                  )}
+                  {can('items.update') && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-10 min-w-[44px] px-2.5 rounded-lg text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/40 gap-1 text-xs font-semibold cursor-pointer"
+                      onClick={() => openEditDialog(item)}
+                      title={t('items.table.editMasterItem')}
+                    >
+                      <Edit3 className="w-4 h-4" />
+                      <span className="hidden xs:inline">{t('common.edit')}</span>
+                    </Button>
+                  )}
+                  {can('items.delete') && allowItemDeletion && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-10 min-w-[44px] px-2.5 rounded-lg text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 gap-1 text-xs font-semibold cursor-pointer"
+                      onClick={() => openDeleteDialog(item.originalItem || item)}
+                      title={t('items.table.deleteItem')}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      <span className="hidden xs:inline">{t('common.delete')}</span>
+                    </Button>
+                  )}
+                </div>
+              </Card>
+            );
+          })}
+        </div>
+      </>
       ) : (
         /* Grid Bento Card View */
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -1594,48 +1726,48 @@ const Items = () => {
                     <Button 
                       variant="ghost" 
                       size="icon" 
-                      className="h-7 w-7 rounded-lg text-amber-600 hover:bg-amber-50"
+                      className="h-9 w-9 sm:h-7 sm:w-7 min-h-[36px] min-w-[36px] sm:min-h-0 sm:min-w-0 rounded-lg text-amber-600 hover:bg-amber-50"
                       onClick={() => openAdjustmentHistoryDialog(item)}
-                      title="Stock Adjustment History"
+                      title={t('items.table.stockHistoryTitle')}
                     >
-                      <History className="w-3.5 h-3.5" />
+                      <History className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
                     </Button>
                     {canTransferInventory && (
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="h-7 w-7 rounded-lg text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 disabled:opacity-30 disabled:cursor-not-allowed"
+                        className="h-9 w-9 sm:h-7 sm:w-7 min-h-[36px] min-w-[36px] sm:min-h-0 sm:min-w-0 rounded-lg text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 disabled:opacity-30 disabled:cursor-not-allowed"
                         onClick={() => openTransferDialog(item)}
                         disabled={!item.project_id || (parseInt(item.balance, 10) || 0) <= 0}
                         title={
                           !item.project_id || (parseInt(item.balance, 10) || 0) <= 0 
-                            ? "Cannot transfer (no stock in this location)" 
-                            : "Transfer Location"
+                            ? t('items.table.cannotTransferNoStock') 
+                            : t('items.table.transferLocationTitle')
                         }
                       >
-                        <ArrowRightLeft className="w-3.5 h-3.5" />
+                        <ArrowRightLeft className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
                       </Button>
                     )}
                     {can('items.update') && (
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="h-7 w-7 rounded-lg text-blue-600 hover:bg-blue-50"
+                        className="h-9 w-9 sm:h-7 sm:w-7 min-h-[36px] min-w-[36px] sm:min-h-0 sm:min-w-0 rounded-lg text-blue-600 hover:bg-blue-50"
                         onClick={() => openEditDialog(item)}
-                        title="Edit Master Item"
+                        title={t('items.table.editMasterItem')}
                       >
-                        <Edit3 className="w-3.5 h-3.5" />
+                        <Edit3 className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
                       </Button>
                     )}
                     {can('items.delete') && allowItemDeletion && (
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="h-7 w-7 rounded-lg text-red-500 hover:bg-red-50"
+                        className="h-9 w-9 sm:h-7 sm:w-7 min-h-[36px] min-w-[36px] sm:min-h-0 sm:min-w-0 rounded-lg text-red-500 hover:bg-red-50"
                         onClick={() => openDeleteDialog(item.originalItem || item)}
-                        title="Delete Item"
+                        title={t('items.table.deleteItem')}
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        <Trash2 className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
                       </Button>
                     )}
                   </div>
@@ -1662,7 +1794,7 @@ const Items = () => {
                 setCurrentPage(p);
                 setPageInput(String(p));
               }}
-              className="h-8 w-8 rounded-lg border-border text-foreground hover:bg-accent disabled:opacity-30 transition-colors cursor-pointer shadow-xs"
+              className="h-9 w-9 sm:h-8 sm:w-8 min-h-[36px] min-w-[36px] sm:min-h-0 sm:min-w-0 rounded-lg border-border text-foreground hover:bg-accent disabled:opacity-30 transition-colors cursor-pointer shadow-xs"
               aria-label={t('items.pagination.prevPage')}
             >
               <ChevronLeft className="w-4 h-4" />
@@ -1679,7 +1811,7 @@ const Items = () => {
                 onChange={handlePageInputChange}
                 onBlur={handlePageInputBlur}
                 onKeyDown={(e) => { if (e.key === 'Enter') handlePageInputBlur(); }}
-                className="h-8 w-12 text-center font-mono text-xs font-bold rounded-lg border border-input bg-background focus:ring-2 focus:ring-primary focus:outline-none transition-colors shadow-xs"
+                className="h-9 sm:h-8 w-12 text-center font-mono text-xs font-bold rounded-lg border border-input bg-background focus:ring-2 focus:ring-primary focus:outline-none transition-colors shadow-xs"
                 aria-label={t('items.pagination.currentPaginationNumber')}
               />
               <span>{t('items.pagination.of')}</span>
@@ -1697,7 +1829,7 @@ const Items = () => {
                 setCurrentPage(p);
                 setPageInput(String(p));
               }}
-              className="h-8 w-8 rounded-lg border-border text-foreground hover:bg-accent disabled:opacity-30 transition-colors cursor-pointer shadow-xs"
+              className="h-9 w-9 sm:h-8 sm:w-8 min-h-[36px] min-w-[36px] sm:min-h-0 sm:min-w-0 rounded-lg border-border text-foreground hover:bg-accent disabled:opacity-30 transition-colors cursor-pointer shadow-xs"
               aria-label={t('items.pagination.nextPage')}
             >
               <ChevronRight className="w-4 h-4" />
@@ -1713,7 +1845,7 @@ const Items = () => {
                 onChange={(e) => {
                   setRowsPerPage(Number(e.target.value));
                 }}
-                className="h-8 rounded-lg border border-input bg-background px-2.5 text-xs font-medium text-foreground focus:ring-2 focus:ring-primary cursor-pointer shadow-xs transition-colors"
+                className="h-9 sm:h-8 rounded-lg border border-input bg-background px-2.5 text-xs font-medium text-foreground focus:ring-2 focus:ring-primary cursor-pointer shadow-xs transition-colors"
                 aria-label={t('items.pagination.rowsPerPage')}
               >
                 <option value={25}>{t('items.pagination.groupsPerPage', { count: 25 })}</option>

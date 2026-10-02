@@ -656,7 +656,7 @@ const Withdrawals = () => {
           <button
             type="button"
             onClick={() => setActiveTab('pos')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer flex-1 sm:flex-none justify-center ${
+            className={`flex items-center gap-2 px-4 py-2.5 sm:py-2 min-h-[44px] sm:min-h-[38px] rounded-lg text-xs font-semibold transition-all cursor-pointer flex-1 sm:flex-none justify-center ${
               activeTab === 'pos'
                 ? 'bg-indigo-600 text-white shadow-xs'
                 : 'text-muted-foreground hover:text-foreground hover:bg-accent/60'
@@ -677,7 +677,7 @@ const Withdrawals = () => {
           <button
             type="button"
             onClick={() => setActiveTab('orders')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer flex-1 sm:flex-none justify-center ${
+            className={`flex items-center gap-2 px-4 py-2.5 sm:py-2 min-h-[44px] sm:min-h-[38px] rounded-lg text-xs font-semibold transition-all cursor-pointer flex-1 sm:flex-none justify-center ${
               activeTab === 'orders'
                 ? 'bg-indigo-600 text-white shadow-xs'
                 : 'text-muted-foreground hover:text-foreground hover:bg-accent/60'
