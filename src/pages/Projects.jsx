@@ -696,7 +696,7 @@ const Projects = () => {
                         <Button 
                           variant="outline" 
                           size="sm" 
-                          className="h-8 text-xs gap-1.5 px-3 rounded-lg border border-border hover:bg-muted font-medium cursor-pointer transition-colors shadow-xs"
+                          className="h-9 sm:h-8 text-xs gap-1.5 px-3 rounded-lg border border-border hover:bg-muted font-medium cursor-pointer transition-colors shadow-xs"
                           onClick={() => openAddLocationDialog(group)}
                         >
                           <Plus className="w-3.5 h-3.5 text-primary" />
@@ -708,7 +708,7 @@ const Projects = () => {
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg cursor-pointer"
+                          className="h-9 w-9 sm:h-8 sm:w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg cursor-pointer"
                           title="Delete entire project"
                           disabled={isCheckingStock}
                           onClick={() => startDeleteProcess('project', group.canonicalName, allGroupProjectIds)}
@@ -767,12 +767,12 @@ const Projects = () => {
                           </div>
 
                           {(can('projects.update') || can('projects.delete')) && (
-                            <div className="flex items-center gap-1 shrink-0 opacity-80 group-hover/item:opacity-100 transition-opacity">
+                            <div className="flex items-center gap-1 shrink-0 opacity-100 sm:opacity-80 sm:group-hover/item:opacity-100 transition-opacity">
                               {can('projects.update') && (
                                 <Button 
                                   variant="ghost" 
                                   size="icon" 
-                                  className="h-7 w-7 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-md cursor-pointer"
+                                  className="h-9 w-9 sm:h-7 sm:w-7 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-md cursor-pointer"
                                   title="Edit this location"
                                   onClick={() => openEditDialog(rec)}
                                 >
@@ -783,7 +783,7 @@ const Projects = () => {
                                 <Button 
                                   variant="ghost" 
                                   size="icon" 
-                                  className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md cursor-pointer"
+                                  className="h-9 w-9 sm:h-7 sm:w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md cursor-pointer"
                                   title="Delete this location"
                                   onClick={() => startDeleteProcess('location', `${group.canonicalName} (${rec.location || 'Main Warehouse'})`, [rec.id])}
                                 >

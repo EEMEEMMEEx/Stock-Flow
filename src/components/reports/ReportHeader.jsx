@@ -117,7 +117,7 @@ const ReportHeader = ({
       </div>
 
       {/* Report Categories Tab Navigation */}
-      <div className="flex flex-wrap gap-2 p-1.5 bg-muted/40 rounded-xl border border-border/50">
+      <div className="flex overflow-x-auto sm:grid sm:grid-cols-4 gap-2 p-1.5 bg-muted/40 rounded-xl border border-border/50 scrollbar-none">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -125,7 +125,7 @@ const ReportHeader = ({
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
-              className={`flex-1 min-w-[200px] flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer border ${
+              className={`shrink-0 sm:shrink sm:w-auto flex items-center justify-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer border whitespace-nowrap min-h-[40px] ${
                 isActive
                   ? `${tab.activeClass} shadow-xs`
                   : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-background/50'

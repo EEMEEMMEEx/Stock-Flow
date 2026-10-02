@@ -1,12 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 
-  Router, Antenna, 
-  AlertTriangle, CheckCircle2, Layers, 
-  ChevronRight, AlertCircle, PenLine, Plus, 
+  Layers, 
+  PenLine, Plus, 
   Trash2, RotateCcw, Save, Search, 
   Package, ShieldCheck, Check, Info, GripVertical
 } from 'lucide-react';
@@ -522,7 +520,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
         }
       }}>
         <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col rounded-xl p-0 overflow-hidden border-border bg-card shadow-lg">
-          <DialogHeader className="p-6 pb-4 border-b border-border/60 bg-muted/20">
+          <DialogHeader className="p-4 sm:p-6 pb-3 sm:pb-4 border-b border-border/60 bg-muted/20">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 shrink-0">
@@ -611,7 +609,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
           </DialogHeader>
 
           {/* Navigation Tabs (Accessible in both View and Edit modes) */}
-          <div className="px-6 pt-3">
+          <div className="px-4 sm:px-6 pt-2.5 sm:pt-3">
             <div
               role="tablist"
               aria-label="BOM inventory views"
@@ -653,7 +651,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
           </div>
 
           {/* Dialog Body */}
-          <div className="flex-1 overflow-y-auto p-6 pt-3 space-y-4">
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 pt-3 space-y-4">
             {isEditing && bomView === 'complete' ? (
               /* =======================================================
                * ADMIN EDITABLE COMPLETE SET BOM FORM VIEW
@@ -666,8 +664,8 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                   </span>
                 </div>
 
-                <div className="rounded-lg border border-border overflow-hidden shadow-xs bg-card">
-                  <table className="w-full text-left text-xs border-collapse">
+                <div className="rounded-lg border border-border overflow-x-auto shadow-xs bg-card">
+                  <table className="w-full text-left text-xs border-collapse min-w-[620px]">
                     <thead className="bg-muted/70 text-muted-foreground font-bold border-b border-border/70">
                       <tr>
                         <th className="py-2.5 px-2 w-16 text-center">{t('siteKits.thSeq')}</th>
@@ -808,7 +806,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                                   type="button"
                                   onClick={() => handleRemoveRow(originalIndex)}
                                   title="Remove item"
-                                  className="p-1.5 rounded-lg text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                                  className="p-2 sm:p-1.5 min-h-[36px] min-w-[36px] sm:min-h-0 sm:min-w-0 inline-flex items-center justify-center rounded-lg text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 transition-colors cursor-pointer"
                                   draggable={false}
                                   onDragStart={(e) => e.stopPropagation()}
                                 >
@@ -833,7 +831,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                     variant="outline"
                     size="sm"
                     onClick={() => handleAddRow(false)}
-                    className="rounded-xl h-8 px-3 gap-1.5 text-xs font-bold border-dashed border-border/80 hover:border-emerald-500/60 text-muted-foreground hover:text-foreground cursor-pointer"
+                    className="rounded-xl h-9 sm:h-8 px-3 gap-1.5 text-xs font-bold border-dashed border-border/80 hover:border-emerald-500/60 text-muted-foreground hover:text-foreground cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>Add Item to Complete Set</span>
@@ -856,8 +854,8 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                   </span>
                 </div>
 
-                <div className="rounded-lg border border-border overflow-hidden shadow-xs bg-card">
-                  <table className="w-full text-left text-xs border-collapse">
+                <div className="rounded-lg border border-border overflow-x-auto shadow-xs bg-card">
+                  <table className="w-full text-left text-xs border-collapse min-w-[640px]">
                     <thead className="bg-muted/70 text-muted-foreground font-bold border-b border-border/70">
                       <tr>
                         <th className="py-2.5 px-2 w-16 text-center">{t('siteKits.thSeq')}</th>
@@ -1016,7 +1014,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                                   type="button"
                                   onClick={() => handleRemoveRow(originalIndex)}
                                   title="Remove item"
-                                  className="p-1.5 rounded-lg text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                                  className="p-2 sm:p-1.5 min-h-[36px] min-w-[36px] sm:min-h-0 sm:min-w-0 inline-flex items-center justify-center rounded-lg text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 transition-colors cursor-pointer"
                                   draggable={false}
                                   onDragStart={(e) => e.stopPropagation()}
                                 >
@@ -1041,7 +1039,7 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
                     variant="outline"
                     size="sm"
                     onClick={() => handleAddRow(true)}
-                    className="rounded-xl h-8 px-3 gap-1.5 text-xs font-bold border-dashed border-border/80 hover:border-emerald-500/60 text-muted-foreground hover:text-foreground cursor-pointer"
+                    className="rounded-xl h-9 sm:h-8 px-3 gap-1.5 text-xs font-bold border-dashed border-border/80 hover:border-emerald-500/60 text-muted-foreground hover:text-foreground cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>Add Spare Equipment Item</span>
@@ -1056,8 +1054,8 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
               /* =======================================================
                * READ-ONLY COMPLETE SET BOM BREAKDOWN VIEW
                * ======================================================= */
-              <div className="rounded-lg border border-border overflow-hidden shadow-xs">
-                <table className="w-full text-left text-xs border-collapse">
+              <div className="rounded-lg border border-border overflow-x-auto shadow-xs bg-card">
+                <table className="w-full text-left text-xs border-collapse min-w-[580px]">
                   <thead className="bg-muted/70 text-muted-foreground font-bold border-b border-border/70">
                     <tr>
                       <th className="py-2.5 px-3 w-12 text-center">{t('siteKits.thSeq')}</th>
@@ -1138,8 +1136,8 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
               /* =======================================================
                * READ-ONLY SPARE EQUIPMENT VIEW
                * ======================================================= */
-              <div className="rounded-lg border border-border overflow-hidden shadow-xs">
-                <table className="w-full text-left text-xs border-collapse">
+              <div className="rounded-lg border border-border overflow-x-auto shadow-xs bg-card">
+                <table className="w-full text-left text-xs border-collapse min-w-[580px]">
                   <thead className="bg-muted/70 text-muted-foreground font-bold border-b border-border/70">
                     <tr>
                       <th className="py-2.5 px-3 w-12 text-center">{t('siteKits.thSeq')}</th>

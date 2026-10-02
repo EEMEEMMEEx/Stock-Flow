@@ -393,7 +393,7 @@ const Dashboard = () => {
       <SiteKitAvailabilityCards siteKits={siteKits} loading={loading} onRefresh={() => fetchDashboardData(false)} />
 
       {/* Redesigned Actionable KPI Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
         {statCards.map((stat) => (
           <DashboardStatCard
             key={stat.id}
@@ -439,22 +439,22 @@ const Dashboard = () => {
                 variant={chartViewMode === 'project' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setChartViewMode('project')}
-                className={`h-7 px-2.5 rounded-md text-xs gap-1.5 font-medium cursor-pointer transition-all ${
+                className={`h-9 sm:h-7 min-h-[36px] sm:min-h-0 px-3 sm:px-2.5 rounded-md text-xs gap-1.5 font-medium cursor-pointer transition-all ${
                   chartViewMode === 'project' ? 'bg-emerald-600 text-white shadow-xs' : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                <Building2 className="w-3 h-3" /> {t('dashboard.byProject', 'By Project')}
+                <Building2 className="w-3.5 h-3.5 sm:w-3 sm:h-3" /> {t('dashboard.byProject', 'By Project')}
               </Button>
               <Button
                 type="button"
                 variant={chartViewMode === 'item' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setChartViewMode('item')}
-                className={`h-7 px-2.5 rounded-md text-xs gap-1.5 font-medium cursor-pointer transition-all ${
+                className={`h-9 sm:h-7 min-h-[36px] sm:min-h-0 px-3 sm:px-2.5 rounded-md text-xs gap-1.5 font-medium cursor-pointer transition-all ${
                   chartViewMode === 'item' ? 'bg-emerald-600 text-white shadow-xs' : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                <Package className="w-3 h-3" /> {t('dashboard.topItems', 'Top Items')}
+                <Package className="w-3.5 h-3.5 sm:w-3 sm:h-3" /> {t('dashboard.topItems', 'Top Items')}
               </Button>
             </div>
           </CardHeader>

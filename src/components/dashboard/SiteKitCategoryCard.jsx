@@ -111,8 +111,8 @@ const SiteKitCategoryCard = ({
         }`} 
       />
 
-      <CardHeader className="pb-2 pt-4 px-5">
-        <div className="flex items-center justify-between gap-2">
+      <CardHeader className="pb-2 pt-4 px-4 sm:px-5">
+        <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-2">
           <div className="flex items-center gap-2.5 min-w-0">
             <div className={`w-9 h-9 rounded-lg flex items-center justify-center bg-gradient-to-br ${gradientCls} border shrink-0`}>
               <Icon className="w-5 h-5" />
@@ -135,7 +135,7 @@ const SiteKitCategoryCard = ({
           </div>
 
           {/* Complete Sets Badge */}
-          <div className="shrink-0 text-right">
+          <div className="shrink-0 text-left sm:text-right">
             <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black border shadow-2xs ${
               isReady 
                 ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/40' 
@@ -152,7 +152,7 @@ const SiteKitCategoryCard = ({
         </div>
       </CardHeader>
 
-      <CardContent className="px-5 pb-4 pt-1 space-y-3 flex-1 flex flex-col justify-between">
+      <CardContent className="px-4 sm:px-5 pb-4 pt-1 space-y-3 flex-1 flex flex-col justify-between">
         {/* Bottleneck Summary Box */}
         <div className="rounded-lg p-2.5 bg-muted/40 border border-border/50 text-[11px] space-y-1.5 min-h-[58px]">
           <div className="flex items-center gap-1.5 font-semibold text-muted-foreground">

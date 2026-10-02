@@ -69,7 +69,7 @@ const ReportFilterBar = ({
               variant="outline"
               size="sm"
               onClick={onToggleCharts}
-              className={`h-8 px-2.5 rounded-lg text-xs font-medium gap-1.5 border-border transition-all ${
+              className={`h-9 sm:h-8 px-2.5 rounded-lg text-xs font-medium gap-1.5 border-border transition-all cursor-pointer ${
                 showCharts ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'
               }`}
             >
@@ -83,7 +83,7 @@ const ReportFilterBar = ({
                 variant="ghost"
                 size="sm"
                 onClick={onResetFilters}
-                className="h-8 px-2.5 text-xs text-muted-foreground hover:text-rose-600 dark:hover:text-rose-400 gap-1"
+                className="h-9 sm:h-8 px-2.5 text-xs text-muted-foreground hover:text-rose-600 dark:hover:text-rose-400 gap-1 cursor-pointer"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>{t('reports.filters.clearFilters')}</span>
@@ -95,7 +95,7 @@ const ReportFilterBar = ({
               variant="ghost"
               size="sm"
               onClick={() => setIsExpanded(!isExpanded)}
-              className="h-8 w-8 p-0 text-muted-foreground"
+              className="h-9 w-9 sm:h-8 sm:w-8 p-0 text-muted-foreground cursor-pointer"
             >
               {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </Button>
@@ -264,28 +264,28 @@ const ReportFilterBar = ({
                 <button
                   type="button"
                   onClick={() => handleApplyPreset('today')}
-                  className="px-2.5 py-1 rounded-lg bg-accent/60 hover:bg-accent text-foreground text-[11px] font-medium transition-colors border border-border/40"
+                  className="px-3 sm:px-2.5 py-1.5 sm:py-1 min-h-[36px] sm:min-h-0 rounded-lg bg-accent/60 hover:bg-accent text-foreground text-xs sm:text-[11px] font-medium transition-colors border border-border/40 cursor-pointer inline-flex items-center justify-center"
                 >
                   {t('reports.filters.today')}
                 </button>
                 <button
                   type="button"
                   onClick={() => handleApplyPreset('7days')}
-                  className="px-2.5 py-1 rounded-lg bg-accent/60 hover:bg-accent text-foreground text-[11px] font-medium transition-colors border border-border/40"
+                  className="px-3 sm:px-2.5 py-1.5 sm:py-1 min-h-[36px] sm:min-h-0 rounded-lg bg-accent/60 hover:bg-accent text-foreground text-xs sm:text-[11px] font-medium transition-colors border border-border/40 cursor-pointer inline-flex items-center justify-center"
                 >
                   {t('reports.filters.last7Days')}
                 </button>
                 <button
                   type="button"
                   onClick={() => handleApplyPreset('30days')}
-                  className="px-2.5 py-1 rounded-lg bg-accent/60 hover:bg-accent text-foreground text-[11px] font-medium transition-colors border border-border/40"
+                  className="px-3 sm:px-2.5 py-1.5 sm:py-1 min-h-[36px] sm:min-h-0 rounded-lg bg-accent/60 hover:bg-accent text-foreground text-xs sm:text-[11px] font-medium transition-colors border border-border/40 cursor-pointer inline-flex items-center justify-center"
                 >
                   {t('reports.filters.last30Days')}
                 </button>
                 <button
                   type="button"
                   onClick={() => handleApplyPreset('month')}
-                  className="px-2.5 py-1 rounded-lg bg-accent/60 hover:bg-accent text-foreground text-[11px] font-medium transition-colors border border-border/40"
+                  className="px-3 sm:px-2.5 py-1.5 sm:py-1 min-h-[36px] sm:min-h-0 rounded-lg bg-accent/60 hover:bg-accent text-foreground text-xs sm:text-[11px] font-medium transition-colors border border-border/40 cursor-pointer inline-flex items-center justify-center"
                 >
                   {t('reports.filters.thisMonth')}
                 </button>

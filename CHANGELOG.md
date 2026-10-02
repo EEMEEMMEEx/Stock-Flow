@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-10-02 14:26] - v1.11.5
+
+- **Files Modified:** `src/pages/Dashboard.jsx`, `src/components/dashboard/SiteKitCategoryCard.jsx`, `src/components/dashboard/SiteKitAvailabilityCards.jsx`, `src/components/reports/ReportHeader.jsx`, `src/components/reports/ReportFilterBar.jsx`, `src/pages/Projects.jsx`, `docs/mobile-responsive-overhaul-plan.md`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **Dashboard & Analytics (Phase 3):** ปรับปรุงระยะห่างกริด KPI Stat Cards บนหน้าจอขนาดกะทัดรัด (`gap-3 sm:gap-4 lg:gap-6`), ขยายพื้นที่สัมผัสปุ่มสลับมุมมองกราฟรายเดือน/รายสัปดาห์/รายวัน (`h-9 sm:h-7 min-h-[36px] sm:min-h-0`) ใช้งานง่ายด้วยนิ้วสัมผัส
+  - **Site Installation Kits Availability (BOM):** ปรับ Badge แสดงสถานะชุดสมบูรณ์ (Complete Sets) ในการ์ดหมวดหมู่พัสดุให้ตัดบรรทัดอย่างนุ่มนวลบนหน้าจอ 360px (`flex-wrap sm:flex-nowrap`), ปรับปรุงตาราง BOM Modal ทั้ง 4 ตาราง (Complete Set Editor, Spare Equipment Editor, Read-Only Complete, Read-Only Spare) ให้รองรับการเลื่อนแนวนอนแบบ Horizontal Scroll (`overflow-x-auto min-w-[580px] - min-w-[640px]`) หมดปัญหาคอลัมน์และปุ่มถูกตัดทับ, ขยายปุ่มถังขยะและปุ่มเพิ่มรายการให้อยู่ในเกณฑ์สัมผัสสะดวก
+  - **Reports & Export (Phase 3):** ยกเครื่องแท็บเลือกประเภทรายงาน (Transactions, Summary, Balance, Site Kits) จากเดิมที่บีบให้เป็นการ์ดยาว 4 แถวแนวตั้งบนมือถือ ให้กลายเป็น Swipeable Tab Bar เลื่อนแนวนอนได้คล่องตัวบนมือถือ (`flex overflow-x-auto sm:grid sm:grid-cols-4 whitespace-nowrap min-h-[40px]`), ขยายปุ่มช่วงวันที่ด่วน (Today, 7 Days, 30 Days, This Month) ให้มีขนาดสัมผัสขั้นต่ำ `min-h-[36px] sm:min-h-0`
+  - **Projects & Locations (Phase 3):** ขยายปุ่มการกระทำในรายการพื้นที่/คลัง (Edit, Delete, Add Location) เป็น `h-9 w-9 sm:h-7 sm:w-7` พร้อมแสดงผลอย่างชัดเจนบนหน้าจอสัมผัสโดยไม่ต้องรอสถานะ Hover
+  - ปรับ version ของระบบเป็น `v1.11.5` (PATCH)
+
 ## [2026-10-02 14:15] - v1.11.4
 
 - **Files Modified:** `src/pages/Items.jsx`, `src/pages/Withdrawals.jsx`, `src/components/withdrawals/WithdrawalPosTerminal.jsx`, `src/components/withdrawals/WithdrawalItemCard.jsx`, `src/pages/Checkouts.jsx`, `src/components/checkouts/CheckoutPosTerminal.jsx`, `docs/mobile-responsive-overhaul-plan.md`, `package.json`, `package-lock.json`, `CHANGELOG.md`
