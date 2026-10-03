@@ -9,7 +9,7 @@ import {
   ArrowUpFromLine, FileText, Sparkles, ExternalLink,
   Package, Clock, Layers,
   HelpCircle, SlidersHorizontal, ArrowLeftRight, Info,
-  BookmarkCheck, Zap
+  BookmarkCheck, Zap, Settings, PenTool
 } from 'lucide-react';
 import { useTranslation } from '@/i18n';
 
@@ -67,7 +67,7 @@ const SECTION_CONFIGS = [
     badgeColor: 'border-l-emerald-500',
     path: '/withdrawals',
     roles: ['SUPERVISOR', 'ADMIN'],
-    permissions: ['withdrawals.approve', 'withdrawals.reject'],
+    permissions: ['withdrawals.approve', 'withdrawals.reject', 'checkouts.approve'],
   },
   {
     id: 'stock-in-inventory-management',
@@ -134,6 +134,28 @@ const SECTION_CONFIGS = [
     path: '/reports',
     roles: ['SUPERVISOR', 'ADMIN'],
     permissions: ['reports.view', 'reports.export', 'history.view'],
+  },
+  {
+    id: 'system-settings-branding',
+    key: 'systemSettingsAndBranding',
+    category: ['admin'],
+    icon: Settings,
+    iconColor: 'text-slate-600 dark:text-slate-300',
+    badgeColor: 'border-l-slate-500',
+    path: '/settings',
+    roles: ['ADMIN'],
+    permissions: ['settings.view', 'settings.update'],
+  },
+  {
+    id: 'user-profile-signatures',
+    key: 'userProfileAndSignatures',
+    category: ['staff', 'supervisor', 'admin'],
+    icon: PenTool,
+    iconColor: 'text-fuchsia-500',
+    badgeColor: 'border-l-fuchsia-500',
+    path: '/profile',
+    roles: ['STAFF', 'SUPERVISOR', 'ADMIN'],
+    permissions: [],
   }
 ];
 

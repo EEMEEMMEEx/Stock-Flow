@@ -1750,200 +1750,240 @@ export default {
   },
   "manual": {
     "title": "StockFlow User Manual",
-    "subtitle": "Comprehensive system guide detailing workflows across all roles (Staff, Supervisor, Admin) and dynamic RBAC access control.",
-    "searchPlaceholder": "Search functions, permissions, steps...",
-    "filterByRole": "Filter by Role:",
-    "allSections": "All Sections",
+    "subtitle": "An end-to-end operating guide for every role (Staff, Supervisor, Admin) with a dynamic RBAC system of 41 permissions and complete approval, checkout, and return workflows.",
+    "searchPlaceholder": "Search features, permissions, procedures...",
+    "filterByRole": "Filter by role:",
+    "allSections": "All manual sections",
     "clearSearch": "Clear search",
-    "goToModule": "Open Live Page",
-    "badgeKnowledgeBase": "StockFlow System Knowledge Base",
-    "showingDocs": "Showing documentation: {{count}} of {{total}} sections",
-    "searchResultsFor": "Search results for: \"{{query}}\"",
-    "noDocsFound": "No documentation found matching your search query",
-    "noDocsHint": "Try searching for terms like \"withdrawals\", \"borrow\", \"approve\", \"CSV\", \"permissions\", or \"projects\"",
-    "showAllDocs": "Show all documentation",
+    "goToModule": "Go to module",
+    "badgeKnowledgeBase": "StockFlow Knowledge Base",
+    "showingDocs": "Showing: {{count}} of {{total}} sections",
+    "searchResultsFor": "Search results for: '{{query}}'",
+    "noDocsFound": "No manual sections match your search",
+    "noDocsHint": "Try keywords such as POS, R2, signature, 41, BOM, approve, or CSV",
+    "showAllDocs": "Show all sections",
     "whatItDoes": "What it does",
-    "whoCanUse": "Who can use",
-    "instructionsTitle": "Step-by-Step Instructions",
+    "whoCanUse": "Who can use it",
+    "instructionsTitle": "Step-by-step instructions",
     "proTipTitle": "Pro-Tip",
-    "warningsTitle": "Safety Rules / Warnings",
-    "helpTitle": "Need additional help or want to report an issue?",
-    "helpDesc": "If you encounter stock calculation issues, menu access errors, or require a specialized custom role, contact your organization System Administrator.",
+    "warningsTitle": "Safety rules & warnings",
+    "helpTitle": "Need more help or want to report an issue?",
+    "helpDesc": "If you encounter stock calculation issues, menu access problems, email notification delivery issues, or need a custom role, please contact your organization's System Administrator.",
     "roles": {
-      "staff": "Staff / Requisition",
+      "staff": "Staff / Requester",
       "supervisor": "Supervisor / Approver",
-      "admin": "Administrator & RBAC",
-      "checkouts": "Checkouts & Returns",
-      "inventory": "Inventory & Stock-In"
+      "admin": "Administrator",
+      "checkouts": "Checkouts (Loans & Returns)",
+      "inventory": "Inventory (Stock In)"
     },
     "roleMatrix": {
-      "staffTitle": "Requisition Staff (STAFF)",
+      "staffTitle": "Requisition Officer (STAFF)",
       "staffBadge": "Requester",
-      "staffDesc": "Check project inventory, create withdrawal orders via POS, borrow and return tools, request due date extensions, and track order status.",
-      "supervisorTitle": "Approver (SUPERVISOR)",
+      "staffDesc": "Review project stock, create withdrawal and checkout requests via the POS system, record a digital signature, request extensions, and track your own request status.",
+      "supervisorTitle": "Supervisor & Approver (SUPERVISOR)",
       "supervisorBadge": "Approver",
-      "supervisorDesc": "Review and approve/reject withdrawal requests, record stock receipts, adjust inventory balances, and export project summary reports.",
+      "supervisorDesc": "Approve or reject both material withdrawals and equipment checkout requests, record stock receipts, adjust balances, transfer between warehouses, and export summary reports.",
       "adminTitle": "System Administrator (ADMIN)",
       "adminBadge": "Administrator",
-      "adminDesc": "Full administrative authority: manage projects, item catalog, user accounts, project access scopes, and configure dynamic RBAC at /roles."
+      "adminDesc": "Full administrative access: manage projects and items, user accounts, project access scopes, configure RBAC at /roles, and system/email settings at /settings."
     },
     "sections": {
       "sidebarNav": {
-        "title": "1. Navigation & RBAC Visibility",
-        "shortDesc": "Overview of menu layout and permission-based dynamic visibility.",
-        "whatItDoes": "The sidebar and action buttons in StockFlow are dynamic and context-aware. Menus appear only when your account is granted permissions corresponding to each specific module. If a menu is hidden, your assigned role does not currently have access.",
-        "whoCanUse": "All system users. Menu visibility varies depending on assigned role and permissions.",
+        "title": "1. Navigation & Menu Visibility (RBAC Visibility)",
+        "shortDesc": "Overview of the menu layout, notification bell, and permission-driven dynamic rendering.",
+        "whatItDoes": "The sidebar and action buttons adapt automatically to your permissions. A menu only appears when your account holds the matching module permission. The Topbar also hosts the notification bell with an unread badge, the profile menu, and theme/language toggles.",
+        "whoCanUse": "All system users. Menu visibility differs by assigned role and permissions.",
         "steps": [
-          "Check authorized navigation items in the sidebar.",
-          "Upon selecting a page, access is validated across both the frontend router and database Row-Level Security (RLS).",
-          "To request additional menu access, contact a System Administrator to update your role permissions at /roles."
+          "Review the three main menu groups: Main Operations (Dashboard, Projects, Items, Stock In, Withdrawals, Checkouts, History, Reports), Administration (Users, Roles), and Account & Help (Profile, Manual, Settings)",
+          "Click the notification bell at the top-right to view notifications in All / Unread / Action Required tabs with an unread counter",
+          "When you open a page, the system verifies permissions at both the Router and the database Row-Level Security (RLS) layer",
+          "Access system settings at /settings (requires settings.view) and your personal profile at /profile from any role",
+          "To request additional access, ask an administrator to adjust it on the /roles page"
         ],
-        "proTips": "Administrators can customize menu permissions for each role dynamically via /roles without updating application code.",
-        "warnings": "Directly navigating to unauthorized URLs will be blocked by system security (403 Forbidden)."
+        "proTips": "Administrators can adjust each role's menu access instantly on the /roles page without code changes, and some notifications include a Quick Approve button so you can act directly from the bell.",
+        "warnings": "Typing an unauthorized URL directly is blocked immediately (403 Forbidden), and menu items may differ from expectations if a role is changed mid-session."
       },
       "staffRequisitionPos": {
-        "title": "2. Stock Checking & Withdrawal POS Terminal",
-        "shortDesc": "Select project, check available balances, and submit requisitions via the POS cart.",
-        "whatItDoes": "The POS Terminal interface allows operators to select projects, search for materials, verify actual available stock, and submit multi-item requisition orders seamlessly in a single transaction.",
-        "whoCanUse": "Requisition staff (Staff / Requester) and all roles granted withdrawals.create permission.",
+        "title": "2. Stock Review & POS Requisition",
+        "shortDesc": "Choose a project, filter by colored category cards, verify live stock, and submit a requisition with a digital signature.",
+        "whatItDoes": "The POS Terminal lets staff choose a project, search or filter materials using colored Category Filter Cards, verify live balances, and submit multiple requisition lines in a single transaction. A digital signature is mandatory before any transaction.",
+        "whoCanUse": "Requisition officers (Staff / Requester) and any role that holds withdrawals.create.",
         "steps": [
-          "Navigate to \"Withdrawals\" and select the destination project from the selector.",
-          "Click \"+ New Request (POS)\" to open the POS shopping cart terminal.",
-          "Search for items, enter required quantities, and click \"Add to Cart\" (alerts will trigger if quantity exceeds available stock).",
-          "Select the storage location and specify purpose or usage notes.",
-          "Review line items and click \"Submit Request\" to finalize."
+          "Create your digital signature first at /profile on the Signature tab (the system blocks transactions until a signature exists)",
+          "Go to Withdrawals and select the destination project",
+          "Click + Create Requisition (POS) to open the cart",
+          "Search for materials or click a colored category card to filter, enter the quantity, then click Add to Cart (the system warns instantly if the request exceeds stock)",
+          "Select the destination storage location, specify the purpose/notes, and confirm the signature is attached",
+          "Review all lines, then click Confirm Requisition Submission"
         ],
-        "proTips": "Use the Site Kits / BOM Requisition feature to add standardized project kits to the cart in a single click.",
-        "warnings": "Requisition orders are verified atomically on an All-or-Nothing basis during approval. If any item is out of stock, the entire order is rejected."
+        "proTips": "Use Site Kits (BOM) to add a full standard material set to the cart in one click, and print the Dispatch Note after approval.",
+        "warnings": "Requisitions are validated All-or-Nothing during approval: if any single line has insufficient stock, the entire requisition cannot be approved. Without a signature the system will not accept the submission."
       },
       "withdrawalStatusLifecycle": {
-        "title": "3. Withdrawal Status Lifecycle",
-        "shortDesc": "Understanding the 4 lifecycle stages from order submission to final stock deduction.",
-        "whatItDoes": "Provides transparent tracking of requisition order progress so requesters and supervisors can monitor status with precision.",
-        "whoCanUse": "Requesters, Approvers, and Administrators.",
+        "title": "3. Withdrawal Lifecycle & PDF Printing Policy",
+        "shortDesc": "Understand the four statuses and the strict PDF document printing rules.",
+        "whatItDoes": "Track requisition progress transparently, with a Strict PDF Policy: the Withdrawal Voucher and Dispatch Note can only be printed for approved and completed statuses, and both carry the requester's and approver's digital signatures automatically.",
+        "whoCanUse": "Requesters, approvers, and administrators.",
         "steps": [
-          "1. Pending: Order submitted, awaiting supervisor or admin review and stock availability check.",
-          "2. Approved: Order approved; requester can pick up materials at the designated warehouse.",
-          "3. Completed: Materials successfully issued; stock balances are deducted from inventory.",
-          "4. Rejected: Order rejected (e.g. insufficient stock or invalid requisition details) with reason provided."
+          "1. Pending: the request has been submitted and is awaiting supervisor stock verification (PDF not available yet)",
+          "2. Approved: the request is approved and stock is deducted, and the voucher PDF can be printed",
+          "3. Completed: materials have been received and the balance is officially deducted",
+          "4. Rejected: the request is declined with a reason (PDF cannot be printed)"
         ],
-        "proTips": "Requesters can inspect rejection reasons and audit logs in the order details view to correct and resubmit.",
-        "warnings": "Physical stock is not deducted from inventory until the order is approved and marked as completed."
+        "proTips": "Dual signatures (requester and approver) on the document reduce errors and provide reliable evidence for auditing.",
+        "warnings": "The print PDF button is hidden or disabled for pending and rejected statuses, and attempting to print returns a restriction message from the system."
       },
       "checkoutsAndReturns": {
-        "title": "4. Checkouts & Equipment Borrowing",
-        "shortDesc": "Record tool checkouts, schedule due dates, request extensions, and process returns.",
-        "whatItDoes": "Manages circulating tools and returnable assets required for temporary field tasks. Features automated due-date countdowns, overdue tracking, and return date extensions.",
-        "whoCanUse": "Staff borrowing equipment and warehouse staff processing returns.",
+        "title": "4. Checkouts & Returns - The Four-Tab System",
+        "shortDesc": "Submit a checkout via POS, approve before dispensing, track active loans, extend, assess return condition, and print PDF documents.",
+        "whatItDoes": "A tool and equipment loan system for field work with four tabs: Pending Approval, Active Loans, POS Checkout, and History. It supports standard and indefinite loans, approval before stock deduction, extensions, and return condition assessment (normal/damaged/lost).",
+        "whoCanUse": "Requesting staff, warehouse officers receiving returns, and supervisors/administrators who approve.",
         "steps": [
-          "Borrowing: Go to \"Checkouts\", click \"+ Borrow Tool\", select borrower, expected return date, and item serial number.",
-          "Monitoring: View active checkout status (Active, Due Soon, or Overdue).",
-          "Extension (Extend Due Date): If additional time is needed, click \"Extend Due Date\", choose a new date, and provide a reason.",
-          "Returns: When equipment is returned, warehouse staff click \"Return\", inspect condition, and confirm to restore item to stock."
+          "Checkout (POS): open the POS Checkout tab, select the borrower and project, pick equipment, enter quantities, and set a due date (or choose indefinite), then submit",
+          "Pending approval: a supervisor opens the Pending Approval tab, reviews the lines, then clicks Approve & Dispense (which deducts real stock) or Reject with a reason",
+          "Tracking: the Active Loans tab shows In Use / Due Soon / Overdue states (overdue items carry a red bar)",
+          "Extension: on an active loan click Extend Due Date, choose a new date and a reason (indefinite loans cannot be extended)",
+          "Return: a warehouse officer clicks Return, assesses the condition (normal/damaged/lost), and confirms receipt back into stock",
+          "Print documents: print the Checkout Slip, Dispatch Note, or Return Receipt as a PDF once approved and dispensed"
         ],
-        "proTips": "Overdue items are highlighted with red status badges for rapid equipment tracking and recovery.",
-        "warnings": "Inspect tool physical condition and operational status thoroughly before confirming return into inventory."
+        "proTips": "Use the History tab to search past loans by borrower or equipment, and overdue items are highlighted for easier follow-up.",
+        "warnings": "Always assess the condition before confirming a return, and documents can only be printed for loans that have been approved and dispensed."
       },
       "supervisorApprovalWorkflow": {
-        "title": "5. Supervisor Approval Workflow",
-        "shortDesc": "Stock validation guidelines, full-order approvals, and the All-or-Nothing principle.",
-        "whatItDoes": "Ensures safe and consistent approval processing by calculating real-time inventory balances and enforcing All-or-Nothing atomic transactions to eliminate inventory discrepancies.",
-        "whoCanUse": "Supervisors, Approvers, and Administrators.",
+        "title": "5. Supervisor Approval (Requisitions & Checkouts)",
+        "shortDesc": "Approve both material withdrawals and equipment checkouts with locked stock verification.",
+        "whatItDoes": "The central approval hub for authorized users, covering material withdrawals (withdrawals.approve / withdrawals.reject) and equipment checkouts (checkouts.approve). Balances are calculated in real time and Row-Level Locking (SELECT ... FOR UPDATE) prevents stock contention.",
+        "whoCanUse": "Supervisors, approvers, and administrators.",
         "steps": [
-          "Navigate to \"Withdrawals\" and filter by \"Pending\" status.",
-          "Click an order to review requested items, quantities, and current available stock.",
-          "If all items have sufficient available stock, click \"Approve\".",
-          "If even one item is insufficient, click \"Reject\" and provide an explanatory note for the requester."
+          "Approve a withdrawal: go to Withdrawals, filter by Pending, open the request, verify the balance, then click Approve or Reject with a reason",
+          "Approve a checkout: go to Checkouts, open the Pending Approval tab, review the lines, then click Approve & Dispense (real stock deduction) or Reject",
+          "Quick approval from the bell: click the quick-approve button on a notification to act immediately without opening the module",
+          "Verify transfer rights: transferring stock between warehouses requires inventory.transfer or inventory.manage"
         ],
-        "proTips": "The system uses PostgreSQL row-level locking so multiple approvers can process orders simultaneously without race conditions.",
-        "warnings": "Partial approvals for individual items in an order are disabled to maintain accounting and requisition integrity."
+        "proTips": "The system locks the stock_balance row during approval, so multiple approvers can work concurrently without race conditions.",
+        "warnings": "Partial approval is not supported for withdrawals, and approval deducts real stock immediately, so verify before confirming."
       },
       "stockInInventoryManagement": {
         "title": "6. Stock In & CSV Import",
-        "shortDesc": "Direct stock receipts entry and bulk imports via CSV/Excel spreadsheets.",
-        "whatItDoes": "Records replenishment of materials and equipment into projects. Supports both single-entry direct receipts and bulk file uploads in a single operation.",
-        "whoCanUse": "Warehouse personnel, Supervisors, and Administrators.",
+        "shortDesc": "Record individual receipts and bulk-import with the standard CSV template (DOPA+USO).",
+        "whatItDoes": "Record stock replenishment into projects through either manual line entry or bulk CSV/Excel import, with multi-warehouse detection and a preview table before confirming.",
+        "whoCanUse": "Warehouse officers, supervisors, and administrators.",
         "steps": [
-          "Navigate to \"Stock Receipts\" and click \"+ Receive Stock\" or \"Import CSV\".",
-          "Direct Entry: Select storage location, select items, enter quantities, and record PO or delivery note numbers.",
-          "CSV Import: Click \"Import CSV\", download the template, populate records, and upload the file.",
-          "Review preview table for accurate quantities and click \"Confirm Stock Receipt\"."
+          "Go to Stock In and choose + Receive Stock or Import CSV",
+          "Direct entry: choose the storage location, pick the item, enter the quantity, and record the PO or delivery number (Supplier / PO)",
+          "CSV import: click to download the standard DOPA+USO CSV template, fill it in, then upload the file (UTF-8 BOM is supported)",
+          "Review the preview table, select the detected destination warehouse, and confirm the stock receipt",
+          "Export a summary at Reports on the Stock In Report tab (Excel/PDF)"
         ],
-        "proTips": "Ensure CSV files are saved in UTF-8 encoding (or UTF-8 BOM) for flawless parsing.",
-        "warnings": "Recording stock in increments available balances immediately. Verify SKU codes and locations before confirming."
+        "proTips": "Save CSV files as UTF-8 (or UTF-8 BOM) to prevent garbled Thai characters, and use the standard template so columns map automatically.",
+        "warnings": "Receipts increase balances immediately, so verify the SKU, storage location, and quantities before confirming."
       },
       "stockAdjustmentAndTransfer": {
-        "title": "7. Stock Adjustment & Transfer",
-        "shortDesc": "Physical inventory cycle counting, stock adjustments, and cross-warehouse transfers.",
-        "whatItDoes": "Designed for periodic inventory audits and cycle counts. Allows operators to adjust stock balances up or down due to damage, shrinkage, or audit discrepancies, as well as transfer materials between projects and locations.",
-        "whoCanUse": "Supervisors and Administrators granted items.adjust_stock permission.",
+        "title": "7. Stock Adjustment & Cross-Warehouse Transfer",
+        "shortDesc": "Two distinct transactions: cycle count adjustment and warehouse/project transfer.",
+        "whatItDoes": "Supports two different operations: 1) Cycle Count Adjustment to increase or decrease balances from physical counts, damage, or loss, requiring items.adjust_stock; 2) Warehouse Transfer of items between warehouses/projects through the process_item_transfer RPC, requiring inventory.transfer or inventory.manage.",
+        "whoCanUse": "Supervisors and administrators holding the relevant permission.",
         "steps": [
-          "Navigate to \"Items Master\" and locate the item to adjust.",
-          "Click \"Adjust Stock\".",
-          "Enter the actual counted quantity or choose adjustment direction (Increase / Decrease).",
-          "Specify the reason for adjustment (e.g. Annual Cycle Count, Damaged Goods, Initial Balance Import).",
-          "Confirm the adjustment. The system logs an audit entry and updates the balance immediately."
+          "Adjust: go to Items, find the item, click Adjust Stock, enter the counted quantity or the increase/decrease direction with a reason, then confirm",
+          "Transfer: on the Items page choose Transfer, specify source and destination warehouses, the quantity, and a reason, then confirm",
+          "The system records an audit log with the timestamp, actor, and reason every time",
+          "Review outcomes later under Transaction History"
         ],
-        "proTips": "All stock adjustments are logged in detail in \"History\" with timestamps, operator identity, and reasons.",
-        "warnings": "Negative adjustments directly affect inventory valuation. Supervisor approval is recommended before submitting."
+        "proTips": "Transfers require inventory.transfer or inventory.manage, which is a different permission from adjustment (items.adjust_stock).",
+        "warnings": "Reducing stock directly affects inventory value, so supervisor approval is recommended before proceeding."
       },
       "projectsAndItemsMaster": {
-        "title": "8. Projects & Master Catalog",
-        "shortDesc": "Create projects, configure storage locations, and register SKU catalog items.",
-        "whatItDoes": "Master Data repository for managing project structures, physical warehouse locations, and catalog registrations for all materials and equipment.",
-        "whoCanUse": "System Administrators.",
+        "title": "8. Projects & Items Master Data",
+        "shortDesc": "Create projects/sub-warehouses, register items, upload images via R2, and set the low-stock threshold.",
+        "whatItDoes": "The master data source for project structure, sub-warehouses, and the full materials/equipment catalog. It supports uploading item images to Cloudflare R2 (Zero Egress) and hiding cancelled records with an Inactive toggle.",
+        "whoCanUse": "Administrators.",
         "steps": [
-          "Creating Projects: Go to \"Projects\", click \"+ Add Project\", specify project code, name, and sub-locations.",
-          "Deactivating Projects: When a project concludes, change its status to Inactive to prevent new transactions while preserving audit history.",
-          "Registering Items: Go to \"Items Master\", click \"+ Add Item\", specify SKU, name, unit of measure, and category."
+          "Create a project: go to Projects, click + New Project, and specify the code, name, and sub-storage locations",
+          "Deactivate: set a project to Inactive to block new transactions while preserving history",
+          "Register items: go to Items, click + Add Item, and specify the SKU, name, unit, and category",
+          "Upload item images: choose an image file and the system uploads it to Cloudflare R2, storing only the URL in the database",
+          "Set the low-stock threshold: configure low_stock_threshold under /settings on the General Settings tab"
         ],
-        "proTips": "Standardize project codes and SKU patterns (e.g. PRJ-001, MAT-ELC-001) for optimal search and filtering performance.",
-        "warnings": "Inactive projects are automatically hidden from withdrawal and stock-in forms."
+        "proTips": "Use the Inactive toggle to show or hide cancelled records, and standardize project/SKU codes for faster searching.",
+        "warnings": "Projects set to Inactive are hidden automatically from withdrawal and stock-in forms, and large binary files should never be stored in the database (use R2 only)."
       },
       "userManagementAndAvatars": {
-        "title": "9. User Management & Scopes",
-        "shortDesc": "Create user accounts, assign roles, define project access scopes, and manage R2 profile avatars.",
-        "whatItDoes": "Centralized administration for user accounts, profile details, departments, project scopes, forced password resets, and Cloudflare R2 avatars.",
-        "whoCanUse": "System Administrators.",
+        "title": "9. User Management, Project Access & Email Invitations",
+        "shortDesc": "Create accounts, send invitation emails, define project scopes, and manage three account statuses.",
+        "whatItDoes": "The user account hub covering profiles, departments, Project Access Scopes, email invitations with a temporary password, and avatars via Cloudflare R2, plus Last Admin Protection.",
+        "whoCanUse": "Administrators.",
         "steps": [
-          "Go to \"Users\", click \"+ Add User\" or click the pencil icon to edit an existing user.",
-          "Profile Tab: Enter full name, phone number, department, position, upload avatar, and toggle \"Force password change on next login\".",
-          "Role & Status Tab: Select the user role and account status (ACTIVE, INACTIVE, or SUSPENDED).",
-          "Project Access Tab: Choose \"All Projects\" or \"Selected Projects\" to restrict project visibility.",
-          "Click \"Save Changes\". Updates sync to the database and refresh the table instantly."
+          "Go to User Management and click + Add User, or the pencil icon to edit an existing user",
+          "General tab: enter name, phone, department, and position, upload a photo, and choose to force a password change on first login",
+          "Invitation: tick Send invitation and account activation email and the system emails a first-login link and assigns a temporary password automatically",
+          "Role & Status tab: select the role and account status (ACTIVE, INACTIVE, or SUSPENDED)",
+          "Project Access tab: choose All Projects or Specific to restrict project visibility",
+          "Click Save and resend an invitation from the user list if the email failed"
         ],
-        "proTips": "The system includes Last Admin Protection to prevent accidental deactivation or demotion of the final administrator.",
-        "warnings": "When employees leave, set their account status to INACTIVE instead of deleting to preserve historical audit logs."
+        "proTips": "Last Admin Protection prevents disabling or demoting the final administrator at both the UI and database-trigger levels, and the default password must be changed on first login.",
+        "warnings": "When an employee leaves, set the account to INACTIVE instead of deleting it to preserve transaction history, and SMTP must be configured correctly before invitations can be sent."
       },
       "dynamicRbacRoleManagement": {
         "title": "10. Dynamic RBAC at /roles",
-        "shortDesc": "Create custom roles, configure granular permissions, and customize badge color themes.",
-        "whatItDoes": "Advanced Role-Based Access Control system enabling Administrators to create custom roles and configure permissions across 36+ granular security rights.",
-        "whoCanUse": "System Administrators.",
+        "shortDesc": "Create roles, assign 41 permissions, pick a badge color, and rely on the Dependency Engine.",
+        "whatItDoes": "An advanced role-based access control system that lets administrators create custom roles and assign granular permissions, 41 in total across all main operational categories, with role badge colors and a Permission Dependency Engine.",
+        "whoCanUse": "Administrators.",
         "steps": [
-          "Navigate to \"Roles & Permissions\" at `/roles`.",
-          "Inspect user counts and permission allocations on role summary cards.",
-          "Click \"+ Create New Role\", specify role code, display name, description, and badge color with live preview.",
-          "Click \"Manage Permissions\" on any role card to toggle functional permissions.",
-          "The Permission Dependency Engine automatically activates prerequisite permissions (e.g. enabling project creation auto-enables project viewing).",
-          "Click \"Save Permissions\". Changes take effect immediately for all users assigned to that role."
+          "Go to Roles & Permissions at /roles",
+          "Review the user and permission counts on each role card",
+          "Click + New Role, specify the code, display name, and description, and pick a badge color with a live preview",
+          "Click Manage Permissions to toggle permissions, grouped by category",
+          "The Dependency Engine auto-enables prerequisites (for example, enabling items.update enables items.view) and unchecks dependent children when a parent is disabled",
+          "Click Save Permissions; changes apply immediately to every user in that role"
         ],
-        "proTips": "Default system roles (ADMIN, STAFF, SUPERVISOR) are protected from deletion to maintain system stability.",
-        "warnings": "Revoking permissions takes effect immediately for active sessions assigned to that role."
+        "proTips": "The built-in system roles (ADMIN, STAFF, SUPERVISOR) are protected from deletion, and the catalog currently holds 41 permissions.",
+        "warnings": "Revoking a permission takes effect immediately for users currently signed in, and permissions should be edited with an understanding of dependencies to avoid orphaned access."
       },
       "reportsAndAuditHistory": {
         "title": "11. Reports & Audit Trail",
-        "shortDesc": "Generate inventory summaries, requisition reports, and export to Excel / PDF.",
-        "whatItDoes": "Reporting hub for inventory balances, stock movements, project requisition history, and user audit logs. Supports export to formatted Excel spreadsheets and print-ready PDF documents.",
-        "whoCanUse": "Supervisors, Approvers, Executives, and Administrators.",
+        "shortDesc": "Four report categories: Stock In, Withdrawals, Balance, and Site Kits, exportable to Excel/PDF.",
+        "whatItDoes": "A reporting hub with four tabs: 1) Stock In Report, 2) Withdrawals Report, 3) Stock Balance Report, and 4) BOM Specs & Site Kits Readiness, with KPIs, charts, and Excel/PDF export.",
+        "whoCanUse": "Supervisors, approvers, executives, and administrators.",
         "steps": [
-          "Navigate to \"Reports\" and choose the desired report type (Stock Balance / Withdrawal History / Site Kits Report).",
-          "Select date range and filter by project.",
-          "Click \"Export Excel (XLSX)\" for spreadsheet analysis.",
-          "Click \"Print PDF Report\" to generate an official formatted document with letterhead and statistical summaries."
+          "Go to Reports and choose the desired tab (Stock In / Withdrawals / Balance / Site Kits)",
+          "Filter by date range, project, and category",
+          "Toggle between chart visuals and the detail table as needed",
+          "Click Export Excel for further analysis or Export PDF for a formal document",
+          "Review detailed transactions under Transaction History (timestamp, actor, and changed data)"
         ],
-        "proTips": "Inspect audit trail details at any time in \"History\", which records IP addresses, timestamps, and change diffs.",
-        "warnings": "When exporting large datasets, select specific date ranges to optimize report generation speed."
+        "proTips": "The Site Kits tab reveals assembly readiness and bottlenecks, and narrowing the date range speeds up large exports.",
+        "warnings": "Exporting requires reports.export, and large datasets should be narrowed by date range before processing."
+      },
+      "systemSettingsAndBranding": {
+        "title": "12. System Settings & Email Notifications (Settings & Branding)",
+        "shortDesc": "Configure SMTP, manage email templates with Live Preview, and define email branding.",
+        "whatItDoes": "The system settings hub with four tabs: General, Email (SMTP), Security & Access, and System Status. It supports notification email template management with Live Preview, test sending, Global Branding (logo, accent color, Base URL), and security policies such as Last Admin Protection.",
+        "whoCanUse": "Administrators holding settings.view / settings.update.",
+        "steps": [
+          "Go to Settings at /settings",
+          "General Settings tab: set the app name, organization, subtitle, low-stock threshold, and requisition policy",
+          "Email (SMTP) tab: enter host, port, user, and sender, choose the TLS mode (STARTTLS/SSL), and test sending",
+          "Manage email templates: enable or disable notification events, set recipients by role, and edit templates with live preview",
+          "Global Branding: define the logo, accent color, and Base URL used across all emails",
+          "Security & Access tab: review the password policy, secure vault storage, and Last Admin Protection"
+        ],
+        "proTips": "Use the Test Email button after every SMTP change, and check Live Preview before saving a template to confirm correct rendering.",
+        "warnings": "settings.update is required to save (accounts without it see read-only mode), and the SMTP password is stored securely in the vault and never echoed back in responses."
+      },
+      "userProfileAndSignatures": {
+        "title": "13. User Profile & Digital Signature",
+        "shortDesc": "Manage personal details, change your password, and draw a digital signature for documents.",
+        "whatItDoes": "A personal page for every user with three tabs: Personal Info (with avatar upload via Cloudflare R2), self-service password change, and Digital Signature (a Signature Pad drawn with a mouse or finger that is stamped automatically onto vouchers, checkout slips, and return receipts).",
+        "whoCanUse": "Every signed-in user (Authenticated User) with no special permission required.",
+        "steps": [
+          "Go to Profile at /profile",
+          "Personal Info tab: edit your name, phone, and position, and upload a profile photo (stored on R2)",
+          "Change Password tab: enter and confirm a new password to change it yourself",
+          "Signature tab: draw your signature in the box with a mouse or finger, then click Save Signature",
+          "The signature is stamped onto PDF documents automatically and can be removed or redrawn at any time"
+        ],
+        "proTips": "Create your signature before transacting (withdraw, checkout, or approve), because the system blocks and redirects you to create one first, and you can jump straight to the Signature tab from the prompt.",
+        "warnings": "A signature is bound to your account and validates document transactions; never share your account, and without a signature you cannot perform document-based transactions."
       }
     }
   },

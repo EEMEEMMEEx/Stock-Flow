@@ -1,5 +1,19 @@
 # Changelog
 
+## [2026-10-03 15:10] - v1.13.7
+
+- **Files Modified:** `src/pages/Manual.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **ปรับปรุงคู่มือ `/manual` ให้ตรงกับระบบจริง 100%**: ขยายจาก 11 เป็น **13 ส่วน** โดยเพิ่ม 2 ส่วนใหม่ — `systemSettingsAndBranding` (id: `system-settings-branding`, path: `/settings`, สิทธิ์ `settings.view`/`settings.update`) และ `userProfileAndSignatures` (id: `user-profile-signatures`, path: `/profile`, ทุกบทบาทที่ล็อกอิน) พร้อม import ไอคอน `Settings` และ `PenTool` จาก `lucide-react`
+  - **อัปเดตเนื้อหา 11 ส่วนเดิมตาม Gap Analysis**: ระบบขอเบิก POS พร้อมการ์ดหมวดหมู่สีและข้อบังคับลายเซ็นดิจิทัล; Strict PDF Policy (พิมพ์ได้เฉพาะ `approved`/`completed`); ระบบยืม-คืน 4 แท็บ (รออนุมัติ/กำลังยืม/POS/ประวัติ) + การยืมแบบไม่กำหนดคืน + การพิมพ์ Checkout Slip/Dispatch Note/Return Receipt; การอนุมัติทั้งใบเบิกและคำขอยืมพร้อม Quick Approve บนกระดิ่งและ Row-Level Locking; เทมเพลต CSV มาตรฐาน DOPA+USO; แยกการปรับยอด (`items.adjust_stock`) ออกจากโอนย้ายข้ามคลัง (`inventory.transfer`); อัปโหลดรูปพัสดุผ่าน Cloudflare R2 + Inactive toggle; เทียบเชิญผู้ใช้ทางอีเมลพร้อมรหัสผ่านชั่วคราว + Project Access Scopes + Last Admin Protection + สถานะ 3 ระดับ; RBAC 41 สิทธิ์; รายงาน 4 แท็บ; ตั้งค่า SMTP/เทมเพลตอีเมล Live Preview/Global Branding/นโยบายความปลอดภัย; โปรไฟล์ 3 แท็บพร้อม Signature Pad
+  - **แก้ตัวเลขสิทธิ์ให้ถูกต้อง**: `dynamicRbacRoleManagement` เปลี่ยนจาก "มากกว่า 36 รายการ" เป็น **41 รายการ** (ยืนยันจาก migration catalog: 35 base ใน `54_complete_rbac_audit_and_fix.sql` + `checkouts.extend`, `items.adjust_stock`, `items.manage`, `checkouts.approve`, `inventory.transfer`, `inventory.manage`)
+  - **แก้ข้อคลาดเคลื่อนของร่างแผนตามหลักฐานในโค้ด**: รายงานที่ 4 คือ **Stock In** (ไม่ใช่รายงานการยืม-คืน — `ReportHeader.jsx` มีแท็บ stock_in/withdrawals/balance/site_kits), เทมเพลต CSV ชื่อ `DOPA_USO_Equipment_Template.csv` (ไม่ใช่ `stock_in_canonical_template.csv`) และเกณฑ์สต็อกต่ำตั้งที่ `/settings` ไม่ใช่หน้า `/items`
+  - **หมายเหตุ**: Version Badge ใน Footer ตรวจแล้วว่ามีอยู่แล้วแบบรวมศูนย์ที่ `AppFooter.jsx` (`v{APP_CONFIG.version}` จาก `package.json`) และแสดงบน `/manual` ผ่าน `PageWrapper` จึงไม่เพิ่มซ้ำ
+  - **การพิสูจน์ (รันจริง)**: `npm run check:i18n` **PASS** (1816/1816 คีย์ parity 100%); `npm run lint` **PASS** 0 errors (19 warnings เดิม ไม่มีไฟล์ที่แก้เพิ่ม warning); `npm run build` **PASS** (3987 modules); สคริปต์ตรวจสอบเชิงโครงสร้างยืนยัน 13 ส่วน, ทุกคีย์ `manual.sections.*` มีครบทั้ง TH/EN (`title/shortDesc/whatItDoes/whoCanUse/steps[]/proTips/warnings`), ทุก `path` มีจริงใน `App.jsx` และทุก permission badge อยู่ในแคตตาล็อก 41 รหัส — PROBLEMS: none
+  - ปรับ version ของระบบเป็น `v1.13.7` (PATCH)
+
+og
+
 ## [2026-10-03 12:38] - v1.13.6
 
 - **Files Modified:** `src/lib/emailSettings.js`, `src/lib/emailSettings.test.js`, `src/lib/emailRenderer.js`, `src/lib/emailRenderer.test.js`, `src/lib/notificationDispatcher.js`, `src/components/settings/EmailTemplateManager.jsx`, `src/pages/Settings.jsx`, `src/pages/UserManagement.jsx`, `api/send-email.js`, `api/checkouts-cron.js`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `scripts/verify-email-branding.mjs` (ใหม่), `package.json`, `package-lock.json`, `CHANGELOG.md`, `docs/global-branding-audit-and-fix-plan.md`
