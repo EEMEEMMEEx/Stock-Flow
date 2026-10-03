@@ -25,6 +25,7 @@ import {
   formatThaiDateOrDateTime,
   buildCheckoutEmailItems,
 } from '../src/lib/emailRenderer.js';
+import { normalizeBaseUrl } from '../src/lib/emailSettings.js';
 
 const BANGKOK_TIME_ZONE = 'Asia/Bangkok';
 const EVENT_DUE_SOON = 'checkout_due_soon';
@@ -266,7 +267,7 @@ async function dispatchOne({
   const checkoutId = order.order_number;
   const totalQty = items.reduce((sum, item) => sum + (Number(item.requested_qty) || 0), 0);
   const unitLabel = items[0]?.unit || 'ชิ้น';
-  const basePublicUrl = String(branding.public_base_url || baseUrl).replace(/\/+$/, '');
+  const basePublicUrl = normalizeBaseUrl(branding.public_base_url || baseUrl);
   const actionUrl = `${basePublicUrl}/checkouts?order_id=${encodeURIComponent(checkoutId)}`;
 
   const emailData = {

@@ -11,6 +11,7 @@ import { getSampleEmailData, renderEmailHtml, SUPPORTED_EVENT_VARIABLES } from '
 import { APP_CONFIG } from '@/config/appConfig';
 import toast from 'react-hot-toast';
 import { sendTestEmail } from '@/lib/emailService';
+import { isLikelyImageUrl, isValidHttpUrl, normalizeBaseUrl } from '@/lib/emailSettings';
 import { useTranslation } from '@/i18n';
 
 const DEFAULT_BRANDING = {
@@ -376,7 +377,31 @@ const EmailTemplateManager = ({
 
   const handleSaveAll = () => {
     if (!canUpdate) return toast.error(t('settings.toasts.permissionDenied', { perm: 'settings.update', defaultValue: 'You do not have permission to save email templates' }));
-    onSave({ branding, events });
+
+    // Normalise and validate the two admin-typed URLs before they reach the dispatcher,
+    // so a trailing slash or a missing scheme can never break an email CTA link.
+    const baseUrlInput = String(branding.public_base_url || '').trim();
+    if (baseUrlInput && !isValidHttpUrl(baseUrlInput)) {
+      return toast.error(t('settings.emailTemplates.branding.invalidBaseUrl', 'Public Base URL must be a valid http(s) URL (e.g. https://stockflowth.online)'));
+    }
+
+    const logoInput = String(branding.logo_url || '').trim();
+    if (logoInput && !isValidHttpUrl(logoInput)) {
+      return toast.error(t('settings.emailTemplates.branding.invalidLogoUrl', 'Logo Image URL must be a valid http(s) URL (e.g. https://stockflowth.online/images/logo.png)'));
+    }
+    if (logoInput && !isLikelyImageUrl(logoInput)) {
+      toast(t('settings.emailTemplates.branding.logoExtensionWarning', 'The logo URL has no image file extension; some email clients may not render it'), { duration: 6000 });
+    }
+
+    const normalizedBranding = {
+      ...branding,
+      app_name: String(branding.app_name || '').trim() || DEFAULT_BRANDING.app_name,
+      logo_url: logoInput,
+      public_base_url: baseUrlInput ? normalizeBaseUrl(baseUrlInput) : '',
+    };
+
+    setBranding(normalizedBranding);
+    onSave({ branding: normalizedBranding, events });
     setIsDirty(false);
     toast.success(t('settings.toasts.emailTemplatesSaved', 'Saved email settings and templates successfully'));
   };
@@ -390,7 +415,7 @@ const EmailTemplateManager = ({
 
     try {
       setSendingTest(true);
-      await sendTestEmail(trimmedEmail, { ...selectedEvent, event_type: selectedEventKey });
+      await sendTestEmail(trimmedEmail, { ...selectedEvent, event_type: selectedEventKey, branding });
       toast.success(t('settings.toasts.testEmailSent', { email: trimmedEmail, defaultValue: `Test email sent to ${trimmedEmail} successfully` }));
     } catch (e) {
       toast.error(e.message || t('settings.toasts.testEmailFailed', 'An error occurred while sending test email via SMTP server'));

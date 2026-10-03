@@ -9,7 +9,14 @@ import {
   buildCheckoutEmailItems,
 } from './emailRenderer';
 import { sendStockFlowEmail } from './emailService';
-import { EMAIL_REGEX, isValidEmail, parseEmailList, mergeNotificationSettings } from './emailSettings';
+import {
+  EMAIL_REGEX,
+  buildActionUrl,
+  isValidEmail,
+  mergeNotificationSettings,
+  normalizeBaseUrl,
+  parseEmailList,
+} from './emailSettings';
 
 const dispatchedEventsCache = new Set();
 
@@ -50,6 +57,15 @@ const fetchNotificationSettings = async () => {
     return { notificationEvents: {}, branding: {} };
   }
   return mergeNotificationSettings(rpcData);
+};
+
+/**
+ * Branding-only convenience for flows that render their own email body (user
+ * invitations) and do not need the per-event routing table.
+ */
+export const fetchEmailBranding = async () => {
+  const { branding } = await fetchNotificationSettings();
+  return branding;
 };
 
 /**
@@ -261,7 +277,7 @@ export const dispatchWithdrawalNotification = async ({
       rejected_by: approverName || actorNames.rejectedByName || 'ผู้ปฏิเสธ',
       completed_by: approverName || actorNames.completedByName || 'ผู้จ่ายวัสดุ',
       rejection_reason: rejectionReason || order.rejection_reason || order.reject_reason || '',
-      action_url: branding.public_base_url || 'https://stockflowth.online/withdrawals',
+      action_url: buildActionUrl(branding.public_base_url, '/withdrawals'),
       items
     };
 
@@ -380,7 +396,7 @@ export const dispatchStockInNotification = async ({
       status_badge: 'รับเข้า Stock',
       item_count: `${lineItems.length} รายการ`,
       total_quantity: `${totalQuantity} หน่วย`,
-      action_url: branding.public_base_url ? `${branding.public_base_url}/stock-in` : 'https://stockflowth.online/stock-in',
+      action_url: buildActionUrl(branding.public_base_url, '/stock-in'),
       items: lineItems
     };
 
@@ -473,7 +489,7 @@ export const dispatchLowStockAlertNotification = async ({
       threshold: `${threshold ?? 10} หน่วย`,
       status: 'ต่ำกว่าเกณฑ์',
       status_badge: 'Stock ต่ำกว่าเกณฑ์',
-      action_url: branding.public_base_url ? `${branding.public_base_url}/items` : 'https://stockflowth.online/items',
+      action_url: buildActionUrl(branding.public_base_url, '/items'),
       items: []
     };
 
@@ -673,7 +689,7 @@ export const dispatchCheckoutNotification = async ({
 
     // 5. Build template data payload shared by HTML, text and subject
     const appName = branding.app_name || 'StockFlow';
-    const publicBaseUrl = branding.public_base_url || 'https://stockflowth.online';
+    const publicBaseUrl = normalizeBaseUrl(branding.public_base_url);
     const todayBangkok = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok' }).format(new Date());
     const approvedDate = formatThaiDateTime(order.approved_at || new Date().toISOString());
     const returnTimestamp = extraData.returnedAt || new Date().toISOString();
@@ -704,7 +720,7 @@ export const dispatchCheckoutNotification = async ({
       reject_reason: rejectionReason || order.rejection_reason || '',
       condition: extraData.condition ? formatReturnCondition(extraData.condition) : '',
       condition_details: extraData.conditionDetails || '',
-      public_base_url: String(publicBaseUrl).replace(/\/+$/, ''),
+      public_base_url: publicBaseUrl,
       // Legacy withdrawal-style aliases kept in the shared data contract
       request_no: order.order_number || `CHK-${String(order.id || '').slice(0, 8).toUpperCase()}`,
       requester_name: order.borrower_name || 'ผู้ขอยืม',
@@ -722,7 +738,7 @@ export const dispatchCheckoutNotification = async ({
       purpose: order.purpose || '-',
       note: order.notes || '',
       generated_date: todayBangkok,
-      action_url: `${String(publicBaseUrl).replace(/\/+$/, '')}/checkouts?order_id=${encodeURIComponent(order.order_number || order.id)}`,
+      action_url: buildActionUrl(publicBaseUrl, `/checkouts?order_id=${encodeURIComponent(order.order_number || order.id)}`),
       items: emailItems,
     };
 

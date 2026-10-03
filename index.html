@@ -16,16 +16,14 @@
         var theme = savedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
         document.documentElement.classList.add(theme === 'dark' ? 'dark' : 'light');
 
-        // Defensive error isolation for external browser extensions, injected scripts, and DevTools Live Metrics (Soft Navs)
+        // Defensive error isolation for third-party browser extension content scripts only (CHANGELOG v1.4.57).
+        // Do NOT re-add guards for DevTools / injected-script console noise here - see CHANGELOG v1.10.22 and
+        // docs/runtime-starttime-console-error-investigation-plan.md (audit: those raw needle strings must never
+        // return to this file; npm run verify:runtime-guards fails if they do).
         function shouldSuppressExternalError(msg, stack) {
           if (!msg && !stack) return false;
           var text = (String(msg) + ' ' + String(stack || '')).toLowerCase();
-          return (
-            text.includes("cannot read properties of undefined (reading 'onmessage')") ||
-            text.includes("cannot read properties of undefined (reading 'starttime')") ||
-            text.includes('reportallchanges') ||
-            text.includes('devtoolsreportsoftnavs')
-          );
+          return text.includes("cannot read properties of undefined (reading 'onmessage')");
         }
 
         window.addEventListener('error', function (event) {

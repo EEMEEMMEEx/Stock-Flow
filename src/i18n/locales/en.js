@@ -854,6 +854,7 @@ export default {
       "dispatchNoteDownloaded": "Dispatch note downloaded",
       "dispatchNotePdfFailed": "Failed to generate dispatch note PDF",
       "dispatchNoteNotAllowed": "Dispatch note is available only for approved or dispensed loans",
+      "checkoutSlipNotAllowed": "Checkout slip is available only for approved or dispensed loans",
       "alreadyReturned": "This order has already been fully returned. Duplicate returns are not permitted.",
       "officerProfileLoadFailed": "Unable to load the dispensing officer profile. Signature details in the document may be incomplete."
     },
@@ -1452,7 +1453,10 @@ export default {
         "logoUrlPlaceholder": "https://domain.com/logo.png",
         "publicBaseUrl": "Public Base URL",
         "publicBaseUrlPlaceholder": "https://stockflowth.online",
-        "accentColor": "Accent Color"
+        "accentColor": "Accent Color",
+        "invalidBaseUrl": "Public Base URL is invalid — use the format https://domain.com",
+        "invalidLogoUrl": "Logo Image URL is invalid — use a full http(s) URL",
+        "logoExtensionWarning": "The logo URL has no image file extension; some email clients may not render it"
       },
       "events": {
         "withdrawal_submitted": {

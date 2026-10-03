@@ -341,7 +341,7 @@ const Settings = () => {
         customSmtpOverrides.pass = smtpForm.new_password.trim();
       }
 
-      await sendTestEmail(trimmedEmail, null, customSmtpOverrides);
+      await sendTestEmail(trimmedEmail, { branding: emailBranding }, customSmtpOverrides);
       toast.success(t('settings.toasts.testEmailSent', { email: trimmedEmail, defaultValue: `Test email sent to ${trimmedEmail} successfully` }));
       setIsTestEmailOpen(false);
       setTestEmailRecipient('');

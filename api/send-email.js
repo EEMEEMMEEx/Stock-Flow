@@ -180,6 +180,29 @@ export default async function handler(req, res) {
       }
     }
 
+    // 2b. Global Branding (Settings > Global Branding > Sender Display Name) drives the
+    // `From` display name. Read with the service role so the header stays authoritative
+    // regardless of which caller (browser dispatcher, cron, invitation) sent the mail.
+    let brandingAppName = '';
+    if (supabaseUrl && serviceRoleKey) {
+      try {
+        const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
+          auth: { autoRefreshToken: false, persistSession: false }
+        });
+        const { data: brandingData } = await supabaseAdmin
+          .from('system_settings')
+          .select('value')
+          .eq('key', 'branding')
+          .maybeSingle();
+        const parsedBranding = typeof brandingData?.value === 'string'
+          ? JSON.parse(brandingData.value)
+          : brandingData?.value;
+        brandingAppName = String(parsedBranding?.app_name || '').trim();
+      } catch (brandingErr) {
+        console.warn('[Vercel API send-email] Branding lookup skipped:', brandingErr.message);
+      }
+    }
+
     // 3. Priority: Verified Admin Overrides > Supabase DB Config > Environment Variables
     const host = effectiveSmtpOverrides?.host || dynamicSmtp.host || process.env.SMTP_HOST || 'smtp.gmail.com';
     const port = Number(effectiveSmtpOverrides?.port || dynamicSmtp.port || process.env.SMTP_PORT || 465);
@@ -192,7 +215,17 @@ export default async function handler(req, res) {
     const user = effectiveSmtpOverrides?.user || dynamicSmtp.user || process.env.SMTP_USER;
     const pass = effectiveSmtpOverrides?.pass || dynamicSmtp.pass || process.env.SMTP_PASS;
     const senderEmail = effectiveSmtpOverrides?.sender_email || dynamicSmtp.sender_email || process.env.SMTP_SENDER_EMAIL || process.env.EMAIL_FROM || user;
-    const senderName = effectiveSmtpOverrides?.sender_name || dynamicSmtp.sender_name || process.env.SMTP_SENDER_NAME || process.env.EMAIL_FROM_NAME || 'StockFlow Notification';
+    // Global Branding wins over the legacy smtp_config.sender_name; an explicit admin
+    // SMTP override (Settings > SMTP > Send test) still takes precedence. Quotes and
+    // CR/LF are stripped so the hand-built header cannot be injected or malformed.
+    const senderName = String(
+      effectiveSmtpOverrides?.sender_name
+      || brandingAppName
+      || dynamicSmtp.sender_name
+      || process.env.SMTP_SENDER_NAME
+      || process.env.EMAIL_FROM_NAME
+      || 'StockFlow Notification'
+    ).replace(/["\\\r\n]+/g, ' ').replace(/\s+/g, ' ').trim() || 'StockFlow Notification';
 
     if (!user || !pass) {
       console.error('[Vercel API send-email] SMTP credentials missing in environment and secrets vault');

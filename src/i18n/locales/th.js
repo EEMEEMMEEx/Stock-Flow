@@ -854,6 +854,7 @@ export default {
       "dispatchNoteDownloaded": "ดาวน์โหลดใบนำส่งเบิกของเรียบร้อยแล้ว",
       "dispatchNotePdfFailed": "สร้างไฟล์ PDF ใบนำส่งเบิกของไม่สำเร็จ",
       "dispatchNoteNotAllowed": "พิมพ์ใบนำส่งได้เฉพาะรายการที่อนุมัติและจ่ายพัสดุแล้วเท่านั้น",
+      "checkoutSlipNotAllowed": "พิมพ์ใบยืมพัสดุได้เฉพาะรายการที่อนุมัติและจ่ายพัสดุแล้วเท่านั้น",
       "alreadyReturned": "รายการนี้ส่งคืนครบถ้วนแล้ว ไม่สามารถทำรายการคืนซ้ำได้",
       "officerProfileLoadFailed": "ไม่สามารถโหลดข้อมูลเจ้าหน้าที่ผู้จ่าย/รับคืนพัสดุได้ รายละเอียดลายเซ็นในเอกสารอาจไม่ครบถ้วน"
     },
@@ -1452,7 +1453,10 @@ export default {
         "logoUrlPlaceholder": "https://domain.com/logo.png",
         "publicBaseUrl": "URL ฐานสาธารณะ (Public Base URL)",
         "publicBaseUrlPlaceholder": "https://stockflowth.online",
-        "accentColor": "สีเน้นหลัก (Accent Color)"
+        "accentColor": "สีเน้นหลัก (Accent Color)",
+        "invalidBaseUrl": "URL ฐานสาธารณะไม่ถูกต้อง กรุณาระบุในรูปแบบ https://domain.com",
+        "invalidLogoUrl": "URL รูปภาพโลโก้ไม่ถูกต้อง กรุณาระบุ URL แบบ http(s) ที่สมบูรณ์",
+        "logoExtensionWarning": "URL โลโก้ไม่มีนามสกุลไฟล์รูปภาพ ไคลเอนต์อีเมลบางตัวอาจไม่แสดงรูป"
       },
       "events": {
         "withdrawal_submitted": {

@@ -20,6 +20,7 @@ import UserStatusDot from '@/components/ui/UserStatusDot';
 import { getRoleLabel } from '@/lib/roleUtils';
 import { uploadAvatarImage } from '@/lib/avatarUpload';
 import { sendUserInvitationEmail } from '@/lib/emailService';
+import { fetchEmailBranding } from '@/lib/notificationDispatcher';
 import { useTranslation } from '@/i18n';
 
 const UserManagement = () => {
@@ -224,7 +225,8 @@ const UserManagement = () => {
               userName: userPayload.full_name,
               roleName: userPayload.roleName || getRoleLabel(userPayload.role),
               projectAccessSummary: userPayload.all_projects ? 'All Projects' : `${userPayload.project_ids?.length || 0} selected projects`,
-              actionUrl: window.location.origin
+              actionUrl: window.location.origin,
+              branding: await fetchEmailBranding()
             });
             toast.success('User created and invitation email sent successfully');
           } catch (emailError) {
@@ -251,7 +253,8 @@ const UserManagement = () => {
         userName: user.full_name,
         roleName: user.role,
         projectAccessSummary: user.all_projects ? 'All Projects' : `${user.assigned_project_ids?.length || 0} assigned projects`,
-        actionUrl: window.location.origin
+        actionUrl: window.location.origin,
+        branding: await fetchEmailBranding()
       });
       toast.success(`Invitation email resent to ${user.email} successfully`);
     } catch (error) {

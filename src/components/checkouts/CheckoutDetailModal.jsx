@@ -196,6 +196,11 @@ const CheckoutDetailModal = ({
 
   // PDF Export Handlers
   const handleDownloadCheckoutPDF = async () => {
+    if (!CHECKOUT_DISPATCH_STATUSES.includes(order.status)) {
+      toast.error(t('checkouts.toasts.checkoutSlipNotAllowed', 'Checkout slip is available only for approved or dispensed loans'));
+      return;
+    }
+
     try {
       setGeneratingPdf(true);
       const blob = await pdf(<MaterialCheckoutPDF order={order} staffProfile={approverProfile || staffProfile} />).toBlob();
@@ -524,17 +529,19 @@ const CheckoutDetailModal = ({
 
         <DialogFooter className="gap-2 flex-wrap sm:justify-between border-t border-border/40 pt-3">
           <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={generatingPdf}
-              onClick={handleDownloadCheckoutPDF}
-              className="rounded-lg h-9 text-xs gap-1.5 font-semibold text-indigo-700 dark:text-indigo-400 border-indigo-500/30 hover:bg-indigo-500/10 shadow-2xs cursor-pointer"
-            >
-              <FileText className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-              <span>{t('checkouts.printCheckoutSlip')}</span>
-            </Button>
+            {CHECKOUT_DISPATCH_STATUSES.includes(order.status) && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={generatingPdf}
+                onClick={handleDownloadCheckoutPDF}
+                className="rounded-lg h-9 text-xs gap-1.5 font-semibold text-indigo-700 dark:text-indigo-400 border-indigo-500/30 hover:bg-indigo-500/10 shadow-2xs cursor-pointer"
+              >
+                <FileText className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                <span>{t('checkouts.printCheckoutSlip')}</span>
+              </Button>
+            )}
 
             {CHECKOUT_DISPATCH_STATUSES.includes(order.status) && (
               <Button

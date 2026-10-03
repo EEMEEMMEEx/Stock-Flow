@@ -84,3 +84,76 @@ export const mergeNotificationSettings = (rows) => {
     branding: branding && typeof branding === 'object' ? branding : {},
   };
 };
+
+/** Fallback used when Global Branding leaves the public base URL empty. */
+export const DEFAULT_PUBLIC_BASE_URL = 'https://stockflowth.online';
+
+/**
+ * Self-hosted logo shipped in `public/images/` (300x90). Email clients cannot
+ * resolve relative URLs, so the absolute production URL is required.
+ */
+export const DEFAULT_LOGO_URL = `${DEFAULT_PUBLIC_BASE_URL}/images/logo.png`;
+
+/** True when the raw value already carries an explicit non-http(s) scheme. */
+const hasForeignScheme = (raw) => /^[a-z][a-z0-9+.-]*:\/\//i.test(raw) && !/^https?:\/\//i.test(raw);
+
+/**
+ * Normalise an admin-typed absolute URL so joined paths never produce `//`:
+ * trims, prepends a missing `https://`, strips trailing slashes and rejects
+ * anything that is not http(s).
+ *
+ * @param {unknown} value      raw setting value (`https://x.com/`, `x.com`, ``)
+ * @param {string} [fallback]  returned for blank/invalid input (pass `''` to detect "not set")
+ * @returns {string}
+ */
+export const normalizeBaseUrl = (value, fallback = DEFAULT_PUBLIC_BASE_URL) => {
+  const raw = typeof value === 'string' ? value.trim() : '';
+  if (!raw || hasForeignScheme(raw)) return fallback;
+
+  const candidate = (/^https?:\/\//i.test(raw) ? raw : `https://${raw}`).replace(/\/+$/, '');
+
+  try {
+    const url = new URL(candidate);
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return fallback;
+    if (!url.hostname) return fallback;
+    return candidate;
+  } catch {
+    return fallback;
+  }
+};
+
+/**
+ * Join a normalised base with a route path, guaranteeing exactly one slash
+ * between them. Query-only paths (`?order_id=X`) are appended as-is.
+ *
+ * @param {unknown} baseUrl      raw `branding.public_base_url`
+ * @param {string} [routePath]   `/withdrawals`, `checkouts`, `?order_id=X`
+ * @param {string} [fallbackBase]
+ * @returns {string}
+ */
+export const buildActionUrl = (baseUrl, routePath = '', fallbackBase = DEFAULT_PUBLIC_BASE_URL) => {
+  const base = normalizeBaseUrl(baseUrl, fallbackBase);
+  const path = String(routePath ?? '');
+  if (!path) return base;
+  return `${base}${path.startsWith('/') || path.startsWith('?') ? path : `/${path}`}`;
+};
+
+/**
+ * Validation gate for the Settings form. Deliberately accepts `localhost` so
+ * local development can still save; rendering applies the stricter
+ * `sanitizeHttpUrl` gate separately.
+ */
+export const isValidHttpUrl = (value) => {
+  const raw = typeof value === 'string' ? value.trim() : '';
+  if (!raw || hasForeignScheme(raw)) return false;
+
+  try {
+    const url = new URL(/^https?:\/\//i.test(raw) ? raw : `https://${raw}`);
+    return (url.protocol === 'http:' || url.protocol === 'https:') && Boolean(url.hostname);
+  } catch {
+    return false;
+  }
+};
+
+/** Heuristic used for a non-blocking warning only (CDN URLs often omit an extension). */
+export const isLikelyImageUrl = (value) => /\.(png|jpe?g|gif|svg|webp)(\?.*)?$/i.test(String(value ?? '').trim());

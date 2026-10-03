@@ -3,6 +3,8 @@
  * Uses only inline styles and presentational tables for Gmail and Outlook.
  */
 
+import { DEFAULT_LOGO_URL, normalizeBaseUrl } from './emailSettings.js';
+
 const THAI_MONTHS = [
   'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
   'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
@@ -924,7 +926,7 @@ export const renderEmailHtml = ({ branding = {}, template = {}, data = SAMPLE_EM
   };
   const accentColor = sanitizeColor(branding.accent_color);
   const appName = escapeHtml(branding.app_name || data.app_name || 'StockFlow');
-  const logoUrl = sanitizeHttpUrl(branding.logo_url, '');
+  const logoUrl = sanitizeHttpUrl(normalizeBaseUrl(branding.logo_url, '') || DEFAULT_LOGO_URL, '');
   const actionUrl = sanitizeHttpUrl(
     resolveEmailVariables(template.cta_url || data.action_url || '', data),
     event.startsWith('checkout_') ? 'https://stockflowth.online/checkouts' : 'https://stockflowth.online/withdrawals'
@@ -1311,6 +1313,7 @@ export const renderUserInvitationEmailHtml = ({
   const accent = sanitizeColor(branding.accent_color || '#2563eb');
   const safeUrl = sanitizeHttpUrl(actionUrl, 'https://eemeemmeex.github.io/Stock-Flow');
   const effectiveAppName = escapeHtml(branding.app_name || appName);
+  const logoUrl = sanitizeHttpUrl(normalizeBaseUrl(branding.logo_url, '') || DEFAULT_LOGO_URL, '');
   const year = new Date().getFullYear().toString();
   const preheader = `ระบบ ${effectiveAppName} ได้เปิดสิทธิ์การใช้งานสำหรับคุณ ${escapeHtml(userName || '')} เรียบร้อยแล้ว`;
   const rows = [
@@ -1339,7 +1342,7 @@ export const renderUserInvitationEmailHtml = ({
       <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="width: 100%; max-width: 620px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; overflow: hidden;">
         <tr><td style="padding: 20px 28px; border-bottom: 3px solid ${accent};">
           <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
-            <td style="vertical-align: middle;"><span style="font-size: 22px; line-height: 28px; font-weight: 800; color: ${accent};">${effectiveAppName}</span></td>
+            <td style="vertical-align: middle;">${logoUrl ? `<img src="${logoUrl}" alt="${effectiveAppName}" style="display: block; max-width: 170px; max-height: 36px; width: auto; border: 0;" />` : `<span style="font-size: 22px; line-height: 28px; font-weight: 800; color: ${accent};">${effectiveAppName}</span>`}</td>
             <td align="right" style="vertical-align: middle; font-size: 10px; line-height: 14px; font-weight: 700; letter-spacing: .3px; color: #64748b;">INVENTORY MANAGEMENT SYSTEM</td>
           </tr></table>
         </td></tr>
@@ -1456,7 +1459,7 @@ export const buildCheckoutEmailData = ({
   const checkoutDate = formatThaiDateTime(order.checkout_date || order.created_at || new Date().toISOString());
   const projectName = project?.name || order.project_name || 'โครงการทั่วไป';
   const projectCode = project?.project_code || project?.code || '-';
-  const baseUrl = String(publicBaseUrl || '').replace(/\/+$/, '');
+  const baseUrl = normalizeBaseUrl(publicBaseUrl, '');
   const primaryItem = items[0] || {};
   const totalQty = items.reduce((sum, item) => sum + (Number(item.requested_qty) || 0), 0);
   const unitLabel = primaryItem.unit || 'ชิ้น';

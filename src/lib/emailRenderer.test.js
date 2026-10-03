@@ -371,3 +371,52 @@ test('builds a complete checkout email payload from an order row', () => {
   assert.ok(rendered.includes('วัชระ มานะดี'));
   assert.ok(rendered.includes('3 วัน'));
 });
+
+// ---------------------------------------------------------------------------
+// Global Email Branding — logo, accent colour and URL normalisation
+// ---------------------------------------------------------------------------
+
+test('renders the self-hosted logo and accent colour in event and invitation HTML', () => {
+  const branding = {
+    app_name: 'StockFlow QA',
+    accent_color: '#3b82f6',
+    logo_url: 'stockflowth.online/images/logo.png', // scheme-less input must be repaired
+  };
+
+  const eventHtml = renderEmailHtml({
+    branding,
+    template: { event_type: 'withdrawal_submitted' },
+    data: getSampleEmailData('withdrawal_submitted'),
+  });
+  assert.match(eventHtml, /<img src="https:\/\/stockflowth\.online\/images\/logo\.png"/);
+  assert.ok(eventHtml.includes('#3b82f6'));
+
+  // Bug #6: the invitation template used to render text only
+  const invitationHtml = renderUserInvitationEmailHtml({
+    appName: 'StockFlow',
+    userName: 'QA User',
+    userEmail: 'qa@stockflowth.online',
+    roleName: 'STAFF',
+    projectAccessSummary: '1 project',
+    actionUrl: 'https://stockflowth.online/',
+    branding,
+  });
+  assert.match(invitationHtml, /<img src="https:\/\/stockflowth\.online\/images\/logo\.png"/);
+  assert.ok(invitationHtml.includes('#3b82f6'));
+
+  // A cleared logo falls back to the asset shipped in public/images/
+  const fallbackHtml = renderEmailHtml({
+    branding: { ...branding, logo_url: '' },
+    template: { event_type: 'withdrawal_submitted' },
+    data: getSampleEmailData('withdrawal_submitted'),
+  });
+  assert.match(fallbackHtml, /<img src="https:\/\/stockflowth\.online\/images\/logo\.png"/);
+
+  // An unusable logo URL must never be emitted as a broken <img>
+  const brokenLogoHtml = renderEmailHtml({
+    branding: { ...branding, logo_url: 'ftp://files.example.com/logo.png' },
+    template: { event_type: 'withdrawal_submitted' },
+    data: getSampleEmailData('withdrawal_submitted'),
+  });
+  assert.doesNotMatch(brokenLogoHtml, /ftp:/);
+});
