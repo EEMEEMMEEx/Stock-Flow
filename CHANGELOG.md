@@ -1,5 +1,19 @@
 # Changelog
 
+## [2026-10-08 23:30] - v1.13.8
+
+- **Files Modified:** `supabase/migrations/76_fix_approve_inventory_request_approved_quantity.sql` (ใหม่), `src/lib/rpcErrors.js` (ใหม่), `src/pages/Withdrawals.jsx`, `src/hooks/useNotifications.js`, `src/components/layout/NotificationBell.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `scripts/build-migration-62.mjs`, `scripts/build-clean-migration-61.mjs`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **Root cause (แก้ที่ฟังก์ชัน ไม่ใช่สคีมา):** `public.approve_inventory_request()` มีบรรทัด `SET approved_quantity = v_deduct` ใน `UPDATE public.withdrawal_items` แต่คอลัมน์ `approved_quantity` **ไม่เคยมีอยู่จริงในทุก migration** — ชื่อนี้ถูกสร้างใน `61_complete_all_system_rpcs.sql` แล้วตกค้างมาถึง `62_align_all_rpc_parameter_signatures.sql` และ `65_security_and_reliability_remediation.sql` แม้สองตัวหลังจะเพิ่มคอลัมน์จริง (`available_at_approval`, `deducted_quantity`, `shortage_quantity`) แล้วก็ตาม PL/pgSQL ไม่ตรวจชื่อคอลัมน์ตอน `CREATE FUNCTION` บั๊กจึงนอนหลับจนกดปุ่ม Approve แล้วได้ `42703` → PostgREST `400`
+  - **หลักฐานสคีมา production (vrnutseacyejnzwcfamv):** ยืนยันผ่าน PostgREST OpenAPI ว่า `withdrawal_items` มี `available_at_approval`, `deducted_quantity`, `shortage_quantity`, `is_shortage`, `requested_qty`, `fulfilled_qty` แต่ **ไม่มี** `approved_quantity`; และยิง `?select=approved_quantity` ได้ `42703` ตรงกับ error ที่รายงาน
+  - **Migration 76 (idempotent, reversible):** `CREATE OR REPLACE FUNCTION public.approve_inventory_request(UUID, BOOLEAN, TEXT)` ตามนิยามล่าสุดของ migration 65 โดย **ตัดเฉพาะบรรทัด `approved_quantity` ออก** — ค่าเดียวกันถูกเก็บใน `deducted_quantity` อยู่แล้วใน UPDATE เดียวกัน, คง `SECURITY DEFINER`, `search_path = public, auth, pg_temp` และ `GRANT` เดิม; ด้านล่างมี verification query และ rollback note
+  - **ไม่เพิ่มคอลัมน์ `approved_quantity`:** เพราะเป็นค่าซ้ำกับ `deducted_quantity` และไม่มี consumer ใด (frontend / Reports / History / PDF) อ่านคอลัมน์นี้ — ถ้าเพิ่มจะเป็น dead column ขัดกับ data contract ที่ใช้ `available_at_approval`/`deducted_quantity`/`shortage_quantity`
+  - **UI error handling (ไม่ให้ ล้มเหลวเงียบ):** เพิ่ม `src/lib/rpcErrors.js` (`isSchemaMismatchError`, `cleanRpcMessage`) แล้วให้ `Withdrawals.jsx` แสดงข้อความชัดเจนเป็นภาษาไทย/อังกฤษเมื่อเจอ schema mismatch แทนข้อความ Postgres ดิบ, ให้ `handleApproveOrder` คืนค่า `true/false` และ **คง Modal รายละเอียดไว้เมื่ออนุมัติล้มเหลว** (เดิมปิด Modal ทันทีทำให้ผู้ใช้ไม่เห็น error บริบทเดิม), และ `useNotifications`/`NotificationBell` ส่ง flag `schemaMismatch` ขึ้น toast
+  - **i18n:** เพิ่ม `withdrawals.toasts.approveFailedSchema` และ `notifications.approveFailedSchema` ครบ TH/EN
+  - **กันบั๊กกลับมา:** แก้ generator `scripts/build-migration-62.mjs` และ `scripts/build-clean-migration-61.mjs` ไม่ให้ emit คอลัมน์ `approved_quantity` อีก (ไฟล์ migration 61/62/65 ที่ apply ไปแล้วคงไว้ตามเดิม — append-only) 
+  - **การพิสูจน์ (รันจริง):** `npm run check:i18n` PASS; `npm run lint` PASS; `npm run build` PASS — ส่วนการ apply migration 76 บน production และกด Approve จริงทำโดยผู้ใช้ผ่าน Supabase SQL Editor (ดูคู่มือ/rollback ในไฟล์ migration)
+  - ปรับ version ของระบบเป็น `v1.13.8` (PATCH)
+
 ## [2026-10-03 15:10] - v1.13.7
 
 - **Files Modified:** `src/pages/Manual.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `package.json`, `package-lock.json`, `CHANGELOG.md`

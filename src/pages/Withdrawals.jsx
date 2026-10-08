@@ -7,6 +7,7 @@ import { MaterialWithdrawalPDF, MaterialDispatchPDF } from '@/lib/pdf-templates'
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n';
 import { toSafeFileToken } from '@/lib/utils';
+import { isSchemaMismatchError } from '@/lib/rpcErrors';
 import toast from 'react-hot-toast';
 import { dispatchWithdrawalNotification, dispatchLowStockAlertNotification } from '@/lib/notificationDispatcher';
 
@@ -530,7 +531,7 @@ const Withdrawals = () => {
 
   // Atomic Approve via Supabase RPC with Shortage Override support
   const handleApproveOrder = async (orderId, allowShortage = false, overrideReason = '') => {
-    if (!canApprove || isProcessing) return;
+    if (!canApprove || isProcessing) return false;
 
     if (!profile?.signature_url) {
       toast.error(t('profile.signatureRequired', 'กรุณาเพิ่มลายเซ็นก่อนทำรายการ'));
@@ -579,6 +580,8 @@ const Withdrawals = () => {
           override_reason: overrideReason
         }));
       }
+
+      return true;
     } catch (error) {
       console.error('Approve Error:', error);
       const rawMsg = error.message || '';
@@ -597,6 +600,14 @@ const Withdrawals = () => {
         } catch {
           toast.error(t('withdrawals.toasts.insufficientInventory'));
         }
+      } else if (isSchemaMismatchError(error)) {
+        // 42703 / PGRST202 etc: the RPC references a column the deployed schema
+        // does not have (migration not applied yet). Show an actionable message
+        // instead of the raw Postgres sentence.
+        toast.error(
+          t('withdrawals.toasts.approveFailedSchema', 'Approval failed: the database schema is out of date (pending migration). Please contact an administrator.'),
+          { id: toastId, duration: 8000 }
+        );
       } else {
         let cleanErrMsg = rawMsg.replace(/.*(?:EXCEPTION|Error|P0001):\s*/i, '') || 'Failed to approve requisition';
         if (cleanErrMsg.includes('Insufficient stock for this project')) {
@@ -607,6 +618,7 @@ const Withdrawals = () => {
         }
         toast.error(cleanErrMsg, { id: toastId, duration: 6000 });
       }
+      return false;
     } finally {
       setIsProcessing(false);
     }
@@ -908,9 +920,11 @@ const Withdrawals = () => {
         canApprove={canApprove}
         canReject={canReject}
         canComplete={canComplete}
-        onApproveOrder={(orderId) => {
-          handleApproveOrder(orderId);
-          setIsDetailsModalOpen(false);
+        onApproveOrder={async (orderId) => {
+          // Keep the modal open when approval fails so the error stays visible
+          // next to the request that failed.
+          const approved = await handleApproveOrder(orderId);
+          if (approved) setIsDetailsModalOpen(false);
         }}
         onOpenRejectModal={(order) => {
           openRejectModal(order);

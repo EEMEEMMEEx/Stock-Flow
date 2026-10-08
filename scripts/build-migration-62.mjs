@@ -748,8 +748,7 @@ BEGIN
     END IF;
 
     UPDATE public.withdrawal_items
-    SET approved_quantity = v_deduct,
-        available_at_approval = v_available,
+    SET available_at_approval = v_available,
         deducted_quantity = v_deduct,
         shortage_quantity = v_shortage
     WHERE id = v_item.id;

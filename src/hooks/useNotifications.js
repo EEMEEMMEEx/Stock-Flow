@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import { isSchemaMismatchError } from '@/lib/rpcErrors';
 
 const PAGE_SIZE = 15;
 
@@ -143,7 +144,12 @@ export const useNotifications = (userId) => {
       return { success: true, data, message: data?.message || 'Withdrawal request approved successfully' };
     } catch (err) {
       console.error('Quick Approve Error in Notification:', err);
-      return { success: false, error: err, message: err.message || 'An error occurred during approval' };
+      return {
+        success: false,
+        error: err,
+        schemaMismatch: isSchemaMismatchError(err),
+        message: err.message || 'An error occurred during approval'
+      };
     }
   }, [loadNotifications, markAsRead]);
 

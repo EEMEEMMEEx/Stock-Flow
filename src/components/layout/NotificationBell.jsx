@@ -214,6 +214,13 @@ const NotificationBell = () => {
           navigate(resolveNotificationTarget(notification) || '/withdrawals?tab=orders');
           return;
         }
+        if (result.schemaMismatch) {
+          toast.error(
+            t('notifications.approveFailedSchema', 'Approval failed: the database schema is out of date (pending migration). Please contact an administrator.'),
+            { duration: 8000 }
+          );
+          return;
+        }
         toast.error(errorMsg || t('notifications.approveFailed'));
         return;
       }

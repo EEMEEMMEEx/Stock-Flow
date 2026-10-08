@@ -635,6 +635,7 @@ export default {
       "approving": "Approving requisition and updating stock...",
       "approved": "Requisition approved successfully",
       "approveFailed": "Failed to approve requisition",
+      "approveFailedSchema": "Approval failed: the database schema is out of date (a migration is pending). Please contact an administrator.",
       "rejectReasonRequired": "Please specify a rejection reason",
       "rejecting": "Rejecting requisition...",
       "rejected": "Requisition rejected successfully",
@@ -2015,6 +2016,7 @@ export default {
     "approvingToast": "Approving requisition and deducting stock...",
     "shortageToast": "Insufficient stock found. Please check in the requisition management page.",
     "approveFailed": "Failed to approve request",
+    "approveFailedSchema": "Approval failed: the database schema is out of date (a migration is pending). Please contact an administrator.",
     "approveSuccess": "Withdrawal request approved successfully",
     "removedToast": "Notification removed",
     "time": {

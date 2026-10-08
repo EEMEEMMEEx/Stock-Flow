@@ -717,7 +717,7 @@ BEGIN
     END IF;
 
     UPDATE public.withdrawal_items
-    SET approved_quantity = v_approved_qty
+    SET deducted_quantity = v_approved_qty
     WHERE id = v_item.id;
 
     IF v_approved_qty > 0 THEN
