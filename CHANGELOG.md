@@ -1,5 +1,21 @@
 # Changelog
 
+## [2026-10-09 15:35] - v1.15.0
+
+- **Files Modified:** `supabase/migrations/78_checkout_caim_ticket_integration.sql`, `api/sync-to-caim.js`, `src/lib/caimSync.js`, `src/components/checkouts/CheckoutReturnModal.jsx`, `src/components/checkouts/CheckoutDetailModal.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `README.md`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **Phase 1 CAIM Claim & RMA Integration (Two-Way Ecosystem):**
+    - **Database Migration 78:** เพิ่มคอลัมน์ `caim_ticket_id`, `caim_ticket_url`, `caim_sync_status` (pending/synced/failed/not_applicable), `caim_synced_at`, `caim_sync_error` ในตาราง `public.checkout_return_logs`
+    - **RPC Extensions:**
+      - อัปเดต `process_return_order` ให้บันทึก `caim_sync_status = 'pending'` อัตโนมัติเมื่อรับคืนแบบ `consumed` พร้อมระบุ `replaced_serial_number` และส่งคืน `returns` array ใน response
+      - เพิ่ม RPC `update_checkout_return_caim_sync` สำหรับอัปเดตสถานะและเลข Ticket จาก CAIM
+    - **Outbound Serverless Endpoint (`api/sync-to-caim.js`):**
+      - Endpoint สำหรับยิงเปิด Ticket ไปยังระบบ CAIM (`https://claims-nu-taupe.vercel.app/api/tickets`) พร้อมระบบ Timeout (10s), Bearer Auth Verification และ Non-blocking error handling
+    - **Frontend Integration:**
+      - ใน `CheckoutReturnModal.jsx`: เมื่อบันทึกรับคืนอุปกรณ์เป็น `consumed` พร้อม S/N ที่ถูกทดแทน ระบบจะยิงสร้าง Ticket ไปยัง CAIM อัตโนมัติในเบื้องหลัง พร้อมแจ้งเตือน toast
+      - ใน `CheckoutDetailModal.jsx`: แสดง Badge ลิงก์ตรงไปยัง Ticket ในระบบ CAIM (`[Ticket: CLM-xxxx ↗]`) และปุ่มกด "ส่งเคลม CAIM" เพื่อ Retry หากการส่งครั้งแรกขัดข้อง
+    - **i18n & System Version:** เพิ่มคีย์ภาษาไทยและอังกฤษครบถ้วน 100% key parity และปรับเวอร์ชันเป็น `v1.15.0` (MINOR)
+
 ## [2026-10-09 17:05] - v1.14.4
 
 - **Files Modified:** `scripts/backup-full-database.mjs`, `package.json`, `package-lock.json`, `CHANGELOG.md`

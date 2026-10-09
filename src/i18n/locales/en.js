@@ -814,6 +814,9 @@ export default {
     "replacedSerial": "Serial number of the faulty item that was replaced (optional)",
     "replacedSerialPlaceholder": "e.g. DOPA-0482 — leave blank if it has no S/N",
     "replacedSerialTag": "Replaced S/N:",
+    "viewInCaim": "View claim ticket in CAIM",
+    "syncToCaim": "Send to CAIM",
+    "syncToCaimTitle": "Dispatch defective item details to CAIM",
     "completedHistory": "Completed Loan & Return History",
     "order": "order",
     "orders": "orders",
@@ -866,7 +869,9 @@ export default {
       "dispatchNoteNotAllowed": "Dispatch note is available only for approved or dispensed loans",
       "checkoutSlipNotAllowed": "Checkout slip is available only for approved or dispensed loans",
       "alreadyReturned": "This order has already been fully returned. Duplicate returns are not permitted.",
-      "officerProfileLoadFailed": "Unable to load the dispensing officer profile. Signature details in the document may be incomplete."
+      "officerProfileLoadFailed": "Unable to load the dispensing officer profile. Signature details in the document may be incomplete.",
+      "caimTicketCreated": "Claim ticket successfully created in CAIM: {{ticket}}",
+      "caimSyncFailed": "Failed to sync claim information with CAIM"
     },
     "fullyReturnedDesc": "All equipment in this order has already been fully returned.",
     "printCheckoutSlip": "Print Checkout Slip (PDF)",

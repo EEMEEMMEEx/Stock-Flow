@@ -814,6 +814,9 @@ export default {
     "replacedSerial": "S/N อุปกรณ์ชำรุดที่ถูกทดแทน (ไม่บังคับ)",
     "replacedSerialPlaceholder": "เช่น DOPA-0482 — เว้นว่างได้ถ้าไม่มี S/N",
     "replacedSerialTag": "ทดแทน S/N:",
+    "viewInCaim": "ดูใบแจ้งเคลมในระบบ CAIM",
+    "syncToCaim": "ส่งเคลม CAIM",
+    "syncToCaimTitle": "ส่งข้อมูลไปเปิด Ticket ในระบบ CAIM",
     "completedHistory": "ประวัติการยืม-คืนที่เสร็จสมบูรณ์",
     "order": "รายการ",
     "orders": "รายการ",
@@ -866,7 +869,9 @@ export default {
       "dispatchNoteNotAllowed": "พิมพ์ใบนำส่งได้เฉพาะรายการที่อนุมัติและจ่ายพัสดุแล้วเท่านั้น",
       "checkoutSlipNotAllowed": "พิมพ์ใบยืมพัสดุได้เฉพาะรายการที่อนุมัติและจ่ายพัสดุแล้วเท่านั้น",
       "alreadyReturned": "รายการนี้ส่งคืนครบถ้วนแล้ว ไม่สามารถทำรายการคืนซ้ำได้",
-      "officerProfileLoadFailed": "ไม่สามารถโหลดข้อมูลเจ้าหน้าที่ผู้จ่าย/รับคืนพัสดุได้ รายละเอียดลายเซ็นในเอกสารอาจไม่ครบถ้วน"
+      "officerProfileLoadFailed": "ไม่สามารถโหลดข้อมูลเจ้าหน้าที่ผู้จ่าย/รับคืนพัสดุได้ รายละเอียดลายเซ็นในเอกสารอาจไม่ครบถ้วน",
+      "caimTicketCreated": "เปิดใบแจ้งเคลมใน CAIM สำเร็จ: {{ticket}}",
+      "caimSyncFailed": "ไม่สามารถส่งข้อมูลไปยัง CAIM ได้"
     },
     "fullyReturnedDesc": "อุปกรณ์ในรายการนี้ได้รับการส่งคืนครบถ้วนแล้ว",
     "printCheckoutSlip": "พิมพ์ใบยืมพัสดุ (PDF)",

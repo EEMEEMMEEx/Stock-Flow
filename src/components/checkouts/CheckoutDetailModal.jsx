@@ -4,12 +4,14 @@ import { Button } from '@/components/ui/button';
 import { 
   FileText, Clock, 
   User, Building2, Calendar, Phone, Layers, RotateCcw,
-  CalendarClock, ArrowRight, Infinity as InfinityIcon, XCircle, AlertTriangle, FileSpreadsheet
+  CalendarClock, ArrowRight, Infinity as InfinityIcon, XCircle, AlertTriangle, FileSpreadsheet,
+  ExternalLink
 } from 'lucide-react';
 import { pdf } from '@react-pdf/renderer';
 import { MaterialCheckoutPDF, MaterialReturnPDF } from '@/lib/checkout-pdf-templates';
 import { MaterialDispatchPDF } from '@/lib/pdf-templates';
 import { CHECKOUT_DISPATCH_STATUSES, toSafeFileToken } from '@/lib/utils';
+import { syncReturnLogToCaim } from '@/lib/caimSync';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 import { supabase } from '@/lib/supabase';
@@ -56,6 +58,7 @@ const CheckoutDetailModal = ({
   const [staffProfile, setStaffProfile] = useState(null);
   const [approverProfile, setApproverProfile] = useState(null);
   const [profileLoadError, setProfileLoadError] = useState('');
+  const [syncingCaimId, setSyncingCaimId] = useState(null);
 
   useEffect(() => {
     if (order?.id && isOpen) {
@@ -189,6 +192,35 @@ const CheckoutDetailModal = ({
       setReturnLogs(data || []);
     } catch (err) {
       console.error('Fetch return logs error:', err);
+    }
+  };
+
+  const handleManualCaimSync = async (log) => {
+    if (!log?.id || !log?.replaced_serial_number) return;
+    try {
+      setSyncingCaimId(log.id);
+      const syncRes = await syncReturnLogToCaim({
+        returnLogId: log.id,
+        orderNumber: order?.order_number,
+        borrowerName: order?.borrower_name,
+        projectName: log.projects?.name || order?.projects?.name,
+        serialNumber: log.replaced_serial_number,
+        itemName: log.checkout_items?.items?.name,
+        problemDesc: log.damage_notes,
+        reporterName: staffProfile?.full_name,
+      });
+      toast.success(
+        t('checkouts.toasts.caimTicketCreated', { ticket: syncRes.ticket_id }) ||
+          `สร้างใบแจ้งเคลมใน CAIM เรียบร้อย: ${syncRes.ticket_id}`
+      );
+      if (order?.id) {
+        await fetchReturnLogs(order.id);
+      }
+    } catch (err) {
+      console.error('Manual CAIM sync error:', err);
+      toast.error(err.message || t('checkouts.toasts.caimSyncFailed', 'ไม่สามารถส่งข้อมูลไปยัง CAIM ได้'));
+    } finally {
+      setSyncingCaimId(null);
     }
   };
 
@@ -499,6 +531,29 @@ const CheckoutDetailModal = ({
                           <span className="font-mono text-[10px] text-amber-700 dark:text-amber-400 bg-amber-500/10 px-1.5 py-0.2 rounded font-bold">
                             {t('checkouts.replacedSerialTag')} {log.replaced_serial_number}
                           </span>
+                        )}
+                        {log.caim_ticket_id ? (
+                          <a
+                            href={log.caim_ticket_url || `https://claims-nu-taupe.vercel.app/tickets?search=${encodeURIComponent(log.caim_ticket_id)}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1 font-mono text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 px-1.5 py-0.5 rounded-md transition-colors"
+                            title={t('checkouts.viewInCaim', 'ดูใบแจ้งเคลมในระบบ CAIM')}
+                          >
+                            <span>Ticket: {log.caim_ticket_id}</span>
+                            <ExternalLink className="w-2.5 h-2.5" />
+                          </a>
+                        ) : log.item_condition === 'consumed' && log.replaced_serial_number && (
+                          <button
+                            type="button"
+                            disabled={syncingCaimId === log.id}
+                            onClick={() => handleManualCaimSync(log)}
+                            className="inline-flex items-center gap-1 text-[10px] font-semibold text-blue-600 dark:text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 px-1.5 py-0.5 rounded-md transition-colors cursor-pointer disabled:opacity-50"
+                            title={t('checkouts.syncToCaimTitle', 'ส่งข้อมูลไปเปิด Ticket ในระบบ CAIM')}
+                          >
+                            <span>{syncingCaimId === log.id ? t('common.pleaseWait') : t('checkouts.syncToCaim', 'ส่งเคลม CAIM')}</span>
+                            <ExternalLink className="w-2.5 h-2.5" />
+                          </button>
                         )}
                       </div>
                       <div className="text-[10px] text-muted-foreground mt-0.5">
