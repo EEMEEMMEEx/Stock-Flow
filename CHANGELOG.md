@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-10-09 13:38] - v1.13.9
+
+- **Files Modified:** `.agents/skills/caveman/SKILL.md`, `.agents/skills/caveman/README.md`, `.agents/skills/ultracave/SKILL.md`, `.agents/skills/ultracave/README.md`, `AGENTS.md`, `.agents/skills/backend-api-pro/SKILL.md`, `.agents/manifest.json`, `.agents/manifest.lock.json`, `.agents/DEPENDENCY_GRAPH.md`, `package.json`, `CHANGELOG.md`
+- **Changes:**
+  - **ติดตั้ง Skill `caveman` (https://github.com/JuliusBrussee/caveman.git):** เพิ่มชุดคำสั่งสำหรับ AI Agent ในการสื่อสารแบบรวบรัด ตัดคำทักทาย/คำสรุป/น้ำท่วมทุ่ง (Token-efficient terse mode) พร้อมรักษารายละเอียดทางเทคนิค โค้ด ตัวเลข เส้นทางไฟล์ และข้อความ error แบบครบถ้วน 100% byte-for-byte
+  - **ติดตั้ง Companion Skill `ultracave`:** รองรับโหมดการบีบอัดระดับสูงสุด (`/caveman ultra` หรือ `/ultracave`) ตัดไวยากรณ์คงไว้เฉพาะสาระสำคัญ (Payload only)
+  - **ลงทะเบียนใน AG Kit & AGENTS.md:** เพิ่มรายการ Caveman ในหัวข้อ `## MUST READ (Project Skills & Knowledge Base)` ใน `AGENTS.md` และซิงค์ Component Registry ใน `manifest.json` และ `manifest.lock.json`
+  - **ผ่านการตรวจสอบ AG Kit Antigravity Doctor:** แก้ไข frontmatter ของ `backend-api-pro` ให้มี `description` ส่งผลให้ `antigravity-doctor.mjs` ผ่านการตรวจสอบระดับ contract ครบ 100%
+  - ปรับ version ของระบบเป็น `v1.13.9` (PATCH)
+
 ## [2026-10-08 23:30] - v1.13.8
 
 - **Files Modified:** `supabase/migrations/76_fix_approve_inventory_request_approved_quantity.sql` (ใหม่), `src/lib/rpcErrors.js` (ใหม่), `src/pages/Withdrawals.jsx`, `src/hooks/useNotifications.js`, `src/components/layout/NotificationBell.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `scripts/build-migration-62.mjs`, `scripts/build-clean-migration-61.mjs`, `package.json`, `package-lock.json`, `CHANGELOG.md`

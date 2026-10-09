@@ -28,6 +28,7 @@
 - **Verification & Validation**: `.agents/skills/verify-changes/SKILL.md`, `.agents/skills/lint-and-validate/SKILL.md`
 - **Systematic Debugging**: `.agents/skills/systematic-debugging/SKILL.md` (Evidence-first, reproducible trace)
 - **Email & SMTP**: `.agents/skills/gmail-smtp/SKILL.md` (HTML email templates, deliverability, Nodemailer)
+- **Terse Output & Token Efficiency**: `.agents/skills/caveman/SKILL.md` (Caveman voice — ตอบสั้นกระชับ ตัดน้ำ ตัดคำทักทาย รักษารายละเอียดทางเทคนิคและโค้ด 100% ประหยัด token)
 
 ---
 
