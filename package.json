@@ -1,7 +1,7 @@
 {
   "name": "stock-flow-app",
   "private": true,
-  "version": "1.13.9",
+  "version": "1.14.4",
   "type": "module",
   "scripts": {
     "dev": "vite --host",
@@ -14,6 +14,7 @@
     "verify:email-branding": "node scripts/verify-email-branding.mjs",
     "verify:runtime-guards": "node scripts/verify-runtime-guards.mjs",
     "verify:checkout-pdf-guards": "node scripts/verify-checkout-pdf-guards.mjs",
+    "verify:consumed-ui": "node scripts/verify-consumed-ui.mjs",
     "preview": "vite preview",
     "test:email": "node --test src/lib/emailRenderer.test.js src/lib/nodemailerTransport.test.js src/lib/emailSettings.test.js",
     "migrate:r2": "node scripts/migrate-legacy-images-to-r2.mjs",

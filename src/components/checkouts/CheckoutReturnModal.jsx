@@ -33,7 +33,7 @@ const CheckoutReturnModal = ({
   useEffect(() => {
     if (order && order.checkout_items) {
       const initialItems = order.checkout_items.map(item => {
-        const remaining = item.quantity_borrowed - (item.quantity_returned + item.quantity_damaged + item.quantity_lost);
+        const remaining = item.quantity_borrowed - (item.quantity_returned + item.quantity_damaged + item.quantity_lost + (Number(item.quantity_consumed) || 0));
         return {
           checkout_item_id: item.id,
           item_name: item.items?.name || item.item_name || 'Item',
@@ -44,9 +44,10 @@ const CheckoutReturnModal = ({
           quantity_already_returned: item.quantity_returned,
           remaining_to_return: remaining,
           returned_quantity: remaining > 0 ? remaining : 0, // default return all remaining
-          condition: 'normal', // 'normal' | 'damaged' | 'lost' | 'needs_repair'
+          condition: 'normal', // 'normal' | 'damaged' | 'lost' | 'needs_repair' | 'consumed'
           destination_project_id: order.project_id || '',
-          damage_notes: ''
+          damage_notes: '',
+          replaced_serial_number: ''
         };
       });
       setReturnItems(initialItems);
@@ -117,6 +118,10 @@ const CheckoutReturnModal = ({
       if (qty > item.remaining_to_return) {
         return toast.error(t('checkouts.toasts.returnQtyExceeds', { item: item.item_name, remaining: item.remaining_to_return, unit: item.unit }));
       }
+      // "นำไปใช้งานทดแทน" must always carry a reason so it can be audited later.
+      if (item.condition === 'consumed' && !String(item.damage_notes || '').trim()) {
+        return toast.error(t('checkouts.consumedReasonRequired'));
+      }
     }
 
     try {
@@ -129,7 +134,8 @@ const CheckoutReturnModal = ({
           returned_quantity: Number(i.returned_quantity),
           condition: i.condition,
           destination_project_id: i.destination_project_id || order.project_id,
-          damage_notes: i.damage_notes?.trim() || null
+          damage_notes: i.damage_notes?.trim() || null,
+          replaced_serial_number: i.replaced_serial_number?.trim() || null
         }))
       };
 
@@ -148,7 +154,8 @@ const CheckoutReturnModal = ({
       const dominantCondition = conditionByItem.includes('lost')
         ? 'lost'
         : (conditionByItem.includes('damaged') ? 'damaged'
-          : (conditionByItem.includes('needs_repair') ? 'needs_repair' : 'normal'));
+          : (conditionByItem.includes('needs_repair') ? 'needs_repair'
+            : (conditionByItem.includes('consumed') ? 'consumed' : 'normal')));
       const mixedConditionNote = new Set(conditionByItem).size > 1
         ? conditionByItem.join(', ')
         : '';
@@ -347,6 +354,7 @@ const CheckoutReturnModal = ({
                             <option value="needs_repair">{t('checkouts.damagedCondition')}</option>
                             <option value="damaged">{t('checkouts.damaged')}</option>
                             <option value="lost">{t('checkouts.lost')}</option>
+                            <option value="consumed">{t('checkouts.consumed')}</option>
                           </select>
                         </div>
 
@@ -366,18 +374,37 @@ const CheckoutReturnModal = ({
                           </select>
                         </div>
 
-                        {/* Damage Note if not normal */}
+                        {/* Replaced serial number (consumed = used as replacement) */}
+                        {item.condition === 'consumed' && (
+                          <div className="col-span-12 space-y-0.5 pt-1">
+                            <Label className="text-[10px] text-amber-600 dark:text-amber-400 font-bold">
+                              {t('checkouts.replacedSerial')}
+                            </Label>
+                            <Input
+                              placeholder={t('checkouts.replacedSerialPlaceholder')}
+                              value={item.replaced_serial_number}
+                              onChange={(e) => handleUpdateItem(item.checkout_item_id, 'replaced_serial_number', e.target.value)}
+                              maxLength={100}
+                              className="h-8 text-xs rounded-lg"
+                            />
+                          </div>
+                        )}
+
+                        {/* Damage Note if not normal — mandatory reason when consumed */}
                         {item.condition !== 'normal' && (
                           <div className="col-span-12 space-y-0.5 pt-1">
                             <Label className="text-[10px] text-amber-600 dark:text-amber-400 font-bold">
-                              {t('checkouts.conditionNotes')}
+                              {item.condition === 'consumed' ? t('checkouts.consumedReason') : t('checkouts.conditionNotes')}
                             </Label>
                             <Input
-                              placeholder={t('checkouts.conditionNotesPlaceholder')}
+                              placeholder={item.condition === 'consumed' ? t('checkouts.consumedReasonPlaceholder') : t('checkouts.conditionNotesPlaceholder')}
                               value={item.damage_notes}
                               onChange={(e) => handleUpdateItem(item.checkout_item_id, 'damage_notes', e.target.value)}
-                              className="h-8 text-xs rounded-lg"
+                              className={`h-8 text-xs rounded-lg ${item.condition === 'consumed' ? 'border-amber-500/50' : ''}`}
                             />
+                            {item.condition === 'consumed' && (
+                              <p className="text-[10px] text-amber-600 dark:text-amber-400">{t('checkouts.consumedNoStockNote')}</p>
+                            )}
                           </div>
                         )}
                       </div>

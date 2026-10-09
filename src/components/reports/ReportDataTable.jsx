@@ -131,6 +131,10 @@ const ReportDataTable = ({
                   </button>
                 </TableHead>
 
+                <TableHead className="font-bold text-xs text-foreground">{t('reports.table.source')}</TableHead>
+
+                <TableHead className="font-bold text-xs text-foreground">{t('reports.table.reference')}</TableHead>
+
                 <TableHead className="font-bold text-xs text-foreground">{t('reports.table.requester')}</TableHead>
 
                 <TableHead className="text-center font-bold text-xs text-foreground w-[150px]">
@@ -252,7 +256,10 @@ const ReportDataTable = ({
                 {/* Withdrawals View Rows */}
                 {activeTab === 'withdrawals' && (
                   <>
-                    <TableCell className="font-medium text-foreground whitespace-nowrap">
+                    <TableCell
+                      className="font-medium text-foreground whitespace-nowrap"
+                      title={row.source === 'checkout_consumed' ? t('reports.table.consumedDateTooltip') : undefined}
+                    >
                       {row.requested_at ? new Date(row.requested_at).toLocaleDateString(i18n.language === 'th' ? 'th-TH' : 'en-US') : '—'}
                     </TableCell>
 
@@ -272,6 +279,22 @@ const ReportDataTable = ({
                     </TableCell>
 
                     <TableCell className="font-medium text-foreground">{row.items?.name}</TableCell>
+
+                    <TableCell>
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-md border text-[10px] font-bold ${
+                        row.source === 'checkout_consumed'
+                          ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/25'
+                          : 'bg-muted text-muted-foreground border-border/50'
+                      }`}>
+                        {row.source === 'checkout_consumed'
+                          ? t('reports.table.sourceCheckoutConsumed')
+                          : t('reports.table.sourceWithdrawal')}
+                      </span>
+                    </TableCell>
+
+                    <TableCell className="font-mono text-[11px] text-muted-foreground">
+                      {row.reference || '-'}
+                    </TableCell>
 
                     <TableCell className="text-muted-foreground">{row.profiles?.full_name || '-'}</TableCell>
 

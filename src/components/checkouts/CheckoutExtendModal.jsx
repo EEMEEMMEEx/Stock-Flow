@@ -175,7 +175,7 @@ const CheckoutExtendModal = ({
       if (!rpcSuccess) {
         let newStatus = order.status;
         const hasPartial = (order.checkout_items || []).some(
-          i => Number(i.quantity_returned || 0) > 0 || Number(i.quantity_damaged || 0) > 0 || Number(i.quantity_lost || 0) > 0
+          i => Number(i.quantity_returned || 0) > 0 || Number(i.quantity_damaged || 0) > 0 || Number(i.quantity_lost || 0) > 0 || Number(i.quantity_consumed || 0) > 0
         );
 
         if (isIndefiniteChoice) {

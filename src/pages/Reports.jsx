@@ -139,8 +139,27 @@ const Reports = () => {
         if (currentFilters.end_date) query = query.lte('requested_at', `${currentFilters.end_date}T23:59:59`);
         if (currentFilters.status) query = query.eq('status', currentFilters.status);
 
-        const { data, error } = await query;
+        // "ยืม → ใช้ทดแทน" (checkout consumed) rows are read through a guarded RPC because
+        // checkout_return_logs is readable only with checkouts.return (RLS blocks reports.view).
+        const [withdrawalRes, consumedRes] = await Promise.all([
+          query,
+          supabase.rpc('get_checkout_consumed_usage', {
+            p_project_id: currentFilters.project_id || null,
+            p_start_date: currentFilters.start_date || null,
+            p_end_date: currentFilters.end_date || null
+          })
+        ]);
+
+        const { data, error } = withdrawalRes;
         if (error && error.code !== '42P01') throw error;
+
+        // Consumed rows are always 'completed', so they are hidden for any other status filter.
+        const includeConsumed = !currentFilters.status || currentFilters.status === 'completed';
+
+        if (consumedRes.error) {
+          // Migration 77 not deployed yet, or the caller lacks reports.view — keep the report usable.
+          console.warn('Checkout consumed usage fetch notice:', consumedRes.error.message);
+        }
 
         const flatData = [];
         data?.forEach((order) => {
@@ -160,10 +179,41 @@ const Reports = () => {
                   ? item.quantity
                   : 0,
               shortage_quantity: item.shortage_quantity !== undefined ? item.shortage_quantity : 0,
-              items: item.items
+              items: item.items,
+              source: 'withdrawal',
+              reference: null
             });
           });
         });
+
+        if (includeConsumed && Array.isArray(consumedRes.data)) {
+          consumedRes.data.forEach((row) => {
+            flatData.push({
+              // วันที่บันทึกใช้ทดแทน (ไม่ใช่วันที่ยืม) — ระบุความต่างใน tooltip/คอลัมน์
+              requested_at: row.returned_at,
+              projects: {
+                name: row.project_name,
+                project_code: row.project_code,
+                location: row.project_location,
+                description: row.project_description
+              },
+              profiles: { full_name: row.borrower_name },
+              status: 'completed',
+              has_shortage: false,
+              override_reason: null,
+              quantity: row.quantity,
+              deducted_quantity: row.quantity,
+              shortage_quantity: 0,
+              items: { name: row.item_name, unit: row.unit },
+              source: 'checkout_consumed',
+              reference: row.order_number
+            });
+          });
+        }
+
+        // Keep the merged list in the same newest-first order as the withdrawal query.
+        flatData.sort((a, b) => new Date(b.requested_at || 0) - new Date(a.requested_at || 0));
+
         setReportData(flatData);
       } else if (currentTab === 'balance') {
         if (!currentFilters.project_id && currentProjects.length > 0) {
@@ -259,7 +309,8 @@ const Reports = () => {
           return (
             (row.items?.name && row.items.name.toLowerCase().includes(searchLower)) ||
             (row.profiles?.full_name && row.profiles.full_name.toLowerCase().includes(searchLower)) ||
-            (row.projects?.name && row.projects.name.toLowerCase().includes(searchLower))
+            (row.projects?.name && row.projects.name.toLowerCase().includes(searchLower)) ||
+            (row.reference && String(row.reference).toLowerCase().includes(searchLower))
           );
         } else if (activeTab === 'balance') {
           return (
@@ -337,7 +388,9 @@ const Reports = () => {
           [t('reports.export.colUnit')]: r.items?.unit,
           [t('reports.export.colRequester')]: r.profiles?.full_name,
           [t('reports.export.colStatus')]: r.has_shortage ? `${t(`status.${r.status}`)} ${t('reports.table.shortageSuffix', { shortage: t('reports.charts.shortage') })}` : t(`status.${r.status}`),
-          [t('reports.export.colShortageOverrideReason')]: r.override_reason || '-'
+          [t('reports.export.colShortageOverrideReason')]: r.override_reason || '-',
+          [t('reports.export.colSource')]: r.source === 'checkout_consumed' ? t('reports.table.sourceCheckoutConsumed') : t('reports.table.sourceWithdrawal'),
+          [t('reports.export.colReference')]: r.reference || '-'
         }));
       } else if (activeTab === 'balance') {
         sheetName = t('reports.export.sheetBalance');

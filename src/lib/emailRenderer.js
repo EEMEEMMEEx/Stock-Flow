@@ -1393,6 +1393,7 @@ const RETURN_CONDITION_LABELS = {
   damaged: 'ชำรุด (ต้องซ่อมแซม)',
   needs_repair: 'ต้องซ่อมแซม',
   lost: 'สูญหาย',
+  consumed: 'นำไปใช้งานทดแทน (ไม่คืนสต็อก)',
   good: 'ปกติ (สมบูรณ์พร้อมใช้งาน)',
 };
 

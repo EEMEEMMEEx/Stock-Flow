@@ -891,14 +891,15 @@ export const StockReportPDF = ({
     if (type === 'withdrawals') {
       return (
         <View style={reportStyles.tableHeader} fixed>
-          <View style={[reportStyles.th, { width: '5%' }]}><Text style={reportStyles.thText}>ลำดับ</Text></View>
-          <View style={[reportStyles.th, { width: '13%' }]}><Text style={reportStyles.thText}>วันที่เบิก</Text></View>
-          <View style={[reportStyles.th, { width: '21%' }]}><Text style={reportStyles.thText}>โครงการ</Text></View>
-          <View style={[reportStyles.th, { width: '25%' }]}><Text style={reportStyles.thText}>รายการวัสดุ</Text></View>
-          <View style={[reportStyles.th, { width: '8%' }]}><Text style={reportStyles.thText}>ขอเบิก</Text></View>
-          <View style={[reportStyles.th, { width: '8%' }]}><Text style={reportStyles.thText}>ตัดจริง</Text></View>
-          <View style={[reportStyles.th, { width: '6%' }]}><Text style={reportStyles.thText}>หน่วย</Text></View>
-          <View style={[reportStyles.th, { width: '14%', borderRightWidth: 0 }]}><Text style={reportStyles.thText}>ผู้เบิก / สถานะ</Text></View>
+          <View style={[reportStyles.th, { width: '4%' }]}><Text style={reportStyles.thText}>ลำดับ</Text></View>
+          <View style={[reportStyles.th, { width: '11%' }]}><Text style={reportStyles.thText}>วันที่เบิก</Text></View>
+          <View style={[reportStyles.th, { width: '18%' }]}><Text style={reportStyles.thText}>โครงการ</Text></View>
+          <View style={[reportStyles.th, { width: '22%' }]}><Text style={reportStyles.thText}>รายการวัสดุ</Text></View>
+          <View style={[reportStyles.th, { width: '7%' }]}><Text style={reportStyles.thText}>ขอเบิก</Text></View>
+          <View style={[reportStyles.th, { width: '7%' }]}><Text style={reportStyles.thText}>ตัดจริง</Text></View>
+          <View style={[reportStyles.th, { width: '5%' }]}><Text style={reportStyles.thText}>หน่วย</Text></View>
+          <View style={[reportStyles.th, { width: '18%' }]}><Text style={reportStyles.thText}>ที่มา / เลขอ้างอิง</Text></View>
+          <View style={[reportStyles.th, { width: '8%', borderRightWidth: 0 }]}><Text style={reportStyles.thText}>ผู้เบิก</Text></View>
         </View>
       );
     }
@@ -951,17 +952,23 @@ export const StockReportPDF = ({
         const reqDate = row.requested_at ? new Date(row.requested_at).toLocaleDateString('th-TH') : '-';
         const deducted = row.deducted_quantity !== undefined && row.deducted_quantity !== null ? row.deducted_quantity : (row.status === 'approved' || row.status === 'completed' ? row.quantity : 0);
         const requester = row.profiles?.full_name || '-';
+        // "ที่มา": withdrawal request vs loan item consumed as a replacement (migration 77)
+        const sourceLabel = row.source === 'checkout_consumed' ? 'ยืม → ใช้ทดแทน' : 'ใบเบิก';
 
         return (
           <View key={idx} style={rowStyle} wrap={false}>
-            <View style={[reportStyles.td, { width: '5%' }]}><Text style={reportStyles.tdTextCenter}>{idx + 1}</Text></View>
-            <View style={[reportStyles.td, { width: '13%' }]}><Text style={reportStyles.tdTextCenter}>{reqDate}</Text></View>
-            <View style={[reportStyles.td, { width: '21%' }]}><Text style={reportStyles.tdText}>{projName}</Text></View>
-            <View style={[reportStyles.td, { width: '25%' }]}><Text style={reportStyles.tdTextBold}>{row.items?.name || '-'}</Text></View>
-            <View style={[reportStyles.td, { width: '8%' }]}><Text style={reportStyles.tdTextCenter}>{row.quantity || 0}</Text></View>
-            <View style={[reportStyles.td, { width: '8%' }]}><Text style={[reportStyles.tdTextCenter, reportStyles.stockInText]}>{deducted}</Text></View>
-            <View style={[reportStyles.td, { width: '6%' }]}><Text style={reportStyles.tdTextCenter}>{row.items?.unit || '-'}</Text></View>
-            <View style={[reportStyles.td, { width: '14%', borderRightWidth: 0 }]}><Text style={reportStyles.tdTextCenter}>{requester}</Text></View>
+            <View style={[reportStyles.td, { width: '4%' }]}><Text style={reportStyles.tdTextCenter}>{idx + 1}</Text></View>
+            <View style={[reportStyles.td, { width: '11%' }]}><Text style={reportStyles.tdTextCenter}>{reqDate}</Text></View>
+            <View style={[reportStyles.td, { width: '18%' }]}><Text style={reportStyles.tdText}>{projName}</Text></View>
+            <View style={[reportStyles.td, { width: '22%' }]}><Text style={reportStyles.tdTextBold}>{row.items?.name || '-'}</Text></View>
+            <View style={[reportStyles.td, { width: '7%' }]}><Text style={reportStyles.tdTextCenter}>{row.quantity || 0}</Text></View>
+            <View style={[reportStyles.td, { width: '7%' }]}><Text style={[reportStyles.tdTextCenter, reportStyles.stockInText]}>{deducted}</Text></View>
+            <View style={[reportStyles.td, { width: '5%' }]}><Text style={reportStyles.tdTextCenter}>{row.items?.unit || '-'}</Text></View>
+            <View style={[reportStyles.td, { width: '18%' }]}>
+              <Text style={reportStyles.tdTextCenter}>{sourceLabel}</Text>
+              {row.reference ? <Text style={{ fontSize: 7, textAlign: 'center', color: '#64748b' }}>{row.reference}</Text> : null}
+            </View>
+            <View style={[reportStyles.td, { width: '8%', borderRightWidth: 0 }]}><Text style={reportStyles.tdTextCenter}>{requester}</Text></View>
           </View>
         );
       }
@@ -1033,16 +1040,16 @@ export const StockReportPDF = ({
     if (type === 'withdrawals') {
       return (
         <View style={reportStyles.tableFooterRow} wrap={false}>
-          <View style={[reportStyles.td, { width: '64%', justifyContent: 'center' }]}>
+          <View style={[reportStyles.td, { width: '55%', justifyContent: 'center' }]}>
             <Text style={[reportStyles.tfText, { textAlign: 'right', paddingRight: 6 }]}>รวมยอดเบิกจ่ายทั้งสิ้น:</Text>
           </View>
-          <View style={[reportStyles.td, { width: '8%' }]}>
+          <View style={[reportStyles.td, { width: '7%' }]}>
             <Text style={reportStyles.tdTextCenter}>{totalInQty}</Text>
           </View>
-          <View style={[reportStyles.td, { width: '8%' }]}>
+          <View style={[reportStyles.td, { width: '7%' }]}>
             <Text style={[reportStyles.tdTextCenter, reportStyles.stockInText]}>{totalOutQty}</Text>
           </View>
-          <View style={[reportStyles.td, { width: '20%', borderRightWidth: 0 }]}>
+          <View style={[reportStyles.td, { width: '31%', borderRightWidth: 0 }]}>
             <Text style={[reportStyles.tdTextCenter, reportStyles.tdTextBold]}>{totalItems} รายการ</Text>
           </View>
         </View>

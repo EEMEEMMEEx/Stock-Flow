@@ -1,5 +1,79 @@
 # Changelog
 
+## [2026-10-09 17:05] - v1.14.4
+
+- **Files Modified:** `scripts/backup-full-database.mjs`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **Reconcile เต็มรูปแบบ:** baseline ใน `getMasterSchemaDDL()` ล้าสมัย (ก่อน migration 65) จึงเพิ่มหัวข้อ **§8 "Reconciliation delta"** ต่อท้าย baseline โดย **generate จาก `supabase/migrations/*.sql` ตามลำดับ apply จริง** (numeric 52-76 → timestamped → 77) ไม่ได้พิมพ์มือ
+  - **§8.1 Table changes (54 คำสั่ง):** `ADD COLUMN IF NOT EXISTS` (รวม `checkout_items.quantity_consumed`, `checkout_return_logs.replaced_serial_number`, `items.source`/`items.vendor`, คอลัมน์ approval workflow ของ `checkout_orders`, คอลัมน์ shortage ของ `withdrawal_items`) และ `ADD/DROP CONSTRAINT IF EXISTS` + `VALIDATE CONSTRAINT` (รวม CHECK `item_condition` ที่มี `'consumed'`) และ `ENABLE ROW LEVEL SECURITY`
+  - **§8.2 RPC (58 นิยาม):** ใช้ **identity = ชนิดอาร์กิวเมนต์** แล้ว replay `DROP FUNCTION`/`CREATE FUNCTION` ตามลำดับในไฟล์ ทำให้ overload ที่ถูก drop (เช่น 72/73) ไม่โผล่ และนิยามสุดท้ายชนะ — ครอบคลุม `process_return_order` เวอร์ชัน migration 77, `get_checkout_consumed_usage`, `approve_checkout_order`, `reject_checkout_order`, `approve/reject/complete_inventory_request`, `process_item_transfer`, `process_stock_in`, `admin_*`, `notify_*`, `push_notifications` และ `is_super_admin`
+  - **§8.3-8.7:** RLS 29 policies (`DROP POLICY IF EXISTS` + นิยามล่าสุดของแต่ละชื่อ), triggers 7, indexes 29, grants/revokes 135 รายการ (กรองเหลือเฉพาะฟังก์ชันที่ยังมีอยู่จริง เพื่อไม่ให้ GRANT อ้างฟังก์ชันที่ถูก drop)
+  - **บั๊กที่พบและแก้ระหว่างทำ:** (1) mirror เดิมเรียก `public.is_super_admin` แต่ไม่เคยนิยาม (2) ต้อง strip SQL comments ก่อนสกัด statement ไม่งั้น regex ดูดข้อความคอมเมนต์ข้ามบรรทัดเข้ามาเป็น SQL ทำให้ restore พัง (3) ต้อง escape `\`, backtick และ `${...}` ตอนฝัง SQL ใน template literal เพราะคอมเมนต์ของ migration มี backtick
+  - **ตรวจสอบ:** `node --check` ผ่าน, ประเมิน template literal จริงเป็นสตริง SQL แล้วสแกน — 2,117 statements / 6,526 บรรทัด, วงเล็บและ `$$` สมดุล (0 ค้าง), มี `'consumed'`, คอลัมน์ใหม่, RPC 77, `REVOKE ... FROM PUBLIC, anon` และ policy แข็งของ migration 65 ครบ; `npm run lint` 0 errors
+  - **ข้อจำกัด:** ยัง **ไม่ได้ทดสอบ restore จริง** (เครื่องนี้ไม่มี Postgres/Docker และไม่มี DB ปลายทางว่าง) — ยืนยันได้เฉพาะระดับ static/parse; ไฟล์โต 93KB → 257KB เพราะ §8 replay นิยามทั้งหมดทับ baseline โดยเจตนา
+  - ปรับ version ของระบบเป็น `v1.14.4` (PATCH)
+
+## [2026-10-09 16:20] - v1.14.3
+
+- **Files Modified:** `scripts/verify-consumed-ui.mjs` (ใหม่), `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **เครื่องมือตรวจ UI แบบไม่เพิ่ม dependency:** เพิ่ม `npm run verify:consumed-ui` ขับ Chrome/Edge ที่ติดตั้งในเครื่องผ่าน DevTools Protocol (Node 26 มี global `WebSocket`) — โปรเจกต์ไม่มี Playwright/Puppeteer และไม่ติดตั้งเพิ่ม
+  - **ขอบเขต read-only:** ล็อกอินด้วย `E2E_EMAIL`/`E2E_PASSWORD` จาก `.env.local` (gitignored), เปิด Return Modal, เปลี่ยนสภาพเป็น `consumed`, ตรวจว่ามีช่อง S/N + เหตุผลเพิ่มขึ้น, แล้วกดยืนยันทั้งที่เหตุผลว่าง — assert ว่า validation บล็อกและ **ไม่มี** request ไป `/rpc/process_return_order` จึงไม่มีการเขียนข้อมูล production
+  - **ตรวจ Reports:** เปิดแท็บ withdrawals, assert ว่ามีคอลัมน์ `ที่มา` และ `เลขอ้างอิง`, สั่ง export Excel แล้วอ่านไฟล์ `.xlsx` ด้วย `xlsx` ที่มีอยู่เพื่อยืนยันหัวคอลัมน์ใหม่จริง
+  - **เก็บหลักฐาน:** screenshot 1440px/375px (รวม dark mode) + `test-results/consumed-ui/summary.json` (gitignored)
+  - **ยืนยัน migration 77 บน production (2026-10-09):** `item_condition` CHECK มี `'consumed'` ครบ 5 ค่า, `quantity_consumed numeric NOT NULL` + `replaced_serial_number text NULL` มีจริง, ฟังก์ชันทั้งสองเป็น `SECURITY DEFINER` + `search_path=public, auth, pg_temp`, grants = `postgres/authenticated/service_role` (ไม่มี `anon`/`PUBLIC`) และ `process_return_order` เป็นเวอร์ชันที่ใช้ `quantity_consumed` (true)
+  - **รันจริงผ่าน 2026-10-09 (18/18 PASS):** ล็อกอินด้วยบัญชีทดสอบ, Reports แท็บ withdrawals มีคอลัมน์ `SOURCE`/`REFERENCE` และไฟล์ Excel ที่ดาวน์โหลดมีหัวคอลัมน์ `Source`/`Reference` จริง, Return Modal มีตัวเลือก "Used as replacement (not returned)", แสดงช่อง S/N + เหตุผล และแถบเตือนว่าไม่คืนสต็อก, กดยืนยันทั้งที่เหตุผลว่าง → toast เตือนและ **ไม่มี** RPC `process_return_order` ถูกส่ง (ยืนยันว่าไม่มีการเขียนข้อมูล: `checkout_return_logs` ยัง 35 แถว และ `consumed` = 0)
+  - ปรับ version ของระบบเป็น `v1.14.3` (PATCH)
+## [2026-10-09 15:40] - v1.14.2
+
+- **Files Modified:** `src/landing/data/landing-translations.js`, `README.md`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **Phase 4 (i18n / Version / Docs) ปิดงานแผน `docs/checkout-consumed-replacement-plan.md`:** ตรวจคีย์ i18n ครบทั้ง `th`/`en` แล้ว (เพิ่มไปแล้วใน Phase 2-3) และตรวจ version hardcode ทั่ว repo
+  - **ลบ version hardcode ที่ค้างอยู่:** `src/landing/data/landing-translations.js` มี `versionBadge` ฝัง `v1.10.21` (th/en) และ `v1.0` (อีก 10 ภาษา) — เปลี่ยนเป็นฟังก์ชัน `versionBadge(status)` ที่อ่าน `APP_CONFIG.version` (ซึ่งมาจาก `package.json` ช่องทางเดียว) ครบทั้ง 12 ภาษา; ก่อนหน้านี้มีเพียง navbar/badge ที่อ่านค่าจริง
+  - **อัปเดต README badge:** `Version-1.10.21` → `Version-1.14.2` ให้ตรงกับ `package.json`
+  - **ผลการตรวจ version:** ทุกจุดที่แสดงผลใช้ `APP_CONFIG.version` — `Settings.jsx` (3 จุด), `AppFooter.jsx`, `LandingNavbar.jsx`; ที่เหลือเป็น comment อ้างประวัติใน `index.html` (`v1.10.22`) และ `scripts/verify-email-branding.mjs` (`v1.13.6`) ซึ่งไม่ใช่การแสดงผล
+  - **ไม่แก้:** `README.md` badge `Vite-5.4` ล้าสมัย (build จริงใช้ Vite 7.3.6) อยู่นอกขอบเขตงาน version ของแอป — แจ้งเป็นข้อสังเกตแยก
+  - ปรับ version ของระบบเป็น `v1.14.2` (PATCH)
+## [2026-10-09 15:05] - v1.14.1
+
+- **Files Modified:** `src/pages/Reports.jsx`, `src/components/reports/ReportDataTable.jsx`, `src/lib/pdf-templates.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **Phase 3 ของแผน `docs/checkout-consumed-replacement-plan.md` (Reports):** แท็บ `withdrawals` นับ `consumed` เป็นการใช้งานจริง โดยแถวใหม่มาจาก RPC `get_checkout_consumed_usage` และแสดงแยกที่มา ไม่ปนกับใบเบิก
+  - **ดึงข้อมูล:** เปลี่ยนเป็น `Promise.all([query เดิม, supabase.rpc('get_checkout_consumed_usage')])` ส่ง filter project/start/end เดียวกัน; ถ้า RPC ยังไม่มี (migration 77 ยังไม่ขึ้น) หรือผู้ใช้ไม่มี `reports.view` จะ `console.warn` แล้วรายงานยังทำงานปกติด้วยข้อมูลใบเบิกเท่านั้น
+  - **Merge shape เดียวกัน:** แถว consumed ใช้ `requested_at ← returned_at` (วันที่บันทึกใช้ทดแทน), `quantity = deducted_quantity`, `shortage_quantity = 0`, `status = 'completed'`, `profiles.full_name ← borrower_name`, `source = 'checkout_consumed'`, `reference = order_number`; แถวเดิมได้ `source = 'withdrawal'` — แล้ว sort รวมตาม `requested_at` ใหม่ล่าสุดก่อน
+  - **Filter/Search:** แถว consumed แสดงเฉพาะเมื่อไม่กรองสถานะ หรือกรอง `completed` (server-side filter ของใบเบิกยังคงเดิม); ช่องค้นหาครอบคลุม `reference` (เลขที่คำสั่งยืม)
+  - **ตาราง:** เพิ่มคอลัมน์ `ที่มา` (badge ใบเบิก / ยืม → ใช้ทดแทน) และ `เลขอ้างอิง` พร้อม tooltip อธิบายว่าวันที่ของแถว consumed คือวันที่บันทึกใช้ทดแทน
+  - **Excel:** เพิ่มคอลัมน์ `ที่มา` และ `เลขอ้างอิง` ในชีต withdrawals
+  - **PDF (`StockReportPDF` type=withdrawals):** เพิ่มคอลัมน์ `ที่มา / เลขอ้างอิง` และเกลี่ยความกว้างใหม่ (4/11/18/22/7/7/5/18/8 %) พร้อม footer 55/7/7/31 % ให้ตรงกับตาราง
+  - **KPI/Charts ไม่ต้องแก้:** ตรวจแล้วทั้ง `ReportKpiGrid` และ `ReportCharts` คิดยอดจาก `deducted_quantity` และ `status` ซึ่งแถว consumed ตั้งค่าให้แล้ว (นับเป็น completed, shortage = 0, pending = 0)
+  - **i18n:** เพิ่ม `reports.table.source`, `sourceWithdrawal`, `sourceCheckoutConsumed`, `reference`, `consumedDateTooltip`, `reports.export.colSource`, `colReference` ครบทั้ง `th` และ `en`
+  - ปรับ version ของระบบเป็น `v1.14.1` (PATCH)
+## [2026-10-09 14:30] - v1.14.0
+
+- **Files Modified:** `src/components/checkouts/CheckoutReturnModal.jsx`, `src/components/checkouts/CheckoutDetailModal.jsx`, `src/components/checkouts/CheckoutActiveList.jsx`, `src/components/checkouts/CheckoutHistoryList.jsx`, `src/components/checkouts/CheckoutExtendModal.jsx`, `src/pages/Checkouts.jsx`, `src/lib/checkout-pdf-templates.jsx`, `src/lib/emailRenderer.js`, `src/lib/emailRenderer.test.js`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **Phase 2 ของแผน `docs/checkout-consumed-replacement-plan.md` (Checkout UI):** รองรับการคืนสภาพใหม่ `consumed` ("นำไปใช้งานทดแทน") ที่ migration 77 เพิ่มไว้
+  - **Return Modal:** เพิ่มตัวเลือก `consumed` ใน select สภาพ, บังคับกรอกเหตุผล/จุดติดตั้ง (toast `checkouts.consumedReasonRequired` ถ้าว่าง), เพิ่มช่อง `replaced_serial_number` (`maxLength=100` ตรงกับ CHECK ฝั่ง DB) แสดงเฉพาะเมื่อเลือก `consumed`, ส่ง `replaced_serial_number` ไปกับ payload ของ `process_return_order`, และปรับ dominant condition สำหรับอีเมลให้รู้จัก `consumed`
+  - **สูตรคงค้าง/ยอดเคลียร์:** บวก `quantity_consumed` เข้าสูตร remaining/completed ทั้งหมด — `CheckoutReturnModal`, `CheckoutActiveList`, `CheckoutHistoryList`, `Checkouts.jsx` (ตัวนับ active), `CheckoutDetailModal` และเงื่อนไข "มีการคืนแล้ว" ของ `CheckoutExtendModal`; ไม่แตะสูตรที่ใช้ `quantity_borrowed` อย่างเดียว (Pending/Approve/Dispatch)
+  - **Detail Modal:** เพิ่ม `totalConsumed` แยกจากยอดชำรุด/สูญหาย, แสดงยอดต่อรายการ, แถบสรุป "ใช้ทดแทน" พร้อมหมายเหตุว่าไม่คืนสต็อก, และใน audit log แสดง `replaced_serial_number` เป็น `ทดแทน S/N:` พร้อม badge สีเหลือง (ไม่ปนสีแดงของชำรุด/สูญหาย) โดยแมป label ผ่าน i18n แทนการโชว์ raw code
+  - **PDF/อีเมล:** `checkout-pdf-templates.jsx` แสดง `นำไปใช้ทดแทน (n)` นำหน้าสภาพชำรุด/สูญหาย และเพิ่ม `consumed` ใน `RETURN_CONDITION_LABELS` ของ `emailRenderer.js` (ใช้ทั้งอีเมลและ fallback ของ PDF) พร้อม unit test
+  - **i18n:** เพิ่มคีย์ `checkouts.consumed`, `consumedShort`, `consumedReason`, `consumedReasonPlaceholder`, `consumedReasonRequired`, `consumedNoStockNote`, `replacedSerial`, `replacedSerialPlaceholder`, `replacedSerialTag` ครบทั้ง `th` และ `en`
+  - **ไม่แก้ (ตรวจแล้ว):** `api/checkouts-cron.js` ไม่อ่าน `quantity_damaged`/`quantity_lost`/`quantity_consumed` จึงไม่ต้องแก้; `scripts/backup-full-database.mjs` เป็นสำเนาสคีมาที่ล้าสมัยอยู่แล้ว (ไม่มี auth check ของ migration 65 และไม่มี `stock_in_orders` กรณีคืนข้ามโครงการ) — ต้องกระทบยอดแยก ไม่แก้ในรอบนี้
+  - **หมายเหตุ deploy:** โค้ดฝั่ง UI นี้ใช้ได้เฉพาะหลัง migration 77 ถูก apply; ถ้ารันก่อน migration ตัวเลือก `consumed` จะชน CHECK constraint เดิม
+  - ปรับ version ของระบบเป็น `v1.14.0` (MINOR — ฟีเจอร์ใหม่ backward-compatible)
+## [2026-10-09 14:05] - v1.13.10
+
+- **Files Modified:** `supabase/migrations/77_checkout_consumed_return_condition.sql` (ใหม่), `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **Phase 1 ของแผน `docs/checkout-consumed-replacement-plan.md` (DB เท่านั้น):** เพิ่มสภาพรับคืนใหม่ `consumed` ("นำไปใช้งานทดแทน") เพื่อเคลียร์ยอดค้างของอุปกรณ์ที่ยืมไปแล้วนำไปใช้แทนของชำรุด โดยไม่ปนกับ `damaged`/`lost`
+  - **สคีมา (additive):** `checkout_items.quantity_consumed NUMERIC NOT NULL DEFAULT 0 CHECK (>= 0)` และ `checkout_return_logs.replaced_serial_number TEXT` — คอลัมน์เดิมไม่ถูกแก้หรือลบ
+  - **CHECK `item_condition`:** ค้นชื่อ constraint จริงจาก `pg_constraint`/`pg_attribute` (DDL เดิมมีเฉพาะ `archive/44`) แล้ว re-add แบบ `NOT VALID` → `VALIDATE` ตามแพตเทิร์น `20260909092350` รวมค่า `'consumed'`; ถ้าพบ constraint มากกว่า 1 ตัวที่อ้าง `item_condition` จะ RAISE ให้ตรวจสอบก่อน
+  - **`process_return_order(JSONB)`:** `CREATE OR REPLACE` คง signature/return/SECURITY DEFINER/`search_path` และ GRANT เดิม — เพิ่มสาขา `consumed` (บังคับ `damage_notes`, รับ `replaced_serial_number` trim ≤ 100 ตัวอักษร, **ไม่** insert `stock_transactions`), นับ `quantity_consumed` ในสูตร over-return/completion/สถานะ item, เพิ่ม guard สถานะ order (`active|partial_returned|overdue`) และปฏิเสธสภาพที่ไม่รู้จักแทนการปล่อยให้ค่าเป็น NULL; พฤติกรรม `normal/damaged/needs_repair/lost` คงเดิมทุกประการ
+  - **`get_checkout_consumed_usage(UUID, DATE, DATE)` (ใหม่):** `STABLE` + `SECURITY DEFINER` + `search_path` pinned, ตรวจ `reports.view` หรือ super admin, `REVOKE` จาก PUBLIC/anon แล้ว `GRANT` ให้ authenticated/service_role — เลี่ยงการเปิด RLS ของ `checkout_return_logs` (policy 65 บรรทัด 172-181 จำกัดเฉพาะ `checkouts.return`)
+  - **Rollback:** ระบุไว้ในคอมเมนต์หัวไฟล์ (คืนนิยาม `process_return_order` เวอร์ชัน 65 + `DROP` ฟังก์ชันรายงาน); คอลัมน์ใหม่เป็น additive ห้าม DROP หากมีข้อมูล `consumed` แล้ว
+  - **ยังไม่ทำ (Phase 2-4):** frontend/Reports/i18n ยังไม่รองรับ `consumed` — ต้อง deploy migration ก่อน frontend เสมอ และ Phase 4 จะปรับ version เป็น `1.14.0` (MINOR)
+  - ปรับ version ของระบบเป็น `v1.13.10` (PATCH)
+
 ## [2026-10-09 13:38] - v1.13.9
 
 - **Files Modified:** `.agents/skills/caveman/SKILL.md`, `.agents/skills/caveman/README.md`, `.agents/skills/ultracave/SKILL.md`, `.agents/skills/ultracave/README.md`, `AGENTS.md`, `.agents/skills/backend-api-pro/SKILL.md`, `.agents/manifest.json`, `.agents/manifest.lock.json`, `.agents/DEPENDENCY_GRAPH.md`, `package.json`, `CHANGELOG.md`

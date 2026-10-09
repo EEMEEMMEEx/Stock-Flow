@@ -62,7 +62,7 @@ const CheckoutActiveList = ({
       let daysDiff = null;
 
       const totalBorrowed = (order.checkout_items || []).reduce((sum, i) => sum + Number(i.quantity_borrowed || 0), 0);
-      const totalReturned = (order.checkout_items || []).reduce((sum, i) => sum + Number(i.quantity_returned || 0) + Number(i.quantity_damaged || 0) + Number(i.quantity_lost || 0), 0);
+      const totalReturned = (order.checkout_items || []).reduce((sum, i) => sum + Number(i.quantity_returned || 0) + Number(i.quantity_damaged || 0) + Number(i.quantity_lost || 0) + Number(i.quantity_consumed || 0), 0);
       const remainingUnits = Math.max(0, totalBorrowed - totalReturned);
       const isCompleted = order.status === 'completed' || Boolean(order.actual_returned_date) || remainingUnits <= 0;
 
@@ -310,7 +310,7 @@ const CheckoutActiveList = ({
                       <div className="text-[11px] text-muted-foreground pt-1 flex flex-wrap gap-1.5">
                         {order.checkout_items?.map((item, idx) => (
                           <span key={item.id || idx} className="bg-muted/60 px-2 py-0.5 rounded-md border border-border/40 font-mono text-[10px]">
-                            {item.items?.name || t('common.item')} ×{item.quantity_borrowed - (item.quantity_returned + item.quantity_damaged + item.quantity_lost)} {item.items?.unit || t('common.piece')}
+                            {item.items?.name || t('common.item')} ×{item.quantity_borrowed - (item.quantity_returned + item.quantity_damaged + item.quantity_lost + (Number(item.quantity_consumed) || 0))} {item.items?.unit || t('common.piece')}
                             {item.serial_number && <span className="text-indigo-600 dark:text-indigo-400"> (S/N: {item.serial_number})</span>}
                           </span>
                         ))}

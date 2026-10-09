@@ -1,6 +1,11 @@
 // Multi-language translation dictionary for Stock-Flow Landing Page
 // Supports Thai, English, Vietnamese, Indonesian, Malay, Lao, Khmer, Burmese, and Filipino
 
+import { APP_CONFIG } from '@/config/appConfig';
+
+// Single source of truth for the version shown on the landing page (package.json).
+const versionBadge = (status) => `v${APP_CONFIG.version} ${status}`;
+
 export const SUPPORTED_LANGUAGES = [
   { code: 'th', label: 'ไทย', name: 'Thai', region: 'TH' },
   { code: 'en', label: 'English', name: 'English', region: 'US/UK' },
@@ -25,7 +30,7 @@ export const landingTranslations = {
       architecture: 'สถาปัตยกรรม',
       security: 'ความปลอดภัย & สิทธิ์',
       launchApp: 'เข้าสู่เว็บแอป',
-      versionBadge: 'v1.10.21 พร้อมใช้งาน',
+      versionBadge: versionBadge('พร้อมใช้งาน'),
     },
     hero: {
       pill: 'NEXT-GEN INVENTORY & POS OS',
@@ -170,7 +175,7 @@ export const landingTranslations = {
       architecture: 'Architecture',
       security: 'Security & RBAC',
       launchApp: 'Launch Web App',
-      versionBadge: 'v1.10.21 Ready',
+      versionBadge: versionBadge('Ready'),
     },
     hero: {
       pill: 'NEXT-GEN INVENTORY & POS OS',
@@ -314,7 +319,7 @@ export const landingTranslations = {
       architecture: 'Kiến trúc',
       security: 'Bảo mật & Phân quyền',
       launchApp: 'Mở ứng dụng',
-      versionBadge: 'v1.0 Sẵn sàng',
+      versionBadge: versionBadge('Sẵn sàng'),
     },
     hero: {
       pill: 'HỆ THỐNG QUẢN LÝ KHO & POS THẾ HỆ MỚI',
@@ -431,7 +436,7 @@ export const landingTranslations = {
       architecture: 'Arsitektur',
       security: 'Keamanan & RBAC',
       launchApp: 'Buka Aplikasi',
-      versionBadge: 'v1.0 Siap Pakai',
+      versionBadge: versionBadge('Siap Pakai'),
     },
     hero: {
       pill: 'SISTEM INVENTARIS & POS MODERN',
@@ -548,7 +553,7 @@ export const landingTranslations = {
       architecture: 'Seni Bina',
       security: 'Keselamatan & RBAC',
       launchApp: 'Buka Aplikasi',
-      versionBadge: 'v1.0 Sedia Digunakan',
+      versionBadge: versionBadge('Sedia Digunakan'),
     },
     hero: {
       pill: 'SISTEM INVENTORI & POS GENERASI BAHARU',
@@ -665,7 +670,7 @@ export const landingTranslations = {
       architecture: 'ໂຄງສ້າງລະບົບ',
       security: 'ຄວາມປອດໄພ & ສິດ',
       launchApp: 'ເຂົ້າສູ່ເວັບແອັບ',
-      versionBadge: 'v1.0 ພ້ອມໃຊ້ງານ',
+      versionBadge: versionBadge('ພ້ອມໃຊ້ງານ'),
     },
     hero: {
       pill: 'ລະບົບຄັງສິນຄ້າ & POS ຍຸກໃໝ່',
@@ -782,7 +787,7 @@ export const landingTranslations = {
       architecture: 'ស្ថាបត្យកម្ម',
       security: 'សុវត្ថិភាព & RBAC',
       launchApp: 'បើកកម្មវិធី',
-      versionBadge: 'v1.0 រួចរាល់',
+      versionBadge: versionBadge('រួចរាល់'),
     },
     hero: {
       pill: 'ប្រព័ន្ធគ្រប់គ្រងស្តុក & POS ជំនាន់ថ្មី',
@@ -899,7 +904,7 @@ export const landingTranslations = {
       architecture: 'ဗိသုကာ',
       security: 'လုံခြုံရေး & RBAC',
       launchApp: 'အက်ပ်ဖွင့်ပါ',
-      versionBadge: 'v1.0 အသင့်ရှိသည်',
+      versionBadge: versionBadge('အသင့်ရှိသည်'),
     },
     hero: {
       pill: 'မျိုးဆက်သစ် စာရင်းအင်း & POS စနစ်',
@@ -1016,7 +1021,7 @@ export const landingTranslations = {
       architecture: 'Arkitektura',
       security: 'Seguridad at RBAC',
       launchApp: 'Buksan ang App',
-      versionBadge: 'v1.0 Handa na',
+      versionBadge: versionBadge('Handa na'),
     },
     hero: {
       pill: 'MAKABAGONG SISTEMA NG INVENTORY AT POS',
@@ -1133,7 +1138,7 @@ export const landingTranslations = {
       architecture: '系统架构',
       security: '安全与权限',
       launchApp: '启动系统',
-      versionBadge: 'v1.0 就绪',
+      versionBadge: versionBadge('就绪'),
     },
     hero: {
       pill: '下一代企业级库存与 POS 系统',
@@ -1250,7 +1255,7 @@ export const landingTranslations = {
       architecture: 'システム構成',
       security: 'セキュリティ・権限',
       launchApp: 'アプリを開く',
-      versionBadge: 'v1.0 本番稼働中',
+      versionBadge: versionBadge('本番稼働中'),
     },
     hero: {
       pill: '次世代 在庫管理 ＆ POS 出庫システム',
@@ -1367,7 +1372,7 @@ export const landingTranslations = {
       architecture: '시스템 아키텍처',
       security: '보안 및 권한',
       launchApp: '웹 앱 열기',
-      versionBadge: 'v1.0 준비 완료',
+      versionBadge: versionBadge('준비 완료'),
     },
     hero: {
       pill: '차세대 재고 관리 및 POS 시스템',

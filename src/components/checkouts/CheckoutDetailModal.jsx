@@ -21,6 +21,14 @@ import StatusBadge from '@/components/ui/StatusBadge';
  * so selecting `email` from profiles fails with HTTP 400 / SQLSTATE 42703.
  * Log the full PostgREST error payload so the cause is never swallowed again.
  */
+const RETURN_CONDITION_LABEL_KEYS = {
+  normal: 'checkouts.normal',
+  damaged: 'checkouts.damaged',
+  needs_repair: 'checkouts.damagedCondition',
+  lost: 'checkouts.lost',
+  consumed: 'checkouts.consumedShort',
+};
+
 const logProfileFetchError = (scope, error) => {
   if (!error || error.code === 'PGRST116') return;
   console.error(
@@ -191,7 +199,9 @@ const CheckoutDetailModal = ({
   const totalBorrowed = checkoutItems.reduce((s, i) => s + Number(i.quantity_borrowed || 0), 0);
   const totalReturned = checkoutItems.reduce((s, i) => s + Number(i.quantity_returned || 0), 0);
   const totalDamaged = checkoutItems.reduce((s, i) => s + Number(i.quantity_damaged || 0) + Number(i.quantity_lost || 0), 0);
-  const remaining = Math.max(0, totalBorrowed - (totalReturned + totalDamaged));
+  // "นำไปใช้งานทดแทน" (consumed) clears the outstanding balance without returning stock.
+  const totalConsumed = checkoutItems.reduce((s, i) => s + Number(i.quantity_consumed || 0), 0);
+  const remaining = Math.max(0, totalBorrowed - (totalReturned + totalDamaged + totalConsumed));
   const isOrderCompleted = order.status === 'completed' || Boolean(order.actual_returned_date) || remaining <= 0;
 
   // PDF Export Handlers
@@ -412,13 +422,18 @@ const CheckoutDetailModal = ({
                 </div>
 
                 {checkoutItems.map((item, idx) => {
-                  const rem = item.quantity_borrowed - (item.quantity_returned + item.quantity_damaged + item.quantity_lost);
+                  const rem = item.quantity_borrowed - (item.quantity_returned + item.quantity_damaged + item.quantity_lost + (Number(item.quantity_consumed) || 0));
                   return (
                     <div key={item.id || idx} className="p-2.5 grid grid-cols-12 text-xs items-center">
                       <div className="col-span-6 space-y-0.5">
                         <p className="font-bold text-foreground line-clamp-1">{item.items?.name || t('dashboard.item')}</p>
                         {item.serial_number && (
                           <p className="text-[10px] text-indigo-600 dark:text-indigo-400 font-mono">S/N: {item.serial_number}</p>
+                        )}
+                        {Number(item.quantity_consumed) > 0 && (
+                          <p className="text-[10px] text-amber-700 dark:text-amber-400 font-semibold">
+                            {t('checkouts.consumedShort')}: {item.quantity_consumed}
+                          </p>
                         )}
                       </div>
                       <div className="col-span-2 text-center font-mono font-semibold">
@@ -438,6 +453,16 @@ const CheckoutDetailModal = ({
               </div>
             </div>
           </div>
+
+          {/* Consumed (used as replacement) summary */}
+          {totalConsumed > 0 && (
+            <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/25 text-[11px] text-amber-700 dark:text-amber-300 font-semibold flex items-start gap-1.5">
+              <RotateCcw className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+              <span>
+                {t('checkouts.consumedShort')}: {totalConsumed} {t('common.piece')} — {t('checkouts.consumedNoStockNote')}
+              </span>
+            </div>
+          )}
 
           {/* Return Audit Logs */}
           {returnLogs.length > 0 && (
@@ -460,10 +485,21 @@ const CheckoutDetailModal = ({
                         )}
                         <span>— {t('checkouts.returnQty')} {log.returned_quantity} {log.checkout_items?.items?.unit || t('common.piece')}</span>
                         <span className={`ml-1 px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                          log.item_condition === 'normal' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-red-500/10 text-red-600'
+                          log.item_condition === 'normal'
+                            ? 'bg-emerald-500/10 text-emerald-600'
+                            : log.item_condition === 'consumed'
+                            ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400'
+                            : 'bg-red-500/10 text-red-600'
                         }`}>
-                          {log.item_condition === 'normal' ? t('checkouts.normal') : log.item_condition}
+                          {RETURN_CONDITION_LABEL_KEYS[log.item_condition]
+                            ? t(RETURN_CONDITION_LABEL_KEYS[log.item_condition])
+                            : log.item_condition}
                         </span>
+                        {log.replaced_serial_number && (
+                          <span className="font-mono text-[10px] text-amber-700 dark:text-amber-400 bg-amber-500/10 px-1.5 py-0.2 rounded font-bold">
+                            {t('checkouts.replacedSerialTag')} {log.replaced_serial_number}
+                          </span>
+                        )}
                       </div>
                       <div className="text-[10px] text-muted-foreground mt-0.5">
                         {t('items.location')}: {log.projects?.name} • {t('history.performedBy')}: {log.profiles?.full_name || 'Staff'}

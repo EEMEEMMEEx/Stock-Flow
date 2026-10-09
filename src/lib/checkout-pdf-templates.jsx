@@ -575,7 +575,9 @@ export const MaterialReturnPDF = ({ order, returnLogs = [], staffProfile }) => {
             const isEmpty = !item.item_id && !item.items && !item.quantity_borrowed;
             const itemName = item.items?.name || item.item_name || '';
             const unit = item.items?.unit || 'ชิ้น';
-            const conditionText = item.quantity_damaged > 0 
+            const conditionText = item.quantity_consumed > 0
+              ? `นำไปใช้ทดแทน (${item.quantity_consumed})`
+              : item.quantity_damaged > 0 
               ? `ชำรุด (${item.quantity_damaged})` 
               : item.quantity_lost > 0 
               ? `สูญหาย (${item.quantity_lost})` 

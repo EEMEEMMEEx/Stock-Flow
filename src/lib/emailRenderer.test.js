@@ -299,6 +299,7 @@ test('maps return condition codes to Thai labels', () => {
   assert.equal(formatReturnCondition('damaged'), 'ชำรุด (ต้องซ่อมแซม)');
   assert.equal(formatReturnCondition('needs_repair'), 'ต้องซ่อมแซม');
   assert.equal(formatReturnCondition('lost'), 'สูญหาย');
+  assert.equal(formatReturnCondition('consumed'), 'นำไปใช้งานทดแทน (ไม่คืนสต็อก)');
   assert.equal(formatReturnCondition('weird_code'), 'weird_code');
   assert.equal(formatReturnCondition(''), '-');
 });

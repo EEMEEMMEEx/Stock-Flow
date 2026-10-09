@@ -24,7 +24,7 @@ const CheckoutHistoryList = ({
       const items = o.checkout_items || [];
       if (items.length === 0) return false;
       const totalBorrowed = items.reduce((s, i) => s + Number(i.quantity_borrowed || 0), 0);
-      const totalReturned = items.reduce((s, i) => s + Number(i.quantity_returned || 0) + Number(i.quantity_damaged || 0) + Number(i.quantity_lost || 0), 0);
+      const totalReturned = items.reduce((s, i) => s + Number(i.quantity_returned || 0) + Number(i.quantity_damaged || 0) + Number(i.quantity_lost || 0) + Number(i.quantity_consumed || 0), 0);
       return totalBorrowed > 0 && (totalBorrowed - totalReturned) <= 0;
     });
   }, [orders]);
