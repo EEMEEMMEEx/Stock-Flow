@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-10-09 19:45] - v1.16.0
+
+- **Files Modified:** `supabase/migrations/79_caim_inbound_webhook_processing.sql` (ใหม่), `api/caim-webhook.js` (ใหม่), `scripts/verify-caim-webhook.mjs` (ใหม่), `scripts/apply-migration-79.mjs` (ใหม่), `.env.example`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **Phase 3 CAIM Inbound Webhook & Processing (ขากลับ CAIM -> Stock-Flow):**
+    - **Migration 79:** สร้างตาราง `public.caim_webhook_logs` (UNIQUE `event_id` กันประมวลผลซ้ำ + status processing/processed/duplicate/unmatched/failed) และ `public.scrap_disposal_items` (ทะเบียนของเสีย) พร้อมเพิ่มคอลัมน์ติดตามผลขากลับใน `checkout_return_logs` (`caim_repair_result`, `caim_closed_at`, `caim_inbound_processed_at`, `caim_stock_in_order_id`, `caim_scrap_disposal_id`) และ `stock_in_items.serial_number` สำหรับ S/N ที่รับกลับเข้าคลัง + index ค้นหา return log ด้วย `caim_ticket_id`
+    - **Atomic RPC `public.process_caim_webhook_event(JSONB)`:** SECURITY DEFINER + `search_path = public, auth, pg_temp`, REVOKE จาก PUBLIC/anon/authenticated แล้ว GRANT เฉพาะ `service_role`; claim idempotency ด้วย `INSERT ... ON CONFLICT (event_id) DO NOTHING` ก่อนทำงานจริง; `unrepairable` -> บันทึกของเสีย (ไม่มี stock movement), `repaired`/`replaced_new` -> สร้าง `stock_in_orders` + `stock_in_items` (+1) + `stock_transactions` (`transaction_type = 'stock_in'`, `reference_type = 'claim_return'`) แบบ Atomic; งานที่ล้มเหลว rollback เฉพาะ sub-transaction แต่ยังเก็บ log สถานะ `failed` พร้อม `SQLERRM`
+    - **`api/caim-webhook.js`:** ตรวจ HMAC-SHA256 (`x-caim-signature: sha256=...`) ด้วย `crypto.timingSafeEqual` เทียบกับ raw body ที่ยังอ่านได้ หรือ canonical JSON ของ body ที่ platform parse ให้แล้ว, ตรวจ replay window `x-caim-timestamp` ±300 วินาที, validate event/ticketId/repairResult, แล้วเรียก RPC ด้วย service role; error จาก RPC ฝั่ง client (payload ผิด) ตอบ 422 ส่วนข้อผิดพลาดอื่นตอบ 500
+    - **Verification tooling:** `npm run verify:caim-webhook` (31 checks) รัน handler จริงยืนยัน gate ทั้งหมด — ไม่มี signature/ผิด = 401, timestamp เก่าเกิน ±300s หรือหายไป = 400, event/repairResult ไม่รองรับ = 422, ticketId ว่าง = 400, malformed JSON = 400, และ payload ที่ถูกต้องไปถึงชั้น DB จริง; `node scripts/apply-migration-79.mjs` สำหรับ apply migration 79 กับ linked project พร้อม probe ยืนยันว่าฟังก์ชันมีจริง
+  - **ข้อจำกัด:** ยัง **ไม่ได้ apply migration 79 กับ production** (ต้องได้รับการยืนยันก่อนรัน) และยังไม่ได้ทดสอบ RPC กับฐานข้อมูลจริง (เครื่องนี้ไม่มี Docker/Postgres) — ยืนยันได้เฉพาะ gate ฝั่ง HTTP ที่รันจริง 31/31 กับ static guard ในตัว migration
+  - ปรับ version ของระบบเป็น `v1.16.0` (MINOR)
+
 ## [2026-10-09 15:35] - v1.15.0
 
 - **Files Modified:** `supabase/migrations/78_checkout_caim_ticket_integration.sql`, `api/sync-to-caim.js`, `src/lib/caimSync.js`, `src/components/checkouts/CheckoutReturnModal.jsx`, `src/components/checkouts/CheckoutDetailModal.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `README.md`, `package.json`, `package-lock.json`, `CHANGELOG.md`
