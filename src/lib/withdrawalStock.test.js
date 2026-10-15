@@ -6,6 +6,7 @@ import {
   buildCartKey,
   buildWarehouseMap,
   clampQuantity,
+  evaluateStockAvailability,
   getWarehouseBalance,
   getWarehouseLabel,
   getWarehouseTotal,
@@ -188,7 +189,7 @@ test('pickDefaultWarehouse breaks balance ties by warehouse name', () => {
   assert.equal(picked.project_id, 'pA');
 });
 
-test('resolveSourceWarehouse honours an explicitly selected project', () => {
+test('resolveSourceWarehouse keeps the selected warehouse when it has stock', () => {
   const warehouses = [
     { project_id: 'p1', project_name: 'A', balance: 3 },
     { project_id: 'p2', project_name: 'B', balance: 9 },
@@ -198,15 +199,50 @@ test('resolveSourceWarehouse honours an explicitly selected project', () => {
     project_name: 'A',
     warehouse_name: 'A',
     balance: 3,
+    isFallback: false,
   });
+});
 
-  // selected project without stock still resolves to that warehouse with 0
-  assert.deepEqual(resolveSourceWarehouse({ selectedProjectId: 'pX', warehouses }), {
-    project_id: 'pX',
-    project_name: '',
-    warehouse_name: '',
-    balance: 0,
-  });
+test('resolveSourceWarehouse falls back to the fullest stock when the selected one is empty (real regression)', () => {
+  // Reported case: header = "ตึกโรงรับจำนำ" (no stock row) while the item really
+  // sits in "คลัง Forth ชั้น 3" with 97 units.
+  const warehouses = [
+    { project_id: 'forth', project_name: 'DOPA-DTRS | USO-SHF', warehouse_name: 'คลัง Forth ชั้น 3', balance: 97 },
+  ];
+  const picked = resolveSourceWarehouse({ selectedProjectId: 'no-stock-warehouse', warehouses });
+  assert.equal(picked.project_id, 'forth');
+  assert.equal(picked.warehouse_name, 'คลัง Forth ชั้น 3');
+  assert.equal(picked.balance, 97);
+  assert.equal(picked.isFallback, true);
+});
+
+test('resolveSourceWarehouse returns null only when nothing has stock', () => {
+  assert.equal(resolveSourceWarehouse({ selectedProjectId: 'p1', warehouses: [] }), null);
+  assert.equal(resolveSourceWarehouse({ selectedProjectId: 'p1', warehouses: [{ project_id: 'p1', balance: 0 }] }), null);
+  assert.equal(resolveSourceWarehouse({ selectedProjectId: ALL_WAREHOUSES, warehouses: [] }), null);
+});
+
+test('resolveSourceWarehouse marks an "all" auto-pick as not a fallback', () => {
+  const warehouses = [{ project_id: 'p1', project_name: 'A', balance: 3 }];
+  assert.equal(resolveSourceWarehouse({ selectedProjectId: ALL_WAREHOUSES, warehouses }).isFallback, false);
+});
+
+test('evaluateStockAvailability approves when available >= requested', () => {
+  assert.deepEqual(evaluateStockAvailability(97, 1), { status: 'ok', available: 97, requested: 1, shortage: 0 });
+  assert.deepEqual(evaluateStockAvailability(1, 1), { status: 'ok', available: 1, requested: 1, shortage: 0 });
+});
+
+test('evaluateStockAvailability reports the exact shortage', () => {
+  assert.deepEqual(evaluateStockAvailability(97, 100), { status: 'shortage', available: 97, requested: 100, shortage: 3 });
+  assert.deepEqual(evaluateStockAvailability(0, 1), { status: 'shortage', available: 0, requested: 1, shortage: 1 });
+});
+
+test('evaluateStockAvailability treats missing/invalid stock as unknown, never 0', () => {
+  for (const value of [null, undefined, '', 'abc', NaN]) {
+    assert.equal(evaluateStockAvailability(value, 1).status, 'unknown', 'available=' + String(value));
+  }
+  assert.equal(evaluateStockAvailability(5, null).status, 'unknown');
+  assert.equal(evaluateStockAvailability(5, undefined).status, 'unknown');
 });
 
 test('resolveSourceWarehouse carries the warehouse label of the picked warehouse', () => {

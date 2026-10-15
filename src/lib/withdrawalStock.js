@@ -83,25 +83,71 @@ export function pickDefaultWarehouse(warehouses = []) {
 
 /**
  * Resolve the source warehouse for a new cart line.
- * - a concrete selected project wins (balance may be 0 = nothing to withdraw)
- * - "all" auto-picks the warehouse holding the most stock
+ * - the selected warehouse wins when it actually has stock
+ * - otherwise fall back to the fullest warehouse that has stock (isFallback: true)
+ * - "all" simply picks the fullest warehouse (isFallback: false)
+ * - returns null only when NO warehouse has stock for the item
  */
 export function resolveSourceWarehouse({ selectedProjectId, warehouses = [] }) {
+  const stocked = (warehouses || []).filter((w) => Number(w.balance) > 0);
+
   if (selectedProjectId && selectedProjectId !== ALL_WAREHOUSES) {
-    const match = (warehouses || []).find((w) => w.project_id === selectedProjectId);
+    const match = stocked.find((w) => w.project_id === selectedProjectId);
+    if (match) {
+      return {
+        project_id: match.project_id,
+        project_name: match.project_name || '',
+        warehouse_name: match.warehouse_name || match.project_name || '',
+        balance: Number(match.balance),
+        isFallback: false,
+      };
+    }
+  }
+
+  const picked = pickDefaultWarehouse(stocked);
+  if (!picked) return null;
+
+  return {
+    project_id: picked.project_id,
+    project_name: picked.project_name || '',
+    warehouse_name: picked.warehouse_name || picked.project_name || '',
+    balance: Number(picked.balance) || 0,
+    // true = a specific warehouse was requested but another one had to be used
+    isFallback: Boolean(selectedProjectId && selectedProjectId !== ALL_WAREHOUSES),
+  };
+}
+
+/**
+ * Single source of truth for the numeric stock comparison used before approving.
+ * Missing / non-numeric availability is reported as "unknown" (an error state)
+ * instead of being coerced to 0, which would create a false shortage.
+ */
+export function evaluateStockAvailability(available, requested) {
+  const requestedNumber = Number(requested);
+  const hasRequested = requested !== null && requested !== undefined && Number.isFinite(requestedNumber);
+
+  const availableNumber = Number(available);
+  const hasAvailable = available !== null && available !== undefined && available !== ''
+    && Number.isFinite(availableNumber);
+
+  if (!hasRequested || !hasAvailable) {
     return {
-      project_id: selectedProjectId,
-      project_name: match?.project_name || '',
-      warehouse_name: match?.warehouse_name || match?.project_name || '',
-      balance: match ? Number(match.balance) || 0 : 0,
+      status: 'unknown',
+      available: hasAvailable ? availableNumber : null,
+      requested: hasRequested ? requestedNumber : null,
+      shortage: null,
     };
   }
 
-  const picked = pickDefaultWarehouse(warehouses);
-  if (!picked) return null;
+  if (availableNumber >= requestedNumber) {
+    return { status: 'ok', available: availableNumber, requested: requestedNumber, shortage: 0 };
+  }
+
   return {
-    ...picked,
-    warehouse_name: picked.warehouse_name || picked.project_name || '',
+    status: 'shortage',
+    available: availableNumber,
+    requested: requestedNumber,
+    shortage: requestedNumber - availableNumber,
   };
 }
 

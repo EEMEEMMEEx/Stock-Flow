@@ -1,5 +1,30 @@
 # Changelog
 
+## [2026-10-15 15:04] - v1.21.2
+
+- **Files Modified:** `src/pages/Withdrawals.jsx`, `src/components/withdrawals/WithdrawalDetailModal.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **Transparent Approval UI (ต่อจากแผน stock-shortage-approval-fix §3.4):** หน้าต่างรายละเอียด/อนุมัติใบเบิกแสดง **ชื่อคลังต้นทางพร้อมยอดคงเหลือจริง** ต่อบรรทัด เช่น "คลัง Forth ชั้น 3 (คงเหลือ 97)" — ดึง `stock_balance` ตาม `(project_id, item_id)` ของทุกรายการในใบเบิกตอนเปิดโมดอล (ถ้าโหลดไม่สำเร็จจะไม่แสดงตัวเลข แต่ยังเปิดโมดอลได้ตามปกติ)
+  - เพิ่มคีย์ภาษา `withdrawals.remainingCount` (th/en) — parity 100% (1,875 คีย์)
+  - ปรับ version เป็น `v1.21.2` (PATCH)
+
+## [2026-10-15 14:58] - v1.21.1
+
+- **Files Modified:** `src/lib/withdrawalStock.js`, `src/lib/withdrawalStock.test.js`, `src/pages/Withdrawals.jsx`, `src/components/withdrawals/WithdrawalCartPanel.jsx`, `src/components/withdrawals/WithdrawalShortageModal.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **แก้การตรวจสต็อกผิดพลาดในกระบวนการอนุมัติใบเบิก (False Shortage):**
+    - **`resolveSourceWarehouse`:** เดิมเมื่อคลังที่เลือกไม่มีสต็อกจะคืน `balance: 0` ผูกกับคลังนั้น → RPC ตรวจเจอ shortage ปลอม (เคสจริง ใบเบิก `136e195b`: เลือก "ตึกโรงรับจำนำ" ซึ่งไม่มีแถว `stock_balance` ขณะที่ของ 97 ชิ้นอยู่ที่ "คลัง Forth ชั้น 3") ตอนนี้ fallback ไปคลังที่มีสต็อกมากที่สุดอัตโนมัติ พร้อมธง `isFallback: true` และคืน `null` เฉพาะเมื่อไม่มีคลังใดมีของจริง
+    - **`evaluateStockAvailability(available, requested)`** helper ใหม่: ตัดสิน `ok` / `shortage` / `unknown` แบบตัวเลขเข้มงวด — `null`/`undefined`/`NaN` ถือเป็น `unknown` (Error State) ไม่แปลงเป็น 0
+    - **`handleProjectChange`:** โครงการที่ Header เป็นเพียง "ปลายทาง" — ไม่เขียนทับ `source_project_id` ของบรรทัดที่มีสต็อกอยู่แล้ว; เปลี่ยนคลังต้นทางให้เฉพาะเมื่อคลังเดิมไม่มีของหรือยังไม่ผูกคลัง (กันคีย์ซ้ำ)
+    - **`handleAddToCart`:** แจ้งเตือนเมื่อระบบสลับไปใช้คลังอื่นแทน (fallback) และบันทึก `source_is_fallback` ไว้แสดง Badge
+    - **`ordersQuery`:** join `projects (*)` เข้า `withdrawal_items` (เฉพาะเมื่อ schema รองรับ) เพื่อให้หน้าอนุมัติ/รายละเอียดเห็นคลังต้นทางของแต่ละบรรทัด
+    - **`handleApproveOrder`:** parse `SHORTAGE_DETECTED` ปลอดภัยขึ้น (หาตำแหน่ง marker แทน greedy regex) และปฏิเสธ payload ที่ไม่มีรายการ shortage
+    - **`WithdrawalCartPanel`:** Badge เตือน "เลือกคลังต้นทางอัตโนมัติ" / "คลังต้นทางต่างจากโครงการ"
+    - **`WithdrawalShortageModal`:** Error State เมื่อข้อมูลสต็อกไม่ครบ (แสดง "—" แทน 0) และปิดปุ่ม Confirm Shortage Override ในกรณีนั้น
+  - **Tests:** `npm run test:withdrawal-stock` เพิ่มเป็น 30 เคส ครอบ fallback, ไม่มีของทุกคลัง, ok/เท่ากัน/ขาด และค่า stock ที่ invalid
+  - **Database:** ไม่มี migration ใหม่ — RPC `approve_inventory_request` (migration 80) ถูกต้องอยู่แล้ว
+  - ปรับ version เป็น `v1.21.1` (PATCH) และแก้ `package-lock.json` ให้ตรงกับ `package.json` (เดิมค้างที่ `1.20.3`)
+
 ## [2026-10-15 11:20] - v1.21.0
 
 - **Files Modified:** `supabase/migrations/81_super_cancellations_and_void_rpcs.sql`, `src/components/withdrawals/WithdrawalCancelModal.jsx`, `src/components/checkouts/CheckoutCancelModal.jsx`, `src/components/ui/StatusBadge.jsx`, `src/pages/Withdrawals.jsx`, `src/components/withdrawals/WithdrawalOrdersList.jsx`, `src/components/withdrawals/WithdrawalDetailModal.jsx`, `src/pages/Checkouts.jsx`, `src/components/checkouts/CheckoutHistoryList.jsx`, `src/components/checkouts/CheckoutDetailModal.jsx`, `src/i18n/locales/en.js`, `src/i18n/locales/th.js`, `package.json`, `CHANGELOG.md`

@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AlertTriangle, ShieldAlert } from 'lucide-react';
 import { useTranslation } from '@/i18n';
-import { getWarehouseLabel } from '@/lib/withdrawalStock';
+import { evaluateStockAvailability, getWarehouseLabel } from '@/lib/withdrawalStock';
 
 const WithdrawalShortageModal = ({
   isOpen,
@@ -16,7 +16,13 @@ const WithdrawalShortageModal = ({
   onConfirmApprove
 }) => {
   const { t } = useTranslation();
-  const shortageRows = shortageData?.shortages || [];
+  const shortageRows = Array.isArray(shortageData?.shortages) ? shortageData.shortages : [];
+  const rowEvaluations = shortageRows.map(row => ({ row, evaluation: evaluateStockAvailability(row.available, row.requested) }));
+  const hasRows = shortageRows.length > 0;
+  const hasUnknownStock = rowEvaluations.some(({ evaluation }) => evaluation.status === 'unknown');
+  // Never offer the override when the stock numbers are missing: a false 0 would
+  // look like a genuine shortage.
+  const canOverride = hasRows && !hasUnknownStock;
   const hasWarehouseColumn = shortageRows.some(row => row.warehouse_name || row.project_id);
   // RPC ส่งชื่อโครงการมาใน warehouse_name จึง resolve ชื่อคลัง (projects.location) ฝั่ง UI แทน
   const resolveRowWarehouse = (row) => getWarehouseLabel(projects.find(p => p.id === row.project_id))
@@ -47,6 +53,15 @@ const WithdrawalShortageModal = ({
             </p>
           </div>
 
+          {!canOverride && (
+            <div className="bg-red-500/10 border border-red-500/30 text-red-900 dark:text-red-200 p-3.5 rounded-xl text-[11px] leading-relaxed flex items-start gap-2">
+              <AlertTriangle className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0" />
+              <span>
+                {t('withdrawals.shortageStockUnknown', 'ไม่สามารถตรวจสอบยอดสต็อกได้ครบถ้วน (ข้อมูลไม่ครบหรือโหลดไม่สำเร็จ) — กรุณาปิดหน้าต่างนี้แล้วกดอนุมัติใหม่อีกครั้ง')}
+              </span>
+            </div>
+          )}
+
           <div className="border border-border rounded-xl overflow-hidden shadow-xs">
             <Table>
               <TableHeader className="bg-muted/50 text-xs">
@@ -60,7 +75,7 @@ const WithdrawalShortageModal = ({
                 </TableRow>
               </TableHeader>
               <TableBody className="text-xs">
-                {shortageRows.map(item => (
+                {rowEvaluations.map(({ row: item, evaluation }) => (
                   <TableRow key={`${item.project_id || ''}::${item.request_item_id || item.item_id}`}>
                     <TableCell className="font-bold text-foreground">{item.item_name}</TableCell>
                     {hasWarehouseColumn && (
@@ -68,13 +83,15 @@ const WithdrawalShortageModal = ({
                         {resolveRowWarehouse(item)}
                       </TableCell>
                     )}
-                    <TableCell className="text-center font-mono">{item.requested} {item.unit}</TableCell>
-                    <TableCell className="text-center font-mono">{item.available} {item.unit}</TableCell>
+                    <TableCell className="text-center font-mono">{evaluation.requested ?? '—'} {item.unit}</TableCell>
+                    <TableCell className="text-center font-mono">
+                      {evaluation.status === 'unknown' ? '—' : evaluation.available} {item.unit}
+                    </TableCell>
                     <TableCell className="text-center font-bold font-mono text-emerald-600 dark:text-emerald-400">
                       {item.deducted} {item.unit}
                     </TableCell>
                     <TableCell className="text-center font-bold font-mono text-amber-600 bg-amber-500/10">
-                      {item.shortage} {item.unit}
+                      {evaluation.shortage ?? '—'} {item.unit}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -106,8 +123,9 @@ const WithdrawalShortageModal = ({
           </Button>
           <Button
             type="button"
-            className="rounded-lg text-xs h-9 px-4 bg-amber-600 hover:bg-amber-700 text-white font-semibold shadow-xs cursor-pointer"
-            onClick={() => onConfirmApprove(shortageData.orderId, true, overrideReason)}
+            disabled={!canOverride}
+            className="rounded-lg text-xs h-9 px-4 bg-amber-600 hover:bg-amber-700 text-white font-semibold shadow-xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={() => onConfirmApprove(shortageData?.orderId, true, overrideReason)}
           >
             {t('withdrawals.confirmShortageOverride', 'Confirm Shortage Override')}
           </Button>

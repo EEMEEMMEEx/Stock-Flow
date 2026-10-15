@@ -8,7 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n';
 import { toSafeFileToken } from '@/lib/utils';
 import { isSchemaMismatchError } from '@/lib/rpcErrors';
-import { ALL_WAREHOUSES, buildCartKey, buildWarehouseMap, clampQuantity, getWarehouseBalance, getWarehouseLabel, getWarehousesForItem, resolveSourceWarehouse } from '@/lib/withdrawalStock';
+import { ALL_WAREHOUSES, buildCartKey, buildWarehouseMap, clampQuantity, getWarehouseBalance, getWarehouseLabel, getWarehousesForItem, pickDefaultWarehouse, resolveSourceWarehouse } from '@/lib/withdrawalStock';
 import toast from 'react-hot-toast';
 import { dispatchWithdrawalNotification, dispatchLowStockAlertNotification } from '@/lib/notificationDispatcher';
 
@@ -86,6 +86,7 @@ const Withdrawals = () => {
   // Details Modal State
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [orderDetails, setOrderDetails] = useState([]);
+  const [orderStockRows, setOrderStockRows] = useState([]);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
   // Shortage Warning & Override Modal State
@@ -146,38 +147,48 @@ const Withdrawals = () => {
 
     setCart(prev => prev.map(cItem => {
       const matching = updatedItems.find(i => i.id === cItem.id);
+      const warehouses = matching?.warehouses || cItem.warehouses || [];
 
-      // Legacy single-warehouse mode: the selected project is also the source.
-      if (!lineSourceEnabled) {
-        if (!projectId || projectId === ALL_WAREHOUSES) return cItem;
-        const avail = matching?.balance !== undefined ? matching.balance : Infinity;
+      // The header project is only the requisition destination: never overwrite a
+      // line whose own source warehouse still has stock.
+      const currentBalance = getWarehouseBalance(warehouses, cItem.source_project_id);
+      const hasOwnSource = Boolean(cItem.source_project_id)
+        && cItem.source_project_id !== ALL_WAREHOUSES
+        && currentBalance > 0;
+
+      if (hasOwnSource) {
         let newQ = cItem.quantity;
-        if (newQ > avail && avail > 0) newQ = avail;
-        const legacyWarehouse = matching?.warehouses?.find(w => w.project_id === projectId);
+        if (newQ > currentBalance) newQ = currentBalance;
         return {
           ...cItem,
-          cartKey: buildCartKey(cItem.id, projectId),
-          source_project_id: projectId,
-          source_project_name: legacyWarehouse?.project_name || cItem.source_project_name || '',
-          source_warehouse_name: legacyWarehouse?.warehouse_name
-            || legacyWarehouse?.project_name
-            || cItem.source_warehouse_name
-            || '',
-          balance: avail,
-          warehouses: matching?.warehouses || cItem.warehouses,
+          balance: currentBalance,
+          warehouses,
           quantity: newQ,
           quantityInput: String(newQ)
         };
       }
 
-      // Multi-warehouse mode: refresh each line against its own source warehouse.
-      const warehouses = matching?.warehouses || [];
-      const avail = getWarehouseBalance(warehouses, cItem.source_project_id);
-      let newQ = cItem.quantity;
-      if (newQ > avail && avail > 0) newQ = avail;
+      // Source missing / "all" / out of stock -> point the line at a stocked warehouse.
+      const picked = pickDefaultWarehouse(warehouses);
+      if (!picked) {
+        return { ...cItem, balance: currentBalance, warehouses };
+      }
+
+      const newKey = buildCartKey(cItem.id, picked.project_id);
+      const keyTaken = prev.some(i => lineKeyOf(i) !== lineKeyOf(cItem) && lineKeyOf(i) === newKey);
+      if (keyTaken) {
+        return { ...cItem, balance: currentBalance, warehouses };
+      }
+
+      const newQ = clampQuantity(cItem.quantity, picked.balance) || 1;
       return {
         ...cItem,
-        balance: avail,
+        cartKey: newKey,
+        source_project_id: picked.project_id,
+        source_project_name: picked.project_name || '',
+        source_warehouse_name: picked.warehouse_name || picked.project_name || '',
+        source_is_fallback: true,
+        balance: Number(picked.balance) || 0,
         warehouses,
         quantity: newQ,
         quantityInput: String(newQ)
@@ -200,6 +211,11 @@ const Withdrawals = () => {
     if (!profile) return;
     try {
       setLoading(true);
+
+      // Probe once so the line -> project join is only requested on a schema that
+      // actually has withdrawal_items.project_id (migration 80).
+      const supportsLineSource = await detectLineSourceCapability();
+
       // 1. Fetch withdrawal orders
       let ordersQuery = supabase
         .from('withdrawal_orders')
@@ -210,7 +226,7 @@ const Withdrawals = () => {
           approver:approved_by (id, full_name, signature_url),
           withdrawal_items (
             *,
-            items (*)
+            items (*)${supportsLineSource ? ', projects (*)' : ''}
           )
         `)
         .order('requested_at', { ascending: false });
@@ -265,7 +281,7 @@ const Withdrawals = () => {
       }
 
       // Enables per-line source warehouse once migration 80 is live.
-      setLineSourceEnabled(await detectLineSourceCapability());
+      setLineSourceEnabled(supportsLineSource);
     } catch (error) {
       console.error('FetchData Error:', error);
       toast.error(t('withdrawals.toasts.loadFailed'));
@@ -326,6 +342,13 @@ const Withdrawals = () => {
       return;
     }
 
+    // The selected warehouse had no stock: tell the user another one was chosen.
+    if (source.isFallback) {
+      toast(t('withdrawals.sourceWarehouseFallback', {
+        warehouse: source.warehouse_name || source.project_name || ''
+      }, `คลังที่เลือกไว้ไม่มีสต็อก — เบิกจาก ${source.warehouse_name || source.project_name} แทน`));
+    }
+
     const availableStock = source.balance !== undefined && source.balance !== null
       ? source.balance
       : Infinity;
@@ -371,6 +394,7 @@ const Withdrawals = () => {
               source_project_id: source.project_id,
               source_project_name: source.project_name || '',
               source_warehouse_name: source.warehouse_name || source.project_name || '',
+              source_is_fallback: Boolean(source.isFallback),
               warehouses,
               quantity: newQ,
               quantityInput: String(newQ)
@@ -386,6 +410,7 @@ const Withdrawals = () => {
           source_project_id: source.project_id,
           source_project_name: source.project_name || '',
           source_warehouse_name: source.warehouse_name || source.project_name || '',
+          source_is_fallback: Boolean(source.isFallback),
           warehouses,
           quantity: 1,
           quantityInput: '1',
@@ -780,12 +805,13 @@ const Withdrawals = () => {
       if (rawMsg.includes('SHORTAGE_DETECTED')) {
         toast.dismiss(toastId);
         try {
-          const jsonStr = rawMsg.replace(/.*SHORTAGE_DETECTED:\s*/, '');
+          const marker = 'SHORTAGE_DETECTED:';
+          const markerIndex = rawMsg.indexOf(marker);
+          const jsonStr = rawMsg.slice(markerIndex + marker.length).trim();
           const parsed = JSON.parse(jsonStr);
-          setShortageData({
-            orderId: orderId,
-            shortages: parsed.shortages || []
-          });
+          const shortages = Array.isArray(parsed?.shortages) ? parsed.shortages : [];
+          if (!shortages.length) throw new Error('SHORTAGE_DETECTED without a usable shortage list');
+          setShortageData({ orderId, shortages });
           setShortageOverrideReason('');
           setIsShortageModalOpen(true);
         } catch {
@@ -956,6 +982,20 @@ const Withdrawals = () => {
         .eq('order_id', order.id);
       if (error) throw error;
       setOrderDetails(data || []);
+
+      // Current balance per (source warehouse, item) so the approval screen can show
+      // the real remaining quantity instead of only the warehouse name.
+      const itemIds = [...new Set((data || []).map(row => row.item_id).filter(Boolean))];
+      let stockRows = [];
+      if (itemIds.length) {
+        const { data: stockData } = await supabase
+          .from('stock_balance')
+          .select('project_id, item_id, balance')
+          .in('item_id', itemIds);
+        stockRows = stockData || [];
+      }
+      setOrderStockRows(stockRows);
+
       setSelectedOrder(order);
       setIsDetailsModalOpen(true);
     } catch {
@@ -1155,6 +1195,7 @@ const Withdrawals = () => {
         onClose={() => setIsDetailsModalOpen(false)}
         order={selectedOrder}
         orderDetails={orderDetails}
+        stockRows={orderStockRows}
         projects={projects}
         showSourceWarehouse={lineSourceEnabled}
         isAdmin={isAdmin}

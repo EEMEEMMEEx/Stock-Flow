@@ -13,6 +13,7 @@ import StatusBadge from '@/components/ui/StatusBadge';
 const WithdrawalDetailModal = ({
   order,
   orderDetails = [],
+  stockRows = [],
   projects = [],
   showSourceWarehouse = false,
   isOpen,
@@ -38,6 +39,9 @@ const WithdrawalDetailModal = ({
   const isRejected = order.status === 'rejected';
   const isCancelled = order.status === 'cancelled';
   const hasShortage = order.has_shortage || order.is_shortage_override;
+
+  // Current balance per (source warehouse, item) for the transparency label.
+  const stockByKey = new Map((stockRows || []).map(row => [`${row.project_id}::${row.item_id}`, row]));
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -220,6 +224,9 @@ const WithdrawalDetailModal = ({
                     const shortage = item.shortage_quantity !== undefined && item.shortage_quantity !== null
                       ? item.shortage_quantity
                       : 0;
+                    const stockRow = stockByKey.get(`${item.project_id || ''}::${item.item_id}`);
+                    const stockBalance = Number(stockRow?.balance);
+                    const hasStockBalance = Boolean(stockRow) && Number.isFinite(stockBalance);
 
                     return (
                       <TableRow key={item.id} className="hover:bg-accent/40">
@@ -233,9 +240,16 @@ const WithdrawalDetailModal = ({
                           <TableCell className="text-[11px]">
                             <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-muted/60 border border-border/60 font-semibold text-muted-foreground">
                               <Building2 className="w-3 h-3" />
-                              {getWarehouseLabel(projects.find(p => p.id === item.project_id))
-                                || getWarehouseLabel(order.projects)
-                                || '-'}
+                              <span>
+                                {getWarehouseLabel(projects.find(p => p.id === item.project_id))
+                                  || getWarehouseLabel(order.projects)
+                                  || '-'}
+                              </span>
+                              {hasStockBalance && (
+                                <span className="font-mono font-normal">
+                                  ({t('withdrawals.remainingCount', { count: stockBalance }, `คงเหลือ ${stockBalance}`)})
+                                </span>
+                              )}
                             </span>
                           </TableCell>
                         )}

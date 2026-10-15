@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 
   ShoppingCart, Trash2, Plus, Minus, ChevronDown, ChevronUp, 
-  Building2, Send, MapPin, FileText, X
+  Building2, Send, MapPin, FileText, X, AlertTriangle
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useTranslation } from '@/i18n';
@@ -163,6 +163,14 @@ const WithdrawalCartPanel = ({
               }
               return list;
             })();
+            // Warn when the line is not pulling from the header project, or when it
+            // was auto-switched to another warehouse because the chosen one was empty.
+            const differsFromHeader = Boolean(
+              lineSourceEnabled
+              && selectedProjectId && selectedProjectId !== 'all'
+              && item.source_project_id
+              && item.source_project_id !== selectedProjectId
+            );
 
             return (
               <div
@@ -261,6 +269,17 @@ const WithdrawalCartPanel = ({
                         </option>
                       ))}
                     </select>
+                  </div>
+                )}
+
+                {(item.source_is_fallback || differsFromHeader) && (
+                  <div className="flex items-center gap-1 pt-0.5">
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/30 text-[10px] font-bold text-amber-700 dark:text-amber-300">
+                      <AlertTriangle className="w-3 h-3" />
+                      {item.source_is_fallback
+                        ? t('withdrawals.autoSourceWarehouse', 'เลือกคลังต้นทางอัตโนมัติ')
+                        : t('withdrawals.sourceWarehouseDifferent', 'คลังต้นทางต่างจากโครงการ')}
+                    </span>
                   </div>
                 )}
 
