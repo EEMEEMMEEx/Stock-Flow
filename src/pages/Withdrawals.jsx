@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n';
 import { toSafeFileToken } from '@/lib/utils';
 import { isSchemaMismatchError } from '@/lib/rpcErrors';
+import { ALL_WAREHOUSES, buildCartKey, buildWarehouseMap, clampQuantity, getWarehouseBalance, getWarehouseLabel, getWarehousesForItem, resolveSourceWarehouse } from '@/lib/withdrawalStock';
 import toast from 'react-hot-toast';
 import { dispatchWithdrawalNotification, dispatchLowStockAlertNotification } from '@/lib/notificationDispatcher';
 
@@ -17,6 +18,7 @@ import WithdrawalOrdersList from '@/components/withdrawals/WithdrawalOrdersList'
 import WithdrawalDetailModal from '@/components/withdrawals/WithdrawalDetailModal';
 import WithdrawalShortageModal from '@/components/withdrawals/WithdrawalShortageModal';
 import WithdrawalRejectModal from '@/components/withdrawals/WithdrawalRejectModal';
+import WithdrawalCancelModal from '@/components/withdrawals/WithdrawalCancelModal';
 import SignatureRequiredModal from '@/components/common/SignatureRequiredModal';
 
 // Shared helpers for withdrawal PDF documents
@@ -33,7 +35,7 @@ const resolveWithdrawalItems = async (order, existingItems = null) => {
 const WITHDRAWAL_TABS = ['pos', 'orders'];
 
 const Withdrawals = () => {
-  const { isAdmin, can, profile } = useAuth();
+  const { isAdmin, isSuperAdmin, can, profile } = useAuth();
   const { t } = useTranslation();
   
   const canCreate = can('withdrawals.create');
@@ -75,6 +77,12 @@ const Withdrawals = () => {
   // Unified Cart State
   const [cart, setCart] = useState([]);
 
+  // Per-line source warehouse is enabled only when the database actually has
+  // withdrawal_items.project_id (migration 80). The capability is probed once so
+  // this frontend stays safe to deploy before the migration is applied.
+  const [lineSourceEnabled, setLineSourceEnabled] = useState(false);
+  const lineSourceCapabilityRef = useRef(null);
+
   // Details Modal State
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [orderDetails, setOrderDetails] = useState([]);
@@ -91,25 +99,33 @@ const Withdrawals = () => {
   const [rejectReason, setRejectReason] = useState('');
   const [showSigModal, setShowSigModal] = useState(false);
 
+  // Cancel Modal State (SUPER Role)
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [orderToCancel, setOrderToCancel] = useState(null);
+
   // Aggregate item balances based on selected project location
-  const mapItemsForProject = (allItems, allBalances, projectId) => {
+  const mapItemsForProject = (allItems, allBalances, projectId, projectList = []) => {
     if (!allItems) return [];
+    // Warehouses are identified by their physical location (projects.location),
+    // because several projects can share the same project name.
+    const warehouseLabelById = new Map((projectList || []).map(p => [p.id, getWarehouseLabel(p)]));
+    const warehouseMap = buildWarehouseMap(allBalances, warehouseLabelById);
     return allItems.map(item => {
+      // Warehouses that can actually supply this item (balance > 0)
+      const warehouses = getWarehousesForItem(warehouseMap, item.id);
+
       // Total across all locations
       const totalSystemBalance = (allBalances || [])
         .filter(b => b.item_id === item.id)
         .reduce((sum, b) => sum + (Number(b.balance) || 0), 0);
 
       // Specific location
-      if (projectId && projectId !== 'all') {
-        const bRecord = (allBalances || []).find(
-          b => b.project_id === projectId && b.item_id === item.id
-        );
-        const projectBalance = bRecord ? (Number(bRecord.balance) || 0) : 0;
+      if (projectId && projectId !== ALL_WAREHOUSES) {
         return {
           ...item,
-          balance: projectBalance,
-          totalSystemBalance
+          balance: getWarehouseBalance(warehouses, projectId),
+          totalSystemBalance,
+          warehouses
         };
       }
 
@@ -117,32 +133,68 @@ const Withdrawals = () => {
       return {
         ...item,
         balance: totalSystemBalance,
-        totalSystemBalance
+        totalSystemBalance,
+        warehouses
       };
     });
   };
 
   const handleProjectChange = (projectId) => {
     setSelectedProjectId(projectId);
-    const updatedItems = mapItemsForProject(rawItems, rawBalances, projectId);
+    const updatedItems = mapItemsForProject(rawItems, rawBalances, projectId, projects);
     setItems(updatedItems);
 
-    // Re-verify cart quantities against new warehouse balance
-    if (projectId && projectId !== 'all') {
-      setCart(prev => prev.map(cItem => {
-        const matching = updatedItems.find(i => i.id === cItem.id);
+    setCart(prev => prev.map(cItem => {
+      const matching = updatedItems.find(i => i.id === cItem.id);
+
+      // Legacy single-warehouse mode: the selected project is also the source.
+      if (!lineSourceEnabled) {
+        if (!projectId || projectId === ALL_WAREHOUSES) return cItem;
         const avail = matching?.balance !== undefined ? matching.balance : Infinity;
         let newQ = cItem.quantity;
         if (newQ > avail && avail > 0) newQ = avail;
+        const legacyWarehouse = matching?.warehouses?.find(w => w.project_id === projectId);
         return {
           ...cItem,
+          cartKey: buildCartKey(cItem.id, projectId),
+          source_project_id: projectId,
+          source_project_name: legacyWarehouse?.project_name || cItem.source_project_name || '',
+          source_warehouse_name: legacyWarehouse?.warehouse_name
+            || legacyWarehouse?.project_name
+            || cItem.source_warehouse_name
+            || '',
           balance: avail,
+          warehouses: matching?.warehouses || cItem.warehouses,
           quantity: newQ,
           quantityInput: String(newQ)
         };
-      }));
-    }
+      }
+
+      // Multi-warehouse mode: refresh each line against its own source warehouse.
+      const warehouses = matching?.warehouses || [];
+      const avail = getWarehouseBalance(warehouses, cItem.source_project_id);
+      let newQ = cItem.quantity;
+      if (newQ > avail && avail > 0) newQ = avail;
+      return {
+        ...cItem,
+        balance: avail,
+        warehouses,
+        quantity: newQ,
+        quantityInput: String(newQ)
+      };
+    }));
   };
+
+  const detectLineSourceCapability = useCallback(async () => {
+    if (lineSourceCapabilityRef.current !== null) return lineSourceCapabilityRef.current;
+    const { error } = await supabase
+      .from('withdrawal_items')
+      .select('project_id')
+      .limit(1);
+    const supported = !error;
+    lineSourceCapabilityRef.current = supported;
+    return supported;
+  }, []);
 
   const fetchData = useCallback(async () => {
     if (!profile) return;
@@ -208,16 +260,19 @@ const Withdrawals = () => {
 
       const targetProjectId = selectedProjectId || 'all';
       if (iData) {
-        const mappedItems = mapItemsForProject(iData, activeBalances, targetProjectId);
+        const mappedItems = mapItemsForProject(iData, activeBalances, targetProjectId, activeProjects);
         setItems(mappedItems);
       }
+
+      // Enables per-line source warehouse once migration 80 is live.
+      setLineSourceEnabled(await detectLineSourceCapability());
     } catch (error) {
       console.error('FetchData Error:', error);
       toast.error(t('withdrawals.toasts.loadFailed'));
     } finally {
       setLoading(false);
     }
-  }, [profile, isAdmin, selectedProjectId]);
+  }, [profile, isAdmin, selectedProjectId, detectLineSourceCapability]);
 
   useEffect(() => {
     fetchData();
@@ -249,9 +304,31 @@ const Withdrawals = () => {
     };
   }, [fetchData]);
 
-  // Cart Operations
+  // Cart Operations — every line is identified by cartKey (item + source warehouse)
+  const lineKeyOf = (line) => line.cartKey || line.id;
+
   const handleAddToCart = (item) => {
-    const availableStock = item.balance !== undefined ? item.balance : Infinity;
+    const warehouses = item.warehouses || [];
+    const resolved = resolveSourceWarehouse({ selectedProjectId, warehouses });
+    // Pre-migration keeps the legacy semantics: the selected project is the source.
+    const legacyWarehouse = warehouses.find(w => w.project_id === selectedProjectId);
+    const source = lineSourceEnabled
+      ? resolved
+      : {
+          project_id: selectedProjectId,
+          project_name: legacyWarehouse?.project_name || '',
+          warehouse_name: legacyWarehouse?.warehouse_name || '',
+          balance: item.balance
+        };
+
+    if (!source || !source.project_id) {
+      toast.error(t('common.outOfStock', 'This item is out of stock'));
+      return;
+    }
+
+    const availableStock = source.balance !== undefined && source.balance !== null
+      ? source.balance
+      : Infinity;
     const totalSys = item.totalSystemBalance !== undefined ? item.totalSystemBalance : availableStock;
 
     if (availableStock <= 0) {
@@ -268,8 +345,13 @@ const Withdrawals = () => {
       return;
     }
 
+    const cartKey = buildCartKey(item.id, source.project_id);
+
     setCart(prev => {
-      const existing = prev.find(i => i.id === item.id);
+      const existing = lineSourceEnabled
+        ? prev.find(i => lineKeyOf(i) === cartKey)
+        : prev.find(i => i.id === item.id);
+
       if (existing) {
         if (existing.quantity >= availableStock) {
           toast.error(
@@ -281,12 +363,30 @@ const Withdrawals = () => {
           return prev;
         }
         const newQ = existing.quantity + 1;
-        return prev.map(i => i.id === item.id ? { ...i, quantity: newQ, quantityInput: String(newQ) } : i);
+        return prev.map(i => lineKeyOf(i) === lineKeyOf(existing)
+          ? {
+              ...i,
+              ...item,
+              cartKey,
+              source_project_id: source.project_id,
+              source_project_name: source.project_name || '',
+              source_warehouse_name: source.warehouse_name || source.project_name || '',
+              warehouses,
+              quantity: newQ,
+              quantityInput: String(newQ)
+            }
+          : i);
       }
+
       return [
         ...prev,
         {
           ...item,
+          cartKey,
+          source_project_id: source.project_id,
+          source_project_name: source.project_name || '',
+          source_warehouse_name: source.warehouse_name || source.project_name || '',
+          warehouses,
           quantity: 1,
           quantityInput: '1',
           delivery_to: '',
@@ -297,9 +397,9 @@ const Withdrawals = () => {
     });
   };
 
-  const handleUpdateQuantity = (id, delta) => {
+  const handleUpdateQuantity = (key, delta) => {
     setCart(prev => prev.reduce((acc, item) => {
-      if (item.id === id) {
+      if (lineKeyOf(item) === key) {
         const availableStock = item.balance !== undefined ? item.balance : Infinity;
         const currentQ = typeof item.quantity === 'number' && !isNaN(item.quantity)
           ? item.quantity
@@ -329,10 +429,10 @@ const Withdrawals = () => {
     }, []));
   };
 
-  const handleDirectQuantityChange = (id, val) => {
+  const handleDirectQuantityChange = (key, val) => {
     const cleanVal = val.replace(/\D/g, '');
     setCart(prev => prev.map(item => {
-      if (item.id === id) {
+      if (lineKeyOf(item) === key) {
         const availableStock = item.balance !== undefined ? item.balance : Infinity;
 
         if (cleanVal === '') {
@@ -358,9 +458,9 @@ const Withdrawals = () => {
     }));
   };
 
-  const handleQuantityBlur = (id) => {
+  const handleQuantityBlur = (key) => {
     setCart(prev => prev.map(item => {
-      if (item.id === id) {
+      if (lineKeyOf(item) === key) {
         const availableStock = item.balance !== undefined ? item.balance : Infinity;
         let num = typeof item.quantity === 'number' && !isNaN(item.quantity)
           ? item.quantity
@@ -375,16 +475,65 @@ const Withdrawals = () => {
     }));
   };
 
-  const handleRemoveFromCart = (id) => {
-    setCart(prev => prev.filter(item => item.id !== id));
+  const handleRemoveFromCart = (key) => {
+    setCart(prev => prev.filter(item => lineKeyOf(item) !== key));
   };
 
   const handleClearCart = () => {
     setCart([]);
   };
 
-  const handleUpdateItemDetails = (id, field, value) => {
-    setCart(prev => prev.map(item => item.id === id ? { ...item, [field]: value } : item));
+  const handleUpdateItemDetails = (key, field, value) => {
+    setCart(prev => prev.map(item => lineKeyOf(item) === key ? { ...item, [field]: value } : item));
+  };
+
+  /**
+   * Move a cart line to another source warehouse (multi-warehouse mode only).
+   * Quantities are clamped to the destination warehouse; when the same item
+   * already sits in that warehouse the two lines are merged.
+   */
+  const handleChangeSourceWarehouse = (key, projectId) => {
+    if (!lineSourceEnabled) return;
+
+    setCart(prev => {
+      const current = prev.find(i => lineKeyOf(i) === key);
+      if (!current) return prev;
+
+      const warehouses = current.warehouses || [];
+      const source = warehouses.find(w => w.project_id === projectId);
+      const available = source ? Number(source.balance) || 0 : 0;
+      const newKey = buildCartKey(current.id, projectId);
+      const movedQty = clampQuantity(current.quantity, available) || 1;
+
+      const collision = prev.find(i => lineKeyOf(i) === newKey && lineKeyOf(i) !== key);
+      if (collision) {
+        const mergedQty = clampQuantity(collision.quantity + movedQty, available) || collision.quantity;
+        return prev
+          .filter(i => lineKeyOf(i) !== key && lineKeyOf(i) !== newKey)
+          .concat({
+            ...collision,
+            source_project_name: source?.project_name || collision.source_project_name || '',
+            source_warehouse_name: source?.warehouse_name || source?.project_name || collision.source_warehouse_name || '',
+            balance: available,
+            warehouses,
+            quantity: mergedQty,
+            quantityInput: String(mergedQty)
+          });
+      }
+
+      return prev.map(i => lineKeyOf(i) === key
+        ? {
+            ...i,
+            cartKey: newKey,
+            source_project_id: projectId,
+            source_project_name: source?.project_name || '',
+            source_warehouse_name: source?.warehouse_name || source?.project_name || '',
+            balance: available,
+            quantity: movedQty,
+            quantityInput: String(movedQty)
+          }
+        : i);
+    });
   };
 
   /**
@@ -396,22 +545,26 @@ const Withdrawals = () => {
    * (`items.min_stock`), falling back to the global `low_stock_threshold` when the
    * item has none. Items with no balance row are skipped rather than treated as 0.
    */
-  const notifyLowStockItems = async ({ projectId, cartItems, approvedByName }) => {
-    const candidateItems = (cartItems || []).filter(item => item?.id);
-    if (!projectId || !candidateItems.length) return;
+  const notifyLowStockItems = async ({ orderId, fallbackProjectId, approvedByName }) => {
+    if (!orderId) return;
 
     try {
-      const itemIds = candidateItems.map(item => item.id);
-      const [balanceRes, itemRes, thresholdRes] = await Promise.all([
+      // Read the lines that were actually approved. In multi-warehouse mode each
+      // line deducts from its own source project, so the alert is evaluated per
+      // (project_id, item_id) pair instead of one balance for the whole order.
+      const lineSelect = lineSourceEnabled
+        ? 'item_id, project_id, deducted_quantity'
+        : 'item_id, deducted_quantity';
+      const [linesRes, orderRes, thresholdRes] = await Promise.all([
         supabase
-          .from('stock_balance')
-          .select('project_id, item_id, balance, project_name, unit')
-          .eq('project_id', projectId)
-          .in('item_id', itemIds),
+          .from('withdrawal_items')
+          .select(lineSelect)
+          .eq('order_id', orderId),
         supabase
-          .from('items')
-          .select('id, name, sku, unit, min_stock')
-          .in('id', itemIds),
+          .from('withdrawal_orders')
+          .select('project_id')
+          .eq('id', orderId)
+          .maybeSingle(),
         supabase
           .from('system_settings')
           .select('value')
@@ -419,36 +572,66 @@ const Withdrawals = () => {
           .maybeSingle()
       ]);
 
-      const balanceByItem = new Map((balanceRes.data || []).map(row => [row.item_id, row]));
+      const headerProjectId = orderRes.data?.project_id || fallbackProjectId || null;
+      const pairMap = new Map();
+      for (const line of linesRes.data || []) {
+        const deducted = Number(line.deducted_quantity);
+        if (!Number.isFinite(deducted) || deducted <= 0) continue;
+
+        const projectId = (lineSourceEnabled && line.project_id) || headerProjectId;
+        if (!projectId || !line.item_id) continue;
+        pairMap.set(`${projectId}::${line.item_id}`, { projectId, itemId: line.item_id });
+      }
+
+      const pairs = [...pairMap.values()];
+      if (!pairs.length) return;
+
+      const itemIds = [...new Set(pairs.map(pair => pair.itemId))];
+      const [balanceRes, itemRes] = await Promise.all([
+        supabase
+          .from('stock_balance')
+          .select('project_id, item_id, balance, project_name, unit')
+          .in('item_id', itemIds),
+        supabase
+          .from('items')
+          .select('id, name, sku, unit, min_stock')
+          .in('id', itemIds)
+      ]);
+
+      const balanceByPair = new Map((balanceRes.data || []).map(row => [`${row.project_id}::${row.item_id}`, row]));
       const itemById = new Map((itemRes.data || []).map(row => [row.id, row]));
       const globalThreshold = Number(thresholdRes.data?.value);
       const fallbackThreshold = Number.isFinite(globalThreshold) ? globalThreshold : 10;
 
-      for (const cartItem of candidateItems) {
-        const balanceRow = balanceByItem.get(cartItem.id);
+      for (const pair of pairs) {
+        const balanceRow = balanceByPair.get(`${pair.projectId}::${pair.itemId}`);
         if (!balanceRow || balanceRow.balance === null || balanceRow.balance === undefined) continue;
 
-        const itemRow = itemById.get(cartItem.id) || {};
+        const itemRow = itemById.get(pair.itemId) || {};
         const itemThreshold = Number(itemRow.min_stock);
         const effectiveThreshold = itemThreshold > 0 ? itemThreshold : fallbackThreshold;
         const currentStock = Number(balanceRow.balance);
 
         if (!(currentStock <= effectiveThreshold)) continue;
 
+        const projectRow = projects.find(p => p.id === pair.projectId);
+        const projectName = projectRow?.name || balanceRow.project_name || 'โครงการทั่วไป';
+        const warehouseName = getWarehouseLabel(projectRow) || balanceRow.project_name || 'คลังโครงการ';
+
         const result = await dispatchLowStockAlertNotification({
-          itemId: cartItem.id,
-          itemName: itemRow.name || cartItem.name || 'วัสดุ',
-          itemCode: itemRow.sku || cartItem.sku || '-',
+          itemId: pair.itemId,
+          itemName: itemRow.name || 'วัสดุ',
+          itemCode: itemRow.sku || '-',
           currentStock,
           threshold: effectiveThreshold,
-          projectName: balanceRow.project_name || projects.find(p => p.id === projectId)?.name || 'โครงการทั่วไป',
-          warehouseName: balanceRow.project_name || 'คลังโครงการ',
-          projectId,
+          projectName,
+          warehouseName,
+          projectId: pair.projectId,
           triggeredBy: approvedByName
         });
 
         if (result?.dispatched) {
-          toast.success(t('withdrawals.toasts.lowStockAlerted', { item: itemRow.name || cartItem.name || '' }));
+          toast.success(t('withdrawals.toasts.lowStockAlerted', { item: itemRow.name || '' }));
         }
       }
     } catch (lowStockError) {
@@ -491,15 +674,22 @@ const Withdrawals = () => {
 
       if (orderError) throw orderError;
 
-      // 2. Insert line items
-      const itemsToInsert = cart.map(item => ({
-        order_id: orderData.id,
-        item_id: item.id,
-        quantity: item.quantity,
-        delivery_to: item.delivery_to || deliveryAddress || null,
-        serial_number: item.serial_number || null,
-        part_number: item.part_number || null
-      }));
+      // 2. Insert line items. When migration 80 is live each line carries its own
+      //    source warehouse; otherwise the DB trigger inherits the order's project.
+      const itemsToInsert = cart.map(item => {
+        const line = {
+          order_id: orderData.id,
+          item_id: item.id,
+          quantity: item.quantity,
+          delivery_to: item.delivery_to || deliveryAddress || null,
+          serial_number: item.serial_number || null,
+          part_number: item.part_number || null
+        };
+        if (lineSourceEnabled && item.source_project_id && item.source_project_id !== ALL_WAREHOUSES) {
+          line.project_id = item.source_project_id;
+        }
+        return line;
+      });
 
       const { error: itemsError } = await supabase.from('withdrawal_items').insert(itemsToInsert);
       if (itemsError) throw itemsError;
@@ -559,10 +749,11 @@ const Withdrawals = () => {
         overrideReason: overrideReason
       }).catch(err => console.warn('[Notification Dispatch Warning]:', err));
 
-      // Reorder-point alerts for items that just fell to/below their threshold
+      // Reorder-point alerts for the source warehouses this approval deducted from
       notifyLowStockItems({
-        projectId: selectedProjectId || selectedOrder?.project_id,
-        cartItems: cart,
+        orderId,
+        fallbackProjectId: selectedOrder?.project_id
+          || (selectedProjectId !== ALL_WAREHOUSES ? selectedProjectId : null),
         approvedByName: profile?.full_name || 'Admin'
       }).catch(err => console.warn('[Low Stock Notification Warning]:', err));
 
@@ -713,6 +904,49 @@ const Withdrawals = () => {
     }
   };
 
+  // Open Cancel Modal (SUPER Role)
+  const openCancelModal = (order) => {
+    setOrderToCancel(order);
+    setIsCancelModalOpen(true);
+  };
+
+  // Cancel Order via Supabase RPC (SUPER Role)
+  const handleCancelSubmit = async (orderId, reason) => {
+    if (!isSuperAdmin || isProcessing) return;
+    setIsProcessing(true);
+    const toastId = toast.loading(t('withdrawals.toasts.cancelling', 'กำลังยกเลิกคำขอเบิก...'));
+    try {
+      const { data, error } = await supabase.rpc('super_cancel_withdrawal_order', {
+        p_order_id: orderId,
+        p_reason: reason.trim() || null
+      });
+      if (error) throw error;
+
+      toast.success(data?.message || t('withdrawals.toasts.cancelled', 'ยกเลิกคำขอเบิกเรียบร้อยแล้ว'), { id: toastId });
+
+      setIsCancelModalOpen(false);
+      setOrderToCancel(null);
+      fetchData();
+
+      if (selectedOrder?.id === orderId) {
+        setSelectedOrder(prev => ({
+          ...prev,
+          status: 'cancelled',
+          cancellation_reason: reason.trim(),
+          cancelled_at: new Date().toISOString()
+        }));
+      }
+    } catch (error) {
+      console.error('Cancel Error:', error);
+      const cleanErrMsg = error.message
+        ? error.message.replace(/.*(?:EXCEPTION|Error|P0001):\s*/i, '')
+        : 'Failed to cancel requisition';
+      toast.error(cleanErrMsg, { id: toastId, duration: 6000 });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   // View Order Details
   const viewOrderDetails = useCallback(async (order) => {
     try {
@@ -757,7 +991,7 @@ const Withdrawals = () => {
       const itemsList = await resolveWithdrawalItems(order, existingItems);
 
       const docBlob = await pdf(
-        <MaterialWithdrawalPDF order={order} items={itemsList} profile={profile} />
+        <MaterialWithdrawalPDF order={order} items={itemsList} profile={profile} projects={projects} />
       ).toBlob();
 
       const url = URL.createObjectURL(docBlob);
@@ -791,7 +1025,7 @@ const Withdrawals = () => {
       const itemsList = await resolveWithdrawalItems(order, existingItems);
 
       const docBlob = await pdf(
-        <MaterialDispatchPDF order={order} items={itemsList} profile={profile} mode="withdrawal" />
+        <MaterialDispatchPDF order={order} items={itemsList} profile={profile} mode="withdrawal" projects={projects} />
       ).toBlob();
 
       const url = URL.createObjectURL(docBlob);
@@ -881,7 +1115,9 @@ const Withdrawals = () => {
           selectedProjectId={selectedProjectId}
           onSelectProject={handleProjectChange}
           cart={cart}
+          lineSourceEnabled={lineSourceEnabled}
           onAddToCart={handleAddToCart}
+          onChangeSourceWarehouse={handleChangeSourceWarehouse}
           onUpdateQuantity={handleUpdateQuantity}
           onDirectQuantityChange={handleDirectQuantityChange}
           onQuantityBlur={handleQuantityBlur}
@@ -895,8 +1131,10 @@ const Withdrawals = () => {
       ) : (
         <WithdrawalOrdersList
           orders={orders}
+          projects={projects}
           loading={loading}
           isAdmin={isAdmin}
+          isSuperAdmin={isSuperAdmin}
           canApprove={canApprove}
           canReject={canReject}
           canComplete={canComplete}
@@ -906,6 +1144,7 @@ const Withdrawals = () => {
           onDownloadDispatchPDF={handleDownloadDispatchPDF}
           onApproveOrder={handleApproveOrder}
           onOpenRejectModal={openRejectModal}
+          onOpenCancelModal={openCancelModal}
           onCompleteOrder={handleCompleteOrder}
         />
       )}
@@ -916,7 +1155,10 @@ const Withdrawals = () => {
         onClose={() => setIsDetailsModalOpen(false)}
         order={selectedOrder}
         orderDetails={orderDetails}
+        projects={projects}
+        showSourceWarehouse={lineSourceEnabled}
         isAdmin={isAdmin}
+        isSuperAdmin={isSuperAdmin}
         canApprove={canApprove}
         canReject={canReject}
         canComplete={canComplete}
@@ -930,6 +1172,7 @@ const Withdrawals = () => {
           openRejectModal(order);
           setIsDetailsModalOpen(false);
         }}
+        onOpenCancelModal={openCancelModal}
         onCompleteOrder={(orderId) => {
           handleCompleteOrder(orderId);
           setIsDetailsModalOpen(false);
@@ -943,6 +1186,7 @@ const Withdrawals = () => {
         isOpen={isShortageModalOpen}
         onClose={() => setIsShortageModalOpen(false)}
         shortageData={shortageData}
+        projects={projects}
         overrideReason={shortageOverrideReason}
         onOverrideReasonChange={setShortageOverrideReason}
         onConfirmApprove={handleApproveOrder}
@@ -956,6 +1200,15 @@ const Withdrawals = () => {
         rejectReason={rejectReason}
         onRejectReasonChange={setRejectReason}
         onConfirmReject={handleRejectSubmit}
+        isProcessing={isProcessing}
+      />
+
+      {/* SUPER Role Cancel Modal */}
+      <WithdrawalCancelModal
+        isOpen={isCancelModalOpen}
+        onClose={() => setIsCancelModalOpen(false)}
+        order={orderToCancel}
+        onConfirmCancel={handleCancelSubmit}
         isProcessing={isProcessing}
       />
 

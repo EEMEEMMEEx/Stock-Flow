@@ -25,7 +25,9 @@ const WithdrawalPosTerminal = ({
   selectedProjectId,
   onSelectProject,
   cart = [],
+  lineSourceEnabled = false,
   onAddToCart,
+  onChangeSourceWarehouse,
   onUpdateQuantity,
   onDirectQuantityChange,
   onQuantityBlur,
@@ -148,6 +150,7 @@ const WithdrawalPosTerminal = ({
   };
 
 
+  const cartLinesForItem = (itemId) => cart.filter(line => line.id === itemId);
   const totalCartUnits = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
   const inStockCount = items.filter(i => (i.balance || 0) > 0).length;
 
@@ -408,7 +411,9 @@ const WithdrawalPosTerminal = ({
                     const isLowStock = availableStock > 0 && availableStock <= 5;
                     const completelyEmpty = isOutOfStock && totalSys <= 0;
 
-                    const cartItem = cart.find(c => c.id === item.id);
+                    const itemCartLines = cartLinesForItem(item.id);
+                    const cartItem = itemCartLines[0];
+                    const cartQuantityTotal = itemCartLines.reduce((sum, line) => sum + (line.quantity || 0), 0);
                     const isInCart = Boolean(cartItem);
 
                     return (
@@ -430,7 +435,7 @@ const WithdrawalPosTerminal = ({
                             <span>{item.name}</span>
                             {isInCart && (
                               <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-indigo-600 text-white shadow-2xs">
-                                {t('withdrawals.inCartBadge', '{{count}} in cart', { count: cartItem.quantity })}
+                                {t('withdrawals.inCartBadge', '{{count}} in cart', { count: cartQuantityTotal })}
                               </span>
                             )}
                           </div>
@@ -475,7 +480,7 @@ const WithdrawalPosTerminal = ({
                                 variant="ghost"
                                 size="icon"
                                 className="h-7 w-7 rounded-none hover:bg-muted text-muted-foreground"
-                                onClick={() => onUpdateQuantity(item.id, -1)}
+                                onClick={() => onUpdateQuantity(cartItem.cartKey || item.id, -1)}
                                 disabled={cartItem.quantity <= 1}
                               >
                                 <Minus className="w-3 h-3" />
@@ -488,7 +493,7 @@ const WithdrawalPosTerminal = ({
                                 variant="ghost"
                                 size="icon"
                                 className="h-7 w-7 rounded-none hover:bg-muted text-muted-foreground"
-                                onClick={() => onUpdateQuantity(item.id, 1)}
+                                onClick={() => onUpdateQuantity(cartItem.cartKey || item.id, 1)}
                                 disabled={cartItem.quantity >= availableStock}
                               >
                                 <Plus className="w-3 h-3" />
@@ -528,16 +533,20 @@ const WithdrawalPosTerminal = ({
           ) : (
             /* Grid View */
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-3.5">
-              {paginatedItems.map(item => (
-                <WithdrawalItemCard
-                  key={item.id}
-                  item={item}
-                  cartItem={cart.find(c => c.id === item.id)}
-                  onAddToCart={onAddToCart}
-                  onUpdateQuantity={onUpdateQuantity}
-                  onOpenLocationBreakdown={(it) => setBreakdownModalItem(it)}
-                />
-              ))}
+              {paginatedItems.map(item => {
+                const itemCartLines = cartLinesForItem(item.id);
+                return (
+                  <WithdrawalItemCard
+                    key={item.id}
+                    item={item}
+                    cartItem={itemCartLines[0]}
+                    cartQuantityTotal={itemCartLines.reduce((sum, line) => sum + (line.quantity || 0), 0)}
+                    onAddToCart={onAddToCart}
+                    onUpdateQuantity={onUpdateQuantity}
+                    onOpenLocationBreakdown={(it) => setBreakdownModalItem(it)}
+                  />
+                );
+              })}
             </div>
           )}
         </div>
@@ -621,6 +630,8 @@ const WithdrawalPosTerminal = ({
           projects={projects}
           selectedProjectId={selectedProjectId}
           onSelectProject={onSelectProject}
+          lineSourceEnabled={lineSourceEnabled}
+          onChangeSourceWarehouse={onChangeSourceWarehouse}
           onUpdateQuantity={onUpdateQuantity}
           onDirectQuantityChange={onDirectQuantityChange}
           onQuantityBlur={onQuantityBlur}
@@ -664,6 +675,8 @@ const WithdrawalPosTerminal = ({
             projects={projects}
             selectedProjectId={selectedProjectId}
             onSelectProject={onSelectProject}
+            lineSourceEnabled={lineSourceEnabled}
+            onChangeSourceWarehouse={onChangeSourceWarehouse}
             onUpdateQuantity={onUpdateQuantity}
             onDirectQuantityChange={onDirectQuantityChange}
             onQuantityBlur={onQuantityBlur}

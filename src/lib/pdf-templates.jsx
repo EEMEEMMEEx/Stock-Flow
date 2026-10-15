@@ -1,5 +1,6 @@
 import { Document, Page, Text, View, StyleSheet, Font, Image } from '@react-pdf/renderer';
 import { resolveWithdrawalRequester, resolveCheckoutBorrower, resolveDocumentNumber } from '@/lib/pdf-signatures';
+import { hasResolvableWarehouse, resolveWarehouseName } from '@/lib/withdrawalStock';
 
 // Register Thai Font (THSarabunNew)
 Font.register({
@@ -170,6 +171,11 @@ const styles = StyleSheet.create({
   colDesc: { width: '52%' },
   colQty: { width: '10%' },
   colSn: { width: '30%', borderRightWidth: 0 },
+  // Multi-warehouse layout: same table plus a "source warehouse" column.
+  colNoWithWh: { width: '6%' },
+  colDescWithWh: { width: '40%' },
+  colWarehouse: { width: '18%' },
+  colSnWithWh: { width: '26%', borderRightWidth: 0 },
 
   // Signatures Section (Dual Clean Boxes)
   signatureSection: {
@@ -222,13 +228,17 @@ const styles = StyleSheet.create({
   rCol5: { width: '10%', textAlign: 'right' },
 });
 
-export const MaterialWithdrawalPDF = ({ order, items, profile }) => {
+export const MaterialWithdrawalPDF = ({ order, items, profile, projects = [] }) => {
   // Pad items to at least 15 rows
   const MIN_ROWS = 15;
   const paddedItems = [...items];
   while (paddedItems.length < MIN_ROWS) {
     paddedItems.push({});
   }
+
+  // Multi-warehouse: show the source warehouse per line once the schema has it.
+  const resolveLineWarehouse = (item) => resolveWarehouseName(item, projects);
+  const showWarehouseColumn = hasResolvableWarehouse(items, projects);
 
   const dateStr = order?.requested_at
     ? new Date(order.requested_at).toLocaleDateString('th-TH')
@@ -301,10 +311,13 @@ export const MaterialWithdrawalPDF = ({ order, items, profile }) => {
         {/* Items Table */}
         <View style={styles.table}>
           <View style={styles.tableHeader} fixed>
-            <View style={[styles.th, styles.colNo]}><Text style={styles.thText}>ลำดับ</Text></View>
-            <View style={[styles.th, styles.colDesc]}><Text style={styles.thText}>รายการ</Text></View>
+            <View style={[styles.th, showWarehouseColumn ? styles.colNoWithWh : styles.colNo]}><Text style={styles.thText}>ลำดับ</Text></View>
+            <View style={[styles.th, showWarehouseColumn ? styles.colDescWithWh : styles.colDesc]}><Text style={styles.thText}>รายการ</Text></View>
+            {showWarehouseColumn && (
+              <View style={[styles.th, styles.colWarehouse]}><Text style={styles.thText}>คลังต้นทาง</Text></View>
+            )}
             <View style={[styles.th, styles.colQty]}><Text style={styles.thText}>จำนวน</Text></View>
-            <View style={[styles.th, styles.colSn]}><Text style={styles.thText}>Serial Number/Part Number</Text></View>
+            <View style={[styles.th, showWarehouseColumn ? styles.colSnWithWh : styles.colSn]}><Text style={styles.thText}>Serial Number/Part Number</Text></View>
           </View>
 
           {paddedItems.map((item, index) => {
@@ -313,16 +326,21 @@ export const MaterialWithdrawalPDF = ({ order, items, profile }) => {
 
             return (
               <View key={index} style={[styles.tableRow, index === paddedItems.length - 1 && { borderBottomWidth: 0 }]}>
-                <View style={[styles.td, styles.colNo]}>
+                <View style={[styles.td, showWarehouseColumn ? styles.colNoWithWh : styles.colNo]}>
                   <Text style={styles.tdTextCenter}>{isEmpty ? '' : index + 1}</Text>
                 </View>
-                <View style={[styles.td, styles.colDesc]}>
+                <View style={[styles.td, showWarehouseColumn ? styles.colDescWithWh : styles.colDesc]}>
                   <Text style={styles.tdText}>{isEmpty ? '' : item.items?.name}</Text>
                 </View>
+                {showWarehouseColumn && (
+                  <View style={[styles.td, styles.colWarehouse]}>
+                    <Text style={styles.tdText}>{isEmpty ? '' : (resolveLineWarehouse(item) || '—')}</Text>
+                  </View>
+                )}
                 <View style={[styles.td, styles.colQty]}>
                   <Text style={styles.tdTextCenter}>{isEmpty ? '' : `${item.quantity} ${item.items?.unit || ''}`}</Text>
                 </View>
-                <View style={[styles.td, styles.colSn]}>
+                <View style={[styles.td, showWarehouseColumn ? styles.colSnWithWh : styles.colSn]}>
                   <Text style={styles.tdTextCenter}>{isEmpty ? '' : serialPart}</Text>
                 </View>
               </View>
@@ -372,14 +390,22 @@ export const MaterialWithdrawalPDF = ({ order, items, profile }) => {
 // ---------------------------------------------------------------------------
 // Material Dispatch Note (ใบนำส่งเบิกของ) — รองรับทั้งใบเบิกพัสดุและใบยืม-คืน
 // ---------------------------------------------------------------------------
-export const MaterialDispatchPDF = ({ order, items = [], profile = null, mode = 'withdrawal' }) => {
+export const MaterialDispatchPDF = ({ order, items = [], profile = null, mode = 'withdrawal', projects = [] }) => {
   if (!order) return null;
 
   const isCheckout = mode === 'checkout';
 
+  // Multi-warehouse: show the source warehouse per line and keep same-warehouse
+  // items together so each warehouse can prepare its own pile.
+  const resolveLineWarehouse = (item) => resolveWarehouseName(item, projects);
+  const showWarehouseColumn = !isCheckout && hasResolvableWarehouse(items, projects);
+  const orderedItems = showWarehouseColumn
+    ? [...items].sort((a, b) => String(resolveLineWarehouse(a) || '').localeCompare(String(resolveLineWarehouse(b) || ''), 'th'))
+    : [...items];
+
   // Pad items to at least 15 rows to keep the standardized dispatch paper layout
   const MIN_ROWS = 15;
-  const paddedItems = [...items];
+  const paddedItems = orderedItems;
   while (paddedItems.length < MIN_ROWS) {
     paddedItems.push({});
   }
@@ -461,10 +487,13 @@ export const MaterialDispatchPDF = ({ order, items = [], profile = null, mode = 
         {/* Items Table */}
         <View style={styles.table}>
           <View style={styles.tableHeader} fixed>
-            <View style={[styles.th, styles.colNo]}><Text style={styles.thText}>ลำดับ</Text></View>
-            <View style={[styles.th, styles.colDesc]}><Text style={styles.thText}>รายการ</Text></View>
+            <View style={[styles.th, showWarehouseColumn ? styles.colNoWithWh : styles.colNo]}><Text style={styles.thText}>ลำดับ</Text></View>
+            <View style={[styles.th, showWarehouseColumn ? styles.colDescWithWh : styles.colDesc]}><Text style={styles.thText}>รายการ</Text></View>
+            {showWarehouseColumn && (
+              <View style={[styles.th, styles.colWarehouse]}><Text style={styles.thText}>คลังต้นทาง</Text></View>
+            )}
             <View style={[styles.th, styles.colQty]}><Text style={styles.thText}>จำนวน</Text></View>
-            <View style={[styles.th, styles.colSn]}><Text style={styles.thText}>Serial Number / หมายเหตุ</Text></View>
+            <View style={[styles.th, showWarehouseColumn ? styles.colSnWithWh : styles.colSn]}><Text style={styles.thText}>Serial Number / หมายเหตุ</Text></View>
           </View>
 
           {paddedItems.map((item, index) => {
@@ -483,16 +512,21 @@ export const MaterialDispatchPDF = ({ order, items = [], profile = null, mode = 
 
             return (
               <View key={index} style={[styles.tableRow, index === paddedItems.length - 1 && { borderBottomWidth: 0 }]}>
-                <View style={[styles.td, styles.colNo]}>
+                <View style={[styles.td, showWarehouseColumn ? styles.colNoWithWh : styles.colNo]}>
                   <Text style={styles.tdTextCenter}>{isEmpty ? '' : index + 1}</Text>
                 </View>
-                <View style={[styles.td, styles.colDesc]}>
+                <View style={[styles.td, showWarehouseColumn ? styles.colDescWithWh : styles.colDesc]}>
                   <Text style={styles.tdText}>{isEmpty ? '' : itemName}</Text>
                 </View>
+                {showWarehouseColumn && (
+                  <View style={[styles.td, styles.colWarehouse]}>
+                    <Text style={styles.tdText}>{isEmpty ? '' : (resolveLineWarehouse(item) || '—')}</Text>
+                  </View>
+                )}
                 <View style={[styles.td, styles.colQty]}>
                   <Text style={styles.tdTextCenter}>{isEmpty ? '' : `${qty} ${unit}`.trim()}</Text>
                 </View>
-                <View style={[styles.td, styles.colSn]}>
+                <View style={[styles.td, showWarehouseColumn ? styles.colSnWithWh : styles.colSn]}>
                   <Text style={styles.tdTextCenter}>{isEmpty ? '' : (serialNotes || '—')}</Text>
                 </View>
               </View>

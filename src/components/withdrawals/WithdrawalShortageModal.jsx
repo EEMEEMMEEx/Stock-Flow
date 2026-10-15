@@ -4,16 +4,24 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AlertTriangle, ShieldAlert } from 'lucide-react';
 import { useTranslation } from '@/i18n';
+import { getWarehouseLabel } from '@/lib/withdrawalStock';
 
 const WithdrawalShortageModal = ({
   isOpen,
   onClose,
   shortageData,
+  projects = [],
   overrideReason,
   onOverrideReasonChange,
   onConfirmApprove
 }) => {
   const { t } = useTranslation();
+  const shortageRows = shortageData?.shortages || [];
+  const hasWarehouseColumn = shortageRows.some(row => row.warehouse_name || row.project_id);
+  // RPC ส่งชื่อโครงการมาใน warehouse_name จึง resolve ชื่อคลัง (projects.location) ฝั่ง UI แทน
+  const resolveRowWarehouse = (row) => getWarehouseLabel(projects.find(p => p.id === row.project_id))
+    || row.warehouse_name
+    || '-';
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -44,6 +52,7 @@ const WithdrawalShortageModal = ({
               <TableHeader className="bg-muted/50 text-xs">
                 <TableRow>
                   <TableHead>{t('items.itemName', 'Item Name')}</TableHead>
+                  {hasWarehouseColumn && <TableHead>{t('withdrawals.sourceWarehouse', 'Source Warehouse')}</TableHead>}
                   <TableHead className="text-center">{t('withdrawals.requested', 'Requested')}</TableHead>
                   <TableHead className="text-center">{t('withdrawals.available', 'Available')}</TableHead>
                   <TableHead className="text-center text-emerald-600 font-bold">{t('withdrawals.toDeduct', 'To Deduct')}</TableHead>
@@ -51,9 +60,14 @@ const WithdrawalShortageModal = ({
                 </TableRow>
               </TableHeader>
               <TableBody className="text-xs">
-                {shortageData?.shortages?.map(item => (
-                  <TableRow key={item.request_item_id || item.item_id}>
+                {shortageRows.map(item => (
+                  <TableRow key={`${item.project_id || ''}::${item.request_item_id || item.item_id}`}>
                     <TableCell className="font-bold text-foreground">{item.item_name}</TableCell>
+                    {hasWarehouseColumn && (
+                      <TableCell className="text-[11px] text-muted-foreground font-semibold">
+                        {resolveRowWarehouse(item)}
+                      </TableCell>
+                    )}
                     <TableCell className="text-center font-mono">{item.requested} {item.unit}</TableCell>
                     <TableCell className="text-center font-mono">{item.available} {item.unit}</TableCell>
                     <TableCell className="text-center font-bold font-mono text-emerald-600 dark:text-emerald-400">

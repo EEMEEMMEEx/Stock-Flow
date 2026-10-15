@@ -7,6 +7,7 @@ import { useTranslation } from '@/i18n';
 const WithdrawalItemCard = React.memo(({
   item,
   cartItem,
+  cartQuantityTotal,
   onAddToCart,
   onUpdateQuantity,
   onOpenLocationBreakdown
@@ -20,7 +21,13 @@ const WithdrawalItemCard = React.memo(({
   const completelyEmpty = isOutOfStock && totalSys <= 0;
 
   const isInCart = Boolean(cartItem);
-  const cartQuantity = cartItem?.quantity || 0;
+  // The card operates on the item's first cart line, while the badge reports the
+  // total requested across every source warehouse.
+  const activeLine = cartItem;
+  const cartQuantity = cartQuantityTotal ?? (activeLine?.quantity || 0);
+  const activeQuantity = activeLine?.quantity || 0;
+  const activeLineAvailable = activeLine?.balance !== undefined ? activeLine.balance : availableStock;
+  const cartLineKey = activeLine?.cartKey || item.id;
 
   return (
     <Card
@@ -100,6 +107,40 @@ const WithdrawalItemCard = React.memo(({
             {item.name}
           </h3>
         </div>
+
+        {/* Per-warehouse availability chips (multi-warehouse requisition) */}
+        {item.warehouses?.length > 0 && (
+          <div className="flex flex-wrap items-center gap-1">
+            {item.warehouses.slice(0, 2).map((warehouse) => (
+              <button
+                key={warehouse.project_id}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onOpenLocationBreakdown(item);
+                }}
+                title={t('withdrawals.viewLocationBreakdown', 'Click to view location breakdown')}
+                className="inline-flex items-center gap-1 max-w-full px-1.5 py-0.5 rounded-md bg-muted/60 border border-border/50 text-[10px] font-semibold text-muted-foreground hover:text-foreground hover:border-indigo-500/40 transition-colors cursor-pointer"
+              >
+                <Building2 className="w-2.5 h-2.5 shrink-0" />
+                <span className="truncate max-w-[84px]">{warehouse.warehouse_name || warehouse.project_name || t('common.location', 'Location')}</span>
+                <span className="font-mono text-emerald-600 dark:text-emerald-400">{warehouse.balance}</span>
+              </button>
+            ))}
+            {item.warehouses.length > 2 && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onOpenLocationBreakdown(item);
+                }}
+                className="px-1.5 py-0.5 rounded-md bg-indigo-500/10 border border-indigo-500/20 text-[10px] font-bold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/20 transition-colors cursor-pointer"
+              >
+                +{item.warehouses.length - 2}
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Footer Controls & Stepper */}
@@ -127,22 +168,22 @@ const WithdrawalItemCard = React.memo(({
               type="button"
               variant="ghost"
               size="icon"
-              onClick={() => onUpdateQuantity(item.id, -1)}
+              onClick={() => onUpdateQuantity(cartLineKey, -1)}
               className="h-9 w-9 min-h-[36px] min-w-[36px] sm:h-7 sm:w-7 sm:min-h-0 sm:min-w-0 rounded-md hover:bg-background text-foreground shrink-0 cursor-pointer flex items-center justify-center"
             >
               <Minus className="w-3.5 h-3.5" />
             </Button>
             
             <span className="font-mono text-xs font-bold text-foreground px-2">
-              {cartQuantity} {item.unit || t('common.defaultUnit', 'pcs')}
+              {activeQuantity} {item.unit || t('common.defaultUnit', 'pcs')}
             </span>
 
             <Button
               type="button"
               variant="ghost"
               size="icon"
-              disabled={cartQuantity >= availableStock}
-              onClick={() => onUpdateQuantity(item.id, 1)}
+              disabled={activeQuantity >= activeLineAvailable}
+              onClick={() => onUpdateQuantity(cartLineKey, 1)}
               className="h-9 w-9 min-h-[36px] min-w-[36px] sm:h-7 sm:w-7 sm:min-h-0 sm:min-w-0 rounded-md hover:bg-background text-foreground shrink-0 disabled:opacity-30 cursor-pointer flex items-center justify-center"
             >
               <Plus className="w-3.5 h-3.5" />

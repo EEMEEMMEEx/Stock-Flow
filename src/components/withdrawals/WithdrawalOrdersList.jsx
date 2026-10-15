@@ -4,19 +4,22 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { 
-  ArrowUpFromLine, CheckCircle2, XCircle, Clock, 
-  AlertTriangle, FileText, Search, Copy, 
-  Check, Eye, Download, RotateCcw, FileSpreadsheet
+  ArrowUpFromLine, CheckCircle2, Clock, 
+  FileText, Search, Copy, 
+  Check, Eye, Download, RotateCcw, FileSpreadsheet, Ban
 } from 'lucide-react';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 import { useTranslation } from '@/i18n';
+import { getWarehouseLabel } from '@/lib/withdrawalStock';
 import StatusBadge from '@/components/ui/StatusBadge';
 
 const WithdrawalOrdersList = ({
   orders = [],
+  projects = [],
   loading = false,
   isAdmin: _isAdmin = false,
+  isSuperAdmin = false,
   canApprove = false,
   canReject = false,
   canComplete = false,
@@ -26,6 +29,7 @@ const WithdrawalOrdersList = ({
   onDownloadDispatchPDF,
   onApproveOrder,
   onOpenRejectModal,
+  onOpenCancelModal,
   onCompleteOrder
 }) => {
   const { t } = useTranslation();
@@ -66,6 +70,7 @@ const WithdrawalOrdersList = ({
   const approvedOrdersCount = orders.filter(o => o.status === 'approved').length;
   const completedOrdersCount = orders.filter(o => o.status === 'completed').length;
   const rejectedOrdersCount = orders.filter(o => o.status === 'rejected').length;
+  const cancelledOrdersCount = orders.filter(o => o.status === 'cancelled').length;
 
 
 
@@ -215,6 +220,20 @@ const WithdrawalOrdersList = ({
               {t('common.rejected', 'Rejected')} ({rejectedOrdersCount})
             </Button>
 
+            <Button
+              type="button"
+              variant={statusFilter === 'cancelled' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setStatusFilter('cancelled')}
+              className={`h-8 px-2.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                statusFilter === 'cancelled'
+                  ? 'bg-slate-700 text-white shadow-xs'
+                  : 'border-slate-500/30 text-slate-700 dark:text-slate-300 hover:bg-slate-500/10'
+              }`}
+            >
+              {t('common.cancelled', 'Cancelled')} ({cancelledOrdersCount})
+            </Button>
+
             {(search || statusFilter !== 'all') && (
               <Button
                 type="button"
@@ -264,7 +283,15 @@ const WithdrawalOrdersList = ({
                 </TableCell>
               </TableRow>
             ) : (
-              filteredOrders.map(order => (
+              filteredOrders.map(order => {
+                // Distinct source warehouses in this requisition (multi-warehouse badge)
+                const sourceWarehouseNames = [...new Set((order.withdrawal_items || [])
+                  .map(item => item.project_id)
+                  .filter(Boolean))]
+                  .map(id => getWarehouseLabel(projects.find(p => p.id === id)))
+                  .filter(Boolean);
+
+                return (
                 <TableRow
                   key={order.id}
                   className="hover:bg-accent/40 transition-colors cursor-pointer"
@@ -287,6 +314,20 @@ const WithdrawalOrdersList = ({
                         {order.projects?.project_code ? `[${order.projects.project_code}] ` : ''}{order.projects?.name || '-'}
                       </span>
                     </div>
+                    {sourceWarehouseNames.length > 1 && (
+                      <div className="flex flex-wrap items-center gap-1 mt-1">
+                        {sourceWarehouseNames.slice(0, 2).map(name => (
+                          <span key={name} className="px-1.5 py-0.5 rounded-md bg-indigo-500/10 border border-indigo-500/20 text-[10px] font-bold text-indigo-600 dark:text-indigo-400">
+                            {name}
+                          </span>
+                        ))}
+                        {sourceWarehouseNames.length > 2 && (
+                          <span className="px-1.5 py-0.5 rounded-md bg-muted border border-border text-[10px] font-bold text-muted-foreground">
+                            +{sourceWarehouseNames.length - 2}
+                          </span>
+                        )}
+                      </div>
+                    )}
                     <div className="flex items-center gap-1 text-[10px] text-muted-foreground font-mono mt-0.5">
                       <span>ID: #{order.id?.slice(0, 8)}</span>
                       <button
@@ -408,10 +449,25 @@ const WithdrawalOrdersList = ({
                           {t('withdrawals.confirmReceipt', 'Confirm Receipt')}
                         </Button>
                       )}
+
+                      {isSuperAdmin && order.status !== 'cancelled' && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="xs"
+                          className="h-8 px-2.5 rounded-lg text-xs font-semibold text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 gap-1 cursor-pointer"
+                          onClick={() => onOpenCancelModal && onOpenCancelModal(order)}
+                          title={t('withdrawals.cancelOrder', 'Cancel Request (SUPER)')}
+                        >
+                          <Ban className="w-3.5 h-3.5" />
+                          <span>{t('common.cancel', 'Cancel')}</span>
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>
-              ))
+                );
+              })
             )}
           </TableBody>
         </Table>

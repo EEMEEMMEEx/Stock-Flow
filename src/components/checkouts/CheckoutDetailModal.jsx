@@ -5,7 +5,7 @@ import {
   FileText, Clock, 
   User, Building2, Calendar, Phone, Layers, RotateCcw,
   CalendarClock, ArrowRight, Infinity as InfinityIcon, XCircle, AlertTriangle, FileSpreadsheet,
-  ExternalLink
+  ExternalLink, Ban
 } from 'lucide-react';
 import { pdf } from '@react-pdf/renderer';
 import { MaterialCheckoutPDF, MaterialReturnPDF } from '@/lib/checkout-pdf-templates';
@@ -48,8 +48,10 @@ const CheckoutDetailModal = ({
   order,
   canReturn = true,
   canExtend = true,
+  isSuperAdmin = false,
   onOpenReturnModal,
-  onOpenExtendModal
+  onOpenExtendModal,
+  onOpenCancelModal
 }) => {
   const { t } = useTranslation();
   const [returnLogs, setReturnLogs] = useState([]);
@@ -333,7 +335,9 @@ const CheckoutDetailModal = ({
             </div>
 
             {/* Status Badge */}
-            {order.status === 'pending' ? (
+            {order.status === 'cancelled' ? (
+              <StatusBadge status="cancelled" size="lg" />
+            ) : order.status === 'pending' ? (
               <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 flex items-center gap-1.5">
                 <Clock className="w-3.5 h-3.5" />
                 <span>{t('checkouts.statusPending', 'รอตรวจสอบ')}</span>
@@ -379,6 +383,25 @@ const CheckoutDetailModal = ({
               {order.rejection_reason && (
                 <p className="text-xs pl-6 text-foreground font-medium">
                   <span className="text-muted-foreground">{t('checkouts.rejectionReasonLabel', 'เหตุผล')}:</span> {order.rejection_reason}
+                </p>
+              )}
+            </div>
+          )}
+
+          {(order.status === 'cancelled' || order.cancellation_reason) && (
+            <div className="p-3 rounded-xl border border-slate-500/30 bg-slate-500/10 text-slate-800 dark:text-slate-200 text-xs space-y-1">
+              <div className="flex items-center gap-2 font-semibold text-rose-600 dark:text-rose-400">
+                <Ban className="w-4 h-4 shrink-0" />
+                <span>{t('checkouts.cancelledNotice', 'รายการนี้ถูกยกเลิกแล้ว')}</span>
+                {order.cancelled_at && (
+                  <span className="text-[11px] font-normal text-muted-foreground">
+                    ({format(new Date(order.cancelled_at), 'dd/MM/yyyy HH:mm')})
+                  </span>
+                )}
+              </div>
+              {order.cancellation_reason && (
+                <p className="text-xs pl-6 text-foreground font-medium">
+                  <span className="text-muted-foreground">{t('checkouts.cancellationReasonLabel', 'เหตุผล')}:</span> {order.cancellation_reason}
                 </p>
               )}
             </div>
@@ -670,7 +693,7 @@ const CheckoutDetailModal = ({
                 <span>{t('checkouts.indefiniteLoan')}</span>
               </div>
             ) : (
-              !isOrderCompleted && remaining > 0 && order.status !== 'pending' && order.status !== 'rejected' && onOpenExtendModal && canExtend && (
+              !isOrderCompleted && remaining > 0 && order.status !== 'pending' && order.status !== 'rejected' && order.status !== 'cancelled' && onOpenExtendModal && canExtend && (
                 <Button
                   type="button"
                   variant="outline"
@@ -687,7 +710,7 @@ const CheckoutDetailModal = ({
               )
             )}
 
-            {!isOrderCompleted && remaining > 0 && order.status !== 'pending' && order.status !== 'rejected' && onOpenReturnModal && canReturn && (
+            {!isOrderCompleted && remaining > 0 && order.status !== 'pending' && order.status !== 'rejected' && order.status !== 'cancelled' && onOpenReturnModal && canReturn && (
               <Button
                 type="button"
                 size="sm"
@@ -699,6 +722,23 @@ const CheckoutDetailModal = ({
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>{t('checkouts.returnEquipment')}</span>
+              </Button>
+            )}
+
+            {isSuperAdmin && order.status !== 'cancelled' && onOpenCancelModal && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  onClose();
+                  onOpenCancelModal(order);
+                }}
+                className="rounded-lg h-9 text-xs gap-1.5 font-semibold text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 shadow-2xs cursor-pointer px-4"
+                title={t('checkouts.cancelOrder', 'ยกเลิกรายการ (SUPER)')}
+              >
+                <Ban className="w-3.5 h-3.5 text-rose-600" />
+                <span>{t('checkouts.cancelOrder', 'ยกเลิกรายการ (SUPER)')}</span>
               </Button>
             )}
 

@@ -1,5 +1,4 @@
-import React from 'react';
-import { Clock, CheckCircle2, XCircle, AlertTriangle } from 'lucide-react';
+import { Clock, CheckCircle2, XCircle, AlertTriangle, Ban } from 'lucide-react';
 import { useTranslation } from '@/i18n';
 
 /**
@@ -81,6 +80,15 @@ export const StatusBadge = ({
         icon: XCircle,
         label: t('common.rejected', 'Rejected'),
         colorClass: 'text-rose-600 dark:text-rose-400 bg-rose-500/10 border-rose-500/30',
+        pulse: false,
+      };
+      break;
+
+    case 'cancelled':
+      config = {
+        icon: Ban,
+        label: t('common.cancelled', 'Cancelled'),
+        colorClass: 'text-slate-500 dark:text-slate-400 bg-slate-500/10 border-slate-500/30',
         pulse: false,
       };
       break;

@@ -20,9 +20,12 @@ const WithdrawalCartPanel = ({
   onClearCart,
   onUpdateItemDetails,
   onSubmitOrder,
+  onChangeSourceWarehouse,
+  lineSourceEnabled = false,
   isSubmitting = false
 }) => {
   const { t } = useTranslation();
+  const lineKeyOf = (line) => line.cartKey || line.id;
   const [purpose, setPurpose] = useState('');
   const [deliveryAddress, setDeliveryAddress] = useState('');
   const [expandedItemId, setExpandedItemId] = useState(null);
@@ -146,12 +149,24 @@ const WithdrawalCartPanel = ({
         ) : (
           cart.map(item => {
             const availableStock = item.balance !== undefined ? item.balance : Infinity;
-            const isExpanded = expandedItemId === item.id;
+            const isExpanded = expandedItemId === lineKeyOf(item);
             const hasDetails = Boolean(item.part_number || item.serial_number);
+            const sourceWarehouses = (() => {
+              const list = item.warehouses || [];
+              if (item.source_project_id && !list.some(w => w.project_id === item.source_project_id)) {
+                return [...list, {
+                  project_id: item.source_project_id,
+                  project_name: item.source_project_name || '',
+                  warehouse_name: item.source_warehouse_name || item.source_project_name || '',
+                  balance: 0
+                }];
+              }
+              return list;
+            })();
 
             return (
               <div
-                key={item.id}
+                key={item.cartKey || item.id}
                 className="p-3 rounded-xl bg-card border border-border shadow-2xs space-y-2 transition-all hover:border-indigo-500/30"
               >
                 <div className="flex items-start justify-between gap-2">
@@ -165,7 +180,9 @@ const WithdrawalCartPanel = ({
                         <>
                           <span>•</span>
                           <span className={item.balance > 0 ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : 'text-red-500 font-semibold'}>
-                            {t('withdrawals.inThisLocation', 'In this location')}: {item.balance}
+                            {lineSourceEnabled
+                              ? `${item.source_warehouse_name || item.source_project_name || t('withdrawals.sourceWarehouse', 'Source Warehouse')}: ${item.balance}`
+                              : `${t('withdrawals.inThisLocation', 'In this location')}: ${item.balance}`}
                           </span>
                         </>
                       )}
@@ -179,7 +196,7 @@ const WithdrawalCartPanel = ({
                       variant="ghost"
                       size="icon"
                       className="h-7 w-7 rounded-none hover:bg-muted text-muted-foreground cursor-pointer"
-                      onClick={() => onUpdateQuantity(item.id, -1)}
+                      onClick={() => onUpdateQuantity(lineKeyOf(item), -1)}
                       disabled={item.quantity <= 1}
                     >
                       <Minus className="w-3 h-3" />
@@ -191,8 +208,8 @@ const WithdrawalCartPanel = ({
                       pattern="[0-9]*"
                       className="w-11 h-7 text-center font-mono text-xs font-bold bg-transparent border-none focus:outline-none p-0 text-foreground"
                       value={item.quantityInput !== undefined ? item.quantityInput : String(item.quantity)}
-                      onChange={(e) => onDirectQuantityChange(item.id, e.target.value)}
-                      onBlur={() => onQuantityBlur(item.id)}
+                      onChange={(e) => onDirectQuantityChange(lineKeyOf(item), e.target.value)}
+                      onBlur={() => onQuantityBlur(lineKeyOf(item))}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') e.currentTarget.blur();
                       }}
@@ -203,7 +220,7 @@ const WithdrawalCartPanel = ({
                       variant="ghost"
                       size="icon"
                       className="h-7 w-7 rounded-none hover:bg-muted text-muted-foreground cursor-pointer"
-                      onClick={() => onUpdateQuantity(item.id, 1)}
+                      onClick={() => onUpdateQuantity(lineKeyOf(item), 1)}
                       disabled={item.quantity >= availableStock}
                     >
                       <Plus className="w-3 h-3" />
@@ -215,18 +232,43 @@ const WithdrawalCartPanel = ({
                     variant="ghost"
                     size="icon"
                     className="h-7 w-7 text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg shrink-0 cursor-pointer"
-                    onClick={() => onRemoveFromCart(item.id)}
+                    onClick={() => onRemoveFromCart(lineKeyOf(item))}
                     title={t('withdrawals.removeItem', 'Remove item')}
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </Button>
                 </div>
 
+                {/* Source warehouse selector (multi-warehouse mode only) */}
+                {lineSourceEnabled && sourceWarehouses.length > 0 && (
+                  <div className="flex items-center gap-2 pt-0.5">
+                    <label
+                      htmlFor={`cart-source-${item.cartKey || item.id}`}
+                      className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide whitespace-nowrap flex items-center gap-1"
+                    >
+                      <Building2 className="w-3 h-3" />
+                      {t('withdrawals.sourceWarehouse', 'Source Warehouse')}
+                    </label>
+                    <select
+                      id={`cart-source-${item.cartKey || item.id}`}
+                      value={item.source_project_id || ''}
+                      onChange={(e) => onChangeSourceWarehouse?.(lineKeyOf(item), e.target.value)}
+                      className="flex-1 min-w-0 h-7 rounded-lg border border-input bg-background px-2 text-[11px] font-semibold text-foreground focus:ring-2 focus:ring-indigo-500 focus:outline-none cursor-pointer"
+                    >
+                      {sourceWarehouses.map((warehouse) => (
+                        <option key={warehouse.project_id} value={warehouse.project_id}>
+                          {warehouse.warehouse_name || warehouse.project_name || t('common.location', 'Location')} ({warehouse.balance})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
                 {/* Toggle S/N & Part Number Details */}
                 <div className="pt-0.5">
                   <button
                     type="button"
-                    onClick={() => toggleExpand(item.id)}
+                    onClick={() => toggleExpand(lineKeyOf(item))}
                     className={`text-[10px] font-semibold flex items-center gap-1 transition-colors cursor-pointer ${
                       hasDetails
                         ? 'text-indigo-600 dark:text-indigo-400'
@@ -245,7 +287,7 @@ const WithdrawalCartPanel = ({
                           className="h-8 text-xs rounded-lg bg-background"
                           placeholder="e.g. PN-990-AB"
                           value={item.part_number || ''}
-                          onChange={(e) => onUpdateItemDetails(item.id, 'part_number', e.target.value)}
+                          onChange={(e) => onUpdateItemDetails(lineKeyOf(item), 'part_number', e.target.value)}
                         />
                       </div>
 
@@ -257,7 +299,7 @@ const WithdrawalCartPanel = ({
                           className="flex min-h-[48px] w-full rounded-lg border border-input bg-background px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-indigo-500 resize-none font-mono"
                           placeholder="SN001, SN002, SN003..."
                           value={item.serial_number || ''}
-                          onChange={(e) => onUpdateItemDetails(item.id, 'serial_number', e.target.value)}
+                          onChange={(e) => onUpdateItemDetails(lineKeyOf(item), 'serial_number', e.target.value)}
                         />
                       </div>
                     </div>

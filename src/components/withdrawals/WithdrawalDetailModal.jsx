@@ -2,24 +2,29 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { 
-  FileText, CheckCircle2, Clock, XCircle, AlertTriangle, 
-  Building2, User, MapPin, Package, FileSpreadsheet
+  FileText, XCircle, AlertTriangle, 
+  Building2, User, MapPin, Package, FileSpreadsheet, Ban
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useTranslation } from '@/i18n';
+import { getWarehouseLabel } from '@/lib/withdrawalStock';
 import StatusBadge from '@/components/ui/StatusBadge';
 
 const WithdrawalDetailModal = ({
   order,
   orderDetails = [],
+  projects = [],
+  showSourceWarehouse = false,
   isOpen,
   onClose,
   isAdmin: _isAdmin = false,
+  isSuperAdmin = false,
   canApprove = false,
   canReject = false,
   canComplete = false,
   onApproveOrder,
   onOpenRejectModal,
+  onOpenCancelModal,
   onCompleteOrder,
   onDownloadPDF,
   onDownloadDispatchPDF
@@ -31,6 +36,7 @@ const WithdrawalDetailModal = ({
   const isApproved = order.status === 'approved';
   const isCompleted = order.status === 'completed';
   const isRejected = order.status === 'rejected';
+  const isCancelled = order.status === 'cancelled';
   const hasShortage = order.has_shortage || order.is_shortage_override;
 
   return (
@@ -63,7 +69,7 @@ const WithdrawalDetailModal = ({
           </div>
 
           {/* Visual Requisition Workflow Stepper */}
-          {!isRejected && (
+          {!isRejected && !isCancelled && (
             <div className="pt-2">
               <div className="flex items-center justify-between text-xs font-bold">
                 {/* Step 1: Requested */}
@@ -162,6 +168,26 @@ const WithdrawalDetailModal = ({
                 <p className="text-[11px] pl-5">{order.reject_reason}</p>
               </div>
             )}
+
+            {/* Cancellation Notice */}
+            {(isCancelled || order.cancellation_reason) && (
+              <div className="sm:col-span-2 bg-slate-500/10 border border-slate-500/30 p-3 rounded-xl text-slate-800 dark:text-slate-200 space-y-1">
+                <p className="font-bold flex items-center gap-1.5 text-rose-600 dark:text-rose-400">
+                  <Ban className="w-4 h-4 text-rose-600 dark:text-rose-400" />
+                  <span>{t('withdrawals.cancellationNotice', 'คำขอนี้ถูกยกเลิกแล้ว (Cancelled)')}:</span>
+                </p>
+                {order.cancellation_reason && (
+                  <p className="text-[11px] pl-5">
+                    <span className="font-semibold">{t('withdrawals.cancellationReason', 'เหตุผล')}:</span> {order.cancellation_reason}
+                  </p>
+                )}
+                {order.cancelled_at && (
+                  <p className="text-[10px] text-muted-foreground pl-5">
+                    {t('withdrawals.cancelledAt', 'ยกเลิกเมื่อ')}: {format(new Date(order.cancelled_at), 'dd/MM/yyyy HH:mm:ss')}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Requested Items Table */}
@@ -176,6 +202,9 @@ const WithdrawalDetailModal = ({
                 <TableHeader className="bg-muted/50 text-xs">
                   <TableRow>
                     <TableHead>{t('items.itemName', 'Item Name')}</TableHead>
+                    {showSourceWarehouse && (
+                      <TableHead>{t('withdrawals.sourceWarehouse', 'Source Warehouse')}</TableHead>
+                    )}
                     <TableHead className="text-center">{t('withdrawals.requested', 'Requested')}</TableHead>
                     <TableHead className="text-center">{t('withdrawals.actualDeducted', 'Actual Deducted')}</TableHead>
                     <TableHead className="text-center text-amber-600">{t('withdrawals.shortage', 'Shortage')}</TableHead>
@@ -200,6 +229,16 @@ const WithdrawalDetailModal = ({
                             <span className="text-[10px] text-muted-foreground font-mono">PN: {item.part_number}</span>
                           )}
                         </TableCell>
+                        {showSourceWarehouse && (
+                          <TableCell className="text-[11px]">
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-muted/60 border border-border/60 font-semibold text-muted-foreground">
+                              <Building2 className="w-3 h-3" />
+                              {getWarehouseLabel(projects.find(p => p.id === item.project_id))
+                                || getWarehouseLabel(order.projects)
+                                || '-'}
+                            </span>
+                          </TableCell>
+                        )}
                         <TableCell className="text-center font-bold font-mono text-foreground">
                           {item.quantity} {item.items?.unit}
                         </TableCell>
@@ -296,6 +335,22 @@ const WithdrawalDetailModal = ({
                 onClick={() => onCompleteOrder(order.id)}
               >
                 {t('withdrawals.confirmReceiptComplete', 'Confirm Receipt Complete')}
+              </Button>
+            )}
+
+            {isSuperAdmin && !isCancelled && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="rounded-lg text-xs font-semibold text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 gap-1.5 cursor-pointer h-9 px-4"
+                onClick={() => {
+                  onOpenCancelModal && onOpenCancelModal(order);
+                  onClose();
+                }}
+              >
+                <Ban className="w-4 h-4 text-rose-600" />
+                <span>{t('withdrawals.cancelOrder', 'ยกเลิกคำขอ (SUPER)')}</span>
               </Button>
             )}
 

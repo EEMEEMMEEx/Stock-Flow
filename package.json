@@ -1,7 +1,7 @@
 {
   "name": "stock-flow-app",
   "private": true,
-  "version": "1.16.0",
+  "version": "1.21.0",
   "type": "module",
   "scripts": {
     "dev": "vite --host",
@@ -16,8 +16,11 @@
     "verify:checkout-pdf-guards": "node scripts/verify-checkout-pdf-guards.mjs",
     "verify:consumed-ui": "node scripts/verify-consumed-ui.mjs",
     "verify:caim-webhook": "node scripts/verify-caim-webhook.mjs",
+    "verify:multi-warehouse": "node scripts/verify-multi-warehouse-migration.mjs",
+    "verify:multi-warehouse-applied": "node scripts/verify-multi-warehouse-applied.mjs",
     "preview": "vite preview",
     "test:email": "node --test src/lib/emailRenderer.test.js src/lib/nodemailerTransport.test.js src/lib/emailSettings.test.js",
+    "test:withdrawal-stock": "node --test src/lib/withdrawalStock.test.js",
     "migrate:r2": "node scripts/migrate-legacy-images-to-r2.mjs",
     "db:backup": "node scripts/backup-full-database.mjs",
     "wiki:sync": "powershell -ExecutionPolicy Bypass -File scripts/sync-wiki.ps1",

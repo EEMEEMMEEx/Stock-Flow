@@ -1,5 +1,120 @@
 # Changelog
 
+## [2026-10-15 11:20] - v1.21.0
+
+- **Files Modified:** `supabase/migrations/81_super_cancellations_and_void_rpcs.sql`, `src/components/withdrawals/WithdrawalCancelModal.jsx`, `src/components/checkouts/CheckoutCancelModal.jsx`, `src/components/ui/StatusBadge.jsx`, `src/pages/Withdrawals.jsx`, `src/components/withdrawals/WithdrawalOrdersList.jsx`, `src/components/withdrawals/WithdrawalDetailModal.jsx`, `src/pages/Checkouts.jsx`, `src/components/checkouts/CheckoutHistoryList.jsx`, `src/components/checkouts/CheckoutDetailModal.jsx`, `src/i18n/locales/en.js`, `src/i18n/locales/th.js`, `package.json`, `CHANGELOG.md`
+- **Changes:**
+  - **สิทธิ์ยกเลิกรายการสำหรับบทบาท SUPER (System Administrator):**
+    - **การยกเลิกใบขอเบิกพัสดุ (`/withdrawals?tab=orders`):** เพิ่มความสามารถให้บทบาท SUPER สามารถยกเลิกใบขอเบิกได้ทั้งจากตารางรายการและจากโมดอลรายละเอียด โดยทำงานผ่าน RPC `super_cancel_withdrawal_order(p_order_id, p_reason)` หากใบเบิกได้รับการอนุมัติ (`approved`) หรือตัดสต็อกเสร็จสิ้น (`completed`) ไปแล้ว ระบบจะทำการคืนสต็อกกลับเข้าคลังต้นทางเดิมแบบอัตโนมัติ (Stock Reversal ผ่าน transaction `RETURN` ต่อคลังต้นทางของแต่ละรายการ) พร้อมบันทึกผู้ยกเลิก, เวลา และเหตุผล
+    - **การยกเลิกรายการประวัติยืม-คืน (`/checkouts?tab=history`):** เพิ่มความสามารถให้บทบาท SUPER สามารถยกเลิกรายการขอยืม-คืนอุปกรณ์ได้ผ่าน RPC `super_cancel_checkout_order(p_order_id, p_reason)` โดยระบบจะปรับสถานะรายการเป็น `cancelled`, คืนสถานะอุปกรณ์คงค้าง และบันทึกประวัติการยกเลิกใน audit log อย่างครบถ้วน
+  - **โมดอลยืนยันการยกเลิกและการจัดการสถานะ:**
+    - สร้าง `WithdrawalCancelModal` และ `CheckoutCancelModal` พร้อมแจ้งเตือนเงื่อนไขการคืนสต็อกและการบังคับระบุเหตุผลในการยกเลิก
+    - อัปเดต `StatusBadge` รองรับสถานะ `'cancelled'` พร้อมไอคอน `Ban` สีเทา slate
+    - อัปเดตตารางรายการและโมดอลรายละเอียดให้แสดง Badge ยกเลิก, กรอบแจ้งเตือนเหตุผล และปิดการดำเนินการที่ขัดแย้ง (เช่น ส่งคืน/ขยายเวลา/อนุมัติ) เมื่อรายการถูกยกเลิกแล้ว
+  - **ระบบภาษา (i18n):** เพิ่มคีย์แปลภาษาไทยและอังกฤษสำหรับฟังก์ชันยกเลิกครบถ้วน 100% Key Parity (1,870 คีย์)
+  - ปรับ version เป็น `v1.21.0` (MINOR)
+
+## [2026-10-11 12:03] - v1.20.3
+
+- **Files Modified:** `src/lib/withdrawalStock.js`, `src/lib/withdrawalStock.test.js`, `src/pages/Withdrawals.jsx`, `src/pages/History.jsx`, `src/components/withdrawals/WithdrawalCartPanel.jsx`, `src/components/withdrawals/WithdrawalItemCard.jsx`, `src/components/withdrawals/WithdrawalOrdersList.jsx`, `src/components/withdrawals/WithdrawalDetailModal.jsx`, `src/components/withdrawals/WithdrawalShortageModal.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **แก้การแสดง "คลังต้นทาง" ให้เป็นชื่อคลังสินค้าจริง (ไม่ใช่ชื่อโครงการ):** ในระบบนี้หลายโครงการใช้ชื่อซ้ำกัน (เช่น `DOPA-DTRS | USO-SHF`) และคลังสินค้าจริงเก็บอยู่ใน `projects.location` (เช่น `คลัง EMS`, `คลัง Forth ชั้น 3`, `คลัง Factory C`) — ตาราง `storage_locations` ว่างเปล่า จึงเพิ่ม helper `getWarehouseLabel(project) = projects.location || projects.name` แล้วใช้ทุกจุด
+  - **PDF ใบเบิก/ใบนำส่ง:** คอลัมน์ "คลังต้นทาง" แสดง `projects.location` แล้ว (ผ่าน `resolveWarehouseName` ที่แก้ให้คืน warehouse label)
+  - **UI:** ชิปคลังบนการ์ดสินค้า, dropdown คลังต้นทางในตะกร้า, badge หลายคลังในรายการใบเบิก, คอลัมน์ใน Detail modal และ Shortage modal ใช้ชื่อคลัง; low-stock alert ส่ง `warehouse_name` เป็นชื่อคลังและ `project_name` เป็นชื่อโครงการแยกกัน
+  - **History:** เพิ่ม `location` ใน join `projects` ทั้งสองจุดเพื่อให้ PDF ฝั่ง History resolve ชื่อคลังได้
+  - เพิ่ม unit test ครอบ `getWarehouseLabel`, `buildWarehouseMap` label map และ `resolveWarehouseName` → รวม **24/24**
+  - ยืนยันกับข้อมูลจริง: ใบเบิก `6895898a` มี 4 บรรทัดจาก 4 โครงการชื่อเดียวกัน แต่ `location` ต่างกัน (คลัง EMS (SAP) / คลัง EMS / คลัง Forth ชั้น 3 / คลัง Factory C)
+  - ปรับ version เป็น `v1.20.3` (PATCH)
+
+## [2026-10-11 11:39] - v1.20.2
+
+- **Files Modified:** `scripts/verify-multi-warehouse-applied.mjs` (ใหม่), `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **Post-apply live verifier:** `npm run verify:multi-warehouse-applied` ตรวจ schema/RPC บนฐานข้อมูลจริงแบบ read-only ผ่าน service role (ไม่มีการ insert/update/delete): คอลัมน์ `project_id`+`storage_location_id` อ่านได้, `project_id` เป็น NOT NULL (จาก OpenAPI required), FK ไป `projects`/`storage_locations`, ไม่มีแถว `project_id IS NULL`, ไม่มีบรรทัด orphan, และ `approve_inventory_request` ตอบ+บังคับสิทธิ์ — พร้อมรายงาน INFO จำนวนบรรทัดที่คลังต้นทางต่างจากหัวใบเบิก (ตัวชี้ว่ามี multi-warehouse จริง)
+  - รันกับ production แล้ว: **7 PASS / 2 INFO / 0 FAIL**
+  - ระบุชัดในเอาต์พุตว่า body ของ RPC, trigger และ index ยืนยันผ่าน REST ไม่ได้ (ต้องใช้ SQL Editor หรือ E2E)
+  - ปรับ version เป็น `v1.20.2` (PATCH)
+
+## [2026-10-11 11:39] - v1.20.1
+
+- **Files Modified:** `multi-warehouse-withdrawal.md`, `CHANGELOG.md` (ไม่มี source/runtime change รอบนี้ จึงคง v1.20.1)
+- **Changes:**
+  - **Deployment:** apply `supabase/migrations/80_multi_warehouse_withdrawal_support.sql` กับ production สำเร็จผ่าน Supabase Dashboard > SQL Editor (ผลลัพธ์ `Success. No rows returned`)
+  - **ยืนยันหลัง apply (read-only ผ่าน PostgREST/service role):** คอลัมน์ `withdrawal_items.project_id`/`storage_location_id` อ่านได้ (เดิม 42703), `project_id` เป็น NOT NULL (อยู่ใน required list ของ OpenAPI) + FK ไป `projects`, `storage_location_id` FK ไป `storage_locations`, backfill ครบ 32/32 แถวเท่ากับ `withdrawal_orders.project_id` ของใบนั้น (mismatch 0, orphan 0), และ RPC `approve_inventory_request` ตอบ business error `Unauthorized` ตามปกติ
+  - **ยังตรวจแบบ read-only ไม่ได้:** เนื้อใน trigger `trg_withdrawal_items_source_project`, index `idx_withdrawal_items_project_item` และ body ของ RPC เวอร์ชันใหม่ (ไม่มีช่องทางรัน SQL — Management API 403) — ต้องยืนยันด้วย E2E ตอนทดสอบจริง
+  - **ขั้นถัดไป:** deploy frontend (commit/push ให้ Vercel) แล้วทำ manual E2E: สร้างใบเบิกที่ตัดของ 2 คลัง → อนุมัติ → ตรวจ `stock_transactions` แยก `project_id` → พิมพ์ PDF ใบเบิก/ใบนำส่ง
+
+## [2026-10-11 11:33] - v1.20.1
+
+- **Files Modified:** `src/pages/History.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **History PDF แสดงคลังต้นทาง:** เพิ่ม capability probe (`withdrawal_items.project_id`) แล้วดึง `project_id` + join `projects (id, name)` เฉพาะเมื่อ schema รองรับ — ก่อน migration query ยังทำงานเหมือนเดิม (ไม่ error 42703) และ PDF จะยังไม่แสดงคอลัมน์
+  - ส่ง `projects={projectsList}` เป็น fallback ให้ `MaterialWithdrawalPDF` เพื่อ resolve ชื่อคลัง
+  - ปรับ version เป็น `v1.20.1` (PATCH)
+
+## [2026-10-11 11:31] - v1.20.0
+
+- **Files Modified:** `src/lib/pdf-templates.jsx`, `src/lib/withdrawalStock.js`, `src/lib/withdrawalStock.test.js`, `src/pages/Withdrawals.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **Phase 5 (PDF) ของ Multi-Warehouse Withdrawal:**
+    - **`MaterialWithdrawalPDF`:** เพิ่มคอลัมน์ "คลังต้นทาง" ต่อบรรทัด พร้อมปรับความกว้างคอลัมน์ให้รวม 100% (`colNoWithWh`/`colDescWithWh`/`colWarehouse`/`colSnWithWh`) — แสดงเฉพาะเมื่อ resolve ชื่อคลังได้จริง จึงไม่พิมพ์ "—" ทั้งตารางเมื่อยังไม่มีข้อมูล
+    - **`MaterialDispatchPDF`:** เพิ่มคอลัมน์ "คลังต้นทาง" และ **เรียงรายการให้คลังเดียวกันอยู่ติดกัน** เพื่อให้แต่ละคลังเตรียมหยิบของได้ง่าย (เลือกใช้ column + sort แทนการแทรก section header เพราะ layout กระดาษถูกออกแบบเป็น 15 แถวคงที่; โหมด checkout ไม่เปลี่ยน)
+    - **Extract pure helpers:** `resolveWarehouseName()` + `hasResolvableWarehouse()` ใน `src/lib/withdrawalStock.js` (แทน logic ซ้ำในเทมเพลต) พร้อม unit test รวมเป็น **19/19**
+    - ส่ง `projects` เข้าเทมเพลตทั้งสองจาก `Withdrawals.jsx` เพื่อ resolve ชื่อคลังโดยไม่ต้องเพิ่ม join (History ยังไม่แสดงคอลัมน์นี้ เพราะ query เลือกคอลัมน์แบบเจาะจง — งานต่อยอด)
+    - ปรับ version เป็น `v1.20.0` (MINOR)
+
+## [2026-10-11 11:27] - v1.19.0
+
+- **Files Modified:** `src/pages/Withdrawals.jsx`, `src/components/withdrawals/WithdrawalOrdersList.jsx`, `src/components/withdrawals/WithdrawalDetailModal.jsx`, `src/components/withdrawals/WithdrawalShortageModal.jsx`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **Phase 3 (ปิดครบ) + Phase 4 Tracking/Modals ของ Multi-Warehouse Withdrawal:**
+    - **`notifyLowStockItems` เขียนใหม่เป็น order-based:** อ่าน `withdrawal_items` ของใบเบิกที่อนุมัติจริง (เฉพาะบรรทัดที่ `deducted_quantity > 0`) แล้วประเมิน reorder point แยกทีละคู่ `(project_id, item_id)`; เลือกคอลัมน์ `project_id` เฉพาะเมื่อ schema รองรับ (ไม่ error ก่อน migration) และใช้ `withdrawal_orders.project_id` เป็น fallback — แก้ปัญหาเดิมที่อ่านจาก cart ฝั่ง frontend (มักว่างเมื่ออนุมัติจากหน้าติดตามผล)
+    - **`WithdrawalOrdersList`**: Badge ชื่อคลังต้นทาง (สูงสุด 2 + `+N`) สำหรับใบเบิกที่ตัดสต็อกจากหลายคลัง
+    - **`WithdrawalDetailModal`**: คอลัมน์ "คลังต้นทาง" ต่อบรรทัดพัสดุ (แสดงเมื่อ `lineSourceEnabled`; fallback เป็นโครงการของหัวใบเบิก)
+    - **`WithdrawalShortageModal`**: คอลัมน์คลังต้นทางในตารางของขาด ใช้ `warehouse_name` จาก shortage payload ของ RPC ใหม่
+    - ปรับ version เป็น `v1.19.0` (MINOR)
+
+## [2026-10-11 11:23] - v1.18.0
+
+- **Files Modified:** `src/pages/Withdrawals.jsx`, `src/components/withdrawals/WithdrawalCartPanel.jsx`, `src/components/withdrawals/WithdrawalPosTerminal.jsx`, `src/components/withdrawals/WithdrawalItemCard.jsx`, `src/lib/withdrawalStock.js`, `src/lib/withdrawalStock.test.js`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **Phase 2/3 Multi-Warehouse Withdrawal — per-line source warehouse (gated rollout):**
+    - **Cart keying เปลี่ยนเป็น `(item, คลังต้นทาง)`** ด้วย `buildCartKey` — สินค้าเดียวกันเบิกจากหลายคลังได้หลายบรรทัดในใบเดียว ทุก handler (`handleUpdateQuantity`, `handleDirectQuantityChange`, `handleQuantityBlur`, `handleRemoveFromCart`, `handleUpdateItemDetails`) ระบุบรรทัดด้วย `cartKey`
+    - **`handleChangeSourceWarehouse`**: ย้ายบรรทัดไปคลังอื่น พร้อม clamp จำนวนตามยอดคลังปลายทาง และ merge เมื่อสินค้า+คลังซ้ำ
+    - **`resolveSourceWarehouse` / `pickDefaultWarehouse` / `clampQuantity`**: เลือกคลังต้นทางอัตโนมัติ (คลังที่มีของมากสุดเมื่อโหมด "ทุกคลัง") — เพิ่ม unit test รวมเป็น 16/16
+    - **`WithdrawalCartPanel`**: dropdown "คลังต้นทาง" ต่อบรรทัด + แสดงยอดคงเหลือของคลังนั้น
+    - **Phase 3 (บางส่วน):** `handleSubmitOrder` ส่ง `project_id` รายบรรทัดเมื่อ DB รองรับ
+    - **Feature gate:** ตรวจ schema ครั้งเดียว (`detectLineSourceCapability` probe `withdrawal_items.project_id`) — frontend ปลอดภัยที่จะ deploy ก่อน/หลัง apply migration 80; ถ้ายังไม่มีคอลัมน์ จะทำงานเหมือนเดิมทุกประการ (ไม่ส่ง project_id รายบรรทัด)
+    - **ค้าง:** `notifyLowStockItems` ยังแจ้งเตือนด้วยคลังเดียว (ต้องแยกตามคลังต้นทางรายบรรทัด) และ Quick Warehouse Selector ตอนกดเพิ่มจากโหมด "ทุกคลัง" ยังใช้ auto-pick
+    - ปรับ version เป็น `v1.18.0` (MINOR)
+
+## [2026-10-11 11:16] - v1.17.1
+
+- **Files Modified:** `src/lib/withdrawalStock.js` (ใหม่), `src/lib/withdrawalStock.test.js` (ใหม่), `src/components/withdrawals/WithdrawalItemCard.jsx`, `src/pages/Withdrawals.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **Phase 2 (บางส่วน) Multi-Warehouse Withdrawal — per-warehouse availability:**
+    - เพิ่มโมดูลบริสุทธิ์ `src/lib/withdrawalStock.js` (`buildWarehouseMap`, `getWarehousesForItem`, `getWarehouseBalance`, `getWarehouseTotal`, `ALL_WAREHOUSES`) เพื่อให้คำนวณสต็อกรายคลังทดสอบได้โดยไม่ต้องใช้ DB — `npm run test:withdrawal-stock` ผ่าน 8/8
+    - `Withdrawals.jsx`: แนบ `warehouses` (เฉพาะคลังที่มียอด > 0 เรียงตามยอดคงเหลือ) ให้ทุก item จาก `stock_balance` โดย **ไม่เปลี่ยนความหมาย** ของ `balance`/`totalSystemBalance` เดิม
+    - `WithdrawalItemCard.jsx`: แสดงชิปคลังต้นทางที่มีของ (สูงสุด 2 คลัง + `+N`) กดเพื่อเปิด Stock Location Breakdown modal
+    - เพิ่มคีย์ i18n ที่หายไป `withdrawals.viewLocationBreakdown` (th/en) — `npm run check:i18n` ยังคง 100% parity (1840/1840)
+    - **หมายเหตุ:** ยังไม่เปลี่ยน cart keying และ submission (Phase 3) — ต้อง apply migration 80 ก่อนจึงจะส่ง `project_id` รายบรรทัดได้อย่างปลอดภัย
+    - ปรับ version เป็น `v1.17.1` (PATCH)
+
+## [2026-10-11 11:03] - v1.17.0
+
+- **Files Modified:** `supabase/migrations/80_multi_warehouse_withdrawal_support.sql` (ใหม่), `scripts/apply-migration-80.mjs` (ใหม่), `scripts/verify-multi-warehouse-migration.mjs` (ใหม่), `multi-warehouse-withdrawal.md`, `docs/multi-warehouse-withdrawal-plan.md`, `.env.example`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **Phase 1 Multi-Warehouse & Multi-Project Requisition (Database & RPC):**
+    - **Migration 80:** เพิ่ม `withdrawal_items.project_id` (NOT NULL, FK -> `projects`) และ `storage_location_id` (FK -> `storage_locations`); backfill จาก `withdrawal_orders.project_id` ของใบเบิกเก่า; BEFORE trigger `trg_withdrawal_items_source_project` เติมคลังต้นทางจากหัวใบเบิกอัตโนมัติเมื่อผู้เรียกไม่ส่งค่า (backward compatible 100% กับ frontend ปัจจุบันที่ยังไม่ส่ง project_id รายบรรทัด); index `idx_withdrawal_items_project_item (project_id, item_id)`
+    - **RPC `approve_inventory_request`:** ตัดสต็อกจาก `stock_balance` ตาม `project_id` ของ "แต่ละบรรทัด" แทนหัวใบเบิก, บันทึก `stock_transactions` (`'OUT'`) แยกตามคลังต้นทาง, ระบุชื่อคลังใน shortage payload (`project_id`, `warehouse_name`), ล็อกแถว `public.items` เรียงตาม `item_id` (mutex เดียวกับ `approve_checkout_order` / `process_item_transfer`) เพราะ `stock_balance` เป็น GROUP BY view ที่ล็อกแถวไม่ได้ (SQLSTATE 0A000)
+    - **Signature/return shape คงเดิม** (`p_request_id`, `p_allow_shortage`, `p_override_reason`) — frontend ไม่ต้องแก้
+  - **หลักฐาน live schema (PostgREST OpenAPI, project vrnutseacyejnzwcfamv):** `withdrawal_items` ยังไม่มี `project_id`/`storage_location_id`; `withdrawal_orders.project_id` เป็น NULLABLE อยู่แล้ว; ข้อมูลจริง 12 ใบเบิก / 32 บรรทัด ไม่มีใบใด `project_id IS NULL` จึง backfill + `SET NOT NULL` ได้ปลอดภัย
+  - **Deployment tooling:** `scripts/apply-migration-80.mjs` รองรับ `--dry-run` (สร้าง `supabase/.temp/80_dry_run.sql` ที่สลับ `COMMIT;` ตัวจริงเป็น `ROLLBACK;` โดยไม่แตะคอมเมนต์) และบังคับ `--yes` ก่อน apply จริง (ไม่มี flag = exit 2); หา connection ตามลำดับ `SUPABASE_DB_URL` → `SUPABASE_DB_PASSWORD` + `supabase/.temp/pooler-url` → `--linked`; เพิ่มคีย์ `SUPABASE_DB_URL`/`SUPABASE_DB_PASSWORD` ใน `.env.example` และ runbook §7 ในแผน
+  - **หลักฐานเพิ่ม (live data):** `stock_transactions` มี `transaction_type = 'OUT'` 1 แถวและ `reference_type = 'withdrawal_order'` 1 แถว (ยืนยันว่า CHECK constraint รองรับ `'OUT'` และ RPC ใช้ชื่อเดิมได้); trigger เดิมบน `withdrawal_items` เป็น `AFTER INSERT ... FOR EACH STATEMENT` ไม่ชนกับ BEFORE trigger ใหม่
+  - **Verification guard:** `npm run verify:multi-warehouse` (`scripts/verify-multi-warehouse-migration.mjs`) ตรวจ 30 invariants ของ migration 80 + apply script (คอลัมน์/FK, backfill, trigger, NOT NULL, index, signature/return shape ของ RPC, การตัดสต็อกตามคลังต้นทางรายบรรทัด, locking order, grants, transaction shape) — พิสูจน์ด้วย mutation test แล้วว่าจับ regression ได้จริง (สลับ `v_item.source_project_id` → `v_order.project_id` = FAIL 2 เคส, exit 1)
+  - **ข้อจำกัด:** ยังไม่ได้ apply migration 80 กับ production (บัญชีนี้ Management API `--linked` = 403 และไม่มี `SUPABASE_DB_URL`/`SUPABASE_DB_PASSWORD`/Docker) — ต้องให้ผู้ใช้ตั้ง credential แล้วรัน `--dry-run` ต่อด้วย `--yes`
+  - ปรับ version เป็น `v1.17.0` (MINOR)
+
 ## [2026-10-09 19:45] - v1.16.0
 
 - **Files Modified:** `supabase/migrations/79_caim_inbound_webhook_processing.sql` (ใหม่), `api/caim-webhook.js` (ใหม่), `scripts/verify-caim-webhook.mjs` (ใหม่), `scripts/apply-migration-79.mjs` (ใหม่), `.env.example`, `package.json`, `package-lock.json`, `CHANGELOG.md`

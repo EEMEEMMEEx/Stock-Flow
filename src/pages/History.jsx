@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -49,12 +49,35 @@ const History = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
 
+  // Per-line source warehouse is fetched only when the DB supports it (migration 80);
+  // probing first keeps this query safe to run before the migration is applied.
+  const lineSourceCapabilityRef = useRef(null);
+  const detectLineSourceCapability = useCallback(async () => {
+    if (lineSourceCapabilityRef.current !== null) return lineSourceCapabilityRef.current;
+    const { error } = await supabase
+      .from('withdrawal_items')
+      .select('project_id')
+      .limit(1);
+    lineSourceCapabilityRef.current = !error;
+    return lineSourceCapabilityRef.current;
+  }, []);
+
   const fetchHistory = useCallback(async () => {
     if (!profile) return;
     try {
       setLoading(true);
       setError(null);
-      
+
+      const supportsLineSource = await detectLineSourceCapability();
+      const lineSourceFields = supportsLineSource
+        ? `project_id,
+            projects (
+              id,
+              name,
+              location
+            ),`
+        : '';
+
       let query = supabase
         .from('withdrawal_orders')
         .select(`
@@ -77,7 +100,8 @@ const History = () => {
           projects (
             id,
             name,
-            project_code
+            project_code,
+            location
           ),
           profiles:requested_by (
             id,
@@ -95,6 +119,7 @@ const History = () => {
             delivery_to,
             serial_number,
             part_number,
+            ${lineSourceFields}
             items (
               id,
               name,
@@ -120,7 +145,7 @@ const History = () => {
     } finally {
       setLoading(false);
     }
-  }, [profile, isAdmin]);
+  }, [profile, isAdmin, detectLineSourceCapability]);
 
   useEffect(() => {
     fetchHistory();
@@ -266,7 +291,7 @@ const History = () => {
     try {
       const itemsList = order.withdrawal_items || [];
       const docBlob = await pdf(
-        <MaterialWithdrawalPDF order={order} items={itemsList} profile={profile} />
+        <MaterialWithdrawalPDF order={order} items={itemsList} profile={profile} projects={projectsList} />
       ).toBlob();
 
       const url = URL.createObjectURL(docBlob);

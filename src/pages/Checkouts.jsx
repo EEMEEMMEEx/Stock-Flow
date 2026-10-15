@@ -19,6 +19,7 @@ import CheckoutExtendModal from '@/components/checkouts/CheckoutExtendModal';
 import CheckoutHistoryList from '@/components/checkouts/CheckoutHistoryList';
 import CheckoutApproveModal from '@/components/checkouts/CheckoutApproveModal';
 import CheckoutRejectModal from '@/components/checkouts/CheckoutRejectModal';
+import CheckoutCancelModal from '@/components/checkouts/CheckoutCancelModal';
 import { dispatchCheckoutNotification } from '@/lib/notificationDispatcher';
 
 const CHECKOUT_TABS = ['pending', 'active', 'pos', 'history'];
@@ -71,6 +72,11 @@ const Checkouts = () => {
   const [selectedOrderForReject, setSelectedOrderForReject] = useState(null);
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
   const [rejecting, setRejecting] = useState(false);
+
+  // Cancellation states (SUPER Role)
+  const [selectedOrderForCancel, setSelectedOrderForCancel] = useState(null);
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
 
   // Deep-link support: open the approval modal for ?tab=pending&id=<order>
   const handledNotificationIdRef = useRef(null);
@@ -397,6 +403,37 @@ const Checkouts = () => {
     }
   };
 
+  const handleOpenCancelModal = (order) => {
+    setSelectedOrderForCancel(order);
+    setIsCancelModalOpen(true);
+  };
+
+  const handleConfirmCancel = async (orderId, reason) => {
+    if (!isSuperAdmin || cancelling) return;
+    try {
+      setCancelling(true);
+      const toastId = toast.loading(t('checkouts.toasts.cancelling', 'กำลังยกเลิกรายการยืม-คืน...'));
+      const { data, error } = await supabase.rpc('super_cancel_checkout_order', {
+        p_order_id: orderId,
+        p_reason: reason.trim() || null
+      });
+      if (error) throw error;
+
+      toast.success(data?.message || t('checkouts.toasts.cancelled', 'ยกเลิกรายการยืม-คืนเรียบร้อยแล้ว'), { id: toastId });
+      setIsCancelModalOpen(false);
+      setSelectedOrderForCancel(null);
+      await fetchCheckoutData();
+    } catch (err) {
+      console.error('Cancel checkout error:', err);
+      const cleanErrMsg = err.message
+        ? err.message.replace(/.*(?:EXCEPTION|Error|P0001):\s*/i, '')
+        : 'Failed to cancel checkout order';
+      toast.error(cleanErrMsg);
+    } finally {
+      setCancelling(false);
+    }
+  };
+
   const pendingOrdersCount = useMemo(() => {
     return orders.filter(o => o.status === 'pending').length;
   }, [orders]);
@@ -564,7 +601,9 @@ const Checkouts = () => {
         <CheckoutHistoryList
           orders={orders}
           loading={loading}
+          isSuperAdmin={isSuperAdmin}
           onOpenDetailModal={handleOpenDetailModal}
+          onOpenCancelModal={handleOpenCancelModal}
         />
       )}
 
@@ -629,8 +668,22 @@ const Checkouts = () => {
         order={selectedOrderForDetail}
         canReturn={canReturn}
         canExtend={canExtend}
+        isSuperAdmin={isSuperAdmin}
         onOpenReturnModal={handleOpenReturnModal}
         onOpenExtendModal={handleOpenExtendModal}
+        onOpenCancelModal={handleOpenCancelModal}
+      />
+
+      {/* Cancel Modal (SUPER Role) */}
+      <CheckoutCancelModal
+        isOpen={isCancelModalOpen}
+        onClose={() => {
+          setIsCancelModalOpen(false);
+          setSelectedOrderForCancel(null);
+        }}
+        order={selectedOrderForCancel}
+        onConfirmCancel={handleConfirmCancel}
+        isProcessing={cancelling}
       />
     </div>
   );

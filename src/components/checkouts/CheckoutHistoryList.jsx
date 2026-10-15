@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 
   Search, History, CheckCircle2, Eye, User, 
-  Building2, FileText, Infinity as InfinityIcon
+  Building2, FileText, Infinity as InfinityIcon, Ban
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useTranslation } from '@/i18n';
@@ -12,7 +12,9 @@ import { useTranslation } from '@/i18n';
 const CheckoutHistoryList = ({
   orders = [],
   loading = false,
-  onOpenDetailModal
+  isSuperAdmin = false,
+  onOpenDetailModal,
+  onOpenCancelModal
 }) => {
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
@@ -86,6 +88,7 @@ const CheckoutHistoryList = ({
 
               const totalBorrowed = (order.checkout_items || []).reduce((s, i) => s + Number(i.quantity_borrowed || 0), 0);
               const isRejected = order.status === 'rejected';
+              const isCancelled = order.status === 'cancelled';
 
               return (
                 <div 
@@ -103,7 +106,12 @@ const CheckoutHistoryList = ({
                           {t('checkouts.noReturnDate')}
                         </span>
                       )}
-                      {isRejected ? (
+                      {isCancelled ? (
+                        <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-slate-500/15 text-slate-700 dark:text-slate-300 border border-slate-500/30 flex items-center gap-1">
+                          <Ban className="w-3 h-3 text-slate-500" />
+                          {t('common.cancelled', 'ยกเลิกแล้ว')}
+                        </span>
+                      ) : isRejected ? (
                         <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-destructive/15 text-destructive border border-destructive/30 flex items-center gap-1">
                           <CheckCircle2 className="w-3 h-3 text-destructive" />
                           {t('checkouts.statusRejected', 'ถูกปฏิเสธ')}
@@ -134,6 +142,13 @@ const CheckoutHistoryList = ({
                       </div>
                     )}
 
+                    {isCancelled && order.cancellation_reason && (
+                      <div className="p-2 rounded-lg bg-slate-500/10 text-slate-700 dark:text-slate-300 text-[11px] font-medium border border-slate-500/20">
+                        <span className="font-semibold mr-1">{t('checkouts.cancellationReasonLabel', 'เหตุผลที่ยกเลิก')}:</span>
+                        {order.cancellation_reason}
+                      </div>
+                    )}
+
                     <div className="text-[11px] text-muted-foreground pt-1 flex flex-wrap gap-1.5">
                       {order.checkout_items?.map((item, idx) => (
                         <span key={item.id || idx} className="bg-muted/60 px-2 py-0.5 rounded-md border border-border/40 font-mono text-[10px]">
@@ -149,7 +164,11 @@ const CheckoutHistoryList = ({
                       <div className="text-muted-foreground text-[11px]">
                         {t('checkouts.borrowed')}: {order.checkout_date ? format(new Date(order.checkout_date), 'dd/MM/yyyy') : '-'}
                       </div>
-                      {isRejected ? (
+                      {isCancelled ? (
+                        <div className="font-semibold text-slate-500 text-[11px]">
+                          {t('checkouts.cancelledAt', 'ยกเลิกเมื่อ')}: {order.cancelled_at ? format(new Date(order.cancelled_at), 'dd/MM/yyyy') : '-'}
+                        </div>
+                      ) : isRejected ? (
                         <div className="font-semibold text-destructive text-[11px]">
                           {t('checkouts.rejectedAt', 'ปฏิเสธเมื่อ')}: {order.rejected_at ? format(new Date(order.rejected_at), 'dd/MM/yyyy') : '-'}
                         </div>
@@ -169,6 +188,19 @@ const CheckoutHistoryList = ({
                       <Eye className="w-3.5 h-3.5" />
                       <span>{t('checkouts.viewDetailsPrint')}</span>
                     </Button>
+
+                    {isSuperAdmin && !isCancelled && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onOpenCancelModal && onOpenCancelModal(order)}
+                        className="rounded-lg h-9 text-xs gap-1.5 font-semibold text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 shadow-2xs cursor-pointer"
+                        title={t('checkouts.cancelOrder', 'ยกเลิกรายการ (SUPER)')}
+                      >
+                        <Ban className="w-3.5 h-3.5" />
+                        <span>{t('common.cancel', 'ยกเลิก')}</span>
+                      </Button>
+                    )}
                   </div>
                 </div>
               );
