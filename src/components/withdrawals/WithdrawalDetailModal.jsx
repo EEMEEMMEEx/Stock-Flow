@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { 
   FileText, XCircle, AlertTriangle, 
-  Building2, User, MapPin, Package, FileSpreadsheet, Ban
+  Building2, User, MapPin, Package, Printer, Ban
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useTranslation } from '@/i18n';
@@ -45,8 +45,8 @@ const WithdrawalDetailModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-3xl rounded-xl bg-card p-6 border border-border shadow-xl">
-        <DialogHeader className="space-y-3 border-b border-border/40 pb-4">
+      <DialogContent className="w-[calc(100%-2rem)] max-w-3xl max-h-[90vh] overflow-hidden grid-cols-[minmax(0,1fr)] rounded-xl bg-card p-4 sm:p-6 border border-border shadow-xl">
+        <DialogHeader className="min-w-0 space-y-3 border-b border-border/40 pb-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-lg bg-indigo-500/10 dark:bg-indigo-950/40 border border-indigo-500/20 flex items-center justify-center shrink-0">
@@ -77,42 +77,42 @@ const WithdrawalDetailModal = ({
             <div className="pt-2">
               <div className="flex items-center justify-between text-xs font-bold">
                 {/* Step 1: Requested */}
-                <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
-                  <div className="w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[11px] font-mono">
+                <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 text-indigo-600 dark:text-indigo-400">
+                  <div className="w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[11px] font-mono shrink-0">
                     1
                   </div>
-                  <span>{t('withdrawals.stepRequestSubmitted', 'Request Submitted')}</span>
+                  <span className="truncate text-[11px] sm:text-xs">{t('withdrawals.stepRequestSubmitted', 'Request Submitted')}</span>
                 </div>
 
-                <div className={`flex-1 h-1 mx-3 rounded-full ${isApproved || isCompleted ? 'bg-indigo-600' : 'bg-muted'}`} />
+                <div className={`flex-1 min-w-3 sm:min-w-6 h-1 mx-2 sm:mx-3 rounded-full ${isApproved || isCompleted ? 'bg-indigo-600' : 'bg-muted'}`} />
 
                 {/* Step 2: Approved */}
-                <div className={`flex items-center gap-2 ${isApproved || isCompleted ? 'text-indigo-600 dark:text-indigo-400' : 'text-muted-foreground'}`}>
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-mono ${
+                <div className={`flex items-center gap-1.5 sm:gap-2 min-w-0 ${isApproved || isCompleted ? 'text-indigo-600 dark:text-indigo-400' : 'text-muted-foreground'}`}>
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-mono shrink-0 ${
                     isApproved || isCompleted ? 'bg-indigo-600 text-white' : 'bg-muted text-muted-foreground'
                   }`}>
                     2
                   </div>
-                  <span>{t('withdrawals.stepApprovedDeducted', 'Approved & Deducted')}</span>
+                  <span className="truncate text-[11px] sm:text-xs">{t('withdrawals.stepApprovedDeducted', 'Approved & Deducted')}</span>
                 </div>
 
-                <div className={`flex-1 h-1 mx-3 rounded-full ${isCompleted ? 'bg-indigo-600' : 'bg-muted'}`} />
+                <div className={`flex-1 min-w-3 sm:min-w-6 h-1 mx-2 sm:mx-3 rounded-full ${isCompleted ? 'bg-indigo-600' : 'bg-muted'}`} />
 
                 {/* Step 3: Completed */}
-                <div className={`flex items-center gap-2 ${isCompleted ? 'text-emerald-600 dark:text-emerald-400' : 'text-muted-foreground'}`}>
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-mono ${
+                <div className={`flex items-center gap-1.5 sm:gap-2 min-w-0 ${isCompleted ? 'text-emerald-600 dark:text-emerald-400' : 'text-muted-foreground'}`}>
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-mono shrink-0 ${
                     isCompleted ? 'bg-emerald-600 text-white' : 'bg-muted text-muted-foreground'
                   }`}>
                     3
                   </div>
-                  <span>{t('withdrawals.stepDeliveredCompleted', 'Delivered & Completed')}</span>
+                  <span className="truncate text-[11px] sm:text-xs">{t('withdrawals.stepDeliveredCompleted', 'Delivered & Completed')}</span>
                 </div>
               </div>
             </div>
           )}
         </DialogHeader>
 
-        <div className="py-3 space-y-4 max-h-[60vh] overflow-y-auto pr-1">
+        <div className="min-w-0 py-3 space-y-4 max-h-[60vh] overflow-y-auto pr-1">
           {/* Order Metadata Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-muted/40 dark:bg-muted/20 p-4 rounded-xl border border-border text-xs">
             <div className="space-y-1">
@@ -201,8 +201,8 @@ const WithdrawalDetailModal = ({
               <span>{t('withdrawals.requestedItems', 'Requested Items')} ({orderDetails.length} {t('common.items', 'items')})</span>
             </h4>
 
-            <div className="border border-border rounded-xl overflow-hidden shadow-xs">
-              <Table>
+            <div className="border border-border rounded-xl overflow-hidden shadow-xs max-w-full">
+              <Table className="min-w-[640px]">
                 <TableHeader className="bg-muted/50 text-xs">
                   <TableRow>
                     <TableHead>{t('items.itemName', 'Item Name')}</TableHead>
@@ -287,15 +287,15 @@ const WithdrawalDetailModal = ({
           </div>
         </div>
 
-        <DialogFooter className="border-t border-border/40 pt-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+        <DialogFooter className="min-w-0 border-t border-border/40 pt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between justify-between gap-3 sm:gap-3 sm:space-x-0 flex-wrap">
           {(isApproved || isCompleted) && (
-            <>
+            <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 onClick={() => onDownloadPDF(order, orderDetails)}
-                className="rounded-lg text-xs font-semibold text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 gap-1.5 cursor-pointer h-9 px-4"
+                className="rounded-lg text-xs font-semibold text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 gap-1.5 cursor-pointer h-9 px-3 sm:px-4 flex-1 sm:flex-initial"
               >
                 <FileText className="w-4 h-4 text-indigo-600" />
                 <span>{t('withdrawals.printDownloadPDF', 'Print / Download Issue Slip (PDF)')}</span>
@@ -306,15 +306,15 @@ const WithdrawalDetailModal = ({
                 variant="outline"
                 size="sm"
                 onClick={() => onDownloadDispatchPDF(order, orderDetails)}
-                className="rounded-lg text-xs font-semibold text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-800 hover:bg-sky-50 dark:hover:bg-sky-950/40 gap-1.5 cursor-pointer h-9 px-4"
+                className="rounded-lg text-xs font-semibold text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-800 hover:bg-sky-50 dark:hover:bg-sky-950/40 gap-1.5 cursor-pointer h-9 px-3 sm:px-4 flex-1 sm:flex-initial"
               >
-                <FileSpreadsheet className="w-4 h-4 text-sky-600" />
+                <Printer className="w-4 h-4 text-sky-600" />
                 <span>{t('withdrawals.printDispatchPdf', 'พิมพ์ใบนำส่งเบิกของ (PDF)')}</span>
               </Button>
-            </>
+            </div>
           )}
 
-          <div className="flex items-center gap-2 sm:ml-auto">
+          <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto justify-end sm:ml-auto">
             {isPending && (
               <>
                 {canReject && (
@@ -353,19 +353,22 @@ const WithdrawalDetailModal = ({
             )}
 
             {isSuperAdmin && !isCancelled && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="rounded-lg text-xs font-semibold text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 gap-1.5 cursor-pointer h-9 px-4"
-                onClick={() => {
-                  onOpenCancelModal && onOpenCancelModal(order);
-                  onClose();
-                }}
-              >
-                <Ban className="w-4 h-4 text-rose-600" />
-                <span>{t('withdrawals.cancelOrder', 'ยกเลิกคำขอ (SUPER)')}</span>
-              </Button>
+              <>
+                <span aria-hidden="true" className="hidden sm:block w-px h-6 bg-border/60" />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="rounded-lg text-xs font-semibold text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 gap-1.5 cursor-pointer h-9 px-4"
+                  onClick={() => {
+                    onOpenCancelModal && onOpenCancelModal(order);
+                    onClose();
+                  }}
+                >
+                  <Ban className="w-4 h-4 text-rose-600" />
+                  <span>{t('withdrawals.cancelOrder', 'ยกเลิกคำขอ (SUPER)')}</span>
+                </Button>
+              </>
             )}
 
             <Button

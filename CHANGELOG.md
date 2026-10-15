@@ -1,5 +1,20 @@
 # Changelog
 
+## [2026-10-15 15:21] - v1.21.3
+
+- **Files Modified:** `src/components/withdrawals/WithdrawalDetailModal.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `scripts/verify-withdrawal-detail-modal.mjs` (ใหม่), `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **แก้ Layout Overflow ในหน้าต่างรายละเอียดใบเบิก (ตาม `docs/requisition-detail-modal-overflow-fix-plan.md`):**
+    - **Root `DialogContent`:** กำหนด `grid-cols-[minmax(0,1fr)]` + `overflow-hidden` + `max-h-[90vh]` + `w-[calc(100%-2rem)]` — หยุด Grid track ไม่ให้ขยายตาม `min-content` ของ Footer ที่เคยดันเนื้อหาล้นออกนอกกรอบ
+    - **Grid children:** เพิ่ม `min-w-0` ให้ `DialogHeader`, scroll body และ `DialogFooter`
+    - **Stepper:** เพิ่ม `min-w-0`/`shrink-0`/`truncate` และระยะเส้นเชื่อม `min-w-3 sm:min-w-6` — ขั้นตอนที่ 3 ไม่ถูกบีบตกขอบอีก
+    - **Items Table:** `min-w-[640px]` ให้เลื่อนแนวนอนภายในกล่องตัวเอง (Table primitive มี `overflow-auto` อยู่แล้วจึงไม่ซ้อน wrapper)
+    - **Footer:** เปลี่ยนเป็น `flex-wrap` แบ่งกลุ่มปุ่มพิมพ์ (ซ้าย) กับกลุ่ม action/close (ขวา), ปุ่มพิมพ์หดได้บนจอเล็ก (`flex-1 sm:flex-initial`), และมีเส้นคั่นก่อนปุ่มอันตราย "ยกเลิกคำขอ (SUPER)"
+    - **UI Polish:** เปลี่ยนไอคอนใบนำส่งจาก `FileSpreadsheet` เป็น `Printer`
+    - **i18n:** เพิ่มคีย์ `withdrawals.printDownloadPDF` และ `withdrawals.confirmReceiptComplete` (th/en) แก้ปัญหาข้อความปะปนภาษา — parity 100% (1,877 คีย์)
+  - **Regression guard:** `npm run verify:withdrawal-detail-modal` ตรวจ 19 invariants ของ layout/i18n — mutation-tested (ลบ `min-w-0` = FAIL, exit 1)
+  - ปรับ version เป็น `v1.21.3` (PATCH)
+
 ## [2026-10-15 15:04] - v1.21.2
 
 - **Files Modified:** `src/pages/Withdrawals.jsx`, `src/components/withdrawals/WithdrawalDetailModal.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `package.json`, `package-lock.json`, `CHANGELOG.md`
