@@ -14,6 +14,9 @@ const DETAIL = new URL('../src/components/checkouts/CheckoutDetailModal.jsx', im
 const TH = new URL('../src/i18n/locales/th.js', import.meta.url);
 const EN = new URL('../src/i18n/locales/en.js', import.meta.url);
 const PKG = new URL('../package.json', import.meta.url);
+const APPLY_SCRIPT = new URL('../scripts/apply-migration-82.mjs', import.meta.url);
+const LIVE_SCRIPT = new URL('../scripts/verify-damaged-repair-live-schema.mjs', import.meta.url);
+const SMOKE_TEST = new URL('../supabase/tests/82_damaged_repair_resolution.smoke.sql', import.meta.url);
 
 let failures = 0;
 const rows = [];
@@ -117,8 +120,30 @@ check('no repair key is missing in th.js', missingInTh.length === 0, missingInTh
 check('no repair key is missing in en.js', missingInEn.length === 0, missingInEn.join(', '));
 check('no key falls back to a hardcoded default', !/t\('checkouts\.repair[A-Za-z]*',\s*'/.test(modal));
 
+// --- apply / smoke-test tooling ---------------------------------------------
+const apply = read(APPLY_SCRIPT);
+const live = read(LIVE_SCRIPT);
+const smoke = read(SMOKE_TEST);
+
+check('apply script supports --dry-run and --yes', /--dry-run/.test(apply) && /--yes/.test(apply));
+check('apply script supports --self-test', /--self-test/.test(apply) && /selfTestFile/.test(apply));
+check('apply script refuses to run without an explicit flag', /ต้องรันด้วย --yes/.test(apply));
+check('smoke test never commits (BEGIN + ROLLBACK)', /^BEGIN;$/m.test(smoke) && /^ROLLBACK;$/m.test(smoke) && !/^COMMIT;$/m.test(smoke));
+check('smoke test simulates an authenticated SUPER caller', /set_config\('request\.jwt\.claims'/.test(smoke) && /is_super_admin/.test(smoke));
+check('smoke test asserts stock_balance grows by the resolved quantity', /v_after <> v_before \+ v_qty/.test(smoke));
+check('smoke test asserts the repair_restored ledger row', /'repair_restored'/.test(smoke));
+check('smoke test asserts spare-part deduction', /'repair_spare_part'/.test(smoke));
+check('smoke test asserts idempotency (second call rejected)', /การกดซ้ำต้องถูกปฏิเสธ/.test(smoke));
+check('smoke test asserts the scrap register for disposal', /scrap_disposal_items/.test(smoke) && /electronic_waste/.test(smoke));
+check('live verifier checks every table the migration touches', /const REQUIRED = \{/.test(live) && /ทุกตารางที่ migration 82 อ้างถึงถูกตรวจ/.test(live));
+check('live verifier strips SQL comments before extracting tables', /startsWith\('--'\)/.test(live));
+check('live verifier proves the RPC rejects unauthenticated callers', /rpcExists/.test(live) && /Unauthorized/.test(live));
+check('live verifier can require the applied state', /requireApplied/.test(live) && /--require-applied/.test(live));
+check('live verifier verifies the new FKs after apply', /Foreign Key to/.test(live));
+
 // --- packaging ---------------------------------------------------------------
 check('npm script verify:damaged-repair is registered', pkg.scripts['verify:damaged-repair'] === 'node scripts/verify-damaged-repair-resolution.mjs');
+check('npm script verify:damaged-repair-live is registered', pkg.scripts['verify:damaged-repair-live'] === 'node scripts/verify-damaged-repair-live-schema.mjs');
 
 // --- report ------------------------------------------------------------------
 console.log('==================================================================');

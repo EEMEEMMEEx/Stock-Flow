@@ -11,8 +11,9 @@ dotenv.config();
 // (docs/partial-damage-component-repair-plan.md §6.1)
 // =============================================================================
 // วิธีใช้:
-//   node scripts/apply-migration-82.mjs --dry-run   # รันใน transaction แล้ว ROLLBACK (ไม่เปลี่ยน DB)
-//   node scripts/apply-migration-82.mjs --yes       # apply จริงกับ production
+//   node scripts/apply-migration-82.mjs --dry-run     # รัน DDL ใน transaction แล้ว ROLLBACK (ไม่เปลี่ยน DB)
+//   node scripts/apply-migration-82.mjs --yes         # apply จริงกับ production
+//   node scripts/apply-migration-82.mjs --self-test   # รัน smoke test ของ RPC (supabase/tests/*.smoke.sql) แล้ว ROLLBACK
 //
 // ช่องทางเชื่อมต่อ (เลือกอัตโนมัติตามลำดับ):
 //   1) SUPABASE_DB_URL             — connection string เต็ม (แนะนำ)
@@ -24,12 +25,14 @@ dotenv.config();
 const args = new Set(process.argv.slice(2));
 const isDryRun = args.has('--dry-run');
 const isConfirmed = args.has('--yes');
+const isSelfTest = args.has('--self-test');
 
 const projectRef = process.env.VITE_SUPABASE_URL
   ? new URL(process.env.VITE_SUPABASE_URL).hostname.split('.')[0]
   : 'vrnutseacyejnzwcfamv';
 
 const migrationFile = path.resolve('supabase/migrations/82_damaged_return_repair_resolution.sql');
+const selfTestFile = path.resolve('supabase/tests/82_damaged_repair_resolution.smoke.sql');
 const dryRunFile = path.resolve('supabase/.temp/82_dry_run.sql');
 
 function resolveDbUrl() {
@@ -67,11 +70,11 @@ function buildDryRunScript() {
   return dryRunFile;
 }
 
-const fileToRun = isDryRun ? buildDryRunScript() : migrationFile;
+const fileToRun = isSelfTest ? selfTestFile : (isDryRun ? buildDryRunScript() : migrationFile);
 console.log('🚀 Migration 82 (Damaged Return Repair Resolution) — project ' + projectRef);
-console.log('📁 File: ' + fileToRun + (isDryRun ? '  [DRY RUN: จบด้วย ROLLBACK]' : ''));
+console.log('📁 File: ' + fileToRun + (isSelfTest ? '  [SELF TEST: จบด้วย ROLLBACK]' : isDryRun ? '  [DRY RUN: จบด้วย ROLLBACK]' : ''));
 
-if (!isDryRun && !isConfirmed) {
+if (!isSelfTest && !isDryRun && !isConfirmed) {
   console.error('⛔ ยกเลิก: ต้องรันด้วย --yes เพื่อยืนยัน apply กับ production (หรือใช้ --dry-run เพื่อทดสอบแบบไม่แก้ข้อมูล)');
   process.exit(2);
 }
@@ -90,7 +93,11 @@ let applied = false;
 try {
   const result = execSync(queryCommand, { encoding: 'utf8', stdio: 'pipe' });
   applied = true;
-  console.log(isDryRun ? '✅ Dry run ผ่าน (rollback แล้ว ไม่มีข้อมูลถูกแก้)' : '✅ Migration 82 applied สำเร็จ:');
+  console.log(isSelfTest
+    ? '✅ Smoke test ผ่าน (rollback แล้ว ไม่มีข้อมูลถูกแก้)'
+    : isDryRun
+      ? '✅ Dry run ผ่าน (rollback แล้ว ไม่มีข้อมูลถูกแก้)'
+      : '✅ Migration 82 applied สำเร็จ:');
   console.log(result);
 } catch (err) {
   console.error('⚠️ Migration execution failed:');
@@ -102,7 +109,7 @@ try {
 // Post-apply verification ผ่าน PostgREST/service role
 // (ข้ามอัตโนมัติเมื่อ dry-run เพราะ schema ถูก rollback กลับไปแล้ว)
 // ---------------------------------------------------------------------------
-if (isDryRun || !applied) {
+if (isDryRun || isSelfTest || !applied) {
   process.exit(process.exitCode || 0);
 }
 

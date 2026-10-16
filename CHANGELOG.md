@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-10-16 17:15] - v1.22.1
+
+- **Files Modified:** `supabase/tests/82_damaged_repair_resolution.smoke.sql` (ใหม่), `scripts/verify-damaged-repair-live-schema.mjs` (ใหม่), `scripts/apply-migration-82.mjs`, `scripts/verify-damaged-repair-resolution.mjs`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **เครื่องมือ apply + ทดสอบ migration 82 ให้จบในคำสั่งเดียว (ไม่แตะ runtime ของแอป):**
+    - `supabase/tests/82_damaged_repair_resolution.smoke.sql` — smoke test แบบ transactional (`BEGIN … ROLLBACK` ไม่แก้ข้อมูลจริง) จำลองผู้เรียกเป็น SUPER ผ่าน `set_config('request.jwt.claims')` แล้วตรวจ §8.1 ครบ: `stock_balance` +N, ledger `stock_in`/`repair_restored`, เอกสารรับเข้าที่ผูก return log, การตัดสต็อกอะไหล่ย่อย `stock_out`/`repair_spare_part`, การกันกดซ้ำ (Idempotent) และกรณีแทงจำหน่ายที่ต้องไม่กระทบสต็อก
+    - `scripts/apply-migration-82.mjs --self-test` — รัน smoke test ข้างต้นผ่าน `supabase db query --file` (จบด้วย ROLLBACK เสมอ)
+    - `scripts/verify-damaged-repair-live-schema.mjs` + `npm run verify:damaged-repair-live` — preflight/post-apply กับฐานข้อมูลจริงผ่าน PostgREST: ตรวจว่าทุกตาราง/คอลัมน์ที่ migration 82 อ้างถึงมีอยู่จริง (กัน SQL drift), permissions `checkouts.return`/`stock_in.create` มีจริง, ledger เดิมใช้ `stock_in`/`stock_out` ได้, พบใบยืมกรณีศึกษา และตรวจ FK ของคอลัมน์ใหม่หลัง apply (มี `--require-applied` สำหรับใช้เป็น gate หลัง deploy)
+  - **ผลรันจริง (ก่อน apply):** `verify:damaged-repair-live` 35/35 PASS — dependency ครบทุกตัว, ยังไม่พบคอลัมน์/RPC ของ migration 82 (ตรงกับสถานะที่ยังไม่ apply) และ `--require-applied` ตอบ exit 1 ตามคาด
+  - **Regression guard:** `verify:damaged-repair` ขยายเป็น 76 invariants — mutation-tested (เปลี่ยน `ROLLBACK` เป็น `COMMIT` ใน smoke test = FAIL)
+  - ปรับ version เป็น `v1.22.1` (PATCH)
+
 ## [2026-10-16 17:08] - v1.22.0
 
 - **Files Modified:** `supabase/migrations/82_damaged_return_repair_resolution.sql` (ใหม่), `scripts/apply-migration-82.mjs` (ใหม่), `scripts/verify-damaged-repair-resolution.mjs` (ใหม่), `src/components/checkouts/RepairResolutionModal.jsx` (ใหม่), `src/components/checkouts/CheckoutDetailModal.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `package.json`, `package-lock.json`, `CHANGELOG.md`
