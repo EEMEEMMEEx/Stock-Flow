@@ -163,7 +163,7 @@ check('sandbox verifier asserts stock +1 and spare part -1', /stock_balance à¸‚à
 check('sandbox verifier covers all three resolutions', /restored_to_stock/.test(sqlScript) && /parts_harvested/.test(sqlScript) && /scrapped/.test(sqlScript));
 check('sandbox verifier skips gracefully without the optional dependency', /\[SKIP\]/.test(sqlScript) && /process\.exit\(2\)/.test(sqlScript));
 check('sandbox fixture mirrors the Supabase roles and auth schema', /CREATE ROLE anon NOLOGIN/.test(fixture) && /CREATE SCHEMA IF NOT EXISTS auth/.test(fixture));
-check('sandbox fixture reuses the production stock_balance definition', /CREATE OR REPLACE VIEW public\.stock_balance/.test(fixture) && /checkout_out/.test(fixture));
+check('sandbox fixture reuses the production stock_balance definition', /CREATE OR REPLACE VIEW public\.stock_balance/.test(fixture) && /'stock_out', 'checkout_out', 'transfer_out', 'OUT', 'CHECKOUT'/.test(fixture) && /'return_in', 'RETURN'/.test(fixture));
 check('npm script verify:damaged-repair-sql is registered', pkg.scripts['verify:damaged-repair-sql'] === 'node scripts/verify-damaged-repair-sql-sandbox.mjs');
 
 // --- packaging ---------------------------------------------------------------

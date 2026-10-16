@@ -129,7 +129,9 @@ CREATE TABLE public.scrap_disposal_items (
   created_at timestamptz DEFAULT now()
 );
 
--- นิยามเดียวกับ production (archive/46_material_checkout_and_return_system)
+-- นิยาม view stock_balance: PostgREST ไม่เปิดเผย DDL ของ view จึงพิสูจน์พฤติกรรมจากข้อมูลจริง
+-- (ตรวจครบทั้ง 146 แถวของ view บน production: สูตรนี้ตรง 146/146 ขณะที่สูตร legacy ตรงเพียง 141/146)
+-- สรุป: out = stock_out + checkout_out + transfer_out + OUT + CHECKOUT, และ return_in/RETURN ถือเป็นรายการหักลบ
 CREATE OR REPLACE VIEW public.stock_balance AS
 SELECT
   sio.project_id,
@@ -140,16 +142,16 @@ SELECT
   COALESCE(SUM(sii.quantity), 0) AS total_in,
   COALESCE((
     SELECT SUM(CASE
-        WHEN st.transaction_type IN ('stock_out', 'checkout_out', 'transfer_out') THEN st.quantity
-        WHEN st.transaction_type IN ('return_in') THEN -st.quantity
+        WHEN st.transaction_type IN ('stock_out', 'checkout_out', 'transfer_out', 'OUT', 'CHECKOUT') THEN st.quantity
+        WHEN st.transaction_type IN ('return_in', 'RETURN') THEN -st.quantity
         ELSE 0 END)
     FROM public.stock_transactions st
     WHERE st.project_id = sio.project_id AND st.item_id = sii.item_id
   ), 0) AS total_out,
   COALESCE(SUM(sii.quantity), 0) - COALESCE((
     SELECT SUM(CASE
-        WHEN st.transaction_type IN ('stock_out', 'checkout_out', 'transfer_out') THEN st.quantity
-        WHEN st.transaction_type IN ('return_in') THEN -st.quantity
+        WHEN st.transaction_type IN ('stock_out', 'checkout_out', 'transfer_out', 'OUT', 'CHECKOUT') THEN st.quantity
+        WHEN st.transaction_type IN ('return_in', 'RETURN') THEN -st.quantity
         ELSE 0 END)
     FROM public.stock_transactions st
     WHERE st.project_id = sio.project_id AND st.item_id = sii.item_id

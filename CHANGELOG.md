@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-10-16 17:30] - v1.22.4
+
+- **Files Modified:** `supabase/tests/fixtures/mock_supabase_schema.sql`, `scripts/verify-damaged-repair-resolution.mjs`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **แก้ fixture ของ sandbox ให้ตรงพฤติกรรม production จริง:** พบว่า view `stock_balance` บน production นับ `OUT`/`CHECKOUT` เป็นรายการตัดออก และ `RETURN` เป็นรายการหักลบด้วย (ไม่ใช่แค่ `stock_out`/`checkout_out`/`transfer_out`/`return_in` ตาม archive/46) — พิสูจน์จากข้อมูลจริงครบทั้ง 146 แถวของ view: สูตรที่ใช้ใน fixture ตรง 146/146 ขณะที่สูตร legacy ตรง 141/146 (PostgREST ไม่เปิดเผย DDL ของ view จึงพิสูจน์เชิงพฤติกรรม)
+  - ยืนยันว่า ledger ของ RPC (`stock_in` + `stock_out`) ให้ผลถูกต้องภายใต้นิยามจริงนี้ — sandbox test ยังผ่าน 19/19 หลังปรับ fixture
+  - **Regression guard:** เพิ่มการตรวจว่านิยาม view ใน fixture ต้องจัดการ `OUT`/`CHECKOUT`/`RETURN`
+  - ปรับ version เป็น `v1.22.4` (PATCH)
+
 ## [2026-10-16 17:28] - v1.22.3
 
 - **Files Modified:** `scripts/verify-damaged-repair-sql-sandbox.mjs` (ใหม่), `supabase/tests/fixtures/mock_supabase_schema.sql` (ใหม่), `scripts/verify-damaged-repair-resolution.mjs`, `package.json`, `package-lock.json`, `CHANGELOG.md`
