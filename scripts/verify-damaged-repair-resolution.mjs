@@ -153,6 +153,8 @@ check('UI verifier scopes the cancel click inside the repair dialog', /const dlg
 check('UI verifier forces the Thai locale for deterministic assertions', /stockflow\.app\.lang/.test(ui));
 check('UI verifier tolerates the expected 404 before apply', /status of 404/.test(ui));
 check('UI verifier captures screenshots as artifacts', /Page\.captureScreenshot/.test(ui) && /test-results\/damaged-repair-ui/.test(ui));
+check('UI verifier asserts responsive layout without horizontal overflow', /03-responsive-/.test(ui) && /scrollWidth/.test(ui) && /1024/.test(ui) && /768/.test(ui));
+check('UI verifier asserts the submit button stays reachable at every width', /ปุ่มยืนยันซ่อมเสร็จเข้าถึงได้ที่/.test(ui) && /scrollTop = scroller\.scrollHeight/.test(ui));
 
 // --- Postgres sandbox verifier (PGlite) -------------------------------------
 const sqlScript = read(SQL_SCRIPT);

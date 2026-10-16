@@ -1,5 +1,16 @@
 # Changelog
 
+## [2026-10-16 17:36] - v1.22.7
+
+- **Files Modified:** `scripts/verify-damaged-repair-ui.mjs`, `scripts/verify-damaged-repair-resolution.mjs`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **ตรวจ Responsive ของโมดอลบันทึกผลการซ่อมด้วยเบราว์เซอร์จริง (ตาม DoD ของ repo):** เพิ่มการวัดค่าจริงที่ 1440 / 1024 / 768 / 375 px — ผลรัน **27/27 PASS**
+    - ไม่มี horizontal overflow ทุกความกว้าง (`document.documentElement.scrollWidth` และ `body.scrollWidth` เท่ากับ viewport, กรอบโมดอลอยู่ใน viewport: 1440→384–1056, 1024→176–848, 768→48–720, 375→0–375)
+    - ปุ่ม "ยืนยันซ่อมเสร็จ / คืนคลัง (+1)" เข้าถึงได้ทุกความกว้าง (สูง 36px, `cursor-pointer`, อยู่ใน viewport หลังเลื่อนเนื้อหาในกล่อง scroll) และเนื้อหาโมดอลเลื่อนได้จริง
+    - เก็บภาพหลักฐาน `test-results/damaged-repair-ui/03-responsive-{1440,1024,768,375}.png` + โหมดมืด 375px
+  - **Regression guard:** `verify:damaged-repair` ขยายเป็น 101 invariants (ตรวจว่ามีการทดสอบ responsive และการเข้าถึงปุ่มยืนยัน)
+  - ปรับ version เป็น `v1.22.7` (PATCH)
+
 ## [2026-10-16 17:34] - v1.22.6
 
 - **Files Modified:** `scripts/verify-damaged-repair-sql-sandbox.mjs`, `scripts/verify-damaged-repair-resolution.mjs`, `package.json`, `package-lock.json`, `CHANGELOG.md`

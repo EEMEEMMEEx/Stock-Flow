@@ -364,11 +364,43 @@ async function main() {
     await evaluate("(() => { const btn = Array.from(document.querySelectorAll('button')).find((el) => /ซ่อมเสร็จ \\/ คืนเข้าคลัง/.test(el.textContent || '')); btn.click(); return true; })()");
     await sleep(500);
 
-    await setViewport(375, 900);
-    await sleep(700);
-    await shot('03-repair-modal-375.png');
+    // ------------------------------------------- responsive / overflow guard
+    const modalMetrics = async () => evaluate("(() => {" +
+      "const dlg = Array.from(document.querySelectorAll('[role=dialog]')).find((el) => /บันทึกผลการซ่อม/.test(el.innerText || ''));" +
+      "if (!dlg) return null;" +
+      "const r = dlg.getBoundingClientRect();" +
+      "const tag = document.documentElement;" +
+      "return { left: Math.round(r.left), right: Math.round(r.right), width: Math.round(r.width)," +
+      " vw: window.innerWidth, pageScrollWidth: tag.scrollWidth, bodyScrollWidth: document.body.scrollWidth }; })()");
+
+    const submitReach = async () => evaluate("(() => {" +
+      "const dlg = Array.from(document.querySelectorAll('[role=dialog]')).find((el) => /บันทึกผลการซ่อม/.test(el.innerText || ''));" +
+      "if (!dlg) return null;" +
+      "const scroller = dlg.querySelector('.overflow-y-auto');" +
+      "if (scroller) scroller.scrollTop = scroller.scrollHeight;" +
+      "const btn = dlg.querySelector('button[type=submit]');" +
+      "if (!btn) return null;" +
+      "const r = btn.getBoundingClientRect();" +
+      "return { bottom: Math.round(r.bottom), height: Math.round(r.height), width: Math.round(r.width)," +
+      " vh: window.innerHeight, cursor: getComputedStyle(btn).cursor, scrollableBody: !!scroller }; })()");
+
+    for (const [width, height, label] of [[1440, 900, '1440'], [1024, 800, '1024'], [768, 900, '768'], [375, 900, '375']]) {
+      await setViewport(width, height);
+      await sleep(700);
+      const metrics = await modalMetrics();
+      record('ไม่ล้นแนวนอนที่ ' + label + 'px (โมดอลอยู่ในกรอบ viewport)',
+        Boolean(metrics) && metrics.left >= 0 && metrics.right <= metrics.vw + 1 &&
+        metrics.pageScrollWidth <= metrics.vw + 1 && metrics.bodyScrollWidth <= metrics.vw + 1,
+        JSON.stringify(metrics));
+      const reach = await submitReach();
+      record('ปุ่มยืนยันซ่อมเสร็จเข้าถึงได้ที่ ' + label + 'px',
+        Boolean(reach) && reach.bottom <= reach.vh + 1 && reach.height >= 36 && reach.cursor === 'pointer' && reach.scrollableBody,
+        JSON.stringify(reach));
+      await shot('03-responsive-' + label + '.png');
+    }
+
     await evaluate("document.documentElement.classList.add('dark'); true");
-    await sleep(500);
+    await sleep(600);
     await shot('04-repair-modal-375-dark.png');
     await evaluate("document.documentElement.classList.remove('dark'); true");
     await setViewport(1440, 900);
