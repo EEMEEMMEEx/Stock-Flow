@@ -1,5 +1,20 @@
 # Changelog
 
+## [2026-10-16 17:08] - v1.22.0
+
+- **Files Modified:** `supabase/migrations/82_damaged_return_repair_resolution.sql` (ใหม่), `scripts/apply-migration-82.mjs` (ใหม่), `scripts/verify-damaged-repair-resolution.mjs` (ใหม่), `src/components/checkouts/RepairResolutionModal.jsx` (ใหม่), `src/components/checkouts/CheckoutDetailModal.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **ระบบซ่อมเปลี่ยนอะไหล่ย่อยและคืนอุปกรณ์ชำรุดบางส่วนเข้าคลัง (ตาม `docs/partial-damage-component-repair-plan.md` §5/§6):**
+    - **Database (migration 82):** เพิ่มคอลัมน์ติดตามผลการซ่อมใน `checkout_return_logs` — `repair_resolution_status` (`unresolved` | `restored_to_stock` | `parts_harvested` | `scrapped`), `repair_notes`, `repair_resolved_at`, `repair_resolved_by`, `restored_stock_in_order_id`, `repair_scrap_disposal_id`, `spare_part_item_id`, `spare_part_quantity` + CHECK constraints (VALIDATE แล้ว) และ partial index สำหรับรายการค้างจัดการ
+    - **RPC ใหม่ `public.resolve_damaged_return_item(p_payload JSONB)`** (`SECURITY DEFINER`, `SET search_path = public, auth, pg_temp`): ล็อกแถว `checkout_return_logs` ด้วย `FOR UPDATE` + ปฏิเสธการกดซ้ำ (`repair_resolution_status <> 'unresolved'`) และปฏิเสธรายการที่งานเคลม CAIM รับเข้าคลังไปแล้ว — กรณี `restored_to_stock` สร้าง `stock_in_orders`/`stock_in_items` + `stock_transactions` (`stock_in`, `reference_type = 'repair_restored'`) ทำให้ `stock_balance` +N และตัดสต็อกอะไหล่ย่อยด้วย `stock_out` (`repair_spare_part`) ใน Transaction เดียวกัน (ตรวจยอดจาก `stock_balance` ก่อนตัด, ล็อก `public.items` เรียงตาม `item_id` เป็น mutex กัน deadlock), กรณี `parts_harvested`/`scrapped` บันทึกลง `scrap_disposal_items` พร้อมรับเข้าชิ้นส่วนที่ยังดีเป็นอะไหล่สำรองได้ (ถ้าระบุ)
+    - **Backfill:** รายการ `damaged`/`needs_repair` ที่ `caim_inbound_processed_at IS NOT NULL` ถูกตั้งสถานะเป็น `restored_to_stock`/`scrapped` อัตโนมัติ เพื่อกันการปั๊มสต็อกซ้ำเป็นสองเท่า
+    - **Frontend:** `RepairResolutionModal.jsx` (ใหม่) ให้เลือก 3 แนวทาง (ซ่อมเสร็จ/คืนคลัง, แยกอะไหล่, แทงจำหน่าย) พร้อมคลังปลายทาง, จำนวน, รายละเอียดการซ่อม (บังคับ), S/N, เลขที่ PO, toggle ตัดสต็อกอะไหล่ย่อย (แสดงเฉพาะอะไหล่ที่มีคงเหลือจริงในคลังนั้น) และ `CheckoutDetailModal.jsx` แสดงปุ่ม "บันทึกซ่อมเสร็จ / คืนคลัง" กับปุ่ม "ส่งเคลม CAIM" บนรายการคืนสภาพชำรุด/ส่งซ่อมที่ยังไม่จัดการ (สิทธิ์ `checkouts.return` หรือ `stock_in.create`) พร้อม Badge สถานะผลการซ่อมและบันทึกการซ่อม
+    - **CAIM:** ปุ่มส่งเคลมของรายการ `damaged`/`needs_repair` ใช้ S/N จาก `checkout_items.serial_number` แทน `replaced_serial_number` (ซึ่งใช้เฉพาะกรณี `consumed`) และปิดปุ่มเมื่อไม่มี S/N
+  - **i18n:** เพิ่มคีย์แปลผลการซ่อม 62 คีย์ (th/en) — parity 100% (1,939 คีย์)
+  - **Regression guard:** `npm run verify:damaged-repair` ตรวจ 60 invariants ของ migration/RPC/UI/i18n — mutation-tested (ถอด `FOR UPDATE` = FAIL, เปลี่ยน `max` ของจำนวน = FAIL)
+  - **Migration 82 ยังไม่ถูก apply กับ production** (เครื่องนี้ไม่มี `SUPABASE_DB_URL`/`SUPABASE_DB_PASSWORD` และ `supabase db query --linked` ได้ HTTP 403) — ใช้ `node scripts/apply-migration-82.mjs --dry-run` เมื่อมี DB URL หรือวาง SQL ใน Supabase Dashboard > SQL Editor
+  - ปรับ version เป็น `v1.22.0` (MINOR)
+
 ## [2026-10-15 15:21] - v1.21.3
 
 - **Files Modified:** `src/components/withdrawals/WithdrawalDetailModal.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `scripts/verify-withdrawal-detail-modal.mjs` (ใหม่), `package.json`, `package-lock.json`, `CHANGELOG.md`

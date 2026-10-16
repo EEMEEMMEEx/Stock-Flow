@@ -5,13 +5,15 @@ import {
   FileText, Clock, 
   User, Building2, Calendar, Phone, Layers, RotateCcw,
   CalendarClock, ArrowRight, Infinity as InfinityIcon, XCircle, AlertTriangle, FileSpreadsheet,
-  ExternalLink, Ban
+  ExternalLink, Ban, Wrench, PackageCheck, Recycle, Trash2
 } from 'lucide-react';
 import { pdf } from '@react-pdf/renderer';
 import { MaterialCheckoutPDF, MaterialReturnPDF } from '@/lib/checkout-pdf-templates';
 import { MaterialDispatchPDF } from '@/lib/pdf-templates';
 import { CHECKOUT_DISPATCH_STATUSES, toSafeFileToken } from '@/lib/utils';
 import { syncReturnLogToCaim } from '@/lib/caimSync';
+import RepairResolutionModal from '@/components/checkouts/RepairResolutionModal';
+import { useAuth } from '@/contexts/AuthContext';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 import { supabase } from '@/lib/supabase';
@@ -29,6 +31,97 @@ const RETURN_CONDITION_LABEL_KEYS = {
   needs_repair: 'checkouts.damagedCondition',
   lost: 'checkouts.lost',
   consumed: 'checkouts.consumedShort',
+};
+
+/**
+ * สถานะผลการซ่อมของรายการรับคืนสภาพชำรุด (migration 82) — `unresolved` = ยังไม่จัดการ
+ */
+const REPAIR_STATUS_META = {
+  restored_to_stock: {
+    Icon: PackageCheck,
+    labelKey: 'checkouts.repairStatusRestored',
+    className: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30',
+  },
+  parts_harvested: {
+    Icon: Recycle,
+    labelKey: 'checkouts.repairStatusHarvested',
+    className: 'bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/30',
+  },
+  scrapped: {
+    Icon: Trash2,
+    labelKey: 'checkouts.repairStatusScrapped',
+    className: 'bg-slate-500/10 text-slate-700 dark:text-slate-300 border-slate-500/30',
+  },
+};
+
+/**
+ * แถวจัดการต่อยอดของรายการที่รับคืนสภาพ 'ชำรุดเสียหาย' / 'ส่งซ่อม'
+ * - ยังไม่จัดการ: ปุ่ม "บันทึกซ่อมเสร็จ / คืนคลัง" และปุ่ม "ส่งเคลม CAIM"
+ * - จัดการแล้ว: Badge สถานะ + รายละเอียดการซ่อม/อะไหล่ที่เปลี่ยน
+ */
+const RepairResolutionRow = ({ log, canResolveRepair, syncingCaimId, onOpenRepair, onSyncCaim }) => {
+  const { t } = useTranslation();
+
+  if (log.item_condition !== 'damaged' && log.item_condition !== 'needs_repair') return null;
+
+  const status = log.repair_resolution_status || 'unresolved';
+  const meta = REPAIR_STATUS_META[status];
+
+  if (meta) {
+    const { Icon } = meta;
+    return (
+      <div className="mt-1.5 flex items-center gap-1.5 flex-wrap">
+        <span className={'inline-flex items-center gap-1 text-[10px] font-bold border px-1.5 py-0.5 rounded-md ' + meta.className}>
+          <Icon className="w-2.5 h-2.5" />
+          <span>{t(meta.labelKey)}</span>
+        </span>
+        {log.repair_notes && (
+          <span className="text-[10px] text-muted-foreground line-clamp-1 max-w-72" title={log.repair_notes}>
+            {t('checkouts.repairNotesTag')}: {log.repair_notes}
+          </span>
+        )}
+        {Number(log.spare_part_quantity) > 0 && (
+          <span className="text-[10px] font-semibold text-indigo-600 dark:text-indigo-400">
+            {t('checkouts.repairSpareTag')} -{log.spare_part_quantity}
+          </span>
+        )}
+      </div>
+    );
+  }
+
+  const serialForCaim = log.replaced_serial_number || log.checkout_items?.serial_number;
+
+  return (
+    <div className="mt-1.5 flex items-center gap-1.5 flex-wrap">
+      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-700 dark:text-amber-300 bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 rounded-md">
+        <Wrench className="w-2.5 h-2.5" />
+        <span>{t('checkouts.repairPendingTag')}</span>
+      </span>
+      {canResolveRepair && (
+        <button
+          type="button"
+          onClick={() => onOpenRepair(log)}
+          className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 px-1.5 py-0.5 rounded-md transition-colors cursor-pointer"
+          title={t('checkouts.repairActionTitle')}
+        >
+          <Wrench className="w-2.5 h-2.5" />
+          <span>{t('checkouts.repairAction')}</span>
+        </button>
+      )}
+      {!log.caim_ticket_id && (
+        <button
+          type="button"
+          disabled={syncingCaimId === log.id || !serialForCaim}
+          onClick={() => onSyncCaim(log)}
+          className="inline-flex items-center gap-1 text-[10px] font-semibold text-blue-600 dark:text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 px-1.5 py-0.5 rounded-md transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          title={serialForCaim ? t('checkouts.syncToCaimTitle') : t('checkouts.noSerialForCaim')}
+        >
+          <span>{syncingCaimId === log.id ? t('common.pleaseWait') : t('checkouts.syncToCaim')}</span>
+          <ExternalLink className="w-2.5 h-2.5" />
+        </button>
+      )}
+    </div>
+  );
 };
 
 const logProfileFetchError = (scope, error) => {
@@ -54,6 +147,9 @@ const CheckoutDetailModal = ({
   onOpenCancelModal
 }) => {
   const { t } = useTranslation();
+  const { can } = useAuth();
+  // บันทึกผลการซ่อมได้เมื่อมีสิทธิ์รับคืนพัสดุ หรือรับเข้า Stock (super admin ถูก bypass ใน can() แล้ว)
+  const canResolveRepair = can('checkouts.return') || can('stock_in.create');
   const [returnLogs, setReturnLogs] = useState([]);
   const [extensionLogs, setExtensionLogs] = useState([]);
   const [generatingPdf, setGeneratingPdf] = useState(false);
@@ -61,6 +157,8 @@ const CheckoutDetailModal = ({
   const [approverProfile, setApproverProfile] = useState(null);
   const [profileLoadError, setProfileLoadError] = useState('');
   const [syncingCaimId, setSyncingCaimId] = useState(null);
+  const [repairLog, setRepairLog] = useState(null);
+  const [isRepairModalOpen, setIsRepairModalOpen] = useState(false);
 
   useEffect(() => {
     if (order?.id && isOpen) {
@@ -198,7 +296,10 @@ const CheckoutDetailModal = ({
   };
 
   const handleManualCaimSync = async (log) => {
-    if (!log?.id || !log?.replaced_serial_number) return;
+    // รายการ 'ชำรุด/ส่งซ่อม' ไม่มี replaced_serial_number (ฟิลด์นั้นใช้กับ 'consumed')
+    // จึง fallback ไปใช้ S/N ของอุปกรณ์ที่ยืมไปจาก checkout_items
+    const serialNumber = log?.replaced_serial_number || log?.checkout_items?.serial_number;
+    if (!log?.id || !serialNumber) return;
     try {
       setSyncingCaimId(log.id);
       const syncRes = await syncReturnLogToCaim({
@@ -206,7 +307,7 @@ const CheckoutDetailModal = ({
         orderNumber: order?.order_number,
         borrowerName: order?.borrower_name,
         projectName: log.projects?.name || order?.projects?.name,
-        serialNumber: log.replaced_serial_number,
+        serialNumber,
         itemName: log.checkout_items?.items?.name,
         problemDesc: log.damage_notes,
         reporterName: staffProfile?.full_name,
@@ -307,6 +408,7 @@ const CheckoutDetailModal = ({
   };
 
   return (
+    <>
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-175 rounded-xl bg-card p-6 border border-border shadow-xl">
         <DialogHeader className="space-y-2 border-b border-border/40 pb-3">
@@ -582,6 +684,16 @@ const CheckoutDetailModal = ({
                       <div className="text-[10px] text-muted-foreground mt-0.5">
                         {t('items.location')}: {log.projects?.name} • {t('history.performedBy')}: {log.profiles?.full_name || 'Staff'}
                       </div>
+                      <RepairResolutionRow
+                        log={log}
+                        canResolveRepair={canResolveRepair}
+                        syncingCaimId={syncingCaimId}
+                        onOpenRepair={(target) => {
+                          setRepairLog(target);
+                          setIsRepairModalOpen(true);
+                        }}
+                        onSyncCaim={handleManualCaimSync}
+                      />
                     </div>
 
                     <div className="text-[11px] text-muted-foreground font-mono">
@@ -755,6 +867,21 @@ const CheckoutDetailModal = ({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    {/* ซ่อมเสร็จ / แยกอะไหล่ / แทงจำหน่าย (migration 82) */}
+    <RepairResolutionModal
+      isOpen={isRepairModalOpen}
+      onClose={() => {
+        setIsRepairModalOpen(false);
+        setRepairLog(null);
+      }}
+      returnLog={repairLog}
+      order={order}
+      onResolved={() => {
+        if (order?.id) fetchReturnLogs(order.id);
+      }}
+    />
+    </>
   );
 };
 

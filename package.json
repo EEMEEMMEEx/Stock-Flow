@@ -1,7 +1,7 @@
 {
   "name": "stock-flow-app",
   "private": true,
-  "version": "1.21.3",
+  "version": "1.22.0",
   "type": "module",
   "scripts": {
     "dev": "vite --host",
@@ -19,6 +19,7 @@
     "verify:multi-warehouse": "node scripts/verify-multi-warehouse-migration.mjs",
     "verify:multi-warehouse-applied": "node scripts/verify-multi-warehouse-applied.mjs",
     "verify:withdrawal-detail-modal": "node scripts/verify-withdrawal-detail-modal.mjs",
+    "verify:damaged-repair": "node scripts/verify-damaged-repair-resolution.mjs",
     "preview": "vite preview",
     "test:email": "node --test src/lib/emailRenderer.test.js src/lib/nodemailerTransport.test.js src/lib/emailSettings.test.js",
     "test:withdrawal-stock": "node --test src/lib/withdrawalStock.test.js",
