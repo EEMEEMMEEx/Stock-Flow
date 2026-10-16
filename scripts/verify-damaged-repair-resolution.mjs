@@ -17,6 +17,7 @@ const PKG = new URL('../package.json', import.meta.url);
 const APPLY_SCRIPT = new URL('../scripts/apply-migration-82.mjs', import.meta.url);
 const LIVE_SCRIPT = new URL('../scripts/verify-damaged-repair-live-schema.mjs', import.meta.url);
 const SMOKE_TEST = new URL('../supabase/tests/82_damaged_repair_resolution.smoke.sql', import.meta.url);
+const UI_SCRIPT = new URL('../scripts/verify-damaged-repair-ui.mjs', import.meta.url);
 
 let failures = 0;
 const rows = [];
@@ -141,9 +142,20 @@ check('live verifier proves the RPC rejects unauthenticated callers', /rpcExists
 check('live verifier can require the applied state', /requireApplied/.test(live) && /--require-applied/.test(live));
 check('live verifier verifies the new FKs after apply', /Foreign Key to/.test(live));
 
+// --- browser (CDP) verifier --------------------------------------------------
+const ui = read(UI_SCRIPT);
+check('UI verifier drives the installed browser over CDP (no new dependency)', /DevTools Protocol/.test(ui) && /remote-debugging-port/.test(ui));
+check('UI verifier never submits once the RPC exists', /rpcExists === true/.test(ui) && /ข้ามการกด submit/.test(ui));
+check('UI verifier asserts no write happens on validation/cancel', /rpcCalls\.length === 0/.test(ui));
+check('UI verifier scopes the cancel click inside the repair dialog', /const dlg = Array\.from\(document\.querySelectorAll\('\[role=dialog\]'\)\)/.test(ui));
+check('UI verifier forces the Thai locale for deterministic assertions', /stockflow\.app\.lang/.test(ui));
+check('UI verifier tolerates the expected 404 before apply', /status of 404/.test(ui));
+check('UI verifier captures screenshots as artifacts', /Page\.captureScreenshot/.test(ui) && /test-results\/damaged-repair-ui/.test(ui));
+
 // --- packaging ---------------------------------------------------------------
 check('npm script verify:damaged-repair is registered', pkg.scripts['verify:damaged-repair'] === 'node scripts/verify-damaged-repair-resolution.mjs');
 check('npm script verify:damaged-repair-live is registered', pkg.scripts['verify:damaged-repair-live'] === 'node scripts/verify-damaged-repair-live-schema.mjs');
+check('npm script verify:damaged-repair-ui is registered', pkg.scripts['verify:damaged-repair-ui'] === 'node scripts/verify-damaged-repair-ui.mjs');
 
 // --- report ------------------------------------------------------------------
 console.log('==================================================================');

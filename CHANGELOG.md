@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-10-16 17:22] - v1.22.2
+
+- **Files Modified:** `scripts/verify-damaged-repair-ui.mjs` (ใหม่), `scripts/verify-damaged-repair-resolution.mjs`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **ยืนยัน UI ของระบบซ่อมคืนสภาพด้วยเบราว์เซอร์จริง (CDP ผ่าน Chrome/Edge ที่ติดตั้งในเครื่อง — ไม่เพิ่ม dependency):** `npm run verify:damaged-repair-ui` ล็อกอินด้วยบัญชี E2E, บังคับภาษาไทย, เปิด `/checkouts?tab=history` → ค้นใบยืม `CHK-202610-3252` → เปิดโมดอลรายละเอียด → ตรวจปุ่ม "บันทึกซ่อมเสร็จ / คืนคลัง" และ "ส่งเคลม CAIM" บนรายการชำรุด 2 แถว → เปิดโมดอลบันทึกผลการซ่อมแล้วตรวจ 3 แนวทาง, คลังปลายทางถูกเลือกไว้ (6 ตัวเลือก), จำนวนถูกจำกัดที่ 1, ช่องรายละเอียดเป็นฟิลด์บังคับ, toggle ตัดอะไหล่ย่อย, โหมดแทงจำหน่ายมีวิธีจำหน่าย + คำเตือน และการปิดโมดอล/ฟอร์มที่ไม่ผ่าน validation ต้องไม่ยิง RPC
+  - **ผลรันจริง 19/19 PASS** (ก่อน apply migration): ปุ่ม/แบดจ์แสดงถูกต้อง, กด submit จริง 1 ครั้งได้ toast "ยังไม่ได้ติดตั้ง migration 82 (resolve_damaged_return_item)" และไม่มีการเขียนข้อมูล (RPC ตอบ 404) — ยืนยัน rendering, interaction, state และ graceful degradation
+  - สคริปต์อ่าน `E2E_EMAIL`/`E2E_PASSWORD` จาก `.env.local` และ**ข้ามการกด submit ทันทีถ้าตรวจพบว่า RPC ถูก apply แล้ว** (กันการเขียนสต็อกจริงระหว่างทดสอบ) · artifacts: `test-results/damaged-repair-ui/*.png` (gitignored)
+  - **Regression guard:** `verify:damaged-repair` ขยายเป็น 84 invariants
+  - ปรับ version เป็น `v1.22.2` (PATCH)
+
 ## [2026-10-16 17:15] - v1.22.1
 
 - **Files Modified:** `supabase/tests/82_damaged_repair_resolution.smoke.sql` (ใหม่), `scripts/verify-damaged-repair-live-schema.mjs` (ใหม่), `scripts/apply-migration-82.mjs`, `scripts/verify-damaged-repair-resolution.mjs`, `package.json`, `package-lock.json`, `CHANGELOG.md`

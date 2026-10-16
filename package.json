@@ -1,7 +1,7 @@
 {
   "name": "stock-flow-app",
   "private": true,
-  "version": "1.22.1",
+  "version": "1.22.2",
   "type": "module",
   "scripts": {
     "dev": "vite --host",
@@ -21,6 +21,7 @@
     "verify:withdrawal-detail-modal": "node scripts/verify-withdrawal-detail-modal.mjs",
     "verify:damaged-repair": "node scripts/verify-damaged-repair-resolution.mjs",
     "verify:damaged-repair-live": "node scripts/verify-damaged-repair-live-schema.mjs",
+    "verify:damaged-repair-ui": "node scripts/verify-damaged-repair-ui.mjs",
     "preview": "vite preview",
     "test:email": "node --test src/lib/emailRenderer.test.js src/lib/nodemailerTransport.test.js src/lib/emailSettings.test.js",
     "test:withdrawal-stock": "node --test src/lib/withdrawalStock.test.js",
