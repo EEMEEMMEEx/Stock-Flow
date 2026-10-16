@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-10-16 17:38] - v1.22.8
+
+- **Files Modified:** `supabase/migrations/scripts/82_dashboard_apply_and_selftest.sql` (ใหม่), `scripts/verify-damaged-repair-sql-sandbox.mjs`, `scripts/verify-damaged-repair-resolution.mjs`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **เพิ่มไฟล์เดียวสำหรับ apply + self-test ผ่าน Supabase Dashboard** (ทางเลือกเมื่อเครื่องที่รัน agent ไม่มี `SUPABASE_DB_URL`): `supabase/migrations/scripts/82_dashboard_apply_and_selftest.sql` ประกอบจากไฟล์ migration 82 และ smoke test แบบคัดลอกทั้งไฟล์ พร้อมคำอธิบายวิธีใช้/ผลลัพธ์ที่ต้องเห็น/ROLLBACK ในหัวไฟล์ — วางใน SQL Editor แล้วกด Run ครั้งเดียวจบ
+  - **พิสูจน์ไฟล์นี้บน Postgres จริง (sandbox) 27/27 PASS:** เพิ่มการรัน bundle ทั้งไฟล์ใน PGlite แล้วยืนยันว่า (1) รันจบไม่มี error (2) migration ถูก apply จริงหลังรัน (คอลัมน์ + ฟังก์ชันอยู่ครบ) (3) self-test ภายใน bundle rollback จริง (return log ตัวอย่างยังเป็น `unresolved`) (4) backfill ของ CAIM ยังคงอยู่ (`restored_to_stock`)
+  - **Regression guard:** ตรวจว่า bundle ตรงกับไฟล์ต้นทางทั้งสองแบบไบต์ต่อไบต์ (ถ้าแก้ไฟล์ต้นทางแล้วไม่สร้าง bundle ใหม่ จะ FAIL) — `verify:damaged-repair` ขยายเป็น 106 invariants
+  - ปรับ version เป็น `v1.22.8` (PATCH)
+
 ## [2026-10-16 17:36] - v1.22.7
 
 - **Files Modified:** `scripts/verify-damaged-repair-ui.mjs`, `scripts/verify-damaged-repair-resolution.mjs`, `package.json`, `package-lock.json`, `CHANGELOG.md`

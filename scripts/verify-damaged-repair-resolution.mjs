@@ -19,6 +19,7 @@ const LIVE_SCRIPT = new URL('../scripts/verify-damaged-repair-live-schema.mjs', 
 const SMOKE_TEST = new URL('../supabase/tests/82_damaged_repair_resolution.smoke.sql', import.meta.url);
 const UI_SCRIPT = new URL('../scripts/verify-damaged-repair-ui.mjs', import.meta.url);
 const SQL_SCRIPT = new URL('../scripts/verify-damaged-repair-sql-sandbox.mjs', import.meta.url);
+const DASHBOARD_BUNDLE = new URL('../supabase/migrations/scripts/82_dashboard_apply_and_selftest.sql', import.meta.url);
 const SQL_FIXTURE = new URL('../supabase/tests/fixtures/mock_supabase_schema.sql', import.meta.url);
 
 let failures = 0;
@@ -174,6 +175,14 @@ check('sandbox verifier proves the dry-run leaves no DDL behind', /dry-run \(ส
 check('apply script and sandbox emulation share the same COMMIT→ROLLBACK rule', /replace\('COMMIT;', 'ROLLBACK;'\)/.test(apply) && /replace\('COMMIT;', 'ROLLBACK;'\)/.test(sqlScript));
 check('sandbox fixture reuses the production stock_balance definition', /CREATE OR REPLACE VIEW public\.stock_balance/.test(fixture) && /'stock_out', 'checkout_out', 'transfer_out', 'OUT', 'CHECKOUT'/.test(fixture) && /'return_in', 'RETURN'/.test(fixture));
 check('npm script verify:damaged-repair-sql is registered', pkg.scripts['verify:damaged-repair-sql'] === 'node scripts/verify-damaged-repair-sql-sandbox.mjs');
+
+// --- Dashboard bundle (migration + self test ในไฟล์เดียว) --------------------
+const bundle = read(DASHBOARD_BUNDLE);
+check('Dashboard bundle มีคำสั่ง apply และ self-test ครบ', /ส่วนที่ 1\/2: APPLY MIGRATION 82/.test(bundle) && /ส่วนที่ 2\/2: SELF TEST/.test(bundle));
+check('Dashboard bundle ตรงกับไฟล์ migration ต้นทาง', bundle.includes(sql.trimEnd()));
+check('Dashboard bundle ตรงกับไฟล์ smoke test ต้นทาง', bundle.includes(smoke.trimEnd()));
+check('Dashboard bundle อธิบายวิธีใช้และ ROLLBACK', /SQL Editor/.test(bundle) && /ROLLBACK/.test(bundle));
+check('sandbox verifier รัน bundle จริงบน Postgres', /bundle สำหรับ Dashboard/.test(sqlScript));
 
 // --- packaging ---------------------------------------------------------------
 check('npm script verify:damaged-repair is registered', pkg.scripts['verify:damaged-repair'] === 'node scripts/verify-damaged-repair-resolution.mjs');

@@ -89,7 +89,7 @@ async function main() {
   await db.exec(SCHEMA);
   console.log('schema mirror สร้างแล้ว');
 
-  await db.exec(
+  const seedSql =
     "INSERT INTO auth.users (id, email) VALUES ('" + ACTOR + "', 'admin@stockflow.com');" +
     "INSERT INTO public.profiles (id, status, role) VALUES ('" + ACTOR + "', 'active', 'SUPER');" +
     "INSERT INTO public.projects (id, name, project_code) VALUES ('" + PROJECT + "', 'DOPA-DTRS | USO-SHF', '20317');" +
@@ -138,8 +138,8 @@ async function main() {
     "  ('" + RL6 + "', '" + ORDER + "', '" + CI6 + "', 1, 'needs_repair', '" + PROJECT + "', 'CAIM ค้างสถานะ', now() - interval '5 day', NULL, NULL, '" + CAIM_ORDER + "');" +
     "INSERT INTO public.checkout_return_logs (id, checkout_order_id, checkout_item_id, returned_quantity, item_condition, destination_project_id, damage_notes, returned_at) VALUES " +
     "  ('" + RL5 + "', '" + ORDER + "', '" + CI5 + "', 1, 'normal', '" + PROJECT + "', NULL, now() - interval '4 day')," +
-    "  ('" + RL7 + "', '" + ORDER + "', '" + CI7 + "', 1, 'needs_repair', '" + PROJECT + "', 'validation case', now() - interval '6 day');"
-  );
+    "  ('" + RL7 + "', '" + ORDER + "', '" + CI7 + "', 1, 'needs_repair', '" + PROJECT + "', 'validation case', now() - interval '6 day');";
+  await db.exec(seedSql);
 
   // 1) apply migration (ครั้งแรก)
   try {
@@ -473,6 +473,47 @@ async function main() {
     unauthError = err.message;
   }
   record('ผู้เรียกที่ไม่มี auth.uid() ถูกปฏิเสธ', /Unauthorized/.test(unauthError), unauthError.slice(0, 120));
+
+  // ไฟล์ bundle สำหรับวางใน Dashboard (migration + smoke test) ต้องรันจบในครั้งเดียว
+  const BUNDLE = path.resolve('supabase/migrations/scripts/82_dashboard_apply_and_selftest.sql');
+  if (existsSync(BUNDLE)) {
+    const bundleDb = new PGlite();
+    let bundleError = '';
+    try {
+      await bundleDb.exec(SCHEMA);
+      await bundleDb.exec(seedSql);
+      await bundleDb.exec(readFileSync(BUNDLE, 'utf8'));
+    } catch (err) {
+      bundleError = err.message;
+    }
+    let bCols = { rows: [{ n: -1 }] };
+    let bFn = { rows: [{ n: -1 }] };
+    let bRl1 = { rows: [{ repair_resolution_status: '?' }] };
+    let bRl4 = { rows: [{ repair_resolution_status: '?' }] };
+    try {
+      bCols = await bundleDb.query(
+        "SELECT COUNT(*)::int AS n FROM information_schema.columns WHERE table_schema='public' AND table_name='checkout_return_logs' AND column_name='repair_resolution_status'"
+      );
+      bFn = await bundleDb.query(
+        "SELECT COUNT(*)::int AS n FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace WHERE n.nspname='public' AND p.proname='resolve_damaged_return_item'"
+      );
+      bRl1 = await bundleDb.query('SELECT repair_resolution_status FROM public.checkout_return_logs WHERE id=$1', [RL1]);
+      bRl4 = await bundleDb.query('SELECT repair_resolution_status FROM public.checkout_return_logs WHERE id=$1', [RL4]);
+    } catch (err) {
+      if (!bundleError) bundleError = 'post-check: ' + err.message;
+    }
+    record('bundle สำหรับ Dashboard: apply migration แล้วรัน self-test จบในไฟล์เดียว',
+      !bundleError && Number(bCols.rows[0].n) === 1 && Number(bFn.rows[0].n) === 1 &&
+      bRl1.rows[0].repair_resolution_status === 'unresolved' &&
+      bRl4.rows[0].repair_resolution_status === 'restored_to_stock',
+      'error=' + bundleError.slice(0, 90) +
+        ' | migration applied=' + (Number(bCols.rows[0].n) === 1 && Number(bFn.rows[0].n) === 1) +
+        ' | self-test rolled back=' + (bRl1.rows[0].repair_resolution_status === 'unresolved') +
+        ' | backfill persisted=' + (bRl4.rows[0].repair_resolution_status === 'restored_to_stock'));
+    await bundleDb.close();
+  } else {
+    record('bundle สำหรับ Dashboard มีอยู่', false, BUNDLE);
+  }
 
   // จำลอง dry-run ของ scripts/apply-migration-82.mjs (สลับ COMMIT; ตัวสุดท้ายเป็น ROLLBACK;)
   // ต้องรันได้จริงและไม่ทิ้ง DDL ไว้ในฐานข้อมูล — ใช้กฎเดียวกับสคริปต์ apply
