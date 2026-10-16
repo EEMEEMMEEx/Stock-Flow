@@ -168,6 +168,8 @@ check('sandbox verifier covers the CAIM backfill and double-count guard', /backf
 check('sandbox verifier runs a validation matrix for unsafe payloads', /invalidCases/.test(sqlScript) && /validation ปฏิเสธ payload/.test(sqlScript));
 check('sandbox verifier sends the exact frontend payload shape (null keys)', /modalPayload/.test(sqlScript) && /spare_part_quantity: null/.test(sqlScript));
 check('sandbox verifier proves unprivileged users are denied', /ผู้ใช้ที่ active แต่ไม่มีสิทธิ์ถูกปฏิเสธ/.test(sqlScript));
+check('sandbox verifier proves the dry-run leaves no DDL behind', /dry-run \(สลับ COMMIT/.test(sqlScript) && /dryDb/.test(sqlScript));
+check('apply script and sandbox emulation share the same COMMIT→ROLLBACK rule', /replace\('COMMIT;', 'ROLLBACK;'\)/.test(apply) && /replace\('COMMIT;', 'ROLLBACK;'\)/.test(sqlScript));
 check('sandbox fixture reuses the production stock_balance definition', /CREATE OR REPLACE VIEW public\.stock_balance/.test(fixture) && /'stock_out', 'checkout_out', 'transfer_out', 'OUT', 'CHECKOUT'/.test(fixture) && /'return_in', 'RETURN'/.test(fixture));
 check('npm script verify:damaged-repair-sql is registered', pkg.scripts['verify:damaged-repair-sql'] === 'node scripts/verify-damaged-repair-sql-sandbox.mjs');
 

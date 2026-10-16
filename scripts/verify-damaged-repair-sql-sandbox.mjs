@@ -474,6 +474,36 @@ async function main() {
   }
   record('ผู้เรียกที่ไม่มี auth.uid() ถูกปฏิเสธ', /Unauthorized/.test(unauthError), unauthError.slice(0, 120));
 
+  // จำลอง dry-run ของ scripts/apply-migration-82.mjs (สลับ COMMIT; ตัวสุดท้ายเป็น ROLLBACK;)
+  // ต้องรันได้จริงและไม่ทิ้ง DDL ไว้ในฐานข้อมูล — ใช้กฎเดียวกับสคริปต์ apply
+  const dryRunLines = MIGRATION.split(/\r?\n/);
+  let dryReplaced = false;
+  for (let i = dryRunLines.length - 1; i >= 0; i -= 1) {
+    if (dryRunLines[i].trim() === 'COMMIT;') {
+      dryRunLines[i] = dryRunLines[i].replace('COMMIT;', 'ROLLBACK;');
+      dryReplaced = true;
+      break;
+    }
+  }
+  const dryDb = new PGlite();
+  let dryError = '';
+  try {
+    await dryDb.exec(SCHEMA);
+    await dryDb.exec(dryRunLines.join('\n'));
+  } catch (err) {
+    dryError = err.message;
+  }
+  const dryCols = await dryDb.query(
+    "SELECT COUNT(*)::int AS n FROM information_schema.columns WHERE table_schema='public' AND table_name='checkout_return_logs' AND column_name='repair_resolution_status'"
+  );
+  const dryFn = await dryDb.query(
+    "SELECT COUNT(*)::int AS n FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace WHERE n.nspname='public' AND p.proname='resolve_damaged_return_item'"
+  );
+  record('dry-run (สลับ COMMIT→ROLLBACK) รันได้และไม่ทิ้ง DDL ไว้จริง',
+    dryReplaced && !dryError && Number(dryCols.rows[0].n) === 0 && Number(dryFn.rows[0].n) === 0,
+    'replaced=' + dryReplaced + ' | error=' + dryError.slice(0, 80) + ' | cols=' + (dryCols.rows[0] ? dryCols.rows[0].n : '?'));
+  await dryDb.close();
+
   const failed = results.filter(function (r) { return !r.pass; });
   console.log('==================================================================');
   console.log('Total: ' + results.length + ' checks, failed: ' + failed.length);

@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-10-16 17:34] - v1.22.6
+
+- **Files Modified:** `scripts/verify-damaged-repair-sql-sandbox.mjs`, `scripts/verify-damaged-repair-resolution.mjs`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **พิสูจน์ความปลอดภัยของเส้นทาง apply ก่อนใช้งานจริง:**
+    - **dry-run:** จำลองการทำงานของ `scripts/apply-migration-82.mjs --dry-run` (สลับ `COMMIT;` ตัวสุดท้ายเป็น `ROLLBACK;` ด้วยกฎเดียวกัน) แล้วรันกับ Postgres จริงใน sandbox — ผลคือ 26/26 PASS และยืนยันว่าไม่มีคอลัมน์/ฟังก์ชันของ migration 82 ถูกทิ้งไว้หลังรัน (DDL ถูก rollback จริง)
+    - **safety guard:** รัน `node scripts/apply-migration-82.mjs` โดยไม่ใส่ flag → ออกทันทีด้วย exit 2 พร้อมข้อความ "ต้องรันด้วย --yes" โดยไม่แตะฐานข้อมูล
+  - **Regression guard:** เพิ่มการตรวจว่ากฎ `COMMIT; → ROLLBACK;` ถูกใช้เหมือนกันทั้งในสคริปต์ apply และ sandbox — `verify:damaged-repair` ขยายเป็น 99 invariants
+  - ปรับ version เป็น `v1.22.6` (PATCH)
+
 ## [2026-10-16 17:32] - v1.22.5
 
 - **Files Modified:** `scripts/verify-damaged-repair-sql-sandbox.mjs`, `supabase/tests/fixtures/mock_supabase_schema.sql`, `scripts/verify-damaged-repair-resolution.mjs`, `package.json`, `package-lock.json`, `CHANGELOG.md`
