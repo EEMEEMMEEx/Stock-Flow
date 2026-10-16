@@ -162,11 +162,34 @@ JOIN public.items i ON i.id = sii.item_id
 JOIN public.projects p ON p.id = sio.project_id
 GROUP BY sio.project_id, sii.item_id, i.name, i.unit, p.name;
 
--- stubs: production ตรวจสิทธิ์ผ่าน role_permissions/auth.users — ที่นี่ตรวจเพียง "ผู้ใช้ active"
+-- ตารางสิทธิ์ (ย่อจาก production) เพื่อทดสอบสาขา authorization ของ RPC
+CREATE TABLE IF NOT EXISTS public.permissions (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  code text UNIQUE
+);
+CREATE TABLE IF NOT EXISTS public.role_permissions (
+  role_id uuid,
+  permission_id uuid
+);
+
+-- has_permission: SUPER ผ่านเสมอ, นอกนั้นต้องมีสิทธิ์ใน role_permissions (ตรรกะเดียวกับ production)
 CREATE OR REPLACE FUNCTION public.has_permission(p_user_id uuid, p_perm_code text)
 RETURNS boolean LANGUAGE sql STABLE AS $fn$
   SELECT p_user_id IS NOT NULL
      AND EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = p_user_id AND p.status = 'active')
+     AND (
+       EXISTS (
+         SELECT 1 FROM public.profiles p
+         WHERE p.id = p_user_id AND UPPER(COALESCE(p.role, '')) = 'SUPER'
+       )
+       OR EXISTS (
+         SELECT 1
+         FROM public.profiles p
+         JOIN public.role_permissions rp ON rp.role_id = p.role_id
+         JOIN public.permissions perm ON perm.id = rp.permission_id
+         WHERE p.id = p_user_id AND perm.code = p_perm_code
+       )
+     )
 $fn$;
 
 CREATE OR REPLACE FUNCTION public.is_super_admin(p_user_id uuid DEFAULT auth.uid())

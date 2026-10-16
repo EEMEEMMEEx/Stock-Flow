@@ -1,5 +1,18 @@
 # Changelog
 
+## [2026-10-16 17:32] - v1.22.5
+
+- **Files Modified:** `scripts/verify-damaged-repair-sql-sandbox.mjs`, `supabase/tests/fixtures/mock_supabase_schema.sql`, `scripts/verify-damaged-repair-resolution.mjs`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **ขยาย sandbox suite จาก 19 → 25 เคส ครอบคลุม guard rails ที่กันสต็อกเพี้ยน:**
+    - **backfill ของ CAIM:** รายการที่ CAIM ปิดเคส/รับเข้าคลังไปแล้วถูกตั้งสถานะเป็น `restored_to_stock` อัตโนมัติพร้อมผูก `restored_stock_in_order_id` (ยืนยันบน Postgres จริง)
+    - **กันนับสต็อกซ้ำ:** รายการที่มี `caim_stock_in_order_id` แต่ยัง `unresolved` ถูกปฏิเสธด้วยข้อความ "ถูกรับเข้าคลังผ่านงานเคลม CAIM แล้ว"
+    - **validation matrix 9 เคส:** ไม่ส่ง `return_log_id`, id ที่ไม่มีอยู่, `quantity` = 0 / เกินยอดรับคืน / ไม่เป็นจำนวนเต็ม, ไม่กรอก `repair_notes`, คลังปลายทางไม่มีอยู่, อะไหล่เป็นตัวเดียวกับอุปกรณ์หลัก, อะไหล่ในคลังไม่พอ — ทุกเคสถูกปฏิเสธและไม่แตะข้อมูล
+    - **สาขา authorization:** ผู้ใช้ที่ active แต่ไม่มี `checkouts.return`/`stock_in.create` ถูกปฏิเสธก่อนแตะข้อมูล (fixture เปลี่ยน `has_permission` ให้ตรวจ `role_permissions` เหมือน production) และผู้เรียกที่ไม่มี `auth.uid()` ถูกปฏิเสธ
+    - **payload รูปแบบเดียวกับ frontend:** ส่งคีย์เป็น JSON null ครบตามที่โมดอลส่งจริง (`reference_number`, `serial_number`, `disposal_method`, `spare_part_*`, `harvested_*`) แล้วทำงานถูกต้อง
+  - **Regression guard:** `verify:damaged-repair` ขยายเป็น 97 invariants
+  - ปรับ version เป็น `v1.22.5` (PATCH)
+
 ## [2026-10-16 17:30] - v1.22.4
 
 - **Files Modified:** `supabase/tests/fixtures/mock_supabase_schema.sql`, `scripts/verify-damaged-repair-resolution.mjs`, `package.json`, `package-lock.json`, `CHANGELOG.md`

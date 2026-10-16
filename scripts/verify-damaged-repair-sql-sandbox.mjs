@@ -59,6 +59,23 @@ const RL1 = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
 const RL2 = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
 const CI3 = 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee';
 const RL3 = 'ffffffff-ffff-ffff-ffff-ffffffffffff';
+const STAFF = '12121212-1212-1212-1212-121212121212';
+const ROLE_STAFF = '13131313-1313-1313-1313-131313131313';
+const PERM_RETURN = '15151515-1515-1515-1515-151515151515';
+const PERM_STOCKIN = '16161616-1616-1616-1616-161616161616';
+const CAIM_ORDER = 'd4d4d4d4-0000-0000-0000-0000000000c4';
+const ITEM_T4 = 'a4a4a4a4-0000-0000-0000-000000000004';
+const ITEM_T5 = 'a5a5a5a5-0000-0000-0000-000000000005';
+const ITEM_T6 = 'a6a6a6a6-0000-0000-0000-000000000006';
+const ITEM_T7 = 'a7a7a7a7-0000-0000-0000-000000000007';
+const CI4 = 'b4b4b4b4-0000-0000-0000-000000000004';
+const CI5 = 'b5b5b5b5-0000-0000-0000-000000000005';
+const CI6 = 'b6b6b6b6-0000-0000-0000-000000000006';
+const CI7 = 'b7b7b7b7-0000-0000-0000-000000000007';
+const RL4 = 'c4c4c4c4-0000-0000-0000-000000000004';
+const RL5 = 'c5c5c5c5-0000-0000-0000-000000000005';
+const RL6 = 'c6c6c6c6-0000-0000-0000-000000000006';
+const RL7 = 'c7c7c7c7-0000-0000-0000-000000000007';
 
 const results = [];
 const record = (name, pass, detail) => {
@@ -97,7 +114,31 @@ async function main() {
     "INSERT INTO public.stock_in_orders (id, project_id, storage_location_id, supplier, received_date, created_by) VALUES " +
     "  (gen_random_uuid(), '" + PROJECT + "', '" + LOCATION + "', 'Seed', CURRENT_DATE, '" + ACTOR + "');" +
     "INSERT INTO public.stock_in_items (order_id, item_id, quantity, notes) " +
-    "  SELECT id, '" + ITEM_SPARE + "', 5, 'seed อะไหล่' FROM public.stock_in_orders WHERE supplier = 'Seed';"
+    "  SELECT id, '" + ITEM_SPARE + "', 5, 'seed อะไหล่' FROM public.stock_in_orders WHERE supplier = 'Seed';" +
+    // สิทธิ์ + ผู้ใช้ที่ active แต่ไม่มีสิทธิ์ (ทดสอบสาขา authorization)
+    "INSERT INTO public.permissions (id, code) VALUES " +
+    "  ('" + PERM_RETURN + "', 'checkouts.return'), ('" + PERM_STOCKIN + "', 'stock_in.create');" +
+    "INSERT INTO auth.users (id, email) VALUES ('" + STAFF + "', 'staff@stockflow.com');" +
+    "INSERT INTO public.profiles (id, status, role, role_id) VALUES ('" + STAFF + "', 'active', 'STAFF', '" + ROLE_STAFF + "');" +
+    // เอกสารรับเข้าที่ CAIM สร้างไว้ก่อน migration (ทดสอบ backfill กันนับสต็อกซ้ำ)
+    "INSERT INTO public.stock_in_orders (id, project_id, storage_location_id, supplier, received_date, created_by) VALUES " +
+    "  ('" + CAIM_ORDER + "', '" + PROJECT + "', '" + LOCATION + "', 'CAIM Claim Return CLM-1', CURRENT_DATE, '" + ACTOR + "');" +
+    "INSERT INTO public.items (id, name, unit) VALUES " +
+    "  ('" + ITEM_T4 + "', 'HEAT EXCHANGER (CAIM ปิดเคสแล้ว)', 'ชิ้น')," +
+    "  ('" + ITEM_T5 + "', 'HEAT EXCHANGER (คืนสภาพปกติ)', 'ชิ้น')," +
+    "  ('" + ITEM_T6 + "', 'HEAT EXCHANGER (CAIM ค้างสถานะ)', 'ชิ้น')," +
+    "  ('" + ITEM_T7 + "', 'HEAT EXCHANGER (validation)', 'ชิ้น');" +
+    "INSERT INTO public.checkout_items (id, checkout_order_id, item_id, serial_number, quantity_borrowed, quantity_damaged, status) VALUES " +
+    "  ('" + CI4 + "', '" + ORDER + "', '" + ITEM_T4 + "', 'HEX-T4', 1, 1, 'returned')," +
+    "  ('" + CI5 + "', '" + ORDER + "', '" + ITEM_T5 + "', 'HEX-T5', 1, 0, 'returned')," +
+    "  ('" + CI6 + "', '" + ORDER + "', '" + ITEM_T6 + "', 'HEX-T6', 1, 1, 'returned')," +
+    "  ('" + CI7 + "', '" + ORDER + "', '" + ITEM_T7 + "', 'HEX-T7', 1, 1, 'returned');" +
+    "INSERT INTO public.checkout_return_logs (id, checkout_order_id, checkout_item_id, returned_quantity, item_condition, destination_project_id, damage_notes, returned_at, caim_repair_result, caim_inbound_processed_at, caim_stock_in_order_id) VALUES " +
+    "  ('" + RL4 + "', '" + ORDER + "', '" + CI4 + "', 1, 'needs_repair', '" + PROJECT + "', 'CAIM ซ่อมเสร็จ', now() - interval '3 day', 'repaired', now() - interval '3 day', '" + CAIM_ORDER + "')," +
+    "  ('" + RL6 + "', '" + ORDER + "', '" + CI6 + "', 1, 'needs_repair', '" + PROJECT + "', 'CAIM ค้างสถานะ', now() - interval '5 day', NULL, NULL, '" + CAIM_ORDER + "');" +
+    "INSERT INTO public.checkout_return_logs (id, checkout_order_id, checkout_item_id, returned_quantity, item_condition, destination_project_id, damage_notes, returned_at) VALUES " +
+    "  ('" + RL5 + "', '" + ORDER + "', '" + CI5 + "', 1, 'normal', '" + PROJECT + "', NULL, now() - interval '4 day')," +
+    "  ('" + RL7 + "', '" + ORDER + "', '" + CI7 + "', 1, 'needs_repair', '" + PROJECT + "', 'validation case', now() - interval '6 day');"
   );
 
   // 1) apply migration (ครั้งแรก)
@@ -303,6 +344,124 @@ async function main() {
   }
   await db.exec('ROLLBACK TO SAVEPOINT s2');
   record('resolution ที่ไม่รองรับถูกปฏิเสธ', /Unsupported resolution/.test(badResolution), badResolution.slice(0, 120));
+
+  // backfill: รายการที่ CAIM ปิดเคส/รับเข้าคลังไปแล้ว ต้องถูกตั้งสถานะกันกดซ้ำ
+  const backfilled = await db.query(
+    'SELECT repair_resolution_status, restored_stock_in_order_id, repair_notes, repair_resolved_at FROM public.checkout_return_logs WHERE id=$1',
+    [RL4]
+  );
+  record('backfill: รายการที่ CAIM รับเข้าคลังแล้วถูกตั้งสถานะเป็น restored_to_stock',
+    backfilled.rows[0].repair_resolution_status === 'restored_to_stock' &&
+    backfilled.rows[0].restored_stock_in_order_id === CAIM_ORDER &&
+    Boolean(backfilled.rows[0].repair_resolved_at) &&
+    /CAIM/.test(backfilled.rows[0].repair_notes || ''),
+    JSON.stringify(backfilled.rows[0]));
+
+  // กันการนับสต็อกซ้ำ: มี caim_stock_in_order_id แต่ยัง unresolved ต้องถูกปฏิเสธ
+  await db.exec('SAVEPOINT s3');
+  let caimGuard = '';
+  try {
+    await db.query('SELECT public.resolve_damaged_return_item($1::jsonb) AS r', [JSON.stringify({
+      return_log_id: RL6, resolution: 'restored_to_stock', project_id: PROJECT, quantity: 1, repair_notes: 'x',
+    })]);
+  } catch (err) {
+    caimGuard = err.message;
+  }
+  await db.exec('ROLLBACK TO SAVEPOINT s3');
+  record('รายการที่ CAIM รับเข้าคลังแล้วถูกปฏิเสธไม่ให้คืนสต็อกซ้ำ', /CAIM/.test(caimGuard), caimGuard.slice(0, 120));
+
+  // สภาพที่ไม่ใช่ชำรุด/ส่งซ่อม ต้องถูกปฏิเสธ
+  await db.exec('SAVEPOINT s4');
+  let wrongCondition = '';
+  try {
+    await db.query('SELECT public.resolve_damaged_return_item($1::jsonb) AS r', [JSON.stringify({
+      return_log_id: RL5, resolution: 'restored_to_stock', project_id: PROJECT, quantity: 1, repair_notes: 'x',
+    })]);
+  } catch (err) {
+    wrongCondition = err.message;
+  }
+  await db.exec('ROLLBACK TO SAVEPOINT s4');
+  record("สภาพ 'normal' ถูกปฏิเสธ (จัดการได้เฉพาะ damaged/needs_repair)", /เฉพาะรายการที่รับคืนสภาพชำรุด/.test(wrongCondition), wrongCondition.slice(0, 120));
+
+  // ตาราง validation: ทุกเคสต้องถูกปฏิเสธ และไม่แตะข้อมูล
+  const invalidCases = [
+    ['ไม่ส่ง return_log_id', { resolution: 'restored_to_stock', repair_notes: 'x' }, /return_log_id is required/],
+    ['return_log_id ที่ไม่มีอยู่', { return_log_id: '00000000-0000-0000-0000-0000000000ff', resolution: 'restored_to_stock', repair_notes: 'x' }, /ไม่พบรายการรับคืน/],
+    ['quantity = 0', { return_log_id: RL7, resolution: 'restored_to_stock', project_id: PROJECT, quantity: 0, repair_notes: 'x' }, /จำนวนต้องมากกว่า 0/],
+    ['quantity เกินยอดรับคืน', { return_log_id: RL7, resolution: 'restored_to_stock', project_id: PROJECT, quantity: 2, repair_notes: 'x' }, /เกินจำนวนที่รับคืนไว้/],
+    ['quantity ไม่เป็นจำนวนเต็ม', { return_log_id: RL7, resolution: 'restored_to_stock', project_id: PROJECT, quantity: 1.5, repair_notes: 'x' }, /จำนวนต้องเป็นจำนวนเต็ม/],
+    ['ไม่ได้กรอกรายละเอียดการซ่อม', { return_log_id: RL7, resolution: 'restored_to_stock', project_id: PROJECT, quantity: 1 }, /กรุณาระบุรายละเอียดการซ่อม/],
+    ['คลังปลายทางไม่มีอยู่', { return_log_id: RL7, resolution: 'restored_to_stock', project_id: '00000000-0000-0000-0000-0000000000aa', quantity: 1, repair_notes: 'x' }, /ไม่พบโครงการ/],
+    ['อะไหล่เป็นตัวเดียวกับอุปกรณ์หลัก', { return_log_id: RL7, resolution: 'restored_to_stock', project_id: PROJECT, quantity: 1, repair_notes: 'x', spare_part_item_id: ITEM_T7, spare_part_quantity: 1 }, /ต้องไม่ใช่ตัวอุปกรณ์หลัก/],
+    ['อะไหล่ในคลังไม่พอ', { return_log_id: RL7, resolution: 'restored_to_stock', project_id: PROJECT, quantity: 1, repair_notes: 'x', spare_part_item_id: ITEM_SPARE, spare_part_quantity: 99 }, /สต็อกอะไหล่ไม่เพียงพอ/],
+  ];
+  let validationFailures = 0;
+  for (let i = 0; i < invalidCases.length; i += 1) {
+    await db.exec('SAVEPOINT v' + i);
+    let message = '';
+    try {
+      await db.query('SELECT public.resolve_damaged_return_item($1::jsonb) AS r', [JSON.stringify(invalidCases[i][1])]);
+    } catch (err) {
+      message = err.message;
+    }
+    await db.exec('ROLLBACK TO SAVEPOINT v' + i);
+    if (!invalidCases[i][2].test(message)) {
+      validationFailures += 1;
+      console.log('   ↳ ' + invalidCases[i][0] + ' → ' + message.slice(0, 120));
+    }
+  }
+  record('validation ปฏิเสธ payload ที่ไม่ถูกต้องครบ ' + invalidCases.length + ' เคส', validationFailures === 0, 'failures=' + validationFailures);
+
+  // payload รูปแบบเดียวกับที่ frontend ส่งจริง (มีคีย์เป็น null) ต้องทำงานได้
+  const modalPayload = {
+    return_log_id: RL7,
+    resolution: 'restored_to_stock',
+    project_id: PROJECT,
+    quantity: 1,
+    repair_notes: 'payload รูปแบบเดียวกับโมดอล',
+    reference_number: null,
+    serial_number: null,
+    disposal_method: null,
+    spare_part_item_id: null,
+    spare_part_quantity: null,
+    harvested_item_id: null,
+    harvested_quantity: null,
+  };
+  const modalCall = await db.query('SELECT public.resolve_damaged_return_item($1::jsonb) AS r', [JSON.stringify(modalPayload)]);
+  const modalLog = await db.query('SELECT repair_resolution_status, spare_part_item_id, repair_scrap_disposal_id FROM public.checkout_return_logs WHERE id=$1', [RL7]);
+  const modalStockIn = await db.query(
+    'SELECT sii.serial_number FROM public.stock_in_items sii WHERE sii.order_id = $1',
+    [modalLog.rows[0] ? (await db.query('SELECT restored_stock_in_order_id FROM public.checkout_return_logs WHERE id=$1', [RL7])).rows[0].restored_stock_in_order_id : null]
+  );
+  record('payload รูปแบบเดียวกับ frontend (คีย์ null) ทำงานถูกต้อง',
+    modalCall.rows[0].r.success === true &&
+    modalLog.rows[0].repair_resolution_status === 'restored_to_stock' &&
+    modalLog.rows[0].spare_part_item_id === null &&
+    modalLog.rows[0].repair_scrap_disposal_id === null &&
+    modalStockIn.rows.length === 1 && modalStockIn.rows[0].serial_number === 'HEX-T7',
+    JSON.stringify(modalLog.rows[0]));
+
+  // ผู้ใช้ที่ active แต่ไม่มีสิทธิ์ ต้องถูกปฏิเสธ
+  await db.query("SELECT set_config('request.jwt.claims', $1, true)", [JSON.stringify({ sub: STAFF, role: 'authenticated' })]);
+  const staffPerm = await db.query(
+    "SELECT public.has_permission($1, 'checkouts.return') AS ret, public.has_permission($1, 'stock_in.create') AS sin",
+    [STAFF]
+  );
+  // ใช้ savepoint เพราะคำสั่งที่ถูกปฏิเสธจะ abort ทรานแซกชันปัจจุบัน
+  await db.exec('SAVEPOINT s5');
+  let staffError = '';
+  try {
+    await db.query('SELECT public.resolve_damaged_return_item($1::jsonb) AS r', [JSON.stringify({
+      return_log_id: RL7, resolution: 'scrapped', project_id: PROJECT, quantity: 1, repair_notes: 'x',
+    })]);
+  } catch (err) {
+    staffError = err.message;
+  }
+  await db.exec('ROLLBACK TO SAVEPOINT s5');
+  record('ผู้ใช้ที่ active แต่ไม่มีสิทธิ์ถูกปฏิเสธ (ก่อนแตะข้อมูล)',
+    staffPerm.rows[0].ret === false && staffPerm.rows[0].sin === false && /Unauthorized: Requires/.test(staffError),
+    'has_permission=' + JSON.stringify(staffPerm.rows[0]) + ' | error=' + staffError.slice(0, 90));
+  await db.query("SELECT set_config('request.jwt.claims', $1, true)", [JSON.stringify({ sub: ACTOR, role: 'authenticated' })]);
 
   // กรณีไม่มีสิทธิ์: auth.uid() = NULL ต้องถูกปฏิเสธก่อนแตะข้อมูล
   await db.exec('ROLLBACK');
