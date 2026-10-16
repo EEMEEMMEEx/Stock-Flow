@@ -18,6 +18,8 @@ const APPLY_SCRIPT = new URL('../scripts/apply-migration-82.mjs', import.meta.ur
 const LIVE_SCRIPT = new URL('../scripts/verify-damaged-repair-live-schema.mjs', import.meta.url);
 const SMOKE_TEST = new URL('../supabase/tests/82_damaged_repair_resolution.smoke.sql', import.meta.url);
 const UI_SCRIPT = new URL('../scripts/verify-damaged-repair-ui.mjs', import.meta.url);
+const SQL_SCRIPT = new URL('../scripts/verify-damaged-repair-sql-sandbox.mjs', import.meta.url);
+const SQL_FIXTURE = new URL('../supabase/tests/fixtures/mock_supabase_schema.sql', import.meta.url);
 
 let failures = 0;
 const rows = [];
@@ -151,6 +153,18 @@ check('UI verifier scopes the cancel click inside the repair dialog', /const dlg
 check('UI verifier forces the Thai locale for deterministic assertions', /stockflow\.app\.lang/.test(ui));
 check('UI verifier tolerates the expected 404 before apply', /status of 404/.test(ui));
 check('UI verifier captures screenshots as artifacts', /Page\.captureScreenshot/.test(ui) && /test-results\/damaged-repair-ui/.test(ui));
+
+// --- Postgres sandbox verifier (PGlite) -------------------------------------
+const sqlScript = read(SQL_SCRIPT);
+const fixture = read(SQL_FIXTURE);
+check('sandbox verifier runs the real migration file on a Postgres engine', /await db\.exec\(MIGRATION\)/.test(sqlScript));
+check('sandbox verifier runs the project smoke test verbatim', /await db\.exec\(SMOKE\)/.test(sqlScript));
+check('sandbox verifier asserts stock +1 and spare part -1', /stock_balance ของอุปกรณ์หลัก \+1/.test(sqlScript) && /ตัดสต็อกอะไหล่ย่อย -1/.test(sqlScript));
+check('sandbox verifier covers all three resolutions', /restored_to_stock/.test(sqlScript) && /parts_harvested/.test(sqlScript) && /scrapped/.test(sqlScript));
+check('sandbox verifier skips gracefully without the optional dependency', /\[SKIP\]/.test(sqlScript) && /process\.exit\(2\)/.test(sqlScript));
+check('sandbox fixture mirrors the Supabase roles and auth schema', /CREATE ROLE anon NOLOGIN/.test(fixture) && /CREATE SCHEMA IF NOT EXISTS auth/.test(fixture));
+check('sandbox fixture reuses the production stock_balance definition', /CREATE OR REPLACE VIEW public\.stock_balance/.test(fixture) && /checkout_out/.test(fixture));
+check('npm script verify:damaged-repair-sql is registered', pkg.scripts['verify:damaged-repair-sql'] === 'node scripts/verify-damaged-repair-sql-sandbox.mjs');
 
 // --- packaging ---------------------------------------------------------------
 check('npm script verify:damaged-repair is registered', pkg.scripts['verify:damaged-repair'] === 'node scripts/verify-damaged-repair-resolution.mjs');

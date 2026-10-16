@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-10-16 17:28] - v1.22.3
+
+- **Files Modified:** `scripts/verify-damaged-repair-sql-sandbox.mjs` (ใหม่), `supabase/tests/fixtures/mock_supabase_schema.sql` (ใหม่), `scripts/verify-damaged-repair-resolution.mjs`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **พิสูจน์ SQL ของ migration 82 ด้วย Postgres จริงใน sandbox (PGlite/WASM) — ไม่แตะ production:** `npm run verify:damaged-repair-sql` รันไฟล์ migration 82 กับ Postgres engine จริงโดยใช้ schema จำลองของ Supabase (`supabase/tests/fixtures/mock_supabase_schema.sql`: roles `anon`/`authenticated`/`service_role`, schema `auth` + `auth.uid()`, ตารางที่เกี่ยวข้อง และ view `stock_balance` นิยามเดียวกับ production) แล้วรัน smoke test ของโปรเจกต์พร้อม assertions เชิงตัวเลข
+  - **ผลรันจริง 19/19 PASS:** migration apply ได้และ apply ซ้ำได้ (Idempotent), คอลัมน์ 8 ตัว + ค่าเริ่มต้น `unresolved` + CHECK constraints ถูกสร้าง, `stock_balance` +1 (0→1), ตัดสต็อกอะไหล่ย่อย -1 (5→4), ledger `stock_in|repair_restored` + `stock_out|repair_spare_part`, เอกสารรับเข้าผูกคลัง/PO/S-N ถูกต้อง, กดซ้ำถูกปฏิเสธและยอดไม่เพิ่ม, กรณีแทงจำหน่ายสต็อกไม่เปลี่ยนแต่มีทะเบียนของเสีย, กรณีแยกอะไหล่รับเข้าชิ้นส่วนที่ยังดี +1, `resolution` ที่ไม่รองรับถูกปฏิเสธ และผู้เรียกที่ไม่มี `auth.uid()` ถูกปฏิเสธ
+  - Dependency เป็น **optional** (ไม่ผูกกับ `package.json` ของแอป): `npm install --prefix test-results/pglite-env @electric-sql/pglite` — ถ้ายังไม่ติดตั้ง สคริปต์จะรายงาน `[SKIP]` และ exit 2 (ทดสอบเส้นทางนี้แล้ว)
+  - **Regression guard:** `verify:damaged-repair` ขยายเป็น 92 invariants
+  - ปรับ version เป็น `v1.22.3` (PATCH)
+
 ## [2026-10-16 17:22] - v1.22.2
 
 - **Files Modified:** `scripts/verify-damaged-repair-ui.mjs` (ใหม่), `scripts/verify-damaged-repair-resolution.mjs`, `package.json`, `package-lock.json`, `CHANGELOG.md`
