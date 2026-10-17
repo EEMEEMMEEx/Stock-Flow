@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { ShieldCheck, ChevronDown, ChevronRight, RefreshCw } from 'lucide-react';
+import { ShieldCheck, ChevronDown, ChevronRight, RefreshCw, Lock } from 'lucide-react';
+import { useTranslation } from '@/i18n';
 
 const PERMISSION_DEPENDENCIES = {
   'projects.create': ['projects.view'],
@@ -33,6 +34,8 @@ const PERMISSION_DEPENDENCIES = {
 };
 
 const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = [], currentPermissions = [] }) => {
+  const { t } = useTranslation();
+  const isSuperRole = role?.code === 'SUPER';
   const [selectedIds, setSelectedIds] = useState([]);
   const [initialIds, setInitialIds] = useState([]);
   const [collapsedCategories, setCollapsedCategories] = useState({});
@@ -48,6 +51,19 @@ const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = []
     }
   }, [role, currentPermissions]);
 
+  // system.revert_actions is SUPER-only. The database enforces the same rule
+  // in admin_save_role_permissions; the UI mirrors it so the checkbox state is
+  // never misleading.
+  useEffect(() => {
+    const revertPermission = catalog.find(p => p.code === 'system.revert_actions');
+    if (!revertPermission) return;
+    if (isSuperRole) {
+      setSelectedIds(prev => (prev.includes(revertPermission.id) ? prev : [...prev, revertPermission.id]));
+    } else {
+      setSelectedIds(prev => prev.filter(id => id !== revertPermission.id));
+    }
+  }, [catalog, isSuperRole]);
+
   // Group permissions by category
   const groupedCatalog = catalog.reduce((acc, item) => {
     const cat = item.category || ' General';
@@ -61,6 +77,11 @@ const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = []
   };
 
   const handlePermissionToggle = (permission) => {
+    if (permission.code === 'system.revert_actions') {
+      // Non-SUPER roles can never receive it; SUPER always keeps it.
+      if (!isSuperRole || selectedIds.includes(permission.id)) return;
+    }
+
     const isCurrentlySelected = selectedIds.includes(permission.id);
 
     if (!isCurrentlySelected) {
@@ -92,14 +113,18 @@ const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = []
     }
   };
 
+  const selectableCategoryIds = (categoryItems) => categoryItems
+    .filter(p => p.code !== 'system.revert_actions' || isSuperRole)
+    .map(p => p.id);
+
   const handleSelectAllCategory = (categoryItems) => {
-    const catIds = categoryItems.map(p => p.id);
+    const catIds = selectableCategoryIds(categoryItems);
     const newIds = Array.from(new Set([...selectedIds, ...catIds]));
     setSelectedIds(newIds);
   };
 
   const handleClearAllCategory = (categoryItems) => {
-    const catIds = categoryItems.map(p => p.id);
+    const catIds = selectableCategoryIds(categoryItems);
     setSelectedIds(selectedIds.filter(id => !catIds.includes(id)));
   };
 
@@ -107,7 +132,11 @@ const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = []
     e.preventDefault();
     try {
       setLoading(true);
-      await onSave(role.id, selectedIds);
+      const sanitizedIds = selectedIds.filter((id) => {
+        const permission = catalog.find(p => p.id === id);
+        return permission?.code !== 'system.revert_actions' || isSuperRole;
+      });
+      await onSave(role.id, sanitizedIds);
       onClose();
     } catch (error) {
       console.error('Save Role Permissions Error:', error);
@@ -149,7 +178,9 @@ const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = []
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => setSelectedIds(catalog.map(p => p.id))}
+              onClick={() => setSelectedIds(catalog
+                .filter(p => p.code !== 'system.revert_actions' || isSuperRole)
+                .map(p => p.id))}
               className="text-xs h-9 sm:h-7 px-3 sm:px-2.5 min-h-[36px] sm:min-h-0 rounded-lg cursor-pointer"
             >
               Select All
@@ -206,7 +237,9 @@ const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = []
                   {!isCollapsed && (
                     <div className="p-3 grid grid-cols-1 md:grid-cols-2 gap-2 bg-transparent">
                       {categoryItems.map((permission) => {
-                        const isChecked = selectedIds.includes(permission.id);
+                        const isSuperOnly = permission.code === 'system.revert_actions';
+                        const isChecked = isSuperOnly && isSuperRole ? true : selectedIds.includes(permission.id);
+                        const isLocked = isSuperOnly;
                         return (
                           <label
                             key={permission.id}
@@ -219,16 +252,26 @@ const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = []
                             <input
                               type="checkbox"
                               checked={isChecked}
+                              disabled={isLocked && !isSuperRole}
                               onChange={() => handlePermissionToggle(permission)}
-                              className="mt-0.5 rounded text-primary focus:ring-primary h-4 w-4"
+                              className="mt-0.5 rounded text-primary focus:ring-primary h-4 w-4 disabled:opacity-40"
                             />
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center justify-between gap-1">
-                                <span className="text-xs font-semibold">{permission.name}</span>
+                                <span className="text-xs font-semibold flex items-center gap-1">
+                                  {isLocked && <Lock className="w-3 h-3 text-amber-500" aria-hidden="true" />}
+                                  {permission.name}
+                                </span>
                                 <code className="text-[10px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground font-mono">
                                   {permission.code}
                                 </code>
                               </div>
+                              {isLocked && (
+                                <span className="mt-1 inline-flex items-center gap-1 rounded-md border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-300">
+                                  <Lock className="w-2.5 h-2.5" aria-hidden="true" />
+                                  {t('superRevert.permissionLocked')}
+                                </span>
+                              )}
                               {permission.description && (
                                 <p className="text-[11px] text-muted-foreground mt-0.5 leading-tight">
                                   {permission.description}

@@ -227,6 +227,23 @@ const DEFAULT_EVENTS_CONFIG = {
     to_extra: '',
     cc_extra: ''
   },
+  withdrawal_reverted: {
+    enabled: true,
+    title: '14. Withdrawal Reverted',
+    desc: 'Notify the requester and the previous approver when a SUPER reverts a withdrawal step',
+    primary_recipient: 'Requester / Previous Approver / Administrator',
+    subject: '[StockFlow] คำขอเบิก {{request_no}} ถูกย้อนสถานะเป็น {{new_status}} — {{project_name}}',
+    status_label: 'ย้อนสถานะคำขอเบิก',
+    status_type: 'warning',
+    heading: 'รายการคำขอเบิกถูกย้อนสถานะโดยผู้ดูแลระบบ',
+    intro: 'คำขอเบิกเลขที่ {{request_no}} สำหรับโครงการ {{project_name}} ถูกย้อนสถานะจาก {{previous_status}} เป็น {{new_status}} โดย {{reverted_by}}',
+    cta_label: 'ดูรายละเอียดคำขอเบิก',
+    cta_url: '{{action_url}}',
+    footer_note: 'หากต้องการตรวจสอบผลกระทบต่อสต็อกหรือสอบถามเหตุผล กรุณาติดต่อผู้ดูแลระบบ (SUPER)',
+    roles: ['ADMIN', 'SUPER'],
+    to_extra: '',
+    cc_extra: ''
+  },
   checkout_returned: {
     enabled: true,
     title: '13. Equipment Returned',
@@ -241,6 +258,23 @@ const DEFAULT_EVENTS_CONFIG = {
     cta_url: '{{action_url}}',
     footer_note: 'ขอขอบคุณที่ให้ความร่วมมือในการส่งคืนอุปกรณ์ตามระเบียบของระบบ StockFlow',
     roles: ['STAFF', 'ADMIN'],
+    to_extra: '',
+    cc_extra: ''
+  },
+  checkout_reverted: {
+    enabled: true,
+    title: '15. Checkout Reverted',
+    desc: 'Notify the borrower and the previous approver when a SUPER reverts a loan step',
+    primary_recipient: 'Borrower / Previous Approver / Administrator',
+    subject: '[StockFlow] รายการยืม {{checkout_id}} ถูกย้อนสถานะเป็น {{new_status}} — {{project_name}}',
+    status_label: 'ย้อนสถานะรายการยืม',
+    status_type: 'warning',
+    heading: 'รายการยืมอุปกรณ์ถูกย้อนสถานะโดยผู้ดูแลระบบ',
+    intro: 'รายการยืมเลขที่ {{checkout_id}} สำหรับโครงการ {{project_name}} ถูกย้อนสถานะจาก {{previous_status}} เป็น {{new_status}} โดย {{reverted_by}}',
+    cta_label: 'ดูรายละเอียดรายการยืม',
+    cta_url: '{{action_url}}',
+    footer_note: 'หากต้องการตรวจสอบผลกระทบต่อสต็อกหรือสอบถามเหตุผล กรุณาติดต่อผู้ดูแลระบบ (SUPER)',
+    roles: ['ADMIN', 'SUPER'],
     to_extra: '',
     cc_extra: ''
   }

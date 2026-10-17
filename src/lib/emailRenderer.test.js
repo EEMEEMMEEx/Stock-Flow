@@ -304,6 +304,67 @@ test('maps return condition codes to Thai labels', () => {
   assert.equal(formatReturnCondition(''), '-');
 });
 
+
+test('renders the two SUPER revert notifications with transition and reason', () => {
+  const baseData = {
+    app_name: 'StockFlow',
+    request_no: 'WO-REVERT-1',
+    project_name: 'DTRS-DOPA',
+    project_code: 'DTRS-01',
+    requester_name: 'Requester',
+    borrower_name: 'Borrower',
+    borrower_department: 'Network',
+    previous_status: 'APPROVED',
+    new_status: 'PENDING',
+    reverted_by: 'Super User',
+    reverted_date: '17 ตุลาคม 2569 เวลา 10:00 น.',
+    revert_reason: 'อนุมัติผิดใบ <script>alert(1)</script>',
+    status: 'PENDING',
+    action_url: 'https://stockflowth.online/withdrawals?tab=orders&id=abc',
+    items: [],
+  };
+
+  const withdrawalHtml = renderEmailHtml({
+    template: { event_type: 'withdrawal_reverted' },
+    data: { ...baseData, event_type: 'withdrawal_reverted' },
+  });
+  const withdrawalText = renderEmailText({
+    template: { event_type: 'withdrawal_reverted' },
+    data: { ...baseData, event_type: 'withdrawal_reverted' },
+  });
+
+  assert.match(withdrawalHtml, /รายการคำขอเบิกถูกย้อนสถานะโดยผู้ดูแลระบบ/);
+  assert.match(withdrawalHtml, /APPROVED/);
+  assert.match(withdrawalHtml, /PENDING/);
+  assert.match(withdrawalHtml, /Super User/);
+  assert.match(withdrawalHtml, /เหตุผลการย้อนสถานะ/);
+  assert.doesNotMatch(withdrawalHtml, /<script>alert/);
+  assert.match(withdrawalText, /การย้อนสถานะ: APPROVED -> PENDING/);
+  assert.match(withdrawalText, /เหตุผลการย้อนสถานะ/);
+
+  const checkoutHtml = renderEmailHtml({
+    template: { event_type: 'checkout_reverted' },
+    data: { ...baseData, event_type: 'checkout_reverted', checkout_id: 'CHK-REVERT-1' },
+  });
+  assert.match(checkoutHtml, /รายการยืมอุปกรณ์ถูกย้อนสถานะโดยผู้ดูแลระบบ/);
+  assert.match(checkoutHtml, /CHK-REVERT-1/);
+  assert.match(checkoutHtml, /สรุปการย้อนสถานะรายการยืม/);
+});
+
+test('exposes the variables required by the revert notification templates', () => {
+  const requiredVariables = {
+    withdrawal_reverted: ['request_no', 'previous_status', 'new_status', 'reverted_by', 'reverted_date', 'revert_reason'],
+    checkout_reverted: ['checkout_id', 'previous_status', 'new_status', 'reverted_by', 'reverted_date', 'revert_reason'],
+  };
+
+  Object.entries(requiredVariables).forEach(([eventType, variables]) => {
+    const codes = SUPPORTED_EVENT_VARIABLES[eventType].map(({ code }) => code);
+    variables.forEach((variable) => {
+      assert.ok(codes.includes('{{' + variable + '}}'), eventType + ' should expose {{' + variable + '}}');
+    });
+  });
+});
+
 test('normalizes checkout items from DB rows and POS payload rows', () => {
   const dbRows = buildCheckoutEmailItems([
     {

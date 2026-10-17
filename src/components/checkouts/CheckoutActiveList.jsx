@@ -12,6 +12,8 @@ import { MaterialDispatchPDF } from '@/lib/pdf-templates';
 import { CHECKOUT_DISPATCH_STATUSES, toSafeFileToken } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import { useTranslation } from '@/i18n';
+import { REVERT_KINDS } from '@/lib/superRevert';
+import { resolveCheckoutMeta } from '@/lib/checkoutDisplay';
 
 const CheckoutActiveList = ({
   orders = [],
@@ -20,7 +22,9 @@ const CheckoutActiveList = ({
   canExtend = true,
   onOpenReturnModal,
   onOpenDetailModal,
-  onOpenExtendModal
+  onOpenExtendModal,
+  canRevertAction = false,
+  onOpenRevertModal
 }) => {
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
@@ -245,71 +249,82 @@ const CheckoutActiveList = ({
           ) : (
             <div className="divide-y divide-border/40">
               {filteredOrders.map(order => {
-                const projectDisplay = order.projects?.project_code 
-                  ? `[${order.projects.project_code}] ${order.projects.name}` 
-                  : (order.projects?.name || '-');
+                const { department, location } = resolveCheckoutMeta(order);
 
                 return (
                   <div 
                     key={order.id}
-                    className="p-4 sm:p-5 hover:bg-muted/15 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
+                    data-order-number={order.order_number}
+                    className="p-4 sm:p-5 hover:bg-muted/15 transition-all flex flex-col xl:flex-row xl:items-center justify-between gap-4"
                   >
                     {/* Left: Borrower & Order Info */}
-                    <div className="space-y-1.5 min-w-0 flex-1">
+                    <div className="space-y-1.5 min-w-0 flex-1 xl:min-w-[320px]">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-mono text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 px-2.5 py-0.5 rounded-lg">
+                        <span className="font-mono text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 px-2.5 py-0.5 rounded-lg whitespace-nowrap shrink-0">
                           {order.order_number}
                         </span>
 
                         {/* Status Badges */}
                         {order.isIndefinite ? (
-                          <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-500/30 flex items-center gap-1">
+                          <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-500/30 inline-flex items-center gap-1 whitespace-nowrap shrink-0">
                             <InfinityIcon className="w-3 h-3 text-purple-600 dark:text-purple-400" />
                             {t('checkouts.indefiniteLoan')}
                           </span>
                         ) : order.isOverdue ? (
-                          <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30 flex items-center gap-1 animate-pulse">
+                          <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30 inline-flex items-center gap-1 whitespace-nowrap shrink-0 animate-pulse">
                             <AlertTriangle className="w-3 h-3" />
                             {t('checkouts.overdueBy', { days: Math.abs(order.daysDiff) })}
                           </span>
                         ) : order.isDueSoon ? (
-                          <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 flex items-center gap-1">
+                          <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 inline-flex items-center gap-1 whitespace-nowrap shrink-0">
                             <Clock className="w-3 h-3" />
                             {order.daysDiff === 0 ? t('checkouts.dueToday') : t('checkouts.dueIn', { days: order.daysDiff })}
                           </span>
                         ) : (
-                          <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                          <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 whitespace-nowrap shrink-0">
                             {t('common.active')}
                           </span>
                         )}
 
                         {order.status === 'partial_returned' && (
-                          <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-blue-500/10 text-blue-600 border border-blue-500/20">
+                          <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-blue-500/10 text-blue-600 border border-blue-500/20 whitespace-nowrap shrink-0">
                             {t('checkouts.processing')} ({order.totalReturned}/{order.totalBorrowed})
                           </span>
                         )}
                       </div>
 
                       <div className="flex flex-wrap items-center gap-3 text-xs text-foreground font-semibold">
-                        <span className="flex items-center gap-1">
-                          <User className="w-3.5 h-3.5 text-muted-foreground" />
-                          <span>{order.borrower_name}</span>
-                          {order.borrower_department && <span className="text-muted-foreground font-normal">({order.borrower_department})</span>}
+                        <span className="flex items-center gap-1 min-w-0">
+                          <User className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                          <span className="truncate" title={order.borrower_name}>{order.borrower_name}</span>
+                          {department && (
+                            <span className="text-muted-foreground font-normal truncate" title={department}>
+                              ({department})
+                            </span>
+                          )}
                         </span>
                         {order.borrower_phone && (
-                          <span className="text-muted-foreground font-normal flex items-center gap-1">
-                            <Phone className="w-3 h-3" /> {order.borrower_phone}
+                          <span className="text-muted-foreground font-normal flex items-center gap-1" title={order.borrower_phone}>
+                            <Phone className="w-3 h-3 shrink-0" />
+                            <span className="truncate">{order.borrower_phone}</span>
                           </span>
                         )}
-                        <span className="text-muted-foreground font-normal flex items-center gap-1 truncate">
-                          <Building2 className="w-3 h-3 text-indigo-500 shrink-0" /> {projectDisplay}
-                        </span>
+                        {location && (
+                          <span className="text-muted-foreground font-normal flex items-center gap-1 min-w-0" title={location}>
+                            <Building2 className="w-3 h-3 text-indigo-500 shrink-0" />
+                            <span className="truncate">{location}</span>
+                          </span>
+                        )}
                       </div>
 
                       {/* Items Summary */}
                       <div className="text-[11px] text-muted-foreground pt-1 flex flex-wrap gap-1.5">
                         {order.checkout_items?.map((item, idx) => (
-                          <span key={item.id || idx} className="bg-muted/60 px-2 py-0.5 rounded-md border border-border/40 font-mono text-[10px]">
+                          <span
+                            key={item.id || idx}
+                            title={`${item.items?.name || t('common.item')} ×${item.quantity_borrowed - (item.quantity_returned + item.quantity_damaged + item.quantity_lost + (Number(item.quantity_consumed) || 0))} ${item.items?.unit || t('common.piece')}${item.serial_number ? ` (S/N: ${item.serial_number})` : ''}`}
+                            className="inline-block max-w-full truncate align-middle whitespace-nowrap bg-muted/60 px-2 py-0.5 rounded-md border border-border/40 font-mono text-[10px]"
+                          >
                             {item.items?.name || t('common.item')} ×{item.quantity_borrowed - (item.quantity_returned + item.quantity_damaged + item.quantity_lost + (Number(item.quantity_consumed) || 0))} {item.items?.unit || t('common.piece')}
                             {item.serial_number && <span className="text-indigo-600 dark:text-indigo-400"> (S/N: {item.serial_number})</span>}
                           </span>
@@ -318,8 +333,8 @@ const CheckoutActiveList = ({
                     </div>
 
                     {/* Right: Date & Action Buttons */}
-                    <div className="flex items-center gap-2 shrink-0 self-end md:self-center">
-                      <div className="text-right mr-2 hidden sm:block">
+                    <div className="flex flex-wrap items-center justify-end gap-2 min-w-0 w-full xl:w-auto self-end xl:self-center">
+                      <div className="text-right mr-2 hidden sm:block whitespace-nowrap shrink-0">
                         <div className="text-[11px] text-muted-foreground">
                           {t('checkouts.borrowDate')}: {order.checkout_date ? format(new Date(order.checkout_date), 'dd/MM/yyyy') : '-'}
                         </div>
@@ -377,6 +392,19 @@ const CheckoutActiveList = ({
                             <span>{t('checkouts.extendLoan')}</span>
                           </Button>
                         )
+                      )}
+
+                      {canRevertAction && order.totalReturned === 0 && order.status !== 'partial_returned' && onOpenRevertModal && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => onOpenRevertModal(order, REVERT_KINDS.CHECKOUT_APPROVAL)}
+                          className="rounded-lg h-9 min-h-[44px] sm:min-h-0 text-xs gap-1.5 font-semibold text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800 hover:bg-amber-50 dark:hover:bg-amber-950/40 shadow-2xs cursor-pointer"
+                          title={t('superRevert.revertCheckoutApprovalBtn')}
+                        >
+                          <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
+                          <span className="hidden sm:inline">{t('superRevert.revertCheckoutApprovalBtn')}</span>
+                        </Button>
                       )}
 
                       {canReturn && !order.isCompleted && order.remainingUnits > 0 && (

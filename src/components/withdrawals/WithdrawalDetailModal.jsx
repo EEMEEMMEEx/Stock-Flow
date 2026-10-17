@@ -3,12 +3,13 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { 
   FileText, XCircle, AlertTriangle, 
-  Building2, User, MapPin, Package, Printer, Ban
+  Building2, User, MapPin, Package, Printer, Ban, RotateCcw
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useTranslation } from '@/i18n';
 import { getWarehouseLabel } from '@/lib/withdrawalStock';
 import StatusBadge from '@/components/ui/StatusBadge';
+import { REVERT_KINDS } from '@/lib/superRevert';
 
 const WithdrawalDetailModal = ({
   order,
@@ -28,7 +29,9 @@ const WithdrawalDetailModal = ({
   onOpenCancelModal,
   onCompleteOrder,
   onDownloadPDF,
-  onDownloadDispatchPDF
+  onDownloadDispatchPDF,
+  canRevertAction = false,
+  onOpenRevertModal
 }) => {
   const { t } = useTranslation();
   if (!order) return null;
@@ -170,6 +173,33 @@ const WithdrawalDetailModal = ({
                   <span>{t('withdrawals.rejectionReason', 'Rejection Reason')}:</span>
                 </p>
                 <p className="text-[11px] pl-5">{order.reject_reason}</p>
+              </div>
+            )}
+
+            {/* Last Revert Notice */}
+            {order.last_reverted_at && (
+              <div className="sm:col-span-2 bg-amber-500/10 border border-amber-500/30 p-3 rounded-xl text-amber-900 dark:text-amber-200 space-y-1">
+                <p className="font-bold flex items-center gap-1.5">
+                  <RotateCcw className="w-4 h-4 text-amber-600 dark:text-amber-400" aria-hidden="true" />
+                  <span>
+                    {t('superRevert.lastReverted', {
+                      name: order.reverter?.full_name || 'SUPER',
+                      date: format(new Date(order.last_reverted_at), 'dd/MM/yyyy HH:mm')
+                    })}
+                  </span>
+                </p>
+                {order.last_revert_reason && (
+                  <p className="text-[11px] pl-5">
+                    <span className="font-semibold">{t('superRevert.revertReason')}:</span> {order.last_revert_reason}
+                  </p>
+                )}
+                {(order.last_revert_from_status || order.last_revert_to_status) && (
+                  <p className="text-[10px] pl-5 font-mono font-bold">
+                    {String(order.last_revert_from_status || '-').toUpperCase()}
+                    {' -> '}
+                    {String(order.last_revert_to_status || '-').toUpperCase()}
+                  </p>
+                )}
               </div>
             )}
 
@@ -349,6 +379,34 @@ const WithdrawalDetailModal = ({
                 onClick={() => onCompleteOrder(order.id)}
               >
                 {t('withdrawals.confirmReceiptComplete', 'Confirm Receipt Complete')}
+              </Button>
+            )}
+
+            {canRevertAction && (isCompleted || isApproved || isRejected) && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="rounded-lg text-xs font-semibold text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800 hover:bg-amber-50 dark:hover:bg-amber-950/40 gap-1.5 cursor-pointer h-9 min-h-[44px] sm:min-h-0 px-4"
+                onClick={() => onOpenRevertModal && onOpenRevertModal(
+                  order,
+                  isCompleted
+                    ? REVERT_KINDS.WITHDRAWAL_COMPLETION
+                    : isApproved
+                    ? REVERT_KINDS.WITHDRAWAL_APPROVAL
+                    : REVERT_KINDS.WITHDRAWAL_REJECTION
+                )}
+              >
+                <RotateCcw className="w-4 h-4" aria-hidden="true" />
+                <span>
+                  {t(
+                    isCompleted
+                      ? 'superRevert.revertCompletionBtn'
+                      : isApproved
+                      ? 'superRevert.revertApprovalBtn'
+                      : 'superRevert.revertRejectionBtn'
+                  )}
+                </span>
               </Button>
             )}
 

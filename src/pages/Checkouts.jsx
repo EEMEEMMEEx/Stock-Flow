@@ -20,12 +20,13 @@ import CheckoutHistoryList from '@/components/checkouts/CheckoutHistoryList';
 import CheckoutApproveModal from '@/components/checkouts/CheckoutApproveModal';
 import CheckoutRejectModal from '@/components/checkouts/CheckoutRejectModal';
 import CheckoutCancelModal from '@/components/checkouts/CheckoutCancelModal';
-import { dispatchCheckoutNotification } from '@/lib/notificationDispatcher';
+import SuperRevertActionModal from '@/components/common/SuperRevertActionModal';
+import { dispatchCheckoutNotification, dispatchRevertNotification } from '@/lib/notificationDispatcher';
 
 const CHECKOUT_TABS = ['pending', 'active', 'pos', 'history'];
 
 const Checkouts = () => {
-  const { can, user, profile, isAdmin, isSuperAdmin } = useAuth();
+  const { can, user, profile, isAdmin, isSuperAdmin, canRevertAction } = useAuth();
   const { t } = useTranslation();
 
   const canCreate = can('checkouts.create');
@@ -77,6 +78,10 @@ const Checkouts = () => {
   const [selectedOrderForCancel, setSelectedOrderForCancel] = useState(null);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+
+  // Revert states (SUPER Role)
+  const [revertTarget, setRevertTarget] = useState(null);
+  const [isRevertModalOpen, setIsRevertModalOpen] = useState(false);
 
   // Deep-link support: open the approval modal for ?tab=pending&id=<order>
   const handledNotificationIdRef = useRef(null);
@@ -237,6 +242,26 @@ const Checkouts = () => {
           }
           return o;
         });
+
+        // Resolve the SUPER actor name for the "reverted by ..." badge. The
+        // last_reverted_by column only exists after migration 83, so it is
+        // read from the * payload and tolerated when absent.
+        const reverterIds = [...new Set(loadedOrders.map(o => o.last_reverted_by).filter(Boolean))];
+        if (reverterIds.length > 0) {
+          const { data: reverterProfiles, error: reverterError } = await supabase
+            .from('profiles')
+            .select('id, full_name')
+            .in('id', reverterIds);
+          if (reverterError) {
+            console.warn('[Checkouts] Reverter profile lookup failed:', reverterError.message);
+          }
+          const reverterById = new Map((reverterProfiles || []).map(p => [p.id, p]));
+          loadedOrders = loadedOrders.map(o => (
+            o.last_reverted_by && reverterById.has(o.last_reverted_by)
+              ? { ...o, reverter: reverterById.get(o.last_reverted_by) }
+              : o
+          ));
+        }
 
         setOrders(loadedOrders);
       }
@@ -401,6 +426,12 @@ const Checkouts = () => {
     } finally {
       setRejecting(false);
     }
+  };
+
+  const handleOpenRevertModal = (order, kind, returnLog = null) => {
+    if (!canRevertAction || !order || !kind) return;
+    setRevertTarget({ order, kind, returnLog });
+    setIsRevertModalOpen(true);
   };
 
   const handleOpenCancelModal = (order) => {
@@ -578,6 +609,8 @@ const Checkouts = () => {
           onOpenReturnModal={handleOpenReturnModal}
           onOpenExtendModal={handleOpenExtendModal}
           onOpenDetailModal={handleOpenDetailModal}
+          canRevertAction={canRevertAction}
+          onOpenRevertModal={handleOpenRevertModal}
         />
       )}
 
@@ -669,9 +702,11 @@ const Checkouts = () => {
         canReturn={canReturn}
         canExtend={canExtend}
         isSuperAdmin={isSuperAdmin}
+        canRevertAction={canRevertAction}
         onOpenReturnModal={handleOpenReturnModal}
         onOpenExtendModal={handleOpenExtendModal}
         onOpenCancelModal={handleOpenCancelModal}
+        onOpenRevertModal={handleOpenRevertModal}
       />
 
       {/* Cancel Modal (SUPER Role) */}
@@ -684,6 +719,34 @@ const Checkouts = () => {
         order={selectedOrderForCancel}
         onConfirmCancel={handleConfirmCancel}
         isProcessing={cancelling}
+      />
+
+      {/* Revert Modal (SUPER Role) */}
+      <SuperRevertActionModal
+        isOpen={isRevertModalOpen}
+        onClose={() => {
+          setIsRevertModalOpen(false);
+          setRevertTarget(null);
+        }}
+        kind={revertTarget?.kind}
+        order={revertTarget?.order}
+        returnLog={revertTarget?.returnLog}
+        onSuccess={(data, reason) => {
+          const orderId = data?.order_id || revertTarget?.order?.id;
+          if (orderId) {
+            dispatchRevertNotification({
+              eventType: 'checkout_reverted',
+              orderId,
+              kind: 'checkout',
+              actorName: profile?.full_name || 'SUPER',
+              reason,
+              previousStatus: data?.previous_status,
+              newStatus: data?.new_status
+            }).catch(err => console.warn('[Revert Notification Warning]:', err));
+          }
+          setIsDetailModalOpen(false);
+          fetchCheckoutData();
+        }}
       />
     </div>
   );

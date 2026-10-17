@@ -19,6 +19,8 @@ import { format } from 'date-fns';
 import { supabase } from '@/lib/supabase';
 import { useTranslation } from '@/i18n';
 import StatusBadge from '@/components/ui/StatusBadge';
+import { REVERT_KINDS, formatRevertDate } from '@/lib/superRevert';
+import { formatProjectLocation } from '@/lib/checkoutDisplay';
 
 /**
  * public.profiles has NO email column (canonical emails live in auth.users only),
@@ -142,11 +144,13 @@ const CheckoutDetailModal = ({
   canReturn = true,
   canExtend = true,
   isSuperAdmin = false,
+  canRevertAction = false,
   onOpenReturnModal,
   onOpenExtendModal,
-  onOpenCancelModal
+  onOpenCancelModal,
+  onOpenRevertModal
 }) => {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const { can } = useAuth();
   // บันทึกผลการซ่อมได้เมื่อมีสิทธิ์รับคืนพัสดุ หรือรับเข้า Stock (super admin ถูก bypass ใน can() แล้ว)
   const canResolveRepair = can('checkouts.return') || can('stock_in.create');
@@ -508,6 +512,32 @@ const CheckoutDetailModal = ({
               )}
             </div>
           )}
+          {order.last_reverted_at && (
+            <div className="p-3 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-900 dark:text-amber-200 text-xs space-y-1">
+              <div className="flex items-center gap-2 font-semibold text-amber-700 dark:text-amber-300">
+                <RotateCcw className="w-4 h-4 shrink-0" aria-hidden="true" />
+                <span>
+                  {t('superRevert.lastReverted', {
+                    name: order.reverter?.full_name || 'SUPER',
+                    date: formatRevertDate(order.last_reverted_at, lang)
+                  })}
+                </span>
+              </div>
+              {order.last_revert_reason && (
+                <p className="text-xs pl-6 text-foreground font-medium">
+                  <span className="text-muted-foreground">{t('superRevert.revertReason')}:</span> {order.last_revert_reason}
+                </p>
+              )}
+              {(order.last_revert_from_status || order.last_revert_to_status) && (
+                <p className="text-[10px] pl-6 font-mono font-bold">
+                  {String(order.last_revert_from_status || '-').toUpperCase()}
+                  {' -> '}
+                  {String(order.last_revert_to_status || '-').toUpperCase()}
+                </p>
+              )}
+            </div>
+          )}
+
           {profileLoadError && (
             <div className="flex items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-[11px] text-amber-700 dark:text-amber-300">
               <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
@@ -524,7 +554,9 @@ const CheckoutDetailModal = ({
                 <strong className="text-foreground">{order.borrower_name}</strong>
               </div>
               {order.borrower_department && (
-                <div className="text-muted-foreground pl-5.5">{t('checkouts.department')}: {order.borrower_department}</div>
+                <div className="text-muted-foreground pl-5.5 truncate" title={order.borrower_department}>
+                  {t('checkouts.department')}: {order.borrower_department}
+                </div>
               )}
               {order.borrower_phone && (
                 <div className="text-muted-foreground pl-5.5 flex items-center gap-1">
@@ -546,7 +578,9 @@ const CheckoutDetailModal = ({
               <div className="flex items-center gap-2">
                 <Building2 className="w-3.5 h-3.5 text-indigo-500" />
                 <span className="text-muted-foreground">{t('items.location')}:</span>
-                <strong className="text-foreground">{order.projects?.name}</strong>
+                <strong className="text-foreground truncate" title={formatProjectLocation(order.projects) || undefined}>
+                  {formatProjectLocation(order.projects) || '-'}
+                </strong>
               </div>
               <div className={`flex items-center gap-2 pl-5.5 font-semibold ${
                 isIndefinite ? 'text-purple-600 dark:text-purple-400' : 'text-red-600 dark:text-red-400'
@@ -657,6 +691,12 @@ const CheckoutDetailModal = ({
                             {t('checkouts.replacedSerialTag')} {log.replaced_serial_number}
                           </span>
                         )}
+                        {log.is_reverted && (
+                          <span className="inline-flex items-center gap-1 rounded-md border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-300">
+                            <RotateCcw className="w-2.5 h-2.5" aria-hidden="true" />
+                            {t('superRevert.returnLogReverted', { date: formatRevertDate(log.reverted_at, lang) })}
+                          </span>
+                        )}
                         {log.caim_ticket_id ? (
                           <a
                             href={log.caim_ticket_url || `https://claims-nu-taupe.vercel.app/tickets?search=${encodeURIComponent(log.caim_ticket_id)}`}
@@ -694,10 +734,33 @@ const CheckoutDetailModal = ({
                         }}
                         onSyncCaim={handleManualCaimSync}
                       />
+                      {log.is_reverted && log.revert_reason && (
+                        <div className="text-[10px] text-amber-700 dark:text-amber-300 mt-0.5">
+                          <span className="font-semibold">{t('superRevert.returnLogRevertedReason')}:</span> {log.revert_reason}
+                        </div>
+                      )}
                     </div>
 
-                    <div className="text-[11px] text-muted-foreground font-mono">
-                      {format(new Date(log.returned_at), 'dd/MM/yyyy HH:mm')}
+                    <div className="flex flex-col items-end gap-1.5">
+                      <div className="text-[11px] text-muted-foreground font-mono">
+                        {format(new Date(log.returned_at), 'dd/MM/yyyy HH:mm')}
+                      </div>
+                      {canRevertAction && !log.is_reverted && onOpenRevertModal && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            onClose();
+                            onOpenRevertModal(order, REVERT_KINDS.CHECKOUT_RETURN, log);
+                          }}
+                          className="rounded-lg h-9 min-h-[44px] sm:min-h-0 text-[11px] gap-1 font-semibold text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800 hover:bg-amber-50 dark:hover:bg-amber-950/40 cursor-pointer"
+                          title={t('superRevert.revertReturnBtn')}
+                        >
+                          <RotateCcw className="w-3 h-3" aria-hidden="true" />
+                          <span>{t('superRevert.revertReturnBtn')}</span>
+                        </Button>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -834,6 +897,26 @@ const CheckoutDetailModal = ({
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>{t('checkouts.returnEquipment')}</span>
+              </Button>
+            )}
+
+            {canRevertAction && onOpenRevertModal
+              && (order.status === 'active' || order.status === 'overdue')
+              && returnLogs.filter(log => !log.is_reverted).length === 0
+              && (totalReturned + totalDamaged + totalConsumed) === 0 && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  onClose();
+                  onOpenRevertModal(order, REVERT_KINDS.CHECKOUT_APPROVAL);
+                }}
+                className="rounded-lg h-9 min-h-[44px] sm:min-h-0 text-xs gap-1.5 font-semibold text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800 hover:bg-amber-50 dark:hover:bg-amber-950/40 shadow-2xs cursor-pointer px-4"
+                title={t('superRevert.revertCheckoutApprovalBtn')}
+              >
+                <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
+                <span>{t('superRevert.revertCheckoutApprovalBtn')}</span>
               </Button>
             )}
 
