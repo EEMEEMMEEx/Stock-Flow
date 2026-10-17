@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { 
-  ShieldCheck, Plus, RefreshCw, Edit, Trash2, Shield, Users, Lock, AlertCircle, Sparkles 
+  ShieldCheck, Plus, RefreshCw, Edit, Trash2, Shield, Users, Lock, AlertCircle, Sparkles, History
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import toast from 'react-hot-toast';
@@ -12,6 +12,7 @@ import toast from 'react-hot-toast';
 import AddRoleModal from '@/components/roles/AddRoleModal';
 import EditRoleModal from '@/components/roles/EditRoleModal';
 import PermissionManagementModal from '@/components/roles/PermissionManagementModal';
+import RevertAuditLogModal from '@/components/common/RevertAuditLogModal';
 import { useTranslation } from '@/i18n';
 
 const RoleManagement = () => {
@@ -28,6 +29,7 @@ const RoleManagement = () => {
   const [selectedRoleForPerms, setSelectedRoleForPerms] = useState(null);
   const [currentRolePermissions, setCurrentRolePermissions] = useState([]);
   const [selectedRoleForDelete, setSelectedRoleForDelete] = useState(null);
+  const [isRevertAuditOpen, setIsRevertAuditOpen] = useState(false);
 
 const fetchRoles = useCallback(async () => {
     try {
@@ -501,6 +503,18 @@ const fetchRoles = useCallback(async () => {
                   </div>
                 </div>
 
+                {roleObj.code === 'SUPER' && isSuperAdmin && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsRevertAuditOpen(true)}
+                    className="w-full h-9 min-h-[44px] sm:min-h-0 rounded-lg text-xs font-semibold text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800 hover:bg-amber-50 dark:hover:bg-amber-950/40 gap-1.5 cursor-pointer"
+                  >
+                    <History className="w-3.5 h-3.5" aria-hidden="true" />
+                    {t('superRevert.openAuditLog')}
+                  </Button>
+                )}
+
                 {/* Card Action Buttons */}
                 <div className="flex items-center justify-between pt-2 border-t border-border/50">
                   {can('roles.manage_permissions') ? (
@@ -617,6 +631,12 @@ const fetchRoles = useCallback(async () => {
           currentPermissions={currentRolePermissions}
         />
       )}
+
+      {/* Revert Audit Log Viewer (SUPER) */}
+      <RevertAuditLogModal
+        isOpen={isRevertAuditOpen}
+        onClose={() => setIsRevertAuditOpen(false)}
+      />
 
       {/* Confirm Delete Role Modal */}
       {selectedRoleForDelete && (

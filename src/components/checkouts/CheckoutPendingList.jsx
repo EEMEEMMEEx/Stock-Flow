@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useTranslation } from '@/i18n';
+import { formatProjectLocation } from '@/lib/checkoutDisplay';
 
 const CheckoutPendingList = ({
   orders = [],
@@ -140,6 +141,7 @@ const CheckoutPendingList = ({
             const items = order.checkout_items || [];
             const totalUnits = items.reduce((s, i) => s + Number(i.quantity_borrowed || 0), 0);
             const isIndefinite = order.borrow_type === 'indefinite';
+            const location = formatProjectLocation(order.projects);
 
             return (
               <Card 
@@ -171,7 +173,7 @@ const CheckoutPendingList = ({
                       {(order.borrower_department || order.borrower_phone) && (
                         <div className="flex items-center gap-3 text-[11px] text-muted-foreground pl-5">
                           {order.borrower_department && (
-                            <span className="truncate">{order.borrower_department}</span>
+                            <span className="truncate" title={order.borrower_department}>{order.borrower_department}</span>
                           )}
                           {order.borrower_phone && (
                             <span className="flex items-center gap-1 shrink-0">
@@ -190,8 +192,8 @@ const CheckoutPendingList = ({
                           <Building2 className="w-3 h-3" />
                           <span>{t('checkouts.project', 'โครงการ')}:</span>
                         </span>
-                        <span className="font-medium text-foreground truncate max-w-[160px]">
-                          {order.projects?.name || order.projects?.project_code || '—'}
+                        <span className="font-medium text-foreground truncate max-w-[160px]" title={location || undefined}>
+                          {location || '—'}
                         </span>
                       </div>
 

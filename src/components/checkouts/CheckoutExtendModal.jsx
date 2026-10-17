@@ -12,6 +12,7 @@ import { format, addDays, differenceInDays, isAfter, parseISO } from 'date-fns';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n';
+import { formatProjectLocation } from '@/lib/checkoutDisplay';
 
 const CheckoutExtendModal = ({
   isOpen,
@@ -287,13 +288,17 @@ const CheckoutExtendModal = ({
                 <User className="w-3.5 h-3.5 text-muted-foreground" />
                 <span>{order.borrower_name}</span>
                 {order.borrower_department && (
-                  <span className="text-muted-foreground font-normal">({order.borrower_department})</span>
+                  <span className="text-muted-foreground font-normal truncate" title={order.borrower_department}>
+                    ({order.borrower_department})
+                  </span>
                 )}
               </div>
-              <div className="flex items-center gap-1 text-muted-foreground text-[11px]">
-                <Building2 className="w-3.5 h-3.5 text-indigo-500" />
-                <span className="truncate max-w-[140px]">{order.projects?.name}</span>
-              </div>
+              {formatProjectLocation(order.projects) && (
+                <div className="flex items-center gap-1 text-muted-foreground text-[11px] min-w-0" title={formatProjectLocation(order.projects)}>
+                  <Building2 className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+                  <span className="truncate max-w-[140px]">{formatProjectLocation(order.projects)}</span>
+                </div>
+              )}
             </div>
 
             <div className="flex items-center justify-between pt-1 border-t border-border/40">

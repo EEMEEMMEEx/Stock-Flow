@@ -517,6 +517,16 @@ export const SUPPORTED_EVENT_VARIABLES = {
     ['equipment_name', 'ชื่ออุปกรณ์'], ['asset_code', 'รหัสทรัพย์สิน / S/N'], ['quantity', 'จำนวน'],
     ['return_date', 'วันที่ส่งคืน'], ['condition', 'สภาพอุปกรณ์'], ['condition_details', 'หมายเหตุสภาพ'], ['action_url', 'ลิงก์เปิดรายการ']
   ],
+  withdrawal_reverted: [
+    ['user_name', 'ชื่อผู้ขอเบิก'], ['request_no', 'เลขที่คำขอเบิก'], ['project_name', 'ชื่อโครงการ'],
+    ['previous_status', 'สถานะก่อนย้อน'], ['new_status', 'สถานะหลังย้อน'], ['reverted_by', 'ผู้ย้อนสถานะ'],
+    ['reverted_date', 'วันที่ย้อนสถานะ'], ['revert_reason', 'เหตุผลการย้อนสถานะ'], ['action_url', 'ลิงก์เปิดรายการ']
+  ],
+  checkout_reverted: [
+    ['checkout_id', 'เลขที่คำขอยืม'], ['borrower_name', 'ชื่อผู้ขอยืม'], ['project_name', 'ชื่อโครงการ'],
+    ['previous_status', 'สถานะก่อนย้อน'], ['new_status', 'สถานะหลังย้อน'], ['reverted_by', 'ผู้ย้อนสถานะ'],
+    ['reverted_date', 'วันที่ย้อนสถานะ'], ['revert_reason', 'เหตุผลการย้อนสถานะ'], ['action_url', 'ลิงก์เปิดรายการ']
+  ],
 };
 
 Object.entries(SUPPORTED_EVENT_VARIABLES).forEach(([eventType, values]) => {
@@ -614,6 +624,20 @@ const EVENT_DEFAULTS = {
     intro: 'เรียน คุณ {{borrower_name}} เจ้าหน้าที่คลังได้ทำการตรวจรับอุปกรณ์ตามรายการเลขที่ {{checkout_id}} สำหรับโครงการ {{project_name}} ส่งคืนเข้าระบบเรียบร้อยแล้วในวันที่ {{return_date}} สภาพอุปกรณ์โดยรวม: {{condition}}',
     cta: 'ดูประวัติและหลักฐานการคืน',
     helper: 'ขอขอบคุณที่ให้ความร่วมมือในการส่งคืนอุปกรณ์ตามระเบียบของระบบ StockFlow'
+  },
+  withdrawal_reverted: {
+    badge: 'ย้อนสถานะคำขอเบิก', type: 'warning',
+    heading: 'รายการคำขอเบิกถูกย้อนสถานะโดยผู้ดูแลระบบ',
+    intro: 'คำขอเบิกเลขที่ {{request_no}} สำหรับโครงการ {{project_name}} ถูกย้อนสถานะจาก {{previous_status}} เป็น {{new_status}} โดย {{reverted_by}}',
+    cta: 'ดูรายละเอียดคำขอเบิก',
+    helper: 'หากต้องการตรวจสอบผลกระทบต่อสต็อกหรือสอบถามเหตุผล กรุณาติดต่อผู้ดูแลระบบ (SUPER)'
+  },
+  checkout_reverted: {
+    badge: 'ย้อนสถานะรายการยืม', type: 'warning',
+    heading: 'รายการยืมอุปกรณ์ถูกย้อนสถานะโดยผู้ดูแลระบบ',
+    intro: 'รายการยืมเลขที่ {{checkout_id}} สำหรับโครงการ {{project_name}} ถูกย้อนสถานะจาก {{previous_status}} เป็น {{new_status}} โดย {{reverted_by}}',
+    cta: 'ดูรายละเอียดรายการยืม',
+    helper: 'หากต้องการตรวจสอบผลกระทบต่อสต็อกหรือสอบถามเหตุผล กรุณาติดต่อผู้ดูแลระบบ (SUPER)'
   }
 };
 
@@ -833,6 +857,18 @@ const renderWorkflow = (data, event) => {
       renderRow('สภาพอุปกรณ์:', data.condition, { emphasis: true }),
       renderRow('หมายเหตุสภาพ:', data.condition_details),
     ],
+    withdrawal_reverted: [
+      renderRow('สถานะปัจจุบัน:', data.fulfillment_status || data.status, { emphasis: true }),
+      renderRow('การเปลี่ยนสถานะ:', [data.previous_status, data.new_status].filter(hasValue).join(' -> '), { emphasis: true }),
+      renderRow('ผู้ย้อนสถานะ:', data.reverted_by),
+      renderRow('วันที่ย้อนสถานะ:', data.reverted_date),
+    ],
+    checkout_reverted: [
+      renderRow('สถานะปัจจุบัน:', data.fulfillment_status || data.status, { emphasis: true }),
+      renderRow('การเปลี่ยนสถานะ:', [data.previous_status, data.new_status].filter(hasValue).join(' -> '), { emphasis: true }),
+      renderRow('ผู้ย้อนสถานะ:', data.reverted_by),
+      renderRow('วันที่ย้อนสถานะ:', data.reverted_date),
+    ],
   };
   const rows = (rowsByEvent[event] ?? rowsByEvent.withdrawal_submitted).join('');
   const rejectReason = data.rejection_reason || (event.startsWith('checkout_') ? data.reject_reason : '');
@@ -843,7 +879,14 @@ const renderWorkflow = (data, event) => {
         <div style="padding-top: 4px; font-size: 13px; line-height: 20px; color: #7c2d12; overflow-wrap: anywhere; word-break: break-word;">${rejectReason}</div>
       </td></tr>
     </table>` : '';
-  if (!rows && !reason) return '';
+  const revertReason = hasValue(data.revert_reason) ? `
+    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top: 12px; border: 1px solid #fcd34d; border-radius: 8px; background-color: #fffbeb;">
+      <tr><td style="padding: 12px 13px;">
+        <div style="font-size: 13px; line-height: 19px; font-weight: 700; color: #92400e;">เหตุผลการย้อนสถานะ:</div>
+        <div style="padding-top: 4px; font-size: 13px; line-height: 20px; color: #78350f; overflow-wrap: anywhere; word-break: break-word;">${data.revert_reason}</div>
+      </td></tr>
+    </table>` : '';
+  if (!rows && !reason && !revertReason) return '';
   const colors = statusColors(eventData.type);
   const title = event === 'stock_in_created'
     ? 'รายละเอียดการรับเข้า'
@@ -853,7 +896,7 @@ const renderWorkflow = (data, event) => {
   return renderSectionCard({
     title,
     accentColor: colors.text,
-    content: `<table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">${rows}</table>${reason}`,
+    content: `<table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">${rows}</table>${reason}${revertReason}`,
   });
 };
 
@@ -919,6 +962,11 @@ export const renderEmailHtml = ({ branding = {}, template = {}, data = SAMPLE_EM
     days_overdue: escapeHtml(data.days_overdue || '-'),
     approver_name: escapeHtml(data.approver_name || data.approved_by || '-'),
     reject_reason: escapeHtml(data.reject_reason || data.rejection_reason || ''),
+    revert_reason: escapeHtml(data.revert_reason || ''),
+    previous_status: escapeHtml(data.previous_status || '-'),
+    new_status: escapeHtml(data.new_status || '-'),
+    reverted_by: escapeHtml(data.reverted_by || '-'),
+    reverted_date: escapeHtml(data.reverted_date || '-'),
     condition: escapeHtml(data.condition || '-'),
     condition_details: escapeHtml(data.condition_details || ''),
     public_base_url: escapeHtml(data.public_base_url || ''),
@@ -953,6 +1001,8 @@ export const renderEmailHtml = ({ branding = {}, template = {}, data = SAMPLE_EM
     checkout_due_soon: `อุปกรณ์ตามคำขอยืม ${safeData.checkout_id} ใกล้ถึงกำหนดส่งคืน (${safeData.due_date})`,
     checkout_overdue: `รายการยืมอุปกรณ์ ${safeData.checkout_id} เกินกำหนดส่งคืนมาแล้ว ${safeData.days_overdue}`,
     checkout_returned: `รับคืนอุปกรณ์ ${safeData.checkout_id} เรียบร้อยแล้ว สภาพ: ${safeData.condition}`,
+    withdrawal_reverted: `คำขอเบิก ${safeData.request_no} ถูกย้อนสถานะเป็น ${safeData.new_status}`,
+    checkout_reverted: `รายการยืม ${safeData.checkout_id} ถูกย้อนสถานะเป็น ${safeData.new_status}`,
   };
   const preheader = renderText(template.preheader || defaultPreheaders[event] || `แจ้งเตือนจากระบบ ${appName}`, safeData);
 
@@ -1124,6 +1174,33 @@ export const renderEmailHtml = ({ branding = {}, template = {}, data = SAMPLE_EM
         renderRow('สถานะ:', safeData.status || badge, { emphasis: true }),
       ],
     },
+    withdrawal_reverted: {
+      title: 'สรุปการย้อนสถานะคำขอเบิก',
+      rows: [
+        renderRow('เลขที่คำขอ:', safeData.request_no, { emphasis: true }),
+        renderRow('โครงการ:', safeData.project_name, { emphasis: true }),
+        renderRow('ผู้ขอเบิก:', safeData.requester_name),
+        renderRow('การเปลี่ยนสถานะ:', [safeData.previous_status, safeData.new_status].filter(hasValue).join(' -> '), { emphasis: true }),
+        renderRow('ผู้ย้อนสถานะ:', safeData.reverted_by),
+        renderRow('วันที่ย้อนสถานะ:', safeData.reverted_date),
+        renderRow('เหตุผลการย้อนสถานะ:', safeData.revert_reason),
+        renderRow('สถานะ:', safeData.status || badge, { emphasis: true }),
+      ],
+    },
+    checkout_reverted: {
+      title: 'สรุปการย้อนสถานะรายการยืม',
+      rows: [
+        renderRow('เลขที่คำขอยืม:', safeData.checkout_id, { emphasis: true }),
+        renderRow('โครงการ:', safeData.project_name, { emphasis: true }),
+        renderRow('ผู้ขอยืม:', safeData.borrower_name),
+        renderRow('แผนก:', safeData.borrower_department),
+        renderRow('การเปลี่ยนสถานะ:', [safeData.previous_status, safeData.new_status].filter(hasValue).join(' -> '), { emphasis: true }),
+        renderRow('ผู้ย้อนสถานะ:', safeData.reverted_by),
+        renderRow('วันที่ย้อนสถานะ:', safeData.reverted_date),
+        renderRow('เหตุผลการย้อนสถานะ:', safeData.revert_reason),
+        renderRow('สถานะ:', safeData.status || badge, { emphasis: true }),
+      ],
+    },
     checkout_returned: {
       title: 'สรุปการรับคืนอุปกรณ์',
       rows: [
@@ -1265,7 +1342,16 @@ export const renderEmailText = ({ branding = {}, template = {}, data = SAMPLE_EM
     bodyDetails = `เลขที่คำขอ: ${data.request_no || '-'}\nโครงการ: ${data.project_name || '-'}\nผู้ขอเบิก: ${data.requester_name || data.user_name || '-'}\nสถานะ: ${data.status || defaults.badge}\nจำนวนรายการ: ${data.item_count || '-'}`;
   }
 
-  return `[${appName}] ${heading}\n\n${intro}\n\n${bodyDetails}\n\nเปิดดูรายการในระบบ: ${actionUrl}\n\n---\nอีเมลฉบับนี้ส่งโดยอัตโนมัติจากระบบ ${appName}`;
+  const revertDetails = [
+    hasValue(data.previous_status) || hasValue(data.new_status)
+      ? `การย้อนสถานะ: ${data.previous_status || '-'} -> ${data.new_status || '-'}`
+      : '',
+    hasValue(data.reverted_by) ? `ผู้ย้อนสถานะ: ${data.reverted_by}` : '',
+    hasValue(data.reverted_date) ? `วันที่ย้อนสถานะ: ${data.reverted_date}` : '',
+    hasValue(data.revert_reason) ? `เหตุผลการย้อนสถานะ: ${data.revert_reason}` : '',
+  ].filter(Boolean).join('\n');
+
+  return `[${appName}] ${heading}\n\n${intro}\n\n${bodyDetails}${revertDetails ? '\n' + revertDetails : ''}\n\nเปิดดูรายการในระบบ: ${actionUrl}\n\n---\nอีเมลฉบับนี้ส่งโดยอัตโนมัติจากระบบ ${appName}`;
 };
 
 export const renderUserInvitationEmailText = ({

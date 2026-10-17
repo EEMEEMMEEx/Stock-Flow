@@ -783,3 +783,183 @@ export const dispatchCheckoutNotification = async ({
     return { success: false, error: err.message };
   }
 };
+
+const REVERT_EMAIL_BADGE = {
+  withdrawal_reverted: 'ย้อนสถานะคำขอเบิก',
+  checkout_reverted: 'ย้อนสถานะรายการยืม',
+};
+
+const formatDateOnlyValue = (value) => {
+  if (!value) return '-';
+  return formatThaiDateOrDateTime(String(value).slice(0, 10));
+};
+
+/**
+ * Dispatches the "a SUPER reverted this record" email for withdrawals and
+ * checkouts. Deliberately not cached: an order can be reverted, re-approved and
+ * reverted again, and each reverse transition is a distinct auditable event.
+ */
+export const dispatchRevertNotification = async ({
+  eventType,
+  orderId,
+  kind = 'withdrawal',
+  actorName = '',
+  reason = '',
+  previousStatus = '',
+  newStatus = '',
+}) => {
+  if (!eventType || !orderId) {
+    return { success: false, reason: 'INVALID_ARGUMENTS' };
+  }
+
+  try {
+    const { notificationEvents, branding } = await fetchNotificationSettings();
+    const eventConfig = notificationEvents[eventType];
+    if (eventConfig && eventConfig.enabled === false) {
+      return { success: true, skipped: 'EVENT_DISABLED' };
+    }
+
+    const isCheckout = kind === 'checkout';
+    let order;
+    if (isCheckout) {
+      const { data, error } = await supabase
+        .from('checkout_orders')
+        .select('*, projects:project_id (id, name, project_code)')
+        .eq('id', orderId)
+        .maybeSingle();
+      if (error || !data) {
+        console.warn('[NotificationDispatcher] Revert checkout fetch error:', error?.message);
+        return { success: false, reason: 'ORDER_NOT_FOUND' };
+      }
+      order = data;
+    } else {
+      const { data, error } = await supabase
+        .from('withdrawal_orders')
+        .select('*, projects:project_id (id, name, project_code), requester:requested_by (id, full_name)')
+        .eq('id', orderId)
+        .maybeSingle();
+      if (error || !data) {
+        console.warn('[NotificationDispatcher] Revert withdrawal fetch error:', error?.message);
+        return { success: false, reason: 'ORDER_NOT_FOUND' };
+      }
+      order = data;
+    }
+
+    let items = [];
+    if (isCheckout) {
+      const { data, error } = await supabase
+        .from('checkout_items')
+        .select('id, quantity_borrowed, quantity_returned, serial_number, items:item_id (id, name, sku, unit)')
+        .eq('checkout_order_id', orderId);
+      if (error) {
+        console.warn('[NotificationDispatcher] Revert checkout items fetch error:', error.message);
+        return { success: false, reason: 'ITEMS_NOT_FOUND' };
+      }
+      items = buildCheckoutEmailItems(data || [], {});
+    } else {
+      const { data, error } = await supabase
+        .from('withdrawal_items')
+        .select('id, quantity, item:item_id (id, name, sku, unit)')
+        .eq('order_id', orderId);
+      if (error) {
+        console.warn('[NotificationDispatcher] Revert withdrawal items fetch error:', error.message);
+        return { success: false, reason: 'ITEMS_NOT_FOUND' };
+      }
+      items = (data || []).map((line) => ({
+        name: line.item?.name || 'วัสดุ',
+        sku: line.item?.sku || '-',
+        unit: line.item?.unit || 'หน่วย',
+        requested_qty: line.quantity,
+        approved_qty: line.quantity,
+      }));
+    }
+
+    const targetRoles = eventConfig?.roles || ['ADMIN', 'SUPER'];
+    const actorIds = isCheckout
+      ? [order.borrower_id, order.approved_by]
+      : [order.requested_by, order.approved_by, order.rejected_by, order.completed_by];
+    const resolvedUsers = await resolveUserEmails({
+      userIds: [...new Set(actorIds.filter(Boolean))],
+      roles: targetRoles.filter(role => role !== 'STAFF'),
+    });
+
+    const recipientEmails = new Set();
+    const directUserId = isCheckout ? order.borrower_id : order.requested_by;
+    const directEmail = resolvedUsers.find(user => user.user_id === directUserId)?.email || '';
+
+    resolvedUsers.forEach(user => { if (user.email) recipientEmails.add(user.email.trim()); });
+    emailsForRoles(resolvedUsers, targetRoles.filter(role => role !== 'STAFF'))
+      .forEach(user => { if (user.email) recipientEmails.add(user.email.trim()); });
+    parseEmailList(eventConfig?.to_extra).forEach(email => recipientEmails.add(email));
+
+    const validRecipients = [...recipientEmails].filter(isValidEmail);
+    if (!validRecipients.length) {
+      return { success: true, skipped: 'NO_VALID_RECIPIENTS' };
+    }
+
+    const appName = branding.app_name || 'StockFlow';
+    const publicBaseUrl = normalizeBaseUrl(branding.public_base_url);
+    const orderNumber = order.order_number
+      || (isCheckout ? 'CHK-' : 'WO-') + String(order.id).slice(0, 8).toUpperCase();
+    const totalQuantity = items.reduce((sum, item) => sum + (Number(item.requested_qty) || 0), 0);
+
+    const emailData = {
+      event_type: eventType,
+      app_name: appName,
+      user_name: isCheckout ? (order.borrower_name || 'ผู้ขอยืม') : (order.requester?.full_name || 'ผู้ขอเบิก'),
+      requester_name: isCheckout ? (order.borrower_name || 'ผู้ขอยืม') : (order.requester?.full_name || 'ผู้ขอเบิก'),
+      requester_email: directEmail,
+      request_no: orderNumber,
+      checkout_id: orderNumber,
+      borrower_name: order.borrower_name || 'ผู้ขอยืม',
+      borrower_department: order.borrower_department || '-',
+      borrower_phone: order.borrower_phone || '-',
+      project_name: order.projects?.name || 'โครงการทั่วไป',
+      project_code: order.projects?.project_code || '-',
+      request_date: formatThaiDateTime(order.created_at || order.requested_at),
+      checkout_date: formatThaiDateTime(order.checkout_date || order.created_at),
+      due_date: formatDateOnlyValue(order.expected_return_date),
+      status: String(newStatus || '').toUpperCase() || '-',
+      status_badge: REVERT_EMAIL_BADGE[eventType] || '',
+      fulfillment_status: String(newStatus || '').toUpperCase() || '-',
+      previous_status: String(previousStatus || '').toUpperCase() || '-',
+      new_status: String(newStatus || '').toUpperCase() || '-',
+      reverted_by: actorName || 'SUPER',
+      reverted_date: formatThaiDateTime(new Date().toISOString()),
+      revert_reason: reason || '-',
+      item_count: items.length + ' รายการ',
+      total_quantity: totalQuantity + ' ' + (items[0]?.unit || 'หน่วย'),
+      purpose: order.purpose || '-',
+      note: order.notes || '',
+      action_url: buildActionUrl(
+        publicBaseUrl,
+        isCheckout
+          ? '/checkouts?tab=history&id=' + encodeURIComponent(order.id)
+          : '/withdrawals?tab=orders&id=' + encodeURIComponent(order.id)
+      ),
+      items,
+    };
+
+    const template = { ...(eventConfig || {}), event_type: eventType };
+    const html = renderEmailHtml({ branding, template, data: emailData });
+    const text = renderEmailText({ branding, template, data: emailData });
+    const fallbackSubject = '[' + appName + '] ' + (isCheckout ? 'รายการยืม ' : 'คำขอเบิก ')
+      + orderNumber + ' ถูกย้อนสถานะเป็น ' + emailData.new_status;
+    const subject = resolveSubject(eventConfig?.subject, fallbackSubject, emailData);
+
+    const ccList = parseEmailList(eventConfig?.cc_extra, { exclude: validRecipients });
+    await sendStockFlowEmail({
+      to: validRecipients,
+      cc: ccList.length ? ccList : undefined,
+      subject,
+      html,
+      text,
+      actionUrl: emailData.action_url,
+    });
+
+    return { success: true, dispatched: true, recipientCount: validRecipients.length, ccCount: ccList.length };
+  } catch (err) {
+    console.error('[NotificationDispatcher] dispatchRevertNotification error:', err);
+    return { success: false, error: err.message };
+  }
+};

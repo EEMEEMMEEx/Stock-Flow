@@ -1,5 +1,63 @@
 # Changelog
 
+## [2026-10-17 22:58] - v1.23.1
+
+- **Files Modified:** `src/components/checkouts/CheckoutActiveList.jsx`, `CheckoutHistoryList.jsx`, `CheckoutPendingList.jsx`, `CheckoutDetailModal.jsx`, `CheckoutExtendModal.jsx`, `src/lib/checkoutDisplay.js` (ใหม่), `src/lib/checkoutDisplay.test.js` (ใหม่), `scripts/verify-checkout-active-layout.mjs` (ใหม่), `docs/checkout-active-layout-verification.md` (ใหม่), `scripts/verify-super-revert-ui.mjs`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **แก้ Layout แถวใบยืม-คืนอุปกรณ์ให้แถว "ยืมระยะยาว / ไม่ระบุกำหนดคืน" เหมือนแถวปกติทุกความกว้าง:**
+    - เลขที่ใบยืมและ Badge สถานะใช้ `whitespace-nowrap shrink-0` ไม่ให้ flex บีบข้อความจนตัดเป็นแนวตั้ง
+    - คอลัมน์ข้อมูลซ้ายมี `xl:min-w-[320px]`; แถวสลับเป็นสองคอลัมน์ที่ `xl` และกลุ่มปุ่มใช้ `flex-wrap justify-end` ขึ้นบรรทัดใหม่แทนการบีบเนื้อหา
+    - Chip อุปกรณ์ใช้ `inline-block max-w-full truncate whitespace-nowrap` พร้อม `title` เผยชื่อเต็ม; ชื่อผู้ยืม/แผนก/โครงการมี `title` เมื่อถูกตัด
+    - เพิ่ม `src/lib/checkoutDisplay.js` (`formatProjectLocation`, `resolveCheckoutMeta`) และใช้ร่วมกันใน active/history/pending/detail/extend — ซ่อนไอคอน/ตัวคั่น/ช่องว่างเมื่อไม่มีแผนกหรือโครงการ แทนการแสดง "-" ลอย ๆ
+    - เส้นกำหนดส่งคืนอยู่ใน flow ปกติ ไม่มี absolute; แสดงตั้งแต่ `sm` และไม่ตัดบรรทัด; สถานะยืมระยะยาวใช้สีม่วง/neutral และไม่ถูกจัดเป็น overdue เมื่อ due date เป็น null
+    - ใช้โครงสร้างแถว/สเปเซอร์เดียวกันทั้งแถวปกติและแถวไม่มีกำหนดคืน
+  - เพิ่ม `npm run test:checkout-display` (**4/4 PASS**) และ `npm run verify:checkout-layout` (**21/21 PASS**) พร้อมอัปเดต `verify:super-revert-ui` เป็น **41/41 PASS**
+  - เก็บหลักฐาน before/after ที่ 1920/1440/1280/1024/768/480/360 px, dark mode 1920/1024/360 px และ zoom-equivalent 1536/819/683 px ไว้ใน `test-results/harness/` (before = component ก่อนแก้, after = component ปัจจุบัน)
+  - ปรับ version เป็น `v1.23.1` (PATCH)
+
+## [2026-10-17 22:27] - v1.23.0
+
+- **Files Modified:** `supabase/migrations/83_super_revert_actions_and_audit.sql` (ใหม่), `supabase/migrations/84_harden_super_revert_helpers.sql` (ใหม่), `supabase/tests/fixtures/super_revert_schema.sql` (ใหม่), `scripts/verify-super-revert-sql-sandbox.mjs` (ใหม่), `scripts/verify-super-revert-ui.mjs` (ใหม่), `src/lib/superRevert.js` (ใหม่), `src/lib/superRevert.test.js` (ใหม่), `src/components/common/SuperRevertActionModal.jsx` (ใหม่), `src/components/common/RevertAuditLogModal.jsx` (ใหม่), `src/contexts/AuthProvider.jsx`, `src/pages/Withdrawals.jsx`, `src/pages/Checkouts.jsx`, `src/pages/RoleManagement.jsx`, `src/components/withdrawals/WithdrawalOrdersList.jsx`, `src/components/withdrawals/WithdrawalDetailModal.jsx`, `src/components/checkouts/CheckoutActiveList.jsx`, `src/components/checkouts/CheckoutDetailModal.jsx`, `src/components/checkouts/CheckoutHistoryList.jsx`, `src/components/roles/PermissionManagementModal.jsx`, `src/lib/notificationDispatcher.js`, `src/lib/emailRenderer.js`, `src/lib/emailRenderer.test.js`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `docs/super-revert-undo-plan.md`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **เพิ่มระบบ SUPER Revert / Undo ตาม `docs/super-revert-undo-plan.md` (ใช้ค่า Default ของ OPEN QUESTIONS ทั้ง 3 ข้อ):**
+    - Migration 83 เพิ่มคอลัมน์ Audit มาตรฐาน (`actor_role`, `action_type`, `target_table`, `target_id`, `previous_status`, `new_status`, `reason`, `user_agent`) พร้อม `ip_address` เดิม, เปิด RLS ให้ SUPER/ADMIN อ่านได้, และบังคับ Append-Only ด้วย Trigger `BEFORE UPDATE OR DELETE` (ยกเว้น nested update จาก FK `ON DELETE SET NULL` เพื่อไม่ให้ `admin_delete_user` พัง)
+    - เพิ่มคอลัมน์ติดตามการย้อนสถานะบน `withdrawal_orders`, `checkout_orders` (`last_reverted_by/at`, `last_revert_reason`, `last_revert_from_status/to_status`) และ soft-revert บน `checkout_return_logs` (`is_reverted`, `reverted_by/at`, `revert_reason`)
+    - เพิ่ม Permission `system.revert_actions` (Category: Role Management) ผูกเฉพาะบทบาท SUPER และล็อกใน `admin_save_role_permissions` ไม่ให้มอบให้บทบาทอื่น
+    - สร้าง Atomic RPCs 3 ตัว: `super_revert_withdrawal_action` (completion/approval/rejection), `super_revert_checkout_approval`, `super_revert_checkout_return` — ทุกตัวตรวจ `is_super_admin` ผ่าน helper กลาง, ล็อกแถว `FOR UPDATE`, ป้องกัน Double Submit, คืน/หักสต็อกตาม Ledger และบันทึก Audit ครบทุกฟิลด์
+    - ฝั่ง UI: เพิ่ม `canRevertAction` (fail-closed), ปุ่ม Revert บนรายการ/รายละเอียดใบเบิกและใบยืม, โมดอลยืนยันที่บังคับกรอกเหตุผล + แสดงการเปลี่ยนสถานะ/ผลกระทบสต็อก, Badge "ย้อนสถานะโดย ...", และ Revert Audit Log Viewer บนการ์ด SUPER ในหน้า `/roles`
+    - แจ้งเตือนอีเมลใหม่ `withdrawal_reverted` / `checkout_reverted` พร้อมสถานะก่อน-หลัง ผู้ดำเนินการ และเหตุผล
+    - Migration 84 (forward fix): บันทึกนิยาม `stock_balance` ที่ตรงกับ production 146/146 แถว (นับ `OUT`/`CHECKOUT` เป็นรายการหัก และ `RETURN`/`return_in` เป็นรายการบวก), จำกัด Audit RLS เป็น SUPER/ADMIN, จำกัด Append-Only exemption เฉพาะ FK `ON DELETE SET NULL`, รองรับรายการเบิกเก่าที่ `deducted_quantity = 0/NULL` ด้วย `fulfilled_qty`/`available_at_approval` และบล็อกด้วย `LEGACY_STOCK_UNKNOWN` เมื่อยอดไม่ทราบ, และบล็อกการย้อนรับคืนบนใบยืมที่ถูกยกเลิก/รออนุมัติ/ถูกปฏิเสธ พร้อมปฏิเสธกรณี counter ไม่ตรงแทนการ clamp
+    - เพิ่มคีย์ i18n `superRevert` ครบ 63 คีย์ทั้งไทยและอังกฤษ (parity 100%)
+  - **Verification (รันจริงใน session นี้):**
+    - `npm run verify:super-revert-sql` — Postgres sandbox (PGlite) **54/54 PASS**: RBAC 403, 401, reason 400, state guards, stock restoration per warehouse, legacy deduction fallback, cancelled-loan guard, counter mismatch, cross-project return reversal, idempotency, append-only audit + narrowed FK exemption, FK compatibility, permission lock, audit RLS, view formula, header-helper privilege hardening
+    - `npm run verify:super-revert-ui` — static UI guards **39/39 PASS**
+    - `npm run test:super-revert` — **5/5 PASS**, `npm run test:email` — **33/33 PASS**
+    - `npm run lint` — PASS (0 errors), `npm run check:i18n` — PASS 100%, `npm run build` — PASS
+  - **สถานะ production:** ตรวจพบว่า migration 83 ถูก apply กับ Supabase production แล้วระหว่าง session (คอลัมน์/RPC/permission ปรากฏผ่าน PostgREST) — migration 84 (header hardening) ยังต้อง apply ผ่าน SQL Editor และควรทำ Manual Test Checklist §5.3
+  - ปรับ version เป็น `v1.23.0` (MINOR: เพิ่มฟีเจอร์ใหม่แบบ backward-compatible)
+
+## [2026-10-17 22:18] - v1.22.10
+
+- **Files Modified:** `.agents/skills/*` (28 skills ใหม่), `.agents/skills/THIRD_PARTY_SOURCES.md` (ใหม่), `AGENTS.md`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **ติดตั้งทักษะภายนอก (Third-Party Skills) 28 ทักษะจาก 3 แหล่ง:**
+    - `replica-skill` (11 skills): `replica-architect`, `replica-backend`, `replica-brand`, `replica-build`, `replica-deploy`, `replica-design`, `replica-diff`, `replica-entrepreneur`, `replica-launch`, `replica-recon`, `replica-test`
+    - `superpowers` (15 skills): `superpowers-brainstorming`, `diagnosing-superpowers`, `dispatching-parallel-agents`, `executing-plans`, `finishing-a-development-branch`, `receiving-code-review`, `requesting-code-review`, `subagent-driven-development`, `superpowers-systematic-debugging`, `test-driven-development`, `using-git-worktrees`, `using-superpowers`, `verification-before-completion`, `writing-plans`, `writing-skills`
+    - `xerj` (2 skills): `xerj-code`, `xerj-security-audit`
+  - **ผ่านการตรวจสอบความปลอดภัย (Security Review):** ไม่มี remote code execution (`curl|bash`, `eval`), ไม่มีการรั่วไหลของ secret/SSH key, และไม่ข้าม user confirmation
+  - **จัดการ Name Collisions อย่างปลอดภัย:** ใส่ prefix `superpowers-` ให้กับ `brainstorming` และ `systematic-debugging` เพื่อไม่ให้เขียนทับสกิลเดิมที่มีอยู่ และตรวจสอบแล้วว่า internal references ยังทำงานได้ถูกต้อง
+  - **บันทึกแหล่งที่มา:** สร้าง `.agents/skills/THIRD_PARTY_SOURCES.md` บันทึก URL, Commit SHA, และวันที่ติดตั้ง
+  - **อัปเดต `AGENTS.md`:** เพิ่มหมวด *Skill Usage Policy* กำหนด Mandatory Rule, Conflict Rule, Safety Constraints Subordination, และตารางรวมทักษะทั้งหมด 68 รายการพร้อมเงื่อนไขการเรียกใช้ (trigger conditions) ที่อ้างอิงตรงจาก `SKILL.md`
+  - ปรับ version เป็น `v1.22.10` (PATCH)
+
+## [2026-10-17 21:58] - v1.22.9
+
+- **Files Modified:** `.agents/skills/pstack/SKILL.md` (ใหม่), `.agents/skills/pstack/playbooks/*` (ใหม่), `.agents/skills/pstack/references/*` (ใหม่), `.agents/skills/pstack/scripts/*` (ใหม่), `.agents/plugins/pstack/*` (ใหม่), `AGENTS.md`, `.gitignore`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **ติดตั้ง skill/plugin `pstack` จาก cursor/plugins:** เพิ่มขีดความสามารถการทำงานแบบ Deep Engineering Rigor & Parallel Execution (Poteto Mode) พร้อมชุดคู่มือ 23 Playbooks, 20 Foundational Principles, Anti-slop response guidelines, และ Subagent orchestration protocols
+  - **ปรับปรุงข้อกำหนดใน `AGENTS.md`:** เพิ่ม `pstack` ลงในหมวด MUST READ และเพิ่มหมวด *Mandatory Engineering Workflow (pstack / Poteto Mode)* บังคับให้ AI Agent ต้องเรียกใช้ playbooks และยึดตาม Non-negotiable Triggers ทุกครั้งในงานวิศวกรรมที่ไม่ใช่งานตอบคำถามทั่วไป พร้อม cite principles ที่ชี้นำการตัดสินใจ
+  - ปรับ version เป็น `v1.22.9` (PATCH)
+
 ## [2026-10-16 17:38] - v1.22.8
 
 - **Files Modified:** `supabase/migrations/scripts/82_dashboard_apply_and_selftest.sql` (ใหม่), `scripts/verify-damaged-repair-sql-sandbox.mjs`, `scripts/verify-damaged-repair-resolution.mjs`, `package.json`, `package-lock.json`, `CHANGELOG.md`

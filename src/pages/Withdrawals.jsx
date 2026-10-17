@@ -10,7 +10,7 @@ import { toSafeFileToken } from '@/lib/utils';
 import { isSchemaMismatchError } from '@/lib/rpcErrors';
 import { ALL_WAREHOUSES, buildCartKey, buildWarehouseMap, clampQuantity, getWarehouseBalance, getWarehouseLabel, getWarehousesForItem, pickDefaultWarehouse, resolveSourceWarehouse } from '@/lib/withdrawalStock';
 import toast from 'react-hot-toast';
-import { dispatchWithdrawalNotification, dispatchLowStockAlertNotification } from '@/lib/notificationDispatcher';
+import { dispatchWithdrawalNotification, dispatchLowStockAlertNotification, dispatchRevertNotification } from '@/lib/notificationDispatcher';
 
 // Modular Withdrawal Subcomponents
 import WithdrawalPosTerminal from '@/components/withdrawals/WithdrawalPosTerminal';
@@ -20,6 +20,7 @@ import WithdrawalShortageModal from '@/components/withdrawals/WithdrawalShortage
 import WithdrawalRejectModal from '@/components/withdrawals/WithdrawalRejectModal';
 import WithdrawalCancelModal from '@/components/withdrawals/WithdrawalCancelModal';
 import SignatureRequiredModal from '@/components/common/SignatureRequiredModal';
+import SuperRevertActionModal from '@/components/common/SuperRevertActionModal';
 
 // Shared helpers for withdrawal PDF documents
 const resolveWithdrawalItems = async (order, existingItems = null) => {
@@ -35,7 +36,7 @@ const resolveWithdrawalItems = async (order, existingItems = null) => {
 const WITHDRAWAL_TABS = ['pos', 'orders'];
 
 const Withdrawals = () => {
-  const { isAdmin, isSuperAdmin, can, profile } = useAuth();
+  const { isAdmin, isSuperAdmin, can, canRevertAction, profile } = useAuth();
   const { t } = useTranslation();
   
   const canCreate = can('withdrawals.create');
@@ -103,6 +104,10 @@ const Withdrawals = () => {
   // Cancel Modal State (SUPER Role)
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [orderToCancel, setOrderToCancel] = useState(null);
+
+  // Revert Modal State (SUPER Role)
+  const [isRevertModalOpen, setIsRevertModalOpen] = useState(false);
+  const [revertTarget, setRevertTarget] = useState(null);
 
   // Aggregate item balances based on selected project location
   const mapItemsForProject = (allItems, allBalances, projectId, projectList = []) => {
@@ -258,7 +263,28 @@ const Withdrawals = () => {
       const wData = wRes.data;
       const wError = wRes.error;
       if (wError && wError.code !== '42P01') throw wError;
-      setOrders(wData || []);
+
+      // Resolve the SUPER actor name for the "reverted by ..." badge. Reading the
+      // optional last_reverted_by column from the * payload keeps this query
+      // valid before migration 83 is applied.
+      const reverterIds = [...new Set((wData || []).map(o => o.last_reverted_by).filter(Boolean))];
+      let ordersWithReverter = wData || [];
+      if (reverterIds.length > 0) {
+        const { data: reverterProfiles, error: reverterError } = await supabase
+          .from('profiles')
+          .select('id, full_name')
+          .in('id', reverterIds);
+        if (reverterError) {
+          console.warn('[Withdrawals] Reverter profile lookup failed:', reverterError.message);
+        }
+        const reverterById = new Map((reverterProfiles || []).map(p => [p.id, p]));
+        ordersWithReverter = ordersWithReverter.map(o => (
+          o.last_reverted_by && reverterById.has(o.last_reverted_by)
+            ? { ...o, reverter: reverterById.get(o.last_reverted_by) }
+            : o
+        ));
+      }
+      setOrders(ordersWithReverter);
 
       const pData = pRes.data;
       const iData = iRes.data;
@@ -930,6 +956,13 @@ const Withdrawals = () => {
     }
   };
 
+  // Open Revert Modal (SUPER Role)
+  const openRevertModal = (order, kind) => {
+    if (!canRevertAction || !order || !kind) return;
+    setRevertTarget({ order, kind });
+    setIsRevertModalOpen(true);
+  };
+
   // Open Cancel Modal (SUPER Role)
   const openCancelModal = (order) => {
     setOrderToCancel(order);
@@ -1186,6 +1219,8 @@ const Withdrawals = () => {
           onOpenRejectModal={openRejectModal}
           onOpenCancelModal={openCancelModal}
           onCompleteOrder={handleCompleteOrder}
+          canRevertAction={canRevertAction}
+          onOpenRevertModal={openRevertModal}
         />
       )}
 
@@ -1220,6 +1255,11 @@ const Withdrawals = () => {
         }}
         onDownloadPDF={handleDownloadPDF}
         onDownloadDispatchPDF={handleDownloadDispatchPDF}
+        canRevertAction={canRevertAction}
+        onOpenRevertModal={(order, kind) => {
+          openRevertModal(order, kind);
+          setIsDetailsModalOpen(false);
+        }}
       />
 
       {/* Shortage Warning & Override Modal */}
@@ -1251,6 +1291,32 @@ const Withdrawals = () => {
         order={orderToCancel}
         onConfirmCancel={handleCancelSubmit}
         isProcessing={isProcessing}
+      />
+
+      {/* SUPER Revert / Undo Modal */}
+      <SuperRevertActionModal
+        isOpen={isRevertModalOpen}
+        onClose={() => {
+          setIsRevertModalOpen(false);
+          setRevertTarget(null);
+        }}
+        kind={revertTarget?.kind}
+        order={revertTarget?.order}
+        onSuccess={(data, reason) => {
+          if (data?.order_id) {
+            dispatchRevertNotification({
+              eventType: 'withdrawal_reverted',
+              orderId: data.order_id,
+              kind: 'withdrawal',
+              actorName: profile?.full_name || 'SUPER',
+              reason,
+              previousStatus: data.previous_status,
+              newStatus: data.new_status
+            }).catch(err => console.warn('[Revert Notification Warning]:', err));
+          }
+          setIsDetailsModalOpen(false);
+          fetchData();
+        }}
       />
 
       {/* Signature Required Gate Modal */}

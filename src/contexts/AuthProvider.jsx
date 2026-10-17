@@ -432,6 +432,11 @@ export const AuthProvider = ({ children }) => {
   const canAny = (permCodes = []) => permCodes.some(code => can(code));
   const canAll = (permCodes = []) => permCodes.every(code => can(code));
 
+  // Single source of truth for the SUPER-only revert/undo capability.
+  // Uses the resolved permission list (not can()) because can() has a SUPER
+  // master bypass: that would render the buttons before migration 83 exists.
+  const canRevertAction = isSuperAdmin && permissions.includes('system.revert_actions');
+
   return (
     <AuthContext.Provider value={{ 
       user, 
@@ -446,6 +451,7 @@ export const AuthProvider = ({ children }) => {
       can,
       canAny,
       canAll,
+      canRevertAction,
       assignedProjectIds,
       allProjectsAccess,
       mustChangePassword: profile?.must_change_password === true,

@@ -4,10 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 
   Search, History, CheckCircle2, Eye, User, 
-  Building2, FileText, Infinity as InfinityIcon, Ban
+  Building2, FileText, Infinity as InfinityIcon, Ban, RotateCcw
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useTranslation } from '@/i18n';
+import { formatRevertDate } from '@/lib/superRevert';
+import { resolveCheckoutMeta } from '@/lib/checkoutDisplay';
 
 const CheckoutHistoryList = ({
   orders = [],
@@ -16,7 +18,7 @@ const CheckoutHistoryList = ({
   onOpenDetailModal,
   onOpenCancelModal
 }) => {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
 
   const completedOrders = useMemo(() => {
@@ -82,9 +84,7 @@ const CheckoutHistoryList = ({
         ) : (
           <div className="divide-y divide-border/40">
             {filteredOrders.map(order => {
-              const projectDisplay = order.projects?.project_code 
-                ? `[${order.projects.project_code}] ${order.projects.name}` 
-                : (order.projects?.name || '-');
+              const { department, location } = resolveCheckoutMeta(order);
 
               const totalBorrowed = (order.checkout_items || []).reduce((s, i) => s + Number(i.quantity_borrowed || 0), 0);
               const isRejected = order.status === 'rejected';
@@ -125,14 +125,21 @@ const CheckoutHistoryList = ({
                     </div>
 
                     <div className="flex flex-wrap items-center gap-3 text-xs text-foreground font-semibold">
-                      <span className="flex items-center gap-1">
-                        <User className="w-3.5 h-3.5 text-muted-foreground" />
-                        <span>{order.borrower_name}</span>
-                        {order.borrower_department && <span className="text-muted-foreground font-normal">({order.borrower_department})</span>}
+                      <span className="flex items-center gap-1 min-w-0">
+                        <User className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                        <span className="truncate" title={order.borrower_name}>{order.borrower_name}</span>
+                        {department && (
+                          <span className="text-muted-foreground font-normal truncate" title={department}>
+                            ({department})
+                          </span>
+                        )}
                       </span>
-                      <span className="text-muted-foreground font-normal flex items-center gap-1 truncate">
-                        <Building2 className="w-3 h-3 text-indigo-500 shrink-0" /> {projectDisplay}
-                      </span>
+                      {location && (
+                        <span className="text-muted-foreground font-normal flex items-center gap-1 min-w-0" title={location}>
+                          <Building2 className="w-3 h-3 text-indigo-500 shrink-0" />
+                          <span className="truncate">{location}</span>
+                        </span>
+                      )}
                     </div>
 
                     {isRejected && order.rejection_reason && (
@@ -146,6 +153,23 @@ const CheckoutHistoryList = ({
                       <div className="p-2 rounded-lg bg-slate-500/10 text-slate-700 dark:text-slate-300 text-[11px] font-medium border border-slate-500/20">
                         <span className="font-semibold mr-1">{t('checkouts.cancellationReasonLabel', 'เหตุผลที่ยกเลิก')}:</span>
                         {order.cancellation_reason}
+                      </div>
+                    )}
+
+                    {order.last_reverted_at && (
+                      <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-[10px] font-semibold text-amber-700 dark:text-amber-300 flex flex-wrap items-center gap-1.5">
+                        <RotateCcw className="w-3 h-3 shrink-0" aria-hidden="true" />
+                        <span>
+                          {t('superRevert.lastReverted', {
+                            name: order.reverter?.full_name || 'SUPER',
+                            date: formatRevertDate(order.last_reverted_at, lang)
+                          })}
+                        </span>
+                        {order.last_revert_reason && (
+                          <span className="font-normal text-amber-800/80 dark:text-amber-200/80 truncate max-w-[280px]" title={order.last_revert_reason}>
+                            {t('superRevert.revertReason')}: {order.last_revert_reason}
+                          </span>
+                        )}
                       </div>
                     )}
 

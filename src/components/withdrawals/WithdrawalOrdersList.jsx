@@ -13,6 +13,7 @@ import toast from 'react-hot-toast';
 import { useTranslation } from '@/i18n';
 import { getWarehouseLabel } from '@/lib/withdrawalStock';
 import StatusBadge from '@/components/ui/StatusBadge';
+import { REVERT_KINDS } from '@/lib/superRevert';
 
 const WithdrawalOrdersList = ({
   orders = [],
@@ -30,7 +31,9 @@ const WithdrawalOrdersList = ({
   onApproveOrder,
   onOpenRejectModal,
   onOpenCancelModal,
-  onCompleteOrder
+  onCompleteOrder,
+  canRevertAction = false,
+  onOpenRevertModal
 }) => {
   const { t } = useTranslation();
   const [search, setSearch] = useState('');
@@ -368,6 +371,12 @@ const WithdrawalOrdersList = ({
                       has_shortage={order.has_shortage}
                       is_shortage_override={order.is_shortage_override}
                     />
+                    {order.last_reverted_at && (
+                      <span className="mt-1 inline-flex items-center gap-1 rounded-md border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-300">
+                        <RotateCcw className="w-2.5 h-2.5" aria-hidden="true" />
+                        {t('superRevert.revertedBadge')}
+                      </span>
+                    )}
                   </TableCell>
 
                   {/* Action Buttons Column */}
@@ -447,6 +456,43 @@ const WithdrawalOrdersList = ({
                           onClick={() => onCompleteOrder(order.id)}
                         >
                           {t('withdrawals.confirmReceipt', 'Confirm Receipt')}
+                        </Button>
+                      )}
+
+                      {canRevertAction && (
+                        order.status === 'completed' || order.status === 'approved' || order.status === 'rejected'
+                      ) && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="xs"
+                          className="h-9 min-h-[44px] sm:min-h-0 sm:h-8 px-2.5 rounded-lg text-xs font-semibold text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800 hover:bg-amber-50 dark:hover:bg-amber-950/40 gap-1 cursor-pointer"
+                          onClick={() => onOpenRevertModal && onOpenRevertModal(
+                            order,
+                            order.status === 'completed'
+                              ? REVERT_KINDS.WITHDRAWAL_COMPLETION
+                              : order.status === 'approved'
+                              ? REVERT_KINDS.WITHDRAWAL_APPROVAL
+                              : REVERT_KINDS.WITHDRAWAL_REJECTION
+                          )}
+                          title={t(
+                            order.status === 'completed'
+                              ? 'superRevert.revertCompletionBtn'
+                              : order.status === 'approved'
+                              ? 'superRevert.revertApprovalBtn'
+                              : 'superRevert.revertRejectionBtn'
+                          )}
+                        >
+                          <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
+                          <span>
+                            {t(
+                              order.status === 'completed'
+                                ? 'superRevert.revertCompletionBtn'
+                                : order.status === 'approved'
+                                ? 'superRevert.revertApprovalBtn'
+                                : 'superRevert.revertRejectionBtn'
+                            )}
+                          </span>
                         </Button>
                       )}
 
