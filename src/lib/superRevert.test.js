@@ -52,6 +52,42 @@ test('maps checkout approval and return reverts to their own RPCs', () => {
   assert.equal(returned.toStatus, 'active');
 });
 
+test('maps checkout rejection, all-returns and repair reverts to their RPCs', () => {
+  const rejection = resolveRevertRequest(REVERT_KINDS.CHECKOUT_REJECTION, { order: { ...order, status: 'rejected' } });
+  assert.equal(rejection.rpc, 'super_revert_checkout_rejection');
+  assert.equal(rejection.params.p_order_id, 'order-1');
+  assert.equal(rejection.toStatus, 'pending');
+  assert.equal(rejection.auditAction, 'CHECKOUT_REJECT_REVERT');
+
+  const allReturns = resolveRevertRequest(REVERT_KINDS.CHECKOUT_RETURNS, { order });
+  assert.equal(allReturns.rpc, 'super_revert_checkout_order_returns');
+  assert.equal(allReturns.toStatus, 'active');
+
+  const repair = resolveRevertRequest(REVERT_KINDS.CHECKOUT_REPAIR, {
+    returnLog: { id: 'log-9', repair_resolution_status: 'restored_to_stock' },
+  });
+  assert.equal(repair.rpc, 'super_revert_damaged_repair');
+  assert.equal(repair.params.p_return_log_id, 'log-9');
+  assert.equal(repair.fromStatus, 'restored_to_stock');
+  assert.equal(repair.toStatus, 'unresolved');
+  assert.equal(repair.auditAction, 'CHECKOUT_REPAIR_REVERT');
+
+  assert.equal(resolveRevertRequest(REVERT_KINDS.CHECKOUT_RETURNS, { order: null }), null);
+  assert.equal(resolveRevertRequest(REVERT_KINDS.CHECKOUT_REPAIR, { returnLog: null }), null);
+});
+
+test('summarizes the all-returns stock impact from the normal-return counters', () => {
+  const impact = summarizeRevertStockImpact(REVERT_KINDS.CHECKOUT_RETURNS, { order });
+  assert.deepEqual(impact, { type: 'deduct_returns_all', qty: 2, unit: 'pcs' });
+
+  const none = summarizeRevertStockImpact(REVERT_KINDS.CHECKOUT_REJECTION, { order: { ...order, checkout_items: [] } });
+  assert.deepEqual(none, { type: 'none' });
+});
+
+test('maps the S/N re-loan guard to its own error key', () => {
+  assert.equal(parseRevertErrorKey({ message: 'EQUIPMENT_ALREADY_RELOANED: Serial SN-1 is already on loan' }), 'superRevert.errEquipmentReloaned');
+});
+
 test('recomputes active when the reverted return was the last accounted quantity', () => {
   const single = {
     ...order,

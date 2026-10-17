@@ -761,6 +761,23 @@ const CheckoutDetailModal = ({
                           <span>{t('superRevert.revertReturnBtn')}</span>
                         </Button>
                       )}
+                      {canRevertAction && !log.is_reverted && onOpenRevertModal
+                        && log.repair_resolution_status && log.repair_resolution_status !== 'unresolved' && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            onClose();
+                            onOpenRevertModal(order, REVERT_KINDS.CHECKOUT_REPAIR, log);
+                          }}
+                          className="rounded-lg h-9 min-h-[44px] sm:min-h-0 text-[11px] gap-1 font-semibold text-sky-700 dark:text-sky-300 border-sky-300 dark:border-sky-800 hover:bg-sky-50 dark:hover:bg-sky-950/40 cursor-pointer"
+                          title={t('superRevert.revertRepairBtn', 'ย้อนผลการซ่อม')}
+                        >
+                          <Wrench className="w-3 h-3" aria-hidden="true" />
+                          <span>{t('superRevert.revertRepairBtn', 'ย้อนผลการซ่อม')}</span>
+                        </Button>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -917,6 +934,42 @@ const CheckoutDetailModal = ({
               >
                 <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
                 <span>{t('superRevert.revertCheckoutApprovalBtn')}</span>
+              </Button>
+            )}
+
+            {canRevertAction && onOpenRevertModal && order.status === 'rejected' && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  onClose();
+                  onOpenRevertModal(order, REVERT_KINDS.CHECKOUT_REJECTION);
+                }}
+                className="rounded-lg h-9 min-h-[44px] sm:min-h-0 text-xs gap-1.5 font-semibold text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800 hover:bg-amber-50 dark:hover:bg-amber-950/40 shadow-2xs cursor-pointer px-4"
+                title={t('superRevert.revertRejectionBtn')}
+              >
+                <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
+                <span>{t('superRevert.revertRejectionBtn')}</span>
+              </Button>
+            )}
+
+            {canRevertAction && onOpenRevertModal
+              && (order.status === 'completed' || order.status === 'partial_returned')
+              && returnLogs.filter(log => !log.is_reverted).length > 0 && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  onClose();
+                  onOpenRevertModal(order, REVERT_KINDS.CHECKOUT_RETURNS);
+                }}
+                className="rounded-lg h-9 min-h-[44px] sm:min-h-0 text-xs gap-1.5 font-semibold text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800 hover:bg-amber-50 dark:hover:bg-amber-950/40 shadow-2xs cursor-pointer px-4"
+                title={t('superRevert.revertAllReturnsBtn', 'ย้อนการรับคืนทั้งหมด')}
+              >
+                <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
+                <span>{t('superRevert.revertAllReturnsBtn', 'ย้อนการรับคืนทั้งหมด')}</span>
               </Button>
             )}
 

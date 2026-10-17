@@ -1040,6 +1040,13 @@ export default {
     "cancellationReasonPlaceholder": "Specify the reason for cancelling this equipment loan...",
     "cancellationReasonLabel": "Reason",
     "confirmCancelOrder": "Confirm Cancellation"
+  ,
+    "historyFilterAll": "All",
+    "historyFilterCompleted": "Fully returned",
+    "historyFilterApproved": "Approved / on loan",
+    "historyFilterRejected": "Rejected / cancelled",
+    "statusPartialReturned": "Partially returned",
+    "dueDateLabel": "Due date"
   },
   "history": {
     "title": "Transaction History Audit Log",
@@ -2326,5 +2333,16 @@ export default {
     "returnLogReverted": "Reverted on {{date}}",
     "returnLogRevertedReason": "Reason",
     "today": "today"
+  ,
+    "actionCheckoutRejection": "Revert loan rejection",
+    "actionCheckoutReturns": "Revert all return confirmations",
+    "actionCheckoutRepair": "Revert repair resolution",
+    "descCheckoutRejection": "The loan returns to PENDING and the rejection details are cleared. Stock is unchanged.",
+    "descCheckoutReturns": "Every return record that has not been reverted is rolled back, the equipment returns to on-loan, and the credited stock is deducted from the destination warehouse.",
+    "descCheckoutRepair": "The repair/disposal resolution returns to UNRESOLVED and the repair stock movements are reversed with opposite ledger entries.",
+    "errEquipmentReloaned": "Cannot revert: this serial number is already on loan in another order.",
+    "deductReturnsAll": "Deduct {{qty}} {{unit}} from the destination warehouse (normal-condition returns only)",
+    "revertRepairBtn": "Revert repair",
+    "revertAllReturnsBtn": "Revert all returns"
   }
 };

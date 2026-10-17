@@ -154,7 +154,17 @@ CREATE TABLE public.checkout_return_logs (
   repair_resolution_status text NOT NULL DEFAULT 'unresolved',
   caim_inbound_processed_at timestamptz,
   caim_stock_in_order_id uuid,
-  caim_scrap_disposal_id uuid
+  caim_scrap_disposal_id uuid,
+  repair_notes text,
+  repair_resolved_at timestamptz,
+  repair_resolved_by uuid,
+  restored_stock_in_order_id uuid,
+  repair_scrap_disposal_id uuid,
+  spare_part_item_id uuid,
+  spare_part_quantity numeric,
+  replaced_serial_number text,
+  caim_repair_result text,
+  caim_closed_at timestamptz
 );
 
 CREATE TABLE public.stock_in_orders (
@@ -217,6 +227,26 @@ JOIN public.stock_in_orders sio ON sio.id = sii.order_id
 JOIN public.items i ON i.id = sii.item_id
 JOIN public.projects p ON p.id = sio.project_id
 GROUP BY sio.project_id, sii.item_id, i.name, i.unit, p.name;
+
+
+-- Created by migration 79 in production; mirrored here for migration 85.
+CREATE TABLE public.scrap_disposal_items (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  checkout_return_log_id UUID REFERENCES public.checkout_return_logs(id) ON DELETE SET NULL,
+  checkout_order_id UUID REFERENCES public.checkout_orders(id) ON DELETE SET NULL,
+  project_id UUID REFERENCES public.projects(id) ON DELETE SET NULL,
+  item_id UUID REFERENCES public.items(id) ON DELETE SET NULL,
+  quantity INTEGER NOT NULL DEFAULT 1 CHECK (quantity > 0),
+  serial_number TEXT,
+  reason TEXT,
+  disposal_method TEXT,
+  caim_ticket_id TEXT,
+  caim_closed_at TIMESTAMPTZ,
+  closed_by TEXT,
+  disposed_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  notes TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
 
 CREATE OR REPLACE FUNCTION public.has_permission(p_user_id uuid, p_perm_code text)
 RETURNS boolean LANGUAGE sql STABLE AS $fn$

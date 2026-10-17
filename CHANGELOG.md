@@ -1,5 +1,38 @@
 # Changelog
 
+## [2026-10-18 02:10] - v1.23.3
+
+- **Files Modified:** `supabase/migrations/85_super_revert_checkout_actions.sql` (ใหม่), `src/lib/superRevert.js`, `src/lib/superRevert.test.js`, `src/components/common/SuperRevertActionModal.jsx`, `src/components/checkouts/CheckoutHistoryList.jsx`, `src/components/checkouts/CheckoutDetailModal.jsx`, `src/pages/Checkouts.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `supabase/tests/fixtures/super_revert_schema.sql`, `scripts/verify-super-revert-sql-sandbox.mjs`, `scripts/verify-super-revert-ui.mjs`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **ปิดช่องว่างของระบบ SUPER Revert ให้ครบตามสเปก `docs/ระบบย้อนกลับสถานะการยืม-คืนพัสดุ` (ส่วน `/checkouts?tab=history` + `/roles`):**
+    - เพิ่ม Migration 85 (forward-only, idempotent) รวม 3 RPCs ที่ยังขาด: `super_revert_checkout_order_returns` (ย้อนการรับคืนทุกรายการของใบยืมในคลิกเดียว), `super_revert_checkout_rejection` (rejected → pending), `super_revert_damaged_repair` (restored_to_stock/parts_harvested/scrapped → unresolved โดยกลับรายการ Ledger ด้วยธุรกรรมตรงข้าม ไม่ลบประวัติ) พร้อมคอลัมน์ `is_reverted/reverted_by/at/revert_reason` บน `scrap_disposal_items`
+    - เพิ่ม Guard 2 `EQUIPMENT_ALREADY_RELOANED`: บล็อกการย้อนรับคืนเมื่อ S/N เดียวกันถูกยืมออกไปในใบยืมอื่นที่ยัง active/overdue/partial_returned (redefine `super_revert_checkout_return` จากนิยาม Migration 84 โดยคง counter-mismatch guard เดิม)
+    - ขยายแท็บ `/checkouts?tab=history` ให้แสดงทุกรายการที่ดำเนินการแล้ว (completed, partial_returned, active, overdue, rejected, cancelled — ยกเว้น pending) พร้อมตัวกรองย่อย (ทั้งหมด / คืนครบแล้ว / อนุมัติแล้ว-กำลังยืม / ถูกปฏิเสธ-ยกเลิก), Badge สถานะกำลังยืม/เลยกำหนด/คืนบางส่วน, กำหนดคืน และปุ่ม "ย้อนกลับ" ต่อแถวตามสถานะ (คืน/อนุมัติ/ปฏิเสธ) ที่แสดงเฉพาะ `canRevertAction`
+    - `CheckoutDetailModal`: เพิ่มปุ่มย้อนผลการซ่อมรายรายการรับคืน, ปุ่มย้อนการปฏิเสธ (footer) และปุ่มย้อนการรับคืนทั้งหมด (order-level) เฉพาะ SUPER
+    - `superRevert.js` + `SuperRevertActionModal`: เพิ่ม kind `CHECKOUT_RETURNS`, `CHECKOUT_REJECTION`, `CHECKOUT_REPAIR`, mapping RPC/audit/ผลกระทบสต็อก และแปล error `EQUIPMENT_ALREADY_RELOANED`
+    - เพิ่มคีย์ i18n 16 คีย์ (ไทย/อังกฤษ) สำหรับตัวกรองประวัติ, สถานะใบยืม, คำอธิบาย/ป้ายปุ่มย้อนผลซ่อมและย้อนทั้งหมด, ข้อความ S/N ถูกยืมซ้ำ — parity 100%
+  - **Verification (รันจริงใน session นี้):**
+    - `npm run verify:super-revert-sql` — Postgres sandbox (PGlite) **66/66 PASS** (เพิ่มเทสต์ rejection revert, order-level multi-log revert, repair revert → แล้วย้อนรับคืนได้, S/N guard, audit action types ใหม่, migration 85 idempotent)
+    - `npm run verify:super-revert-ui` — static UI guards **56/56 PASS**
+    - `npm run test:super-revert` — **8/8 PASS**
+    - `npm run check:i18n` — **2018/2018 keys, 100% parity**
+    - `npm run lint` — 0 errors (14 pre-existing warnings)
+    - `npm run build` — PASS
+    - Browser smoke (Edge headless + CDP, read-only ไม่กดยืนยัน): login สำเร็จ → `/checkouts?tab=history` แสดง 41 รายการพร้อมปุ่ม Revert 41 ปุ่มและตัวกรอง 4 ตัว; เปิดโมดอล "Revert all return confirmations" แสดง COMPLETED → ACTIVE, SUPER only, ช่องเหตุผลบังคับ และปุ่มยืนยัน disabled จนกว่าจะกรอก; `/roles` เปิด Manage Permissions ของ ADMIN พบแถว `system.revert_actions` เป็น disabled + ข้อความล็อก; ที่ 375px ไม่มี horizontal overflow (scrollWidth = clientWidth = 375)
+  - ปรับ version เป็น `v1.23.3` (PATCH)
+
+
+## [2026-10-18 01:30] - v1.23.2
+
+- **Files Modified:** `src/contexts/AuthProvider.jsx`, `src/lib/superRevert.js`, `src/components/common/SuperRevertActionModal.jsx`, `src/components/checkouts/CheckoutDetailModal.jsx`, `src/components/checkouts/CheckoutHistoryList.jsx`, `src/pages/Checkouts.jsx`, `supabase/migrations/85_super_revert_checkout_actions.sql` (ใหม่), `supabase/tests/fixtures/super_revert_schema.sql`, `scripts/verify-super-revert-sql-sandbox.mjs`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **ผสานฟีเจอร์ SUPER Revert / Undo จาก Remote PR #50 เข้ากับ Local AuthProvider และส่วนต่อขยายใบยืม-คืน:**
+    - ผสาน `src/contexts/AuthProvider.jsx`: นำ `canRevertAction` จาก remote มาใช้ร่วมกับ safe baseline permissions (`superOnlyPerms` สำหรับสิทธิ์ `system.revert_actions` ของผู้ใช้บทบาท `super`) โดยรักษา fail-closed gate ตรงตาม static guard
+    - เพิ่ม Migration 85 (`85_super_revert_checkout_actions.sql`) เพื่อรองรับการย้อนสถานะเพิ่มเติมของฝั่งใบยืม-คืนพัสดุ (ย้อนคืนทุกรายการ, ย้อนปฏิเสธ, ย้อนผลซ่อมพัสดุชำรุด พร้อม S/N re-loan guard) อย่างปลอดภัยแบบ Forward-Only ไม่ชนกับ Migration 83/84 ของ remote
+    - เชื่อมโยง UI บน `CheckoutHistoryList.jsx`, `CheckoutDetailModal.jsx`, `SuperRevertActionModal.jsx`, และ `Checkouts.jsx`
+    - ตรวจสอบความถูกต้องครบถ้วน: Static Guard 41/41 PASS, SQL Sandbox 66/66 PASS, Unit Tests 9/9 PASS, Layout Guards 21/21 PASS, i18n 100% (2002/2002), ESLint 0 errors, Vite build ผ่าน 100%
+  - ปรับ version เป็น `v1.23.2` (PATCH)
+
 ## [2026-10-17 22:58] - v1.23.1
 
 - **Files Modified:** `src/components/checkouts/CheckoutActiveList.jsx`, `CheckoutHistoryList.jsx`, `CheckoutPendingList.jsx`, `CheckoutDetailModal.jsx`, `CheckoutExtendModal.jsx`, `src/lib/checkoutDisplay.js` (ใหม่), `src/lib/checkoutDisplay.test.js` (ใหม่), `scripts/verify-checkout-active-layout.mjs` (ใหม่), `docs/checkout-active-layout-verification.md` (ใหม่), `scripts/verify-super-revert-ui.mjs`, `package.json`, `package-lock.json`, `CHANGELOG.md`

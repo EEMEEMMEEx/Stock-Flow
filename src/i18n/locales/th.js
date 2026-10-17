@@ -1040,6 +1040,13 @@ export default {
     "cancellationReasonPlaceholder": "ระบุเหตุผลในการยกเลิกรายการยืม-คืนนี้...",
     "cancellationReasonLabel": "เหตุผล",
     "confirmCancelOrder": "ยืนยันการยกเลิก"
+  ,
+    "historyFilterAll": "ทั้งหมด",
+    "historyFilterCompleted": "คืนครบแล้ว",
+    "historyFilterApproved": "อนุมัติแล้ว / กำลังยืม",
+    "historyFilterRejected": "ถูกปฏิเสธ / ยกเลิก",
+    "statusPartialReturned": "คืนบางส่วน",
+    "dueDateLabel": "กำหนดคืน"
   },
   "history": {
     "title": "ประวัติรายการย้อนหลัง",
@@ -2326,5 +2333,16 @@ export default {
     "returnLogReverted": "ย้อนสถานะเมื่อ {{date}}",
     "returnLogRevertedReason": "เหตุผล",
     "today": "วันนี้"
+  ,
+    "actionCheckoutRejection": "ย้อนการปฏิเสธใบยืม",
+    "actionCheckoutReturns": "ย้อนการรับคืนทั้งหมด",
+    "actionCheckoutRepair": "ย้อนผลการซ่อม",
+    "descCheckoutRejection": "ใบยืมจะกลับไปสถานะ PENDING และล้างข้อมูลการปฏิเสธ โดยไม่มีผลกระทบต่อสต็อก",
+    "descCheckoutReturns": "รายการรับคืนที่ยังไม่ถูกย้อนทั้งหมดจะถูกย้อน อุปกรณ์กลับสู่สถานะกำลังยืม และหักยอดสต็อกที่เคยรับคืนออกจากคลังปลายทาง",
+    "descCheckoutRepair": "ผลการซ่อม/จำหน่ายจะกลับสู่สถานะ UNRESOLVED และระบบจะปรับยอดสต็อกที่เกิดจากการซ่อมกลับคืนแบบตรงกันข้าม",
+    "errEquipmentReloaned": "ไม่สามารถย้อนได้เพราะอุปกรณ์ S/N นี้ถูกยืมออกไปในใบยืมอื่นแล้ว",
+    "deductReturnsAll": "หัก {{qty}} {{unit}} ออกจากคลังปลายทาง (เฉพาะรายการคืนสภาพปกติ)",
+    "revertRepairBtn": "ย้อนผลการซ่อม",
+    "revertAllReturnsBtn": "ย้อนการรับคืนทั้งหมด"
   }
 };

@@ -7,6 +7,9 @@ export const REVERT_KINDS = {
   WITHDRAWAL_REJECTION: 'withdrawal_rejection',
   CHECKOUT_APPROVAL: 'checkout_approval',
   CHECKOUT_RETURN: 'checkout_return',
+  CHECKOUT_RETURNS: 'checkout_returns',
+  CHECKOUT_REJECTION: 'checkout_rejection',
+  CHECKOUT_REPAIR: 'checkout_repair',
 };
 
 export const REVERT_AUDIT_ACTION_TYPES = [
@@ -15,6 +18,8 @@ export const REVERT_AUDIT_ACTION_TYPES = [
   'WITHDRAWAL_REJECT_REVERT',
   'CHECKOUT_APPROVAL_REVERT',
   'CHECKOUT_RETURN_REVERT',
+  'CHECKOUT_REJECT_REVERT',
+  'CHECKOUT_REPAIR_REVERT',
 ];
 
 export const REVERT_ACTION_LABEL_KEYS = {
@@ -23,6 +28,8 @@ export const REVERT_ACTION_LABEL_KEYS = {
   WITHDRAWAL_REJECT_REVERT: 'superRevert.actionWithdrawalRejection',
   CHECKOUT_APPROVAL_REVERT: 'superRevert.actionCheckoutApproval',
   CHECKOUT_RETURN_REVERT: 'superRevert.actionCheckoutReturn',
+  CHECKOUT_REJECT_REVERT: 'superRevert.actionCheckoutRejection',
+  CHECKOUT_REPAIR_REVERT: 'superRevert.actionCheckoutRepair',
 };
 
 const REVERT_RPC_BY_KIND = {
@@ -31,6 +38,9 @@ const REVERT_RPC_BY_KIND = {
   [REVERT_KINDS.WITHDRAWAL_REJECTION]: 'super_revert_withdrawal_action',
   [REVERT_KINDS.CHECKOUT_APPROVAL]: 'super_revert_checkout_approval',
   [REVERT_KINDS.CHECKOUT_RETURN]: 'super_revert_checkout_return',
+  [REVERT_KINDS.CHECKOUT_RETURNS]: 'super_revert_checkout_order_returns',
+  [REVERT_KINDS.CHECKOUT_REJECTION]: 'super_revert_checkout_rejection',
+  [REVERT_KINDS.CHECKOUT_REPAIR]: 'super_revert_damaged_repair',
 };
 
 const TARGET_ACTION_BY_KIND = {
@@ -51,6 +61,39 @@ export const resolveRevertRequest = (kind, { order = null, returnLog = null } = 
       fromStatus: order?.status || 'completed',
       toStatus: remainingStatusAfterReturnRevert(order, returnLog),
       auditAction: 'CHECKOUT_RETURN_REVERT',
+    };
+  }
+
+  if (kind === REVERT_KINDS.CHECKOUT_RETURNS) {
+    if (!order?.id) return null;
+    return {
+      rpc,
+      params: { p_order_id: order.id, p_reason: null },
+      fromStatus: order.status,
+      toStatus: 'active',
+      auditAction: 'CHECKOUT_RETURN_REVERT',
+    };
+  }
+
+  if (kind === REVERT_KINDS.CHECKOUT_REJECTION) {
+    if (!order?.id) return null;
+    return {
+      rpc,
+      params: { p_order_id: order.id, p_reason: null },
+      fromStatus: order.status,
+      toStatus: 'pending',
+      auditAction: 'CHECKOUT_REJECT_REVERT',
+    };
+  }
+
+  if (kind === REVERT_KINDS.CHECKOUT_REPAIR) {
+    if (!returnLog?.id) return null;
+    return {
+      rpc,
+      params: { p_return_log_id: returnLog.id, p_reason: null },
+      fromStatus: returnLog.repair_resolution_status || 'resolved',
+      toStatus: 'unresolved',
+      auditAction: 'CHECKOUT_REPAIR_REVERT',
     };
   }
 
@@ -108,6 +151,19 @@ export const summarizeRevertStockImpact = (kind, { order = null, returnLog = nul
     return qty > 0 ? { type: 'restore_checkout', qty, unit } : { type: 'none' };
   }
 
+  if (kind === REVERT_KINDS.CHECKOUT_RETURNS) {
+    const items = order?.checkout_items || [];
+    const qty = items.reduce((sum, item) => sum + Number(item.quantity_returned || 0), 0);
+    const unit = items[0]?.items?.unit || '';
+    return qty > 0 ? { type: 'deduct_returns_all', qty, unit } : { type: 'none' };
+  }
+
+  // Rejection and repair reverts only move statuses / ledger offsets: the modal
+  // description carries the exact wording, so no quantity is shown here.
+  if (kind === REVERT_KINDS.CHECKOUT_REJECTION || kind === REVERT_KINDS.CHECKOUT_REPAIR) {
+    return { type: 'none' };
+  }
+
   if (kind === REVERT_KINDS.CHECKOUT_RETURN && returnLog?.item_condition === 'normal') {
     return {
       type: 'deduct_return',
@@ -129,6 +185,7 @@ export const parseRevertErrorKey = (error) => {
   if (code === '42501') return 'superRevert.errForbidden';
   if (code === '22023' || /reason is required/i.test(message)) return 'superRevert.errReasonRequired';
   if (/LEGACY_STOCK_UNKNOWN/.test(message)) return 'superRevert.errLegacyStock';
+  if (/EQUIPMENT_ALREADY_RELOANED/.test(message)) return 'superRevert.errEquipmentReloaned';
   if (/INSUFFICIENT_STOCK/.test(message)) return 'superRevert.errInsufficientStock';
   if (/CASCADE_BLOCKED/.test(message)) return 'superRevert.errCascadeBlocked';
   if (/INVALID_STATE/.test(message)) return 'superRevert.errInvalidState';

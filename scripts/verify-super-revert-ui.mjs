@@ -20,6 +20,8 @@ const modal = read('src/components/common/SuperRevertActionModal.jsx');
 const auditModal = read('src/components/common/RevertAuditLogModal.jsx');
 const lib = read('src/lib/superRevert.js');
 const migration = read('supabase/migrations/83_super_revert_actions_and_audit.sql');
+const migration85 = read('supabase/migrations/85_super_revert_checkout_actions.sql');
+const checkoutHistory = read('src/components/checkouts/CheckoutHistoryList.jsx');
 const withdrawalList = read('src/components/withdrawals/WithdrawalOrdersList.jsx');
 const withdrawalDetail = read('src/components/withdrawals/WithdrawalDetailModal.jsx');
 const withdrawalsPage = read('src/pages/Withdrawals.jsx');
@@ -55,6 +57,16 @@ check('modal disables while processing', /disabled=\{processing\}/.test(modal));
 check('shared helper resolves all five revert kinds', ['withdrawal_completion','withdrawal_approval','withdrawal_rejection','checkout_approval','checkout_return'].every(k => lib.includes("'" + k + "'")));
 check('shared helper calls the authoritative RPC names', ['super_revert_withdrawal_action','super_revert_checkout_approval','super_revert_checkout_return'].every(r => lib.includes(r)));
 
+
+// 3b. Migration 85 completion surface
+check('migration 85 defines super_revert_checkout_order_returns', /FUNCTION public\.super_revert_checkout_order_returns/.test(migration85));
+check('migration 85 defines super_revert_checkout_rejection', /FUNCTION public\.super_revert_checkout_rejection/.test(migration85));
+check('migration 85 defines super_revert_damaged_repair', /FUNCTION public\.super_revert_damaged_repair/.test(migration85));
+check('migration 85 keeps the S/N re-loan guard', /EQUIPMENT_ALREADY_RELOANED/.test(migration85));
+check('migration 85 flags reverted scrap disposal rows', /scrap_disposal_items[\s\S]{0,200}is_reverted/.test(migration85));
+check('shared helper resolves the completion RPCs', ['super_revert_checkout_order_returns','super_revert_checkout_rejection','super_revert_damaged_repair'].every(r => lib.includes(r)));
+check('shared helper exposes the new revert kinds', ['CHECKOUT_RETURNS','CHECKOUT_REJECTION','CHECKOUT_REPAIR'].every(k => lib.includes(k)));
+
 // 4. Withdrawals
 check('withdrawal list gates revert buttons by canRevertAction', /canRevertAction &&/.test(withdrawalList));
 check('withdrawal list offers completion/approval/rejection reverts', /WITHDRAWAL_COMPLETION/.test(withdrawalList) && /WITHDRAWAL_APPROVAL/.test(withdrawalList) && /WITHDRAWAL_REJECTION/.test(withdrawalList));
@@ -71,6 +83,15 @@ check('checkout detail gates the return revert by canRevertAction', /canRevertAc
 check('checkout detail shows reverted return logs', /superRevert\.returnLogReverted/.test(checkoutDetail));
 check('checkouts page mounts SuperRevertActionModal', /<SuperRevertActionModal/.test(checkoutsPage));
 check('checkouts page dispatches checkout_reverted', /dispatchRevertNotification\(\{[\s\S]{0,200}checkout_reverted/.test(checkoutsPage));
+
+check('checkout history gates the revert button by canRevertAction', /canRevertAction && onOpenRevertModal && revertKindFor\(order\)/.test(checkoutHistory));
+check('checkout history offers status sub-filters', /HISTORY_FILTERS/.test(checkoutHistory) && /historyFilterApproved/.test(checkoutHistory));
+check('checkout history includes on-loan rows (non-pending filter)', /o\.status !== 'pending'/.test(checkoutHistory));
+check('checkout history maps status to a revert kind', /REVERT_KINDS\.CHECKOUT_RETURNS/.test(checkoutHistory) && /REVERT_KINDS\.CHECKOUT_REJECTION/.test(checkoutHistory));
+check('checkouts page passes the revert gate to the history list', /<CheckoutHistoryList[\s\S]{0,300}canRevertAction=\{canRevertAction\}[\s\S]{0,200}onOpenRevertModal=\{handleOpenRevertModal\}/.test(checkoutsPage));
+check('checkout detail offers the repair revert per return log', /REVERT_KINDS\.CHECKOUT_REPAIR/.test(checkoutDetail));
+check('checkout detail offers the rejection revert', /REVERT_KINDS\.CHECKOUT_REJECTION/.test(checkoutDetail));
+check('checkout detail offers the order-level returns revert', /REVERT_KINDS\.CHECKOUT_RETURNS/.test(checkoutDetail));
 
 // 6. Roles
 check('role page opens the revert audit viewer for SUPER', /roleObj\.code === 'SUPER' && isSuperAdmin/.test(rolesPage) && /RevertAuditLogModal/.test(rolesPage));

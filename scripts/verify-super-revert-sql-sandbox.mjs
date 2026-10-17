@@ -15,6 +15,7 @@ const PGLITE_ENTRY = path.join(SANDBOX_DIR, 'node_modules/@electric-sql/pglite/d
 const FIXTURE = path.resolve('supabase/tests/fixtures/super_revert_schema.sql');
 const MIGRATION = readFileSync('supabase/migrations/83_super_revert_actions_and_audit.sql', 'utf8');
 const MIGRATION_84 = readFileSync('supabase/migrations/84_harden_super_revert_helpers.sql', 'utf8');
+const MIGRATION_85 = readFileSync('supabase/migrations/85_super_revert_checkout_actions.sql', 'utf8');
 
 async function loadPGlite() {
   if (existsSync(PGLITE_ENTRY)) {
@@ -243,6 +244,41 @@ async function main() {
       "('" + RL8 + "', '" + C8 + "', '" + CI8 + "', 2, 'normal', '" + P1 + "', 'unresolved')," +
       "('" + RL9 + "', '" + C9 + "', '" + CI9 + "', 2, 'normal', '" + P1 + "', 'unresolved');",
   ].join('\n');
+
+  // ---- Fixtures for the migration 85 RPCs ----
+  const C10 = 'ffffffff-0000-0000-0000-000000000010';
+  const C11 = 'ffffffff-0000-0000-0000-000000000011';
+  const C12 = 'ffffffff-0000-0000-0000-000000000012';
+  const C13 = 'ffffffff-0000-0000-0000-000000000013';
+  const CI10 = '99999999-0000-0000-0000-000000000011';
+  const CI11A = '99999999-0000-0000-0000-000000000012';
+  const CI11B = '99999999-0000-0000-0000-000000000013';
+  const CI12 = '99999999-0000-0000-0000-000000000014';
+  const CI13 = '99999999-0000-0000-0000-000000000015';
+  const RL11A = '12121212-0000-0000-0000-000000000011';
+  const RL11B = '12121212-0000-0000-0000-000000000012';
+  const RL13 = '12121212-0000-0000-0000-000000000013';
+
+  await db.exec(`
+    INSERT INTO public.checkout_orders (id, order_number, project_id, status, borrower_id, borrower_name, created_by, rejected_by, rejected_at, rejection_reason) VALUES
+      ('${C10}', 'CHK-C10', '${P1}', 'rejected', '${STAFF}', 'Borrower', '${STAFF}', '${ADMIN}', now(), 'seed reject');
+    INSERT INTO public.checkout_items (id, checkout_order_id, item_id, quantity_borrowed, status) VALUES
+      ('${CI10}', '${C10}', '${IA}', 1, 'rejected');
+    INSERT INTO public.checkout_orders (id, order_number, project_id, status, borrower_id, borrower_name, created_by, approved_by, approved_at, actual_returned_date) VALUES
+      ('${C11}', 'CHK-C11', '${P1}', 'completed', '${STAFF}', 'Borrower', '${STAFF}', '${ADMIN}', now(), now()),
+      ('${C12}', 'CHK-C12', '${P1}', 'active', '${STAFF}', 'Borrower', '${STAFF}', '${ADMIN}', now(), NULL),
+      ('${C13}', 'CHK-C13', '${P1}', 'completed', '${STAFF}', 'Borrower', '${STAFF}', '${ADMIN}', now(), now());
+    INSERT INTO public.checkout_items (id, checkout_order_id, item_id, quantity_borrowed, quantity_returned, status, serial_number) VALUES
+      ('${CI11A}', '${C11}', '${IJ}', 1, 1, 'returned', NULL),
+      ('${CI11B}', '${C11}', '${II}', 1, 1, 'returned', NULL),
+      ('${CI12}', '${C12}', '${IH}', 1, 0, 'borrowed', 'SN-GUARD'),
+      ('${CI13}', '${C13}', '${IH}', 1, 1, 'returned', 'SN-GUARD');
+    INSERT INTO public.checkout_return_logs (id, checkout_order_id, checkout_item_id, returned_quantity, item_condition, destination_project_id, repair_resolution_status) VALUES
+      ('${RL11A}', '${C11}', '${CI11A}', 1, 'normal', '${P1}', 'unresolved'),
+      ('${RL11B}', '${C11}', '${CI11B}', 1, 'normal', '${P1}', 'unresolved'),
+      ('${RL13}', '${C13}', '${CI13}', 1, 'normal', '${P1}', 'unresolved');
+  `);
+
   await db.exec(seed);
 
   try {
@@ -266,6 +302,13 @@ async function main() {
     record('migration 84 (header hardening) applies twice', true);
   } catch (err) {
     record('migration 84 (header hardening) applies twice', false, err.message);
+  }
+  try {
+    await db.exec(MIGRATION_85);
+    await db.exec(MIGRATION_85);
+    record('migration 85 (checkout revert completion) applies twice', true);
+  } catch (err) {
+    record('migration 85 (checkout revert completion) applies twice', false, err.message);
   }
 
   const headerPrivs = await db.query(
@@ -419,11 +462,50 @@ async function main() {
     e = await expectError('SELECT public.super_revert_checkout_return($1::uuid, $2)', [RL4, 'insufficient']);
     record('return revert with insufficient stock is blocked with INSUFFICIENT_STOCK', e.failed && /INSUFFICIENT_STOCK/.test(e.error.message), e.error && e.error.message);
 
+    // ---- Migration 85: checkout rejection revert ----
+    const c10 = await db.query('SELECT public.super_revert_checkout_rejection($1::uuid, $2) AS r', [C10, 'ย้อนปฏิเสธใบยืม']);
+    const c10row = await db.query('SELECT status, rejected_by, rejection_reason FROM public.checkout_orders WHERE id=$1', [C10]);
+    record('checkout rejection revert returns the loan to pending', c10.rows[0].r.success === true && c10.rows[0].r.new_status === 'pending' && c10row.rows[0].status === 'pending' && c10row.rows[0].rejected_by === null && c10row.rows[0].rejection_reason === null, JSON.stringify(c10row.rows[0]));
+    const c10items = await db.query('SELECT status FROM public.checkout_items WHERE checkout_order_id=$1', [C10]);
+    record('checkout rejection revert flips lines to pending', c10items.rows.every(r => r.status === 'pending'), JSON.stringify(c10items.rows));
+    e = await expectError('SELECT public.super_revert_checkout_rejection($1::uuid, $2)', [C10, 'double']);
+    record('second rejection revert is rejected', e.failed && /INVALID_STATE/.test(e.error.message), e.error && e.error.message);
+
+    // ---- Migration 85: order-level return revert ----
+    const beforeIJ = await balance(P1, IJ);
+    const beforeII = await balance(P1, II);
+    const c11 = await db.query('SELECT public.super_revert_checkout_order_returns($1::uuid, $2) AS r', [C11, 'ย้อนคืนทั้งใบ']);
+    const c11row = await db.query('SELECT status, actual_returned_date FROM public.checkout_orders WHERE id=$1', [C11]);
+    const c11logs = await db.query('SELECT is_reverted FROM public.checkout_return_logs WHERE checkout_order_id=$1', [C11]);
+    record('order-level revert reverts every live return log', c11.rows[0].r.success === true && Number(c11.rows[0].r.reverted_logs) === 2 && c11logs.rows.every(r => r.is_reverted === true), JSON.stringify(c11.rows[0].r));
+    record('order-level revert puts both items back on loan', (await balance(P1, IJ)) === beforeIJ - 1 && (await balance(P1, II)) === beforeII - 1 && c11row.rows[0].status === 'active' && c11row.rows[0].actual_returned_date === null, 'IJ=' + (await balance(P1, IJ)) + ' II=' + (await balance(P1, II)) + ' status=' + c11row.rows[0].status);
+    e = await expectError('SELECT public.super_revert_checkout_order_returns($1::uuid, $2)', [C11, 'double']);
+    record('second order-level revert is rejected', e.failed && /INVALID_STATE/.test(e.error.message), e.error && e.error.message);
+
+    // ---- Migration 85: damaged repair resolution revert ----
+    const rl5repair = await db.query('SELECT public.super_revert_damaged_repair($1::uuid, $2) AS r', [RL5, 'ย้อนผลซ่อม']);
+    const rl5row = await db.query('SELECT repair_resolution_status, repair_notes, repair_resolved_at, repair_scrap_disposal_id FROM public.checkout_return_logs WHERE id=$1', [RL5]);
+    record('repair resolution revert sets the row back to unresolved', rl5repair.rows[0].r.success === true && rl5repair.rows[0].r.new_status === 'unresolved' && rl5row.rows[0].repair_resolution_status === 'unresolved' && rl5row.rows[0].repair_notes === null && rl5row.rows[0].repair_scrap_disposal_id === null, JSON.stringify(rl5row.rows[0]));
+    const rl5return = await db.query('SELECT public.super_revert_checkout_return($1::uuid, $2) AS r', [RL5, 'ย้อนรับคืนหลังย้อนซ่อม']);
+    const ci5 = await db.query('SELECT quantity_damaged, status FROM public.checkout_items WHERE id=$1', [CI5]);
+    record('return revert works after the repair resolution is reverted', rl5return.rows[0].r.success === true && Number(ci5.rows[0].quantity_damaged) === 0, JSON.stringify(rl5return.rows[0].r));
+
+    // ---- Migration 85: equipment re-loaned guard ----
+    const beforeIH = await balance(P1, IH);
+    e = await expectError('SELECT public.super_revert_checkout_return($1::uuid, $2)', [RL13, 'SN re-loaned']);
+    const rl13 = await db.query('SELECT is_reverted FROM public.checkout_return_logs WHERE id=$1', [RL13]);
+    record('return revert is blocked when the S/N is already on loan again', e.failed && /EQUIPMENT_ALREADY_RELOANED/.test(e.error.message) && rl13.rows[0].is_reverted === false && (await balance(P1, IH)) === beforeIH, e.error && e.error.message);
+    const guardDef = await db.query("SELECT pg_get_functiondef('public.super_revert_checkout_return(uuid,text)'::regprocedure) AS def");
+    record('migration 85 keeps the S/N guard in the final function definition', /EQUIPMENT_ALREADY_RELOANED/.test(guardDef.rows[0].def));
+
     // ---- Audit trail ----
     const audits = await db.query("SELECT action_type, actor_role, target_table, target_id, previous_status, new_status, reason, ip_address, user_agent FROM public.audit_logs WHERE action_type LIKE '%REVERT%' ORDER BY created_at");
     const byType = new Map(audits.rows.map(r => [r.action_type, r]));
     record('audit rows exist for all five revert action types',
       ['WITHDRAWAL_APPROVAL_REVERT','WITHDRAWAL_COMPLETE_REVERT','WITHDRAWAL_REJECT_REVERT','CHECKOUT_APPROVAL_REVERT','CHECKOUT_RETURN_REVERT'].every(t => byType.has(t)),
+      JSON.stringify([...byType.keys()]));
+    record('audit rows exist for the migration 85 revert actions',
+      ['CHECKOUT_REJECT_REVERT','CHECKOUT_REPAIR_REVERT','CHECKOUT_RETURN_REVERT'].every(t => byType.has(t)),
       JSON.stringify([...byType.keys()]));
     const sample = audits.rows.find(r => r.action_type === 'WITHDRAWAL_APPROVAL_REVERT' && r.target_id === W1);
     record('audit row carries actor role, target, transition and reason',

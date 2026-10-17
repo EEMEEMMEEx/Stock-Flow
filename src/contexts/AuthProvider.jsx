@@ -17,12 +17,18 @@ const getSafeBaselinePermissions = (roleStr, emailStr = '') => {
   const isSuperOrAdmin = normalizedRole === 'super' || normalizedRole === 'admin' || (emailStr || '').toLowerCase() === 'admin@stockflow.com';
 
   if (isSuperOrAdmin) {
+    // system.revert_actions is reserved for SUPER only (migration 83): the
+    // safe baseline may only include it when the profile role is 'super'.
+    const superOnlyPerms = normalizedRole === 'super' || (emailStr || '').toLowerCase() === 'admin@stockflow.com'
+      ? ['system.revert_actions']
+      : [];
     return [
       'dashboard.view', 'items.view', 'items.create', 'items.update', 'items.delete', 'items.adjust_stock', 'inventory.transfer', 'inventory.manage',
       'stock_in.view', 'stock_in.create', 'withdrawals.view', 'withdrawals.create', 'withdrawals.approve', 'withdrawals.reject', 'withdrawals.complete',
       'checkouts.view', 'checkouts.create', 'checkouts.extend', 'checkouts.return', 'history.view', 'reports.view', 'reports.export',
       'projects.view', 'projects.create', 'projects.update', 'projects.delete', 'users.view', 'users.create', 'users.update', 'users.deactivate', 'users.reset_password',
-      'roles.view', 'roles.create', 'roles.update', 'roles.delete', 'roles.manage_permissions', 'settings.view', 'settings.update'
+      'roles.view', 'roles.create', 'roles.update', 'roles.delete', 'roles.manage_permissions', 'settings.view', 'settings.update',
+      ...superOnlyPerms
     ];
   }
   if (['supervisor', 'approver', 'manager'].includes(normalizedRole)) {

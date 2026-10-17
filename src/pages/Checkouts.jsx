@@ -635,8 +635,10 @@ const Checkouts = () => {
           orders={orders}
           loading={loading}
           isSuperAdmin={isSuperAdmin}
+          canRevertAction={canRevertAction}
           onOpenDetailModal={handleOpenDetailModal}
           onOpenCancelModal={handleOpenCancelModal}
+          onOpenRevertModal={handleOpenRevertModal}
         />
       )}
 

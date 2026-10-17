@@ -4,39 +4,66 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 
   Search, History, CheckCircle2, Eye, User, 
-  Building2, FileText, Infinity as InfinityIcon, Ban, RotateCcw
+  Building2, FileText, Infinity as InfinityIcon, Ban, RotateCcw, Clock
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useTranslation } from '@/i18n';
-import { formatRevertDate } from '@/lib/superRevert';
+import { formatRevertDate, REVERT_KINDS } from '@/lib/superRevert';
 import { resolveCheckoutMeta } from '@/lib/checkoutDisplay';
 
+const HISTORY_FILTERS = [
+  { value: 'all', labelKey: 'checkouts.historyFilterAll' },
+  { value: 'completed', labelKey: 'checkouts.historyFilterCompleted' },
+  { value: 'approved', labelKey: 'checkouts.historyFilterApproved' },
+  { value: 'rejected', labelKey: 'checkouts.historyFilterRejected' },
+];
+
+const revertKindFor = (order) => {
+  if (order.status === 'completed' || order.status === 'partial_returned') return REVERT_KINDS.CHECKOUT_RETURNS;
+  if (order.status === 'active' || order.status === 'overdue') return REVERT_KINDS.CHECKOUT_APPROVAL;
+  if (order.status === 'rejected') return REVERT_KINDS.CHECKOUT_REJECTION;
+  return null;
+};
+
+const revertLabelKeyFor = (order) => {
+  if (order.status === 'completed' || order.status === 'partial_returned') return 'superRevert.revertReturnBtn';
+  if (order.status === 'active' || order.status === 'overdue') return 'superRevert.revertCheckoutApprovalBtn';
+  if (order.status === 'rejected') return 'superRevert.revertRejectionBtn';
+  return null;
+};
 const CheckoutHistoryList = ({
   orders = [],
   loading = false,
   isSuperAdmin = false,
+  canRevertAction = false,
   onOpenDetailModal,
-  onOpenCancelModal
+  onOpenCancelModal,
+  onOpenRevertModal
 }) => {
   const { t, lang } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
 
-  const completedOrders = useMemo(() => {
-    return orders.filter(o => {
-      if (o.status === 'completed' || o.actual_returned_date) return true;
-      if (o.status === 'rejected' || o.status === 'cancelled') return true;
-      const items = o.checkout_items || [];
-      if (items.length === 0) return false;
-      const totalBorrowed = items.reduce((s, i) => s + Number(i.quantity_borrowed || 0), 0);
-      const totalReturned = items.reduce((s, i) => s + Number(i.quantity_returned || 0) + Number(i.quantity_damaged || 0) + Number(i.quantity_lost || 0) + Number(i.quantity_consumed || 0), 0);
-      return totalBorrowed > 0 && (totalBorrowed - totalReturned) <= 0;
-    });
-  }, [orders]);
+  const [statusFilter, setStatusFilter] = useState('all');
+
+  // Every checkout that had an action taken on it (everything except pending).
+  const historyOrders = useMemo(() => (
+    orders.filter(o => o.status && o.status !== 'pending')
+  ), [orders]);
+
+  const bucketOf = (order) => {
+    if (order.status === 'rejected' || order.status === 'cancelled') return 'rejected';
+    if (order.status === 'completed') return 'completed';
+    if (order.status === 'active' || order.status === 'overdue' || order.status === 'partial_returned') return 'approved';
+    return 'approved';
+  };
 
   const filteredOrders = useMemo(() => {
-    if (!searchQuery.trim()) return completedOrders;
+    const byStatus = statusFilter === 'all'
+      ? historyOrders
+      : historyOrders.filter(o => bucketOf(o) === statusFilter);
+    if (!searchQuery.trim()) return byStatus;
     const q = searchQuery.toLowerCase();
-    return completedOrders.filter(order => (
+    return byStatus.filter(order => (
       order.order_number?.toLowerCase().includes(q) ||
       order.borrower_name?.toLowerCase().includes(q) ||
       order.borrower_department?.toLowerCase().includes(q) ||
@@ -45,11 +72,13 @@ const CheckoutHistoryList = ({
       order.rejection_reason?.toLowerCase().includes(q) ||
       order.checkout_items?.some(i => i.items?.name?.toLowerCase().includes(q) || i.serial_number?.toLowerCase().includes(q))
     ));
-  }, [completedOrders, searchQuery]);
+  }, [historyOrders, searchQuery, statusFilter]);
+
 
   return (
     <Card className="rounded-xl bg-card border border-border shadow-xs">
-      <CardHeader className="border-b border-border/40 pb-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <CardHeader className="border-b border-border/40 pb-3 flex flex-col gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <CardTitle className="text-sm font-bold flex items-center gap-2 text-foreground">
           <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
             <History className="w-4 h-4" />
@@ -67,6 +96,29 @@ const CheckoutHistoryList = ({
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-8 h-9 text-xs rounded-lg"
           />
+        </div>
+        </div>
+
+        {/* Sub-filters so SUPER can find what to revert quickly */}
+        <div className="flex flex-wrap items-center gap-1.5">
+          {HISTORY_FILTERS.map(filter => {
+            const isActive = statusFilter === filter.value;
+            const count = filter.value === 'all'
+              ? historyOrders.length
+              : historyOrders.filter(o => bucketOf(o) === filter.value).length;
+            return (
+              <button
+                key={filter.value}
+                type="button"
+                onClick={() => setStatusFilter(filter.value)}
+                aria-pressed={isActive}
+                className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-[11px] font-semibold transition-colors cursor-pointer min-h-[32px] ${isActive ? 'border-primary/40 bg-primary/10 text-primary' : 'border-border/60 bg-muted/30 text-muted-foreground hover:text-foreground hover:bg-muted/60'}`}
+              >
+                <span>{t(filter.labelKey)}</span>
+                <span className="font-mono text-[10px] opacity-80">{count}</span>
+              </button>
+            );
+          })}
         </div>
       </CardHeader>
 
@@ -116,10 +168,19 @@ const CheckoutHistoryList = ({
                           <CheckCircle2 className="w-3 h-3 text-destructive" />
                           {t('checkouts.statusRejected', 'ถูกปฏิเสธ')}
                         </span>
-                      ) : (
+                      ) : bucketOf(order) === 'completed' ? (
                         <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-emerald-500/15 text-emerald-600 border border-emerald-500/30 flex items-center gap-1">
                           <CheckCircle2 className="w-3 h-3" />
                           {t('checkouts.fullyReturned')} ({totalBorrowed} {totalBorrowed === 1 ? t('checkouts.unitCount_one') : t('checkouts.unitCount_other')})
+                        </span>
+                      ) : (
+                        <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {order.status === 'overdue'
+                            ? t('checkouts.statusOverdue', 'เลยกำหนดคืน')
+                            : order.status === 'partial_returned'
+                              ? t('checkouts.statusPartialReturned', 'คืนบางส่วน')
+                              : t('checkouts.statusActive', 'กำลังยืม')}
                         </span>
                       )}
                     </div>
@@ -196,9 +257,13 @@ const CheckoutHistoryList = ({
                         <div className="font-semibold text-destructive text-[11px]">
                           {t('checkouts.rejectedAt', 'ปฏิเสธเมื่อ')}: {order.rejected_at ? format(new Date(order.rejected_at), 'dd/MM/yyyy') : '-'}
                         </div>
-                      ) : (
+                      ) : bucketOf(order) === 'completed' ? (
                         <div className="font-bold text-emerald-600 dark:text-emerald-400">
                           {t('checkouts.returned')}: {order.actual_returned_date ? format(new Date(order.actual_returned_date), 'dd/MM/yyyy') : '-'}
+                        </div>
+                      ) : (
+                        <div className="font-semibold text-amber-600 dark:text-amber-400">
+                          {t('checkouts.dueDateLabel', 'กำหนดคืน')}: {order.expected_return_date ? format(new Date(order.expected_return_date), 'dd/MM/yyyy') : t('checkouts.noReturnDate')}
                         </div>
                       )}
                     </div>
@@ -212,6 +277,19 @@ const CheckoutHistoryList = ({
                       <Eye className="w-3.5 h-3.5" />
                       <span>{t('checkouts.viewDetailsPrint')}</span>
                     </Button>
+
+                    {canRevertAction && onOpenRevertModal && revertKindFor(order) && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onOpenRevertModal(order, revertKindFor(order))}
+                        className="rounded-lg h-9 text-xs gap-1.5 font-semibold text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800 hover:bg-amber-50 dark:hover:bg-amber-950/40 shadow-2xs cursor-pointer whitespace-nowrap"
+                        title={t(revertLabelKeyFor(order))}
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
+                        <span>{t(revertLabelKeyFor(order))}</span>
+                      </Button>
+                    )}
 
                     {isSuperAdmin && !isCancelled && (
                       <Button
