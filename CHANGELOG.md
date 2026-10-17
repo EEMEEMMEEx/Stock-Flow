@@ -1,5 +1,19 @@
 # Changelog
 
+## [2026-10-17 22:18] - v1.22.10
+
+- **Files Modified:** `.agents/skills/*` (28 skills ใหม่), `.agents/skills/THIRD_PARTY_SOURCES.md` (ใหม่), `AGENTS.md`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **ติดตั้งทักษะภายนอก (Third-Party Skills) 28 ทักษะจาก 3 แหล่ง:**
+    - `replica-skill` (11 skills): `replica-architect`, `replica-backend`, `replica-brand`, `replica-build`, `replica-deploy`, `replica-design`, `replica-diff`, `replica-entrepreneur`, `replica-launch`, `replica-recon`, `replica-test`
+    - `superpowers` (15 skills): `superpowers-brainstorming`, `diagnosing-superpowers`, `dispatching-parallel-agents`, `executing-plans`, `finishing-a-development-branch`, `receiving-code-review`, `requesting-code-review`, `subagent-driven-development`, `superpowers-systematic-debugging`, `test-driven-development`, `using-git-worktrees`, `using-superpowers`, `verification-before-completion`, `writing-plans`, `writing-skills`
+    - `xerj` (2 skills): `xerj-code`, `xerj-security-audit`
+  - **ผ่านการตรวจสอบความปลอดภัย (Security Review):** ไม่มี remote code execution (`curl|bash`, `eval`), ไม่มีการรั่วไหลของ secret/SSH key, และไม่ข้าม user confirmation
+  - **จัดการ Name Collisions อย่างปลอดภัย:** ใส่ prefix `superpowers-` ให้กับ `brainstorming` และ `systematic-debugging` เพื่อไม่ให้เขียนทับสกิลเดิมที่มีอยู่ และตรวจสอบแล้วว่า internal references ยังทำงานได้ถูกต้อง
+  - **บันทึกแหล่งที่มา:** สร้าง `.agents/skills/THIRD_PARTY_SOURCES.md` บันทึก URL, Commit SHA, และวันที่ติดตั้ง
+  - **อัปเดต `AGENTS.md`:** เพิ่มหมวด *Skill Usage Policy* กำหนด Mandatory Rule, Conflict Rule, Safety Constraints Subordination, และตารางรวมทักษะทั้งหมด 68 รายการพร้อมเงื่อนไขการเรียกใช้ (trigger conditions) ที่อ้างอิงตรงจาก `SKILL.md`
+  - ปรับ version เป็น `v1.22.10` (PATCH)
+
 ## [2026-10-17 21:58] - v1.22.9
 
 - **Files Modified:** `.agents/skills/pstack/SKILL.md` (ใหม่), `.agents/skills/pstack/playbooks/*` (ใหม่), `.agents/skills/pstack/references/*` (ใหม่), `.agents/skills/pstack/scripts/*` (ใหม่), `.agents/plugins/pstack/*` (ใหม่), `AGENTS.md`, `.gitignore`, `package.json`, `package-lock.json`, `CHANGELOG.md`
