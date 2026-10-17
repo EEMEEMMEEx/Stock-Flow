@@ -1,5 +1,13 @@
 # Changelog
 
+## [2026-10-17 21:58] - v1.22.9
+
+- **Files Modified:** `.agents/skills/pstack/SKILL.md` (ใหม่), `.agents/skills/pstack/playbooks/*` (ใหม่), `.agents/skills/pstack/references/*` (ใหม่), `.agents/skills/pstack/scripts/*` (ใหม่), `.agents/plugins/pstack/*` (ใหม่), `AGENTS.md`, `.gitignore`, `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **ติดตั้ง skill/plugin `pstack` จาก cursor/plugins:** เพิ่มขีดความสามารถการทำงานแบบ Deep Engineering Rigor & Parallel Execution (Poteto Mode) พร้อมชุดคู่มือ 23 Playbooks, 20 Foundational Principles, Anti-slop response guidelines, และ Subagent orchestration protocols
+  - **ปรับปรุงข้อกำหนดใน `AGENTS.md`:** เพิ่ม `pstack` ลงในหมวด MUST READ และเพิ่มหมวด *Mandatory Engineering Workflow (pstack / Poteto Mode)* บังคับให้ AI Agent ต้องเรียกใช้ playbooks และยึดตาม Non-negotiable Triggers ทุกครั้งในงานวิศวกรรมที่ไม่ใช่งานตอบคำถามทั่วไป พร้อม cite principles ที่ชี้นำการตัดสินใจ
+  - ปรับ version เป็น `v1.22.9` (PATCH)
+
 ## [2026-10-16 17:38] - v1.22.8
 
 - **Files Modified:** `supabase/migrations/scripts/82_dashboard_apply_and_selftest.sql` (ใหม่), `scripts/verify-damaged-repair-sql-sandbox.mjs`, `scripts/verify-damaged-repair-resolution.mjs`, `package.json`, `package-lock.json`, `CHANGELOG.md`

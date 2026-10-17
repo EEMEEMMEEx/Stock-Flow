@@ -22,6 +22,7 @@
 ---
 
 ## MUST READ (Project Skills & Knowledge Base)
+- **Deep Engineering & Parallel Rigor (pstack / Poteto Mode)**: `.agents/skills/pstack/SKILL.md` (Go deep first, 23 playbooks, 20 foundational principles, anti-slop, verifiable units)
 - **Codebase Standards**: `.agents/skills/clean-code/SKILL.md` (clean, direct, pragmatic code)
 - **Database & Supabase Concurrency**: `.agents/skills/database-design/SKILL.md` (Atomic RPCs, `SELECT ... FOR UPDATE`, RLS)
 - **Frontend Design & UI/UX**: `.agents/skills/frontend-design/SKILL.md`, `.agents/skills/tailwind-patterns/SKILL.md`
@@ -29,6 +30,25 @@
 - **Systematic Debugging**: `.agents/skills/systematic-debugging/SKILL.md` (Evidence-first, reproducible trace)
 - **Email & SMTP**: `.agents/skills/gmail-smtp/SKILL.md` (HTML email templates, deliverability, Nodemailer)
 - **Terse Output & Token Efficiency**: `.agents/skills/caveman/SKILL.md` (Caveman voice — ตอบสั้นกระชับ ตัดน้ำ ตัดคำทักทาย รักษารายละเอียดทางเทคนิคและโค้ด 100% ประหยัด token)
+
+---
+
+## Mandatory Engineering Workflow (pstack / Poteto Mode)
+AI Agent ทุกตัว **ต้องเรียกใช้และปฏิบัติตามข้อกำหนดของ skill `pstack` (`.agents/skills/pstack/SKILL.md`) อย่างเคร่งครัด** ในทุกงานที่ไม่ใช่งานตอบคำถามทั่วไป:
+- **จับคู่งานกับ 1 ใน 23 Playbooks เสมอ**: คัดลอกขั้นตอนของ Playbook ที่ตรงกับงาน (เช่น `investigation`, `bug-fix`, `feature`, `refactoring`, `prototype`, `shipping`, `babysit`, `orchestrate`) มาไว้ใน Todo List ของงานเป็นลำดับแรก
+- **Non-negotiable Triggers (เงื่อนไขบังคับใช้)**:
+  - **งานสถาปัตยกรรม / ตัดสินใจเชิงโครงสร้าง / ความไม่แน่ใจ**: เรียกใช้ `how` / `architect` ทำ parallel design exploration ก่อนลงมือ
+  - **พบทางแยก ("ควรเลือกแบบไหน", "จะทำยังไงดี")**: หากเป็นข้อเท็จจริงที่พิสูจน์ได้ด้วย runtime ให้ทำ prototype ทดสอบจริงก่อน ห้ามถามผู้ใช้โดยไม่จำเป็น
+  - **ก่อนเขียนโค้ดทุกครั้ง**: ระบุ Data Shape ให้ชัดเจน และจัดโครงสร้างโดเมนตาม `principle-model-the-domain`
+  - **โค้ดที่ข้ามขอบเขตฟังก์ชัน / โมดูล**: ใช้ `architect` วางโครงสร้างก่อน implement
+  - **การขนานงาน (Parallel Fan-out)**: ใช้ `swarm` (coverage / gauntlet) และ `arena` (bakeoff)
+  - **ดีไซน์ที่มีข้อถกเถียง**: ผ่านการตรวจสอบแบบ adversarial review ด้วย `interrogate` ก่อนส่งมอบ
+  - **คำอธิบาย / ข้อความสรุป**: ใช้ `unslop` ตอบกระชับ ประโยคบอกเล่าสั้น ตรงประเด็น ไม่มีน้ำ เน้นมุมมอง consumer และ maintainer
+  - **ก่อน review โค้ด**: ตัดคอมเมนต์บรรยายขั้นตอนออก เหลือเฉพาะ *why* ตาม `no-comments`
+  - **การวัด Performance / Benchmark**: ผ่าน `benchmark-checklist` และอธิบายตัวเลขตาม `principle-explain-the-number`
+  - **การส่งมอบและ merge**: ปฏิบัติตาม `babysit` และ `shipping` (Green CI ยังไม่พอ ต้องมี contiguous verified run)
+  - **งานระยะยาว / Autonomous Run**: บันทึก Decision Trail ตลอดทางด้วย `show-me-your-work`
+- **Principle Citation**: ระบุชื่อ Principle ของ pstack ที่ชี้นำการตัดสินใจในคำตอบเสมอ (เช่น `Laziness Protocol`, `Prove It Works`, `Fix Root Causes`, `Model the Domain`)
 
 ---
 
