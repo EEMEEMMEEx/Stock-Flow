@@ -1,5 +1,26 @@
 # Changelog
 
+## [2026-10-18 02:30] - v1.23.4
+
+- **Files Modified:** `supabase/migrations/86_remediate_supabase_security_linter_warnings.sql` (ใหม่), `scripts/verify-security-linter-sql-sandbox.mjs` (ใหม่), `scripts/apply-migration-86.mjs` (ใหม่), `docs/supabase-security-linter-remediation-plan.md` (ใหม่), `package.json`, `CHANGELOG.md`
+- **Changes:**
+  - **แก้ปัญหาคำเตือนความปลอดภัย Supabase Database Security Linter (125 WARN findings across 5 categories):**
+    - **Step 1 (anon_security_definer_function_executable):** ปิดกั้นการเรียกใช้งานฟังก์ชัน `SECURITY DEFINER` ผ่าน PostgREST RPC โดย unauthenticated users (`anon` และ `PUBLIC`) รวม 50+ ฟังก์ชัน (Admin, Inventory, Orders, Auth, Internal Triggers)
+    - **Step 2 (authenticated_security_definer_function_executable & hardening):**
+      - Revoke สิทธิ์ `EXECUTE` ของฟังก์ชัน Trigger/Internal ทั้ง 15 ฟังก์ชันจาก `PUBLIC`, `anon` และ `authenticated` โดยจำกัดให้เฉพาะ `service_role`
+      - Hardened Business Functions: ตรึง `SET search_path = public, auth, pg_temp`, บังคับตรวจ `auth.uid()`, ตัดการเชื่อถือ spoofable actor IDs (`p_actor_id`), และเพิ่ม Authorization guards ป้องกัน cross-user queries บน `transfer_and_delete_project`, `adjust_item_current_stock`, `extend_checkout_due_date`, `process_item_transfer`, `get_user_permissions`, `has_permission`, `get_user_emails`, และ `admin_*`
+    - **Step 3 (rls_policy_always_true):** ยกเลิก Permissive policies ที่ใช้ `USING (true)` / `WITH CHECK (true)` บน 7 ตารางหลัก (`categories`, `projects`, `stock_in_orders`, `stock_in_items`, `storage_locations`, `scrap_disposal_items`, `checkout_extension_logs`) และแทนที่ด้วย scoped policies แยกตาม command (INSERT/UPDATE/DELETE) โดยผูกกับ `(SELECT auth.uid())` และสิทธิ์ RBAC ผ่าน `has_permission()`
+    - **Step 4 (extension_in_public):** ย้าย extensions `btree_gist` และ `pg_trgm` ออกจาก `public` schema ไปยัง `extensions` schema พร้อมให้สิทธิ์ USAGE แก่ทุก role
+    - **Step 5 (auth_leaked_password_protection):** จัดทำคำแนะนำการเปิดใช้งาน "Prevent use of leaked passwords" ใน Supabase Dashboard > Authentication > Policies
+  - **Verification (รันจริงใน session นี้):**
+    - `npm run verify:security-linter-sql` — Postgres sandbox (PGlite) **12/12 PASS** (ครอบคลุมทั้ง 5 categories, ตรวจสอบ idempotency รอบที่สองผ่าน 100%, search_path pinned, auth guards ทำงานถูกต้อง)
+    - `npm run verify:super-revert-sql` — Postgres sandbox **66/66 PASS**
+    - `node --test src/lib/superRevert.test.js src/lib/checkoutDisplay.test.js` — **12/12 PASS**
+    - `npx eslint scripts/apply-migration-86.mjs scripts/verify-security-linter-sql-sandbox.mjs` — **0 errors / 0 warnings**
+    - `npm run build` — **Vite build PASS**
+  - ปรับ version เป็น `v1.23.4` (PATCH)
+
+
 ## [2026-10-18 02:10] - v1.23.3
 
 - **Files Modified:** `supabase/migrations/85_super_revert_checkout_actions.sql` (ใหม่), `src/lib/superRevert.js`, `src/lib/superRevert.test.js`, `src/components/common/SuperRevertActionModal.jsx`, `src/components/checkouts/CheckoutHistoryList.jsx`, `src/components/checkouts/CheckoutDetailModal.jsx`, `src/pages/Checkouts.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `supabase/tests/fixtures/super_revert_schema.sql`, `scripts/verify-super-revert-sql-sandbox.mjs`, `scripts/verify-super-revert-ui.mjs`, `package.json`, `package-lock.json`, `CHANGELOG.md`

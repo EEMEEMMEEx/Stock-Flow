@@ -1,7 +1,7 @@
 {
   "name": "stock-flow-app",
   "private": true,
-  "version": "1.23.3",
+  "version": "1.23.4",
   "type": "module",
   "scripts": {
     "dev": "vite --host",
@@ -24,6 +24,8 @@
     "verify:damaged-repair-ui": "node scripts/verify-damaged-repair-ui.mjs",
     "verify:damaged-repair-sql": "node scripts/verify-damaged-repair-sql-sandbox.mjs",
     "verify:super-revert-sql": "node scripts/verify-super-revert-sql-sandbox.mjs",
+    "verify:security-linter-sql": "node scripts/verify-security-linter-sql-sandbox.mjs",
+    "apply:migration-86": "node scripts/apply-migration-86.mjs",
     "verify:super-revert-ui": "node scripts/verify-super-revert-ui.mjs",
     "test:super-revert": "node --test src/lib/superRevert.test.js",
     "test:checkout-display": "node --test src/lib/checkoutDisplay.test.js",
