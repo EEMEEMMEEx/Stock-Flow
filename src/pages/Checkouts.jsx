@@ -441,9 +441,10 @@ const Checkouts = () => {
 
   const handleConfirmCancel = async (orderId, reason) => {
     if (!isSuperAdmin || cancelling) return;
+    let toastId;
     try {
       setCancelling(true);
-      const toastId = toast.loading(t('checkouts.toasts.cancelling', 'กำลังยกเลิกรายการยืม-คืน...'));
+      toastId = toast.loading(t('checkouts.toasts.cancelling', 'กำลังยกเลิกรายการยืม-คืน...'));
       const { data, error } = await supabase.rpc('super_cancel_checkout_order', {
         p_order_id: orderId,
         p_reason: reason.trim() || null
@@ -459,7 +460,11 @@ const Checkouts = () => {
       const cleanErrMsg = err.message
         ? err.message.replace(/.*(?:EXCEPTION|Error|P0001):\s*/i, '')
         : 'Failed to cancel checkout order';
-      toast.error(cleanErrMsg);
+      if (toastId) {
+        toast.error(cleanErrMsg, { id: toastId });
+      } else {
+        toast.error(cleanErrMsg);
+      }
     } finally {
       setCancelling(false);
     }

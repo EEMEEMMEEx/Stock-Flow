@@ -1,5 +1,21 @@
 # Changelog
 
+## [2026-10-18 20:35] - v1.23.5
+
+- **Files Modified:** `supabase/migrations/87_fix_super_cancel_checkout_order_schema_alignment.sql` (ใหม่), `scripts/verify-super-cancel-checkout-order-sandbox.mjs` (ใหม่), `scripts/apply-migration-87.mjs` (ใหม่), `src/pages/Checkouts.jsx`, `package.json`, `docs/fix-super-cancel-checkout-order-plan.md`, `CHANGELOG.md`
+- **Changes:**
+  - **แก้ไข PostgREST RPC `super_cancel_checkout_order` schema alignment (Postgres error 42703 undefined_column `order_id`):**
+    - แก้ไข Foreign Key column mismatch ใน `public.checkout_items` จาก `ci.order_id` เป็น `ci.checkout_order_id` ทั้งใน cursor การคำนวณ unreturned quantity และคำสั่ง update line items status เป็น `rejected`
+    - เพิ่มคอลัมน์ `updated_at` บนตาราง `public.checkout_orders` แบบ idempotent (`ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();`) เพื่อป้องกันข้อผิดพลาด 42703 ซ้ำซ้อนขณะบันทึกเวลาแก้ไข
+    - ขยาย scope การคืนสต็อก (RETURN ledger) ให้ครอบคลุมทั้งสถานะ `active`, `approved`, `overdue`, และ `partial_returned` เพื่อคืนจำนวนค้างส่งจริง `quantity_borrowed - (returned + consumed + damaged + lost)` กลับเข้าโครงการอัตโนมัติ
+    - ปรับปรุงการจัดการ Toast ใน `src/pages/Checkouts.jsx` (`handleConfirmCancel`) ให้ dismiss loading toast ทันทีเมื่อเกิดข้อผิดพลาด ไม่ค้างสถานะ spinner
+  - **Verification (รันจริงใน session นี้):**
+    - `npm run verify:super-cancel-sql` — Postgres sandbox (PGlite) **15/15 PASS** (idempotency, schema alignment, active loan cancellation, partial loan cancellation, already cancelled guard, not found guard, RBAC authorization guards)
+    - `npm run verify:super-revert-sql` — Postgres sandbox **66/66 PASS**
+    - `npm run lint` — 0 errors
+    - `npm run build` — Vite production build PASS
+  - ปรับ version เป็น `v1.23.5` (PATCH)
+
 ## [2026-10-18 02:30] - v1.23.4
 
 - **Files Modified:** `supabase/migrations/86_remediate_supabase_security_linter_warnings.sql` (ใหม่), `scripts/verify-security-linter-sql-sandbox.mjs` (ใหม่), `scripts/apply-migration-86.mjs` (ใหม่), `docs/supabase-security-linter-remediation-plan.md` (ใหม่), `package.json`, `CHANGELOG.md`
