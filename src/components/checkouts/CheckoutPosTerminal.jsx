@@ -28,7 +28,7 @@ const CheckoutPosTerminal = ({
   const canChooseBorrower = isAdmin || isSuperAdmin || can('checkouts.update') || can('checkouts.approve');
   
   // Selected source project
-  const [selectedProjectId, setSelectedProjectId] = useState('');
+  const [selectedProjectId, setSelectedProjectId] = useState('all');
   
   // Borrower Info Form
   const [borrowerType, setBorrowerType] = useState('profile');
@@ -124,15 +124,22 @@ const CheckoutPosTerminal = ({
 
 
 
-  // Available items in the selected project location
+  // Available items in the selected project location (or system-wide when 'all')
   const availableItems = useMemo(() => {
     if (!selectedProjectId) return [];
     
     return items.map(item => {
-      const b = (rawBalances || []).find(
-        r => r.project_id === selectedProjectId && r.item_id === item.id
-      );
-      const balance = b ? (Number(b.balance) || 0) : 0;
+      let balance = 0;
+      if (selectedProjectId === 'all') {
+        balance = (rawBalances || [])
+          .filter(r => r.item_id === item.id)
+          .reduce((sum, r) => sum + (Number(r.balance) || 0), 0);
+      } else {
+        const b = (rawBalances || []).find(
+          r => r.project_id === selectedProjectId && r.item_id === item.id
+        );
+        balance = b ? (Number(b.balance) || 0) : 0;
+      }
       return {
         ...item,
         availableStock: balance
@@ -164,6 +171,11 @@ const CheckoutPosTerminal = ({
       }
       handleUpdateQuantity(item.id, existing.quantity + 1);
     } else {
+      const bestWarehouse = (rawBalances || [])
+        .filter(r => (selectedProjectId === 'all' || r.project_id === selectedProjectId) && r.item_id === item.id && (Number(r.balance) || 0) > 0)
+        .sort((a, b) => (Number(b.balance) || 0) - (Number(a.balance) || 0))[0];
+      const sourceProjectId = selectedProjectId !== 'all' ? selectedProjectId : (bestWarehouse?.project_id || projects[0]?.id || '');
+
       setCart(prev => [
         ...prev,
         {
@@ -174,6 +186,7 @@ const CheckoutPosTerminal = ({
           unit: item.unit || 'ชิ้น',
           quantity: 1,
           availableStock: item.availableStock,
+          source_project_id: sourceProjectId,
           serial_numbers: [''], // Array with length matching quantity
           condition: 'normal',
           notes: ''
@@ -274,6 +287,18 @@ const CheckoutPosTerminal = ({
     if (!selectedProjectId) {
       return toast.error(t('checkouts.errSelectLocation'));
     }
+
+    let orderProjectId = selectedProjectId;
+    if (selectedProjectId === 'all') {
+      const candidate = cart[0]?.source_project_id || (rawBalances || []).find(
+        b => b.item_id === cart[0]?.item_id && Number(b.balance) >= (cart[0]?.quantity || 1)
+      )?.project_id || projects[0]?.id;
+
+      if (!candidate) {
+        return toast.error(t('checkouts.errSelectLocation', 'กรุณาระบุโครงการหรือคลังสินค้าต้นทาง'));
+      }
+      orderProjectId = candidate;
+    }
     if (borrowerType === 'profile' && !borrowerId) {
       return toast.error(t('checkouts.errResolveUser'));
     }
@@ -337,7 +362,7 @@ const CheckoutPosTerminal = ({
       }
 
       const payload = {
-        project_id: selectedProjectId,
+        project_id: orderProjectId,
         borrower_type: borrowerType,
         borrower_id: borrowerType === 'profile' ? borrowerId : null,
         borrower_name: borrowerName.trim(),
@@ -365,7 +390,7 @@ const CheckoutPosTerminal = ({
           orderData: {
             id: data?.order_id,
             order_number: data?.order_number,
-            projects: projects.find(p => p.id === selectedProjectId)
+            projects: projects.find(p => p.id === orderProjectId)
           }
         }).catch(err => console.warn('Checkout submitted notification notice:', err));
       }
@@ -380,7 +405,7 @@ const CheckoutPosTerminal = ({
           orderData: {
             id: data?.order_id,
             order_number: data?.order_number,
-            projects: projects.find(p => p.id === selectedProjectId)
+            projects: projects.find(p => p.id === orderProjectId)
           }
         }).catch(err => console.warn('Checkout handover notification notice:', err));
       }
@@ -433,17 +458,19 @@ const CheckoutPosTerminal = ({
                   setSelectedProjectId(id);
                   setCart([]); // Clear cart when project changes
                 }}
-                required={true}
-                mode="dual"
+                allowAll={true}
+                allLabel={t('withdrawals.allLocationsLabel', '-- ทุกโครงการและคลังสินค้า (ยอดรวมทั้งระบบ) --')}
+                required={false}
+                mode="unified"
                 label={t('checkouts.step1Location')}
-                showSummaryCard={false}
+                showSummaryCard={selectedProjectId !== 'all'}
               />
 
               {selectedProjectId && (
                 <div className="flex items-center justify-between text-xs text-muted-foreground bg-indigo-500/5 dark:bg-indigo-950/20 p-2.5 rounded-lg border border-indigo-500/20">
                   <span className="flex items-center gap-1.5 font-medium">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                    <span>{t('checkouts.availableInWarehouse')}</span>
+                    <span>{selectedProjectId === 'all' ? t('checkouts.availableInAllWarehouses', 'พร้อมให้ยืม (รวมทุกคลัง)') : t('checkouts.availableInWarehouse')}</span>
                   </span>
                   <span className="font-bold text-indigo-600 dark:text-indigo-400">
                     {availableItems.length} {availableItems.length === 1 ? t('common.item') : t('common.items')}

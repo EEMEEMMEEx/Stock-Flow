@@ -52,7 +52,12 @@ const WithdrawalCartPanel = ({
   }, 0);
 
   const selectedProject = projects.find(p => p.id === selectedProjectId);
-  const isValidProject = Boolean(selectedProjectId && selectedProjectId !== 'all');
+  const fallbackProjectId = cart[0]?.source_project_id || projects[0]?.id;
+  const effectiveProjectId = (selectedProjectId && selectedProjectId !== 'all')
+    ? selectedProjectId
+    : fallbackProjectId;
+  const effectiveProject = selectedProject || projects.find(p => p.id === effectiveProjectId);
+  const isValidProject = Boolean(selectedProjectId && selectedProjectId !== 'all') || Boolean(effectiveProjectId && cart.length > 0);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -61,13 +66,13 @@ const WithdrawalCartPanel = ({
       return;
     }
 
-    if (!isValidProject) {
+    if (!isValidProject || !effectiveProjectId) {
       toast.error(t('withdrawals.selectLocation', 'Please select a destination storage location'));
       return;
     }
 
     onSubmitOrder({
-      projectId: selectedProjectId,
+      projectId: effectiveProjectId,
       purpose: purpose.trim(),
       deliveryAddress: deliveryAddress.trim()
     });
@@ -120,12 +125,16 @@ const WithdrawalCartPanel = ({
           <div className="min-w-0 flex-1">
             <div className="font-bold flex items-center justify-between">
               <span>{t('common.location', 'Location')}:</span>
-              {!isValidProject && <span className="text-[10px] text-amber-600 dark:text-amber-400 font-extrabold">* {t('common.required', 'Required')}</span>}
+              {selectedProjectId === 'all' && (
+                <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-medium">
+                  {t('withdrawals.multiWarehouseAuto', 'เบิกตามคลังพัสดุ')}
+                </span>
+              )}
             </div>
-            {isValidProject ? (
+            {effectiveProject ? (
               <p className="font-semibold truncate text-foreground mt-0.5">
-                {selectedProject?.project_code ? `[${selectedProject.project_code}] ` : ''}{selectedProject?.name}
-                {selectedProject?.location && <span className="text-muted-foreground font-normal"> ({selectedProject.location})</span>}
+                {effectiveProject?.project_code ? `[${effectiveProject.project_code}] ` : ''}{effectiveProject?.name}
+                {effectiveProject?.location && <span className="text-muted-foreground font-normal"> ({effectiveProject.location})</span>}
               </p>
             ) : (
               <p className="text-[11px] text-amber-700 dark:text-amber-300 mt-0.5">

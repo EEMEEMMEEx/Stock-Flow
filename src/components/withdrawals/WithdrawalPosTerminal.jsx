@@ -167,7 +167,7 @@ const WithdrawalPosTerminal = ({
             allowAll={true}
             allLabel={t('withdrawals.allLocationsLabel', '-- All Projects & Locations (System-wide Total) --')}
             label={t('withdrawals.targetProjectLocation', 'Target Project & Storage Location')}
-            mode="dual"
+            mode="unified"
             showSummaryCard={selectedProjectId !== 'all'}
           />
         </div>

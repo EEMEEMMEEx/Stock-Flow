@@ -703,7 +703,11 @@ const Withdrawals = () => {
       return;
     }
 
-    if (!projectId || projectId === 'all') {
+    const targetProjectId = (projectId && projectId !== 'all')
+      ? projectId
+      : (cart[0]?.source_project_id || projects[0]?.id);
+
+    if (!targetProjectId) {
       toast.error(t('withdrawals.toasts.selectLocation'));
       return;
     }
@@ -716,7 +720,7 @@ const Withdrawals = () => {
       const { data: orderData, error: orderError } = await supabase
         .from('withdrawal_orders')
         .insert([{
-          project_id: projectId,
+          project_id: targetProjectId,
           purpose: purpose || null,
           delivery_address: deliveryAddress || null,
           requested_by: profile.id,
@@ -755,7 +759,7 @@ const Withdrawals = () => {
         orderId: orderData.id,
         orderData: {
           ...orderData,
-          projects: projects.find(p => p.id === projectId),
+          projects: projects.find(p => p.id === targetProjectId),
           profiles: profile
         }
       }).catch(err => console.warn('[Notification Dispatch Warning]:', err));
