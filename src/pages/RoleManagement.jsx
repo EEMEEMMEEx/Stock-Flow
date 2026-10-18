@@ -403,7 +403,19 @@ const fetchRoles = useCallback(async () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {(isSuperAdmin || can('system.audit_log.view')) && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsRevertAuditOpen(true)}
+              className="h-9 px-3 rounded-lg text-xs font-semibold text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800 hover:bg-amber-50 dark:hover:bg-amber-950/40 gap-1.5 cursor-pointer shrink-0"
+            >
+              <History className="w-4 h-4 text-amber-600 dark:text-amber-400" aria-hidden="true" />
+              <span>{t('superRevert.openAuditLog')}</span>
+            </Button>
+          )}
+
           <Button 
             variant="outline" 
             onClick={fetchInitialData} 
@@ -502,18 +514,6 @@ const fetchRoles = useCallback(async () => {
                     </div>
                   </div>
                 </div>
-
-                {roleObj.code === 'SUPER' && (can('system.audit_log.view') || isSuperAdmin) && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsRevertAuditOpen(true)}
-                    className="w-full h-9 min-h-[44px] sm:min-h-0 rounded-lg text-xs font-semibold text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800 hover:bg-amber-50 dark:hover:bg-amber-950/40 gap-1.5 cursor-pointer"
-                  >
-                    <History className="w-3.5 h-3.5" aria-hidden="true" />
-                    {t('superRevert.openAuditLog')}
-                  </Button>
-                )}
 
                 {/* Card Action Buttons */}
                 <div className="flex items-center justify-between pt-2 border-t border-border/50">
