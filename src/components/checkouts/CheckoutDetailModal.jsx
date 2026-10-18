@@ -5,7 +5,8 @@ import {
   FileText, Clock, 
   User, Building2, Calendar, Phone, Layers, RotateCcw,
   CalendarClock, ArrowRight, Infinity as InfinityIcon, XCircle, AlertTriangle, FileSpreadsheet,
-  ExternalLink, Ban, Wrench, PackageCheck, Recycle, Trash2
+  ExternalLink, Ban, Wrench, PackageCheck, Recycle, Trash2,
+  Plus, Hash, Info
 } from 'lucide-react';
 import { pdf } from '@react-pdf/renderer';
 import { MaterialCheckoutPDF, MaterialReturnPDF } from '@/lib/checkout-pdf-templates';
@@ -13,6 +14,7 @@ import { MaterialDispatchPDF } from '@/lib/pdf-templates';
 import { CHECKOUT_DISPATCH_STATUSES, toSafeFileToken } from '@/lib/utils';
 import { syncReturnLogToCaim } from '@/lib/caimSync';
 import RepairResolutionModal from '@/components/checkouts/RepairResolutionModal';
+import EditSerialModal from '@/components/checkouts/EditSerialModal';
 import { useAuth } from '@/contexts/AuthContext';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
@@ -61,7 +63,7 @@ const REPAIR_STATUS_META = {
  * - ยังไม่จัดการ: ปุ่ม "บันทึกซ่อมเสร็จ / คืนคลัง" และปุ่ม "ส่งเคลม CAIM"
  * - จัดการแล้ว: Badge สถานะ + รายละเอียดการซ่อม/อะไหล่ที่เปลี่ยน
  */
-const RepairResolutionRow = ({ log, canResolveRepair, syncingCaimId, onOpenRepair, onSyncCaim }) => {
+const RepairResolutionRow = ({ log, canResolveRepair, canEditSerial, syncingCaimId, onOpenRepair, onSyncCaim, onOpenEditSerial }) => {
   const { t } = useTranslation();
 
   if (log.item_condition !== 'damaged' && log.item_condition !== 'needs_repair') return null;
@@ -94,33 +96,69 @@ const RepairResolutionRow = ({ log, canResolveRepair, syncingCaimId, onOpenRepai
   const serialForCaim = log.replaced_serial_number || log.checkout_items?.serial_number;
 
   return (
-    <div className="mt-1.5 flex items-center gap-1.5 flex-wrap">
-      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-700 dark:text-amber-300 bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 rounded-md">
-        <Wrench className="w-2.5 h-2.5" />
-        <span>{t('checkouts.repairPendingTag')}</span>
-      </span>
-      {canResolveRepair && (
-        <button
-          type="button"
-          onClick={() => onOpenRepair(log)}
-          className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 px-1.5 py-0.5 rounded-md transition-colors cursor-pointer"
-          title={t('checkouts.repairActionTitle')}
-        >
+    <div className="mt-1.5 flex flex-col gap-1.5">
+      <div className="flex items-center gap-1.5 flex-wrap">
+        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-700 dark:text-amber-300 bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 rounded-md">
           <Wrench className="w-2.5 h-2.5" />
-          <span>{t('checkouts.repairAction')}</span>
-        </button>
-      )}
-      {!log.caim_ticket_id && (
-        <button
-          type="button"
-          disabled={syncingCaimId === log.id || !serialForCaim}
-          onClick={() => onSyncCaim(log)}
-          className="inline-flex items-center gap-1 text-[10px] font-semibold text-blue-600 dark:text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 px-1.5 py-0.5 rounded-md transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-          title={serialForCaim ? t('checkouts.syncToCaimTitle') : t('checkouts.noSerialForCaim')}
-        >
-          <span>{syncingCaimId === log.id ? t('common.pleaseWait') : t('checkouts.syncToCaim')}</span>
-          <ExternalLink className="w-2.5 h-2.5" />
-        </button>
+          <span>{t('checkouts.repairPendingTag')}</span>
+        </span>
+        {canResolveRepair && (
+          <button
+            type="button"
+            onClick={() => onOpenRepair(log)}
+            className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 px-1.5 py-0.5 rounded-md transition-colors cursor-pointer"
+            title={t('checkouts.repairActionTitle')}
+          >
+            <Wrench className="w-2.5 h-2.5" />
+            <span>{t('checkouts.repairAction')}</span>
+          </button>
+        )}
+        {!log.caim_ticket_id && (
+          <button
+            type="button"
+            disabled={syncingCaimId === log.id || !serialForCaim}
+            onClick={() => onSyncCaim(log)}
+            className="inline-flex items-center gap-1 text-[10px] font-semibold text-blue-600 dark:text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 px-1.5 py-0.5 rounded-md transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            title={serialForCaim ? t('checkouts.syncToCaimTitle') : t('checkouts.noSerialForCaim')}
+          >
+            <span>{syncingCaimId === log.id ? t('common.pleaseWait') : t('checkouts.syncToCaim')}</span>
+            <ExternalLink className="w-2.5 h-2.5" />
+          </button>
+        )}
+        {serialForCaim && canEditSerial && (
+          <button
+            type="button"
+            onClick={() => onOpenEditSerial?.(log)}
+            className="inline-flex items-center gap-1 text-[10px] font-medium text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 underline decoration-dotted transition-colors cursor-pointer"
+            title={t('checkouts.editSerialTitle', 'แก้ไขหมายเลขเครื่อง')}
+          >
+            <Hash className="w-2.5 h-2.5" />
+            <span>{t('checkouts.editSerial', 'แก้ไข S/N')}</span>
+          </button>
+        )}
+      </div>
+
+      {!serialForCaim && !log.caim_ticket_id && (
+        <div className="flex items-center gap-1.5 text-[11px] text-amber-700 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-md px-2 py-1 max-w-full flex-wrap">
+          <Info className="w-3.5 h-3.5 shrink-0 text-amber-600 dark:text-amber-400" aria-hidden="true" />
+          <span className="break-words">
+            {t('checkouts.noSerialForCaim')}
+          </span>
+          {canEditSerial ? (
+            <button
+              type="button"
+              onClick={() => onOpenEditSerial?.(log)}
+              className="inline-flex items-center gap-1 font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer ml-auto"
+            >
+              <Plus className="w-3 h-3" />
+              <span>{t('checkouts.addSerialAction', 'เพิ่ม S/N')}</span>
+            </button>
+          ) : (
+            <span className="text-[10px] text-muted-foreground ml-auto">
+              ({t('checkouts.contactAdminToAddSerial', 'ติดต่อผู้ดูแลระบบเพื่อระบุ S/N')})
+            </span>
+          )}
+        </div>
       )}
     </div>
   );
@@ -155,6 +193,7 @@ const CheckoutDetailModal = ({
   const { can } = useAuth();
   // บันทึกผลการซ่อมได้เมื่อมีสิทธิ์ checkouts.resolve_repair หรือรับคืนพัสดุ หรือรับเข้า Stock
   const canResolveRepair = can('checkouts.resolve_repair') || can('checkouts.return') || can('stock_in.create');
+  const canEditSerial = can('checkouts.edit_serial');
   const [returnLogs, setReturnLogs] = useState([]);
   const [extensionLogs, setExtensionLogs] = useState([]);
   const [generatingPdf, setGeneratingPdf] = useState(false);
@@ -164,6 +203,8 @@ const CheckoutDetailModal = ({
   const [syncingCaimId, setSyncingCaimId] = useState(null);
   const [repairLog, setRepairLog] = useState(null);
   const [isRepairModalOpen, setIsRepairModalOpen] = useState(false);
+  const [editSerialLog, setEditSerialLog] = useState(null);
+  const [isEditSerialModalOpen, setIsEditSerialModalOpen] = useState(false);
 
   useEffect(() => {
     if (order?.id && isOpen) {
@@ -329,6 +370,27 @@ const CheckoutDetailModal = ({
       toast.error(err.message || t('checkouts.toasts.caimSyncFailed', 'ไม่สามารถส่งข้อมูลไปยัง CAIM ได้'));
     } finally {
       setSyncingCaimId(null);
+    }
+  };
+
+  const handleSerialUpdated = ({ checkoutItemId, returnLogId, newSerial }) => {
+    setReturnLogs((prev) =>
+      prev.map((l) => {
+        if (l.id === returnLogId || l.checkout_item_id === checkoutItemId) {
+          return {
+            ...l,
+            replaced_serial_number: newSerial,
+            checkout_items: l.checkout_items ? {
+              ...l.checkout_items,
+              serial_number: newSerial
+            } : l.checkout_items
+          };
+        }
+        return l;
+      })
+    );
+    if (order?.id) {
+      fetchReturnLogs(order.id);
     }
   };
 
@@ -728,12 +790,17 @@ const CheckoutDetailModal = ({
                       <RepairResolutionRow
                         log={log}
                         canResolveRepair={canResolveRepair}
+                        canEditSerial={canEditSerial}
                         syncingCaimId={syncingCaimId}
                         onOpenRepair={(target) => {
                           setRepairLog(target);
                           setIsRepairModalOpen(true);
                         }}
                         onSyncCaim={handleManualCaimSync}
+                        onOpenEditSerial={(target) => {
+                          setEditSerialLog(target);
+                          setIsEditSerialModalOpen(true);
+                        }}
                       />
                       {log.is_reverted && log.revert_reason && (
                         <div className="text-[10px] text-amber-700 dark:text-amber-300 mt-0.5">
@@ -1017,6 +1084,18 @@ const CheckoutDetailModal = ({
       onResolved={() => {
         if (order?.id) fetchReturnLogs(order.id);
       }}
+    />
+
+    {/* ระบุ/แก้ไข S/N ย้อนหลังเพื่อส่งเคลม CAIM (migration 89) */}
+    <EditSerialModal
+      isOpen={isEditSerialModalOpen}
+      onClose={() => {
+        setIsEditSerialModalOpen(false);
+        setEditSerialLog(null);
+      }}
+      log={editSerialLog}
+      order={order}
+      onSuccess={handleSerialUpdated}
     />
     </>
   );

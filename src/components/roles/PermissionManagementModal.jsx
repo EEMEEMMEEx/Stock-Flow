@@ -32,6 +32,7 @@ const PERMISSION_DEPENDENCIES = {
   'checkouts.reject': ['checkouts.view'],
   'checkouts.return': ['checkouts.view'],
   'checkouts.extend': ['checkouts.view'],
+  'checkouts.edit_serial': ['checkouts.view'],
   'checkouts.cancel': ['checkouts.view'],
   'checkouts.update': ['checkouts.view'],
   'checkouts.delete': ['checkouts.view'],
