@@ -36,13 +36,14 @@ const resolveWithdrawalItems = async (order, existingItems = null) => {
 const WITHDRAWAL_TABS = ['pos', 'orders'];
 
 const Withdrawals = () => {
-  const { isAdmin, isSuperAdmin, can, canRevertAction, profile } = useAuth();
+  const { isAdmin, isSuperAdmin, can, canAny, canRevertAction, profile } = useAuth();
   const { t } = useTranslation();
   
   const canCreate = can('withdrawals.create');
   const canApprove = can('withdrawals.approve');
   const canReject = can('withdrawals.reject');
   const canComplete = can('withdrawals.complete');
+  const canCancel = can('withdrawals.cancel');
 
   // Navigation Tab: 'pos' (Terminal) | 'orders' (Requisition Tracking)
   // The URL query string drives the tab; the permission-based default is captured
@@ -236,7 +237,8 @@ const Withdrawals = () => {
         `)
         .order('requested_at', { ascending: false });
 
-      if (!isAdmin) {
+      const canViewAllWithdrawals = isAdmin || canAny(['withdrawals.approve', 'withdrawals.update', 'withdrawals.reject', 'withdrawals.complete']);
+      if (!canViewAllWithdrawals) {
         ordersQuery = ordersQuery.eq('requested_by', profile.id);
       }
 
@@ -314,7 +316,7 @@ const Withdrawals = () => {
     } finally {
       setLoading(false);
     }
-  }, [profile, isAdmin, selectedProjectId, detectLineSourceCapability]);
+  }, [profile, isAdmin, selectedProjectId, detectLineSourceCapability, canAny, t]);
 
   useEffect(() => {
     fetchData();
@@ -969,9 +971,9 @@ const Withdrawals = () => {
     setIsCancelModalOpen(true);
   };
 
-  // Cancel Order via Supabase RPC (SUPER Role)
+  // Cancel Order via Supabase RPC (SUPER / withdrawals.cancel)
   const handleCancelSubmit = async (orderId, reason) => {
-    if (!isSuperAdmin || isProcessing) return;
+    if (!canCancel || isProcessing) return;
     setIsProcessing(true);
     const toastId = toast.loading(t('withdrawals.toasts.cancelling', 'กำลังยกเลิกคำขอเบิก...'));
     try {
@@ -1211,6 +1213,7 @@ const Withdrawals = () => {
           canApprove={canApprove}
           canReject={canReject}
           canComplete={canComplete}
+          canCancel={canCancel}
           onOpenPosMode={() => setActiveTab('pos')}
           onViewOrderDetails={viewOrderDetails}
           onDownloadPDF={handleDownloadPDF}
@@ -1238,6 +1241,7 @@ const Withdrawals = () => {
         canApprove={canApprove}
         canReject={canReject}
         canComplete={canComplete}
+        canCancel={canCancel}
         onApproveOrder={async (orderId) => {
           // Keep the modal open when approval fails so the error stays visible
           // next to the request that failed.

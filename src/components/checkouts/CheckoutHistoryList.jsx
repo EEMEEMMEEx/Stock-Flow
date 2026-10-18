@@ -35,6 +35,7 @@ const CheckoutHistoryList = ({
   orders = [],
   loading = false,
   isSuperAdmin = false,
+  canCancel = false,
   canRevertAction = false,
   onOpenDetailModal,
   onOpenCancelModal,
@@ -291,7 +292,7 @@ const CheckoutHistoryList = ({
                       </Button>
                     )}
 
-                    {isSuperAdmin && !isCancelled && (
+                    {(canCancel || isSuperAdmin) && !isCancelled && (
                       <Button
                         variant="outline"
                         size="sm"

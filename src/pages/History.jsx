@@ -21,7 +21,7 @@ import HistoryEmptyState, { HistoryLoadingSkeleton, HistoryErrorState } from '@/
 
 const History = () => {
   const { t } = useTranslation();
-  const { isAdmin, profile } = useAuth();
+  const { isAdmin, canAny, profile } = useAuth();
   
   // Data State
   const [history, setHistory] = useState([]);
@@ -132,7 +132,8 @@ const History = () => {
         .order('requested_at', { ascending: false })
         .limit(500);
         
-      if (!isAdmin) {
+      const canViewAllWithdrawals = isAdmin || canAny(['withdrawals.approve', 'withdrawals.update', 'withdrawals.reject', 'withdrawals.complete']);
+      if (!canViewAllWithdrawals) {
         query = query.eq('requested_by', profile.id);
       }
       
@@ -145,7 +146,7 @@ const History = () => {
     } finally {
       setLoading(false);
     }
-  }, [profile, isAdmin, detectLineSourceCapability]);
+  }, [profile, isAdmin, canAny, detectLineSourceCapability]);
 
   useEffect(() => {
     fetchHistory();

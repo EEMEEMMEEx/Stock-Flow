@@ -24,6 +24,7 @@ const WithdrawalDetailModal = ({
   canApprove = false,
   canReject = false,
   canComplete = false,
+  canCancel = false,
   onApproveOrder,
   onOpenRejectModal,
   onOpenCancelModal,
@@ -410,7 +411,7 @@ const WithdrawalDetailModal = ({
               </Button>
             )}
 
-            {isSuperAdmin && !isCancelled && (
+            {(canCancel || isSuperAdmin) && !isCancelled && (
               <>
                 <span aria-hidden="true" className="hidden sm:block w-px h-6 bg-border/60" />
                 <Button

@@ -33,6 +33,8 @@ const Checkouts = () => {
   const canReturn = can('checkouts.return');
   const canExtend = can('checkouts.extend') || can('checkouts.update');
   const canApprove = can('checkouts.approve') || isAdmin || isSuperAdmin;
+  const canReject = can('checkouts.reject') || canApprove;
+  const canCancel = can('checkouts.cancel') || isSuperAdmin;
 
   // Navigation Tabs: 'pending' | 'active' | 'pos' | 'history'
   // The URL query string is the single source of truth for the active tab, so
@@ -440,7 +442,7 @@ const Checkouts = () => {
   };
 
   const handleConfirmCancel = async (orderId, reason) => {
-    if (!isSuperAdmin || cancelling) return;
+    if (!canCancel || cancelling) return;
     let toastId;
     try {
       setCancelling(true);
@@ -599,6 +601,7 @@ const Checkouts = () => {
           orders={orders}
           loading={loading}
           canApprove={canApprove}
+          canReject={canReject}
           onOpenApproveModal={handleOpenApproveModal}
           onOpenRejectModal={handleOpenRejectModal}
           onOpenDetailModal={handleOpenDetailModal}
@@ -640,6 +643,7 @@ const Checkouts = () => {
           orders={orders}
           loading={loading}
           isSuperAdmin={isSuperAdmin}
+          canCancel={canCancel}
           canRevertAction={canRevertAction}
           onOpenDetailModal={handleOpenDetailModal}
           onOpenCancelModal={handleOpenCancelModal}
@@ -709,6 +713,7 @@ const Checkouts = () => {
         canReturn={canReturn}
         canExtend={canExtend}
         isSuperAdmin={isSuperAdmin}
+        canCancel={canCancel}
         canRevertAction={canRevertAction}
         onOpenReturnModal={handleOpenReturnModal}
         onOpenExtendModal={handleOpenExtendModal}

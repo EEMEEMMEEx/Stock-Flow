@@ -15,6 +15,7 @@ const CheckoutPendingList = ({
   orders = [],
   loading = false,
   canApprove = false,
+  canReject = false,
   onOpenApproveModal,
   onOpenRejectModal,
   onOpenDetailModal
@@ -281,25 +282,29 @@ const CheckoutPendingList = ({
                     <span>{t('checkouts.detailsBtn', 'รายละเอียด')}</span>
                   </Button>
 
-                  {canApprove ? (
+                  {(canApprove || canReject) ? (
                     <div className="flex items-center gap-1.5">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => onOpenRejectModal(order)}
-                        className="h-8 px-2.5 text-xs font-semibold text-destructive border-destructive/30 hover:bg-destructive/10 hover:border-destructive rounded-lg cursor-pointer transition-colors"
-                      >
-                        <XCircle className="w-3.5 h-3.5 mr-1" />
-                        <span>{t('checkouts.rejectBtn', 'ปฏิเสธ')}</span>
-                      </Button>
-                      <Button
-                        size="sm"
-                        onClick={() => onOpenApproveModal(order)}
-                        className="h-8 px-3 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg cursor-pointer shadow-xs transition-colors"
-                      >
-                        <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
-                        <span>{t('checkouts.approveAndDispenseBtn', 'อนุมัติจ่ายของ')}</span>
-                      </Button>
+                      {canReject && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => onOpenRejectModal(order)}
+                          className="h-8 px-2.5 text-xs font-semibold text-destructive border-destructive/30 hover:bg-destructive/10 hover:border-destructive rounded-lg cursor-pointer transition-colors"
+                        >
+                          <XCircle className="w-3.5 h-3.5 mr-1" />
+                          <span>{t('checkouts.rejectBtn', 'ปฏิเสธ')}</span>
+                        </Button>
+                      )}
+                      {canApprove && (
+                        <Button
+                          size="sm"
+                          onClick={() => onOpenApproveModal(order)}
+                          className="h-8 px-3 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg cursor-pointer shadow-xs transition-colors"
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
+                          <span>{t('checkouts.approveAndDispenseBtn', 'อนุมัติจ่ายของ')}</span>
+                        </Button>
+                      )}
                     </div>
                   ) : (
                     <span className="text-[11px] text-muted-foreground italic">

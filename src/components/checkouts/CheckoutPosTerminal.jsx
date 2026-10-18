@@ -24,8 +24,8 @@ const CheckoutPosTerminal = ({
   onCheckoutSuccess
 }) => {
   const { t } = useTranslation();
-  const { profile, user, isAdmin, isSuperAdmin } = useAuth();
-  const canChooseBorrower = isAdmin || isSuperAdmin;
+  const { profile, user, isAdmin, isSuperAdmin, can } = useAuth();
+  const canChooseBorrower = isAdmin || isSuperAdmin || can('checkouts.update') || can('checkouts.approve');
   
   // Selected source project
   const [selectedProjectId, setSelectedProjectId] = useState('');

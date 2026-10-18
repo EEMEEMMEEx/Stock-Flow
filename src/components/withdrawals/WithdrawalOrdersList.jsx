@@ -24,6 +24,7 @@ const WithdrawalOrdersList = ({
   canApprove = false,
   canReject = false,
   canComplete = false,
+  canCancel = false,
   onOpenPosMode,
   onViewOrderDetails,
   onDownloadPDF,
@@ -496,7 +497,7 @@ const WithdrawalOrdersList = ({
                         </Button>
                       )}
 
-                      {isSuperAdmin && order.status !== 'cancelled' && (
+                      {(canCancel || isSuperAdmin) && order.status !== 'cancelled' && (
                         <Button
                           type="button"
                           variant="outline"

@@ -12,23 +12,36 @@ const withTimeout = (promise, ms = 4000) => {
 };
 
 // Safe Baseline Role Fallback Permissions (Prevents lockout when API/Network glitched)
+const SUPER_BASELINE_PERMISSIONS = [
+  'dashboard.view',
+  'projects.view', 'projects.create', 'projects.update', 'projects.delete',
+  'items.view', 'items.create', 'items.update', 'items.delete', 'items.transfer', 'items.adjust_stock', 'items.manage',
+  'inventory.view', 'inventory.transfer', 'inventory.manage',
+  'stock_in.view', 'stock_in.create', 'stock_in.update', 'stock_in.cancel', 'stock_in.delete',
+  'withdrawals.view', 'withdrawals.create', 'withdrawals.approve', 'withdrawals.reject', 'withdrawals.complete', 'withdrawals.cancel', 'withdrawals.update', 'withdrawals.delete',
+  'checkouts.view', 'checkouts.create', 'checkouts.approve', 'checkouts.reject', 'checkouts.extend', 'checkouts.return', 'checkouts.cancel', 'checkouts.update', 'checkouts.delete', 'checkouts.resolve_repair',
+  'history.view', 'reports.view', 'reports.export',
+  'users.view', 'users.create', 'users.update', 'users.deactivate', 'users.reset_password', 'users.delete', 'users.manage',
+  'roles.view', 'roles.create', 'roles.update', 'roles.delete', 'roles.manage_permissions',
+  'system.revert_actions', 'system.audit_log.view', 'system.backup', 'system.import_export',
+  'settings.view', 'settings.update'
+];
+
 const getSafeBaselinePermissions = (roleStr, emailStr = '') => {
   const normalizedRole = (roleStr || 'staff').toLowerCase().trim();
-  const isSuperOrAdmin = normalizedRole === 'super' || normalizedRole === 'admin' || (emailStr || '').toLowerCase() === 'admin@stockflow.com';
+  const isSuper = normalizedRole === 'super' || (emailStr || '').toLowerCase() === 'admin@stockflow.com';
 
-  if (isSuperOrAdmin) {
-    // system.revert_actions is reserved for SUPER only (migration 83): the
-    // safe baseline may only include it when the profile role is 'super'.
-    const superOnlyPerms = normalizedRole === 'super' || (emailStr || '').toLowerCase() === 'admin@stockflow.com'
-      ? ['system.revert_actions']
-      : [];
+  if (isSuper) {
+    return [...SUPER_BASELINE_PERMISSIONS];
+  }
+
+  if (normalizedRole === 'admin') {
     return [
       'dashboard.view', 'items.view', 'items.create', 'items.update', 'items.delete', 'items.adjust_stock', 'inventory.transfer', 'inventory.manage',
       'stock_in.view', 'stock_in.create', 'withdrawals.view', 'withdrawals.create', 'withdrawals.approve', 'withdrawals.reject', 'withdrawals.complete',
       'checkouts.view', 'checkouts.create', 'checkouts.extend', 'checkouts.return', 'history.view', 'reports.view', 'reports.export',
       'projects.view', 'projects.create', 'projects.update', 'projects.delete', 'users.view', 'users.create', 'users.update', 'users.deactivate', 'users.reset_password',
-      'roles.view', 'roles.create', 'roles.update', 'roles.delete', 'roles.manage_permissions', 'settings.view', 'settings.update',
-      ...superOnlyPerms
+      'roles.view', 'roles.create', 'roles.update', 'roles.delete', 'roles.manage_permissions', 'settings.view', 'settings.update'
     ];
   }
   if (['supervisor', 'approver', 'manager'].includes(normalizedRole)) {

@@ -11,25 +11,45 @@ const PERMISSION_DEPENDENCIES = {
   'items.create': ['items.view'],
   'items.update': ['items.view'],
   'items.delete': ['items.view'],
+  'items.transfer': ['items.view'],
+  'items.manage': ['items.view'],
+  'inventory.view': ['items.view'],
   'inventory.transfer': ['items.view'],
   'items.adjust_stock': ['items.view', 'items.update'],
   'stock_in.create': ['stock_in.view'],
+  'stock_in.update': ['stock_in.view'],
+  'stock_in.cancel': ['stock_in.view'],
+  'stock_in.delete': ['stock_in.view'],
   'withdrawals.create': ['withdrawals.view'],
   'withdrawals.approve': ['withdrawals.view'],
   'withdrawals.reject': ['withdrawals.view'],
   'withdrawals.complete': ['withdrawals.view'],
+  'withdrawals.cancel': ['withdrawals.view'],
+  'withdrawals.update': ['withdrawals.view'],
+  'withdrawals.delete': ['withdrawals.view'],
   'checkouts.create': ['checkouts.view'],
+  'checkouts.approve': ['checkouts.view'],
+  'checkouts.reject': ['checkouts.view'],
   'checkouts.return': ['checkouts.view'],
   'checkouts.extend': ['checkouts.view'],
+  'checkouts.cancel': ['checkouts.view'],
+  'checkouts.update': ['checkouts.view'],
+  'checkouts.delete': ['checkouts.view'],
+  'checkouts.resolve_repair': ['checkouts.view'],
   'reports.export': ['reports.view'],
   'users.create': ['users.view'],
   'users.update': ['users.view'],
   'users.deactivate': ['users.view'],
   'users.reset_password': ['users.view'],
+  'users.delete': ['users.view'],
+  'users.manage': ['users.view'],
   'roles.create': ['roles.view'],
   'roles.update': ['roles.view'],
   'roles.delete': ['roles.view'],
   'roles.manage_permissions': ['roles.view'],
+  'system.audit_log.view': ['roles.view'],
+  'system.backup': ['settings.view'],
+  'system.import_export': ['settings.view'],
   'settings.update': ['settings.view'],
 };
 
@@ -42,6 +62,12 @@ const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = []
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    if (isSuperRole && catalog.length > 0) {
+      const allIds = catalog.map(p => p.id);
+      setSelectedIds(allIds);
+      setInitialIds(allIds);
+      return;
+    }
     if (role && currentPermissions) {
       const ids = currentPermissions
         .map(p => (typeof p === 'object' && p !== null ? (p.permission_id || p.id) : p))
@@ -49,19 +75,16 @@ const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = []
       setSelectedIds(ids);
       setInitialIds(ids);
     }
-  }, [role, currentPermissions]);
+  }, [role, currentPermissions, isSuperRole, catalog]);
 
   // system.revert_actions is SUPER-only. The database enforces the same rule
   // in admin_save_role_permissions; the UI mirrors it so the checkbox state is
   // never misleading.
   useEffect(() => {
+    if (isSuperRole) return;
     const revertPermission = catalog.find(p => p.code === 'system.revert_actions');
     if (!revertPermission) return;
-    if (isSuperRole) {
-      setSelectedIds(prev => (prev.includes(revertPermission.id) ? prev : [...prev, revertPermission.id]));
-    } else {
-      setSelectedIds(prev => prev.filter(id => id !== revertPermission.id));
-    }
+    setSelectedIds(prev => prev.filter(id => id !== revertPermission.id));
   }, [catalog, isSuperRole]);
 
   // Group permissions by category
@@ -77,9 +100,9 @@ const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = []
   };
 
   const handlePermissionToggle = (permission) => {
+    if (isSuperRole) return;
     if (permission.code === 'system.revert_actions') {
-      // Non-SUPER roles can never receive it; SUPER always keeps it.
-      if (!isSuperRole || selectedIds.includes(permission.id)) return;
+      if (selectedIds.includes(permission.id)) return;
     }
 
     const isCurrentlySelected = selectedIds.includes(permission.id);
@@ -118,12 +141,14 @@ const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = []
     .map(p => p.id);
 
   const handleSelectAllCategory = (categoryItems) => {
+    if (isSuperRole) return;
     const catIds = selectableCategoryIds(categoryItems);
     const newIds = Array.from(new Set([...selectedIds, ...catIds]));
     setSelectedIds(newIds);
   };
 
   const handleClearAllCategory = (categoryItems) => {
+    if (isSuperRole) return;
     const catIds = selectableCategoryIds(categoryItems);
     setSelectedIds(selectedIds.filter(id => !catIds.includes(id)));
   };
@@ -132,10 +157,12 @@ const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = []
     e.preventDefault();
     try {
       setLoading(true);
-      const sanitizedIds = selectedIds.filter((id) => {
-        const permission = catalog.find(p => p.id === id);
-        return permission?.code !== 'system.revert_actions' || isSuperRole;
-      });
+      const sanitizedIds = isSuperRole
+        ? catalog.map(p => p.id)
+        : selectedIds.filter((id) => {
+            const permission = catalog.find(p => p.id === id);
+            return permission?.code !== 'system.revert_actions';
+          });
       await onSave(role.id, sanitizedIds);
       onClose();
     } catch (error) {
@@ -157,7 +184,9 @@ const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = []
             Permissions Configuration — {role?.name} ({role?.code})
           </DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
-            Configure permissions for this role. System automatically resolves dependencies.
+            {isSuperRole 
+              ? 'บทบาทผู้ดูแลระบบสูงสุด (SUPER) ได้รับและล็อกสิทธิ์ทั้งหมดในระบบโดยอัตโนมัติ'
+              : 'Configure permissions for this role. System automatically resolves dependencies.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -165,7 +194,7 @@ const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = []
         <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-lg bg-muted/30 border border-border/50 text-xs">
           <div className="flex items-center gap-4">
             <span>Selected permissions: <strong className="text-primary text-sm font-bold">{selectedIds.length}</strong> / {catalog.length} items</span>
-            {(addedCount > 0 || removedCount > 0) && (
+            {!isSuperRole && (addedCount > 0 || removedCount > 0) && (
               <span className="flex items-center gap-2 font-medium">
                 {addedCount > 0 && <span className="text-emerald-600 dark:text-emerald-400">+{addedCount} Added</span>}
                 {removedCount > 0 && <span className="text-red-500">-{removedCount} Removed</span>}
@@ -173,28 +202,35 @@ const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = []
             )}
           </div>
 
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setSelectedIds(catalog
-                .filter(p => p.code !== 'system.revert_actions' || isSuperRole)
-                .map(p => p.id))}
-              className="text-xs h-9 sm:h-7 px-3 sm:px-2.5 min-h-[36px] sm:min-h-0 rounded-lg cursor-pointer"
-            >
-              Select All
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setSelectedIds([])}
-              className="text-xs h-9 sm:h-7 px-3 sm:px-2.5 min-h-[36px] sm:min-h-0 rounded-lg cursor-pointer"
-            >
-              Clear All
-            </Button>
-          </div>
+          {isSuperRole ? (
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-md bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 font-bold text-xs">
+              <Lock className="w-3.5 h-3.5" />
+              <span>ล็อกอัตโนมัติสำหรับผู้ดูแลระบบสูงสุด (SUPER)</span>
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setSelectedIds(catalog
+                  .filter(p => p.code !== 'system.revert_actions')
+                  .map(p => p.id))}
+                className="text-xs h-9 sm:h-7 px-3 sm:px-2.5 min-h-[36px] sm:min-h-0 rounded-lg cursor-pointer"
+              >
+                Select All
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setSelectedIds([])}
+                className="text-xs h-9 sm:h-7 px-3 sm:px-2.5 min-h-[36px] sm:min-h-0 rounded-lg cursor-pointer"
+              >
+                Clear All
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Permission Categories Accordion */}
@@ -203,7 +239,9 @@ const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = []
             {Object.keys(groupedCatalog).map((categoryName) => {
               const categoryItems = groupedCatalog[categoryName];
               const isCollapsed = collapsedCategories[categoryName];
-              const selectedCategoryCount = categoryItems.filter(p => selectedIds.includes(p.id)).length;
+              const selectedCategoryCount = isSuperRole 
+                ? categoryItems.length 
+                : categoryItems.filter(p => selectedIds.includes(p.id)).length;
               const isAllCategorySelected = selectedCategoryCount === categoryItems.length;
 
               return (
@@ -222,15 +260,17 @@ const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = []
                       </span>
                     </button>
 
-                    <div className="flex items-center gap-2 text-xs">
-                      <button
-                        type="button"
-                        onClick={() => isAllCategorySelected ? handleClearAllCategory(categoryItems) : handleSelectAllCategory(categoryItems)}
-                        className="text-primary hover:underline font-medium cursor-pointer"
-                      >
-                        {isAllCategorySelected ? 'Deselect Category' : 'Select Category'}
-                      </button>
-                    </div>
+                    {!isSuperRole && (
+                      <div className="flex items-center gap-2 text-xs">
+                        <button
+                          type="button"
+                          onClick={() => isAllCategorySelected ? handleClearAllCategory(categoryItems) : handleSelectAllCategory(categoryItems)}
+                          className="text-primary hover:underline font-medium cursor-pointer"
+                        >
+                          {isAllCategorySelected ? 'Deselect Category' : 'Select Category'}
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   {/* Category Permissions List */}
@@ -238,8 +278,8 @@ const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = []
                     <div className="p-3 grid grid-cols-1 md:grid-cols-2 gap-2 bg-transparent">
                       {categoryItems.map((permission) => {
                         const isSuperOnly = permission.code === 'system.revert_actions';
-                        const isChecked = isSuperOnly && isSuperRole ? true : selectedIds.includes(permission.id);
-                        const isLocked = isSuperOnly;
+                        const isLocked = isSuperRole || isSuperOnly;
+                        const isChecked = isSuperRole ? true : selectedIds.includes(permission.id);
                         return (
                           <label
                             key={permission.id}
@@ -252,7 +292,7 @@ const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = []
                             <input
                               type="checkbox"
                               checked={isChecked}
-                              disabled={isLocked && !isSuperRole}
+                              disabled={isLocked}
                               onChange={() => handlePermissionToggle(permission)}
                               className="mt-0.5 rounded text-primary focus:ring-primary h-4 w-4 disabled:opacity-40"
                             />
@@ -269,7 +309,7 @@ const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = []
                               {isLocked && (
                                 <span className="mt-1 inline-flex items-center gap-1 rounded-md border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-300">
                                   <Lock className="w-2.5 h-2.5" aria-hidden="true" />
-                                  {t('superRevert.permissionLocked')}
+                                  {isSuperRole ? 'ล็อกสิทธิ์ถาวรสำหรับ SUPER' : t('superRevert.permissionLocked')}
                                 </span>
                               )}
                               {permission.description && (
@@ -298,6 +338,8 @@ const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = []
                   <RefreshCw className="w-3.5 h-3.5 animate-spin" />
                   <span>Saving...</span>
                 </>
+              ) : isSuperRole ? (
+                `Synchronize All (${catalog.length} Permissions)`
               ) : (
                 `Save Permissions (${selectedIds.length} ${selectedIds.length === 1 ? 'permission' : 'permissions'})`
               )}

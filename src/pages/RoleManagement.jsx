@@ -503,7 +503,7 @@ const fetchRoles = useCallback(async () => {
                   </div>
                 </div>
 
-                {roleObj.code === 'SUPER' && isSuperAdmin && (
+                {roleObj.code === 'SUPER' && (can('system.audit_log.view') || isSuperAdmin) && (
                   <Button
                     variant="outline"
                     size="sm"

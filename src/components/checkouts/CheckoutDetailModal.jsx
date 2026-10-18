@@ -144,6 +144,7 @@ const CheckoutDetailModal = ({
   canReturn = true,
   canExtend = true,
   isSuperAdmin = false,
+  canCancel = false,
   canRevertAction = false,
   onOpenReturnModal,
   onOpenExtendModal,
@@ -152,8 +153,8 @@ const CheckoutDetailModal = ({
 }) => {
   const { t, lang } = useTranslation();
   const { can } = useAuth();
-  // บันทึกผลการซ่อมได้เมื่อมีสิทธิ์รับคืนพัสดุ หรือรับเข้า Stock (super admin ถูก bypass ใน can() แล้ว)
-  const canResolveRepair = can('checkouts.return') || can('stock_in.create');
+  // บันทึกผลการซ่อมได้เมื่อมีสิทธิ์ checkouts.resolve_repair หรือรับคืนพัสดุ หรือรับเข้า Stock
+  const canResolveRepair = can('checkouts.resolve_repair') || can('checkouts.return') || can('stock_in.create');
   const [returnLogs, setReturnLogs] = useState([]);
   const [extensionLogs, setExtensionLogs] = useState([]);
   const [generatingPdf, setGeneratingPdf] = useState(false);
@@ -973,7 +974,7 @@ const CheckoutDetailModal = ({
               </Button>
             )}
 
-            {isSuperAdmin && order.status !== 'cancelled' && onOpenCancelModal && (
+            {(canCancel || isSuperAdmin) && order.status !== 'cancelled' && onOpenCancelModal && (
               <Button
                 type="button"
                 variant="outline"
