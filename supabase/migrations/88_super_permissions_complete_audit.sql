@@ -296,6 +296,8 @@ DECLARE
   v_role_code TEXT;
   v_revert_perm_id UUID;
   v_total_catalog_count INT;
+  v_governed_ids UUID[] := ARRAY[]::UUID[];
+  v_existing_governed_ids UUID[] := ARRAY[]::UUID[];
 BEGIN
   IF v_caller_id IS NULL THEN
     RAISE EXCEPTION 'Authentication required.';
@@ -337,13 +339,43 @@ BEGIN
     SELECT DISTINCT x FROM unnest(v_permission_ids) AS t(x) WHERE x IS NOT NULL
   );
 
-  -- Strip system.revert_actions from non-SUPER roles
+  -- Always strip system.revert_actions from non-SUPER roles (strictly SUPER-only)
   SELECT id INTO v_revert_perm_id
   FROM public.permissions
   WHERE code = 'system.revert_actions';
 
   IF v_revert_perm_id IS NOT NULL THEN
     v_permission_ids := array_remove(v_permission_ids, v_revert_perm_id);
+  END IF;
+
+  -- Delegation Guard: The 17 newly audited SUPER permissions can ONLY be delegated/configured by SUPER.
+  -- Non-SUPER callers cannot grant new governed permissions to any role, nor can they revoke
+  -- governed permissions previously granted by a SUPER administrator.
+  IF NOT public.is_super_admin(v_caller_id) THEN
+    SELECT COALESCE(ARRAY_AGG(id), ARRAY[]::UUID[]) INTO v_governed_ids
+    FROM public.permissions
+    WHERE code = ANY(ARRAY[
+      'users.delete', 'users.manage',
+      'checkouts.reject', 'checkouts.cancel', 'checkouts.update', 'checkouts.delete', 'checkouts.resolve_repair',
+      'withdrawals.cancel', 'withdrawals.update', 'withdrawals.delete',
+      'stock_in.update', 'stock_in.cancel', 'stock_in.delete',
+      'inventory.view',
+      'system.audit_log.view', 'system.backup', 'system.import_export'
+    ]);
+
+    SELECT COALESCE(ARRAY_AGG(permission_id), ARRAY[]::UUID[]) INTO v_existing_governed_ids
+    FROM public.role_permissions
+    WHERE role_id = p_role_id
+      AND permission_id = ANY(v_governed_ids);
+
+    -- Keep non-governed permissions submitted by caller + preserve existing governed permissions
+    v_permission_ids := ARRAY(
+      SELECT DISTINCT x FROM (
+        SELECT x FROM unnest(v_permission_ids) AS t(x) WHERE NOT (x = ANY(v_governed_ids))
+        UNION
+        SELECT x FROM unnest(v_existing_governed_ids) AS t(x)
+      ) u WHERE x IS NOT NULL
+    );
   END IF;
 
   DELETE FROM public.role_permissions WHERE role_id = p_role_id;

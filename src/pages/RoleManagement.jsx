@@ -629,6 +629,7 @@ const fetchRoles = useCallback(async () => {
           role={selectedRoleForPerms}
           catalog={catalog}
           currentPermissions={currentRolePermissions}
+          isCallerSuper={isSuperAdmin}
         />
       )}
 

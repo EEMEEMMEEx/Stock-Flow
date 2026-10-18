@@ -3,6 +3,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from '@/components/ui/button';
 import { ShieldCheck, ChevronDown, ChevronRight, RefreshCw, Lock } from 'lucide-react';
 import { useTranslation } from '@/i18n';
+import { useAuth } from '@/contexts/AuthContext';
+import { SUPER_GOVERNED_PERMISSIONS, SUPER_STRICT_ONLY_PERMISSIONS } from '@/lib/roleUtils';
 
 const PERMISSION_DEPENDENCIES = {
   'projects.create': ['projects.view'],
@@ -54,8 +56,18 @@ const PERMISSION_DEPENDENCIES = {
   'settings.update': ['settings.view'],
 };
 
-const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = [], currentPermissions = [] }) => {
+const PermissionManagementModal = ({ 
+  isOpen, 
+  onClose, 
+  onSave, 
+  role, 
+  catalog = [], 
+  currentPermissions = [],
+  isCallerSuper = undefined
+}) => {
   const { t } = useTranslation();
+  const { isSuperAdmin } = useAuth();
+  const effectiveIsCallerSuper = isCallerSuper !== undefined ? Boolean(isCallerSuper) : Boolean(isSuperAdmin);
   const isSuperRole = role?.code === 'SUPER';
   const [selectedIds, setSelectedIds] = useState([]);
   const [initialIds, setInitialIds] = useState([]);
@@ -102,8 +114,12 @@ const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = []
 
   const handlePermissionToggle = (permission) => {
     if (isSuperRole) return;
-    if (permission.code === 'system.revert_actions') {
+    if (SUPER_STRICT_ONLY_PERMISSIONS.includes(permission.code)) {
       if (selectedIds.includes(permission.id)) return;
+      return;
+    }
+    if (SUPER_GOVERNED_PERMISSIONS.includes(permission.code) && !effectiveIsCallerSuper) {
+      return;
     }
 
     const isCurrentlySelected = selectedIds.includes(permission.id);
@@ -138,7 +154,12 @@ const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = []
   };
 
   const selectableCategoryIds = (categoryItems) => categoryItems
-    .filter(p => p.code !== 'system.revert_actions' || isSuperRole)
+    .filter(p => {
+      if (isSuperRole) return false;
+      if (SUPER_STRICT_ONLY_PERMISSIONS.includes(p.code)) return false;
+      if (SUPER_GOVERNED_PERMISSIONS.includes(p.code) && !effectiveIsCallerSuper) return false;
+      return true;
+    })
     .map(p => p.id);
 
   const handleSelectAllCategory = (categoryItems) => {
@@ -158,12 +179,36 @@ const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = []
     e.preventDefault();
     try {
       setLoading(true);
-      const sanitizedIds = isSuperRole
-        ? catalog.map(p => p.id)
-        : selectedIds.filter((id) => {
-            const permission = catalog.find(p => p.id === id);
-            return permission?.code !== 'system.revert_actions';
+      let sanitizedIds;
+      if (isSuperRole) {
+        sanitizedIds = catalog.map(p => p.id);
+      } else {
+        // Strip system.revert_actions for non-SUPER roles
+        sanitizedIds = selectedIds.filter((id) => {
+          const permission = catalog.find(p => p.id === id);
+          return permission?.code !== 'system.revert_actions';
+        });
+
+        // Non-SUPER callers cannot add newly selected governed permissions,
+        // and must preserve any governed permissions that the role already had
+        if (!effectiveIsCallerSuper) {
+          const initialGovernedIds = initialIds.filter(id => {
+            const p = catalog.find(item => item.id === id);
+            return p && SUPER_GOVERNED_PERMISSIONS.includes(p.code);
           });
+
+          sanitizedIds = sanitizedIds.filter(id => {
+            const p = catalog.find(item => item.id === id);
+            if (p && SUPER_GOVERNED_PERMISSIONS.includes(p.code)) {
+              return initialGovernedIds.includes(id);
+            }
+            return true;
+          });
+
+          sanitizedIds = Array.from(new Set([...sanitizedIds, ...initialGovernedIds]));
+        }
+      }
+
       await onSave(role.id, sanitizedIds);
       onClose();
     } catch (error) {
@@ -214,9 +259,20 @@ const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = []
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => setSelectedIds(catalog
-                  .filter(p => p.code !== 'system.revert_actions')
-                  .map(p => p.id))}
+                onClick={() => {
+                  const editableIds = catalog
+                    .filter(p => {
+                      if (SUPER_STRICT_ONLY_PERMISSIONS.includes(p.code)) return false;
+                      if (SUPER_GOVERNED_PERMISSIONS.includes(p.code) && !effectiveIsCallerSuper) return false;
+                      return true;
+                    })
+                    .map(p => p.id);
+                  const lockedSelectedIds = selectedIds.filter(id => {
+                    const p = catalog.find(item => item.id === id);
+                    return p && (SUPER_GOVERNED_PERMISSIONS.includes(p.code) && !effectiveIsCallerSuper);
+                  });
+                  setSelectedIds(Array.from(new Set([...lockedSelectedIds, ...editableIds])));
+                }}
                 className="text-xs h-9 sm:h-7 px-3 sm:px-2.5 min-h-[36px] sm:min-h-0 rounded-lg cursor-pointer"
               >
                 Select All
@@ -225,7 +281,13 @@ const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = []
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => setSelectedIds([])}
+                onClick={() => {
+                  const lockedSelectedIds = selectedIds.filter(id => {
+                    const p = catalog.find(item => item.id === id);
+                    return p && (SUPER_GOVERNED_PERMISSIONS.includes(p.code) && !effectiveIsCallerSuper);
+                  });
+                  setSelectedIds(lockedSelectedIds);
+                }}
                 className="text-xs h-9 sm:h-7 px-3 sm:px-2.5 min-h-[36px] sm:min-h-0 rounded-lg cursor-pointer"
               >
                 Clear All
@@ -278,13 +340,18 @@ const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = []
                   {!isCollapsed && (
                     <div className="p-3 grid grid-cols-1 md:grid-cols-2 gap-2 bg-transparent">
                       {categoryItems.map((permission) => {
-                        const isSuperOnly = permission.code === 'system.revert_actions';
-                        const isLocked = isSuperRole || isSuperOnly;
+                        const isGoverned = SUPER_GOVERNED_PERMISSIONS.includes(permission.code);
+                        const isStrictOnly = SUPER_STRICT_ONLY_PERMISSIONS.includes(permission.code);
+                        const isLocked = isSuperRole 
+                          || (isStrictOnly && !isSuperRole)
+                          || (isGoverned && !effectiveIsCallerSuper);
                         const isChecked = isSuperRole ? true : selectedIds.includes(permission.id);
                         return (
                           <label
                             key={permission.id}
-                            className={`flex items-start gap-3 p-2.5 rounded-lg border cursor-pointer transition-all ${
+                            className={`flex items-start gap-3 p-2.5 rounded-lg border transition-all ${
+                              isLocked ? 'cursor-not-allowed opacity-85' : 'cursor-pointer'
+                            } ${
                               isChecked
                                 ? 'border-primary bg-primary/10 font-medium shadow-xs'
                                 : 'border-border/60 bg-background hover:bg-muted/40'
@@ -310,7 +377,17 @@ const PermissionManagementModal = ({ isOpen, onClose, onSave, role, catalog = []
                               {isLocked && (
                                 <span className="mt-1 inline-flex items-center gap-1 rounded-md border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-300">
                                   <Lock className="w-2.5 h-2.5" aria-hidden="true" />
-                                  {isSuperRole ? 'ล็อกสิทธิ์ถาวรสำหรับ SUPER' : t('superRevert.permissionLocked')}
+                                  {isSuperRole 
+                                    ? 'ล็อกสิทธิ์ถาวรสำหรับ SUPER' 
+                                    : isStrictOnly 
+                                      ? t('superRevert.permissionLocked', 'เฉพาะผู้ดูแลระบบสูงสุด (SUPER)') 
+                                      : 'สงวนสิทธิ์ให้ SUPER เป็นผู้กำหนดเท่านั้น'}
+                                </span>
+                              )}
+                              {!isLocked && isGoverned && effectiveIsCallerSuper && (
+                                <span className="mt-1 inline-flex items-center gap-1 rounded-md border border-primary/30 bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold text-primary">
+                                  <ShieldCheck className="w-2.5 h-2.5" aria-hidden="true" />
+                                  {'SUPER Delegated'}
                                 </span>
                               )}
                               {permission.description && (

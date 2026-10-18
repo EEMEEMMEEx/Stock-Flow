@@ -104,3 +104,29 @@ test('Migration 88 inserts all 17 new permissions and enforces SUPER safeguards'
   assert.ok(migration88Source.includes('CREATE OR REPLACE FUNCTION public.admin_save_role_permissions'), 'admin_save_role_permissions must be updated');
   assert.ok(migration88Source.includes('v_perm_count < 59'), 'Assertion must verify at least 59 permissions');
 });
+
+test('roleUtils.js exports SUPER_GOVERNED_PERMISSIONS and modal enforces delegation guards', async () => {
+  const { SUPER_GOVERNED_PERMISSIONS, SUPER_STRICT_ONLY_PERMISSIONS } = await import('../roleUtils.js');
+
+  assert.equal(SUPER_GOVERNED_PERMISSIONS.length, 17, 'Must contain exactly 17 governed permissions');
+  assert.equal(SUPER_STRICT_ONLY_PERMISSIONS.length, 1, 'Must contain exactly 1 strict-only permission');
+  assert.ok(SUPER_STRICT_ONLY_PERMISSIONS.includes('system.revert_actions'), 'Must include system.revert_actions');
+
+  for (const perm of APPROVED_17_NEW_PERMISSIONS) {
+    assert.ok(SUPER_GOVERNED_PERMISSIONS.includes(perm), `SUPER_GOVERNED_PERMISSIONS must include ${perm}`);
+  }
+
+  const modalPath = path.resolve('src/components/roles/PermissionManagementModal.jsx');
+  const modalSource = readFileSync(modalPath, 'utf8');
+
+  assert.ok(modalSource.includes('SUPER_GOVERNED_PERMISSIONS'), 'Modal must import SUPER_GOVERNED_PERMISSIONS');
+  assert.ok(modalSource.includes('effectiveIsCallerSuper'), 'Modal must compute effectiveIsCallerSuper');
+  assert.ok(modalSource.includes('สงวนสิทธิ์ให้ SUPER เป็นผู้กำหนดเท่านั้น'), 'Modal must label locked governed permissions');
+});
+
+test('Migration 88 enforces SUPER-only delegation guard on admin_save_role_permissions', () => {
+  assert.ok(migration88Source.includes('v_governed_ids UUID[]'), 'Must declare v_governed_ids');
+  assert.ok(migration88Source.includes('v_existing_governed_ids UUID[]'), 'Must declare v_existing_governed_ids');
+  assert.ok(migration88Source.includes('IF NOT public.is_super_admin(v_caller_id) THEN'), 'Must check caller is_super_admin');
+  assert.ok(migration88Source.includes('Keep non-governed permissions submitted by caller + preserve existing governed permissions'), 'Must preserve existing governed permissions');
+});

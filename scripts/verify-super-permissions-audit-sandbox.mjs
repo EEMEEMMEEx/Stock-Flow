@@ -275,6 +275,58 @@ try {
   `);
   record('admin_save_role_permissions strips system.revert_actions from non-SUPER roles', staffHasRevertRes.rows[0].exists === false);
 
+  // Test SUPER-only delegation guard for 17 governed permissions:
+  // 1. Give ADMIN role the 'roles.manage_permissions' permission so ADMIN can call the RPC
+  const managePermRes = await db.query(`SELECT id FROM public.permissions WHERE code = 'roles.manage_permissions'`);
+  await db.query(`INSERT INTO public.role_permissions (role_id, permission_id) VALUES ('${ADMIN_ROLE}', '${managePermRes.rows[0].id}') ON CONFLICT DO NOTHING;`);
+
+  // 2. ADMIN caller attempts to grant governed permissions ('users.delete', 'checkouts.cancel') to STAFF
+  const usersDeleteRes = await db.query(`SELECT id FROM public.permissions WHERE code = 'users.delete'`);
+  const checkoutsCancelRes = await db.query(`SELECT id FROM public.permissions WHERE code = 'checkouts.cancel'`);
+  const usersDeleteId = usersDeleteRes.rows[0].id;
+  const checkoutsCancelId = checkoutsCancelRes.rows[0].id;
+
+  await asUser(ADMIN_USER);
+  await db.query(`SELECT public.admin_save_role_permissions('${STAFF_ROLE}', ARRAY['${usersDeleteId}', '${checkoutsCancelId}']::UUID[])`);
+
+  const staffHasGovernedRes = await db.query(`
+    SELECT EXISTS (
+      SELECT 1 FROM public.role_permissions
+      WHERE role_id = '${STAFF_ROLE}' AND permission_id IN ('${usersDeleteId}', '${checkoutsCancelId}')
+    ) as exists
+  `);
+  record('admin_save_role_permissions blocks non-SUPER from granting governed permissions', staffHasGovernedRes.rows[0].exists === false);
+
+  // 3. SUPER caller delegates a governed permission ('checkouts.reject') to ADMIN role
+  const checkoutsRejectRes = await db.query(`SELECT id FROM public.permissions WHERE code = 'checkouts.reject'`);
+  const checkoutsRejectId = checkoutsRejectRes.rows[0].id;
+
+  await asUser(SUPER_USER);
+  await db.query(`SELECT public.admin_save_role_permissions('${ADMIN_ROLE}', ARRAY['${managePermRes.rows[0].id}', '${checkoutsRejectId}']::UUID[])`);
+
+  const adminHasRejectRes = await db.query(`
+    SELECT EXISTS (
+      SELECT 1 FROM public.role_permissions
+      WHERE role_id = '${ADMIN_ROLE}' AND permission_id = '${checkoutsRejectId}'
+    ) as exists
+  `);
+  record('admin_save_role_permissions allows SUPER caller to delegate governed permissions', adminHasRejectRes.rows[0].exists === true);
+
+  // 4. ADMIN caller subsequently edits ADMIN role (omits checkouts.reject in payload) -> existing governed permission is preserved!
+  const itemsViewRes = await db.query(`SELECT id FROM public.permissions WHERE code = 'items.view'`);
+  const itemsViewId = itemsViewRes.rows[0].id;
+
+  await asUser(ADMIN_USER);
+  await db.query(`SELECT public.admin_save_role_permissions('${ADMIN_ROLE}', ARRAY['${managePermRes.rows[0].id}', '${itemsViewId}']::UUID[])`);
+
+  const adminPreservedRejectRes = await db.query(`
+    SELECT EXISTS (
+      SELECT 1 FROM public.role_permissions
+      WHERE role_id = '${ADMIN_ROLE}' AND permission_id = '${checkoutsRejectId}'
+    ) as exists
+  `);
+  record('admin_save_role_permissions preserves existing governed permissions when non-SUPER edits role', adminPreservedRejectRes.rows[0].exists === true);
+
   // ---------------------------------------------------------------------------
   // STEP 6: Test Operational RPCs with New Permissions
   // ---------------------------------------------------------------------------
@@ -326,6 +378,7 @@ try {
     process.exit(1);
   }
 } catch (error) {
-  console.error('[FATAL] Sandbox verification crashed:', error);
+  console.error('[FATAL] Sandbox verification crashed:', error.message || error);
+  if (error.stack) console.error(error.stack);
   process.exit(1);
 }

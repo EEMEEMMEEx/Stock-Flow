@@ -93,3 +93,34 @@ export const getRoleTextColorClass = (roleInput, roleNameInput, roleObj) => {
   return 'text-purple-600 dark:text-purple-400 font-semibold';
 };
 
+/**
+ * Permissions Governed Exclusively by the SUPER Role
+ * Only SUPER administrators are authorized to delegate these permissions to other roles.
+ */
+export const SUPER_GOVERNED_PERMISSIONS = [
+  'users.delete',
+  'users.manage',
+  'checkouts.reject',
+  'checkouts.cancel',
+  'checkouts.update',
+  'checkouts.delete',
+  'checkouts.resolve_repair',
+  'withdrawals.cancel',
+  'withdrawals.update',
+  'withdrawals.delete',
+  'stock_in.update',
+  'stock_in.cancel',
+  'stock_in.delete',
+  'inventory.view',
+  'system.audit_log.view',
+  'system.backup',
+  'system.import_export'
+];
+
+/**
+ * Permissions strictly reserved for the SUPER role only (never delegable)
+ */
+export const SUPER_STRICT_ONLY_PERMISSIONS = [
+  'system.revert_actions'
+];
+
