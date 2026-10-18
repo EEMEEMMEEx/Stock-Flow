@@ -170,7 +170,7 @@ GRANT EXECUTE ON FUNCTION public.transfer_and_delete_project(UUID[], UUID, UUID)
 CREATE OR REPLACE FUNCTION public.adjust_item_current_stock(
   p_item_id UUID,
   p_project_id UUID,
-  p_new_quantity NUMERIC,
+  p_new_quantity INTEGER,
   p_reason TEXT,
   p_actor_id UUID DEFAULT NULL
 )
@@ -375,8 +375,9 @@ BEGIN
 END;
 $$;
 
-REVOKE ALL ON FUNCTION public.adjust_item_current_stock(UUID, UUID, NUMERIC, TEXT, UUID) FROM PUBLIC, anon;
-GRANT EXECUTE ON FUNCTION public.adjust_item_current_stock(UUID, UUID, NUMERIC, TEXT, UUID) TO authenticated, service_role;
+DROP FUNCTION IF EXISTS public.adjust_item_current_stock(UUID, UUID, NUMERIC, TEXT, UUID);
+REVOKE ALL ON FUNCTION public.adjust_item_current_stock(UUID, UUID, INTEGER, TEXT, UUID) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.adjust_item_current_stock(UUID, UUID, INTEGER, TEXT, UUID) TO authenticated, service_role;
 
 
 -- 4.3 extend_checkout_due_date: Require authenticated caller & validate actor
@@ -537,6 +538,7 @@ BEGIN
 END;
 $$;
 
+DROP FUNCTION IF EXISTS public.extend_checkout_due_date(UUID, DATE, TEXT, UUID);
 REVOKE ALL ON FUNCTION public.extend_checkout_due_date(UUID, DATE, TEXT, UUID, BOOLEAN) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.extend_checkout_due_date(UUID, DATE, TEXT, UUID, BOOLEAN) TO authenticated, service_role;
 
@@ -602,7 +604,7 @@ GRANT EXECUTE ON FUNCTION public.process_item_transfer(UUID, UUID, UUID, NUMERIC
 
 -- 4.5 get_user_permissions: Disallow querying other users unless admin
 CREATE OR REPLACE FUNCTION public.get_user_permissions(p_user_id UUID DEFAULT auth.uid())
-RETURNS JSONB
+RETURNS TABLE (permission_code TEXT)
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public, auth, pg_temp
@@ -613,11 +615,10 @@ DECLARE
   v_role_code TEXT;
   v_role_id UUID;
   v_email TEXT;
-  v_perms JSONB;
 BEGIN
   v_target_user_id := COALESCE(p_user_id, auth.uid());
   IF v_target_user_id IS NULL THEN
-    RETURN '[]'::jsonb;
+    RETURN;
   END IF;
 
   -- Disallow querying other users' permissions unless caller is an admin
@@ -646,7 +647,7 @@ BEGIN
   WHERE p.id = v_target_user_id;
 
   IF v_status IS NULL OR v_status != 'active' THEN
-    RETURN '[]'::jsonb;
+    RETURN;
   END IF;
 
   BEGIN
@@ -656,19 +657,16 @@ BEGIN
   END;
 
   IF v_role_code = 'SUPER' OR LOWER(COALESCE(v_email, '')) = 'admin@stockflow.com' THEN
-    SELECT COALESCE(jsonb_agg(code ORDER BY code), '[]'::jsonb)
-    INTO v_perms
-    FROM public.permissions;
-    RETURN v_perms;
+    RETURN QUERY SELECT code FROM public.permissions ORDER BY code;
+    RETURN;
   END IF;
 
-  SELECT COALESCE(jsonb_agg(p.code ORDER BY p.code), '[]'::jsonb)
-  INTO v_perms
+  RETURN QUERY
+  SELECT DISTINCT perm.code
   FROM public.role_permissions rp
-  JOIN public.permissions p ON p.id = rp.permission_id
-  WHERE rp.role_id = v_role_id;
-
-  RETURN v_perms;
+  JOIN public.permissions perm ON perm.id = rp.permission_id
+  WHERE rp.role_id = v_role_id
+  ORDER BY perm.code;
 END;
 $$;
 

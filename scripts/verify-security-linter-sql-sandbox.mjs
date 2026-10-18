@@ -320,6 +320,24 @@ CREATE OR REPLACE FUNCTION public.resolve_damaged_return_item() RETURNS void LAN
 CREATE OR REPLACE FUNCTION public.can_manage_site_bom() RETURNS void LANGUAGE plpgsql SECURITY DEFINER AS $$ BEGIN NULL; END; $$;
 CREATE OR REPLACE FUNCTION public.complete_force_password_change() RETURNS void LANGUAGE plpgsql SECURITY DEFINER AS $$ BEGIN NULL; END; $$;
 CREATE OR REPLACE FUNCTION public.get_my_permissions() RETURNS void LANGUAGE plpgsql SECURITY DEFINER AS $$ BEGIN NULL; END; $$;
+CREATE OR REPLACE FUNCTION public.get_user_permissions(p_user_id UUID DEFAULT auth.uid())
+RETURNS TABLE (permission_code TEXT) LANGUAGE plpgsql SECURITY DEFINER AS $$
+BEGIN
+  RETURN QUERY SELECT 'test.permission'::text;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.adjust_item_current_stock(
+  p_item_id UUID,
+  p_project_id UUID,
+  p_new_quantity INTEGER,
+  p_reason TEXT,
+  p_actor_id UUID DEFAULT NULL
+) RETURNS JSONB LANGUAGE plpgsql SECURITY DEFINER AS $$
+BEGIN
+  RETURN jsonb_build_object('success', true);
+END;
+$$;
 
 CREATE OR REPLACE FUNCTION public.enforce_audit_log_append_only() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER AS $$ BEGIN RETURN NEW; END; $$;
 CREATE OR REPLACE FUNCTION public.rls_auto_enable() RETURNS event_trigger LANGUAGE plpgsql SECURITY DEFINER AS $$ BEGIN NULL; END; $$;
