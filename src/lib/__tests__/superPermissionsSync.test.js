@@ -45,7 +45,7 @@ const SUPER_ONLY_SENSITIVE_PERMISSIONS = [
   'system.backup'
 ];
 
-test('SUPER baseline in AuthProvider.jsx contains all 59 canonical permissions', () => {
+test('SUPER baseline in AuthProvider.jsx contains all 60 canonical permissions', () => {
   // Extract SUPER_BASELINE_PERMISSIONS array from AuthProvider.jsx
   const match = authProviderSource.match(/const SUPER_BASELINE_PERMISSIONS = \[([\s\S]*?)\];/);
   assert.ok(match, 'SUPER_BASELINE_PERMISSIONS array must exist in AuthProvider.jsx');
@@ -55,14 +55,17 @@ test('SUPER baseline in AuthProvider.jsx contains all 59 canonical permissions',
     .map(p => p.trim().replace(/['"]/g, ''))
     .filter(Boolean);
 
-  assert.equal(perms.length, 59, `SUPER baseline must have exactly 59 permissions (got ${perms.length})`);
+  assert.equal(perms.length, 60, `SUPER baseline must have exactly 60 permissions (got ${perms.length})`);
 
   // Check uniqueness
   const uniquePerms = new Set(perms);
-  assert.equal(uniquePerms.size, 59, 'All 59 permissions in SUPER baseline must be unique');
+  assert.equal(uniquePerms.size, 60, 'All 60 permissions in SUPER baseline must be unique');
 
   // Verify items.transfer is present (restored)
   assert.ok(uniquePerms.has('items.transfer'), 'items.transfer must be present in SUPER baseline');
+
+  // Verify scrap.view is present
+  assert.ok(uniquePerms.has('scrap.view'), 'scrap.view must be present in SUPER baseline');
 
   // Verify all 17 new permissions are present
   for (const perm of APPROVED_17_NEW_PERMISSIONS) {

@@ -20,7 +20,7 @@ const SUPER_BASELINE_PERMISSIONS = [
   'stock_in.view', 'stock_in.create', 'stock_in.update', 'stock_in.cancel', 'stock_in.delete',
   'withdrawals.view', 'withdrawals.create', 'withdrawals.approve', 'withdrawals.reject', 'withdrawals.complete', 'withdrawals.cancel', 'withdrawals.update', 'withdrawals.delete',
   'checkouts.view', 'checkouts.create', 'checkouts.approve', 'checkouts.reject', 'checkouts.extend', 'checkouts.return', 'checkouts.cancel', 'checkouts.update', 'checkouts.delete', 'checkouts.resolve_repair',
-  'history.view', 'reports.view', 'reports.export',
+  'history.view', 'reports.view', 'reports.export', 'scrap.view',
   'users.view', 'users.create', 'users.update', 'users.deactivate', 'users.reset_password', 'users.delete', 'users.manage',
   'roles.view', 'roles.create', 'roles.update', 'roles.delete', 'roles.manage_permissions',
   'system.revert_actions', 'system.audit_log.view', 'system.backup', 'system.import_export',
@@ -39,7 +39,7 @@ const getSafeBaselinePermissions = (roleStr, emailStr = '') => {
     return [
       'dashboard.view', 'items.view', 'items.create', 'items.update', 'items.delete', 'items.adjust_stock', 'inventory.transfer', 'inventory.manage',
       'stock_in.view', 'stock_in.create', 'withdrawals.view', 'withdrawals.create', 'withdrawals.approve', 'withdrawals.reject', 'withdrawals.complete',
-      'checkouts.view', 'checkouts.create', 'checkouts.extend', 'checkouts.return', 'history.view', 'reports.view', 'reports.export',
+      'checkouts.view', 'checkouts.create', 'checkouts.extend', 'checkouts.return', 'history.view', 'reports.view', 'reports.export', 'scrap.view',
       'projects.view', 'projects.create', 'projects.update', 'projects.delete', 'users.view', 'users.create', 'users.update', 'users.deactivate', 'users.reset_password',
       'roles.view', 'roles.create', 'roles.update', 'roles.delete', 'roles.manage_permissions', 'settings.view', 'settings.update'
     ];

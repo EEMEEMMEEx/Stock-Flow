@@ -4,6 +4,7 @@ import {
   LayoutDashboard, 
   FolderKanban, 
   Package, 
+  PackageX,
   ArrowDownToLine, 
   ArrowUpFromLine, 
   RotateCcw,
@@ -39,6 +40,7 @@ const NAVIGATION_GROUPS = [
       { id: 'stock_in', name: 'Stock In', nameKey: 'nav.stockIn', path: '/stock-in', icon: ArrowDownToLine, permission: 'stock_in.view' },
       { id: 'withdrawals', name: 'Withdrawals', nameKey: 'nav.withdrawals', path: '/withdrawals', icon: ArrowUpFromLine, permission: 'withdrawals.view' },
       { id: 'checkouts', name: 'Checkouts', nameKey: 'nav.checkouts', path: '/checkouts', icon: RotateCcw, permission: 'checkouts.view' },
+      { id: 'scrap', name: 'Scrap & Salvage', nameKey: 'nav.scrap', path: '/scrap', icon: PackageX, permission: 'scrap.view' },
       { id: 'history', name: 'History', nameKey: 'nav.history', path: '/history', icon: History, permission: 'history.view' },
       { id: 'reports', name: 'Reports', nameKey: 'nav.reports', path: '/reports', icon: FileText, permission: 'reports.view' },
     ]
