@@ -1,5 +1,20 @@
 # Changelog
 
+## [2026-10-19 10:00] - v1.25.1
+
+- **Files Modified:** `supabase/migrations/91_sequential_checkout_order_number.sql` (ใหม่), `scripts/verify-sequential-checkout-number-sandbox.mjs` (ใหม่), `scripts/apply-migration-91.mjs` (ใหม่), `scripts/verify-pdf-signatures.mjs`, `docs/sequential-checkout-order-number-plan.md` (ใหม่), `package.json`, `CHANGELOG.md`
+- **Changes:**
+  - **ปรับระบบเลขที่เอกสารใบยืมพัสดุ (CHK-YYYYMM-XXXX) ให้เป็นเลขรันต่อเนื่องเริ่มต้นที่ 0000 และเรียงลำดับประวัติเดิม:**
+    - สร้างตารางกลาง `public.document_counters` สำหรับจัดการตัวนับรหัสเอกสารตามประเภท (`doc_type`) และรอบเดือน (`period` เช่น `202610`)
+    - รันกระบวนการ Backfill จัดเรียงประวัติใบยืมเดิมทั้งหมดในระบบแบบ Two-Phase ปลอดภัย ไร้ข้อผิดพลาด Unique Key Collision โดยจัดเรียงตามลำดับเวลา `created_at ASC, id ASC` แยกตามรอบเดือน เริ่มต้นที่ `0000`, `0001`... (`202608` รัน 0000, `202609` รัน 0000-0021, `202610` รัน 0000-0017)
+    - ซิงค์ค่าตัวนับสูงสุดของแต่ละรอบเดือนเข้าสู่ตาราง `document_counters` ทำให้รายการยืมใหม่นับต่อจากลำดับล่าสุดทันทีอย่างไร้รอยต่อ
+    - ปรับปรุง PostgreSQL RPC `public.process_checkout_order(p_payload JSONB)` ให้ใช้ Atomic Upsert บนตาราง `document_counters` พร้อม Row Lock เพื่อรับประกัน Zero Race Condition สำหรับคำขอสร้างใบยืมพร้อมกัน
+    - รองรับการจัดรูปแบบ 4 หลัก (`0000`–`9999`) และขยายเป็น 5+ หลักโดยอัตโนมัติเมื่อเกิน 9,999 รายการ (Option A) ป้องกันปัญหา Postgres `lpad` 4-char string truncation
+  - **Verification:**
+    - `node scripts/verify-sequential-checkout-number-sandbox.mjs` — PGlite WASM Sandbox **ALL PASS** (Historic renumbering, document_counters sync, runtime sequential allocation, month rollover, 10,000 overflow, 10 concurrent requests)
+    - `npm run verify:pdf` — PDF signatures and docno `0000` resolver **21/21 PASS**
+  - ปรับ version เป็น `v1.25.1` (PATCH)
+
 ## [2026-10-19 08:15] - v1.24.4
 
 - **Files Modified:** `src/components/common/ProjectLocationSelector.jsx`, `src/components/checkouts/RepairResolutionModal.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `package.json`, `docs/repair-project-dropdown-implementation-plan.md`, `CHANGELOG.md`

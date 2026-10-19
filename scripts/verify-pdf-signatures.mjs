@@ -88,6 +88,7 @@ check('withdrawal: requester without signature -> null',
 check('docno: withdrawal uses work_order_no', resolveDocumentNumber(withdrawalOrder), 'WO-2026-0001');
 check('docno: withdrawal fallback to #id', resolveDocumentNumber({ id: 'abcdef12-3456' }), '#abcdef12');
 check('docno: checkout uses order_number', resolveDocumentNumber(checkoutOrder, 'checkout'), 'CHK-202610-0001');
+check('docno: checkout uses order_number 0000', resolveDocumentNumber({ order_number: 'CHK-202610-0000' }, 'checkout'), 'CHK-202610-0000');
 check('docno: missing values -> dash', resolveDocumentNumber({}), '—');
 
 // ---------------------------------------------------------------------------
