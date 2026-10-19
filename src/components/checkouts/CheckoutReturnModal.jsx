@@ -383,7 +383,7 @@ const CheckoutReturnModal = ({
                             className="w-full h-8 rounded-lg border border-input bg-background px-2 text-xs font-semibold focus:ring-2 focus:ring-emerald-500 cursor-pointer"
                           >
                             <option value="normal">{t('checkouts.normal')}</option>
-                            <option value="needs_repair">{t('checkouts.damagedCondition')}</option>
+                            <option value="needs_repair">{t('checkouts.needsRepair')}</option>
                             <option value="damaged">{t('checkouts.damaged')}</option>
                             <option value="lost">{t('checkouts.lost')}</option>
                             <option value="consumed">{t('checkouts.consumed')}</option>

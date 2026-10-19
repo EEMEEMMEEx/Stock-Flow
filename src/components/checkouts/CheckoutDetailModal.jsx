@@ -32,7 +32,7 @@ import { formatProjectLocation } from '@/lib/checkoutDisplay';
 const RETURN_CONDITION_LABEL_KEYS = {
   normal: 'checkouts.normal',
   damaged: 'checkouts.damaged',
-  needs_repair: 'checkouts.damagedCondition',
+  needs_repair: 'checkouts.needsRepair',
   lost: 'checkouts.lost',
   consumed: 'checkouts.consumedShort',
 };

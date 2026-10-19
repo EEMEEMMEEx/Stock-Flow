@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-10-19 22:22] - v1.25.12
+
+- **Files Modified:** `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `src/components/checkouts/CheckoutReturnModal.jsx`, `src/components/checkouts/CheckoutDetailModal.jsx`, `docs/device-condition-label-investigation-plan.md`, `package.json`, `CHANGELOG.md`
+- **Changes:**
+  - **แก้ไขป้ายชื่อสภาพอุปกรณ์ซ้ำซ้อนในเมนูรับคืนพัสดุ (Device Condition Label Collision Fix):**
+    - แก้ไขปัญหาตัวเลือกสภาพอุปกรณ์แสดงข้อความ "ชำรุดเสียหาย" ซ้ำกัน 2 บรรทัด (สำหรับ `value="needs_repair"` และ `value="damaged"`)
+    - เพิ่มคีย์ i18n `checkouts.needsRepair`: `"ชำรุด (ส่งซ่อม)"` / `"Needs Repair"`
+    - ปรับปรุงคีย์ i18n `checkouts.damaged` ให้ชัดเจนขึ้น: `"เสียหายหนัก (แทงจำหน่าย)"` / `"Damaged (Scrap)"`
+    - ปรับ `CheckoutReturnModal.jsx` ให้ตัวเลือก `needs_repair` เรียกใช้ `t('checkouts.needsRepair')`
+    - ปรับ `CheckoutDetailModal.jsx` ให้ `RETURN_CONDITION_LABEL_KEYS.needs_repair` ชี้ไปที่ `checkouts.needsRepair`
+    - คงค่าในฐานข้อมูล, RPC, constraints และ backward compatibility กับ logs ในอดีตทั้งหมด 100%
+
 ## [2026-10-19 20:58] - v1.25.11
 
 - **Files Modified:** `src/components/withdrawals/WithdrawalDetailModal.jsx`, `scripts/verify-withdrawal-detail-modal.mjs`, `package.json`, `CHANGELOG.md`, `docs/withdrawal-detail-modal-ux-implementation-plan.md`
