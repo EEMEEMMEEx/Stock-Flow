@@ -1,5 +1,41 @@
 # Changelog
 
+## [2026-10-19 16:40] - v1.25.8
+
+- **Files Modified:** `supabase/migrations/20261020000000_email_delivery_logs_and_event_seeds.sql` (ใหม่), `api/send-email.js`, `src/lib/emailService.js`, `src/lib/emailRenderer.js`, `src/lib/notificationDispatcher.js`, `src/hooks/useNotifications.js`, `src/pages/Checkouts.jsx`, `src/components/settings/EmailTemplateManager.jsx`, `src/components/settings/EmailDeliveryLogs.jsx` (ใหม่), `src/pages/Settings.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `scripts/verify-email-branding.mjs`, `package.json`, `CHANGELOG.md`, `docs/notification-email-settings-implementation-plan.md` (ใหม่)
+- **Changes:**
+  - **ตรวจสอบและยกระดับระบบการตั้งค่าการแจ้งเตือนและอีเมล (Notification and Email Settings) ครบทั้ง 15 เหตุการณ์:**
+    - พัฒนา Migration `20261020000000_email_delivery_logs_and_event_seeds.sql`:
+      - สร้างตาราง `public.email_delivery_logs` พร้อม RLS (Super/Admin ดูประวัติได้, Service Role แทรกประวัติ) และ Index บน `event_type`, `status`, `created_at`
+      - Seed เหตุการณ์แจ้งเตือนที่ขาดหาย (`stock_in_created`, `withdrawal_reverted`, `checkout_reverted`) เข้าสู่ `system_settings.notification_events` ครบถ้วน 15 เหตุการณ์
+    - ปรับปรุง Backend `api/send-email.js`:
+      - เพิ่มการบันทึกประวัติผลการส่งอีเมลลงใน `email_delivery_logs` ทั้งกรณีสำเร็จ (`sent`) และกรณีล้มเหลว (`failed` พร้อม error message)
+      - แก้ไขช่องโหว่ CORS Origin reflection ให้ตรวจสอบความถูกต้องก่อนสะท้อนกลับ
+      - รับและบันทึก `eventType` จาก payload
+    - ปรับปรุง `src/lib/emailRenderer.js`:
+      - เพิ่มชุดข้อมูลจำลอง (Mock Data) สำหรับเหตุการณ์ 14 (`withdrawal_reverted`) และ 15 (`checkout_reverted`) ใน `SAMPLE_EMAIL_DATA_BY_EVENT`
+      - แก้ไข RegEx Special Replacement Character (`$`) ใน `resolveEmailVariables` ด้วย Replacer Function `() => String(value)`
+      - เพิ่ม Sanitization `escapeHtml()` ให้กับ `item.status_label` และ `item.due_date`
+      - เสริม Outlook MSO Conditional Width Table และ Fallback Font Stack ให้รองรับภาษาไทย
+    - แก้ไขปัญหา Checkout Double-Fire ใน `src/pages/Checkouts.jsx`:
+      - ตัดการส่งอีเมล `checkout_handed_over` ซ้ำซ้อนขณะกดอนุมัติใบยืม โดยจะส่งเฉพาะ `checkout_approved` และส่งมอบอุปกรณ์เฉพาะขั้นตอนส่งมอบจริง
+    - ปรับปรุง Notification Bell Parity ใน `src/hooks/useNotifications.js`:
+      - เชื่อมโยงการอนุมัติใบเบิกด่วน (`approveQuickWithdrawal`) ให้ส่งอีเมล `withdrawal_approved` และตรวจสอบสต็อกขั้นต่ำ (`checkAndDispatchOrderLowStock`) ให้เท่าเทียมกับหน้าใบเบิกปกติ
+    - ปรับปรุง Cache Keys และ Plain Text ใน `src/lib/notificationDispatcher.js`:
+      - แก้ไข Cache Key ของ `stock_in_created` และ Partial Return ใน `checkout_returned` ป้องกันการส่งอีเมลซ้ำซ้อน
+      - สลับมาใช้ `renderEmailText()` เพื่อสร้างเนื้อหา Plain Text ทางเลือกที่ถูกต้อง
+    - เพิ่ม UI บันทึกประวัติการส่งอีเมล `src/components/settings/EmailDeliveryLogs.jsx`:
+      - แสดงตารางประวัติการส่งอีเมลสถานะ (Sent/Failed), ตัวกรองสถานะ, ค้นหาตามผู้รับ/หัวข้อ/เหตุการณ์, การแบ่งหน้า, และ Modal ดูข้อผิดพลาดทางเทคนิค
+      - ติดตั้งในหน้า `src/pages/Settings.jsx` ภายใต้แท็บการตั้งค่าอีเมล
+    - เพิ่มการตรวจสอบความถูกต้องของฟอร์มเทมเพลตใน `src/components/settings/EmailTemplateManager.jsx` ป้องกันการบันทึกหัวข้อว่าง หรือใส่ตัวแปรผิดรูปแบบ
+    - เพิ่มคำแปลสองภาษา (TH/EN) สำหรับเหตุการณ์ 14, 15 และโมดูล `emailLogs` ใน `src/i18n/locales/th.js` และ `en.js`
+  - **Verification:**
+    - `npm run test:email` — **33/33 PASS** (Template Shells, Revert Notifications, Nodemailer transport & error normalization)
+    - `node scripts/verify-email-branding.mjs` — **103/103 PASS** (15 notification events, self-hosted logo, accent color, route retention)
+    - `npm run check:i18n` — **PASS** (100% key parity 2,107/2,107 keys ระหว่าง en.js และ th.js)
+    - `npm run verify:notifications` — **17/17 PASS**
+    - `npm run build` — **PASS** (Vite v7.3.6 production build 4,001 modules transformed ใน 9.79s)
+
 ## [2026-10-19 15:45] - v1.25.7
 
 - **Files Modified:** `supabase/migrations/96_fix_admin_delete_user_and_integrity_guard.sql` (ใหม่), `src/pages/UserManagement.jsx`, `src/components/users/UserActionModal.jsx`, `package.json`, `scripts/verify-admin-delete-user-sandbox.mjs` (ใหม่), `CHANGELOG.md`

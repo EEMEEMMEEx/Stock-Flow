@@ -57,7 +57,7 @@ const routeFor = (event) => (
 );
 
 const events = Object.keys(SAMPLE_EMAIL_DATA_BY_EVENT);
-check("template inventory : 13 notification events", events.length === 13, "found " + events.length);
+check("template inventory : 15 notification events", events.length === 15, "found " + events.length);
 
 for (const event of events) {
   const html = renderEmailHtml({

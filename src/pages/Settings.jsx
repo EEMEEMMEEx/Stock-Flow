@@ -13,6 +13,7 @@ import { APP_CONFIG } from '@/config/appConfig';
 import toast from 'react-hot-toast';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import EmailTemplateManager from '@/components/settings/EmailTemplateManager';
+import EmailDeliveryLogs from '@/components/settings/EmailDeliveryLogs';
 import DefaultPasswordManager from '@/components/settings/DefaultPasswordManager';
 import { sendTestEmail } from '@/lib/emailService';
 import { useTranslation } from '@/i18n';
@@ -78,6 +79,7 @@ const Settings = () => {
     withdrawal_rejected: { enabled: true, roles: ['STAFF'] },
     withdrawal_completed: { enabled: true, roles: ['ADMIN'] },
     withdrawal_reverted: { enabled: true, roles: ['ADMIN', 'SUPER'] },
+    stock_in_created: { enabled: true, roles: ['ADMIN', 'SUPERVISOR'] },
     low_stock_alert: { enabled: true, roles: ['ADMIN', 'SUPERVISOR'] },
     checkout_submitted: { enabled: true, roles: ['ADMIN', 'SUPERVISOR'] },
     checkout_approved: { enabled: true, roles: ['STAFF', 'ADMIN'] },
@@ -896,6 +898,11 @@ const Settings = () => {
                   }
                 }}
               />
+            </div>
+
+            {/* Email Delivery Logs Section */}
+            <div className="pt-6 border-t border-border/40">
+              <EmailDeliveryLogs />
             </div>
           </CardContent>
         )}

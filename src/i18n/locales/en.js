@@ -1683,6 +1683,16 @@ export default {
           "title": "13. Equipment Returned",
           "desc": "Notify the borrower when returned equipment is inspected and recorded",
           "primaryRecipient": "Borrower / Administrator"
+        },
+        "withdrawal_reverted": {
+          "title": "14. Withdrawal Reverted",
+          "desc": "Notify when an administrator reverts a withdrawal order status and returns stock",
+          "primaryRecipient": "Requester / Administrator"
+        },
+        "checkout_reverted": {
+          "title": "15. Checkout Reverted",
+          "desc": "Notify when an administrator reverts an equipment borrow order status",
+          "primaryRecipient": "Borrower / Administrator"
         }
       },
       "list": {
@@ -1798,6 +1808,25 @@ export default {
       "users_other": "{{count}} Users",
       "roles_one": "{{count}} Role",
       "roles_other": "{{count}} Roles"
+    },
+    "emailLogs": {
+      "title": "Email Delivery Logs",
+      "subtitle": "Audit log of notification dispatch attempts and SMTP delivery status",
+      "searchPlaceholder": "Search by recipient, subject, or event...",
+      "allStatus": "All Statuses",
+      "sentOnly": "Sent Only",
+      "failedOnly": "Failed Only",
+      "timestamp": "Timestamp",
+      "event": "Event",
+      "recipient": "Recipient",
+      "subject": "Subject",
+      "status": "Status",
+      "noLogs": "No email delivery logs recorded yet",
+      "sentBadge": "Sent",
+      "failedBadge": "Failed",
+      "pageSummary": "Showing {{from}} - {{to}} of {{total}} logs",
+      "detailTitle": "Email Delivery Details",
+      "errorMessage": "Error Message"
     },
     "testEmailModal": {
       "title": "Test Email Notification",

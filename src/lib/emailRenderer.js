@@ -435,6 +435,64 @@ export const SAMPLE_EMAIL_DATA_BY_EVENT = {
       { name: 'แท่นชาร์จแบตเตอรี่วิทยุ Motorola PMPN4527A', sku: 'ASSET-DOPA-0517 (S/N: 51230987)', unit: 'ชุด', requested_qty: 1, approved_qty: 1, issued_qty: 1, available_stock: 7 },
     ],
   },
+  withdrawal_reverted: {
+    event_type: 'withdrawal_reverted',
+    app_name: 'StockFlow',
+    user_name: 'วัชระ มานะดี',
+    requester_name: 'วัชระ มานะดี',
+    requester_email: 'watchara@example.com',
+    request_no: 'WO-0B2C1F6C',
+    project_name: 'DTRS-DOPA',
+    project_code: 'DTRS-DOPA-01',
+    previous_status: 'อนุมัติแล้ว',
+    new_status: 'รออนุมัติ',
+    reverted_by: 'Super Admin',
+    reverted_date: '10 ตุลาคม 2569 เวลา 11:20 น.',
+    revert_reason: 'ปรับปรุงรายการพัสดุและจำนวนตามคำร้องขอของหน่วยงาน',
+    status: 'ย้อนสถานะคำขอเบิก',
+    status_badge: 'ย้อนสถานะคำขอเบิก',
+    fulfillment_status: 'รอพิจารณาอนุมัติใหม่',
+    item_count: '4 รายการ',
+    total_quantity: '174 หน่วย',
+    action_url: 'https://stockflowth.online/withdrawals',
+    public_base_url: 'https://stockflowth.online',
+    items: SAMPLE_ITEM_DATA,
+  },
+  checkout_reverted: {
+    event_type: 'checkout_reverted',
+    app_name: 'StockFlow',
+    user_name: 'วัชระ มานะดี',
+    borrower_name: 'วัชระ มานะดี',
+    borrower_department: 'วิศวกรรมระบบและเครือข่าย (DTRS Network)',
+    borrower_phone: '081-987-6543',
+    requester_name: 'วัชระ มานะดี',
+    requester_email: 'watchara@example.com',
+    checkout_id: 'CHK-2026-0089',
+    request_no: 'CHK-2026-0089',
+    project_name: 'โครงการติดตั้งระบบสื่อสาร DTRS-DOPA ระยะที่ 2',
+    project_code: 'DTRS-DOPA-02',
+    equipment_name: 'วิทยุสื่อสารดิจิทัล Motorola XiR P8668i TIA',
+    asset_code: 'ASSET-DOPA-0482 (S/N: 78945612)',
+    quantity: '2 เครื่อง',
+    checkout_date: '2 ตุลาคม 2569 เวลา 14:30 น.',
+    due_date: '9 ตุลาคม 2569',
+    previous_status: 'คืนอุปกรณ์เรียบร้อย',
+    new_status: 'กำลังยืมใช้งาน',
+    reverted_by: 'Super Admin',
+    reverted_date: '10 ตุลาคม 2569 เวลา 11:30 น.',
+    revert_reason: 'พบรายการอุปกรณ์ส่งคืนยังไม่ครบถ้วน ย้อนสถานะเพื่อบันทึกใหม่',
+    status: 'ย้อนสถานะรายการยืม',
+    status_badge: 'ย้อนสถานะรายการยืม',
+    fulfillment_status: 'กำลังยืมใช้งาน',
+    item_count: '2 รายการ',
+    total_quantity: '2 เครื่อง',
+    action_url: 'https://stockflowth.online/checkouts?order_id=CHK-2026-0089',
+    public_base_url: 'https://stockflowth.online',
+    items: [
+      { name: 'วิทยุสื่อสารดิจิทัล Motorola XiR P8668i TIA', sku: 'ASSET-DOPA-0482 (S/N: 78945612)', unit: 'เครื่อง', requested_qty: 1, approved_qty: 1, issued_qty: 1, available_stock: 5 },
+      { name: 'แท่นชาร์จแบตเตอรี่วิทยุ Motorola PMPN4527A', sku: 'ASSET-DOPA-0517 (S/N: 51230987)', unit: 'ชุด', requested_qty: 1, approved_qty: 1, issued_qty: 1, available_stock: 7 },
+    ],
+  },
 };
 
 export const SAMPLE_EMAIL_DATA = {
@@ -537,7 +595,7 @@ const EVENT_DEFAULTS = {
   withdrawal_submitted: {
     badge: 'คำขอเบิกใหม่', type: 'warning',
     heading: 'มีคำขอเบิกจ่ายวัสดุใหม่เข้าระบบ',
-    intro: 'สวัสดีครับ<br />{{requester_name}} ได้ส่งคำขอเบิกจ่ายวัสดุเลขที่ {{request_no}} สำหรับโครงการ {{project_name}} และกำลังรอการพิจารณาอนุมัติ',
+    intro: 'สวัสดีครับ {{requester_name}} ได้ส่งคำขอเบิกจ่ายวัสดุเลขที่ {{request_no}} สำหรับโครงการ {{project_name}} และกำลังรอการพิจารณาอนุมัติ',
     cta: 'ตรวจสอบและพิจารณาคำขอ',
     helper: 'กรุณาตรวจสอบรายการวัสดุและจำนวนคงเหลือก่อนดำเนินการอนุมัติ'
   },
@@ -668,7 +726,7 @@ export const resolveEmailVariables = (text = '', data = SAMPLE_EMAIL_DATA) => {
   let result = String(text || '');
   Object.entries(data).forEach(([key, value]) => {
     if (typeof value === 'string' || typeof value === 'number') {
-      result = result.replace(new RegExp(`{{\\s*${key}\\s*}}`, 'g'), String(value));
+      result = result.replace(new RegExp(`{{\\s*${key}\\s*}}`, 'g'), () => String(value));
     }
   });
   return result.replace(/{{\s*[\w.-]+\s*}}/g, '');
@@ -732,10 +790,10 @@ const renderMaterialDetails = (items = [], heading = 'รายการวั�
     ].filter(Boolean).join('') : isLowStock ? [
       renderRow('คงเหลือปัจจุบัน:', hasValue(item.available_stock ?? requested) ? formatQuantity(item.available_stock ?? requested, unit) : '', { emphasis: true }),
       renderRow('เกณฑ์แจ้งเตือนสต็อกต่ำ:', hasValue(item.threshold || item.min_quantity) ? formatQuantity(item.threshold || item.min_quantity, unit) : ''),
-      renderRow('สถานะ:', item.status_label || 'ต้องเติมสต็อก', { emphasis: true })
+      renderRow('สถานะ:', escapeHtml(item.status_label || 'ต้องเติมสต็อก'), { emphasis: true })
     ].filter(Boolean).join('') : isEquipment ? [
       renderRow('จำนวนที่ยืม:', hasValue(requested) ? formatQuantity(requested, unit) : '', { emphasis: true }),
-      renderRow('กำหนดส่งคืน:', item.due_date || ''),
+      renderRow('กำหนดส่งคืน:', escapeHtml(item.due_date || '')),
       hasValue(item.condition) ? renderRow('สภาพการตรวจรับ:', `<span style="display: inline-block; padding: 2px 8px; border-radius: 999px; background-color: #dcfce7; color: #166534; font-size: 11px; font-weight: 700;">${escapeHtml(item.condition)}</span>`) : ''
     ].filter(Boolean).join('') : [
       renderRow('จำนวนที่ขอ:', hasValue(requested) ? formatQuantity(requested, unit) : ''),
@@ -1235,10 +1293,11 @@ export const renderEmailHtml = ({ branding = {}, template = {}, data = SAMPLE_EM
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${renderText(template.subject || appName, safeData)}</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: ${EMAIL_THEME.page}; font-family: Arial, Tahoma, 'Noto Sans Thai', sans-serif; color: ${EMAIL_THEME.bodyText};">
+<body style="margin: 0; padding: 0; background-color: ${EMAIL_THEME.page}; font-family: Arial, Tahoma, 'Sarabun', 'Noto Sans Thai', sans-serif; color: ${EMAIL_THEME.bodyText};">
   <div style="display: none; max-height: 0; overflow: hidden; opacity: 0; color: transparent; mso-hide: all;">${preheader}</div>
   <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="width: 100%; background-color: ${EMAIL_THEME.page};">
     <tr><td align="center" style="padding: 24px 12px;">
+      <!--[if (gte mso 9)|(IE)]><table role="presentation" width="620" align="center" cellpadding="0" cellspacing="0" border="0"><tr><td><![endif]-->
       <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="width: 100%; max-width: 620px; background-color: ${EMAIL_THEME.surface}; border: 1px solid ${EMAIL_THEME.border}; border-radius: 14px; overflow: hidden;">
         <tr><td style="padding: 20px 28px; border-bottom: 3px solid ${accentColor};">
           <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
@@ -1262,6 +1321,7 @@ export const renderEmailHtml = ({ branding = {}, template = {}, data = SAMPLE_EM
         </td></tr>
         <tr><td align="center" style="padding: 16px 28px; border-top: 1px solid ${EMAIL_THEME.border}; background-color: ${EMAIL_THEME.panel}; font-size: 12px; line-height: 18px; color: ${EMAIL_THEME.mutedText};">${footerText}<br />© ${safeData.year} ${appName} · Inventory Management System</td></tr>
       </table>
+      <!--[if (gte mso 9)|(IE)]></td></tr></table><![endif]-->
     </td></tr>
   </table>
 </body>

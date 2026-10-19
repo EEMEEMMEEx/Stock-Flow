@@ -56,8 +56,13 @@ function normalizeNodemailerError(error) {
 
 export default async function handler(req, res) {
   // Set CORS and Security headers
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  const origin = req.headers.origin;
+  if (origin) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  }
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
   res.setHeader(
     'Access-Control-Allow-Headers',
@@ -110,7 +115,7 @@ export default async function handler(req, res) {
       });
     }
 
-    const { to, cc, bcc, subject, html, text, smtpOverrides, inlineImages } = req.body || {};
+    const { to, cc, bcc, subject, html, text, smtpOverrides, inlineImages, eventType } = req.body || {};
 
     // Parse, trim and deduplicate recipients (to, cc, bcc)
     const rawTo = Array.isArray(to) ? to : String(to || '').split(',').map(s => s.trim()).filter(Boolean);
@@ -314,6 +319,27 @@ export default async function handler(req, res) {
     const info = await transporter.sendMail(mailOptions);
     console.log('[Vercel API send-email] Sent successfully:', info.messageId || messageId);
 
+    if (supabaseUrl && serviceRoleKey) {
+      try {
+        const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
+        await supabaseAdmin.from('email_delivery_logs').insert({
+          event_type: eventType || null,
+          recipient: toList.join(', '),
+          subject: subject || 'StockFlow Notification',
+          status: 'sent',
+          message_id: info.messageId || messageId,
+          metadata: {
+            cc: ccList.length ? ccList : undefined,
+            bcc: bccList.length ? bccList : undefined,
+            accepted: info.accepted || toList,
+            rejected: info.rejected || [],
+          }
+        });
+      } catch (logErr) {
+        console.warn('[Vercel API send-email] Delivery log insert skipped:', logErr.message);
+      }
+    }
+
     return res.status(200).json({
       success: true,
       messageId: info.messageId || messageId,
@@ -325,6 +351,28 @@ export default async function handler(req, res) {
   } catch (error) {
     console.error('[Vercel API send-email] Error:', error);
     const normalized = normalizeNodemailerError(error);
+
+    const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (supabaseUrl && serviceRoleKey) {
+      try {
+        const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
+        await supabaseAdmin.from('email_delivery_logs').insert({
+          event_type: req.body?.eventType || null,
+          recipient: Array.isArray(req.body?.to) ? req.body.to.join(', ') : String(req.body?.to || 'unknown'),
+          subject: req.body?.subject || 'StockFlow Notification',
+          status: 'failed',
+          error_message: normalized.message || error.message,
+          metadata: {
+            code: normalized.code,
+            originalError: normalized.original
+          }
+        });
+      } catch (logErr) {
+        console.warn('[Vercel API send-email] Failure log insert skipped:', logErr.message);
+      }
+    }
+
     return res.status(normalized.status).json({
       success: false,
       code: normalized.code,

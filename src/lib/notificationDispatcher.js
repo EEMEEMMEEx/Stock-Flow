@@ -287,7 +287,11 @@ export const dispatchWithdrawalNotification = async ({
       data: emailData
     });
 
-    const plainText = `[${emailData.app_name}] แจ้งเตือนรายการคำขอเบิก ${emailData.request_no}\nโครงการ: ${emailData.project_name}\nผู้ขอเบิก: ${emailData.requester_name}\nสถานะ: ${emailData.status}\nจำนวน: ${emailData.item_count}\nเปิดดูรายละเอียด: ${emailData.action_url}`;
+    const plainText = renderEmailText({
+      branding,
+      template: eventConfig || {},
+      data: emailData
+    });
 
     const subject = resolveSubject(
       eventConfig?.subject,
@@ -304,6 +308,7 @@ export const dispatchWithdrawalNotification = async ({
       subject,
       html,
       text: plainText,
+      eventType,
       actionUrl: emailData.action_url
     });
 
@@ -326,7 +331,10 @@ export const dispatchStockInNotification = async ({
   supplier = '',
   poNumber = ''
 }) => {
-  const cacheKey = `stock_in_created:${orderId || projectId}:${Date.now()}`;
+  const cacheKey = `stock_in_created:${orderId || projectId}`;
+  if (dispatchedEventsCache.has(cacheKey)) {
+    return { success: true, deduplicated: true };
+  }
   try {
     const { notificationEvents, branding } = await fetchNotificationSettings();
 
@@ -406,7 +414,11 @@ export const dispatchStockInNotification = async ({
       data: emailData
     });
 
-    const plainText = `[${emailData.app_name}] มีการรับวัสดุเข้าสต็อกเรียบร้อยแล้ว\nเลขที่รับเข้า: ${emailData.stock_in_no}\nโครงการ: ${emailData.project_name}\nผู้รับเข้า: ${emailData.received_by}\nจำนวน: ${emailData.item_count} (${emailData.total_quantity})\nเปิดดูรายการ: ${emailData.action_url}`;
+    const plainText = renderEmailText({
+      branding,
+      template: eventConfig || {},
+      data: emailData
+    });
 
     const subject = resolveSubject(
       eventConfig?.subject,
@@ -422,6 +434,7 @@ export const dispatchStockInNotification = async ({
       subject,
       html,
       text: plainText,
+      eventType: 'stock_in_created',
       actionUrl: emailData.action_url
     });
 
@@ -515,6 +528,7 @@ export const dispatchLowStockAlertNotification = async ({
       subject,
       html,
       text: plainText,
+      eventType: 'low_stock_alert',
       actionUrl: emailData.action_url
     });
 
@@ -523,6 +537,116 @@ export const dispatchLowStockAlertNotification = async ({
   } catch (err) {
     console.error('[NotificationDispatcher] dispatchLowStockAlertNotification error:', err);
     return { success: false, error: err.message };
+  }
+};
+
+/**
+ * Inspects inventory balance after a withdrawal approval and dispatches low-stock alerts
+ * for any item whose balance dropped to or below its minimum threshold.
+ * Shared between Withdrawals page and NotificationBell quick-approve.
+ */
+export const checkAndDispatchOrderLowStock = async ({
+  orderId,
+  fallbackProjectId = null,
+  approvedByName = 'Admin'
+}) => {
+  if (!orderId) return { checked: false, reason: 'NO_ORDER_ID' };
+
+  try {
+    const [orderRes, linesRes, thresholdRes] = await Promise.all([
+      supabase
+        .from('withdrawal_orders')
+        .select('id, project_id')
+        .eq('id', orderId)
+        .maybeSingle(),
+      supabase
+        .from('withdrawal_items')
+        .select('item_id, requested_quantity, deducted_quantity, project_id')
+        .eq('request_id', orderId),
+      supabase
+        .from('system_settings')
+        .select('value')
+        .eq('key', 'low_stock_threshold')
+        .maybeSingle()
+    ]);
+
+    const headerProjectId = orderRes.data?.project_id || fallbackProjectId || null;
+    const pairMap = new Map();
+    for (const line of linesRes.data || []) {
+      const deducted = Number(line.deducted_quantity ?? line.requested_quantity);
+      if (!Number.isFinite(deducted) || deducted <= 0) continue;
+
+      const projectId = line.project_id || headerProjectId;
+      if (!projectId || !line.item_id) continue;
+      pairMap.set(`${projectId}::${line.item_id}`, { projectId, itemId: line.item_id });
+    }
+
+    const pairs = [...pairMap.values()];
+    if (!pairs.length) return { checked: true, alertedCount: 0 };
+
+    const itemIds = [...new Set(pairs.map(p => p.itemId))];
+    const projectIds = [...new Set(pairs.map(p => p.projectId))];
+
+    const [balanceRes, itemRes, projectRes] = await Promise.all([
+      supabase
+        .from('stock_balance')
+        .select('project_id, item_id, balance, project_name, unit')
+        .in('item_id', itemIds),
+      supabase
+        .from('items')
+        .select('id, name, sku, unit, min_stock')
+        .in('id', itemIds),
+      supabase
+        .from('projects')
+        .select('id, name, project_code')
+        .in('id', projectIds)
+    ]);
+
+    const balanceByPair = new Map((balanceRes.data || []).map(row => [`${row.project_id}::${row.item_id}`, row]));
+    const itemById = new Map((itemRes.data || []).map(row => [row.id, row]));
+    const projectById = new Map((projectRes.data || []).map(row => [row.id, row]));
+    const globalThreshold = Number(thresholdRes.data?.value);
+    const fallbackThreshold = Number.isFinite(globalThreshold) ? globalThreshold : 10;
+
+    let alertedCount = 0;
+    const alertedItems = [];
+
+    for (const pair of pairs) {
+      const balanceRow = balanceByPair.get(`${pair.projectId}::${pair.itemId}`);
+      if (!balanceRow || balanceRow.balance === null || balanceRow.balance === undefined) continue;
+
+      const itemRow = itemById.get(pair.itemId) || {};
+      const itemThreshold = Number(itemRow.min_stock);
+      const effectiveThreshold = itemThreshold > 0 ? itemThreshold : fallbackThreshold;
+      const currentStock = Number(balanceRow.balance);
+
+      if (!(currentStock <= effectiveThreshold)) continue;
+
+      const projectRow = projectById.get(pair.projectId);
+      const projectName = projectRow?.name || balanceRow.project_name || 'โครงการทั่วไป';
+      const warehouseName = balanceRow.project_name || projectRow?.name || 'คลังโครงการ';
+
+      const result = await dispatchLowStockAlertNotification({
+        itemId: pair.itemId,
+        itemName: itemRow.name || 'วัสดุ',
+        itemCode: itemRow.sku || '-',
+        currentStock,
+        threshold: effectiveThreshold,
+        projectName,
+        warehouseName,
+        projectId: pair.projectId
+      });
+
+      if (result?.success && !result?.deduplicated && !result?.skipped) {
+        alertedCount++;
+        alertedItems.push(itemRow.name || pair.itemId);
+      }
+    }
+
+    return { checked: true, alertedCount, alertedItems };
+  } catch (err) {
+    console.warn('[NotificationDispatcher] checkAndDispatchOrderLowStock error:', err?.message);
+    return { checked: false, error: err?.message };
   }
 };
 
@@ -598,7 +722,9 @@ export const dispatchCheckoutNotification = async ({
     return { success: true, skipped: 'SUPPRESSED' };
   }
 
-  const cacheKey = `${eventType}:${orderId}`;
+  const cacheKey = eventType === 'checkout_returned' && !extraData?.returnsCompleted
+    ? `${eventType}:${orderId}:${extraData?.returnedAt || Date.now()}`
+    : `${eventType}:${orderId}`;
   if (dispatchedEventsCache.has(cacheKey)) {
     return { success: true, deduplicated: true };
   }
@@ -773,6 +899,7 @@ export const dispatchCheckoutNotification = async ({
       subject,
       html,
       text: plainText,
+      eventType,
       actionUrl: emailData.action_url,
     });
 
@@ -954,6 +1081,7 @@ export const dispatchRevertNotification = async ({
       subject,
       html,
       text,
+      eventType,
       actionUrl: emailData.action_url,
     });
 

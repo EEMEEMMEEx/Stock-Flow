@@ -1683,6 +1683,16 @@ export default {
           "title": "13. รับคืนอุปกรณ์เสร็จสมบูรณ์",
           "desc": "แจ้งเตือนผู้ขอยืมเมื่อเจ้าหน้าที่คลังตรวจรับอุปกรณ์ที่ส่งคืนเรียบร้อยแล้ว",
           "primaryRecipient": "ผู้ขอยืม / ผู้ดูแลระบบ"
+        },
+        "withdrawal_reverted": {
+          "title": "14. ย้อนสถานะคำขอเบิก",
+          "desc": "แจ้งเตือนเมื่อผู้ดูแลระบบย้อนสถานะคำขอเบิกและคืนยอดสต็อกกลับเข้าคลัง",
+          "primaryRecipient": "ผู้ขอเบิก / ผู้ดูแลระบบ"
+        },
+        "checkout_reverted": {
+          "title": "15. ย้อนสถานะรายการยืม",
+          "desc": "แจ้งเตือนเมื่อผู้ดูแลระบบย้อนสถานะรายการยืมอุปกรณ์กลับเป็นก่อนหน้า",
+          "primaryRecipient": "ผู้ขอยืม / ผู้ดูแลระบบ"
         }
       },
       "list": {
@@ -1798,6 +1808,25 @@ export default {
       "users_other": "{{count}} ผู้ใช้",
       "roles_one": "{{count}} บทบาท",
       "roles_other": "{{count}} บทบาท"
+    },
+    "emailLogs": {
+      "title": "ประวัติการส่งอีเมล (Email Delivery Logs)",
+      "subtitle": "ประวัติการส่งการแจ้งเตือนและผลการจัดส่งผ่าน SMTP Server",
+      "searchPlaceholder": "ค้นหาตามผู้รับ, หัวข้อ, หรือประเภทเหตุการณ์...",
+      "allStatus": "สถานะทั้งหมด",
+      "sentOnly": "ส่งสำเร็จ (Sent)",
+      "failedOnly": "ส่งไม่สำเร็จ (Failed)",
+      "timestamp": "เวลาที่ส่ง",
+      "event": "เหตุการณ์",
+      "recipient": "ผู้รับ",
+      "subject": "หัวข้อ",
+      "status": "สถานะ",
+      "noLogs": "ยังไม่มีประวัติการส่งอีเมลในระบบ",
+      "sentBadge": "ส่งสำเร็จ",
+      "failedBadge": "ล้มเหลว",
+      "pageSummary": "แสดง {{from}} - {{to}} จากทั้งหมด {{total}} รายการ",
+      "detailTitle": "รายละเอียดการส่งอีเมล",
+      "errorMessage": "ข้อผิดพลาด (Error Message)"
     },
     "testEmailModal": {
       "title": "ทดสอบการแจ้งเตือนทางอีเมล",

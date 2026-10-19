@@ -427,6 +427,34 @@ const EmailTemplateManager = ({
       toast(t('settings.emailTemplates.branding.logoExtensionWarning', 'The logo URL has no image file extension; some email clients may not render it'), { duration: 6000 });
     }
 
+    // Validate each event template
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    for (const [evtKey, evtConfig] of Object.entries(events)) {
+      if (evtConfig?.enabled) {
+        const subject = String(evtConfig.subject || '').trim();
+        if (!subject) {
+          return toast.error(t('settings.emailTemplates.validation.emptySubject', { event: evtConfig.title || evtKey, defaultValue: `Subject for ${evtConfig.title || evtKey} cannot be empty` }));
+        }
+        const openMatches = subject.match(/{{/g) || [];
+        const closeMatches = subject.match(/}}/g) || [];
+        if (openMatches.length !== closeMatches.length) {
+          return toast.error(t('settings.emailTemplates.validation.malformedPlaceholder', { event: evtConfig.title || evtKey, defaultValue: `Malformed placeholder {{...}} in subject of ${evtConfig.title || evtKey}` }));
+        }
+      }
+      if (evtConfig?.to_extra) {
+        const invalid = String(evtConfig.to_extra).split(',').map(s => s.trim()).filter(s => s && !emailRegex.test(s));
+        if (invalid.length > 0) {
+          return toast.error(`Invalid email in To Extra (${evtKey}): ${invalid.join(', ')}`);
+        }
+      }
+      if (evtConfig?.cc_extra) {
+        const invalid = String(evtConfig.cc_extra).split(',').map(s => s.trim()).filter(s => s && !emailRegex.test(s));
+        if (invalid.length > 0) {
+          return toast.error(`Invalid email in CC Extra (${evtKey}): ${invalid.join(', ')}`);
+        }
+      }
+    }
+
     const normalizedBranding = {
       ...branding,
       app_name: String(branding.app_name || '').trim() || DEFAULT_BRANDING.app_name,
