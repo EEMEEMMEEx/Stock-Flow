@@ -1,5 +1,18 @@
 # Changelog
 
+## [2026-10-19 20:58] - v1.25.11
+
+- **Files Modified:** `src/components/withdrawals/WithdrawalDetailModal.jsx`, `scripts/verify-withdrawal-detail-modal.mjs`, `package.json`, `CHANGELOG.md`, `docs/withdrawal-detail-modal-ux-implementation-plan.md`
+- **Changes:**
+  - **ปรับปรุง UX/UI และแก้ปัญหา Action Buttons ล้นจอในโมดอลคำขอเบิกพัสดุ (WithdrawalDetailModal):**
+    - แก้ไขปัญหาปุ่มฝั่งขวา "ย้อนการรับของ", "ยกเลิกคำขอ (SUPER)", และ "ปิด" (Close) ถูกดันหลุดขอบล่างของหน้าจอ (clipped off-screen) ที่ Zoom 100% และขนาดหน้าจอปกติ
+    - ปรับโครงสร้าง `DialogContent` เป็น 3-Zone Flex Layout (`flex flex-col max-h-[90vh] overflow-hidden`) พร้อมคงคลาส `grid-cols-[minmax(0,1fr)]`
+    - กำหนดให้ `DialogHeader` มี `shrink-0` คงที่
+    - เปลี่ยนส่วนกลาง Scroll Body จากฟิกซ์ `max-h-[60vh]` เป็น `flex-1 min-h-0 overflow-y-auto overscroll-contain` เพื่อให้ยืดหดตามพื้นที่ที่เหลือจริงใน Viewport และเลื่อนดูข้อมูลภายในได้สมบูรณ์
+    - ปรับ `DialogFooter` เป็น Sticky Docked Footer พร้อม `shrink-0 mt-auto bg-card` รับประกัน 100% ว่าปุ่ม Footer จะไม่ถูกเนื้อหาตรงกลางดันตกขอบจอ
+    - เพิ่ม `min-h-[44px] sm:min-h-0` ให้กับปุ่ม Cancel และ Close เพื่อให้ได้ Touch Target ที่เหมาะสมสำหรับหน้าจอสัมผัสและอุปกรณ์พกพา
+    - อัปเดตสคริปต์ตรวจสอบ Invariants `scripts/verify-withdrawal-detail-modal.mjs` เพิ่มการตรวจ `flex-col`, `flex-1 min-h-0`, และ `shrink-0` (20/20 Checks PASS)
+
 ## [2026-10-19 19:52] - v1.25.9
 
 - **Files Modified:** `package.json`, `package-lock.json`, `CHANGELOG.md`

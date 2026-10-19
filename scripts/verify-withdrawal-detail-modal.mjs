@@ -29,10 +29,11 @@ check('DialogContent clips overflow', /<DialogContent[^>]*overflow-hidden/.test(
 check('DialogContent caps height at 90vh', has('max-h-[90vh]'));
 check('DialogContent keeps a viewport-safe width', has('w-[calc(100%-2rem)]'));
 
-// --- grid children -----------------------------------------------------------
-check('DialogHeader is min-w-0', /<DialogHeader className="[^"]*min-w-0/.test(src));
-check('scroll body is min-w-0', /className="min-w-0 py-3[^"]*overflow-y-auto/.test(src));
-check('DialogFooter is min-w-0', /<DialogFooter className="[^"]*min-w-0/.test(src));
+// --- grid/flex children ------------------------------------------------------
+check('DialogContent uses flex-col layout', /<DialogContent[^>]*flex-col/.test(src));
+check('DialogHeader is min-w-0 and shrink-0', /<DialogHeader className="[^"]*min-w-0[^"]*shrink-0/.test(src));
+check('scroll body is flex-1 min-h-0 and min-w-0', /className="min-w-0 py-3[^"]*flex-1 min-h-0[^"]*overflow-y-auto/.test(src));
+check('DialogFooter is min-w-0 and shrink-0', /<DialogFooter className="[^"]*min-w-0[^"]*shrink-0/.test(src));
 check('DialogFooter wraps its buttons', /<DialogFooter className="[^"]*flex-wrap/.test(src));
 
 // --- items table -------------------------------------------------------------

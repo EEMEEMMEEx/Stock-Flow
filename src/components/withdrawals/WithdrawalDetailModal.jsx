@@ -49,8 +49,8 @@ const WithdrawalDetailModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="w-[calc(100%-2rem)] max-w-3xl max-h-[90vh] overflow-hidden grid-cols-[minmax(0,1fr)] rounded-xl bg-card p-4 sm:p-6 border border-border shadow-xl">
-        <DialogHeader className="min-w-0 space-y-3 border-b border-border/40 pb-4">
+      <DialogContent className="w-[calc(100%-2rem)] max-w-3xl max-h-[90vh] overflow-hidden flex flex-col grid-cols-[minmax(0,1fr)] rounded-xl bg-card p-4 sm:p-6 border border-border shadow-xl">
+        <DialogHeader className="min-w-0 space-y-3 border-b border-border/40 pb-4 shrink-0">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-lg bg-indigo-500/10 dark:bg-indigo-950/40 border border-indigo-500/20 flex items-center justify-center shrink-0">
@@ -116,7 +116,7 @@ const WithdrawalDetailModal = ({
           )}
         </DialogHeader>
 
-        <div className="min-w-0 py-3 space-y-4 max-h-[60vh] overflow-y-auto pr-1">
+        <div className="min-w-0 py-3 space-y-4 flex-1 min-h-0 overflow-y-auto overscroll-contain pr-1">
           {/* Order Metadata Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-muted/40 dark:bg-muted/20 p-4 rounded-xl border border-border text-xs">
             <div className="space-y-1">
@@ -318,7 +318,7 @@ const WithdrawalDetailModal = ({
           </div>
         </div>
 
-        <DialogFooter className="min-w-0 border-t border-border/40 pt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between justify-between gap-3 sm:gap-3 sm:space-x-0 flex-wrap">
+        <DialogFooter className="min-w-0 border-t border-border/40 pt-3 sm:pt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between justify-between gap-3 sm:gap-3 sm:space-x-0 flex-wrap shrink-0 mt-auto bg-card">
           {(isApproved || isCompleted) && (
             <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
               <Button
@@ -353,7 +353,7 @@ const WithdrawalDetailModal = ({
                     type="button"
                     variant="destructive"
                     size="sm"
-                    className="rounded-lg text-xs font-semibold cursor-pointer h-9 px-4"
+                    className="rounded-lg text-xs font-semibold cursor-pointer h-9 min-h-[44px] sm:min-h-0 px-4"
                     onClick={() => onOpenRejectModal(order)}
                   >
                     {t('withdrawals.rejectRequest', 'Reject Request')}
@@ -363,7 +363,7 @@ const WithdrawalDetailModal = ({
                   <Button
                     type="button"
                     size="sm"
-                    className="rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer h-9 px-4 shadow-xs"
+                    className="rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer h-9 min-h-[44px] sm:min-h-0 px-4 shadow-xs"
                     onClick={() => onApproveOrder(order.id)}
                   >
                     {t('withdrawals.approveRequest', 'Approve Request')}
@@ -376,7 +376,7 @@ const WithdrawalDetailModal = ({
               <Button
                 type="button"
                 size="sm"
-                className="rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer h-9 px-4 shadow-xs"
+                className="rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer h-9 min-h-[44px] sm:min-h-0 px-4 shadow-xs"
                 onClick={() => onCompleteOrder(order.id)}
               >
                 {t('withdrawals.confirmReceiptComplete', 'Confirm Receipt Complete')}
@@ -418,7 +418,7 @@ const WithdrawalDetailModal = ({
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="rounded-lg text-xs font-semibold text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 gap-1.5 cursor-pointer h-9 px-4"
+                  className="rounded-lg text-xs font-semibold text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 gap-1.5 cursor-pointer h-9 min-h-[44px] sm:min-h-0 px-4"
                   onClick={() => {
                     onOpenCancelModal && onOpenCancelModal(order);
                     onClose();
@@ -435,7 +435,7 @@ const WithdrawalDetailModal = ({
               variant="outline"
               size="sm"
               onClick={onClose}
-              className="rounded-lg text-xs h-9 px-4 font-semibold"
+              className="rounded-lg text-xs h-9 min-h-[44px] sm:min-h-0 px-4 font-semibold"
             >
               {t('common.close', 'Close')}
             </Button>
