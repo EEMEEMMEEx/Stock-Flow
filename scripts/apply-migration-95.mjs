@@ -90,19 +90,24 @@ async function main() {
       process.exit(1);
     }
   } else {
-    console.log('📡 No direct DB connection, running via supabase cli db execute...');
+    console.log('📡 No direct DB connection, running via supabase cli db query...');
     try {
-      const cmd = `npx supabase db execute --project-ref ${projectRef} --file "${scriptToExecute}"`;
+      const cmd = `npx supabase db query --linked --project-ref ${projectRef} --file "${scriptToExecute}"`;
       console.log(`$ ${cmd}`);
-      execSync(cmd, { stdio: 'inherit' });
+      const result = execSync(cmd, { encoding: 'utf8', stdio: 'pipe' });
       console.log('------------------------------------------------------------------------------');
       if (isDryRun || !isConfirmed) {
         console.log('✅ DRY-RUN สำเร็จ');
       } else {
         console.log('🎉 LIVE APPLY สำเร็จ');
+        console.log(result);
       }
     } catch (err) {
-      console.error('❌ Supabase CLI Execution Failed:', err.message);
+      console.error('⚠️ Supabase CLI Execution Failed:');
+      console.error((err.stdout || err.message || '').toString().slice(0, 1500));
+      console.log('\n💡 หากพบข้อจำกัดสิทธิ์ CLI (HTTP 403) กรุณาคัดลอก SQL ใน:');
+      console.log(`   ${migrationFile}`);
+      console.log('   ไป Run ที่ Supabase Dashboard > SQL Editor');
       process.exit(1);
     }
   }

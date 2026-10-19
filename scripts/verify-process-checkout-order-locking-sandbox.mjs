@@ -13,6 +13,7 @@ const PGLITE_ENTRY = path.join(SANDBOX_DIR, 'node_modules/@electric-sql/pglite/d
 const FIXTURE = path.resolve('supabase/tests/fixtures/mock_supabase_schema.sql');
 const MIGRATION_91 = path.resolve('supabase/migrations/91_sequential_checkout_order_number.sql');
 const MIGRATION_95 = path.resolve('supabase/migrations/95_fix_process_checkout_order_locking_on_view.sql');
+const MIGRATION_96 = path.resolve('supabase/migrations/96_fix_has_permission_trigger_exception.sql');
 
 async function loadPGlite() {
   if (existsSync(PGLITE_ENTRY)) {
@@ -85,6 +86,13 @@ await db.exec(`
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     PRIMARY KEY (doc_type, period)
   );
+
+  CREATE TABLE IF NOT EXISTS public.roles (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    code TEXT UNIQUE,
+    name TEXT
+  );
+  INSERT INTO public.roles (code, name) VALUES ('ADMIN', 'Administrator'), ('STAFF', 'Staff') ON CONFLICT DO NOTHING;
 
   -- Underlying tables for the real stock_balance view
   CREATE TABLE IF NOT EXISTS public.stock_in_orders (
@@ -192,7 +200,7 @@ await db.exec(`
   DROP FUNCTION IF EXISTS public.is_super_admin(UUID);
   CREATE OR REPLACE FUNCTION public.is_super_admin(p_user_id UUID DEFAULT NULL)
   RETURNS BOOLEAN AS $$
-    SELECT true;
+    SELECT (COALESCE(p_user_id, auth.uid()) = '${ADMIN_USER_ID}');
   $$ LANGUAGE sql STABLE;
 
   DROP FUNCTION IF EXISTS public.is_checkout_delegate(UUID);
@@ -200,6 +208,12 @@ await db.exec(`
   RETURNS BOOLEAN AS $$
     SELECT false;
   $$ LANGUAGE sql STABLE;
+
+  -- Seed permissions for staff checkout creation
+  INSERT INTO public.permissions (code) VALUES ('checkouts.create'), ('checkouts.approve') ON CONFLICT DO NOTHING;
+  INSERT INTO public.role_permissions (role_id, permission_id)
+    SELECT r.id, p.id FROM public.roles r, public.permissions p
+    WHERE r.code = 'STAFF' AND p.code = 'checkouts.create';
 `);
 
 // 4. Verify initial stock in view
@@ -207,11 +221,16 @@ const balanceRes = await db.query(`SELECT item_name, balance FROM public.stock_b
 console.log('📊 Stock Balance in VIEW:', balanceRes.rows);
 assert.equal(Number(balanceRes.rows.find(r => r.item_name === 'Drill Machine Dewalt').balance), 50);
 
-// 5. Apply Migration 95
+// 5. Apply Migration 95 and Migration 96
 console.log('⚡ Applying Migration 95...');
 const migration95Sql = readFileSync(MIGRATION_95, 'utf8');
 await db.exec(migration95Sql);
 console.log('✅ Migration 95 applied successfully.');
+
+console.log('⚡ Applying Migration 96 (Fix has_permission exception)...');
+const migration96Sql = readFileSync(MIGRATION_96, 'utf8');
+await db.exec(migration96Sql);
+console.log('✅ Migration 96 applied successfully.');
 
 // Set caller as Admin User
 await db.query(`SET request.jwt.claim.sub = '${ADMIN_USER_ID}';`);
@@ -336,4 +355,37 @@ for (const file of files) {
 assert.equal(problematicFiles.length, 0, `Found illegal FOR UPDATE on stock_balance in: ${problematicFiles.join(', ')}`);
 console.log('  ✅ Test 4 PASSED: Zero illegal FOR UPDATE on views in any active migration.');
 
-console.log('\n🎉 ALL MIGRATION 95 SANDBOX VERIFICATIONS PASSED 100%!');
+// 10. Test 5: Verify has_permission does NOT throw 'Cannot check permissions of other users'
+console.log('🧪 Test 5: Verify has_permission returns boolean across users without throwing exception...');
+// Caller is regular Staff User
+await db.query(`SET request.jwt.claim.sub = '${STAFF_USER_ID}';`);
+
+// Non-admin checking admin user's permission (should return true/false cleanly, never throw!)
+const permCheck = await db.query(`
+  SELECT public.has_permission($1, 'checkouts.approve') AS has_perm;
+`, [ADMIN_USER_ID]);
+assert.equal(typeof permCheck.rows[0].has_perm, 'boolean', 'Must return boolean without raising Unauthorized');
+console.log('  ✅ has_permission result for cross-user check:', permCheck.rows[0].has_perm);
+
+// Staff submits a requisition (pending order workflow)
+const staffPayload = {
+  project_id: PROJECT_ID,
+  borrower_type: 'profile',
+  borrower_id: STAFF_USER_ID,
+  borrow_type: 'standard',
+  expected_return_date: '2026-10-30',
+  purpose: 'Staff field task',
+  items: [
+    { item_id: ITEM_2_ID, quantity: 1 }
+  ]
+};
+
+const staffResult = await db.query(`
+  SELECT public.process_checkout_order($1::jsonb) AS res;
+`, [JSON.stringify(staffPayload)]);
+assert.equal(staffResult.rows[0].res.success, true);
+assert.equal(staffResult.rows[0].res.status, 'pending');
+console.log('  Result 5 (Staff Requisition):', staffResult.rows[0].res);
+console.log('  ✅ Test 5 PASSED: Staff requisition created cleanly without Unauthorized exception!');
+
+console.log('\n🎉 ALL MIGRATIONS 95 & 96 SANDBOX VERIFICATIONS PASSED 100%!');
