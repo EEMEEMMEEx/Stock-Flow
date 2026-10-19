@@ -497,7 +497,26 @@ const Reports = () => {
         );
         downloadFileName = `Site_Kits_BOM_Availability_Report_${new Date().toISOString().split('T')[0]}.pdf`;
       } else {
-        doc = <StockReportPDF data={processedData} type={activeTab} />;
+        const selectedProj = projects.find(p => p.id === filters.project_id);
+        const projectName = selectedProj
+          ? (selectedProj.project_code ? `[${selectedProj.project_code}] ${selectedProj.name}` : selectedProj.name)
+          : '';
+        const warehouseName = selectedProj?.location || (selectedProj ? t('reports.filters.mainStorage') : '');
+        const selectedCat = categories.find(c => c.id === filters.category_id);
+        const categoryName = selectedCat?.name || '';
+
+        doc = (
+          <StockReportPDF
+            data={processedData}
+            type={activeTab}
+            projectName={projectName}
+            warehouseName={warehouseName}
+            categoryName={categoryName}
+            startDate={filters.start_date}
+            endDate={filters.end_date}
+            searchQuery={filters.search}
+          />
+        );
       }
 
       const blob = await pdf(doc).toBlob();

@@ -1,7 +1,7 @@
 {
   "name": "stock-flow-app",
   "private": true,
-  "version": "1.25.9",
+  "version": "1.25.10",
   "type": "module",
   "scripts": {
     "dev": "vite --host",
@@ -11,6 +11,7 @@
     "check:i18n": "node scripts/check-i18n-parity.mjs",
     "verify:admin-delete-user": "node scripts/verify-admin-delete-user-sandbox.mjs",
     "verify:pdf": "node scripts/verify-pdf-signatures.mjs",
+    "verify:reports-pdf-warehouse": "node scripts/verify-reports-pdf-warehouse.mjs",
     "verify:notifications": "node scripts/verify-notification-targets.mjs",
     "verify:email-branding": "node scripts/verify-email-branding.mjs",
     "verify:runtime-guards": "node scripts/verify-runtime-guards.mjs",

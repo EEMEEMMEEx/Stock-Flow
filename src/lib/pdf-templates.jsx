@@ -665,7 +665,8 @@ const reportStyles = StyleSheet.create({
   },
   filterInfoContainer: {
     flexDirection: 'row',
-    alignItems: 'center'
+    alignItems: 'center',
+    flexWrap: 'wrap'
   },
   filterChip: {
     backgroundColor: '#ffffff',
@@ -674,7 +675,8 @@ const reportStyles = StyleSheet.create({
     borderRadius: 3,
     paddingHorizontal: 6,
     paddingVertical: 1.5,
-    marginLeft: 4
+    marginLeft: 4,
+    marginVertical: 1
   },
   filterChipText: {
     fontSize: 8,
@@ -857,6 +859,7 @@ export const StockReportPDF = ({
   data = [], 
   type = 'balance',
   projectName = '',
+  warehouseName = '',
   categoryName = '',
   startDate = '',
   endDate = '',
@@ -1123,6 +1126,11 @@ export const StockReportPDF = ({
             {projectName ? (
               <View style={reportStyles.filterChip}>
                 <Text style={reportStyles.filterChipText}>โครงการ: {projectName}</Text>
+              </View>
+            ) : null}
+            {warehouseName ? (
+              <View style={reportStyles.filterChip}>
+                <Text style={reportStyles.filterChipText}>คลังพัสดุ: {warehouseName}</Text>
               </View>
             ) : null}
             {categoryName && categoryName !== 'ทุกหมวดหมู่' ? (
