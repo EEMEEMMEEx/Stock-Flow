@@ -177,7 +177,7 @@ const UserActionModal = ({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!isDeleting && !isSuspending && !open) onClose(); }}>
       <DialogContent className="max-w-lg bg-card text-card-foreground border border-border shadow-xl p-0 overflow-hidden rounded-xl">
         {/* Modal Header */}
         <div className="px-6 pt-6 pb-4 border-b border-border/40 bg-muted/20">

@@ -1,5 +1,29 @@
 # Changelog
 
+## [2026-10-19 15:45] - v1.25.7
+
+- **Files Modified:** `supabase/migrations/96_fix_admin_delete_user_and_integrity_guard.sql` (ใหม่), `src/pages/UserManagement.jsx`, `src/components/users/UserActionModal.jsx`, `package.json`, `scripts/verify-admin-delete-user-sandbox.mjs` (ใหม่), `CHANGELOG.md`
+- **Changes:**
+  - **แก้ไขข้อผิดพลาด admin_delete_user RPC column "email" does not exist (PostgreSQL 42703) และเสริมเกราะป้องกันความปลอดภัยระดับฐานข้อมูล:**
+    - พัฒนา Migration `96_fix_admin_delete_user_and_integrity_guard.sql`:
+      - แก้ไขการ Query ค่าอีเมลของผู้ใช้เป้าหมายให้ดึงจาก `auth.users` โดยตรง แทนการอ่านจาก `public.profiles` ซึ่งไม่มีคอลัมน์ `email`
+      - เพิ่ม Guard ตรวจสอบการลบตนเอง (`Self-deletion is prohibited.`)
+      - เพิ่ม Guard ลำดับชั้นความปลอดภัย ห้ามบทบาทที่ไม่ใช่ `SUPER` ลบบัญชีผู้ดูแลระบบสูงสุด (`SUPER`)
+      - เพิ่ม Guard บัญชีผู้ดูแลระบบคนสุดท้าย ห้ามลบบัญชี `ADMIN` หรือ `SUPER` ที่ Active คนสุดท้ายในระบบ ป้องกันปัญหา System Admin Lockout
+      - เพิ่ม Guard ตรวจสอบประวัติทางบัญชี (Audit & Transaction History Guard) ปฏิเสธการ Hard Delete ผู้ใช้ที่เคยมีรายการใน `stock_transactions`, `withdrawal_orders`, `checkout_orders`, หรือ `stock_in_orders` เพื่อรักษา Audit Trail ทางบัญชี 100% พร้อมบังคับให้ใช้การระงับการใช้งาน (`status = 'inactive'`) แทน
+      - ปรับปรุง Foreign Key constraint บน `public.user_project_assignments.created_by` ให้มีคุณสมบัติ `ON DELETE SET NULL` ป้องกัน Postgres Error 23503 เมื่อลบผู้ใช้ที่เคยมอบหมายงานให้ผู้อื่น
+      - ทำ Atomic Purge ตารางที่เกี่ยวข้อง (`user_notifications`, `notifications`, `user_project_assignments`, `storage.objects`, `auth.identities`, `public.profiles`, `auth.users`) พร้อมบันทึก `public.audit_logs`
+      - สั่ง `NOTIFY pgrst, 'reload schema';` เพื่ออัปเดต PostgREST Schema Cache ทันที
+    - ปรับปรุง Frontend `src/pages/UserManagement.jsx`:
+      - เพิ่มฟังก์ชัน `getDeleteUserErrorMessage` แปลงข้อผิดพลาดจากฐานข้อมูลเป็นข้อความภาษาไทยที่สุภาพและเข้าใจง่าย พร้อมกำกับภาษาอังกฤษ 1 บรรทัด (เช่น ห้ามลบตนเอง, มีประวัติธุรกรรมให้ระงับบัญชีแทน, ห้ามลบ Super Admin, ไม่มีสิทธิ์)
+      - ป้องกันไม่ให้ข้อความทางเทคนิคดิบของ PostgreSQL (เช่น `column "email" does not exist`) หลุดไปแสดงบน Toast Notification ของผู้ใช้
+      - ปรับปรุงการบันทึก Error ลง Console ให้เป็น Structured Metadata Object (`rpc`, `targetUserId`, `targetEmail`, `code`, `message`, `details`) เพื่อความสะดวกในการวิเคราะห์ของทีมวิศวกร
+      - เพิ่ม State Guard ป้องกัน Double-click / Re-entry ระหว่างดำเนินการลบ
+    - ปรับปรุง `src/components/users/UserActionModal.jsx`:
+      - ล็อคการปิด Modal (`onOpenChange`) ระหว่างที่กำลังรันสถานะ Deleting หรือ Suspending
+  - **Verification:**
+    - `node scripts/verify-admin-delete-user-sandbox.mjs` — PGlite WASM Sandbox **7/7 PASS** (Unauthenticated Guard, Self-Delete Guard, Super Admin Hierarchy Guard, History Guard, Atomic Delete of Clean User with Audit Log, Secondary Admin Delete, Last Active Admin Guard)
+
 ## [2026-10-19 14:35] - v1.25.4
 
 - **Files Modified:** `supabase/migrations/94_super_revert_caim_stock_in.sql` (ใหม่), `src/lib/superRevert.js`, `src/components/common/SuperRevertActionModal.jsx`, `src/components/checkouts/CheckoutDetailModal.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `package.json`, `docs/caim-stock-in-reversal-implementation-plan.md` (ใหม่), `scripts/verify-caim-stock-in-revert.mjs` (ใหม่), `CHANGELOG.md`

@@ -408,11 +408,34 @@ const UserManagement = () => {
     }
   };
 
+  const getDeleteUserErrorMessage = (err) => {
+    const rawMsg = (err?.message || '').toLowerCase();
+    if (rawMsg.includes('self-deletion') || rawMsg.includes('self_deletion')) {
+      return 'ไม่สามารถลบบัญชีของตนเองได้ (Cannot delete your own account)';
+    }
+    if (rawMsg.includes('super admin') || rawMsg.includes('superadmin') || rawMsg.includes('cannot_delete_super_admin')) {
+      return 'ไม่สามารถลบบัญชีผู้ดูแลระบบสูงสุดได้ (Cannot delete System Administrator account)';
+    }
+    if (rawMsg.includes('last active administrator') || rawMsg.includes('last administrator') || rawMsg.includes('cannot_delete_last_admin')) {
+      return 'ไม่สามารถลบบัญชีผู้ดูแลระบบคนสุดท้ายในระบบได้ (Cannot delete the last Administrator account in the system)';
+    }
+    if (rawMsg.includes('transaction history') || rawMsg.includes('order history') || rawMsg.includes('foreign key') || rawMsg.includes('violates foreign key')) {
+      return 'ไม่สามารถลบบัญชีที่มีประวัติการทำรายการได้ กรุณาใช้การระงับบัญชีแทน (Cannot delete user with transaction history; please suspend account instead)';
+    }
+    if (rawMsg.includes('unauthorized') || rawMsg.includes('permission') || err?.code === '42501') {
+      return 'ไม่มีสิทธิ์ในการลบบัญชีผู้ใช้ ต้องใช้สิทธิ์ Super Admin (Permission denied: Super Admin privilege required)';
+    }
+    if (rawMsg.includes('not found')) {
+      return 'ไม่พบข้อมูลผู้ใช้ในระบบ (User account not found)';
+    }
+    return 'เกิดข้อผิดพลาดในการลบบัญชีผู้ใช้ กรุณาติดต่อผู้ดูแลระบบ (An error occurred while deleting user account)';
+  };
+
   const confirmDeleteUserPermanent = async () => {
-    if (!selectedUserForDelete) return;
+    if (!selectedUserForDelete || loading) return;
     const isTargetSuper = (selectedUserForDelete.role || '').toLowerCase() === 'super' || (selectedUserForDelete.roles?.code || '').toUpperCase() === 'SUPER' || (selectedUserForDelete.email || '').toLowerCase() === 'admin@stockflow.com';
     if (isTargetSuper) {
-      toast.error('System Security: Cannot delete System Administrator account');
+      toast.error('ไม่สามารถลบบัญชีผู้ดูแลระบบสูงสุดได้ (Cannot delete System Administrator account)');
       setSelectedUserForDelete(null);
       return;
     }
@@ -424,14 +447,22 @@ const UserManagement = () => {
       });
       if (error) throw error;
       if (data?.success) {
-        toast.success(`Permanently deleted user account ${selectedUserForDelete.email} successfully`);
+        toast.success(`ลบบัญชีผู้ใช้ ${selectedUserForDelete.email || ''} เรียบร้อยแล้ว (User deleted successfully)`);
         await fetchUsers();
       } else {
-        toast.error(data?.message || 'Failed to delete user');
+        toast.error(data?.message || 'ไม่สามารถลบบัญชีผู้ใช้ได้ (Failed to delete user)');
       }
     } catch (err) {
-      console.error('Delete User Error:', err);
-      toast.error(err.message || 'An error occurred while deleting user account');
+      console.error('[admin_delete_user] Delete User Error:', {
+        rpc: 'admin_delete_user',
+        targetUserId: selectedUserForDelete?.id,
+        targetEmail: selectedUserForDelete?.email,
+        code: err?.code,
+        message: err?.message,
+        details: err?.details,
+        hint: err?.hint
+      });
+      toast.error(getDeleteUserErrorMessage(err));
     } finally {
       setSelectedUserForDelete(null);
       setLoading(false);
