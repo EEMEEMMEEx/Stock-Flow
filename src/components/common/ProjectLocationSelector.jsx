@@ -9,6 +9,7 @@ import { useTranslation } from '@/i18n';
  * Eliminates the confusing two-stage dropdowns ("1. เลือก โครงการ" & "2. เลือก สถานที่จัดเก็บ").
  */
 export const ProjectLocationSelector = ({
+  id,
   projects = [],
   value = '',
   onChange,
@@ -17,14 +18,19 @@ export const ProjectLocationSelector = ({
   allLabel,
   mode: _mode = 'unified',
   label,
+  icon: IconComponent,
+  iconClassName,
   description: _description,
   showSummaryCard = true,
   className = '',
+  disabled = false,
+  showCount = true,
   size: _size = 'default'
 }) => {
   const { t } = useTranslation();
   const displayLabel = label || t('projects.title');
   const displayAllLabel = allLabel || `-- ${t('common.all')} ${t('common.location')} --`;
+  const Icon = IconComponent || Building2;
 
   // Group projects by unique Project Name + Project Code
   const groupedProjects = useMemo(() => {
@@ -70,22 +76,26 @@ export const ProjectLocationSelector = ({
     <div className={`space-y-2 ${className}`}>
       {/* Label & Header */}
       <div className="flex items-center justify-between">
-        <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
-          <Building2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+        <label htmlFor={id} className="text-xs font-bold text-foreground flex items-center gap-1.5">
+          <Icon className={iconClassName || "w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400"} />
           <span>{displayLabel}</span>
           {required && <span className="text-destructive font-bold">*</span>}
         </label>
-        <span className="text-[11px] text-muted-foreground font-normal">
-          {projects.length} {t('common.location')}
-        </span>
+        {showCount && (
+          <span className="text-[11px] text-muted-foreground font-normal">
+            {projects.length} {t('common.location')}
+          </span>
+        )}
       </div>
 
       {/* Single Clean Dropdown: No separate "2. สถานที่จัดเก็บ" */}
       <select
+        id={id}
         required={required}
+        disabled={disabled}
         value={value || ''}
         onChange={(e) => handleChange(e.target.value)}
-        className="w-full h-9 rounded-lg border border-input bg-background px-3 text-xs font-medium focus:ring-2 focus:ring-primary shadow-xs cursor-pointer transition-colors"
+        className="w-full h-9 rounded-lg border border-input bg-background px-3 text-xs font-medium focus:ring-2 focus:ring-primary shadow-xs cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {allowAll && <option value="all">{displayAllLabel}</option>}
         {!allowAll && !value && (

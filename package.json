@@ -1,7 +1,7 @@
 {
   "name": "stock-flow-app",
   "private": true,
-  "version": "1.24.3",
+  "version": "1.24.4",
   "type": "module",
   "scripts": {
     "dev": "vite --host",
@@ -22,6 +22,7 @@
     "verify:damaged-repair": "node scripts/verify-damaged-repair-resolution.mjs",
     "verify:damaged-repair-live": "node scripts/verify-damaged-repair-live-schema.mjs",
     "verify:damaged-repair-ui": "node scripts/verify-damaged-repair-ui.mjs",
+    "verify:repair-project": "node scripts/verify-repair-project-dropdown.mjs",
     "verify:damaged-repair-sql": "node scripts/verify-damaged-repair-sql-sandbox.mjs",
     "verify:super-revert-sql": "node scripts/verify-super-revert-sql-sandbox.mjs",
     "verify:security-linter-sql": "node scripts/verify-security-linter-sql-sandbox.mjs",

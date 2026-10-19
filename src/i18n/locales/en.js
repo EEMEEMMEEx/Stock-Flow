@@ -856,6 +856,7 @@ export default {
     "repairProjectLabel": "Warehouse / project receiving the item back",
     "repairSelectProject": "Select warehouse / project",
     "repairProjectRequired": "Please select the warehouse/project to restore the item into",
+    "repairAllProjectsHint": "Will automatically restock into the checkout order origin warehouse",
     "repairQuantityLabel": "Quantity to resolve",
     "repairQuantityHint": "Up to {{max}} {{unit}} as returned",
     "repairQtyInvalid": "Quantity must be a whole number greater than 0",

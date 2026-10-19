@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-10-19 08:15] - v1.24.4
+
+- **Files Modified:** `src/components/common/ProjectLocationSelector.jsx`, `src/components/checkouts/RepairResolutionModal.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `package.json`, `docs/repair-project-dropdown-implementation-plan.md`, `CHANGELOG.md`
+- **Changes:**
+  - **แทนที่ Dropdown คลัง/โครงการในโมดอลบันทึกผลการซ่อม (`RepairResolutionModal`) ด้วย `ProjectLocationSelector`:**
+    - ขยาย `ProjectLocationSelector` (`src/components/common/ProjectLocationSelector.jsx`) ให้รองรับ props `id`, `disabled`, `icon`, `iconClassName`, และ `showCount` เพื่อเชื่อมโยง validation และสไตล์ร่วมอย่างสมบูรณ์
+    - ใน `RepairResolutionModal.jsx` ดึงคอลัมน์ `location` และ `description` เพิ่มเติมจากตาราง `projects` และใช้ `ProjectLocationSelector` แทน native `<select id="repair-project">` ทำให้ตัวเลือกที่ชื่อโครงการและรหัสโครงการซ้ำกันถูกจัดกลุ่มแยกตามสถานที่จัดเก็บ (`location`) เช่น `ตึกโรงรับจำนำ`, `คลัง EMS`, `คลัง Forth ชั้น 3` อย่างชัดเจน ไม่แสดงผลซ้ำกันอีกต่อไป
+    - เพิ่มตัวเลือก "ทุกโครงการ" (`'all'`) ด้วย `allowAll={true}` และ `allLabel={t('withdrawals.allLocationsLabel')}` สอดคล้องกับหน้า `/withdrawals` และ `/checkouts?tab=pos`
+    - กำหนด Fallback Rule ตอน Submit: เมื่อเลือก `'all'` ระบบจะ Resolve ไปยังคลังปลายทางเดิมของรายการรับคืน (`returnLog.destination_project_id`) หรือโครงการของใบยืม (`order?.project_id`) หรือคลังแรกในระบบ (`projects[0]?.id`) เสมือนเป็นคลังรับเข้าหลัก และส่ง UUID ที่ถูกต้องไปยัง RPC `resolve_damaged_return_item` ป้องกันข้อผิดพลาด Postgres UUID syntax error
+    - เพิ่มคำอธิบายระบุคลังปลายทางที่พัสดุจะถูกรับกลับเข้าสต็อกเมื่อเลือก "ทุกโครงการ"
+  - ปรับ version เป็น `v1.24.4` (PATCH)
+
 ## [2026-10-18 20:35] - v1.23.5
 
 - **Files Modified:** `supabase/migrations/87_fix_super_cancel_checkout_order_schema_alignment.sql` (ใหม่), `scripts/verify-super-cancel-checkout-order-sandbox.mjs` (ใหม่), `scripts/apply-migration-87.mjs` (ใหม่), `src/pages/Checkouts.jsx`, `package.json`, `docs/fix-super-cancel-checkout-order-plan.md`, `CHANGELOG.md`

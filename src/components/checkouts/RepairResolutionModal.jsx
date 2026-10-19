@@ -4,12 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
-  Wrench, PackageCheck, Recycle, Trash2, AlertTriangle, Layers, Boxes, Loader2
+  Wrench, PackageCheck, Recycle, Trash2, AlertTriangle, Layers, Boxes, Loader2, Info
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { supabase } from '@/lib/supabase';
 import { useTranslation } from '@/i18n';
 import { cleanRpcMessage, isSchemaMismatchError } from '@/lib/rpcErrors';
+import { ProjectLocationSelector } from '@/components/common/ProjectLocationSelector';
 
 /**
  * บันทึกผลการซ่อมของรายการรับคืนสภาพ 'damaged' / 'needs_repair'
@@ -74,7 +75,7 @@ const RepairResolutionModal = ({
   useEffect(() => {
     if (!isOpen || !returnLog) return;
     setResolution('restored_to_stock');
-    setProjectId(returnLog.destination_project_id || order?.project_id || '');
+    setProjectId(returnLog.destination_project_id || order?.project_id || 'all');
     setQuantity(String(returnedQuantity));
     setRepairNotes('');
     setReferenceNumber('');
@@ -96,7 +97,7 @@ const RepairResolutionModal = ({
     (async () => {
       try {
         const [projectRes, itemRes] = await Promise.all([
-          supabase.from('projects').select('id, name, project_code, status').eq('status', 'active').order('name'),
+          supabase.from('projects').select('id, name, project_code, location, description, status').eq('status', 'active').order('name'),
           supabase.from('items').select('id, name, unit').order('name'),
         ]);
         if (cancelled) return;
@@ -126,10 +127,19 @@ const RepairResolutionModal = ({
     (async () => {
       try {
         setLoadingSpare(true);
+        const targetProjectId = (projectId && projectId !== 'all')
+          ? projectId
+          : (returnLog?.destination_project_id || order?.project_id || projects[0]?.id);
+
+        if (!targetProjectId) {
+          setSpareOptions([]);
+          return;
+        }
+
         const { data, error } = await supabase
           .from('stock_balance')
           .select('item_id, item_name, unit, balance')
-          .eq('project_id', projectId)
+          .eq('project_id', targetProjectId)
           .gt('balance', 0)
           .order('item_name');
 
@@ -147,7 +157,7 @@ const RepairResolutionModal = ({
     })();
 
     return () => { cancelled = true; };
-  }, [isOpen, resolution, spareEnabled, projectId]);
+  }, [isOpen, resolution, spareEnabled, projectId, returnLog?.destination_project_id, order?.project_id, projects]);
 
   if (!returnLog) return null;
 
@@ -190,10 +200,19 @@ const RepairResolutionModal = ({
       return;
     }
 
+    const resolvedProjectId = (projectId && projectId !== 'all')
+      ? projectId
+      : (returnLog?.destination_project_id || order?.project_id || projects[0]?.id || null);
+
+    if (!resolvedProjectId) {
+      toast.error(t('checkouts.repairProjectRequired'));
+      return;
+    }
+
     const payload = {
       return_log_id: returnLog.id,
       resolution,
-      project_id: projectId,
+      project_id: resolvedProjectId,
       quantity: Number(quantity),
       repair_notes: repairNotes.trim(),
       reference_number: referenceNumber.trim() || null,
@@ -287,28 +306,40 @@ const RepairResolutionModal = ({
             </div>
 
             {/* 2. คลังปลายทาง + จำนวน */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-start">
               <div className="space-y-1.5 sm:col-span-2">
-                <Label htmlFor="repair-project" className="text-xs font-semibold text-foreground flex items-center gap-1">
-                  <Layers className="w-3 h-3 text-indigo-500" />
-                  <span>{t('checkouts.repairProjectLabel')}</span>
-                  <span className="text-[10px] text-rose-500 font-bold">*</span>
-                </Label>
-                <select
+                <ProjectLocationSelector
                   id="repair-project"
-                  required
+                  projects={projects}
                   value={projectId}
-                  onChange={(event) => setProjectId(event.target.value)}
+                  onChange={(val) => {
+                    setProjectId(val);
+                    setSpareItemId('');
+                  }}
+                  required={true}
+                  allowAll={true}
+                  allLabel={t('withdrawals.allLocationsLabel', '-- ทุกโครงการและคลังสินค้า (ยอดรวมทั้งระบบ) --')}
+                  label={t('checkouts.repairProjectLabel')}
+                  icon={Layers}
+                  iconClassName="w-3.5 h-3.5 text-indigo-500"
                   disabled={submitting}
-                  className="w-full h-9 rounded-lg border border-input bg-background px-3 text-xs font-medium text-foreground focus:ring-2 focus:ring-primary shadow-xs cursor-pointer transition-colors disabled:opacity-50"
-                >
-                  <option value="" disabled>-- {t('checkouts.repairSelectProject')} --</option>
-                  {projects.map((project) => (
-                    <option key={project.id} value={project.id}>
-                      {project.project_code ? '[' + project.project_code + '] ' : ''}{project.name}
-                    </option>
-                  ))}
-                </select>
+                  showSummaryCard={Boolean(projectId && projectId !== 'all')}
+                  showCount={false}
+                />
+                {projectId === 'all' && (
+                  <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-1 text-indigo-600 dark:text-indigo-400">
+                    <Info className="w-3 h-3 shrink-0" />
+                    <span>
+                      {t('checkouts.repairAllProjectsHint')}:{' '}
+                      <span className="font-semibold text-foreground">
+                        {projects.find((p) => p.id === (returnLog?.destination_project_id || order?.project_id || projects[0]?.id))?.name || ''}
+                        {projects.find((p) => p.id === (returnLog?.destination_project_id || order?.project_id || projects[0]?.id))?.location
+                          ? ` — ${projects.find((p) => p.id === (returnLog?.destination_project_id || order?.project_id || projects[0]?.id))?.location}`
+                          : ''}
+                      </span>
+                    </span>
+                  </p>
+                )}
               </div>
 
               <div className="space-y-1.5">

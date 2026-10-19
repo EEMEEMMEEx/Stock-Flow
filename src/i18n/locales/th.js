@@ -856,6 +856,7 @@ export default {
     "repairProjectLabel": "คลัง/โครงการที่รับกลับเข้าสต็อก",
     "repairSelectProject": "เลือกคลัง/โครงการ",
     "repairProjectRequired": "กรุณาเลือกคลัง/โครงการที่รับอุปกรณ์กลับเข้าสต็อก",
+    "repairAllProjectsHint": "รับกลับเข้าสต็อกที่คลังต้นทางของใบยืม",
     "repairQuantityLabel": "จำนวนที่จัดการ",
     "repairQuantityHint": "สูงสุด {{max}} {{unit}} ตามยอดที่รับคืนไว้",
     "repairQtyInvalid": "จำนวนต้องเป็นจำนวนเต็มมากกว่า 0",
