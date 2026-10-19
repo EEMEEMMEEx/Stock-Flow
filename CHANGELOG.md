@@ -1,5 +1,26 @@
 # Changelog
 
+## [2026-10-19 12:15] - v1.25.3
+
+- **Files Modified:** `src/pages/StockIn.jsx`, `src/lib/stockInSearch.js` (ใหม่), `src/lib/stockInSearch.test.js` (ใหม่), `supabase/migrations/93_search_stock_in_orders_rpc.sql` (ใหม่), `scripts/apply-migration-93.mjs` (ใหม่), `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `package.json`, `docs/stock-in-search-implementation-plan.md` (ใหม่), `CHANGELOG.md`
+- **Changes:**
+  - **เพิ่มระบบค้นหาใบรับเข้าพัสดุโดยตรง (`/stock-in`) และแสดง Badge ชี้เป้าพัสดุที่ตรง:**
+    - พัฒนา Database RPC `public.search_stock_in_orders(TEXT, UUID, INT, INT)` ใน Migration 93 พร้อม GIN Trigram Indexes (`pg_trgm`) บน `items(name, sku, model)` และ `profiles(full_name)` เพื่อเร่งความเร็วการค้นหาคำภาษาไทยและอังกฤษ
+    - ใช้เทคนิค `EXISTS` Subquery กรอง Line items (`stock_in_items`) ข้าม Master items (`items`) ครอบคลุม SKU, Material name, Model, Description, S/N, Part number และ Header fields (Receiver, PO, Supplier, Notes) โดยการันตี Zero Duplicate Parent Rows
+    - รองรับการแสดงผล Badge ชี้เป้าพัสดุที่ตรง (`matched_items_snippet`) ใต้ชื่อคลังสินค้าในตารางรายการรับเข้าพัสดุ (ทางเลือก ข ที่ได้รับการอนุมัติ) เพื่อให้ผู้ใช้ทราบทันทีว่ารายการนั้นค้นพบเพราะพัสดุชิ้นใด
+    - เพิ่มระบบ Search Toolbar บนหน้า `/stock-in`: ช่องค้นหาพร้อมไอคอน `Search`, ปุ่มล้างคำค้น (`X`), Dropdown เลือกคลังสินค้าปลายทาง, ปุ่มรีเซ็ตตัวกรอง (`RotateCcw`), และตัวนับผลลัพธ์แบบ Real-time
+    - เพิ่มระบบ Pagination สำหรับตารางรับเข้าพัสดุ พร้อมรีเซ็ตกลับหน้า 1 อัตโนมัติเมื่อคำค้นหรือตัวกรองเปลี่ยนแปลง
+    - ซิงค์คำค้นหาและตัวกรองเข้าสู่ URL Search Params (`?search=...&warehouse=...&page=...`) ผ่าน `useSearchParams` พร้อม Debounce 300ms ป้องกัน Network Flooding
+    - สร้าง Pure Filter Function `filterStockInOrders` ใน `src/lib/stockInSearch.js` รองรับ Multi-word Tokenization (AND logic), NFC Unicode Normalization และ Edge Punctuation Stripping เป็น Resilient Fallback ทำงานได้ทันทีแม้ยังไม่ได้รัน Migration
+    - เพิ่ม Unit Tests 10 กรณีทดสอบใน `src/lib/stockInSearch.test.js` ทดสอบครอบคลุม SKU, ชื่อพัสดุ, วลีที่มีคอมมา/อักขระพิเศษ, ชื่อผู้รับ, Multi-word, Case-insensitivity และ SQL Wildcard Sanitization
+    - เพิ่มคีย์แปลภาษาใหม่ใน `en.js` และ `th.js` รักษาความสมบูรณ์ 100% Key Parity (2079/2079 keys)
+  - **Verification:**
+    - `npm run test:stock-in-search` — 10/10 Unit Tests PASS (68ms)
+    - `npm run check:i18n` — 100% Key Parity PASS
+    - `npm run lint` — ESLint PASS
+    - `npm run build` — Vite production build PASS
+  - ปรับ version เป็น `v1.25.3` (PATCH)
+
 ## [2026-10-19 10:50] - v1.25.2
 
 - **Files Modified:** `supabase/migrations/92_fix_admin_force_delete_item_rpc.sql` (ใหม่), `scripts/verify-force-delete-item-sandbox.mjs` (ใหม่), `scripts/apply-migration-92.mjs` (ใหม่), `src/pages/Items.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `package.json`, `docs/force-delete-item-flow-fix-plan.md` (ใหม่), `CHANGELOG.md`

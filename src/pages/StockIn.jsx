@@ -1,4 +1,5 @@
-import { useEffect, useState, useRef, useMemo } from 'react';
+import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,7 +9,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { 
   ArrowDownToLine, Download, Upload, Plus, Trash2, Check, 
   RefreshCw, Package, Building2, FileSpreadsheet, Layers, 
-  Filter, CheckCircle2, Search, 
+  Filter, CheckCircle2, Search, X, RotateCcw, SearchX,
+  ChevronLeft, ChevronRight,
   ArrowRight, 
   MapPin, SlidersHorizontal, BarChart3, CornerDownRight
 } from 'lucide-react';
@@ -25,10 +27,23 @@ import {
 import { ProjectLocationSelector } from '@/components/common/ProjectLocationSelector';
 import { useTranslation } from '@/i18n';
 import { formatI18nDate, formatI18nNumber } from '@/lib/i18n-format';
+import { filterStockInOrders } from '@/lib/stockInSearch';
 
 const StockIn = () => {
   const { can, user } = useAuth();
   const { t } = useTranslation();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // URL Query Sync & Search States
+  const [searchInput, setSearchInput] = useState(searchParams.get('search') || '');
+  const [debouncedSearch, setDebouncedSearch] = useState(searchParams.get('search') || '');
+  const [warehouseFilter, setWarehouseFilter] = useState(searchParams.get('warehouse') || 'all');
+  const [currentPage, setCurrentPage] = useState(
+    Math.max(1, parseInt(searchParams.get('page') || '1', 10) || 1)
+  );
+  const [pageSize] = useState(20);
+  const [totalCount, setTotalCount] = useState(0);
+
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   
@@ -62,20 +77,43 @@ const StockIn = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [orderDetails, setOrderDetails] = useState([]);
 
+  // 300ms debounce for search input
   useEffect(() => {
-    fetchData();
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchInput);
+      setCurrentPage(1);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
+
+  // Sync state to URL search params
+  useEffect(() => {
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (debouncedSearch.trim()) next.set('search', debouncedSearch.trim());
+        else next.delete('search');
+
+        if (warehouseFilter && warehouseFilter !== 'all') next.set('warehouse', warehouseFilter);
+        else next.delete('warehouse');
+
+        if (currentPage > 1) next.set('page', String(currentPage));
+        else next.delete('page');
+
+        return next;
+      },
+      { replace: true }
+    );
+  }, [debouncedSearch, warehouseFilter, currentPage, setSearchParams]);
+
+  // Initial projects & items fetch (mount only)
+  useEffect(() => {
+    fetchMasterData();
   }, []);
 
-  const fetchData = async () => {
+  const fetchMasterData = async () => {
     try {
-      setLoading(true);
-      // Parallelize fetching stock in orders, active projects, and items
-      const [oRes, pRes, iRes] = await Promise.all([
-        supabase
-          .from('stock_in_orders')
-          .select('*, projects(name, project_code, location, description), profiles(full_name)')
-          .order('created_at', { ascending: false })
-          .limit(50),
+      const [pRes, iRes] = await Promise.all([
         supabase
           .from('projects')
           .select('id, name, project_code, location, description')
@@ -83,19 +121,109 @@ const StockIn = () => {
           .order('name'),
         supabase
           .from('items')
-          .select('id, name, unit, sku, image_url, category_id, model, description')
+          .select('id, name, unit, sku, image_url, category_id, model, description'),
       ]);
-        
-      if (oRes.error && oRes.error.code !== '42P01') throw oRes.error;
-      setOrders(oRes.data || []);
       setProjects(pRes.data || []);
       setItems(iRes.data || []);
+    } catch (err) {
+      console.error('Error loading master data:', err);
+    }
+  };
+
+  const fetchOrders = useCallback(async () => {
+    try {
+      setLoading(true);
+      const targetProject = warehouseFilter !== 'all' ? warehouseFilter : null;
+      const offset = (currentPage - 1) * pageSize;
+
+      // 1. Primary: Dedicated RPC (with GIN Trigram indexes & EXISTS subqueries)
+      const { data: rpcData, error: rpcError } = await supabase.rpc('search_stock_in_orders', {
+        p_search: debouncedSearch.trim() || null,
+        p_project_id: targetProject,
+        p_limit: pageSize,
+        p_offset: offset,
+      });
+
+      if (!rpcError && Array.isArray(rpcData)) {
+        const formatted = rpcData.map((row) => ({
+          id: row.id,
+          project_id: row.project_id,
+          supplier: row.supplier,
+          po_number: row.po_number,
+          notes: row.notes,
+          received_date: row.received_date,
+          created_by: row.created_by,
+          created_at: row.created_at,
+          matched_items_snippet: row.matched_items_snippet,
+          projects: {
+            id: row.project_id,
+            name: row.project_name,
+            project_code: row.project_code,
+            location: row.project_location,
+            description: row.project_description,
+          },
+          profiles: {
+            full_name: row.received_by_name,
+          },
+        }));
+
+        setOrders(formatted);
+        const total = rpcData.length > 0 ? Number(rpcData[0].total_count || 0) : 0;
+        setTotalCount(total);
+        return;
+      }
+
+      // 2. Resilient Client Fallback: If RPC not deployed yet, query table and filter client-side
+      let query = supabase
+        .from('stock_in_orders')
+        .select('*, projects(id, name, project_code, location, description), profiles(full_name), stock_in_items(id, name, sku, model, serial_number, part_number, items(id, name, sku, model, description))')
+        .order('created_at', { ascending: false });
+
+      if (targetProject) {
+        query = query.eq('project_id', targetProject);
+      }
+
+      const { data: fallbackData, error: fallbackError } = await query.limit(200);
+      if (fallbackError && fallbackError.code !== '42P01') throw fallbackError;
+
+      const allOrders = fallbackData || [];
+      const filtered = filterStockInOrders(allOrders, {
+        search: debouncedSearch,
+        projectId: targetProject,
+      });
+
+      setTotalCount(filtered.length);
+      setOrders(filtered.slice(offset, offset + pageSize));
     } catch (error) {
-      console.error(error);
+      console.error('fetchOrders error:', error);
     } finally {
       setLoading(false);
     }
+  }, [debouncedSearch, warehouseFilter, currentPage, pageSize]);
+
+  // Fetch orders on filter / search / pagination changes
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
+
+  const fetchData = async () => {
+    await Promise.all([fetchMasterData(), fetchOrders()]);
   };
+
+  const handleClearSearch = () => {
+    setSearchInput('');
+    setDebouncedSearch('');
+    setCurrentPage(1);
+  };
+
+  const handleResetFilters = () => {
+    setSearchInput('');
+    setDebouncedSearch('');
+    setWarehouseFilter('all');
+    setCurrentPage(1);
+  };
+
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
   const handleOpenCreateDialog = () => {
     const defaultProjId = projects[0]?.id || '';
@@ -554,6 +682,75 @@ const StockIn = () => {
         )}
       </div>
 
+      {/* Search & Filter Toolbar */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 flex-1">
+          {/* Search Box */}
+          <div className="relative flex-1 max-w-lg">
+            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+            <Input
+              type="text"
+              placeholder={t('stockIn.searchPlaceholder', 'ค้นหา SKU, ชื่อพัสดุ, ผู้รับ, เลขที่ใบรับเข้า...')}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              className="pl-8 pr-8 h-9 text-xs rounded-lg bg-background border-border shadow-2xs focus-visible:ring-1"
+            />
+            {searchInput && (
+              <button
+                type="button"
+                onClick={handleClearSearch}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5 rounded cursor-pointer transition-colors"
+                title={t('stockIn.clearSearch', 'ล้างคำค้นหา')}
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          {/* Destination Warehouse Dropdown */}
+          <div className="w-full sm:w-56 shrink-0">
+            <select
+              value={warehouseFilter}
+              onChange={(e) => {
+                setWarehouseFilter(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full h-9 px-3 text-xs rounded-lg bg-background border border-border text-foreground shadow-2xs focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
+            >
+              <option value="all">{t('stockIn.allWarehouses', 'คลังทั้งหมด')}</option>
+              {projects.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.project_code ? `[${p.project_code}] ` : ''}{p.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Reset Filters Button */}
+          {(searchInput || warehouseFilter !== 'all') && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={handleResetFilters}
+              className="h-9 px-2.5 text-xs text-muted-foreground hover:text-foreground rounded-lg gap-1.5 cursor-pointer shrink-0"
+              title={t('common.reset', 'รีเซ็ต')}
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span className="hidden md:inline">{t('common.reset', 'รีเซ็ต')}</span>
+            </Button>
+          )}
+        </div>
+
+        {/* Results Counter */}
+        {(debouncedSearch || warehouseFilter !== 'all') && (
+          <div className="text-xs text-muted-foreground shrink-0 flex items-center gap-1.5 font-medium">
+            <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>{t('stockIn.showingResults', { count: totalCount, defaultValue: `พบ ${totalCount} รายการ` })}</span>
+          </div>
+        )}
+      </div>
+
       {/* Main Stock Receipts Table */}
       <Card className="overflow-hidden rounded-xl bg-card border border-border shadow-xs">
         <Table>
@@ -567,9 +764,36 @@ const StockIn = () => {
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={4} className="text-center py-8">{t('common.loading')}</TableCell></TableRow>
+              <TableRow><TableCell colSpan={4} className="text-center py-12 text-muted-foreground">{t('common.loading')}</TableCell></TableRow>
             ) : orders.length === 0 ? (
-              <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">{t('common.noData')}</TableCell></TableRow>
+              <TableRow>
+                <TableCell colSpan={4} className="text-center py-12">
+                  <div className="flex flex-col items-center justify-center gap-2">
+                    <SearchX className="w-10 h-10 text-muted-foreground/40 stroke-1" />
+                    <p className="text-sm font-semibold text-foreground">
+                      {debouncedSearch || warehouseFilter !== 'all'
+                        ? t('stockIn.noOrdersFoundSearch', 'ไม่พบใบรับเข้าพัสดุที่ตรงกับคำค้นหา')
+                        : t('common.noData')}
+                    </p>
+                    {(debouncedSearch || warehouseFilter !== 'all') && (
+                      <>
+                        <p className="text-xs text-muted-foreground max-w-sm">
+                          {t('stockIn.noOrdersFoundDesc', 'ลองตรวจสอบตัวสะกดหรือค้นหาด้วยคำอื่น')}
+                        </p>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleResetFilters}
+                          className="mt-2 h-8 text-xs rounded-lg gap-1.5 cursor-pointer"
+                        >
+                          <RotateCcw className="w-3 h-3" />
+                          <span>{t('stockIn.clearSearch', 'ล้างคำค้นหา')}</span>
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </TableCell>
+              </TableRow>
             ) : (
               orders.map((o) => (
                 <TableRow key={o.id} className="hover:bg-muted/20">
@@ -586,10 +810,23 @@ const StockIn = () => {
                         ({o.projects.location})
                       </span>
                     )}
+
+                    {/* Matched item snippet badge (ทางเลือก ข) */}
+                    {o.matched_items_snippet && (
+                      <div className="mt-1 flex items-center gap-1.5">
+                        <span
+                          className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 max-w-md truncate"
+                          title={o.matched_items_snippet}
+                        >
+                          <span className="font-semibold mr-1">{t('stockIn.matchedItem', 'พบพัสดุ')}:</span>
+                          {o.matched_items_snippet}
+                        </span>
+                      </div>
+                    )}
                   </TableCell>
                   <TableCell>{o.profiles?.full_name || 'Admin User'}</TableCell>
                   <TableCell className="text-right">
-                    <Button size="sm" variant="outline" className="rounded-xl h-8 text-xs font-semibold" onClick={() => viewOrderDetails(o)}>
+                    <Button size="sm" variant="outline" className="rounded-xl h-8 text-xs font-semibold cursor-pointer" onClick={() => viewOrderDetails(o)}>
                       {t('common.viewDetails')}
                     </Button>
                   </TableCell>
@@ -599,6 +836,50 @@ const StockIn = () => {
           </TableBody>
         </Table>
       </Card>
+
+      {/* Pagination Footer */}
+      {totalPages > 1 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 bg-card rounded-xl border border-border shadow-xs text-xs text-muted-foreground select-none">
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              disabled={currentPage <= 1 || loading}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              className="h-8 w-8 rounded-lg border-border text-foreground hover:bg-accent disabled:opacity-30 cursor-pointer shadow-xs"
+              aria-label={t('common.previous', 'Previous')}
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
+
+            <div className="flex items-center gap-1.5 font-medium text-foreground">
+              <span>{t('items.pagination.page', 'Page')}</span>
+              <span className="font-mono font-bold text-foreground px-2 py-0.5 rounded bg-muted/60 border border-border/60">
+                {currentPage}
+              </span>
+              <span>{t('items.pagination.of', 'of')}</span>
+              <span className="font-mono font-bold text-foreground">{totalPages}</span>
+            </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              disabled={currentPage >= totalPages || loading}
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              className="h-8 w-8 rounded-lg border-border text-foreground hover:bg-accent disabled:opacity-30 cursor-pointer shadow-xs"
+              aria-label={t('common.next', 'Next')}
+            >
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
+
+          <div className="text-xs text-muted-foreground font-medium">
+            {t('stockIn.totalRecords', 'Total records')}: <span className="font-mono font-bold text-foreground">{totalCount}</span>
+          </div>
+        </div>
+      )}
 
       {/* ========================================================================= */}
       {/* 1. INTERACTIVE DOPA+USO CSV IMPORT PREVIEW & WAREHOUSE FILTER MODAL */}
