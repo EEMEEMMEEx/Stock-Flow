@@ -433,7 +433,7 @@ const CheckoutPosTerminal = ({
         toast.error(t('checkouts.checkoutOrderFailed'));
       } else {
         const cleaned = cleanRpcMessage(err);
-        const isTechnical = err?.code === '0A000' || !cleaned || /FOR UPDATE|GROUP BY|syntax error/i.test(cleaned);
+        const isTechnical = err?.code === '0A000' || !cleaned || /FOR UPDATE|GROUP BY|syntax error|Cannot check permissions/i.test(cleaned);
         toast.error(isTechnical ? t('checkouts.checkoutOrderFailed') : cleaned);
       }
     } finally {
