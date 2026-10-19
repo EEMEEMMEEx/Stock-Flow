@@ -16,6 +16,7 @@ import { useTranslation } from '@/i18n';
 import { ProjectLocationSelector } from '@/components/common/ProjectLocationSelector';
 import SignatureRequiredModal from '@/components/common/SignatureRequiredModal';
 import { dispatchCheckoutNotification } from '@/lib/notificationDispatcher';
+import { cleanRpcMessage, isSchemaMismatchError } from '@/lib/rpcErrors';
 
 const CheckoutPosTerminal = ({
   projects = [],
@@ -428,7 +429,13 @@ const CheckoutPosTerminal = ({
       if (onCheckoutSuccess) onCheckoutSuccess(data);
     } catch (err) {
       console.error('Checkout error:', err);
-      toast.error(err.message || t('checkouts.checkoutOrderFailed'));
+      if (isSchemaMismatchError(err)) {
+        toast.error(t('checkouts.checkoutOrderFailed'));
+      } else {
+        const cleaned = cleanRpcMessage(err);
+        const isTechnical = err?.code === '0A000' || !cleaned || /FOR UPDATE|GROUP BY|syntax error/i.test(cleaned);
+        toast.error(isTechnical ? t('checkouts.checkoutOrderFailed') : cleaned);
+      }
     } finally {
       setSubmitting(false);
     }

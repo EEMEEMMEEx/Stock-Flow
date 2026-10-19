@@ -1,7 +1,7 @@
 {
   "name": "stock-flow-app",
   "private": true,
-  "version": "1.25.4",
+  "version": "1.25.5",
   "type": "module",
   "scripts": {
     "dev": "vite --host",
@@ -41,6 +41,8 @@
     "apply:migration-93": "node scripts/apply-migration-93.mjs",
     "test:stock-in-search": "node --test src/lib/stockInSearch.test.js",
     "verify:force-delete-sql": "node scripts/verify-force-delete-item-sandbox.mjs",
+    "apply:migration-95": "node scripts/apply-migration-95.mjs",
+    "verify:checkout-locking-sandbox": "node scripts/verify-process-checkout-order-locking-sandbox.mjs",
     "verify:super-revert-ui": "node scripts/verify-super-revert-ui.mjs",
     "test:super-revert": "node --test src/lib/superRevert.test.js",
     "test:checkout-display": "node --test src/lib/checkoutDisplay.test.js",
