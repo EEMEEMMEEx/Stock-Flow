@@ -1,5 +1,16 @@
 # Changelog
 
+## [2026-10-19 19:52] - v1.25.9
+
+- **Files Modified:** `package.json`, `package-lock.json`, `CHANGELOG.md`
+- **Changes:**
+  - **อัปเดต Nodemailer เป็น Latest Stable Release (Dependency Bump):**
+    - ยกเล็งเวอร์ชัน `nodemailer` จาก `10.0.10` → `10.1.7` (npm registry latest stable) พร้อมอัปเดต `package-lock.json` ตาม Lockfile Conventions ของโปรเจกต์ (npm)
+    - ตรวจสอบและยืนยัน Integration ที่มีอยู่แล้วครบถ้วน ไม่มีการแก้ไข Source Code ใดๆ (Zero Code Change): Vercel Serverless `/api/send-email` (Transporter แบบ Pool + TLS + Timeouts), Dynamic SMTP Config จาก Supabase (`system_settings`/`system_secrets`) ตามลำดับความสำคัญ Admin Override > DB Config > Environment Variables
+    - ยืนยันความปลอดภัย: SMTP Credentials อยู่เฉพาะ Environment Variables (`.env` ที่ gitignore แล้ว) และ Supabase Secrets Vault เท่านั้น ไม่มีการ Hardcode/Log รหัสผ่าน และไม่รั่วไหลสู่ Frontend (`smtpOverrides` ใช้ได้เฉพาะ Admin ที่ผ่านการตรวจสอบสิทธิ์เท่านั้น)
+    - ยืนยัน Business Safety: การส่งอีเมลล้มเหลวไม่บล็อก/ย้อนกลับธุรกรรม (Dispatch แบบ Fire-and-forget พร้อม `.catch()` ทุก Call Site ของ ยืม-คืน/เบิกจ่าย), มี Dedup Cache ป้องกันส่งซ้ำ และมี `email_delivery_logs` บันทึก Audit Trail ทั้งสำเร็จ/ล้มเหลว
+    - ตรวจสอบด้วย `npm run test:email` (33/33 Tests ผ่าน — ใช้ `jsonTransport` Mocked Transport ไม่มีการส่งอีเมลจริง), `npm run lint` (0 errors), `npm run build` (สำเร็จ)
+
 ## [2026-10-19 16:40] - v1.25.8
 
 - **Files Modified:** `supabase/migrations/20261020000000_email_delivery_logs_and_event_seeds.sql` (ใหม่), `api/send-email.js`, `src/lib/emailService.js`, `src/lib/emailRenderer.js`, `src/lib/notificationDispatcher.js`, `src/hooks/useNotifications.js`, `src/pages/Checkouts.jsx`, `src/components/settings/EmailTemplateManager.jsx`, `src/components/settings/EmailDeliveryLogs.jsx` (ใหม่), `src/pages/Settings.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `scripts/verify-email-branding.mjs`, `package.json`, `CHANGELOG.md`, `docs/notification-email-settings-implementation-plan.md` (ใหม่)
