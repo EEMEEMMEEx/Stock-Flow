@@ -21,6 +21,7 @@ const TITLE_KEYS = {
   [REVERT_KINDS.CHECKOUT_RETURNS]: 'superRevert.actionCheckoutReturns',
   [REVERT_KINDS.CHECKOUT_REJECTION]: 'superRevert.actionCheckoutRejection',
   [REVERT_KINDS.CHECKOUT_REPAIR]: 'superRevert.actionCheckoutRepair',
+  [REVERT_KINDS.CAIM_STOCK_IN]: 'superRevert.actionCaimStockIn',
 };
 
 const DESCRIPTION_KEYS = {
@@ -32,6 +33,7 @@ const DESCRIPTION_KEYS = {
   [REVERT_KINDS.CHECKOUT_RETURNS]: 'superRevert.descCheckoutReturns',
   [REVERT_KINDS.CHECKOUT_REJECTION]: 'superRevert.descCheckoutRejection',
   [REVERT_KINDS.CHECKOUT_REPAIR]: 'superRevert.descCheckoutRepair',
+  [REVERT_KINDS.CAIM_STOCK_IN]: 'superRevert.descCaimStockIn',
 };
 
 const SuperRevertActionModal = ({
@@ -75,6 +77,9 @@ const SuperRevertActionModal = ({
     }
     if (impact.type === 'deduct_returns_all') {
       return t('superRevert.deductReturnsAll', { qty: impact.qty, unit: impact.unit || t('common.piece') });
+    }
+    if (impact.type === 'deduct_caim_stock_in') {
+      return t('superRevert.deductCaimStockIn', { qty: impact.qty, unit: impact.unit || t('common.piece') });
     }
     return t('superRevert.stockImpactNone');
   })();

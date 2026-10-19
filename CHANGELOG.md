@@ -1,6 +1,33 @@
 # Changelog
 
-## [2026-10-19 12:15] - v1.25.3
+## [2026-10-19 14:35] - v1.25.4
+
+- **Files Modified:** `supabase/migrations/94_super_revert_caim_stock_in.sql` (ใหม่), `src/lib/superRevert.js`, `src/components/common/SuperRevertActionModal.jsx`, `src/components/checkouts/CheckoutDetailModal.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `package.json`, `docs/caim-stock-in-reversal-implementation-plan.md` (ใหม่), `scripts/verify-caim-stock-in-revert.mjs` (ใหม่), `CHANGELOG.md`
+- **Changes:**
+  - **เพิ่มฟังก์ชันย้อนการรับเข้าพัสดุจากงานเคลม CAIM (Reverse CAIM Stock-In) สำหรับสิทธิ์ SUPER:**
+    - พัฒนา Database RPC `public.super_revert_caim_stock_in(p_return_log_id UUID, p_reason TEXT)` ใน Migration 94:
+      - ตรวจสอบสิทธิ์อย่างเข้มงวดผ่าน `public.assert_super_revert_authorized` (เฉพาะบทบาท `SUPER` ที่มีสิทธิ์ `system.revert_actions`)
+      - ตรวจสอบสถานะของแถว `checkout_return_logs` ป้องกัน Reversal ซ้ำซ้อน (Idempotent Guard)
+      - ทำ Mutex Lock บนตาราง `public.items` เรียงตาม ID (`ORDER BY id FOR UPDATE`) ป้องกัน Concurrency Deadlock
+      - ตรวจสอบยอดคงเหลือพัสดุในคลังผ่าน `public.stock_balance` ต้องไม่ต่ำกว่าจำนวนที่จะหักออก ป้องกันปัญหาสต็อกติดลบ (`INSUFFICIENT_STOCK`)
+      - ตรวจสอบ Serial Number Guard ไม่ให้อุปกรณ์ที่มี S/N ถูกย้อนรับเข้าหากถูกนำไปให้ยืมในใบยืมอื่นไปแล้ว (`EQUIPMENT_ALREADY_RELOANED`)
+      - ใช้ Immutable Ledger Model โดยการบันทึกแถวธุรกรรมชดเชย (`transaction_type = 'stock_out'`, `reference_type = 'caim_stock_in_revert'`) ใน `public.stock_transactions` เพื่อรักษาร่องรอยการตรวจสอบเต็มรูปแบบโดยไม่ลบประวัติ `stock_in_orders` เดิม
+      - รีเซ็ตสถานะของ `checkout_return_logs`: เคลียร์ `caim_inbound_processed_at = NULL`, `caim_stock_in_order_id = NULL`, `caim_repair_result = NULL` และตั้ง `repair_resolution_status = 'unresolved'` โดยคง `is_reverted = FALSE` เพื่อให้ผู้ใช้สามารถนำรายการไปตัดผลการซ่อม/คืนสต็อกใหม่ได้ทันทีโดยไม่ติด Guard P0001
+      - บันทึกประวัติการย้อนสถานะลงใน `public.audit_logs` ผ่าน `public.record_super_revert_audit` (`action_type = 'CAIM_STOCK_IN_REVERT'`)
+    - อัปเดต Frontend Helper `src/lib/superRevert.js`:
+      - เพิ่ม Kind `REVERT_KINDS.CAIM_STOCK_IN = 'caim_stock_in'`
+      - แมป RPC Call ไปยัง `super_revert_caim_stock_in` พร้อมจัดการ Stock Impact Summary แบบ `deduct_caim_stock_in`
+    - ปรับปรุง UI Components:
+      - `SuperRevertActionModal.jsx`: รองรับ Title, Description และผลกระทบสต็อกสำหรับรายการย้อนรับเข้า CAIM
+      - `CheckoutDetailModal.jsx`: เพิ่มปุ่ม "ย้อนการรับเข้า CAIM" (พร้อมไอคอน `RotateCcw`) สำหรับรายการคืนชำรุดที่ผ่านการรับเข้าจาก CAIM แล้ว และซ่อนปุ่ม Revert ซ่อมทั่วไปเพื่อป้องกันความสับสน
+    - เพิ่มคีย์แปลภาษาไทยและอังกฤษใน `th.js` และ `en.js` บรรลุ 100% Key Parity (2084/2084 keys)
+  - **Verification:**
+    - `node scripts/verify-caim-stock-in-revert.mjs` — PGlite WASM Sandbox **5/5 PASS** (Happy Path, Idempotency Guard, Unauthorized Role Guard, Insufficient Stock Guard, Guard Clearance Verification)
+    - `npm run check:i18n` — 100% Key Parity PASS (2084/2084 keys)
+    - `npm run lint` — ESLint PASS (0 errors)
+    - `npm run build` — Vite production build PASS
+  - ปรับ version เป็น `v1.25.4` (PATCH)
+
 
 - **Files Modified:** `src/pages/StockIn.jsx`, `src/lib/stockInSearch.js` (ใหม่), `src/lib/stockInSearch.test.js` (ใหม่), `supabase/migrations/93_search_stock_in_orders_rpc.sql` (ใหม่), `scripts/apply-migration-93.mjs` (ใหม่), `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `package.json`, `docs/stock-in-search-implementation-plan.md` (ใหม่), `CHANGELOG.md`
 - **Changes:**

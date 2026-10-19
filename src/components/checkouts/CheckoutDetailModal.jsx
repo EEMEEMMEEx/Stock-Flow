@@ -830,6 +830,7 @@ const CheckoutDetailModal = ({
                         </Button>
                       )}
                       {canRevertAction && !log.is_reverted && onOpenRevertModal
+                        && !log.caim_stock_in_order_id && !log.caim_inbound_processed_at
                         && log.repair_resolution_status && log.repair_resolution_status !== 'unresolved' && (
                         <Button
                           type="button"
@@ -844,6 +845,23 @@ const CheckoutDetailModal = ({
                         >
                           <Wrench className="w-3 h-3" aria-hidden="true" />
                           <span>{t('superRevert.revertRepairBtn', 'ย้อนผลการซ่อม')}</span>
+                        </Button>
+                      )}
+                      {canRevertAction && !log.is_reverted && onOpenRevertModal
+                        && (log.caim_stock_in_order_id || log.caim_inbound_processed_at) && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            onClose();
+                            onOpenRevertModal(order, REVERT_KINDS.CAIM_STOCK_IN, log);
+                          }}
+                          className="rounded-lg h-9 min-h-[44px] sm:min-h-0 text-[11px] gap-1 font-semibold text-rose-700 dark:text-rose-300 border-rose-300 dark:border-rose-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer"
+                          title={t('superRevert.revertCaimStockInBtn', 'ย้อนการรับเข้า CAIM')}
+                        >
+                          <RotateCcw className="w-3 h-3" aria-hidden="true" />
+                          <span>{t('superRevert.revertCaimStockInBtn', 'ย้อนการรับเข้า CAIM')}</span>
                         </Button>
                       )}
                     </div>

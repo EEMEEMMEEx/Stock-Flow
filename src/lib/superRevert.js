@@ -10,6 +10,7 @@ export const REVERT_KINDS = {
   CHECKOUT_RETURNS: 'checkout_returns',
   CHECKOUT_REJECTION: 'checkout_rejection',
   CHECKOUT_REPAIR: 'checkout_repair',
+  CAIM_STOCK_IN: 'caim_stock_in',
 };
 
 export const REVERT_AUDIT_ACTION_TYPES = [
@@ -20,6 +21,7 @@ export const REVERT_AUDIT_ACTION_TYPES = [
   'CHECKOUT_RETURN_REVERT',
   'CHECKOUT_REJECT_REVERT',
   'CHECKOUT_REPAIR_REVERT',
+  'CAIM_STOCK_IN_REVERT',
 ];
 
 export const REVERT_ACTION_LABEL_KEYS = {
@@ -30,6 +32,7 @@ export const REVERT_ACTION_LABEL_KEYS = {
   CHECKOUT_RETURN_REVERT: 'superRevert.actionCheckoutReturn',
   CHECKOUT_REJECT_REVERT: 'superRevert.actionCheckoutRejection',
   CHECKOUT_REPAIR_REVERT: 'superRevert.actionCheckoutRepair',
+  CAIM_STOCK_IN_REVERT: 'superRevert.actionCaimStockIn',
 };
 
 const REVERT_RPC_BY_KIND = {
@@ -41,6 +44,7 @@ const REVERT_RPC_BY_KIND = {
   [REVERT_KINDS.CHECKOUT_RETURNS]: 'super_revert_checkout_order_returns',
   [REVERT_KINDS.CHECKOUT_REJECTION]: 'super_revert_checkout_rejection',
   [REVERT_KINDS.CHECKOUT_REPAIR]: 'super_revert_damaged_repair',
+  [REVERT_KINDS.CAIM_STOCK_IN]: 'super_revert_caim_stock_in',
 };
 
 const TARGET_ACTION_BY_KIND = {
@@ -94,6 +98,17 @@ export const resolveRevertRequest = (kind, { order = null, returnLog = null } = 
       fromStatus: returnLog.repair_resolution_status || 'resolved',
       toStatus: 'unresolved',
       auditAction: 'CHECKOUT_REPAIR_REVERT',
+    };
+  }
+
+  if (kind === REVERT_KINDS.CAIM_STOCK_IN) {
+    if (!returnLog?.id) return null;
+    return {
+      rpc,
+      params: { p_return_log_id: returnLog.id, p_reason: null },
+      fromStatus: returnLog.repair_resolution_status || 'restored_to_stock',
+      toStatus: 'unresolved',
+      auditAction: 'CAIM_STOCK_IN_REVERT',
     };
   }
 
@@ -169,6 +184,15 @@ export const summarizeRevertStockImpact = (kind, { order = null, returnLog = nul
       type: 'deduct_return',
       qty: Number(returnLog.returned_quantity || 0),
       unit: returnLog?.checkout_items?.items?.unit || order?.checkout_items?.[0]?.items?.unit || '',
+    };
+  }
+
+  if (kind === REVERT_KINDS.CAIM_STOCK_IN) {
+    const unit = returnLog?.checkout_items?.items?.unit || order?.checkout_items?.[0]?.items?.unit || '';
+    return {
+      type: 'deduct_caim_stock_in',
+      qty: 1,
+      unit,
     };
   }
 

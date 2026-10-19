@@ -2368,13 +2368,18 @@ export default {
     "actionCheckoutRejection": "ย้อนการปฏิเสธใบยืม",
     "actionCheckoutReturns": "ย้อนการรับคืนทั้งหมด",
     "actionCheckoutRepair": "ย้อนผลการซ่อม",
+    "actionCaimStockIn": "ย้อนการรับเข้าพัสดุจาก CAIM",
     "descCheckoutRejection": "ใบยืมจะกลับไปสถานะ PENDING และล้างข้อมูลการปฏิเสธ โดยไม่มีผลกระทบต่อสต็อก",
     "descCheckoutReturns": "รายการรับคืนที่ยังไม่ถูกย้อนทั้งหมดจะถูกย้อน อุปกรณ์กลับสู่สถานะกำลังยืม และหักยอดสต็อกที่เคยรับคืนออกจากคลังปลายทาง",
     "descCheckoutRepair": "ผลการซ่อม/จำหน่ายจะกลับสู่สถานะ UNRESOLVED และระบบจะปรับยอดสต็อกที่เกิดจากการซ่อมกลับคืนแบบตรงกันข้าม",
+    "descCaimStockIn": "รายการที่รับเข้าจากงานเคลม CAIM จะกลับสู่สถานะรอดำเนินการซ่อม (UNRESOLVED) และระบบจะหักสต็อกที่เคยรับเข้าออก 1 หน่วย",
     "errEquipmentReloaned": "ไม่สามารถย้อนได้เพราะอุปกรณ์ S/N นี้ถูกยืมออกไปในใบยืมอื่นแล้ว",
     "deductReturnsAll": "หัก {{qty}} {{unit}} ออกจากคลังปลายทาง (เฉพาะรายการคืนสภาพปกติ)",
+    "deductCaimStockIn": "หัก {{qty}} {{unit}} ออกจากคลังที่เคยรับเข้า",
     "revertRepairBtn": "ย้อนผลการซ่อม",
-    "revertAllReturnsBtn": "ย้อนการรับคืนทั้งหมด"
+    "revertAllReturnsBtn": "ย้อนการรับคืนทั้งหมด",
+    "revertCaimStockInBtn": "ย้อนการรับเข้า CAIM",
+    "caimStockInSuccess": "ย้อนการรับเข้าพัสดุจาก CAIM สำเร็จ (สต็อกถูกหักออก 1 หน่วย)"
   },
   "scrap": {
     "title": "ของเสียหาย/ซ่อมไม่ได้ (ซาก)",

@@ -2368,13 +2368,18 @@ export default {
     "actionCheckoutRejection": "Revert loan rejection",
     "actionCheckoutReturns": "Revert all return confirmations",
     "actionCheckoutRepair": "Revert repair resolution",
+    "actionCaimStockIn": "Reverse CAIM claim stock-in",
     "descCheckoutRejection": "The loan returns to PENDING and the rejection details are cleared. Stock is unchanged.",
     "descCheckoutReturns": "Every return record that has not been reverted is rolled back, the equipment returns to on-loan, and the credited stock is deducted from the destination warehouse.",
     "descCheckoutRepair": "The repair/disposal resolution returns to UNRESOLVED and the repair stock movements are reversed with opposite ledger entries.",
+    "descCaimStockIn": "The item received from CAIM claim returns to UNRESOLVED and 1 unit credited to warehouse stock is deducted.",
     "errEquipmentReloaned": "Cannot revert: this serial number is already on loan in another order.",
     "deductReturnsAll": "Deduct {{qty}} {{unit}} from the destination warehouse (normal-condition returns only)",
+    "deductCaimStockIn": "Deduct {{qty}} {{unit}} from the credited warehouse",
     "revertRepairBtn": "Revert repair",
-    "revertAllReturnsBtn": "Revert all returns"
+    "revertAllReturnsBtn": "Revert all returns",
+    "revertCaimStockInBtn": "Reverse CAIM stock-in",
+    "caimStockInSuccess": "CAIM stock-in successfully reversed (1 unit deducted from stock)"
   },
   "scrap": {
     "title": "Damaged / Unrepairable (Salvage)",
