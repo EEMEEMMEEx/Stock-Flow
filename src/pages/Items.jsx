@@ -21,6 +21,7 @@ import { ProjectLocationSelector } from '@/components/common/ProjectLocationSele
 import { TransferItemDialog } from '@/components/items/TransferItemDialog';
 import { uploadFileToR2 } from '@/lib/r2Storage';
 import { useTranslation } from '@/i18n';
+import { isSchemaMismatchError, cleanRpcMessage } from '@/lib/rpcErrors';
 
 const Items = () => {
   const { can, canAny, profile } = useAuth();
@@ -518,15 +519,12 @@ const Items = () => {
     setIsDeleting(true);
     try {
       if (force || hasTransactionConflict) {
-        // Attempt atomic force delete RPC (Migration 48)
+        // Attempt atomic force delete RPC (Migration 92 / 48)
         const { data, error: rpcError } = await supabase.rpc('admin_force_delete_item', {
           p_item_id: selectedItem.id
         });
 
         if (rpcError) {
-          if (rpcError.code === 'PGRST202' || rpcError.status === 404) {
-            throw new Error(t('items.toasts.forceDeleteRpcMissing'));
-          }
           throw rpcError;
         }
 
@@ -558,7 +556,19 @@ const Items = () => {
       fetchItems();
     } catch (error) {
       console.error('Delete Item Error:', error);
-      toast.error(t('items.toasts.deleteItemError') + ': ' + (error.message || ''));
+
+      if (isSchemaMismatchError(error)) {
+        toast.error(t('items.toasts.forceDeleteSchemaMismatch'));
+      } else if (error?.status === 403 || error?.code === '42501' || String(error?.message).includes('Unauthorized')) {
+        toast.error(t('items.toasts.requiresDeletePermission'));
+      } else if (error?.code === '23503') {
+        toast.error(t('items.toasts.cannotDeleteHasReference'));
+      } else if (error?.code === 'PGRST202' || error?.status === 404) {
+        toast.error(t('items.toasts.forceDeleteRpcMissing'));
+      } else {
+        const cleanMsg = cleanRpcMessage(error);
+        toast.error(cleanMsg ? `${t('items.toasts.deleteItemError')}: ${cleanMsg}` : t('items.toasts.deleteItemError'));
+      }
     } finally {
       setIsDeleting(false);
     }

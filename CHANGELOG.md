@@ -1,5 +1,22 @@
 # Changelog
 
+## [2026-10-19 10:50] - v1.25.2
+
+- **Files Modified:** `supabase/migrations/92_fix_admin_force_delete_item_rpc.sql` (ใหม่), `scripts/verify-force-delete-item-sandbox.mjs` (ใหม่), `scripts/apply-migration-92.mjs` (ใหม่), `src/pages/Items.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `package.json`, `docs/force-delete-item-flow-fix-plan.md` (ใหม่), `CHANGELOG.md`
+- **Changes:**
+  - **แก้ไขปัญหา Force Delete Item ล้มเหลวจาก `pos_order_items` และปรับปรุง Error Message ให้เป็นมิตร:**
+    - สร้าง Migration 92 (`92_fix_admin_force_delete_item_rpc.sql`) นิยาม `public.admin_force_delete_item(UUID)` และ `public.admin_bulk_force_delete_items(UUID[])` ใหม่ทั้งหมด
+    - ตัดคำสั่ง `DELETE FROM public.pos_order_items` ซึ่งเป็นตารางที่ไม่มีอยู่จริงในฐานข้อมูลออก ป้องกัน PostgreSQL Error `42P01` (`undefined_table`)
+    - เพิ่มการเคลียร์ Foreign Key ให้ครอบคลุมทุกตารางลูกในระบบจริง: `checkout_return_logs`, `checkout_items`, `scrap_disposal_items`, `site_bom_templates`, `stock_adjustment_logs`, `stock_transactions`, `stock_in_items`, `withdrawal_items`, และ `items.parent_id` พร้อมใช้ `to_regclass` และ dynamic column checks เพื่อความปลอดภัยในทุกสภาพแวดล้อม
+    - ปรับปรุงการจัดการ Error ใน `src/pages/Items.jsx` (`handleDeleteItem`): นำเข้า `isSchemaMismatchError` และ `cleanRpcMessage` จาก `@/lib/rpcErrors` ดักจับ Schema Mismatch, สิทธิ์การใช้งาน (`42501`), Foreign Key Conflict (`23503`), และ Function Missing (`PGRST202`/`404`) โดยไม่แสดง Raw Database SQL Syntax แก่ผู้ใช้อีกต่อไป
+    - เพิ่มคีย์คำแปลใน `th.js` และ `en.js` สำหรับแจ้งเตือนผู้ใช้ด้วยข้อความที่ชัดเจน ตรงประเด็น
+  - **Verification:**
+    - `npm run verify:force-delete-sql` — PGlite WASM Sandbox **ALL PASS** (Target item deletion, child cascades, audit log, data isolation, bulk force delete)
+    - `npm run check:i18n` — 100% key parity (2070/2070 keys) PASS
+    - `npm run lint` — ESLint PASS
+    - `npm run build` — Vite production build PASS
+  - ปรับ version เป็น `v1.25.2` (PATCH)
+
 ## [2026-10-19 10:00] - v1.25.1
 
 - **Files Modified:** `supabase/migrations/91_sequential_checkout_order_number.sql` (ใหม่), `scripts/verify-sequential-checkout-number-sandbox.mjs` (ใหม่), `scripts/apply-migration-91.mjs` (ใหม่), `scripts/verify-pdf-signatures.mjs`, `docs/sequential-checkout-order-number-plan.md` (ใหม่), `package.json`, `CHANGELOG.md`
