@@ -282,12 +282,12 @@ const Manual = () => {
       {/* Role Responsibility Quick Summary Matrix */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Role 1: Staff */}
-        <div className="p-4 rounded-xl border border-border border-l-4 border-l-blue-500 bg-card shadow-xs space-y-2">
+        <div className="p-4 rounded-xl border border-border/80 bg-card shadow-xs space-y-2">
           <div className="flex items-center justify-between">
             <span className="font-bold text-sm text-foreground flex items-center gap-2">
-              <User className="w-4 h-4 text-blue-500" /> {t('manual.roleMatrix.staffTitle')}
+              <User className="w-4 h-4 text-blue-500" aria-hidden="true" /> {t('manual.roleMatrix.staffTitle')}
             </span>
-            <span className="text-[10px] bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 font-bold px-2 py-0.5 rounded-full">
+            <span className="text-xs bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 font-bold px-2 py-0.5 rounded-full">
               {t('manual.roleMatrix.staffBadge')}
             </span>
           </div>
@@ -295,18 +295,18 @@ const Manual = () => {
             {t('manual.roleMatrix.staffDesc')}
           </p>
           <div className="flex flex-wrap gap-1 pt-1">
-            <span className="text-[10px] bg-muted px-2 py-0.5 rounded font-mono">withdrawals.create</span>
-            <span className="text-[10px] bg-muted px-2 py-0.5 rounded font-mono">checkouts.create</span>
+            <span className="text-xs bg-muted px-2 py-0.5 rounded font-mono">withdrawals.create</span>
+            <span className="text-xs bg-muted px-2 py-0.5 rounded font-mono">checkouts.create</span>
           </div>
         </div>
 
         {/* Role 2: Supervisor */}
-        <div className="p-4 rounded-xl border border-border border-l-4 border-l-emerald-500 bg-card shadow-xs space-y-2">
+        <div className="p-4 rounded-xl border border-border/80 bg-card shadow-xs space-y-2">
           <div className="flex items-center justify-between">
             <span className="font-bold text-sm text-foreground flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-emerald-500" /> {t('manual.roleMatrix.supervisorTitle')}
+              <ShieldCheck className="w-4 h-4 text-emerald-500" aria-hidden="true" /> {t('manual.roleMatrix.supervisorTitle')}
             </span>
-            <span className="text-[10px] bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold px-2 py-0.5 rounded-full">
+            <span className="text-xs bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold px-2 py-0.5 rounded-full">
               {t('manual.roleMatrix.supervisorBadge')}
             </span>
           </div>
@@ -314,18 +314,18 @@ const Manual = () => {
             {t('manual.roleMatrix.supervisorDesc')}
           </p>
           <div className="flex flex-wrap gap-1 pt-1">
-            <span className="text-[10px] bg-muted px-2 py-0.5 rounded font-mono">withdrawals.approve</span>
-            <span className="text-[10px] bg-muted px-2 py-0.5 rounded font-mono">stock_in.create</span>
+            <span className="text-xs bg-muted px-2 py-0.5 rounded font-mono">withdrawals.approve</span>
+            <span className="text-xs bg-muted px-2 py-0.5 rounded font-mono">stock_in.create</span>
           </div>
         </div>
 
         {/* Role 3: Admin */}
-        <div className="p-4 rounded-xl border border-border border-l-4 border-l-purple-500 bg-card shadow-xs space-y-2">
+        <div className="p-4 rounded-xl border border-border/80 bg-card shadow-xs space-y-2">
           <div className="flex items-center justify-between">
             <span className="font-bold text-sm text-foreground flex items-center gap-2">
-              <Shield className="w-4 h-4 text-purple-500" /> {t('manual.roleMatrix.adminTitle')}
+              <Shield className="w-4 h-4 text-purple-500" aria-hidden="true" /> {t('manual.roleMatrix.adminTitle')}
             </span>
-            <span className="text-[10px] bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 font-bold px-2 py-0.5 rounded-full">
+            <span className="text-xs bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 font-bold px-2 py-0.5 rounded-full">
               {t('manual.roleMatrix.adminBadge')}
             </span>
           </div>
@@ -333,8 +333,8 @@ const Manual = () => {
             {t('manual.roleMatrix.adminDesc')}
           </p>
           <div className="flex flex-wrap gap-1 pt-1">
-            <span className="text-[10px] bg-muted px-2 py-0.5 rounded font-mono">roles.manage_permissions</span>
-            <span className="text-[10px] bg-muted px-2 py-0.5 rounded font-mono">users.update</span>
+            <span className="text-xs bg-muted px-2 py-0.5 rounded font-mono">roles.manage_permissions</span>
+            <span className="text-xs bg-muted px-2 py-0.5 rounded font-mono">users.update</span>
           </div>
         </div>
       </div>
@@ -377,7 +377,7 @@ const Manual = () => {
               <Card 
                 key={sec.id} 
                 id={sec.id}
-                className={`rounded-xl bg-card border border-border shadow-xs border-l-4 ${sec.badgeColor} overflow-hidden transition-all duration-200 hover:shadow-md`}
+                className={`rounded-xl bg-card border border-border shadow-xs overflow-hidden transition-all duration-200 hover:shadow-md`}
               >
                 <CardHeader className="bg-muted/10 pb-4 border-b border-border/30">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -432,7 +432,7 @@ const Manual = () => {
                       </p>
                       <div className="flex flex-wrap gap-1 pt-1">
                         {sec.permissions.map((perm) => (
-                          <span key={perm} className="text-[10px] bg-muted/80 text-muted-foreground px-1.5 py-0.5 rounded font-mono">
+                          <span key={perm} className="text-xs bg-muted/80 text-muted-foreground px-1.5 py-0.5 rounded font-mono">
                             {perm}
                           </span>
                         ))}

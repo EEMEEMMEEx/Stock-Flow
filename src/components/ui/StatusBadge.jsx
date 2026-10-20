@@ -124,7 +124,7 @@ export const StatusBadge = ({
   return (
     <span
       className={`inline-flex items-center justify-center rounded-full border ${badgeSize} ${config.colorClass} ${
-        config.pulse ? 'animate-pulse' : ''
+        config.pulse ? 'motion-safe:animate-pulse' : ''
       } shrink-0 select-none shadow-2xs transition-all ${className}`}
       title={tooltipLabel}
       aria-label={tooltipLabel}

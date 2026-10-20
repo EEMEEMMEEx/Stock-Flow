@@ -72,7 +72,7 @@ export const UserStatusDot = ({
     >
       <span
         className={`rounded-full ${currentSize.dot} ${dotColor} ${
-          hasPulse ? 'animate-pulse' : ''
+          hasPulse ? 'motion-safe:animate-pulse' : ''
         } shadow-xs shrink-0`}
       />
       <span className="sr-only">{tooltipTitle}</span>

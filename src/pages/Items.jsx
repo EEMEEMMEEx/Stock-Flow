@@ -19,6 +19,7 @@ import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 import { ProjectLocationSelector } from '@/components/common/ProjectLocationSelector';
 import { TransferItemDialog } from '@/components/items/TransferItemDialog';
+import { ItemStockHistoryDialog } from '@/components/items/ItemStockHistoryDialog';
 import { uploadFileToR2 } from '@/lib/r2Storage';
 import { useTranslation } from '@/i18n';
 import { isSchemaMismatchError, cleanRpcMessage } from '@/lib/rpcErrors';
@@ -1308,8 +1309,7 @@ const Items = () => {
                     <TableRow 
                       key={`${item.recordKey}_${isChild ? 'child' : 'parent'}`} 
                       className={`transition-colors ${
-                        isChild 
-                          ? "bg-blue-500/[0.03] dark:bg-blue-950/25 border-l-4 border-l-blue-500 hover:bg-blue-500/[0.07] dark:hover:bg-blue-950/40" 
+                        isChild ? "bg-muted/40 dark:bg-muted/20 hover:bg-muted/60" 
                           : item.hasChildren
                             ? "hover:bg-muted/60 font-medium bg-card"
                             : "hover:bg-muted/50 bg-card"
@@ -1466,9 +1466,7 @@ const Items = () => {
                           <Button 
                             variant="ghost" 
                             size="icon" 
-                            className="h-8 w-8 rounded-lg text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950/40" 
-                            onClick={() => openAdjustmentHistoryDialog(item)} 
-                            title={t('items.table.stockHistoryTitle')}
+                            className="min-h-[44px] min-w-[44px] sm:min-h-8 sm:min-w-8 h-10 w-10 sm:h-8 sm:w-8 rounded-lg text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950/40" onClick={() => openAdjustmentHistoryDialog(item)} title={t('items.table.stockHistoryTitle')} aria-label={t('items.table.stockHistoryTitle')}
                           >
                             <History className="w-4 h-4" />
                           </Button>
@@ -1476,8 +1474,7 @@ const Items = () => {
                             <Button 
                               variant="ghost" 
                               size="icon" 
-                              className="h-8 w-8 rounded-lg text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 disabled:opacity-30 disabled:cursor-not-allowed" 
-                              onClick={() => openTransferDialog(item)} 
+                              className="min-h-[44px] min-w-[44px] sm:min-h-8 sm:min-w-8 h-10 w-10 sm:h-8 sm:w-8 rounded-lg text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 disabled:opacity-30 disabled:cursor-not-allowed" onClick={() => openTransferDialog(item)} aria-label={t('items.table.transferLocationTitle')} 
                               disabled={!item.project_id || (parseInt(item.balance, 10) || 0) <= 0}
                               title={
                                 !item.project_id || (parseInt(item.balance, 10) || 0) <= 0 
@@ -1492,8 +1489,7 @@ const Items = () => {
                             <Button 
                               variant="ghost" 
                               size="icon" 
-                              className="h-8 w-8 rounded-lg text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/40" 
-                              onClick={() => openEditDialog(item)} 
+                              className="min-h-[44px] min-w-[44px] sm:min-h-8 sm:min-w-8 h-10 w-10 sm:h-8 sm:w-8 rounded-lg text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/40" onClick={() => openEditDialog(item)} aria-label={t('items.table.editMasterItem')} 
                               title={t('items.table.editMasterItem')}
                             >
                               <Edit3 className="w-4 h-4" />
@@ -1503,8 +1499,7 @@ const Items = () => {
                             <Button 
                               variant="ghost" 
                               size="icon" 
-                              className="h-8 w-8 rounded-lg text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40" 
-                              onClick={() => openDeleteDialog(item.originalItem || item)} 
+                              className="min-h-[44px] min-w-[44px] sm:min-h-8 sm:min-w-8 h-10 w-10 sm:h-8 sm:w-8 rounded-lg text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40" onClick={() => openDeleteDialog(item.originalItem || item)} aria-label={t('items.table.deleteItem')} 
                               title={t('items.table.deleteItem')}
                             >
                               <Trash2 className="w-4 h-4" />
@@ -2168,90 +2163,13 @@ const Items = () => {
       />
 
       {/* Stock Adjustment Audit History Dialog */}
-      <Dialog open={isHistoryDialogOpen} onOpenChange={setIsHistoryDialogOpen}>
-        <DialogContent className="sm:max-w-[620px] rounded-xl border-border bg-card shadow-lg">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-bold flex items-center gap-2 text-foreground">
-              <History className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-              <span>{t('items.dialogs.historyTitle')}</span>
-            </DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground">
-              {t('items.dialogs.historyItem', { name: selectedItemForHistory?.name, sku: selectedItemForHistory?.sku || '-' })}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="py-2 space-y-3 max-h-[400px] overflow-y-auto pr-1">
-            {loadingHistoryLogs ? (
-              <div className="py-8 text-center text-xs text-muted-foreground">
-                <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-amber-600" />
-                <span>{t('items.dialogs.loadingHistory')}</span>
-              </div>
-            ) : adjustmentHistoryLogs.length === 0 ? (
-              <div className="p-6 rounded-lg border border-dashed border-border/80 text-center text-xs text-muted-foreground">
-                <History className="w-6 h-6 mx-auto mb-1 opacity-40" />
-                <span>{t('items.dialogs.noHistory')}</span>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {adjustmentHistoryLogs.map((log) => {
-                  const projName = log.projects?.project_code 
-                    ? `${log.projects.project_code} — ${log.projects.name}` 
-                    : (log.projects?.name || 'Warehouse');
-                  return (
-                    <div 
-                      key={log.id} 
-                      className="p-3 rounded-lg bg-muted/40 border border-border/60 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 hover:bg-muted/60 transition-colors"
-                    >
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-bold text-foreground flex items-center gap-1">
-                            <Building2 className="w-3 h-3 text-primary" />
-                            {projName}
-                          </span>
-                          <span className="text-muted-foreground font-mono text-[11px]">
-                            {log.previous_quantity} ➔ <strong className="text-foreground font-bold">{log.new_quantity}</strong>
-                          </span>
-                          <span className={`px-1.5 py-0.2 rounded-md font-mono text-[10px] font-extrabold ${
-                            log.difference > 0 
-                              ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30' 
-                              : log.difference < 0
-                              ? 'bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-500/30'
-                              : 'bg-muted text-muted-foreground'
-                          }`}>
-                            {log.difference > 0 ? `+${log.difference}` : log.difference} {selectedItemForHistory?.unit || 'ชิ้น'}
-                          </span>
-                        </div>
-                        <div className="text-[11px] text-muted-foreground">
-                          {t('items.dialogs.reason')} <span className="text-foreground font-medium">&quot;{log.reason}&quot;</span>
-                        </div>
-                        <div className="text-[10px] text-muted-foreground">
-                          {t('items.dialogs.by')} {log.profiles?.full_name || t('items.dialogs.staff')}
-                        </div>
-                      </div>
-
-                      <div className="text-[11px] text-muted-foreground font-mono self-end sm:self-auto shrink-0">
-                        {format(new Date(log.created_at), 'dd/MM/yyyy HH:mm')}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          <DialogFooter className="border-t border-border/40 pt-3">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setIsHistoryDialogOpen(false)}
-              className="rounded-lg text-xs"
-            >
-              {t('common.close')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ItemStockHistoryDialog
+        open={isHistoryDialogOpen}
+        onOpenChange={setIsHistoryDialogOpen}
+        selectedItem={selectedItemForHistory}
+        loading={loadingHistoryLogs}
+        logs={adjustmentHistoryLogs}
+      />
     </div>
   );
 };

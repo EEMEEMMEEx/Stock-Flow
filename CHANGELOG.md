@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-10-20 09:25] - v1.25.18
+### Refactored & Polished
+- **Distill Components**: สกัด `ItemStockHistoryDialog.jsx` ออกจาก `Items.jsx` และ `StockInOrderDetailModal.jsx` ออกจาก `StockIn.jsx` ลดขนาดหน้าจอหลักและเพิ่มความสะดวกในการบำรุงรักษา
+- **Shape Anti-pattern**: กำจัดแอนติแพตเทิร์น Side-tab (`border-l-4`) ใน `Items.jsx` และ `Manual.jsx` ตามข้อกำหนด The Border Definition Rule ใน `DESIGN.md`
+- **Polish Vector SVG**: แทนที่อักขระลูกศร Unicode `➔` ในประวัติสต็อกด้วย Lucide `ArrowRight` (100% Vector SVG) พร้อมระบุ `aria-hidden="true"` ให้ไอคอนตกแต่ง
+- **A11y Typography**: ปรับแต่งระดับความสูงตัวอักษรที่ตกค้าง (`text-[10px]`, `text-[11px]`) ใน `Manual.jsx` และ Dialogs สู่ระดับมาตรฐาน `text-xs` ตาม Type Ramp
+- **Adapt Mobile**: ปรับแต่ง Touch Target ของปุ่มตาราง Action และปุ่ม Pagination ให้มีขนาดขั้นต่ำ 44×44px บน Mobile/Tablet และเพิ่ม `overflow-x-auto` บนตารางรับเข้าพัสดุ
+- **Motion Reduction**: ติดตั้ง `motion-reduce:animate-none` และ `motion-safe:animate-pulse` บนแอนิเมชันจุดสถานะใน Landing Page (`HeroSection.jsx`, `LandingFooter.jsx`) และ UI Badges (`StatusBadge.jsx`, `UserStatusDot.jsx`, `skeleton.jsx`)
+
 ## [2026-10-20 09:14] - v1.25.17
 ### Optimized
 - **Code Splitting**: ติดตั้ง Route-level code splitting ผ่าน `React.lazy()` และ `Suspense` ครอบคลุมทุกหน้าจอใน `App.jsx`
