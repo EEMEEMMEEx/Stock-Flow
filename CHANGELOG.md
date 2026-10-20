@@ -1,5 +1,13 @@
 # Changelog
 
+## [2026-10-20 11:30] - v1.25.21
+### Fixed & Polished (Reports Audit — Phase 3: P3 Polish & Integrity)
+- **Accessibility & ARIA Sort (P3)**: เติมแอตทริบิวต์ `aria-sort` ครบถ้วน 100% บนทุก `<TableHead>` ที่มีฟังก์ชันการจัดเรียงใน `ReportDataTable.jsx` (รวมทั้งแก้ไขคีย์จัดเรียงของ Withdrawals จาก `received_date` สู่ `requested_at` ที่ถูกต้อง)
+- **React Reconciliation Keys (P3)**: เปลี่ยนการใช้ array index (`key={idx}`) ในตารางรายการอุปกรณ์ของ `ReportSiteKits.jsx` เป็น Composite Unique Key (`${category_id}-${part_number}-${bom_name}-${item_id}`) ป้องกันข้อผิดพลาดของ Virtual DOM เมื่อมีการกรองหรือเรียงลำดับ
+- **State Integrity & Export UX (P3)**: เพิ่ม `excelLoading` state และบล็อก `finally { setExcelLoading(false); }` ใน `ReportSiteKits.jsx` และ `Reports.jsx` ป้องกันการกด Export ซ้ำซ้อนและแก้ไขปัญหาปุ่ม Excel ค้างสถานะกำลังโหลด
+- **Clean Documentation (P3)**: จัดระเบียบ comment stale ใน `Reports.jsx` ที่ระบุชื่อแท็บซ้ำให้ถูกต้องตรงตามสถาปัตยกรรม 4 แท็บจริง
+
+
 ## [2026-10-20 10:50] - v1.25.20
 ### Fixed & Enhanced (Reports Audit — Phase 2: P2 & P3)
 - **Accessibility & ARIA (P2)**: ติดตั้ง WAI-ARIA Tab Semantics (`role="tablist"`, `role="tab"`, `aria-selected`, `aria-controls`, `id`, `tabIndex`) พร้อม Roving Tabindex Keyboard Navigation บน Arrow Keys (Left/Right/Home/End) ใน `ReportHeader.jsx` และ `role="tabpanel"` ใน `Reports.jsx`

@@ -59,7 +59,7 @@ const ReportDataTable = ({
           <TableHeader className="bg-muted/80 backdrop-blur sticky top-0 z-10 whitespace-nowrap shadow-xs">
             {activeTab === 'stock_in' && (
               <TableRow className="hover:bg-transparent border-b border-border">
-                <TableHead className="w-[130px]">
+                <TableHead className="w-[130px]" aria-sort={getAriaSort('received_date')}>
                   <button
                     onClick={() => onSort('received_date')}
                     className="flex items-center gap-1.5 font-bold text-xs text-foreground group"
@@ -69,7 +69,7 @@ const ReportDataTable = ({
                   </button>
                 </TableHead>
 
-                <TableHead>
+                <TableHead aria-sort={getAriaSort('projects.name')}>
                   <button
                     onClick={() => onSort('projects.name')}
                     className="flex items-center gap-1.5 font-bold text-xs text-foreground group"
@@ -79,7 +79,7 @@ const ReportDataTable = ({
                   </button>
                 </TableHead>
 
-                <TableHead>
+                <TableHead aria-sort={getAriaSort('items.name')}>
                   <button
                     onClick={() => onSort('items.name')}
                     className="flex items-center gap-1.5 font-bold text-xs text-foreground group"
@@ -106,7 +106,7 @@ const ReportDataTable = ({
 
             {activeTab === 'withdrawals' && (
               <TableRow className="hover:bg-transparent border-b border-border">
-                <TableHead className="w-[120px]" aria-sort={getAriaSort('received_date')}>
+                <TableHead className="w-[120px]" aria-sort={getAriaSort('requested_at')}>
                   <button
                     onClick={() => onSort('requested_at')}
                     className="flex items-center gap-1.5 font-bold text-xs text-foreground group"
@@ -116,7 +116,7 @@ const ReportDataTable = ({
                   </button>
                 </TableHead>
 
-                <TableHead>
+                <TableHead aria-sort={getAriaSort('projects.name')}>
                   <button
                     onClick={() => onSort('projects.name')}
                     className="flex items-center gap-1.5 font-bold text-xs text-foreground group"
@@ -126,7 +126,7 @@ const ReportDataTable = ({
                   </button>
                 </TableHead>
 
-                <TableHead>
+                <TableHead aria-sort={getAriaSort('items.name')}>
                   <button
                     onClick={() => onSort('items.name')}
                     className="flex items-center gap-1.5 font-bold text-xs text-foreground group"
@@ -162,7 +162,7 @@ const ReportDataTable = ({
 
             {activeTab === 'balance' && (
               <TableRow className="hover:bg-transparent border-b border-border">
-                <TableHead>
+                <TableHead aria-sort={getAriaSort('project_name')}>
                   <button
                     onClick={() => onSort('project_name')}
                     className="flex items-center gap-1.5 font-bold text-xs text-foreground group"
@@ -172,7 +172,7 @@ const ReportDataTable = ({
                   </button>
                 </TableHead>
 
-                <TableHead>
+                <TableHead aria-sort={getAriaSort('item_name')}>
                   <button
                     onClick={() => onSort('item_name')}
                     className="flex items-center gap-1.5 font-bold text-xs text-foreground group"
@@ -182,7 +182,7 @@ const ReportDataTable = ({
                   </button>
                 </TableHead>
 
-                <TableHead className="text-right">
+                <TableHead className="text-right" aria-sort={getAriaSort('total_in')}>
                   <button
                     onClick={() => onSort('total_in')}
                     className="flex items-center justify-end gap-1.5 font-bold text-xs text-emerald-700 dark:text-emerald-400 group w-full"
@@ -192,7 +192,7 @@ const ReportDataTable = ({
                   </button>
                 </TableHead>
 
-                <TableHead className="text-right">
+                <TableHead className="text-right" aria-sort={getAriaSort('total_out')}>
                   <button
                     onClick={() => onSort('total_out')}
                     className="flex items-center justify-end gap-1.5 font-bold text-xs text-amber-700 dark:text-amber-400 group w-full"
@@ -202,7 +202,7 @@ const ReportDataTable = ({
                   </button>
                 </TableHead>
 
-                <TableHead className="text-right">
+                <TableHead className="text-right" aria-sort={getAriaSort('balance')}>
                   <button
                     onClick={() => onSort('balance')}
                     className="flex items-center justify-end gap-1.5 font-bold text-xs text-foreground group w-full"

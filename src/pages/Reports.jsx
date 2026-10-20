@@ -20,7 +20,7 @@ const Reports = () => {
   const { t } = useTranslation();
   const { can } = useAuth();
   const canExport = can('reports.export');
-  const [activeTab, setActiveTab] = useState('stock_in'); // 'stock_in', 'withdrawals', 'balance', 'site_kits', 'site_kits'
+  const [activeTab, setActiveTab] = useState('stock_in'); // 'stock_in', 'withdrawals', 'balance', 'site_kits'
 
   // Data State
   const [projects, setProjects] = useState([]);
@@ -439,6 +439,8 @@ const Reports = () => {
     } catch (error) {
       console.error(error);
       toast.error(t('reports.export.excelFailed'));
+    } finally {
+      setExcelLoading(false);
     }
   };
 

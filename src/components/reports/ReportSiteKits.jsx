@@ -24,6 +24,7 @@ const ReportSiteKits = ({ projects = [] }) => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
+  const [excelLoading, setExcelLoading] = useState(false);
 
   const loadData = useCallback(async (isInitial = false) => {
     try {
@@ -80,6 +81,7 @@ const ReportSiteKits = ({ projects = [] }) => {
       toast.error(t('reports.export.permissionDeniedExcel'));
       return;
     }
+    setExcelLoading(true);
     try {
       const { utils, writeFile } = await import('xlsx');
       const exportData = filteredItems.map((item, index) => ({
@@ -116,6 +118,8 @@ const ReportSiteKits = ({ projects = [] }) => {
     } catch (err) {
       console.error('Export error:', err);
       toast.error(t('reports.export.excelFailed'));
+    } finally {
+      setExcelLoading(false);
     }
   };
 
@@ -267,10 +271,11 @@ const ReportSiteKits = ({ projects = [] }) => {
               <Button
                 type="button"
                 onClick={handleExportExcel}
+                disabled={loading || excelLoading}
                 className="h-9 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold gap-1.5 shadow-xs cursor-pointer"
               >
                 <FileSpreadsheet className="w-3.5 h-3.5" />
-                <span>{t('reports.siteKits.exportExcel')}</span>
+                <span>{excelLoading ? t('reports.export.generatingExcel', 'Exporting...') : t('reports.siteKits.exportExcel')}</span>
               </Button>
             </>
           )}
@@ -356,7 +361,7 @@ const ReportSiteKits = ({ projects = [] }) => {
                 ) : (
                   filteredItems.map((item, idx) => (
                     <tr 
-                      key={idx}
+                      key={`${item.category_id || ''}-${item.part_number || ''}-${item.bom_name || ''}-${item.item_id || item.bom_item_id || idx}`}
                       className={`hover:bg-muted/40 transition-colors ${
                         item.isLimiting ? 'bg-amber-500/8 dark:bg-amber-500/15' : ''
                       }`}
