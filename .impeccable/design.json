@@ -1,0 +1,237 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-20T08:33:00.000Z",
+  "title": "Design System: Stock-Flow",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Enterprise Indigo",
+        "canonical": "oklch(45% 0.22 275)",
+        "tonalRamp": ["#1e1b4b", "#312e81", "#3730a3", "#4338ca", "#4f46e5", "#6366f1", "#818cf8", "#e0e7ff"]
+      },
+      "primary-foreground": {
+        "role": "neutral",
+        "displayName": "Indigo Contrast Text",
+        "canonical": "oklch(98% 0.01 240)",
+        "tonalRamp": ["#0f172a", "#1e293b", "#334155", "#64748b", "#94a3b8", "#cbd5e1", "#f1f5f9", "#f8fafc"]
+      },
+      "background": {
+        "role": "neutral",
+        "displayName": "Clean Slate Canvas",
+        "canonical": "oklch(98% 0.01 240)",
+        "tonalRamp": ["#020617", "#0f172a", "#1e293b", "#475569", "#94a3b8", "#e2e8f0", "#f1f5f9", "#f8fafc"]
+      },
+      "foreground": {
+        "role": "neutral",
+        "displayName": "Deep Slate Text",
+        "canonical": "oklch(20% 0.03 260)",
+        "tonalRamp": ["#020617", "#0f172a", "#1e293b", "#334155", "#475569", "#64748b", "#94a3b8", "#f8fafc"]
+      },
+      "card": {
+        "role": "neutral",
+        "displayName": "Pure White Card",
+        "canonical": "oklch(100% 0 0)",
+        "tonalRamp": ["#0f172a", "#1e293b", "#334155", "#64748b", "#cbd5e1", "#e2e8f0", "#f8fafc", "#ffffff"]
+      },
+      "secondary": {
+        "role": "secondary",
+        "displayName": "Slate Secondary",
+        "canonical": "oklch(96% 0.01 240)",
+        "tonalRamp": ["#0f172a", "#1e293b", "#475569", "#64748b", "#94a3b8", "#cbd5e1", "#f1f5f9", "#f8fafc"]
+      },
+      "destructive": {
+        "role": "tertiary",
+        "displayName": "Signal Crimson",
+        "canonical": "oklch(55% 0.22 25)",
+        "tonalRamp": ["#450a0a", "#7f1d1d", "#991b1b", "#b91c1c", "#dc2626", "#ef4444", "#f87171", "#fee2e2"]
+      },
+      "status-success": {
+        "role": "secondary",
+        "displayName": "Signal Emerald",
+        "canonical": "oklch(58% 0.16 155)",
+        "tonalRamp": ["#064e3b", "#065f46", "#047857", "#059669", "#10b981", "#34d399", "#a7f3d0", "#ecfdf5"]
+      },
+      "status-warning": {
+        "role": "secondary",
+        "displayName": "Signal Amber",
+        "canonical": "oklch(62% 0.18 70)",
+        "tonalRamp": ["#78350f", "#92400e", "#b45309", "#d97706", "#f59e0b", "#fbbf24", "#fde68a", "#fffbeb"]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display Page Title",
+        "purpose": "Primary operational page title and key metrics."
+      },
+      "headline": {
+        "displayName": "Section Headline",
+        "purpose": "Card headers and dialog titles."
+      },
+      "title": {
+        "displayName": "Sub-section Title",
+        "purpose": "Group headers, table captions, and card item names."
+      },
+      "body": {
+        "displayName": "Standard Body",
+        "purpose": "Main content, data table cells, and form descriptions."
+      },
+      "label": {
+        "displayName": "Compact Label",
+        "purpose": "Input field labels, badge tags, and compact buttons."
+      }
+    },
+    "shadows": [
+      {
+        "name": "shadow-xs",
+        "value": "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+        "purpose": "Default at-rest elevation for buttons, cards, and inputs."
+      },
+      {
+        "name": "shadow-md",
+        "value": "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
+        "purpose": "Hover and focused elevation for interactive cards and floating popovers."
+      },
+      {
+        "name": "shadow-2xl",
+        "value": "0 25px 50px -12px rgb(0 0 0 / 0.25)",
+        "purpose": "Modals, drawers, and overlay sheets."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(0, 0, 0.2, 1)",
+        "purpose": "Standard entrance transitions and drawer sliding."
+      },
+      {
+        "name": "duration-fast",
+        "value": "150ms",
+        "purpose": "Color transitions and button hover states."
+      },
+      {
+        "name": "duration-normal",
+        "value": "200ms",
+        "purpose": "Sidebar collapse and modal visibility."
+      }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" },
+      { "name": "2xl", "value": "1536px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Primary action button with Enterprise Indigo background and crisp tactile elevation.",
+      "html": "<button class=\"ds-btn-primary\"><svg class=\"ds-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/></svg><span>ยืนยันการเบิกพัสดุ</span></button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #4338ca; color: #f8fafc; font-family: 'Sarabun', 'Inter', sans-serif; font-size: 14px; font-weight: 500; height: 36px; padding: 0 16px; border-radius: 8px; border: 1px solid transparent; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); cursor: pointer; transition: background-color 150ms ease, box-shadow 150ms ease; user-select: none; } .ds-btn-primary:hover { background: #3730a3; box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1); } .ds-btn-primary:focus-visible { outline: 2px solid #4338ca; outline-offset: 2px; } .ds-btn-primary .ds-icon { width: 16px; height: 16px; stroke-width: 2; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Neutral secondary button for secondary actions, cancellations, or filter toggles.",
+      "html": "<button class=\"ds-btn-secondary\"><span>ปิดหน้าต่าง</span></button>",
+      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #f1f5f9; color: #0f172a; font-family: 'Sarabun', 'Inter', sans-serif; font-size: 14px; font-weight: 500; height: 36px; padding: 0 16px; border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); cursor: pointer; transition: background-color 150ms ease; user-select: none; } .ds-btn-secondary:hover { background: #e2e8f0; } .ds-btn-secondary:focus-visible { outline: 2px solid #4338ca; outline-offset: 2px; }"
+    },
+    {
+      "name": "Text Input Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Standard operational input field with crisp 1px border and autofill protection.",
+      "html": "<input type=\"text\" class=\"ds-input\" placeholder=\"สแกนบาร์โค้ด หรือพิมพ์ SKU พัสดุ...\" />",
+      "css": ".ds-input { display: flex; width: 100%; height: 36px; padding: 0 12px; font-family: 'Sarabun', 'Inter', sans-serif; font-size: 14px; color: #0f172a; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); transition: border-color 150ms ease, box-shadow 150ms ease; } .ds-input::placeholder { color: #5b6a7e; } .ds-input:focus { outline: none; border-color: #4338ca; box-shadow: 0 0 0 2px rgba(67, 56, 202, 0.2); }"
+    },
+    {
+      "name": "Operational Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Standard surface container with 12px radius, 1px border, and comfortable density.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-header\"><h3 class=\"ds-card-title\">สรุปรายการเบิกพัสดุ</h3><p class=\"ds-card-desc\">โครงการ DOPA ประจำเดือนปัจจุบัน</p></div><div class=\"ds-card-content\"><p>เนื้อหารายการและตารางข้อมูลพัสดุ</p></div></div>",
+      "css": ".ds-card { background: #ffffff; color: #0f172a; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); font-family: 'Sarabun', 'Inter', sans-serif; } .ds-card-header { padding: 20px 24px 12px 24px; display: flex; flex-direction: column; gap: 4px; } .ds-card-title { margin: 0; font-size: 18px; font-weight: 600; line-height: 1.3; } .ds-card-desc { margin: 0; font-size: 14px; color: #5b6a7e; } .ds-card-content { padding: 0 24px 20px 24px; font-size: 14px; line-height: 1.6; }"
+    },
+    {
+      "name": "Status Badge (Approved)",
+      "kind": "chip",
+      "refersTo": "status-badge",
+      "description": "Accessible icon-only circular status badge indicating successful approval.",
+      "html": "<span class=\"ds-badge ds-badge-approved\" title=\"Approved\"><svg class=\"ds-badge-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M22 11.08V12a10 10 0 1 1-5.93-9.14\"/><polyline points=\"22 4 12 14.01 9 11.01\"/></svg><span class=\"ds-sr-only\">Approved</span></span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 9999px; border: 1px solid transparent; user-select: none; } .ds-badge-approved { background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3); color: #059669; } .ds-badge-icon { width: 16px; height: 16px; } .ds-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }"
+    },
+    {
+      "name": "Status Badge (Pending)",
+      "kind": "chip",
+      "refersTo": "status-badge",
+      "description": "Accessible icon-only circular status badge with gentle pulse indicating pending review.",
+      "html": "<span class=\"ds-badge ds-badge-pending\" title=\"Pending\"><svg class=\"ds-badge-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><polyline points=\"12 6 12 12 16 14\"/></svg><span class=\"ds-sr-only\">Pending</span></span>",
+      "css": ".ds-badge-pending { background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.3); color: #d97706; animation: ds-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; } @keyframes ds-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Precision Depot",
+    "overview": "Stock-Flow ถูกออกแบบภายใต้ปรัชญา Enterprise Industrial & Disciplined — พื้นที่ทำงานดิจิทัลของศูนย์กระจายสินค้าและคลังพัสดุระดับองค์กรขนาดใหญ่ (Forth Corporation Public Company Limited) ที่ต้องการความแม่นยำสูงสุด รวดเร็ว ไร้ความคลุมเครือ และรองรับภาระงานหนัก (Heavy Operational Load) ทุกองค์ประกอบบนหน้าจอมีหน้าที่ชัดเจน (Purpose-Driven) ปราศจากการตกแต่งที่ฟุ่มเฟือยหรือลูกเล่นการตลาดที่ไม่จำเป็น\n\nการออกแบบผสานความคล่องตัวของสถานีเบิกจ่ายหน้าร้าน (POS Terminal) เข้ากับความสุขุมรอบคอบของระบบจัดการคลังและวิศวกรรมภาคสนาม ใน Light Mode ระบบใช้มิติ Soft Tactical Layering ที่มีเส้นขอบคมชัด (1px crisp border) เงาบางเบาที่ให้สัมผัสจับต้องได้ และใน Dark Mode เลือกใช้พื้นหลัง Deep Charcoal ตัดกับแผ่น Card ที่ลอยตัวอย่างชัดเจน เพื่อลดความล้าของสายตาเมื่อใช้งานในสภาพแสงน้อย",
+    "keyCharacteristics": [
+      "Strictly Purpose-Driven: ทุกพิกเซลมีเหตุผลเพื่อการปฏิบัติงาน ข้อมูลตารางและรหัสพัสดุต้องสแกนสายตาได้ทันที (High Scanability)",
+      "Soft Tactical Layering: มิติของวัตถุเกิดจากการซ้อนทับระดับเฉดสีและเส้นขอบ 1px เป็นหลัก เงาทำหน้าที่เพียงบอกสถานะสัมผัส",
+      "Pure Vector Fidelity: ไอคอนทั้งหมดในระบบเป็น 100% Vector SVG ผ่าน Lucide React ปราศจาก Unicode Emojis โดยเด็ดขาด",
+      "Dual Script Harmony: จัดจังหวะช่องไฟและ Line-height ให้ข้อความภาษาไทย (Sarabun) และอังกฤษ (Inter) แสดงผลคู่กันได้อย่างสมดุล"
+    ],
+    "rules": [
+      {
+        "name": "The Pure Vector Rule",
+        "body": "ทุกสัญลักษณ์ ไอคอน และการแสดงสถานะในระบบต้องใช้ Vector SVG ผ่าน lucide-react เท่านั้น ห้ามใช้อิโมจิ Unicode ใน UI โดยเด็ดขาด เพื่อคงความน่าเชื่อถือระดับ Enterprise",
+        "section": "colors"
+      },
+      {
+        "name": "The Single Accent Rule",
+        "body": "สี Primary Enterprise Indigo ต้องใช้ไม่เกิน 15% ของพื้นที่หน้าจอทั้งหมด จุดเด่นของสีเน้นคือการนำสายตาไปยัง Action ถัดไป ไม่ใช่การแต่งแต้มรอบจอ",
+        "section": "colors"
+      },
+      {
+        "name": "The High Contrast Baseline Rule",
+        "body": "ทุกคู่สีข้อความและพื้นหลังต้องผ่านเกณฑ์ WCAG AA (≥ 4.5:1 สำหรับข้อความปกติ และ ≥ 3.0:1 สำหรับข้อความขนาดใหญ่) เสมอ",
+        "section": "colors"
+      },
+      {
+        "name": "The Dual Script Rhythm Rule",
+        "body": "ข้อความที่มีภาษาไทยต้องกำหนด line-height: 1.6 และ letter-spacing: 0.01em เสมอ เพื่อป้องกันสระและวรรณยุกต์ชนกับบรรทัดถัดไป",
+        "section": "typography"
+      },
+      {
+        "name": "The Tabular Numbers Rule",
+        "body": "ตัวเลขรหัสพัสดุ จำนวนสต็อก ราคา และยอดคงเหลือในตารางต้องแสดงผลด้วย font-variant-numeric: tabular-nums เพื่อให้ตัวเลขตรงหลักกันในแนวตั้ง",
+        "section": "typography"
+      },
+      {
+        "name": "The Border Definition Rule",
+        "body": "ทุกการ์ด อินพุต และโมดอลต้องมีเส้นขอบ 1px ชัดเจน ห้ามพึ่งพาเงาฟุ้งเพียงอย่างเดียวในการแยกขอบเขตขององค์ประกอบ",
+        "section": "elevation"
+      },
+      {
+        "name": "The Grounded Rest Rule",
+        "body": "วัตถุที่ไม่ได้ถูกกระทำ (At Rest) จะมีมิติเงาที่สงบนิ่งและแนบชิดพื้นผิว เงาจะลอยขึ้นเฉพาะเมื่อผู้ใช้แตะหรือชี้เมาส์เท่านั้น",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do ใช้ไอคอน Vector SVG จาก lucide-react เท่านั้นสำหรับทุกองค์ประกอบอินเทอร์เฟซ",
+      "Do ตรวจสอบให้ข้อความทุกจุดผ่านเกณฑ์ WCAG AA Contrast (4.5:1) เสมอ",
+      "Do ใช้ tabular-nums กับตัวเลขสต็อก ยอดเบิกจ่าย และรหัสเอกสารทุกครั้ง",
+      "Do ให้ความสำคัญกับสถานะ Loading, Empty State, และ Error State ของทุกหน้าจอ",
+      "Do ใช้เส้นขอบ 1px ควบคู่กับเงาเบาบาง เพื่อสร้างความชัดเจนในโครงสร้างหน้าจอ"
+    ],
+    "donts": [
+      "Don't ใส่อิโมจิ Unicode (เช่น 📦, 🚀, ⚠️) ในส่วนของ UI, ไอคอนปุ่ม, หรือป้ายสถานะโดยเด็ดขาด",
+      "Don't ใช้สีฉูดฉาดหรือสีสะท้อนแสงโดยไม่มีความหมายเชิงฟังก์ชันกำกับ",
+      "Don't สร้างปุ่มหรืออินพุตที่ไม่มี Focus State หรือมองไม่เห็นเส้น Focus Ring ขณะนำทางด้วยคีย์บอร์ด",
+      "Don't ใช้เงาฟุ้งขนาดใหญ่แบบแอปโซเชียลมีเดียที่ทำให้องค์ประกอบดูเบลอหรือไม่มั่นคง",
+      "Don't แก้ไขสีพื้นหลังโดยตรงแบบ Hardcoded (เช่น bg-blue-600) ให้ใช้โทเค็นของระบบเสมอ (bg-primary)"
+    ]
+  }
+}

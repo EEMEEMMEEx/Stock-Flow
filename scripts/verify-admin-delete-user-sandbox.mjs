@@ -1,5 +1,5 @@
 // ==============================================================================
-// Deep verification script for Migration 96 & admin_delete_user RPC (PGlite Sandbox)
+// Deep verification script for Migration 97 & admin_delete_user RPC (PGlite Sandbox)
 //   node scripts/verify-admin-delete-user-sandbox.mjs
 // ==============================================================================
 
@@ -11,7 +11,7 @@ import assert from 'node:assert/strict';
 const SANDBOX_DIR = path.resolve('test-results/pglite-env');
 const PGLITE_ENTRY = path.join(SANDBOX_DIR, 'node_modules/@electric-sql/pglite/dist/index.js');
 const FIXTURE = path.resolve('supabase/tests/fixtures/mock_supabase_schema.sql');
-const MIGRATION_FILE = path.resolve('supabase/migrations/96_fix_admin_delete_user_and_integrity_guard.sql');
+const MIGRATION_FILE = path.resolve('supabase/migrations/97_fix_admin_delete_user_and_integrity_guard.sql');
 
 async function loadPGlite() {
   if (existsSync(PGLITE_ENTRY)) {
@@ -32,7 +32,7 @@ if (!PGlite) {
   process.exit(2);
 }
 
-console.log('🧪 Starting admin_delete_user Sandbox Verification (Migration 96)...');
+console.log('🧪 Starting admin_delete_user Sandbox Verification (Migration 97)...');
 const db = new PGlite();
 
 // 1. Load mock base schema
@@ -162,11 +162,11 @@ await db.exec(`
   $fn$;
 `);
 
-// 3. Execute Migration 96
-console.log('📦 Executing Migration 96...');
+// 3. Execute Migration 97
+console.log('📦 Executing Migration 97...');
 const migrationSql = readFileSync(MIGRATION_FILE, 'utf8');
 await db.exec(migrationSql);
-console.log('✅ Migration 96 executed successfully!');
+console.log('✅ Migration 97 executed successfully!');
 
 // Setup Helpers
 async function asUser(userId) {

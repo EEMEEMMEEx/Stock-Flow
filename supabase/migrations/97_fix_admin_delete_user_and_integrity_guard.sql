@@ -1,5 +1,5 @@
 -- =============================================================================
--- Migration 96: Fix admin_delete_user RPC & Enforce Strict Audit/Integrity Guards
+-- Migration 97: Fix admin_delete_user RPC & Enforce Strict Audit/Integrity Guards
 -- =============================================================================
 -- Problem:
 --   1. admin_delete_user in Migration 61/62 attempted to query `email` from

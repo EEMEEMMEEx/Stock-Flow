@@ -1,5 +1,36 @@
 # Changelog
 
+## [2026-10-20 08:34] - v1.25.15
+
+- **Files Modified:** `DESIGN.md` (ใหม่), `.impeccable/design.json` (ใหม่), `package.json`, `README.md`, `CHANGELOG.md`
+- **Changes:**
+  - **สร้างเอกสารระบบการออกแบบผ่าน Impeccable Document (Generate DESIGN.md & Design System Sidecar):**
+    - สร้าง `DESIGN.md` ตามมาตรฐานสเปก DESIGN.md พร้อม Machine-readable YAML Frontmatter สำหรับ Design Tokens (Colors, Typography, Rounded, Spacing, Components)
+    - รวบรวม 8 หมวดหมู่ตามลำดับมาตรฐาน: Overview ("The Precision Depot", Enterprise Industrial & Disciplined), Colors, Typography, Layout, Elevation & Depth, Shapes, Components, และ Do's & Don'ts
+    - กำหนดกฎเหล็กสำคัญ: `The Pure Vector Rule` (100% Vector SVG ผ่าน Lucide React, Zero Unicode Emojis ใน UI), `The Single Accent Rule`, `The High Contrast Baseline Rule`, `The Dual Script Rhythm Rule`, `The Tabular Numbers Rule`, `The Border Definition Rule`
+    - สร้าง Sidecar `.impeccable/design.json` (Schema v2) บันทึก Color Metadata, Tonal Ramps, Typography Meta, Shadows, Motion, Breakpoints, Narrative, และชุดคอมโพเนนต์มาตรฐานที่พร้อมเรนเดอร์ใน Shadow DOM (Buttons, Input, Card, StatusBadges)
+
+## [2026-10-20 08:25] - v1.25.14
+
+- **Files Modified:** `PRODUCT.md` (ใหม่), `.impeccable/config.json` (ใหม่), `package.json`, `CHANGELOG.md`
+- **Changes:**
+  - **กำหนดและบันทึกบริบทผลิตภัณฑ์ผ่าน Impeccable Init (Establish Durable Product Truth in PRODUCT.md):**
+    - สร้าง `PRODUCT.md` ตามสคีมาของ Impeccable (schema 1) รวบรวมข้อมูลสัจธรรมของผลิตภัณฑ์ (Product Truth) ของ Stock-Flow (Forth Corporation Public Company Limited)
+    - ระบุกลุ่มผู้ใช้งานหลัก (Warehouse Officers, Field Engineers) และผู้ใช้งานรอง (Admins, PMs)
+    - บันทึก Positioning, Workflows (POS Withdrawal, BOM Kits, Equipment Lending, All-or-Nothing Approval), Product Principles, และข้อกำหนดความปลอดภัย (Atomic Concurrency Locking, Strict SVG Icons)
+    - บันทึกการตั้งค่า Workflow เริ่มต้นสำหรับการออกแบบ (`"buildPath": "code"`) ใน `.impeccable/config.json`
+
+## [2026-10-20 08:23] - v1.25.13
+
+- **Files Modified:** `supabase/migrations/96_fix_admin_delete_user_and_integrity_guard.sql` (ย้ายไปเป็น `97_...`), `scripts/verify-admin-delete-user-sandbox.mjs`, `package.json`, `docs/fix-duplicate-migration-96-plan.md` (ใหม่), `CHANGELOG.md`
+- **Changes:**
+  - **แก้ไขปัญหา Migration Version 96 ซ้ำซ้อน (Duplicate Migration Version 96 Collision Fix):**
+    - แก้ไขข้อผิดพลาด `ERROR: duplicate key value violates unique constraint "schema_migrations_pkey" (SQLSTATE 23505) Key (version)=(96) already exists` เมื่อรัน Supabase CLI
+    - ตรวจพบไฟล์ Migration ที่ใช้เลขเวอร์ชัน `96` ชนกัน 2 ไฟล์ ได้แก่ `96_fix_has_permission_trigger_exception.sql` และ `96_fix_admin_delete_user_and_integrity_guard.sql`
+    - เปลี่ยนชื่อ `96_fix_admin_delete_user_and_integrity_guard.sql` เป็น `97_fix_admin_delete_user_and_integrity_guard.sql`
+    - ปรับปรุงการอ้างอิงและคอมเมนต์ภายในไฟล์สคริปต์ `scripts/verify-admin-delete-user-sandbox.mjs`
+    - รันการทดสอบ Sandbox PGlite Verification (7/7 Passed) ครบถ้วน 100%
+
 ## [2026-10-19 22:22] - v1.25.12
 
 - **Files Modified:** `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `src/components/checkouts/CheckoutReturnModal.jsx`, `src/components/checkouts/CheckoutDetailModal.jsx`, `docs/device-condition-label-investigation-plan.md`, `package.json`, `CHANGELOG.md`
