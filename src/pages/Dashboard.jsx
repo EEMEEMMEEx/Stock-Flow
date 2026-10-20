@@ -365,13 +365,13 @@ const Dashboard = () => {
       {/* Header with Live Status & Manual Refresh */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2.5">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2.5">
             <span>{t('dashboard.title', 'Dashboard')}</span>
             <span className="flex h-2.5 w-2.5 relative">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
             </span>
-          </h2>
+          </h1>
           <p className="text-sm text-muted-foreground mt-1">
             {t('dashboard.welcomeBack', 'Welcome back,')} <span className="font-semibold text-foreground">{profile?.full_name}</span>. {t('dashboard.subtitle', 'Real-time overview of warehouse inventory and operations')}
           </p>
@@ -425,7 +425,7 @@ const Dashboard = () => {
                     : t('dashboard.top10Items', 'Top 10 Items by Stock Balance')}
                 </span>
               </CardTitle>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 {chartViewMode === 'project' 
                   ? t('dashboard.showingProjectDesc', { count: stockByProjects.length, defaultValue: `Showing total in, total out, and balance across ${stockByProjects.length} storage locations` })
                   : t('dashboard.showingItemDesc', 'Showing total in, total out, and balance by item (hover for full name)')}
@@ -537,7 +537,7 @@ const Dashboard = () => {
                 {recentActivity.map((item, i) => (
                   <div key={i} className="flex flex-col p-4 hover:bg-muted/10 transition-colors">
                       <div className="flex justify-between items-start mb-1.5">
-                        <span className="text-[11px] font-mono font-medium text-muted-foreground/80">
+                        <span className="text-xs font-mono font-medium text-muted-foreground/80">
                           {format(new Date(item.requested_at), 'dd/MM HH:mm')}
                         </span>
                         <StatusBadge status={item.status} size="sm" />
@@ -552,7 +552,7 @@ const Dashboard = () => {
                           defaultValue: `and ${item.withdrawal_items.length - 1} other ${item.withdrawal_items.length - 1 === 1 ? 'item' : 'items'}`
                         }) : ''}
                       </p>
-                      <p className="text-[11px] font-medium text-muted-foreground flex items-center gap-1.5">
+                      <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                         {item.projects?.name || t('dashboard.centralWarehouse', 'Central Warehouse')}
                       </p>

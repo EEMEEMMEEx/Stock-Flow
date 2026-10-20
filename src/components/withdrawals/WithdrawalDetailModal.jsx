@@ -60,6 +60,9 @@ const WithdrawalDetailModal = ({
                 <DialogTitle className="text-lg font-extrabold text-foreground tracking-tight flex items-center gap-2">
                   <span>{t('withdrawals.requisitionRequest', 'Requisition Request')} #{order.id?.slice(0, 8)}</span>
                 </DialogTitle>
+                <DialogDescription className="sr-only">
+                  {t('withdrawals.detailModalDesc', 'รายละเอียดคำขอเบิกพัสดุและรายการวัสดุ')}
+                </DialogDescription>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   {t('withdrawals.createdAt', 'Created at')}: {order.requested_at ? format(new Date(order.requested_at), 'dd/MM/yyyy HH:mm:ss') : '-'}
                 </p>
@@ -78,41 +81,41 @@ const WithdrawalDetailModal = ({
 
           {/* Visual Requisition Workflow Stepper */}
           {!isRejected && !isCancelled && (
-            <div className="pt-2">
-              <div className="flex items-center justify-between text-xs font-bold">
+            <nav aria-label={t('withdrawals.workflowNav', 'Requisition Workflow')} className="pt-2">
+              <ol className="flex items-center justify-between text-xs font-bold list-none p-0 m-0">
                 {/* Step 1: Requested */}
-                <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 text-indigo-600 dark:text-indigo-400">
-                  <div className="w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[11px] font-mono shrink-0">
+                <li aria-current={isPending ? 'step' : undefined} className="flex items-center gap-1.5 sm:gap-2 min-w-0 text-primary">
+                  <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-mono font-bold shrink-0">
                     1
                   </div>
-                  <span className="truncate text-[11px] sm:text-xs">{t('withdrawals.stepRequestSubmitted', 'Request Submitted')}</span>
-                </div>
+                  <span className="truncate text-xs">{t('withdrawals.stepRequestSubmitted', 'Request Submitted')}</span>
+                </li>
 
-                <div className={`flex-1 min-w-3 sm:min-w-6 h-1 mx-2 sm:mx-3 rounded-full ${isApproved || isCompleted ? 'bg-indigo-600' : 'bg-muted'}`} />
+                <li aria-hidden="true" className={`flex-1 min-w-3 sm:min-w-6 h-1 mx-2 sm:mx-3 rounded-full ${isApproved || isCompleted ? 'bg-primary' : 'bg-muted'}`} />
 
                 {/* Step 2: Approved */}
-                <div className={`flex items-center gap-1.5 sm:gap-2 min-w-0 ${isApproved || isCompleted ? 'text-indigo-600 dark:text-indigo-400' : 'text-muted-foreground'}`}>
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-mono shrink-0 ${
-                    isApproved || isCompleted ? 'bg-indigo-600 text-white' : 'bg-muted text-muted-foreground'
+                <li aria-current={isApproved && !isCompleted ? 'step' : undefined} className={`flex items-center gap-1.5 sm:gap-2 min-w-0 ${isApproved || isCompleted ? 'text-primary' : 'text-muted-foreground'}`}>
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-mono font-bold shrink-0 ${
+                    isApproved || isCompleted ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
                   }`}>
                     2
                   </div>
-                  <span className="truncate text-[11px] sm:text-xs">{t('withdrawals.stepApprovedDeducted', 'Approved & Deducted')}</span>
-                </div>
+                  <span className="truncate text-xs">{t('withdrawals.stepApprovedDeducted', 'Approved & Deducted')}</span>
+                </li>
 
-                <div className={`flex-1 min-w-3 sm:min-w-6 h-1 mx-2 sm:mx-3 rounded-full ${isCompleted ? 'bg-indigo-600' : 'bg-muted'}`} />
+                <li aria-hidden="true" className={`flex-1 min-w-3 sm:min-w-6 h-1 mx-2 sm:mx-3 rounded-full ${isCompleted ? 'bg-primary' : 'bg-muted'}`} />
 
                 {/* Step 3: Completed */}
-                <div className={`flex items-center gap-1.5 sm:gap-2 min-w-0 ${isCompleted ? 'text-emerald-600 dark:text-emerald-400' : 'text-muted-foreground'}`}>
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-mono shrink-0 ${
+                <li aria-current={isCompleted ? 'step' : undefined} className={`flex items-center gap-1.5 sm:gap-2 min-w-0 ${isCompleted ? 'text-emerald-600 dark:text-emerald-400' : 'text-muted-foreground'}`}>
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-mono font-bold shrink-0 ${
                     isCompleted ? 'bg-emerald-600 text-white' : 'bg-muted text-muted-foreground'
                   }`}>
                     3
                   </div>
-                  <span className="truncate text-[11px] sm:text-xs">{t('withdrawals.stepDeliveredCompleted', 'Delivered & Completed')}</span>
-                </div>
-              </div>
-            </div>
+                  <span className="truncate text-xs">{t('withdrawals.stepDeliveredCompleted', 'Delivered & Completed')}</span>
+                </li>
+              </ol>
+            </nav>
           )}
         </DialogHeader>
 
@@ -159,10 +162,10 @@ const WithdrawalDetailModal = ({
             {(order.is_shortage_override || order.override_reason) && (
               <div className="sm:col-span-2 bg-amber-500/10 border border-amber-500/30 p-3 rounded-xl text-amber-900 dark:text-amber-200 space-y-1">
                 <p className="font-bold flex items-center gap-1.5">
-                  <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                  <AlertTriangle className="w-4 h-4 text-amber-700 dark:text-amber-400 font-semibold dark:text-amber-400" />
                   <span>{t('withdrawals.shortageOverrideNotes', 'Shortage Override Notes')}:</span>
                 </p>
-                <p className="text-[11px] pl-5">{order.override_reason || t('withdrawals.stockDeductedActual', 'Stock deducted based on actual available inventory')}</p>
+                <p className="text-xs pl-5">{order.override_reason || t('withdrawals.stockDeductedActual', 'Stock deducted based on actual available inventory')}</p>
               </div>
             )}
 
@@ -173,7 +176,7 @@ const WithdrawalDetailModal = ({
                   <XCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
                   <span>{t('withdrawals.rejectionReason', 'Rejection Reason')}:</span>
                 </p>
-                <p className="text-[11px] pl-5">{order.reject_reason}</p>
+                <p className="text-xs pl-5">{order.reject_reason}</p>
               </div>
             )}
 
@@ -181,7 +184,7 @@ const WithdrawalDetailModal = ({
             {order.last_reverted_at && (
               <div className="sm:col-span-2 bg-amber-500/10 border border-amber-500/30 p-3 rounded-xl text-amber-900 dark:text-amber-200 space-y-1">
                 <p className="font-bold flex items-center gap-1.5">
-                  <RotateCcw className="w-4 h-4 text-amber-600 dark:text-amber-400" aria-hidden="true" />
+                  <RotateCcw className="w-4 h-4 text-amber-700 dark:text-amber-400 font-semibold dark:text-amber-400" aria-hidden="true" />
                   <span>
                     {t('superRevert.lastReverted', {
                       name: order.reverter?.full_name || 'SUPER',
@@ -190,12 +193,12 @@ const WithdrawalDetailModal = ({
                   </span>
                 </p>
                 {order.last_revert_reason && (
-                  <p className="text-[11px] pl-5">
+                  <p className="text-xs pl-5">
                     <span className="font-semibold">{t('superRevert.revertReason')}:</span> {order.last_revert_reason}
                   </p>
                 )}
                 {(order.last_revert_from_status || order.last_revert_to_status) && (
-                  <p className="text-[10px] pl-5 font-mono font-bold">
+                  <p className="text-xs pl-5 font-mono font-bold">
                     {String(order.last_revert_from_status || '-').toUpperCase()}
                     {' -> '}
                     {String(order.last_revert_to_status || '-').toUpperCase()}
@@ -212,12 +215,12 @@ const WithdrawalDetailModal = ({
                   <span>{t('withdrawals.cancellationNotice', 'คำขอนี้ถูกยกเลิกแล้ว (Cancelled)')}:</span>
                 </p>
                 {order.cancellation_reason && (
-                  <p className="text-[11px] pl-5">
+                  <p className="text-xs pl-5">
                     <span className="font-semibold">{t('withdrawals.cancellationReason', 'เหตุผล')}:</span> {order.cancellation_reason}
                   </p>
                 )}
                 {order.cancelled_at && (
-                  <p className="text-[10px] text-muted-foreground pl-5">
+                  <p className="text-xs text-muted-foreground pl-5">
                     {t('withdrawals.cancelledAt', 'ยกเลิกเมื่อ')}: {format(new Date(order.cancelled_at), 'dd/MM/yyyy HH:mm:ss')}
                   </p>
                 )}
@@ -242,7 +245,7 @@ const WithdrawalDetailModal = ({
                     )}
                     <TableHead className="text-center">{t('withdrawals.requested', 'Requested')}</TableHead>
                     <TableHead className="text-center">{t('withdrawals.actualDeducted', 'Actual Deducted')}</TableHead>
-                    <TableHead className="text-center text-amber-600">{t('withdrawals.shortage', 'Shortage')}</TableHead>
+                    <TableHead className="text-center text-amber-700 dark:text-amber-400 font-semibold">{t('withdrawals.shortage', 'Shortage')}</TableHead>
                     <TableHead>{t('withdrawals.destinationSN', 'Destination / S/N')}</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -264,11 +267,11 @@ const WithdrawalDetailModal = ({
                         <TableCell>
                           <div className="font-bold text-foreground">{item.items?.name}</div>
                           {item.part_number && (
-                            <span className="text-[10px] text-muted-foreground font-mono">PN: {item.part_number}</span>
+                            <span className="text-xs text-muted-foreground font-mono">PN: {item.part_number}</span>
                           )}
                         </TableCell>
                         {showSourceWarehouse && (
-                          <TableCell className="text-[11px]">
+                          <TableCell className="text-xs">
                             <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-muted/60 border border-border/60 font-semibold text-muted-foreground">
                               <Building2 className="w-3 h-3" />
                               <span>
@@ -289,7 +292,7 @@ const WithdrawalDetailModal = ({
                         </TableCell>
                         <TableCell className="text-center">
                           {isPending ? (
-                            <span className="text-muted-foreground italic font-normal text-[11px]">- ({t('common.pending', 'Pending')})</span>
+                            <span className="text-muted-foreground italic font-normal text-xs">- ({t('common.pending', 'Pending')})</span>
                           ) : isApprovedOrCompleted ? (
                             <span className="font-bold font-mono text-emerald-600 dark:text-emerald-400">
                               {deducted} {item.items?.unit}
@@ -298,13 +301,13 @@ const WithdrawalDetailModal = ({
                             <span className="text-muted-foreground">-</span>
                           )}
                         </TableCell>
-                        <TableCell className="text-center font-bold font-mono text-amber-600">
+                        <TableCell className="text-center font-bold font-mono text-amber-700 dark:text-amber-400 font-semibold">
                           {shortage > 0 ? `${shortage} ${item.items?.unit}` : '-'}
                         </TableCell>
-                        <TableCell className="text-muted-foreground text-[11px]">
+                        <TableCell className="text-muted-foreground text-xs">
                           <div>{item.delivery_to || order.delivery_address || '-'}</div>
                           {item.serial_number && (
-                            <div className="text-[10px] text-indigo-600 dark:text-indigo-400 font-mono truncate max-w-[140px]" title={item.serial_number}>
+                            <div className="text-xs text-indigo-600 dark:text-indigo-400 font-mono truncate max-w-[140px]" title={item.serial_number}>
                               S/N: {item.serial_number}
                             </div>
                           )}
@@ -326,7 +329,7 @@ const WithdrawalDetailModal = ({
                 variant="outline"
                 size="sm"
                 onClick={() => onDownloadPDF(order, orderDetails)}
-                className="rounded-lg text-xs font-semibold text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 gap-1.5 cursor-pointer h-9 px-3 sm:px-4 flex-1 sm:flex-initial"
+                className="rounded-lg text-xs font-semibold text-primary border-primary/20 hover:bg-primary/10 gap-1.5 cursor-pointer h-9 min-h-[44px] sm:min-h-[36px] px-3 sm:px-4 flex-1 sm:flex-initial focus-visible:ring-2 focus-visible:ring-primary"
               >
                 <FileText className="w-4 h-4 text-indigo-600" />
                 <span>{t('withdrawals.printDownloadPDF', 'Print / Download Issue Slip (PDF)')}</span>
@@ -337,7 +340,7 @@ const WithdrawalDetailModal = ({
                 variant="outline"
                 size="sm"
                 onClick={() => onDownloadDispatchPDF(order, orderDetails)}
-                className="rounded-lg text-xs font-semibold text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-800 hover:bg-sky-50 dark:hover:bg-sky-950/40 gap-1.5 cursor-pointer h-9 px-3 sm:px-4 flex-1 sm:flex-initial"
+                className="rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground border-border hover:bg-accent gap-1.5 cursor-pointer h-9 min-h-[44px] sm:min-h-[36px] px-3 sm:px-4 flex-1 sm:flex-initial focus-visible:ring-2 focus-visible:ring-primary"
               >
                 <Printer className="w-4 h-4 text-sky-600" />
                 <span>{t('withdrawals.printDispatchPdf', 'พิมพ์ใบนำส่งเบิกของ (PDF)')}</span>

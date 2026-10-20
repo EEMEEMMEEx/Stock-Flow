@@ -163,7 +163,7 @@ export default function LiveSimulatorSection() {
                     <select
                       value={selectedProject}
                       onChange={(e) => setSelectedProject(e.target.value)}
-                      className="bg-zinc-900 border border-white/10 rounded-lg px-2.5 py-1 text-xs text-emerald-400 font-semibold focus:outline-none"
+                      className="bg-zinc-900 border border-white/10 rounded-lg px-2.5 py-1 text-xs text-emerald-400 font-semibold focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none focus:outline-none"
                     >
                       <option value="USO Net Phase 3">USO Net Phase 3 (สวทช.)</option>
                       <option value="DOPA Smart District">DOPA Smart District</option>
@@ -246,7 +246,7 @@ export default function LiveSimulatorSection() {
                         min="0"
                         value={newTargetStock}
                         onChange={(e) => setNewTargetStock(e.target.value)}
-                        className="w-full bg-zinc-900 border border-white/10 rounded-lg px-2.5 py-1 text-sm font-bold font-mono text-white focus:outline-none focus:border-emerald-400"
+                        className="w-full bg-zinc-900 border border-white/10 rounded-lg px-2.5 py-1 text-sm font-bold font-mono text-white focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none focus:outline-none focus:border-emerald-400"
                       />
                     </div>
                   </div>
@@ -261,7 +261,7 @@ export default function LiveSimulatorSection() {
                     type="text"
                     value={adjustReason}
                     onChange={(e) => setAdjustReason(e.target.value)}
-                    className="w-full bg-zinc-900 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-zinc-200 focus:outline-none focus:border-emerald-400"
+                    className="w-full bg-zinc-900 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-zinc-200 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none focus:outline-none focus:border-emerald-400"
                   />
                 </div>
 
@@ -323,7 +323,7 @@ export default function LiveSimulatorSection() {
                       type="date"
                       value={selectedNewDueDate}
                       onChange={(e) => setSelectedNewDueDate(e.target.value)}
-                      className="bg-zinc-900 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white font-mono flex-1 focus:outline-none"
+                      className="bg-zinc-900 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white font-mono flex-1 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none focus:outline-none"
                     />
                     <button
                       type="button"
@@ -377,7 +377,7 @@ export default function LiveSimulatorSection() {
                       max="10"
                       value={targetSitesCount}
                       onChange={(e) => setTargetSitesCount(Number(e.target.value) || 1)}
-                      className="w-16 bg-zinc-900 border border-white/10 rounded-lg px-2.5 py-1 text-xs text-blue-400 font-bold font-mono focus:outline-none"
+                      className="w-16 bg-zinc-900 border border-white/10 rounded-lg px-2.5 py-1 text-xs text-blue-400 font-bold font-mono focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none focus:outline-none"
                     />
                   </div>
                 </div>

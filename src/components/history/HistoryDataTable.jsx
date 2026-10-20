@@ -38,18 +38,18 @@ const HistoryDataTable = ({
         <Table>
           <TableHeader className="bg-muted/40 backdrop-blur border-b border-border/50">
             <TableRow>
-              <TableHead className="w-[110px] font-bold text-xs">{t('history.orderNo', 'Order #')}</TableHead>
+              <TableHead className="w-[110px] font-bold text-xs">{t('history.tableHeaders.orderNo', 'Order #')}</TableHead>
               <TableHead className="w-[140px] text-xs">
-                {renderSortHeader(t('history.dateTime', 'Date / Time'), 'requested_at')}
+                {renderSortHeader(t('history.tableHeaders.date', 'Date / Time'), 'requested_at')}
               </TableHead>
               <TableHead className="min-w-[180px] text-xs">
-                {renderSortHeader(t('history.project', 'Project'), 'project')}
+                {renderSortHeader(t('history.tableHeaders.project', 'Project'), 'project')}
               </TableHead>
               <TableHead className="min-w-[130px] text-xs">
-                {renderSortHeader(t('history.requester', 'Requester'), 'requester')}
+                {renderSortHeader(t('history.tableHeaders.requester', 'Requester'), 'requester')}
               </TableHead>
-              <TableHead className="min-w-[200px] text-xs">{t('history.items', 'Items')}</TableHead>
-              <TableHead className="w-[100px] text-center text-xs">{t('history.totalQty', 'Total Qty')}</TableHead>
+              <TableHead className="min-w-[200px] text-xs">{t('history.tableHeaders.itemsCount', 'Items')}</TableHead>
+              <TableHead className="w-[100px] text-center text-xs">{t('history.tableHeaders.totalQty', 'Total Qty')}</TableHead>
               <TableHead className="w-[170px] text-center text-xs">
                 {renderSortHeader(t('common.status', 'Status'), 'status')}
               </TableHead>

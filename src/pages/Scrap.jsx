@@ -112,7 +112,7 @@ const Scrap = () => {
       setPendingItems(data || []);
     } catch (err) {
       console.error('Fetch pending damaged returns failed:', err);
-      toast.error(t('common.errorLoadData') || 'Failed to load pending items');
+      toast.error(t('common.errorLoadData', 'Failed to load pending items'));
     }
   }, [t]);
 
@@ -143,7 +143,7 @@ const Scrap = () => {
       setDisposedItems(data || []);
     } catch (err) {
       console.error('Fetch disposed scrap failed:', err);
-      toast.error(t('common.errorLoadData') || 'Failed to load scrap records');
+      toast.error(t('common.errorLoadData', 'Failed to load scrap records'));
     }
   }, [t]);
 
@@ -158,7 +158,7 @@ const Scrap = () => {
     setRefreshing(true);
     await Promise.all([fetchPendingDamaged(), fetchDisposedScrap()]);
     setRefreshing(false);
-    toast.success(t('common.dataRefreshed') || 'Data refreshed');
+    toast.success(t('common.dataRefreshed', 'Data refreshed'));
   };
 
   useEffect(() => {
@@ -269,7 +269,7 @@ const Scrap = () => {
     const targetData = isPending ? filteredPending : filteredDisposed;
 
     if (!targetData || targetData.length === 0) {
-      toast.error(t('common.noDataToExport') || 'No data to export');
+      toast.error(t('common.noDataToExport', 'No data to export'));
       return;
     }
 
@@ -306,7 +306,7 @@ const Scrap = () => {
 
     const fileName = `StockFlow_${sheetName}_${new Date().toISOString().slice(0, 10)}.xlsx`;
     writeFile(workbook, fileName);
-    toast.success(t('common.exportSuccess') || 'Exported successfully');
+    toast.success(t('common.exportSuccess', 'Exported successfully'));
   };
 
   return (
@@ -530,8 +530,8 @@ const Scrap = () => {
                               <span>{t('scrap.resolveAction')}</span>
                             </Button>
                           ) : (
-                            <span className="text-[11px] text-muted-foreground italic">
-                              {t('common.viewOnly') || 'View only'}
+                            <span className="text-xs text-muted-foreground italic">
+                              {t('common.viewOnly', 'View only')}
                             </span>
                           )}
                         </td>

@@ -1,5 +1,13 @@
 # Changelog
 
+## [2026-10-20 09:10] - v1.25.16
+### Fixed
+- **Resilience**: ติดตั้ง `ErrorBoundary` ครอบคลุมระดับ Route ใน `App.jsx` ป้องกัน White Screen of Death
+- **A11y**: เพิ่ม `role="tablist"`, `role="tab"`, `aria-selected`, Focus Ring, `DialogDescription` และแก้ไข Contrast Ratio ในหน้าคำขอเบิกพัสดุ (`Withdrawals.jsx`, `WithdrawalDetailModal.jsx`)
+- **A11y**: ฟื้นฟูโครงสร้าง Heading Hierarchy (`<h1>`) ใน 6 หน้าจอหลัก (`Withdrawals`, `Dashboard`, `Items`, `StockIn`, `Projects`, `Login`)
+- **i18n**: เพิ่มคีย์พจนานุกรมที่ขาดหาย 29 คีย์ลงใน `th.js` และ `en.js` แบบ 100% Symmetry, แก้ไขบั๊ก `t() || fallback` ใน `Scrap.jsx`, และปรับปรุง Call-sites ใน `HistoryDataTable.jsx` และ `ReportHeader.jsx`
+- **Impeccable Integrity**: กำจัด AI Slop Anti-pattern (`gradient-text`) ใน Hero Section และปรับ Type Ramp (`text-[10px]`, `text-[11px]`) ให้กลับสู่มาตรฐาน `DESIGN.md`
+
 ## [2026-10-20 08:34] - v1.25.15
 
 - **Files Modified:** `DESIGN.md` (ใหม่), `.impeccable/design.json` (ใหม่), `package.json`, `README.md`, `CHANGELOG.md`

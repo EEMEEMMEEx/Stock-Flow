@@ -89,7 +89,7 @@ const Login = () => {
           <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center mb-2 mx-auto">
             <Package className="w-6 h-6 text-white" />
           </div>
-          <CardTitle className="text-3xl font-bold text-center">StockFlow</CardTitle>
+          <CardTitle className="text-3xl font-bold text-center"><h1 className="text-3xl font-bold">StockFlow</h1></CardTitle>
           <CardDescription className="text-center text-base">
             {t('auth.welcomeBack')}
           </CardDescription>

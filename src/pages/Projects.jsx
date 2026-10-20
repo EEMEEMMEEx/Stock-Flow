@@ -531,12 +531,12 @@ const Projects = () => {
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-border">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2.5 text-foreground">
+          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2.5 text-foreground">
             <div className="p-2 rounded-lg bg-primary/10 text-primary">
               <Building2 className="w-5 h-5" />
             </div>
             <span>{t('projects.title')}</span>
-          </h2>
+          </h1>
           <p className="text-muted-foreground mt-1 text-xs sm:text-sm flex items-center gap-2">
             <span>{t('projects.subtitle')}</span>
             <span className="text-muted-foreground/60">•</span>

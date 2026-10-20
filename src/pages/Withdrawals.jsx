@@ -847,7 +847,7 @@ const Withdrawals = () => {
           setShortageOverrideReason('');
           setIsShortageModalOpen(true);
         } catch {
-          toast.error(t('withdrawals.toasts.insufficientInventory'));
+          toast.error(t('withdrawals.toasts.insufficientStock', 'พัสดุในคลังมีไม่เพียงพอสำหรับการอนุมัติ'));
         }
       } else if (isSchemaMismatchError(error)) {
         // 42703 / PGRST202 etc: the RPC references a column the deployed schema
@@ -1128,24 +1128,50 @@ const Withdrawals = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in-50 duration-200">
+      {/* Top Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-border pb-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-primary/10 text-primary border border-primary/20 shadow-xs">
+            <ClipboardList className="w-6 h-6" aria-hidden="true" />
+          </div>
+          <div className="space-y-0.5">
+            <h1 className="text-2xl font-bold text-foreground tracking-tight flex items-center gap-2">
+              <span>{t('withdrawals.title', 'คำขอเบิกและจ่ายพัสดุ')}</span>
+            </h1>
+            <p className="text-xs text-muted-foreground">
+              {t('withdrawals.subtitle', 'ทำรายการเบิกและจ่ายวัสดุสำหรับงานติดตั้งในโครงการ')}
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Top Requisition Hub Navigation Tabs */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-2 sm:p-2.5 rounded-xl bg-card border border-border shadow-xs">
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+        <div
+          role="tablist"
+          aria-label={t('withdrawals.title', 'Requisition Navigation Tabs')}
+          className="flex items-center gap-2 w-full sm:w-auto"
+        >
           {/* Tab 1: POS Terminal */}
           <button
             type="button"
+            role="tab"
+            id="tab-pos"
+            aria-selected={activeTab === 'pos'}
+            aria-controls="panel-pos"
+            tabIndex={activeTab === 'pos' ? 0 : -1}
             onClick={() => setActiveTab('pos')}
-            className={`flex items-center gap-2 px-4 py-2.5 sm:py-2 min-h-[44px] sm:min-h-[38px] rounded-lg text-xs font-semibold transition-all cursor-pointer flex-1 sm:flex-none justify-center ${
+            className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-lg text-xs font-semibold transition-all cursor-pointer flex-1 sm:flex-none justify-center focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none ${
               activeTab === 'pos'
-                ? 'bg-indigo-600 text-white shadow-xs'
+                ? 'bg-primary text-primary-foreground shadow-xs'
                 : 'text-muted-foreground hover:text-foreground hover:bg-accent/60'
             }`}
           >
-            <Zap className="w-3.5 h-3.5 text-amber-400 fill-amber-400/30" />
+            <Zap className="w-3.5 h-3.5 text-amber-400 fill-amber-400/30" aria-hidden="true" />
             <span>{t('withdrawals.posTab')}</span>
             {cart.length > 0 && (
-              <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-extrabold ${
-                activeTab === 'pos' ? 'bg-white/20 text-white' : 'bg-indigo-600 text-white'
+              <span className={`px-2 py-0.5 rounded-full text-xs font-mono font-extrabold ${
+                activeTab === 'pos' ? 'bg-white text-primary shadow-xs' : 'bg-primary text-primary-foreground'
               }`}>
                 {cart.length} {t('common.items')} ({totalCartUnits} {t('common.unit')})
               </span>
@@ -1155,18 +1181,23 @@ const Withdrawals = () => {
           {/* Tab 2: Orders Tracking */}
           <button
             type="button"
+            role="tab"
+            id="tab-orders"
+            aria-selected={activeTab === 'orders'}
+            aria-controls="panel-orders"
+            tabIndex={activeTab === 'orders' ? 0 : -1}
             onClick={() => setActiveTab('orders')}
-            className={`flex items-center gap-2 px-4 py-2.5 sm:py-2 min-h-[44px] sm:min-h-[38px] rounded-lg text-xs font-semibold transition-all cursor-pointer flex-1 sm:flex-none justify-center ${
+            className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-lg text-xs font-semibold transition-all cursor-pointer flex-1 sm:flex-none justify-center focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none ${
               activeTab === 'orders'
-                ? 'bg-indigo-600 text-white shadow-xs'
+                ? 'bg-primary text-primary-foreground shadow-xs'
                 : 'text-muted-foreground hover:text-foreground hover:bg-accent/60'
             }`}
           >
-            <ClipboardList className="w-3.5 h-3.5 text-emerald-400" />
+            <ClipboardList className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" />
             <span>{t('withdrawals.requisitionsTab')}</span>
             {pendingOrdersCount > 0 && (
               <span
-                className="px-2 py-0.5 rounded-full text-[10px] font-mono font-extrabold bg-amber-500 text-slate-950 animate-pulse"
+                className="px-2 py-0.5 rounded-full text-xs font-mono font-extrabold bg-amber-500 text-slate-950 animate-pulse motion-reduce:animate-none"
                 title={`${pendingOrdersCount} ${t('common.pending')}`}
                 aria-label={`${pendingOrdersCount} ${t('common.pending')}`}
               >
@@ -1178,7 +1209,7 @@ const Withdrawals = () => {
 
         {/* Status Indicator */}
         <div className="hidden md:flex items-center gap-2 text-xs font-semibold text-muted-foreground pr-3">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping motion-reduce:animate-none" aria-hidden="true" />
           <span>{t('withdrawals.systemReady')}</span>
         </div>
       </div>

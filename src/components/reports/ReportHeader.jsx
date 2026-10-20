@@ -93,7 +93,7 @@ const ReportHeader = ({
                 className="h-9 px-3.5 rounded-xl font-semibold text-xs border-rose-200 dark:border-rose-900/60 text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
               >
                 <FileText className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
-                <span>{pdfLoading ? t('reports.generatingPdf') : t('reports.exportPdf')}</span>
+                <span>{pdfLoading ? t('reports.export.generatingPdf', 'Generating PDF...') : t('reports.exportPdf')}</span>
               </Button>
 
               <Button

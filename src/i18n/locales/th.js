@@ -91,7 +91,20 @@ export default {
     "add": "เพิ่ม",
     "results": "รายการ",
     "units": "ชิ้น",
-    "max": "สูงสุด"
+    "max": "สูงสุด",
+    "submitting": "กำลังส่งข้อมูล...",
+    "processing": "กำลังประมวลผล...",
+    "suspended": "ระงับการใช้งาน",
+    "lowStockCount": "พัสดุใกล้หมด {{count}} รายการ",
+    "copy": "คัดลอก",
+    "page": "หน้า",
+    "of": "จาก",
+    "cannotUndo": "ไม่สามารถยกเลิกได้",
+    "errorLoadData": "เกิดข้อผิดพลาดในการโหลดข้อมูล",
+    "dataRefreshed": "อัปเดตข้อมูลล่าสุดเรียบร้อยแล้ว",
+    "noDataToExport": "ไม่มีข้อมูลสำหรับส่งออก",
+    "exportSuccess": "ส่งออกไฟล์สำเร็จ",
+    "viewOnly": "ดูได้อย่างเดียว"
   },
   "nav": {
     "dashboard": "แดชบอร์ด",
@@ -207,7 +220,12 @@ export default {
       "neededPerKit": "ใช้ {{count}} {{unit}}/ชุด",
       "checkInventory": "ตรวจเช็กสต็อก"
     },
-    "item": "รายการ"
+    "item": "รายการ",
+    "syncingData": "กำลังซิงค์ข้อมูล...",
+    "stockBalanceByProject": "ยอดคงเหลือแยกตามโครงการ",
+    "top10Items": "10 อันดับพัสดุยอดเบิกสูงสุด",
+    "showingProjectDesc": "แสดงยอดรับเข้า-เบิกจ่ายสุทธิตามโครงการ",
+    "showingItemDesc": "แสดงรายการพัสดุที่มีการเคลื่อนไหวสูงสุด"
   },
   "stockIn": {
     "title": "รับเข้าพัสดุโดยตรง",
@@ -689,8 +707,12 @@ export default {
       "dispatchNotePdfFailed": "สร้างไฟล์ PDF ใบนำส่งเบิกของไม่สำเร็จ",
       "insufficientStock": "พัสดุในโครงการนี้มีไม่เพียงพอ",
       "lowStockAlerted": "แจ้งเตือนวัสดุถึงจุดสั่งซื้อแล้ว: {{item}}",
-      "lowStockAlertFailed": "ส่งอีเมลแจ้งเตือนวัสดุถึงจุดสั่งซื้อไม่สำเร็จ"
-    }
+      "lowStockAlertFailed": "ส่งอีเมลแจ้งเตือนวัสดุถึงจุดสั่งซื้อไม่สำเร็จ",
+      "loadFailed": "โหลดข้อมูลการเบิกจ่ายไม่สำเร็จ"
+    },
+    "detailModalDesc": "รายละเอียดคำขอเบิกพัสดุและรายการวัสดุ",
+    "workflowNav": "ขั้นตอนการขอเบิกพัสดุ",
+    "insufficientInventory": "พัสดุในคลังมีไม่เพียงพอสำหรับการอนุมัติ"
   },
   "checkouts": {
     "title": "ระบบยืม-คืนอุปกรณ์",
@@ -1071,8 +1093,7 @@ export default {
     "cancellationReason": "เหตุผลในการยกเลิก",
     "cancellationReasonPlaceholder": "ระบุเหตุผลในการยกเลิกรายการยืม-คืนนี้...",
     "cancellationReasonLabel": "เหตุผล",
-    "confirmCancelOrder": "ยืนยันการยกเลิก"
-  ,
+    "confirmCancelOrder": "ยืนยันการยกเลิก",
     "historyFilterAll": "ทั้งหมด",
     "historyFilterCompleted": "คืนครบแล้ว",
     "historyFilterApproved": "อนุมัติแล้ว / กำลังยืม",
@@ -1125,7 +1146,13 @@ export default {
     "showingPage": "แสดงหน้าที่ {{page}} จากทั้งหมด {{totalPages}} หน้า (รวม {{total}} รายการ)",
     "prevPage": "ก่อนหน้า",
     "nextPage": "ถัดไป",
-    "printPdf": "พิมพ์ PDF"
+    "printPdf": "พิมพ์ PDF",
+    "orderNo": "เลขที่ใบเบิก",
+    "dateTime": "วันเวลาที่ทำรายการ",
+    "project": "โครงการ",
+    "requester": "ผู้ขอเบิก",
+    "items": "รายการพัสดุ",
+    "totalQty": "จำนวนรวม"
   },
   "reports": {
     "title": "รายงานและสถิติคลังพัสดุ",
@@ -1343,7 +1370,8 @@ export default {
       "colCurrentStock": "สต็อกปัจจุบัน",
       "colKitsPossible": "ประกอบได้ (ชุด)",
       "colMissingForNextSet": "ขาดอีกสำหรับชุดถัดไป"
-    }
+    },
+    "generatingPdf": "กำลังสร้างเอกสาร PDF..."
   },
   "users": {
     "title": "จัดการผู้ใช้งาน",
@@ -2393,8 +2421,7 @@ export default {
     "lastReverted": "ย้อนสถานะโดย {{name}} เมื่อ {{date}}",
     "returnLogReverted": "ย้อนสถานะเมื่อ {{date}}",
     "returnLogRevertedReason": "เหตุผล",
-    "today": "วันนี้"
-  ,
+    "today": "วันนี้",
     "actionCheckoutRejection": "ย้อนการปฏิเสธใบยืม",
     "actionCheckoutReturns": "ย้อนการรับคืนทั้งหมด",
     "actionCheckoutRepair": "ย้อนผลการซ่อม",

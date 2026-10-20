@@ -65,7 +65,7 @@ export default function HeroSection() {
           <ShinyText
             text={t.hero.pill}
             speed={3.5}
-            className="text-[11px] font-mono uppercase tracking-widest font-semibold text-emerald-300"
+            className="text-xs font-mono uppercase tracking-widest font-semibold text-emerald-300"
           />
         </motion.div>
 
@@ -77,7 +77,7 @@ export default function HeroSection() {
           className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white max-w-4xl leading-[1.08]"
         >
           <span>{t.hero.headlinePrefix}</span>
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400">
+          <span className="text-emerald-400">
             <DecryptedText
               key={lang}
               text={t.hero.headlineDynamic}
@@ -230,12 +230,12 @@ export default function HeroSection() {
                     <div className="p-3 rounded-xl bg-zinc-900/50 border border-white/10 hover:border-emerald-500/30 transition-colors">
                       <div className="flex items-start justify-between">
                         <span className="text-xs font-medium text-white">Cisco Catalyst 9200L</span>
-                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300">
+                        <span className="text-xs font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300">
                           {t.hero.mockupInStock}: 14
                         </span>
                       </div>
-                      <span className="text-[11px] text-zinc-400 mt-1 block font-mono">SKU: NET-CS-9200</span>
-                      <div className="mt-2.5 flex items-center justify-between text-[11px]">
+                      <span className="text-xs text-zinc-400 mt-1 block font-mono">SKU: NET-CS-9200</span>
+                      <div className="mt-2.5 flex items-center justify-between text-xs">
                         <span className="text-zinc-400">Project: DOPA Q1</span>
                         <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-medium">
                           {t.hero.mockupAddPos}
@@ -246,12 +246,12 @@ export default function HeroSection() {
                     <div className="p-3 rounded-xl bg-zinc-900/50 border border-white/10 hover:border-emerald-500/30 transition-colors">
                       <div className="flex items-start justify-between">
                         <span className="text-xs font-medium text-white">Hikvision IP PTZ 4K</span>
-                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300">
+                        <span className="text-xs font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300">
                           {t.hero.mockupInStock}: 28
                         </span>
                       </div>
-                      <span className="text-[11px] text-zinc-400 mt-1 block font-mono">SKU: CAM-HK-4K</span>
-                      <div className="mt-2.5 flex items-center justify-between text-[11px]">
+                      <span className="text-xs text-zinc-400 mt-1 block font-mono">SKU: CAM-HK-4K</span>
+                      <div className="mt-2.5 flex items-center justify-between text-xs">
                         <span className="text-zinc-400">Project: USO Phase 3</span>
                         <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-medium">
                           {t.hero.mockupAddPos}
@@ -277,7 +277,7 @@ export default function HeroSection() {
                         <Boxes className="w-3.5 h-3.5 text-emerald-400" />
                         {t.hero.mockupCartTitle} (2 Items)
                       </span>
-                      <span className="text-[11px] font-mono text-zinc-400">TX #9842</span>
+                      <span className="text-xs font-mono text-zinc-400">TX #9842</span>
                     </div>
 
                     <div className="space-y-2 text-xs">
@@ -291,7 +291,7 @@ export default function HeroSection() {
                       </div>
                     </div>
 
-                    <div className="mt-3 p-2 rounded-lg bg-zinc-950/60 border border-white/5 text-[11px] text-zinc-400 space-y-1">
+                    <div className="mt-3 p-2 rounded-lg bg-zinc-950/60 border border-white/5 text-xs text-zinc-400 space-y-1">
                       <div className="flex justify-between">
                         <span>{t.hero.mockupProject}:</span>
                         <span className="text-zinc-200 font-medium">USO Phase 3 / DOPA</span>
@@ -333,35 +333,35 @@ export default function HeroSection() {
                       <SlidersHorizontal className="w-4 h-4 text-emerald-400" />
                       <span>Edit Master Item / ปรับยอดสต็อกคงเหลือปัจจุบัน</span>
                     </span>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
+                    <span className="text-xs font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
                       SETTING: ENABLED
                     </span>
                   </div>
 
                   <div className="space-y-2 text-xs">
                     <div className="p-2.5 rounded-xl bg-zinc-950/60 border border-white/5">
-                      <span className="text-zinc-400 text-[11px] block">รายการวัสดุ (Item Catalog)</span>
+                      <span className="text-zinc-400 text-xs block">รายการวัสดุ (Item Catalog)</span>
                       <span className="font-bold text-white">Fortinet FortiGate 60F Security Gateway</span>
                     </div>
 
                     <div className="grid grid-cols-2 gap-2">
                       <div className="p-2.5 rounded-xl bg-zinc-950/60 border border-white/5">
-                        <span className="text-zinc-400 text-[10px]">สต็อกเดิม (Current Stock)</span>
+                        <span className="text-zinc-400 text-xs">สต็อกเดิม (Current Stock)</span>
                         <div className="text-sm font-mono font-bold text-zinc-300">{mockStockQty} ชิ้น</div>
                       </div>
                       <div className="p-2.5 rounded-xl bg-emerald-950/30 border border-emerald-500/30">
-                        <span className="text-emerald-300 text-[10px] font-bold">ยอดใหม่ (New Stock)</span>
+                        <span className="text-emerald-300 text-xs font-bold">ยอดใหม่ (New Stock)</span>
                         <input
                           type="number"
                           value={mockNewStockQty}
                           onChange={(e) => setMockNewStockQty(e.target.value)}
-                          className="w-full bg-zinc-900 border border-white/10 rounded px-2 py-0.5 text-xs font-mono font-bold text-white focus:outline-none"
+                          className="w-full bg-zinc-900 border border-white/10 rounded px-2 py-0.5 text-xs font-mono font-bold text-white focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none focus:outline-none"
                         />
                       </div>
                     </div>
 
                     <div className="p-2.5 rounded-xl bg-zinc-950/60 border border-white/5 space-y-1">
-                      <span className="text-[10px] text-zinc-400 font-bold flex items-center gap-1">
+                      <span className="text-xs text-zinc-400 font-bold flex items-center gap-1">
                         <Sparkles className="w-3 h-3 text-amber-400" />
                         <span>เหตุผลในการปรับปรุงยอดสต็อก (Mandatory Reason) *</span>
                       </span>
@@ -369,7 +369,7 @@ export default function HeroSection() {
                         type="text"
                         value={mockStockReason}
                         onChange={(e) => setMockStockReason(e.target.value)}
-                        className="w-full bg-zinc-900 border border-white/10 rounded px-2 py-1 text-xs text-zinc-200 focus:outline-none"
+                        className="w-full bg-zinc-900 border border-white/10 rounded px-2 py-1 text-xs text-zinc-200 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none focus:outline-none"
                       />
                     </div>
                   </div>
@@ -396,7 +396,7 @@ export default function HeroSection() {
                           +{Number(mockNewStockQty || 0) - mockStockQty} Units
                         </span>
                       </div>
-                      <div className="text-[11px] text-zinc-400 pt-1 font-sans">
+                      <div className="text-xs text-zinc-400 pt-1 font-sans">
                         RPC: <code className="text-emerald-300 font-mono">adjust_item_current_stock()</code>
                       </div>
                     </div>
@@ -421,7 +421,7 @@ export default function HeroSection() {
                       <CalendarClock className="w-4 h-4 text-amber-400" />
                       <span>Active Loan / ขยายกำหนดวันส่งคืนเครื่องมือ</span>
                     </span>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">
+                    <span className="text-xs font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">
                       RECALCULATED: NORMAL
                     </span>
                   </div>
@@ -442,18 +442,18 @@ export default function HeroSection() {
                   </div>
 
                   <div className="space-y-1 text-xs">
-                    <label className="text-[11px] font-semibold text-zinc-300">เลือกกำหนดส่งคืนใหม่ (New Due Date):</label>
+                    <label className="text-xs font-semibold text-zinc-300">เลือกกำหนดส่งคืนใหม่ (New Due Date):</label>
                     <div className="flex gap-2">
                       <input
                         type="date"
                         value={mockDueDate}
                         onChange={(e) => setMockDueDate(e.target.value)}
-                        className="bg-zinc-900 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white font-mono flex-1 focus:outline-none"
+                        className="bg-zinc-900 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white font-mono flex-1 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none focus:outline-none"
                       />
                       <button
                         type="button"
                         onClick={() => setMockDueDate('2026-09-30')}
-                        className="px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-[11px] font-mono text-zinc-200 border border-white/10"
+                        className="px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-xs font-mono text-zinc-200 border border-white/10"
                       >
                         +30 วัน
                       </button>
@@ -468,10 +468,10 @@ export default function HeroSection() {
                       <span>Extension Log Tracked</span>
                     </span>
                     <div className="space-y-2 text-xs font-mono">
-                      <div className="p-2 rounded-lg bg-emerald-950/20 border border-emerald-500/20 text-emerald-300 text-[11px]">
+                      <div className="p-2 rounded-lg bg-emerald-950/20 border border-emerald-500/20 text-emerald-300 text-xs">
                         ✓ สถานะจะเปลี่ยนจาก <span className="text-rose-400">Overdue</span> กลับเป็น <span className="text-emerald-400">Active</span> โดยอัตโนมัติ
                       </div>
-                      <div className="text-[11px] text-zinc-400 pt-1 font-sans">
+                      <div className="text-xs text-zinc-400 pt-1 font-sans">
                         บันทึกลงตาราง <code className="text-emerald-300 font-mono">checkout_extension_logs</code> และ Audit Trail
                       </div>
                     </div>
@@ -496,7 +496,7 @@ export default function HeroSection() {
                       <PackageCheck className="w-4 h-4 text-blue-400" />
                       <span>Site Kits BOM / ชุดติดตั้งไซต์งานสำเร็จรูป</span>
                     </span>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 font-bold">
+                    <span className="text-xs font-mono px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 font-bold">
                       READY FOR 4 SITES
                     </span>
                   </div>

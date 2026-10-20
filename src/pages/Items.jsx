@@ -998,12 +998,12 @@ const Items = () => {
       {/* Top Banner Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight flex items-center gap-3">
+          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-3">
             <div className="p-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400">
               <Package className="w-7 h-7" />
             </div>
             <span>{t('items.title')}</span>
-          </h2>
+          </h1>
           <p className="text-sm text-muted-foreground mt-1">
             {t('items.subtitle')}
           </p>

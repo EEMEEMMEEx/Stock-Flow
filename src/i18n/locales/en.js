@@ -91,7 +91,20 @@ export default {
     "add": "Add",
     "results": "records",
     "units": "units",
-    "max": "Max"
+    "max": "Max",
+    "submitting": "Submitting...",
+    "processing": "Processing...",
+    "suspended": "Suspended",
+    "lowStockCount": "{{count}} items low stock",
+    "copy": "Copy",
+    "page": "Page",
+    "of": "of",
+    "cannotUndo": "Cannot be undone",
+    "errorLoadData": "Failed to load data",
+    "dataRefreshed": "Data refreshed successfully",
+    "noDataToExport": "No data to export",
+    "exportSuccess": "Exported successfully",
+    "viewOnly": "View only"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -207,7 +220,12 @@ export default {
       "neededPerKit": "Needs {{count}} {{unit}}/kit",
       "checkInventory": "Check Inventory"
     },
-    "item": "Item"
+    "item": "Item",
+    "syncingData": "Syncing data...",
+    "stockBalanceByProject": "Stock Balance by Project",
+    "top10Items": "Top 10 Most Withdrawn Items",
+    "showingProjectDesc": "Showing net in/out stock by project",
+    "showingItemDesc": "Showing items with highest inventory turnover"
   },
   "stockIn": {
     "title": "Direct Stock In",
@@ -689,8 +707,12 @@ export default {
       "dispatchNotePdfFailed": "Failed to generate dispatch note PDF",
       "insufficientStock": "Insufficient inventory in this project",
       "lowStockAlerted": "Reorder point alert sent: {{item}}",
-      "lowStockAlertFailed": "Failed to send the reorder point alert email"
-    }
+      "lowStockAlertFailed": "Failed to send the reorder point alert email",
+      "loadFailed": "Failed to load withdrawal data"
+    },
+    "detailModalDesc": "Requisition details and item breakdown",
+    "workflowNav": "Requisition Workflow",
+    "insufficientInventory": "Insufficient stock for approval"
   },
   "checkouts": {
     "title": "Equipment Checkout & Return",
@@ -1071,8 +1093,7 @@ export default {
     "cancellationReason": "Cancellation Reason",
     "cancellationReasonPlaceholder": "Specify the reason for cancelling this equipment loan...",
     "cancellationReasonLabel": "Reason",
-    "confirmCancelOrder": "Confirm Cancellation"
-  ,
+    "confirmCancelOrder": "Confirm Cancellation",
     "historyFilterAll": "All",
     "historyFilterCompleted": "Fully returned",
     "historyFilterApproved": "Approved / on loan",
@@ -1125,7 +1146,13 @@ export default {
     "showingPage": "Showing page {{page}} of {{totalPages}} ({{total}} total records)",
     "prevPage": "Previous",
     "nextPage": "Next",
-    "printPdf": "Print PDF"
+    "printPdf": "Print PDF",
+    "orderNo": "Order #",
+    "dateTime": "Date / Time",
+    "project": "Project",
+    "requester": "Requester",
+    "items": "Items",
+    "totalQty": "Total Qty"
   },
   "reports": {
     "title": "Reports & Inventory Analytics",
@@ -1343,7 +1370,8 @@ export default {
       "colCurrentStock": "Current Stock",
       "colKitsPossible": "Kits Possible",
       "colMissingForNextSet": "Missing For Next Set"
-    }
+    },
+    "generatingPdf": "Generating PDF..."
   },
   "users": {
     "title": "User Management",
@@ -2393,8 +2421,7 @@ export default {
     "lastReverted": "Reverted by {{name}} on {{date}}",
     "returnLogReverted": "Reverted on {{date}}",
     "returnLogRevertedReason": "Reason",
-    "today": "today"
-  ,
+    "today": "today",
     "actionCheckoutRejection": "Revert loan rejection",
     "actionCheckoutReturns": "Revert all return confirmations",
     "actionCheckoutRepair": "Revert repair resolution",
