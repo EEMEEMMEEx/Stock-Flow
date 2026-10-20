@@ -2,8 +2,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { Zap, ClipboardList } from 'lucide-react';
-import { pdf } from '@react-pdf/renderer';
-import { MaterialWithdrawalPDF, MaterialDispatchPDF } from '@/lib/pdf-templates';
+// Dynamic import used in handleDownloadPDF and handleDownloadDispatchPDF
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n';
 import { toSafeFileToken } from '@/lib/utils';
@@ -1067,6 +1066,10 @@ const Withdrawals = () => {
 
     const toastId = toast.loading('Generating requisition PDF document...');
     try {
+      const [{ pdf }, { MaterialWithdrawalPDF }] = await Promise.all([
+        import('@react-pdf/renderer'),
+        import('@/lib/pdf-templates')
+      ]);
       const itemsList = await resolveWithdrawalItems(order, existingItems);
 
       const docBlob = await pdf(
@@ -1101,6 +1104,10 @@ const Withdrawals = () => {
 
     const toastId = toast.loading(t('withdrawals.toasts.dispatchNoteGenerating', 'Generating dispatch note PDF...'));
     try {
+      const [{ pdf }, { MaterialDispatchPDF }] = await Promise.all([
+        import('@react-pdf/renderer'),
+        import('@/lib/pdf-templates')
+      ]);
       const itemsList = await resolveWithdrawalItems(order, existingItems);
 
       const docBlob = await pdf(

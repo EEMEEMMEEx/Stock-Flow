@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-10-20 09:14] - v1.25.17
+### Optimized
+- **Code Splitting**: ติดตั้ง Route-level code splitting ผ่าน `React.lazy()` และ `Suspense` ครอบคลุมทุกหน้าจอใน `App.jsx`
+- **Dynamic Imports**: แปลงการนำเข้า `@react-pdf/renderer` ใน `History.jsx`, `Withdrawals.jsx` และ `xlsx` ใน `Scrap.jsx` เป็น Dynamic `await import()` โหลดตามคำขอ ช่วยลด Initial Bundle ลงอย่างมีนัยสำคัญ
+- **Performance**: ปรับแต่ง `Squares.jsx` ด้วย `IntersectionObserver` หยุดคำนวณ Canvas เมื่ออยู่นอก Viewport และเคารพการตั้งค่า `prefers-reduced-motion`
+- **Performance**: ปรับปรุง `fetchDashboardData` ใน `Dashboard.jsx` ให้รันแบบขนานผ่าน `Promise.all` พร้อมใส่ Debounce 400ms บน Realtime subscriptions
+- **A11y & Theming**: เพิ่ม Accessible Data Table ซ่อนสายตาสำหรับ Screen Reader บนชาร์ต Recharts และใส่ ARIA Tab บนตัวสลับมุมมอง `Dashboard.jsx`
+- **A11y**: เพิ่ม `aria-label` และ `<label>` ในฟอร์มล็อกอิน `Login.jsx` รวมถึงช่องค้นหาหลักใน `Items.jsx`, `StockIn.jsx`, `Projects.jsx`
+- **Theming**: ปรับพื้นหลัง `LandingPage.jsx` สู่ Deep Charcoal (`#090d16`) และปรับปุ่ม CTA `LandingNavbar.jsx` สู่ Enterprise Indigo (`#4338ca`) ตาม `DESIGN.md`
+
 ## [2026-10-20 09:10] - v1.25.16
 ### Fixed
 - **Resilience**: ติดตั้ง `ErrorBoundary` ครอบคลุมระดับ Route ใน `App.jsx` ป้องกัน White Screen of Death

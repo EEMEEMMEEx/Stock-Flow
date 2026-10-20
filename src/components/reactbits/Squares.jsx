@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect } from 'react';
 
 export default function Squares({
   direction = 'right',
@@ -13,12 +13,15 @@ export default function Squares({
   const numSquaresX = useRef(0);
   const numSquaresY = useRef(0);
   const gridOffset = useRef({ x: 0, y: 0 });
-  const [hoveredSquare, setHoveredSquare] = useState(null);
+  const hoveredSquareRef = useRef(null);
+  const isVisibleRef = useRef(true);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     const resizeCanvas = () => {
       canvas.width = canvas.offsetWidth;
@@ -30,11 +33,26 @@ export default function Squares({
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
+    // IntersectionObserver to pause loop when scrolled out of view
+    const observer = new IntersectionObserver(([entry]) => {
+      isVisibleRef.current = entry.isIntersecting;
+      if (entry.isIntersecting && !prefersReducedMotion && !requestRef.current) {
+        requestRef.current = requestAnimationFrame(draw);
+      }
+    }, { threshold: 0.05 });
+    observer.observe(canvas);
+
     const draw = () => {
+      if (!isVisibleRef.current || prefersReducedMotion) {
+        requestRef.current = null;
+        return;
+      }
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       const startX = Math.floor(gridOffset.current.x / squareSize) * squareSize;
       const startY = Math.floor(gridOffset.current.y / squareSize) * squareSize;
+      const hovered = hoveredSquareRef.current;
 
       for (let x = startX; x < canvas.width + squareSize; x += squareSize) {
         for (let y = startY; y < canvas.height + squareSize; y += squareSize) {
@@ -42,9 +60,9 @@ export default function Squares({
           const squareY = y - (gridOffset.current.y % squareSize);
 
           if (
-            hoveredSquare &&
-            Math.floor((x - startX) / squareSize) === hoveredSquare.x &&
-            Math.floor((y - startY) / squareSize) === hoveredSquare.y
+            hovered &&
+            Math.floor((x - startX) / squareSize) === hovered.x &&
+            Math.floor((y - startY) / squareSize) === hovered.y
           ) {
             ctx.fillStyle = hoverFillColor;
             ctx.fillRect(squareX, squareY, squareSize, squareSize);
@@ -80,15 +98,21 @@ export default function Squares({
       requestRef.current = requestAnimationFrame(draw);
     };
 
-    draw();
+    if (prefersReducedMotion) {
+      // Draw single static frame
+      draw();
+    } else {
+      draw();
+    }
 
     return () => {
       window.removeEventListener('resize', resizeCanvas);
+      observer.disconnect();
       if (requestRef.current) {
         cancelAnimationFrame(requestRef.current);
       }
     };
-  }, [direction, speed, borderColor, hoverFillColor, hoveredSquare, squareSize]);
+  }, [direction, speed, borderColor, hoverFillColor, squareSize]);
 
   const handleMouseMove = (event) => {
     const canvas = canvasRef.current;
@@ -100,11 +124,11 @@ export default function Squares({
     const hoveredSquareX = Math.floor((mouseX + (gridOffset.current.x % squareSize)) / squareSize);
     const hoveredSquareY = Math.floor((mouseY + (gridOffset.current.y % squareSize)) / squareSize);
 
-    setHoveredSquare({ x: hoveredSquareX, y: hoveredSquareY });
+    hoveredSquareRef.current = { x: hoveredSquareX, y: hoveredSquareY };
   };
 
   const handleMouseLeave = () => {
-    setHoveredSquare(null);
+    hoveredSquareRef.current = null;
   };
 
   return (

@@ -4,8 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { FileText, Building2, User, Calendar, MapPin, Target } from 'lucide-react';
-import { pdf } from '@react-pdf/renderer';
-import { MaterialWithdrawalPDF } from '@/lib/pdf-templates';
+// Dynamic import used in handleDownloadPDF to reduce initial bundle
 import toast from 'react-hot-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
@@ -290,6 +289,10 @@ const History = () => {
 
     const toastId = toast.loading('Generating withdrawal PDF document...');
     try {
+      const [{ pdf }, { MaterialWithdrawalPDF }] = await Promise.all([
+        import('@react-pdf/renderer'),
+        import('@/lib/pdf-templates')
+      ]);
       const itemsList = order.withdrawal_items || [];
       const docBlob = await pdf(
         <MaterialWithdrawalPDF order={order} items={itemsList} profile={profile} projects={projectsList} />
@@ -490,7 +493,7 @@ const History = () => {
                           <TableCell className="font-medium text-foreground">
                             {item.items?.name || '—'}
                             {item.items?.sku && (
-                              <span className="block text-[10px] text-muted-foreground font-mono">
+                              <span className="block text-xs text-muted-foreground font-mono">
                                 SKU: {item.items.sku}
                               </span>
                             )}

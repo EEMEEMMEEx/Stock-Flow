@@ -90,7 +90,7 @@ export default function LandingNavbar() {
 
           <a
             href="https://stockflowth.online"
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-zinc-950 bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 transition-all duration-200 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 hover:scale-[1.02] active:scale-[0.98]"
+            className="flex items-center gap-2 px-4 py-2 min-h-[40px] rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 shadow-lg shadow-indigo-600/25 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:outline-none"
           >
             <span>{t.nav.launchApp}</span>
             <ArrowUpRight className="w-4 h-4" strokeWidth={2.2} />

@@ -1091,6 +1091,7 @@ const Items = () => {
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
+              aria-label={t('items.filters.searchPlaceholder')}
               placeholder={t('items.filters.searchPlaceholder')}
               className="pl-9 pr-4 h-9 rounded-lg text-base sm:text-xs bg-background border-input shadow-xs"
               value={searchQuery}

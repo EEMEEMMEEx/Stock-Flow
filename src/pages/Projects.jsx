@@ -551,6 +551,7 @@ const Projects = () => {
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
+              aria-label={t('projects.searchPlaceholder')}
               placeholder={t('projects.searchPlaceholder')}
               className="pl-9 h-9 text-xs rounded-lg bg-background border border-input focus-visible:ring-1 focus-visible:ring-primary"
               value={searchQuery}

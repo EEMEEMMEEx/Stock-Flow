@@ -14,7 +14,7 @@ import {
   Boxes,
   Loader2
 } from 'lucide-react';
-import { utils, writeFile } from 'xlsx';
+// Dynamic import used in handleExportExcel
 import toast from 'react-hot-toast';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
@@ -233,21 +233,21 @@ const Scrap = () => {
     switch (method) {
       case 'parts_harvest':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
             <Recycle className="w-3 h-3" />
             {t('scrap.disposalHarvest')}
           </span>
         );
       case 'electronic_waste':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
             <Cpu className="w-3 h-3" />
             {t('scrap.disposalElectronic')}
           </span>
         );
       case 'recycle':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20">
             <Recycle className="w-3 h-3" />
             {t('scrap.disposalRecycle')}
           </span>
@@ -255,7 +255,7 @@ const Scrap = () => {
       case 'dispose':
       default:
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20">
             <Trash2 className="w-3 h-3" />
             {t('scrap.disposalDispose')}
           </span>
@@ -264,7 +264,7 @@ const Scrap = () => {
   };
 
   // Export to Excel
-  const handleExportExcel = () => {
+  const handleExportExcel = async () => {
     const isPending = activeTab === 'pending';
     const targetData = isPending ? filteredPending : filteredDisposed;
 
@@ -299,6 +299,7 @@ const Scrap = () => {
           [t('scrap.disposedBy')]: row.closed_by || '-'
         }));
 
+    const { utils, writeFile } = await import('xlsx');
     const worksheet = utils.json_to_sheet(exportRows);
     const workbook = utils.book_new();
     const sheetName = isPending ? 'Pending_Repairs' : 'Scrap_Register';
@@ -370,7 +371,7 @@ const Scrap = () => {
           <Wrench className="w-3.5 h-3.5 text-amber-500" />
           <span>{t('scrap.pendingTab')}</span>
           {pendingItems.length > 0 && (
-            <span className="px-1.5 py-0.2 rounded-md bg-amber-500/15 text-amber-700 dark:text-amber-400 text-[10px] font-mono font-bold">
+            <span className="px-1.5 py-0.2 rounded-md bg-amber-500/15 text-amber-700 dark:text-amber-400 text-xs font-mono font-bold">
               {pendingItems.length}
             </span>
           )}
@@ -388,7 +389,7 @@ const Scrap = () => {
           <PackageX className="w-3.5 h-3.5 text-rose-500" />
           <span>{t('scrap.disposedTab')}</span>
           {disposedItems.length > 0 && (
-            <span className="px-1.5 py-0.2 rounded-md bg-rose-500/15 text-rose-700 dark:text-rose-400 text-[10px] font-mono font-bold">
+            <span className="px-1.5 py-0.2 rounded-md bg-rose-500/15 text-rose-700 dark:text-rose-400 text-xs font-mono font-bold">
               {disposedItems.length}
             </span>
           )}
@@ -490,14 +491,14 @@ const Scrap = () => {
                           <div>
                             <span>{orderNumber}</span>
                             {borrowerName && (
-                              <div className="text-[10px] text-muted-foreground">{borrowerName}</div>
+                              <div className="text-xs text-muted-foreground">{borrowerName}</div>
                             )}
                           </div>
                         </td>
                         <td className="py-3 px-4 font-medium text-foreground">
                           {itemName}
                         </td>
-                        <td className="py-3 px-4 font-mono text-[11px]">
+                        <td className="py-3 px-4 font-mono text-xs">
                           {itemSerial !== '-' ? (
                             <span className="px-1.5 py-0.5 rounded bg-muted text-foreground border border-border/50">
                               {itemSerial}
@@ -587,7 +588,7 @@ const Scrap = () => {
                         <td className="py-3 px-4 font-medium text-foreground">
                           {itemName}
                         </td>
-                        <td className="py-3 px-4 font-mono text-[11px]">
+                        <td className="py-3 px-4 font-mono text-xs">
                           {itemSerial !== '-' ? (
                             <span className="px-1.5 py-0.5 rounded bg-muted text-foreground border border-border/50">
                               {itemSerial}
@@ -605,7 +606,7 @@ const Scrap = () => {
                         <td className="py-3 px-4">
                           {renderDisposalBadge(item.disposal_method)}
                         </td>
-                        <td className="py-3 px-4 font-mono text-[11px] text-muted-foreground">
+                        <td className="py-3 px-4 font-mono text-xs text-muted-foreground">
                           {orderNumber !== '-' ? (
                             <span>{orderNumber}</span>
                           ) : item.caim_ticket_id ? (

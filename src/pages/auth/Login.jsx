@@ -97,10 +97,15 @@ const Login = () => {
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
+              <label htmlFor="login-email" className="sr-only">
+                {t('auth.email')}
+              </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
+                <Mail className="absolute left-3 top-3.5 h-5 w-5 text-muted-foreground" aria-hidden="true" />
                 <Input
+                  id="login-email"
                   type="email"
+                  aria-label={t('auth.email')}
                   placeholder={t('auth.email')}
                   autoComplete="email"
                   className="pl-10 h-12 bg-background/50 border-white/10 text-foreground caret-primary focus:border-primary"
@@ -111,10 +116,15 @@ const Login = () => {
               </div>
             </div>
             <div className="space-y-2">
+              <label htmlFor="login-password" className="sr-only">
+                {t('auth.password')}
+              </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
+                <Lock className="absolute left-3 top-3.5 h-5 w-5 text-muted-foreground" aria-hidden="true" />
                 <Input
+                  id="login-password"
                   type={showPassword ? 'text' : 'password'}
+                  aria-label={t('auth.password')}
                   placeholder={t('auth.password')}
                   autoComplete="current-password"
                   className="pl-10 pr-12 h-12 bg-background/50 border-white/10 text-foreground caret-primary focus:border-primary"

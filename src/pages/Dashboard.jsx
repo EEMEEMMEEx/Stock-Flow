@@ -93,41 +93,27 @@ const Dashboard = () => {
       else setRefreshing(true);
       setHasError(false);
 
-      // 1. Fetch Active Projects
-      const { data: pData, error: projErr } = await supabase
-        .from('projects')
-        .select('id, name, project_code, location, status')
-        .eq('status', 'active');
-
-      // 2. Fetch Master Items Count
-      const { count: itemCount, error: itemErr } = await supabase
-        .from('items')
-        .select('*', { count: 'exact', head: true });
-
-      // 3. Fetch Pending Orders Count
-      const { count: pendingCount, error: pendingErr } = await supabase
-        .from('withdrawal_orders')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'pending');
-
-      // 4. Fetch Today's Orders Count
       const today = new Date().toISOString().split('T')[0];
-      const { count: todayWithdrawals, error: todayErr } = await supabase
-        .from('withdrawal_orders')
-        .select('*', { count: 'exact', head: true })
-        .gte('requested_at', today);
 
-      // 5. Fetch Stock Balance
-      const { data: balanceData } = await supabase
-        .from('stock_balance')
-        .select('*');
-
-      // 6. Fetch Recent Activity
-      const { data: activityData } = await supabase
-        .from('withdrawal_orders')
-        .select('*, projects(name), profiles!withdrawal_orders_requested_by_fkey(full_name), withdrawal_items(items(name))')
-        .order('requested_at', { ascending: false })
-        .limit(6);
+      // Concurrent parallel query execution
+      const [
+        { data: pData, error: projErr },
+        { count: itemCount, error: itemErr },
+        { count: pendingCount, error: pendingErr },
+        { count: todayWithdrawals, error: todayErr },
+        { data: balanceData },
+        { data: activityData }
+      ] = await Promise.all([
+        supabase.from('projects').select('id, name, project_code, location, status').eq('status', 'active'),
+        supabase.from('items').select('*', { count: 'exact', head: true }),
+        supabase.from('withdrawal_orders').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+        supabase.from('withdrawal_orders').select('*', { count: 'exact', head: true }).gte('requested_at', today),
+        supabase.from('stock_balance').select('project_id, item_id, balance'),
+        supabase.from('withdrawal_orders')
+          .select('*, projects(name), profiles!withdrawal_orders_requested_by_fkey(full_name), withdrawal_items(items(name))')
+          .order('requested_at', { ascending: false })
+          .limit(6)
+      ]);
 
       if (projErr || itemErr || pendingErr || todayErr) {
         setHasError(true);
@@ -235,24 +221,23 @@ const Dashboard = () => {
   useEffect(() => {
     fetchDashboardData(true);
 
+    // Debounced Realtime trigger to prevent fetch floods
+    let debounceTimer = null;
+    const triggerDebouncedFetch = () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        fetchDashboardData(false);
+      }, 400);
+    };
+
     // Set up Realtime subscriptions for live dashboard sync
     const channel = supabase
       .channel('dashboard-live-sync')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'projects' }, () => {
-        fetchDashboardData(false);
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'withdrawal_orders' }, () => {
-        fetchDashboardData(false);
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'stock_in_orders' }, () => {
-        fetchDashboardData(false);
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'stock_transactions' }, () => {
-        fetchDashboardData(false);
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'site_bom_templates' }, () => {
-        fetchDashboardData(false);
-      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'projects' }, triggerDebouncedFetch)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'withdrawal_orders' }, triggerDebouncedFetch)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'stock_in_orders' }, triggerDebouncedFetch)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'stock_transactions' }, triggerDebouncedFetch)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'site_bom_templates' }, triggerDebouncedFetch)
       .subscribe();
 
     // Also auto-refresh when tab gains focus
@@ -432,36 +417,77 @@ const Dashboard = () => {
               </p>
             </div>
 
-            {/* View Mode Toggle */}
-            <div className="flex items-center bg-muted/50 p-0.5 rounded-lg border border-border shrink-0 self-start sm:self-auto">
+            {/* View Mode Toggle with ARIA Tab semantics */}
+            <div
+              role="tablist"
+              aria-label={t('dashboard.viewMode', 'Chart View Mode')}
+              className="flex items-center bg-muted/60 p-0.5 rounded-lg border border-border shrink-0 self-start sm:self-auto"
+            >
               <Button
                 type="button"
+                role="tab"
+                aria-selected={chartViewMode === 'project'}
                 variant={chartViewMode === 'project' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setChartViewMode('project')}
-                className={`h-9 sm:h-7 min-h-[36px] sm:min-h-0 px-3 sm:px-2.5 rounded-md text-xs gap-1.5 font-medium cursor-pointer transition-all ${
-                  chartViewMode === 'project' ? 'bg-emerald-600 text-white shadow-xs' : 'text-muted-foreground hover:text-foreground'
+                className={`h-9 min-h-[44px] sm:min-h-[32px] sm:h-8 px-3.5 sm:px-3 rounded-md text-xs gap-1.5 font-semibold cursor-pointer transition-all ${
+                  chartViewMode === 'project'
+                    ? 'bg-primary text-primary-foreground shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                 }`}
               >
-                <Building2 className="w-3.5 h-3.5 sm:w-3 sm:h-3" /> {t('dashboard.byProject', 'By Project')}
+                <Building2 className="w-3.5 h-3.5" aria-hidden="true" /> {t('dashboard.byProject', 'By Project')}
               </Button>
               <Button
                 type="button"
+                role="tab"
+                aria-selected={chartViewMode === 'item'}
                 variant={chartViewMode === 'item' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setChartViewMode('item')}
-                className={`h-9 sm:h-7 min-h-[36px] sm:min-h-0 px-3 sm:px-2.5 rounded-md text-xs gap-1.5 font-medium cursor-pointer transition-all ${
-                  chartViewMode === 'item' ? 'bg-emerald-600 text-white shadow-xs' : 'text-muted-foreground hover:text-foreground'
+                className={`h-9 min-h-[44px] sm:min-h-[32px] sm:h-8 px-3.5 sm:px-3 rounded-md text-xs gap-1.5 font-semibold cursor-pointer transition-all ${
+                  chartViewMode === 'item'
+                    ? 'bg-primary text-primary-foreground shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                 }`}
               >
-                <Package className="w-3.5 h-3.5 sm:w-3 sm:h-3" /> {t('dashboard.topItems', 'Top Items')}
+                <Package className="w-3.5 h-3.5" aria-hidden="true" /> {t('dashboard.topItems', 'Top Items')}
               </Button>
             </div>
           </CardHeader>
 
           <CardContent className="flex-1 pt-6">
+            {/* Screen Reader Fallback Data Table */}
+            <div className="sr-only">
+              <table>
+                <caption>{chartViewMode === 'project' ? t('dashboard.stockBalanceByProject', 'Stock Balance by Project') : t('dashboard.top10Items', 'Top 10 Most Withdrawn Items')}</caption>
+                <thead>
+                  <tr>
+                    <th>{t('common.name', 'Name')}</th>
+                    <th>{t('dashboard.totalIn', 'Total In')}</th>
+                    <th>{t('dashboard.totalOut', 'Total Out')}</th>
+                    <th>{t('dashboard.balance', 'Balance')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentChartData.map((d, i) => (
+                    <tr key={i}>
+                      <td>{d.fullName || d.name}</td>
+                      <td>{d.total_in}</td>
+                      <td>{d.total_out}</td>
+                      <td>{d.balance}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
             {currentChartData.length > 0 ? (
-              <div className="h-[380px] w-full">
+              <div
+                role="img"
+                aria-label={chartViewMode === 'project' ? t('dashboard.showingProjectDesc', 'Chart showing stock balance by project') : t('dashboard.showingItemDesc', 'Chart showing top withdrawn items')}
+                className="h-[380px] w-full"
+              >
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={currentChartData}

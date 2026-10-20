@@ -690,6 +690,7 @@ const StockIn = () => {
             <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
             <Input
               type="text"
+              aria-label={t('stockIn.searchPlaceholder', 'ค้นหา SKU, ชื่อพัสดุ, ผู้รับ, เลขที่ใบรับเข้า...')}
               placeholder={t('stockIn.searchPlaceholder', 'ค้นหา SKU, ชื่อพัสดุ, ผู้รับ, เลขที่ใบรับเข้า...')}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}

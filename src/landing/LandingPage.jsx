@@ -17,7 +17,7 @@ export default function LandingPage() {
 
   return (
     <LandingLanguageProvider>
-      <div className="min-h-screen bg-zinc-950 text-white font-sans selection:bg-emerald-500 selection:text-black">
+      <div className="min-h-screen bg-[#090d16] text-white font-sans selection:bg-primary selection:text-primary-foreground">
         <LandingNavbar />
         <main>
           <HeroSection />
