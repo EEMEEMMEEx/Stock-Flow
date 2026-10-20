@@ -50,7 +50,8 @@ const ReportPagination = ({
           <select
             value={pageSize}
             onChange={(e) => onPageSizeChange(Number(e.target.value))}
-            className="h-7 px-2 rounded-lg border border-input bg-background text-xs font-semibold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer"
+            aria-label={t('reports.pagination.perPage')}
+            className="h-11 sm:h-9 px-2 rounded-lg border border-input bg-background text-xs font-semibold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer"
           >
             <option value={10}>10</option>
             <option value={25}>25</option>
@@ -67,8 +68,9 @@ const ReportPagination = ({
           size="sm"
           onClick={() => onPageChange(1)}
           disabled={currentPage === 1}
-          className="h-8 w-8 p-0 rounded-lg"
+          className="h-11 w-11 sm:h-8 sm:w-8 p-0 rounded-lg"
           title={t('reports.pagination.firstPage')}
+          aria-label={t('reports.pagination.firstPage')}
         >
           <ChevronsLeft className="w-4 h-4" />
         </Button>
@@ -78,8 +80,9 @@ const ReportPagination = ({
           size="sm"
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className="h-8 w-8 p-0 rounded-lg"
+          className="h-11 w-11 sm:h-8 sm:w-8 p-0 rounded-lg"
           title={t('reports.pagination.previousPage')}
+          aria-label={t('reports.pagination.previousPage')}
         >
           <ChevronLeft className="w-4 h-4" />
         </Button>
@@ -90,7 +93,9 @@ const ReportPagination = ({
             variant={page === currentPage ? 'default' : 'outline'}
             size="sm"
             onClick={() => onPageChange(page)}
-            className={`h-8 w-8 p-0 rounded-lg font-bold text-xs ${
+            aria-label={`${t('reports.pagination.page')} ${page}`}
+            aria-current={page === currentPage ? 'page' : undefined}
+            className={`h-11 w-11 sm:h-8 sm:w-8 p-0 rounded-lg font-bold text-xs ${
               page === currentPage
                 ? 'bg-primary text-primary-foreground shadow-xs'
                 : 'text-muted-foreground hover:text-foreground'
@@ -105,8 +110,9 @@ const ReportPagination = ({
           size="sm"
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="h-8 w-8 p-0 rounded-lg"
+          className="h-11 w-11 sm:h-8 sm:w-8 p-0 rounded-lg"
           title={t('reports.pagination.nextPage')}
+          aria-label={t('reports.pagination.nextPage')}
         >
           <ChevronRight className="w-4 h-4" />
         </Button>
@@ -116,8 +122,9 @@ const ReportPagination = ({
           size="sm"
           onClick={() => onPageChange(totalPages)}
           disabled={currentPage === totalPages}
-          className="h-8 w-8 p-0 rounded-lg"
+          className="h-11 w-11 sm:h-8 sm:w-8 p-0 rounded-lg"
           title={t('reports.pagination.lastPage')}
+          aria-label={t('reports.pagination.lastPage')}
         >
           <ChevronsRight className="w-4 h-4" />
         </Button>

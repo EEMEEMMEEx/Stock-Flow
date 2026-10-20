@@ -56,9 +56,9 @@ const ReportKpiGrid = ({ activeTab, reportData = [], projects = [], selectedProj
       unit: metrics.totalItems === 1 ? t('reports.record') : t('reports.records'),
       subtext: t('reports.kpi.scope', { name: metrics.projectName }),
       icon: Package,
-      iconBg: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
+      iconBg: 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20',
       badge: t('reports.kpi.filtered'),
-      badgeBg: 'bg-blue-500/10 text-blue-600 dark:text-blue-300'
+      badgeBg: 'bg-blue-500/10 text-blue-700 dark:text-blue-300'
     },
     {
       id: 'stock_in',
@@ -67,9 +67,9 @@ const ReportKpiGrid = ({ activeTab, reportData = [], projects = [], selectedProj
       unit: activeTab === 'withdrawals' ? '' : (metrics.stockInTotal === 1 ? t('reports.kpi.unit') : t('reports.kpi.units')),
       subtext: activeTab === 'stock_in' ? t('reports.kpi.filteredTotal') : t('reports.kpi.cumulativeStockIn'),
       icon: ArrowDownToLine,
-      iconBg: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+      iconBg: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20',
       badge: activeTab === 'stock_in' ? t('reports.kpi.badgeReceiving') : t('reports.kpi.badgeTotalIn'),
-      badgeBg: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-300'
+      badgeBg: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
     },
     {
       id: 'stock_out',
@@ -78,9 +78,9 @@ const ReportKpiGrid = ({ activeTab, reportData = [], projects = [], selectedProj
       unit: activeTab === 'stock_in' ? '' : (metrics.stockOutTotal === 1 ? t('reports.kpi.unit') : t('reports.kpi.units')),
       subtext: activeTab === 'withdrawals' ? t('reports.kpi.actualStockDeducted') : t('reports.kpi.cumulativeDispatched'),
       icon: ArrowUpFromLine,
-      iconBg: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
+      iconBg: 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20',
       badge: activeTab === 'withdrawals' ? t('reports.kpi.badgeDispatched') : t('reports.kpi.badgeTotalOut'),
-      badgeBg: 'bg-amber-500/10 text-amber-600 dark:text-amber-300'
+      badgeBg: 'bg-amber-500/10 text-amber-700 dark:text-amber-300'
     },
     {
       id: 'balance',
@@ -89,9 +89,9 @@ const ReportKpiGrid = ({ activeTab, reportData = [], projects = [], selectedProj
       unit: activeTab === 'balance' ? (metrics.balanceTotal === 1 ? t('reports.kpi.unit') : t('reports.kpi.units')) : '',
       subtext: activeTab === 'balance' ? t('reports.kpi.availableInventory') : t('reports.kpi.selectTab3'),
       icon: Layers,
-      iconBg: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20',
+      iconBg: 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border-indigo-500/20',
       badge: t('reports.kpi.badgeBalance'),
-      badgeBg: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-300'
+      badgeBg: 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-300'
     },
     {
       id: 'shortage',
@@ -100,9 +100,9 @@ const ReportKpiGrid = ({ activeTab, reportData = [], projects = [], selectedProj
       unit: metrics.shortageCount === 1 ? t('reports.record') : t('reports.records'),
       subtext: activeTab === 'withdrawals' ? (metrics.pendingCount === 1 ? t('reports.kpi.pendingRecord', { count: metrics.pendingCount }) : t('reports.kpi.pendingRecords', { count: metrics.pendingCount })) : t('reports.kpi.itemsZeroOrLow'),
       icon: AlertTriangle,
-      iconBg: metrics.shortageCount > 0 ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20' : 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20',
+      iconBg: metrics.shortageCount > 0 ? 'bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/20' : 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20',
       badge: metrics.shortageCount > 0 ? t('reports.kpi.attention') : t('reports.kpi.normal'),
-      badgeBg: metrics.shortageCount > 0 ? 'bg-rose-500/10 text-rose-600 dark:text-rose-300' : 'bg-slate-500/10 text-slate-600 dark:text-slate-300'
+      badgeBg: metrics.shortageCount > 0 ? 'bg-rose-500/10 text-rose-700 dark:text-rose-300' : 'bg-slate-500/10 text-slate-600 dark:text-slate-300'
     },
     {
       id: 'scope',
@@ -111,9 +111,9 @@ const ReportKpiGrid = ({ activeTab, reportData = [], projects = [], selectedProj
       unit: '',
       subtext: projects.length === 1 ? t('reports.kpi.totalProjectInSystem', { count: projects.length }) : t('reports.kpi.totalProjectsInSystem', { count: projects.length }),
       icon: FolderKanban,
-      iconBg: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20',
+      iconBg: 'bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/20',
       badge: t('reports.kpi.badgeProject'),
-      badgeBg: 'bg-purple-500/10 text-purple-600 dark:text-purple-300'
+      badgeBg: 'bg-purple-500/10 text-purple-700 dark:text-purple-300'
     }
   ];
 
@@ -128,13 +128,13 @@ const ReportKpiGrid = ({ activeTab, reportData = [], projects = [], selectedProj
                 <div className={`p-2 rounded-xl border ${card.iconBg} transition-transform group-hover:scale-105`}>
                   <Icon className="w-4 h-4 shrink-0" />
                 </div>
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${card.badgeBg}`}>
+                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${card.badgeBg}`}>
                   {card.badge}
                 </span>
               </div>
 
               <div>
-                <p className="text-[11px] font-medium text-muted-foreground line-clamp-1">
+                <p className="text-xs font-medium text-muted-foreground line-clamp-1">
                   {card.title}
                 </p>
                 <div className="flex items-baseline gap-1 mt-0.5">
@@ -145,7 +145,7 @@ const ReportKpiGrid = ({ activeTab, reportData = [], projects = [], selectedProj
                     <span className="text-xs font-semibold text-muted-foreground">{card.unit}</span>
                   )}
                 </div>
-                <p className="text-[10px] text-muted-foreground/80 mt-1 line-clamp-1 flex items-center gap-1">
+                <p className="text-xs text-muted-foreground/80 mt-1 line-clamp-1 flex items-center gap-1">
                   <TrendingUp className="w-2.5 h-2.5 shrink-0 opacity-60" />
                   {card.subtext}
                 </p>

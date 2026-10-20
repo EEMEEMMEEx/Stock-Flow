@@ -16,6 +16,11 @@ const ReportDataTable = ({
 }) => {
   const { t, i18n } = useTranslation();
 
+  const getAriaSort = (key) => {
+    if (sortConfig.key !== key) return 'none';
+    return sortConfig.direction === 'asc' ? 'ascending' : 'descending';
+  };
+
   const renderSortIcon = (key) => {
     if (sortConfig.key !== key) {
       return <ArrowUpDown className="w-3 h-3 shrink-0 opacity-40 group-hover:opacity-100 transition-opacity" />;
@@ -87,7 +92,7 @@ const ReportDataTable = ({
                 <TableHead className="font-bold text-xs text-foreground">{t('reports.table.supplier')}</TableHead>
                 <TableHead className="font-bold text-xs text-foreground">{t('reports.table.poNumber')}</TableHead>
 
-                <TableHead className="text-right w-[140px]">
+                <TableHead className="text-right w-[140px]" aria-sort={getAriaSort('quantity')}>
                   <button
                     onClick={() => onSort('quantity')}
                     className="flex items-center justify-end gap-1.5 font-bold text-xs text-foreground group w-full"
@@ -101,7 +106,7 @@ const ReportDataTable = ({
 
             {activeTab === 'withdrawals' && (
               <TableRow className="hover:bg-transparent border-b border-border">
-                <TableHead className="w-[120px]">
+                <TableHead className="w-[120px]" aria-sort={getAriaSort('received_date')}>
                   <button
                     onClick={() => onSort('requested_at')}
                     className="flex items-center gap-1.5 font-bold text-xs text-foreground group"
@@ -145,11 +150,11 @@ const ReportDataTable = ({
                   {t('reports.table.requested')}
                 </TableHead>
 
-                <TableHead className="text-center font-bold text-xs text-emerald-600 dark:text-emerald-400">
+                <TableHead className="text-center font-bold text-xs text-emerald-700 dark:text-emerald-400">
                   {t('reports.table.stockDeducted')}
                 </TableHead>
 
-                <TableHead className="text-center font-bold text-xs text-amber-600 dark:text-amber-400">
+                <TableHead className="text-center font-bold text-xs text-amber-700 dark:text-amber-400">
                   {t('reports.table.shortage')}
                 </TableHead>
               </TableRow>
@@ -180,7 +185,7 @@ const ReportDataTable = ({
                 <TableHead className="text-right">
                   <button
                     onClick={() => onSort('total_in')}
-                    className="flex items-center justify-end gap-1.5 font-bold text-xs text-emerald-600 dark:text-emerald-400 group w-full"
+                    className="flex items-center justify-end gap-1.5 font-bold text-xs text-emerald-700 dark:text-emerald-400 group w-full"
                   >
                     <span>{t('reports.table.totalIn')}</span>
                     {renderSortIcon('total_in')}
@@ -190,7 +195,7 @@ const ReportDataTable = ({
                 <TableHead className="text-right">
                   <button
                     onClick={() => onSort('total_out')}
-                    className="flex items-center justify-end gap-1.5 font-bold text-xs text-amber-600 dark:text-amber-400 group w-full"
+                    className="flex items-center justify-end gap-1.5 font-bold text-xs text-amber-700 dark:text-amber-400 group w-full"
                   >
                     <span>{t('reports.table.totalOut')}</span>
                     {renderSortIcon('total_out')}
@@ -212,7 +217,7 @@ const ReportDataTable = ({
 
           <TableBody className="text-xs divide-y divide-border/40">
             {reportData.map((row, i) => (
-              <TableRow key={i} className="hover:bg-muted/40 transition-colors">
+              <TableRow key={row.id || `${row.project_id || ''}-${row.item_id || ''}-${row.sku || ''}-${i}`} className="hover:bg-muted/40 transition-colors">
                 {/* Stock In View Rows */}
                 {activeTab === 'stock_in' && (
                   <>
@@ -222,12 +227,12 @@ const ReportDataTable = ({
 
                     <TableCell className="font-semibold text-foreground">
                       <div className="space-y-0.5">
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-accent text-accent-foreground border border-border/50 text-[11px] font-bold">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-accent text-accent-foreground border border-border/50 text-xs font-bold">
                           {row.projects?.project_code ? `${row.projects.project_code} — ` : ''}
                           {row.projects?.name}
                         </span>
                         {row.projects?.location && (
-                          <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold pl-1 flex items-center gap-1">
+                          <div className="text-xs text-emerald-700 dark:text-emerald-400 font-semibold pl-1 flex items-center gap-1">
                             <Building2 className="w-3 h-3 shrink-0 inline" />
                             <span>{row.projects.location}</span>
                           </div>
@@ -238,7 +243,7 @@ const ReportDataTable = ({
                     <TableCell>
                       <div className="font-medium text-foreground">{row.items?.name}</div>
                       {row.model && (
-                        <span className="text-[10px] text-muted-foreground">
+                        <span className="text-xs text-muted-foreground">
                           {t('reports.table.model', { model: row.model })}
                         </span>
                       )}
@@ -247,7 +252,7 @@ const ReportDataTable = ({
                     <TableCell className="text-muted-foreground">{row.supplier || '-'}</TableCell>
                     <TableCell className="text-muted-foreground font-mono">{row.po_number || '-'}</TableCell>
 
-                    <TableCell className="text-right font-bold text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
+                    <TableCell className="text-right font-bold text-emerald-700 dark:text-emerald-400 whitespace-nowrap">
                       +{row.quantity?.toLocaleString()} {row.items?.unit}
                     </TableCell>
                   </>
@@ -265,12 +270,12 @@ const ReportDataTable = ({
 
                     <TableCell className="font-semibold text-foreground">
                       <div className="space-y-0.5">
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-accent text-accent-foreground border border-border/50 text-[11px] font-bold">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-accent text-accent-foreground border border-border/50 text-xs font-bold">
                           {row.projects?.project_code ? `${row.projects.project_code} — ` : ''}
                           {row.projects?.name}
                         </span>
                         {row.projects?.location && (
-                          <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold pl-1 flex items-center gap-1">
+                          <div className="text-xs text-emerald-700 dark:text-emerald-400 font-semibold pl-1 flex items-center gap-1">
                             <Building2 className="w-3 h-3 shrink-0 inline" />
                             <span>{row.projects.location}</span>
                           </div>
@@ -281,7 +286,7 @@ const ReportDataTable = ({
                     <TableCell className="font-medium text-foreground">{row.items?.name}</TableCell>
 
                     <TableCell>
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-md border text-[10px] font-bold ${
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-md border text-xs font-bold ${
                         row.source === 'checkout_consumed'
                           ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/25'
                           : 'bg-muted text-muted-foreground border-border/50'
@@ -292,7 +297,7 @@ const ReportDataTable = ({
                       </span>
                     </TableCell>
 
-                    <TableCell className="font-mono text-[11px] text-muted-foreground">
+                    <TableCell className="font-mono text-xs text-muted-foreground">
                       {row.reference || '-'}
                     </TableCell>
 
@@ -310,11 +315,11 @@ const ReportDataTable = ({
                       {row.quantity} {row.items?.unit}
                     </TableCell>
 
-                    <TableCell className="text-center font-bold text-emerald-600 dark:text-emerald-400">
+                    <TableCell className="text-center font-bold text-emerald-700 dark:text-emerald-400">
                       {row.deducted_quantity} {row.items?.unit}
                     </TableCell>
 
-                    <TableCell className="text-center font-bold text-amber-600 dark:text-amber-400 bg-amber-500/5">
+                    <TableCell className="text-center font-bold text-amber-700 dark:text-amber-400 bg-amber-500/5">
                       {row.shortage_quantity > 0 ? `${row.shortage_quantity} ${row.items?.unit}` : '-'}
                     </TableCell>
                   </>
@@ -325,12 +330,12 @@ const ReportDataTable = ({
                   <>
                     <TableCell className="font-semibold text-foreground">
                       <div className="space-y-0.5">
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-accent text-accent-foreground border border-border/50 text-[11px] font-bold">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-accent text-accent-foreground border border-border/50 text-xs font-bold">
                           {row.projects?.project_code ? `${row.projects.project_code} — ` : ''}
                           {row.projects?.name || row.project_name}
                         </span>
                         {row.projects?.location && (
-                          <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold pl-1 flex items-center gap-1">
+                          <div className="text-xs text-emerald-700 dark:text-emerald-400 font-semibold pl-1 flex items-center gap-1">
                             <Building2 className="w-3 h-3 shrink-0 inline" />
                             <span>{row.projects.location}</span>
                           </div>
@@ -341,11 +346,11 @@ const ReportDataTable = ({
 
                     <TableCell className="font-medium text-foreground">{row.item_name}</TableCell>
 
-                    <TableCell className="text-right font-semibold text-emerald-600 dark:text-emerald-400">
+                    <TableCell className="text-right font-semibold text-emerald-700 dark:text-emerald-400">
                       +{row.total_in?.toLocaleString()}
                     </TableCell>
 
-                    <TableCell className="text-right font-semibold text-amber-600 dark:text-amber-400">
+                    <TableCell className="text-right font-semibold text-amber-700 dark:text-amber-400">
                       -{row.total_out?.toLocaleString()}
                     </TableCell>
 

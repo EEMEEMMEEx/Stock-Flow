@@ -1,5 +1,16 @@
 # Changelog
 
+## [2026-10-20 10:50] - v1.25.20
+### Fixed & Enhanced (Reports Audit — Phase 2: P2 & P3)
+- **Accessibility & ARIA (P2)**: ติดตั้ง WAI-ARIA Tab Semantics (`role="tablist"`, `role="tab"`, `aria-selected`, `aria-controls`, `id`, `tabIndex`) พร้อม Roving Tabindex Keyboard Navigation บน Arrow Keys (Left/Right/Home/End) ใน `ReportHeader.jsx` และ `role="tabpanel"` ใน `Reports.jsx`
+- **Accessibility & Form Labels (P2)**: เพิ่ม `htmlFor` และ `id` เชื่อมโยงให้กับ Form Controls ทุกจุดใน `ReportFilterBar.jsx`, เพิ่ม `aria-label`, `aria-expanded`, และ `aria-controls` บนปุ่มยุบ/ขยายตัวกรอง, และเพิ่ม `aria-label` บน Select / Search ใน `ReportSiteKits.jsx`
+- **Accessibility & Data Tables for SR (P2)**: เพิ่ม Accessible Data Table ซ่อนสายตา (`sr-only`) สำหรับ Screen Reader บนชาร์ต Recharts Bar Chart และ Pie Chart ใน `ReportCharts.jsx`
+- **Contrast Ratios (P2)**: ปรับปรุงสีข้อความสถานะและตัวเลขสู่ `text-emerald-700` และ `text-amber-700` ใน `ReportDataTable.jsx` และ `ReportKpiGrid.jsx` ให้ผ่านเกณฑ์ WCAG AA (>4.5:1)
+- **Touch Targets (P2)**: ปรับปรุงขนาดปุ่มและตัวเลือกใน `ReportHeader.jsx`, `ReportPagination.jsx`, `ReportFilterBar.jsx`, และ `ReportSiteKits.jsx` สู่ `min-h-[44px]` บน Mobile/Tablet
+- **Type Ramp Restoration (P2)**: กวาดล้างคลาส `text-[10px]` และ `text-[11px]` ใน `ReportDataTable.jsx`, `ReportKpiGrid.jsx`, และ `ReportSiteKits.jsx` กลับสู่ `text-xs` ตามมาตรฐาน `DESIGN.md`
+- **Performance & Data Flow (P2)**: ป้องกัน Double Fetch เมื่อสลับไปยังแท็บ `balance` ใน `Reports.jsx` และเพิ่ม Debounce 300ms ให้กับช่องค้นหาใน `ReportFilterBar.jsx`
+- **Polish & Housekeeping (P3)**: เพิ่ม `excelLoading` ปิดปุ่ม Excel ระหว่าง Export ใน `ReportHeader.jsx`, แทนที่การ Hardcode "Project: " ด้วย `t('common.project')`, เปลี่ยน Table Keys จาก array index เป็น composite unique keys, และเพิ่ม `aria-sort` บนหัวตารางที่จัดเรียงได้
+
 ## [2026-10-20 10:12] - v1.25.19
 ### Fixed & Optimized (Reports Audit — Phase 1: P1)
 - **Adapt Responsive (P1)**: แก้แท็บรายงานทับซ้อน/ตัดคำบน Desktop ใน `ReportHeader.jsx` โดยถอด `whitespace-nowrap` ระดับ `sm+`, เพิ่ม `min-w-0` ให้ปุ่มและป้ายข้อความ และเพิ่ม `leading-snug` เปิดให้ป้ายภาษาไทยยาวตัดบรรทัดได้ (Mobile ยังเลื่อนแนวนอนเหมือนเดิม)

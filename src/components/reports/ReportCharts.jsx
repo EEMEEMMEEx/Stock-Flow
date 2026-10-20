@@ -158,6 +158,32 @@ const ReportCharts = ({ activeTab, reportData = [] }) => {
           </span>
         </CardHeader>
         <CardContent className="p-4 pt-0">
+          {/* Screen Reader Fallback Data Table */}
+          <div className="sr-only">
+            <table>
+              <caption>
+                {activeTab === 'stock_in'
+                  ? t('reports.charts.stockInByProject')
+                  : activeTab === 'withdrawals'
+                  ? t('reports.charts.withdrawalsByProject')
+                  : t('reports.charts.balanceByProject')}
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">{t('common.name', 'Name')}</th>
+                  <th scope="col">{t('reports.charts.quantity')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {projectChartData.map((row) => (
+                  <tr key={row.fullName}>
+                    <th scope="row">{row.fullName}</th>
+                    <td>{row.value.toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
           <div className="h-[220px] w-full mt-2">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={projectChartData} margin={{ top: 10, right: 10, left: -20, bottom: 20 }}>
@@ -201,6 +227,32 @@ const ReportCharts = ({ activeTab, reportData = [] }) => {
           </CardTitle>
         </CardHeader>
         <CardContent className="p-4 pt-0">
+          {/* Screen Reader Fallback Data Table */}
+          <div className="sr-only">
+            <table>
+              <caption>
+                {activeTab === 'stock_in'
+                  ? t('reports.charts.supplierDistribution')
+                  : activeTab === 'withdrawals'
+                  ? t('reports.charts.withdrawalStatusBreakdown')
+                  : t('reports.charts.inventoryStatusBreakdown')}
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">{t('common.name', 'Name')}</th>
+                  <th scope="col">{t('reports.charts.quantity')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {statusPieData.map((row) => (
+                  <tr key={row.name}>
+                    <th scope="row">{row.name}</th>
+                    <td>{row.value.toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
           <div className="h-[220px] w-full flex items-center justify-center">
             {statusPieData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">

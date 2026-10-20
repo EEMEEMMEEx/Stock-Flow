@@ -21,6 +21,23 @@ const ReportFilterBar = ({
 }) => {
   const { t } = useTranslation();
   const [isExpanded, setIsExpanded] = React.useState(true);
+  const [searchInput, setSearchInput] = React.useState(filters.search);
+
+  // Debounce search keystrokes so the parent state (and its client-side filtering) updates once typing pauses.
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchInput !== filters.search) {
+        onFilterChange({ target: { name: 'search', value: searchInput } });
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchInput]);
+
+  // Keep the local input in sync when filters are reset or the tab changes.
+  React.useEffect(() => {
+    setSearchInput(filters.search);
+  }, [filters.search]);
 
   // Quick Date Presets helper
   const handleApplyPreset = (presetKey) => {
@@ -69,7 +86,8 @@ const ReportFilterBar = ({
               variant="outline"
               size="sm"
               onClick={onToggleCharts}
-              className={`h-9 sm:h-8 px-2.5 rounded-lg text-xs font-medium gap-1.5 border-border transition-all cursor-pointer ${
+              aria-label={showCharts ? t('reports.filters.hideVisuals') : t('reports.filters.showVisuals')}
+              className={`h-11 sm:h-8 px-2.5 rounded-lg text-xs font-medium gap-1.5 border-border transition-all cursor-pointer ${
                 showCharts ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'
               }`}
             >
@@ -83,7 +101,7 @@ const ReportFilterBar = ({
                 variant="ghost"
                 size="sm"
                 onClick={onResetFilters}
-                className="h-9 sm:h-8 px-2.5 text-xs text-muted-foreground hover:text-rose-600 dark:hover:text-rose-400 gap-1 cursor-pointer"
+                className="h-11 sm:h-8 px-2.5 text-xs text-muted-foreground hover:text-rose-600 dark:hover:text-rose-400 gap-1 cursor-pointer"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>{t('reports.filters.clearFilters')}</span>
@@ -95,7 +113,10 @@ const ReportFilterBar = ({
               variant="ghost"
               size="sm"
               onClick={() => setIsExpanded(!isExpanded)}
-              className="h-9 w-9 sm:h-8 sm:w-8 p-0 text-muted-foreground cursor-pointer"
+              aria-label={isExpanded ? t('reports.filters.hideFilters') : t('reports.filters.showFilters')}
+              aria-expanded={isExpanded}
+              aria-controls="report-filters-panel"
+              className="h-11 w-11 sm:h-8 sm:w-8 p-0 text-muted-foreground cursor-pointer"
             >
               {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </Button>
@@ -104,18 +125,19 @@ const ReportFilterBar = ({
 
         {/* Filter Form Controls */}
         {isExpanded && (
-          <div className="space-y-4">
+          <div id="report-filters-panel" className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 items-end">
               {/* Project & Storage Location Filter */}
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-foreground flex items-center gap-1">
+                <Label htmlFor="report-filter-project" className="text-xs font-semibold text-foreground flex items-center gap-1">
                   {t('reports.filters.projectAndLocation')} {activeTab === 'balance' && <span className="text-rose-500">*</span>}
                 </Label>
                 <select
+                  id="report-filter-project"
                   name="project_id"
                   value={filters.project_id}
                   onChange={onFilterChange}
-                  className="flex h-9 w-full rounded-xl border border-input bg-background px-3 py-1 text-xs shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring font-medium cursor-pointer"
+                  className="flex h-11 sm:h-9 w-full rounded-xl border border-input bg-background px-3 py-1 text-xs shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring font-medium cursor-pointer"
                 >
                   {activeTab !== 'balance' && <option value="">{t('reports.filters.allProjectsAndLocations')}</option>}
                   {(() => {
@@ -126,7 +148,7 @@ const ReportFilterBar = ({
                       else map.get(key).locations.push(p);
                     });
                     return Array.from(map.values()).map(group => (
-                      <optgroup key={group.key} label={`Project: ${group.project_code ? `[${group.project_code}] ` : ''}${group.name}`}>
+                      <optgroup key={group.key} label={`${t('common.project')}: ${group.project_code ? `[${group.project_code}] ` : ''}${group.name}`}>
                         {group.locations.map(loc => (
                           <option key={loc.id} value={loc.id}>
                             {loc.location || t('reports.filters.mainStorage')} {loc.description ? `— ${loc.description}` : ''}
@@ -142,27 +164,29 @@ const ReportFilterBar = ({
               {activeTab !== 'balance' && (
                 <>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-foreground">{t('reports.filters.startDate')}</Label>
+                    <Label htmlFor="report-filter-start-date" className="text-xs font-semibold text-foreground">{t('reports.filters.startDate')}</Label>
                     <div className="relative">
                       <Input
+                        id="report-filter-start-date"
                         type="date"
                         name="start_date"
                         value={filters.start_date}
                         onChange={onFilterChange}
-                        className="h-9 text-xs rounded-xl pr-2"
+                        className="h-11 sm:h-9 text-xs rounded-xl pr-2"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-foreground">{t('reports.filters.endDate')}</Label>
+                    <Label htmlFor="report-filter-end-date" className="text-xs font-semibold text-foreground">{t('reports.filters.endDate')}</Label>
                     <div className="relative">
                       <Input
+                        id="report-filter-end-date"
                         type="date"
                         name="end_date"
                         value={filters.end_date}
                         onChange={onFilterChange}
-                        className="h-9 text-xs rounded-xl pr-2"
+                        className="h-11 sm:h-9 text-xs rounded-xl pr-2"
                       />
                     </div>
                   </div>
@@ -172,15 +196,16 @@ const ReportFilterBar = ({
               {/* Search Filter (Stock-In) */}
               {activeTab === 'stock_in' && (
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-foreground">{t('reports.filters.searchStockIn')}</Label>
+                  <Label htmlFor="report-filter-search" className="text-xs font-semibold text-foreground">{t('reports.filters.searchStockIn')}</Label>
                   <div className="relative">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Search className="absolute left-2.5 top-3.5 sm:top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
+                      id="report-filter-search"
                       name="search"
-                      value={filters.search}
-                      onChange={onFilterChange}
+                      value={searchInput}
+                      onChange={(e) => setSearchInput(e.target.value)}
                       placeholder={t('reports.filters.searchStockInPlaceholder')}
-                      className="pl-8 h-9 text-xs rounded-xl"
+                      className="pl-8 h-11 sm:h-9 text-xs rounded-xl"
                     />
                   </div>
                 </div>
@@ -189,12 +214,13 @@ const ReportFilterBar = ({
               {/* Status Filter (Withdrawals) */}
               {activeTab === 'withdrawals' && (
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-foreground">{t('reports.filters.withdrawalStatus')}</Label>
+                  <Label htmlFor="report-filter-status" className="text-xs font-semibold text-foreground">{t('reports.filters.withdrawalStatus')}</Label>
                   <select
+                    id="report-filter-status"
                     name="status"
                     value={filters.status}
                     onChange={onFilterChange}
-                    className="flex h-9 w-full rounded-xl border border-input bg-background px-3 py-1 text-xs shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="flex h-11 sm:h-9 w-full rounded-xl border border-input bg-background px-3 py-1 text-xs shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <option value="">{t('reports.filters.allStatuses')}</option>
                     <option value="pending">{t('status.pending')}</option>
@@ -209,12 +235,13 @@ const ReportFilterBar = ({
               {activeTab === 'balance' && (
                 <>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-foreground">{t('reports.filters.category')}</Label>
+                    <Label htmlFor="report-filter-category" className="text-xs font-semibold text-foreground">{t('reports.filters.category')}</Label>
                     <select
+                      id="report-filter-category"
                       name="category_id"
                       value={filters.category_id}
                       onChange={onFilterChange}
-                      className="flex h-9 w-full rounded-xl border border-input bg-background px-3 py-1 text-xs shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="flex h-11 sm:h-9 w-full rounded-xl border border-input bg-background px-3 py-1 text-xs shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <option value="">{t('reports.filters.allCategories')}</option>
                       {categories.map((c) => (
@@ -226,15 +253,16 @@ const ReportFilterBar = ({
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-foreground">{t('reports.filters.searchBalance')}</Label>
+                    <Label htmlFor="report-filter-search-balance" className="text-xs font-semibold text-foreground">{t('reports.filters.searchBalance')}</Label>
                     <div className="relative">
-                      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <Search className="absolute left-2.5 top-3.5 sm:top-2.5 h-4 w-4 text-muted-foreground" />
                       <Input
+                        id="report-filter-search-balance"
                         name="search"
-                        value={filters.search}
-                        onChange={onFilterChange}
+                        value={searchInput}
+                        onChange={(e) => setSearchInput(e.target.value)}
                         placeholder={t('reports.filters.searchBalancePlaceholder')}
-                        className="pl-8 h-9 text-xs rounded-xl"
+                        className="pl-8 h-11 sm:h-9 text-xs rounded-xl"
                       />
                     </div>
                   </div>
@@ -244,10 +272,10 @@ const ReportFilterBar = ({
               {/* Apply Filter Button */}
               <div className="flex items-center gap-2 sm:col-span-2 lg:col-span-1 justify-end">
                 <Button
-                  onClick={onApplyFilters}
+                  onClick={() => onApplyFilters(searchInput)}
                   disabled={loading}
                   size="sm"
-                  className="w-full h-9 rounded-xl font-semibold text-xs bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs gap-1.5"
+                  className="w-full h-11 sm:h-9 rounded-xl font-semibold text-xs bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs gap-1.5"
                 >
                   <Search className="w-3.5 h-3.5" />
                   <span>{loading ? t('reports.filters.fetching') : t('reports.filters.apply')}</span>

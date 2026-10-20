@@ -20,7 +20,7 @@ const Reports = () => {
   const { t } = useTranslation();
   const { can } = useAuth();
   const canExport = can('reports.export');
-  const [activeTab, setActiveTab] = useState('stock_in'); // 'stock_in', 'withdrawals', 'balance'
+  const [activeTab, setActiveTab] = useState('stock_in'); // 'stock_in', 'withdrawals', 'balance', 'site_kits', 'site_kits'
 
   // Data State
   const [projects, setProjects] = useState([]);
@@ -29,6 +29,7 @@ const Reports = () => {
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
+  const [excelLoading, setExcelLoading] = useState(false);
   const [showCharts, setShowCharts] = useState(true);
 
   // Filter State
@@ -72,9 +73,9 @@ const Reports = () => {
     fetchFilterOptions();
   }, [fetchFilterOptions]);
 
-  const fetchReportData = useCallback(async () => {
+  const fetchReportData = useCallback(async (overrides) => {
     const currentTab = activeTabRef.current;
-    const currentFilters = filtersRef.current;
+    const currentFilters = overrides ? { ...filtersRef.current, ...overrides } : filtersRef.current;
     const currentProjects = projectsRef.current;
     setLoading(true);
     setFetchError(false);
@@ -249,6 +250,9 @@ const Reports = () => {
   }, [t]);
 
   useEffect(() => {
+    // On the balance tab the project_id effect below fires in the same commit
+    // (handleTabChange sets both at once) — skip here to avoid a duplicate fetch.
+    if (activeTab === 'balance' && filtersRef.current.project_id) return;
     fetchReportData();
   }, [activeTab, fetchReportData]);
 
@@ -275,6 +279,15 @@ const Reports = () => {
       fetchReportData();
     }
   }, [filters.project_id, activeTab, fetchReportData]);
+
+  // FilterBar debounces search input locally; Apply passes the latest value explicitly
+  // so the fetch never races the debounced state update.
+  const handleApplyFilters = (searchValue) => {
+    if (typeof searchValue === 'string' && searchValue !== filtersRef.current.search) {
+      setFilters((prev) => ({ ...prev, search: searchValue }));
+    }
+    fetchReportData(typeof searchValue === 'string' ? { search: searchValue } : undefined);
+  };
 
   const handleTabChange = (tabId) => {
     setActiveTab(tabId);
@@ -368,6 +381,7 @@ const Reports = () => {
       toast.error(t('reports.export.permissionDeniedExcel'));
       return;
     }
+    setExcelLoading(true);
     try {
       const { utils, writeFile } = await import('xlsx');
       let exportData = [];
@@ -410,39 +424,6 @@ const Reports = () => {
           [t('reports.export.colBalance')]: r.balance,
           [t('reports.export.colUnit')]: r.unit
         }));
-      } else if (activeTab === 'site_kits') {
-        const { fetchSiteKitsAvailability } = await import('@/lib/siteKits');
-        const siteKitsData = await fetchSiteKitsAvailability(filters.project_id || null);
-        let itemsList = [];
-        (siteKitsData || []).forEach(cat => {
-          (cat.items || []).forEach(item => {
-            const isLimiting = item.is_mandatory && item.sets_possible === cat.complete_sets;
-            itemsList.push({
-              ...item,
-              category_id: cat.category_id,
-              category_name: cat.category_name,
-              category_complete_sets: cat.complete_sets,
-              isLimiting
-            });
-          });
-        });
-        sheetName = t('reports.export.sheetSiteKits');
-        exportData = itemsList.map((item, index) => ({
-          [t('reports.export.colNo')]: index + 1,
-          [t('reports.export.colEquipmentCategory')]: item.category_name,
-          [t('reports.export.colPartNumber')]: item.part_number || '-',
-          [t('reports.export.colBomItemName')]: item.bom_name,
-          [t('reports.export.colQtyPerSite')]: item.qty_per_site,
-          [t('reports.export.colUnit')]: item.unit || t('common.piece'),
-          [t('reports.export.colCurrentStock')]: item.total_stock,
-          [t('reports.export.colKitsPossible')]: item.sets_possible,
-          [t('reports.export.colMissingForNextSet')]: item.missing_for_next_set || 0,
-          [t('reports.export.colStatus')]: item.total_stock === 0 
-            ? t('reports.siteKits.outOfStock') 
-            : item.isLimiting 
-            ? t('reports.siteKits.limitingStock') 
-            : t('reports.siteKits.ready')
-        }));
       }
 
       if (exportData.length === 0) {
@@ -470,62 +451,32 @@ const Reports = () => {
       setPdfLoading(true);
       const toastId = toast.loading(t('reports.export.generatingPdf'));
 
-      const { StockReportPDF, SiteKitsReportPDF } = await import('@/lib/pdf-templates.jsx');
+      const { StockReportPDF } = await import('@/lib/pdf-templates.jsx');
       const { pdf } = await import('@react-pdf/renderer');
 
       let doc;
-      let downloadFileName = `${activeTab}_Report_${new Date().toISOString().split('T')[0]}.pdf`;
+      const downloadFileName = `${activeTab}_Report_${new Date().toISOString().split('T')[0]}.pdf`;
 
-      if (activeTab === 'site_kits') {
-        const { fetchSiteKitsAvailability } = await import('@/lib/siteKits');
-        const siteKitsData = await fetchSiteKitsAvailability(filters.project_id || null);
-        let itemsList = [];
-        (siteKitsData || []).forEach(cat => {
-          (cat.items || []).forEach(item => {
-            const isLimiting = item.is_mandatory && item.sets_possible === cat.complete_sets;
-            itemsList.push({
-              ...item,
-              category_id: cat.category_id,
-              category_name: cat.category_name,
-              category_complete_sets: cat.complete_sets,
-              isLimiting
-            });
-          });
-        });
-        const selectedProj = projects.find(p => p.id === filters.project_id);
-        const projectName = selectedProj ? (selectedProj.location ? `${selectedProj.name} (${selectedProj.location})` : selectedProj.name) : t('reports.export.allStorageLocations');
+      const selectedProj = projects.find(p => p.id === filters.project_id);
+      const projectName = selectedProj
+        ? (selectedProj.project_code ? `[${selectedProj.project_code}] ${selectedProj.name}` : selectedProj.name)
+        : '';
+      const warehouseName = selectedProj?.location || (selectedProj ? t('reports.export.mainStorage') : '');
+      const selectedCat = categories.find(c => c.id === filters.category_id);
+      const categoryName = selectedCat?.name || '';
 
-        doc = (
-          <SiteKitsReportPDF
-            items={itemsList}
-            siteKits={siteKitsData || []}
-            projectName={projectName}
-            categoryName={t('reports.export.all4Categories')}
-          />
-        );
-        downloadFileName = `Site_Kits_BOM_Availability_Report_${new Date().toISOString().split('T')[0]}.pdf`;
-      } else {
-        const selectedProj = projects.find(p => p.id === filters.project_id);
-        const projectName = selectedProj
-          ? (selectedProj.project_code ? `[${selectedProj.project_code}] ${selectedProj.name}` : selectedProj.name)
-          : '';
-        const warehouseName = selectedProj?.location || (selectedProj ? t('reports.filters.mainStorage') : '');
-        const selectedCat = categories.find(c => c.id === filters.category_id);
-        const categoryName = selectedCat?.name || '';
-
-        doc = (
-          <StockReportPDF
-            data={processedData}
-            type={activeTab}
-            projectName={projectName}
-            warehouseName={warehouseName}
-            categoryName={categoryName}
-            startDate={filters.start_date}
-            endDate={filters.end_date}
-            searchQuery={filters.search}
-          />
-        );
-      }
+      doc = (
+        <StockReportPDF
+          data={processedData}
+          type={activeTab}
+          projectName={projectName}
+          warehouseName={warehouseName}
+          categoryName={categoryName}
+          startDate={filters.start_date}
+          endDate={filters.end_date}
+          searchQuery={filters.search}
+        />
+      );
 
       const blob = await pdf(doc).toBlob();
       const url = window.URL.createObjectURL(blob);
@@ -554,13 +505,15 @@ const Reports = () => {
         onTabChange={handleTabChange}
         onExportPDF={handleExportPDF}
         onExportExcel={handleExportExcel}
-        onRefresh={fetchReportData}
+        onRefresh={() => fetchReportData()}
         totalItemsCount={processedData.length}
         loading={loading}
         pdfLoading={pdfLoading}
+        excelLoading={excelLoading}
         canExport={canExport}
       />
 
+      <div role="tabpanel" id="report-tabpanel" aria-labelledby={`report-tab-${activeTab}`} className="space-y-6">
       {activeTab === 'site_kits' ? (
         <ReportSiteKits projects={projects} />
       ) : fetchError && reportData.length === 0 ? (
@@ -601,7 +554,7 @@ const Reports = () => {
             filters={filters}
             onFilterChange={handleFilterChange}
             onResetFilters={handleResetFilters}
-            onApplyFilters={fetchReportData}
+            onApplyFilters={handleApplyFilters}
             projects={projects}
             categories={categories}
             showCharts={showCharts}
@@ -638,6 +591,7 @@ const Reports = () => {
           )}
         </>
       )}
+      </div>
     </div>
   );
 };

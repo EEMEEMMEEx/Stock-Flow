@@ -202,7 +202,7 @@ const ReportSiteKits = ({ projects = [] }) => {
               >
                 <Icon className="w-3.5 h-3.5" />
                 <span>{cat.category_name.split(' ')[0]}</span>
-                <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-background/30 font-black">
+                <span className="px-1.5 py-0.2 rounded-full text-xs bg-background/30 font-black">
                   {cat.complete_sets} {cat.complete_sets === 1 ? t('reports.siteKits.set') : t('reports.siteKits.sets')}
                 </span>
               </Button>
@@ -214,7 +214,8 @@ const ReportSiteKits = ({ projects = [] }) => {
           <select
             value={selectedProjectId}
             onChange={(e) => setSelectedProjectId(e.target.value)}
-            className="h-9 rounded-xl px-3 text-xs bg-background border border-border/80 focus:ring-1 focus:ring-emerald-500 font-medium text-foreground cursor-pointer"
+            aria-label={t('reports.siteKits.warehouseFilter')}
+            className="h-11 sm:h-9 rounded-xl px-3 text-xs bg-background border border-border/80 focus:ring-1 focus:ring-emerald-500 font-medium text-foreground cursor-pointer"
           >
             <option value="">{t('reports.siteKits.allWarehouses')}</option>
             {projects.map(p => (
@@ -229,9 +230,10 @@ const ReportSiteKits = ({ projects = [] }) => {
             <Input
               type="text"
               placeholder={t('reports.siteKits.searchPlaceholder')}
+              aria-label={t('reports.siteKits.searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="h-9 pl-8 text-xs rounded-xl border-border/80 bg-background"
+              className="h-11 sm:h-9 pl-8 text-xs rounded-xl border-border/80 bg-background"
             />
           </div>
 
@@ -241,8 +243,9 @@ const ReportSiteKits = ({ projects = [] }) => {
             size="sm"
             onClick={() => loadData(false)}
             disabled={refreshing}
-            className="h-9 px-3 rounded-xl border-border/80 text-xs font-bold cursor-pointer"
+            className="h-11 sm:h-9 px-3 rounded-xl border-border/80 text-xs font-bold cursor-pointer"
             title={t('common.refresh')}
+            aria-label={t('common.refresh')}
           >
             <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin text-emerald-600' : ''}`} />
           </Button>
@@ -295,7 +298,7 @@ const ReportSiteKits = ({ projects = [] }) => {
                     {cat.complete_sets} {cat.complete_sets === 1 ? t('reports.siteKits.set') : t('reports.siteKits.sets')}
                   </Badge>
                 </div>
-                <div className="text-[11px] text-muted-foreground pt-1 border-t border-border/50">
+                <div className="text-xs text-muted-foreground pt-1 border-t border-border/50">
                   {cat.bottlenecks && cat.bottlenecks.length > 0 ? (
                     <span className="text-amber-600 dark:text-amber-400 font-medium">
                       {t('reports.siteKits.limitingPrefix', { name: cat.bottlenecks[0] })}
@@ -364,17 +367,17 @@ const ReportSiteKits = ({ projects = [] }) => {
                       <td className="py-3 px-4 font-bold text-foreground">
                         {item.category_name}
                       </td>
-                      <td className="py-3 px-4 font-mono text-[11px] text-muted-foreground">
+                      <td className="py-3 px-4 font-mono text-xs text-muted-foreground">
                         {item.part_number || '-'}
                       </td>
                       <td className="py-3 px-4">
                         <div className="font-semibold text-foreground">{item.bom_name}</div>
-                        <div className="text-[10px] text-muted-foreground">
+                        <div className="text-xs text-muted-foreground">
                           {t('reports.siteKits.matchedInSystem', { name: item.db_matched_name })}
                         </div>
                       </td>
                       <td className="py-3 px-4 text-center font-bold text-foreground">
-                        {item.qty_per_site} <span className="text-[10px] font-normal text-muted-foreground">{item.unit || t('common.piece')}</span>
+                        {item.qty_per_site} <span className="text-xs font-normal text-muted-foreground">{item.unit || t('common.piece')}</span>
                       </td>
                       <td className="py-3 px-4 text-center font-bold text-foreground">
                         <span className={item.total_stock === 0 ? 'text-rose-600 dark:text-rose-400' : ''}>
@@ -405,15 +408,15 @@ const ReportSiteKits = ({ projects = [] }) => {
                       </td>
                       <td className="py-3 px-4 text-center">
                         {item.total_stock === 0 ? (
-                          <Badge variant="outline" className="bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/30 text-[10px] font-bold">
+                          <Badge variant="outline" className="bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/30 text-xs font-bold">
                             {t('reports.siteKits.outOfStock')}
                           </Badge>
                         ) : item.isLimiting ? (
-                          <Badge variant="outline" className="bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30 text-[10px] font-bold">
+                          <Badge variant="outline" className="bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30 text-xs font-bold">
                             {t('reports.siteKits.limitingStock')}
                           </Badge>
                         ) : (
-                          <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 text-[10px] font-bold">
+                          <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 text-xs font-bold">
                             {t('reports.siteKits.ready')}
                           </Badge>
                         )}

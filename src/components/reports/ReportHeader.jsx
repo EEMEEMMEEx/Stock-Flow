@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { FileText, Download, ArrowDownToLine, ArrowUpFromLine, Scale, Sparkles, RefreshCw, Layers } from 'lucide-react';
@@ -12,9 +13,26 @@ const ReportHeader = ({
   totalItemsCount = 0,
   loading = false,
   pdfLoading = false,
+  excelLoading = false,
   canExport = true
 }) => {
   const { t } = useTranslation();
+  const tabRefs = useRef([]);
+
+  // Roving-tabindex keyboard nav: selection follows focus per WAI-ARIA Tabs pattern.
+  const handleTabKeyDown = (e) => {
+    const currentIndex = tabs.findIndex((tab) => tab.id === activeTab);
+    let nextIndex = null;
+    if (e.key === 'ArrowRight') nextIndex = (currentIndex + 1) % tabs.length;
+    else if (e.key === 'ArrowLeft') nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+    else if (e.key === 'Home') nextIndex = 0;
+    else if (e.key === 'End') nextIndex = tabs.length - 1;
+    if (nextIndex === null) return;
+    e.preventDefault();
+    tabRefs.current[nextIndex]?.focus();
+    if (tabs[nextIndex].id !== activeTab) onTabChange(tabs[nextIndex].id);
+  };
+
   const tabs = [
     {
       id: 'stock_in',
@@ -69,14 +87,16 @@ const ReportHeader = ({
           </div>
         </div>
 
-        {/* Action Controls */}
+        {/* Action Controls — hidden on site_kits: ReportSiteKits provides its own
+            refresh/export toolbar bound to its own filter state */}
+        {activeTab !== 'site_kits' && (
         <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           <Button
             onClick={onRefresh}
             disabled={loading}
             variant="outline"
             size="sm"
-            className="h-9 px-3 rounded-xl border-border hover:bg-accent text-xs font-medium gap-1.5 transition-all"
+            className="h-11 sm:h-9 px-3 rounded-xl border-border hover:bg-accent text-xs font-medium gap-1.5 transition-all"
             title={t('common.refresh')}
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
@@ -90,7 +110,7 @@ const ReportHeader = ({
                 disabled={pdfLoading || loading}
                 variant="outline"
                 size="sm"
-                className="h-9 px-3.5 rounded-xl font-semibold text-xs border-rose-200 dark:border-rose-900/60 text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
+                className="h-11 sm:h-9 px-3.5 rounded-xl font-semibold text-xs border-rose-200 dark:border-rose-900/60 text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
               >
                 <FileText className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
                 <span>{pdfLoading ? t('reports.export.generatingPdf', 'Generating PDF...') : t('reports.exportPdf')}</span>
@@ -98,12 +118,12 @@ const ReportHeader = ({
 
               <Button
                 onClick={onExportExcel}
-                disabled={loading}
+                disabled={loading || excelLoading}
                 size="sm"
-                className="h-9 px-3.5 rounded-xl font-semibold text-xs bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white shadow-xs hover:shadow-md shadow-emerald-600/20 flex items-center gap-1.5 transition-all cursor-pointer"
+                className="h-11 sm:h-9 px-3.5 rounded-xl font-semibold text-xs bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white shadow-xs hover:shadow-md shadow-emerald-600/20 flex items-center gap-1.5 transition-all cursor-pointer"
               >
                 <Download className="w-3.5 h-3.5" />
-                <span>{t('reports.exportExcel')}</span>
+                <span>{excelLoading ? t('reports.export.generatingExcel', 'Exporting...') : t('reports.exportExcel')}</span>
               </Button>
             </>
           )}
@@ -114,18 +134,30 @@ const ReportHeader = ({
             <span>{totalItemsCount === 1 ? t('reports.record') : t('reports.records')}</span>
           </Badge>
         </div>
+        )}
       </div>
 
       {/* Report Categories Tab Navigation */}
-      <div className="flex overflow-x-auto sm:grid sm:grid-cols-4 gap-2 p-1.5 bg-muted/40 rounded-xl border border-border/50 scrollbar-none">
-        {tabs.map((tab) => {
+      <div
+        role="tablist"
+        aria-label={t('reports.tabs.label')}
+        onKeyDown={handleTabKeyDown}
+        className="flex overflow-x-auto sm:grid sm:grid-cols-4 gap-2 p-1.5 bg-muted/40 rounded-xl border border-border/50"
+      >
+        {tabs.map((tab, index) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
           return (
             <button
               key={tab.id}
+              ref={(el) => { tabRefs.current[index] = el; }}
+              role="tab"
+              id={`report-tab-${tab.id}`}
+              aria-selected={isActive}
+              aria-controls="report-tabpanel"
+              tabIndex={isActive ? 0 : -1}
               onClick={() => onTabChange(tab.id)}
-              className={`shrink-0 sm:shrink sm:w-auto min-w-0 flex items-center justify-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-lg text-xs sm:text-sm font-semibold leading-snug transition-all cursor-pointer border whitespace-nowrap sm:whitespace-normal min-h-[40px] ${
+              className={`shrink-0 sm:shrink sm:w-auto min-w-0 flex items-center justify-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-lg text-xs sm:text-sm font-semibold leading-snug transition-all cursor-pointer border whitespace-nowrap sm:whitespace-normal min-h-[44px] ${
                 isActive
                   ? `${tab.activeClass} shadow-xs`
                   : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-background/50'
