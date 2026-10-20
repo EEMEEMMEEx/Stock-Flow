@@ -125,14 +125,14 @@ const ReportHeader = ({
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
-              className={`shrink-0 sm:shrink sm:w-auto flex items-center justify-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer border whitespace-nowrap min-h-[40px] ${
+              className={`shrink-0 sm:shrink sm:w-auto min-w-0 flex items-center justify-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-lg text-xs sm:text-sm font-semibold leading-snug transition-all cursor-pointer border whitespace-nowrap sm:whitespace-normal min-h-[40px] ${
                 isActive
                   ? `${tab.activeClass} shadow-xs`
                   : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-background/50'
               }`}
             >
               <Icon className={`w-4 h-4 shrink-0 ${isActive ? '' : 'opacity-70'}`} />
-              <span>{tab.label}</span>
+              <span className="min-w-0">{tab.label}</span>
             </button>
           );
         })}

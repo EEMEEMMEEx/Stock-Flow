@@ -1,5 +1,13 @@
 # Changelog
 
+## [2026-10-20 10:12] - v1.25.19
+### Fixed & Optimized (Reports Audit — Phase 1: P1)
+- **Adapt Responsive (P1)**: แก้แท็บรายงานทับซ้อน/ตัดคำบน Desktop ใน `ReportHeader.jsx` โดยถอด `whitespace-nowrap` ระดับ `sm+`, เพิ่ม `min-w-0` ให้ปุ่มและป้ายข้อความ และเพิ่ม `leading-snug` เปิดให้ป้ายภาษาไทยยาวตัดบรรทัดได้ (Mobile ยังเลื่อนแนวนอนเหมือนเดิม)
+- **Harden Error Feedback (P1)**: เพิ่ม Error State แยกจาก Empty State ใน `Reports.jsx` — เมื่อโหลดข้อมูลล้มเหลวแสดง Error Card พร้อมปุ่มลองใหม่ + toast แจ้งเตือน แทนการแสดง "ไม่พบข้อมูล" ที่หลอกผู้ใช้
+- **Optimize Dynamic Import (P1)**: แปลง import `xlsx` ใน `Reports.jsx` และ `ReportSiteKits.jsx` เป็น `await import('xlsx')` ตามแบบแผนเดียวกับ `Scrap.jsx` ลดขนาดชังก์หน้า Reports
+- **Fix Stale Data**: เคลียร์ `reportData` เมื่อสลับแท็บใน `Reports.jsx` ป้องกันข้อมูลแท็บเก่าค้างแสดงผลข้ามแท็บและป้องกันตัวนับ "จำนวนรายการ" โชว์ตัวเลขเก่า
+- **i18n**: เพิ่มคีย์ `reports.error.*` (title, description, retry, fetchFailed) ครบสมมาตรทั้ง `th.js` และ `en.js`
+
 ## [2026-10-20 09:25] - v1.25.18
 ### Refactored & Polished
 - **Distill Components**: สกัด `ItemStockHistoryDialog.jsx` ออกจาก `Items.jsx` และ `StockInOrderDetailModal.jsx` ออกจาก `StockIn.jsx` ลดขนาดหน้าจอหลักและเพิ่มความสะดวกในการบำรุงรักษา

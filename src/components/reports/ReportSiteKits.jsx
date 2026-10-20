@@ -7,7 +7,6 @@ import {
   FileSpreadsheet, FileText, Layers, 
   RefreshCw, Search 
 } from 'lucide-react';
-import { utils, writeFile } from 'xlsx';
 import toast from 'react-hot-toast';
 import { fetchSiteKitsAvailability } from '@/lib/siteKits';
 import { useAuth } from '@/contexts/AuthContext';
@@ -76,12 +75,13 @@ const ReportSiteKits = ({ projects = [] }) => {
     return list;
   }, [siteKits, selectedCategoryId, searchTerm]);
 
-  const handleExportExcel = () => {
+  const handleExportExcel = async () => {
     if (!canExport) {
       toast.error(t('reports.export.permissionDeniedExcel'));
       return;
     }
     try {
+      const { utils, writeFile } = await import('xlsx');
       const exportData = filteredItems.map((item, index) => ({
         [t('reports.export.colNo')]: index + 1,
         [t('reports.export.colEquipmentCategory')]: item.category_name,

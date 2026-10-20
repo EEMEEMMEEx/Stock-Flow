@@ -28,6 +28,7 @@ import { ProjectLocationSelector } from '@/components/common/ProjectLocationSele
 import { useTranslation } from '@/i18n';
 import { formatI18nDate, formatI18nNumber } from '@/lib/i18n-format';
 import { filterStockInOrders } from '@/lib/stockInSearch';
+import { StockInOrderDetailModal } from '@/components/stockin/StockInOrderDetailModal';
 
 const StockIn = () => {
   const { can, user } = useAuth();

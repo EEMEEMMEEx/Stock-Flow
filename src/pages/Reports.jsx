@@ -1,8 +1,10 @@
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
-import { utils, writeFile } from 'xlsx';
 import toast from 'react-hot-toast';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { AlertTriangle, RotateCcw } from 'lucide-react';
 import { useTranslation } from '@/i18n';
 
 // Subcomponents
@@ -25,6 +27,7 @@ const Reports = () => {
   const [categories, setCategories] = useState([]);
   const [reportData, setReportData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [fetchError, setFetchError] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [showCharts, setShowCharts] = useState(true);
 
@@ -74,6 +77,7 @@ const Reports = () => {
     const currentFilters = filtersRef.current;
     const currentProjects = projectsRef.current;
     setLoading(true);
+    setFetchError(false);
     setCurrentPage(1);
     try {
       if (currentTab === 'stock_in') {
@@ -237,10 +241,12 @@ const Reports = () => {
       }
     } catch (error) {
       console.error(error);
+      setFetchError(true);
+      toast.error(t('reports.error.fetchFailed'));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchReportData();
@@ -272,6 +278,7 @@ const Reports = () => {
 
   const handleTabChange = (tabId) => {
     setActiveTab(tabId);
+    setReportData([]);
     setFilters({
       project_id: tabId === 'balance' ? projects[0]?.id || '' : '',
       start_date: '',
@@ -362,6 +369,7 @@ const Reports = () => {
       return;
     }
     try {
+      const { utils, writeFile } = await import('xlsx');
       let exportData = [];
       let sheetName = '';
 
@@ -555,6 +563,28 @@ const Reports = () => {
 
       {activeTab === 'site_kits' ? (
         <ReportSiteKits projects={projects} />
+      ) : fetchError && reportData.length === 0 ? (
+        <Card className="border border-dashed border-rose-300 dark:border-rose-900/60 shadow-xs">
+          <CardContent className="p-8 sm:p-12 text-center flex flex-col items-center justify-center space-y-3">
+            <div className="p-4 rounded-full bg-rose-500/10 ring-1 ring-rose-500/20 text-rose-600 dark:text-rose-400">
+              <AlertTriangle className="w-8 h-8 stroke-1.5" />
+            </div>
+            <h3 className="text-lg font-bold text-foreground tracking-tight">{t('reports.error.title')}</h3>
+            <p className="text-xs sm:text-sm text-muted-foreground max-w-md mx-auto">
+              {t('reports.error.description')}
+            </p>
+            <Button
+              onClick={fetchReportData}
+              disabled={loading}
+              variant="outline"
+              size="sm"
+              className="mt-2 rounded-xl text-xs font-semibold gap-1.5 border-border hover:bg-accent cursor-pointer"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>{t('reports.error.retry')}</span>
+            </Button>
+          </CardContent>
+        </Card>
       ) : (
         <>
           {/* 2. Operational Summary KPI Grid */}

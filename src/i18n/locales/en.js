@@ -1162,6 +1162,12 @@ export default {
     "exportExcel": "Export Excel",
     "records": "records",
     "record": "record",
+    "error": {
+      "title": "Failed to load report data",
+      "description": "An error occurred while fetching data from the system. Please check your connection and try again.",
+      "retry": "Retry",
+      "fetchFailed": "Failed to load report data. Please try again."
+    },
     "tabs": {
       "stockIn": "1. Stock-In Report",
       "withdrawals": "2. Withdrawals Report",
