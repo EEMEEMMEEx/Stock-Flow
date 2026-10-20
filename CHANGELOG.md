@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-10-20 12:00] - v1.25.22
+### Fixed & Enhanced (StockIn Audit Remediation — Full Suite: P1, P2, P3)
+- **Responsive Tables in Modals (P1)**: เพิ่ม `overflow-x-auto` และกำหนด `min-w-[650px]` / `min-w-[700px]` ให้ตารางแสดงผลใน `StockInOrderDetailModal.jsx` และ CSV Import Preview ใน `StockIn.jsx` ป้องกันตารางบีบอัดจนอ่านไม่ได้บน Mobile/Tablet
+- **Safe Date Formatting (P1)**: ปรับปรุงการจัดรูปแบบวันที่ใน `StockInOrderDetailModal.jsx` มาใช้ `formatI18nDate` ที่มี Safe Null-check ป้องกัน RangeError Runtime Crash และรองรับปฏิทินไทย B.E. สมบูรณ์
+- **Accessibility & Form Labels (P1 & P2)**: เพิ่ม `aria-label` ให้กับ Warehouse Select, Table Rows, และปุ่มไอคอนลบรายการ (Trash Buttons) ทั้งหมด; ส่ง `id` ให้กับ `ProjectLocationSelector` ทั้งสองจุดเพื่อผูกกับ `<label htmlFor>` อย่างถูกต้อง
+- **Type Ramp Restoration (P2)**: กำจัดคลาส `text-[10px]` และ `text-[11px]` ทั้งหมด 12 จุดใน `StockIn.jsx` และ `ProjectLocationSelector.jsx` กลับคืนสู่ระดับมาตรฐาน `text-xs` (12px) ตาม `DESIGN.md`
+- **Touch Targets 44px (P2)**: ขยายพื้นที่สัมผัสของปุ่ม Pagination (`ChevronLeft`, `ChevronRight`), ปุ่มคลังสินค้าตรวจจับอัตโนมัติ, และปุ่มลบรายการ สู่ขนาดขั้นต่ำ 44×44px บน Mobile (`min-h-[44px] min-w-[44px] sm:min-h-8 sm:min-w-8`)
+- **Signal Emerald Theming (P2)**: กวาดล้างพาเลตต์ `green-*` ทั้งหมดใน `StockIn.jsx` และ `StockInOrderDetailModal.jsx` สู่พาเลตต์ **Signal Emerald** (`emerald-*`) ตามมาตรฐานอัตลักษณ์แบรนด์
+- **Performance & Debounce (P2)**: เพิ่ม Debounce 300ms ให้กับช่องค้นหาใน CSV Preview Modal ป้องกัน Re-render ถี่เกินความจำเป็น
+- **Pure Vector Standards & Heading Semantics (P3)**: แทนที่อักขระ Unicode `└─` ด้วย Lucide `<CornerDownRight />` (100% Vector SVG) และปรับระดับหัวข้อ Dialog เป็น `<h3>`
+
+
 ## [2026-10-20 11:30] - v1.25.21
 ### Fixed & Polished (Reports Audit — Phase 3: P3 Polish & Integrity)
 - **Accessibility & ARIA Sort (P3)**: เติมแอตทริบิวต์ `aria-sort` ครบถ้วน 100% บนทุก `<TableHead>` ที่มีฟังก์ชันการจัดเรียงใน `ReportDataTable.jsx` (รวมทั้งแก้ไขคีย์จัดเรียงของ Withdrawals จาก `received_date` สู่ `requested_at` ที่ถูกต้อง)

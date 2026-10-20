@@ -71,6 +71,7 @@ const StockIn = () => {
   const [selectedQtySource, setSelectedQtySource] = useState('คงเหลือ');
   const [onlyPositiveFilter, setOnlyPositiveFilter] = useState(true);
   const [previewSearch, setPreviewSearch] = useState('');
+  const [debouncedPreviewSearch, setDebouncedPreviewSearch] = useState('');
   const [previewProjectId, setPreviewProjectId] = useState('');
   const [importFileName, setImportFileName] = useState('');
 
@@ -86,6 +87,14 @@ const StockIn = () => {
     }, 300);
     return () => clearTimeout(timer);
   }, [searchInput]);
+
+  // 300ms debounce for CSV preview search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedPreviewSearch(previewSearch);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [previewSearch]);
 
   // Sync state to URL search params
   useEffect(() => {
@@ -621,8 +630,8 @@ const StockIn = () => {
 
   // Filtered preview items for interactive preview search
   const filteredPreviewItems = useMemo(() => {
-    if (!previewSearch.trim()) return previewItems;
-    const q = previewSearch.toLowerCase();
+    if (!debouncedPreviewSearch.trim()) return previewItems;
+    const q = debouncedPreviewSearch.toLowerCase();
     return previewItems.filter(i => 
       (i.name && i.name.toLowerCase().includes(q)) ||
       (i.sku && i.sku.toLowerCase().includes(q)) ||
@@ -630,7 +639,7 @@ const StockIn = () => {
       (i.model && i.model.toLowerCase().includes(q)) ||
       (i.notes && i.notes.toLowerCase().includes(q))
     );
-  }, [previewItems, previewSearch]);
+  }, [previewItems, debouncedPreviewSearch]);
 
   // Calculations
   const totalItemsCount = lineItems.length;
@@ -646,7 +655,7 @@ const StockIn = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            <ArrowDownToLine className="w-7 h-7 text-green-500" />
+            <ArrowDownToLine className="w-7 h-7 text-emerald-600 dark:text-emerald-400" />
             <span>{t('stockIn.title', 'Stock Receipts')}</span>
           </h1>
           <p className="text-muted-foreground mt-2">
@@ -712,6 +721,8 @@ const StockIn = () => {
           {/* Destination Warehouse Dropdown */}
           <div className="w-full sm:w-56 shrink-0">
             <select
+              id="warehouse-filter-select"
+              aria-label={t('stockIn.destinationWarehouse', 'คลังสินค้าปลายทาง')}
               value={warehouseFilter}
               onChange={(e) => {
                 setWarehouseFilter(e.target.value);
@@ -756,7 +767,7 @@ const StockIn = () => {
       {/* Main Stock Receipts Table */}
       <Card className="overflow-hidden rounded-xl bg-card border border-border shadow-xs">
         <div className="overflow-x-auto">
-        <Table>
+        <Table aria-label={t('stockIn.title', 'รายการรับเข้าพัสดุ')}>
           <TableHeader className="bg-muted/50">
             <TableRow>
               <TableHead>{t('stockIn.receivedDate')}</TableHead>
@@ -818,7 +829,7 @@ const StockIn = () => {
                     {o.matched_items_snippet && (
                       <div className="mt-1 flex items-center gap-1.5">
                         <span
-                          className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 max-w-md truncate"
+                          className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 max-w-md truncate"
                           title={o.matched_items_snippet}
                         >
                           <span className="font-semibold mr-1">{t('stockIn.matchedItem', 'พบพัสดุ')}:</span>
@@ -851,7 +862,7 @@ const StockIn = () => {
               size="icon"
               disabled={currentPage <= 1 || loading}
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              className="h-8 w-8 rounded-lg border-border text-foreground hover:bg-accent disabled:opacity-30 cursor-pointer shadow-xs"
+              className="h-8 w-8 min-h-[44px] min-w-[44px] sm:min-h-8 sm:min-w-8 rounded-lg border-border text-foreground hover:bg-accent disabled:opacity-30 cursor-pointer shadow-xs flex items-center justify-center"
               aria-label={t('common.previous', 'Previous')}
             >
               <ChevronLeft className="w-4 h-4" />
@@ -872,7 +883,7 @@ const StockIn = () => {
               size="icon"
               disabled={currentPage >= totalPages || loading}
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              className="h-8 w-8 rounded-lg border-border text-foreground hover:bg-accent disabled:opacity-30 cursor-pointer shadow-xs"
+              className="h-8 w-8 min-h-[44px] min-w-[44px] sm:min-h-8 sm:min-w-8 rounded-lg border-border text-foreground hover:bg-accent disabled:opacity-30 cursor-pointer shadow-xs flex items-center justify-center"
               aria-label={t('common.next', 'Next')}
             >
               <ChevronRight className="w-4 h-4" />
@@ -911,10 +922,10 @@ const StockIn = () => {
                 <span className="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-emerald-500/15 text-emerald-600 border border-emerald-500/30 font-mono">
                   {t('stockIn.totalItems')}: {previewItems.length}
                 </span>
-                <span className="px-2 py-0.5 rounded-lg text-[11px] font-bold bg-indigo-500/15 text-indigo-600 border border-indigo-500/30">
+                <span className="px-2 py-0.5 rounded-lg text-xs font-bold bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30">
                   PARENT: {previewParentCount}
                 </span>
-                <span className="px-2 py-0.5 rounded-lg text-[11px] font-bold bg-blue-500/15 text-blue-600 border border-blue-500/30">
+                <span className="px-2 py-0.5 rounded-lg text-xs font-bold bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30">
                   CHILD: {previewChildCount}
                 </span>
                 <span className="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 font-mono">
@@ -928,6 +939,7 @@ const StockIn = () => {
             {/* Top Toolbar: Destination Project & Storage Location Selector */}
             <div className="bg-muted/30 p-3.5 rounded-xl border border-border space-y-3">
               <ProjectLocationSelector
+                id="preview-project-selector"
                 projects={projects}
                 value={previewProjectId}
                 onChange={handlePreviewProjectChange}
@@ -953,7 +965,7 @@ const StockIn = () => {
                       size="xs"
                       variant={selectedQtySource === 'คงเหลือ' ? 'default' : 'outline'}
                       onClick={() => handleChangeQtySource('คงเหลือ')}
-                      className={`h-7 rounded-lg text-[11px] font-bold cursor-pointer transition-all flex items-center gap-1 ${
+                      className={`min-h-[44px] sm:min-h-7 h-auto py-1 px-2.5 rounded-lg text-xs font-bold cursor-pointer transition-all flex items-center gap-1 ${
                         selectedQtySource === 'คงเหลือ'
                           ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
                           : 'border-border/60 hover:bg-muted'
@@ -972,7 +984,7 @@ const StockIn = () => {
                           size="xs"
                           variant={isSelected ? 'default' : 'outline'}
                           onClick={() => handleChangeQtySource(wh)}
-                          className={`h-7 rounded-lg text-[11px] font-bold cursor-pointer transition-all flex items-center gap-1 ${
+                          className={`min-h-[44px] sm:min-h-7 h-auto py-1 px-2.5 rounded-lg text-xs font-bold cursor-pointer transition-all flex items-center gap-1 ${
                             isSelected
                               ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-2xs'
                               : 'border-border/60 hover:bg-muted text-foreground'
@@ -992,7 +1004,7 @@ const StockIn = () => {
                   size="xs"
                   variant="ghost"
                   onClick={handleToggleOnlyPositive}
-                  className="h-7 text-xs font-semibold text-muted-foreground hover:text-foreground gap-1.5 self-start sm:self-auto cursor-pointer"
+                  className="min-h-[44px] sm:min-h-7 h-auto py-1 px-2.5 text-xs font-semibold text-muted-foreground hover:text-foreground gap-1.5 self-start sm:self-auto cursor-pointer"
                 >
                   {onlyPositiveFilter ? (
                     <>
@@ -1027,6 +1039,7 @@ const StockIn = () => {
               <div className="relative w-full sm:w-72">
                 <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <Input
+                  aria-label={t('stockIn.csvImport.searchPreviewPlaceholder')}
                   placeholder={t('stockIn.csvImport.searchPreviewPlaceholder')}
                   value={previewSearch}
                   onChange={(e) => setPreviewSearch(e.target.value)}
@@ -1040,8 +1053,8 @@ const StockIn = () => {
             </div>
 
             {/* Preview Items Table */}
-            <div className="border border-border rounded-xl overflow-hidden shadow-xs max-h-[44vh] overflow-y-auto">
-              <Table>
+            <div className="border border-border rounded-xl overflow-hidden shadow-xs max-h-[44vh] overflow-y-auto overflow-x-auto">
+              <Table className="min-w-[700px]" aria-label="CSV Import Preview Table">
                 <TableHeader className="bg-muted/60 sticky top-0 z-10 backdrop-blur text-xs">
                   <TableRow className="border-b">
                     <TableHead className="w-[6%] text-center">#</TableHead>
@@ -1068,7 +1081,7 @@ const StockIn = () => {
                         </TableCell>
 
                         <TableCell>
-                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold border ${
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold border ${
                             isChild 
                               ? 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/60 dark:text-blue-200' 
                               : 'bg-indigo-100 text-indigo-800 border-indigo-300 dark:bg-indigo-900/60 dark:text-indigo-200'
@@ -1078,7 +1091,7 @@ const StockIn = () => {
                           </span>
                         </TableCell>
 
-                        <TableCell className="font-mono text-muted-foreground text-[11px]">
+                        <TableCell className="font-mono text-muted-foreground text-xs">
                           {item.part_number || item.sku || '—'}
                         </TableCell>
 
@@ -1091,7 +1104,7 @@ const StockIn = () => {
                               </span>
                             </div>
                             {item.parent_sku && isChild && (
-                              <div className="text-[10px] text-muted-foreground font-mono pl-3">
+                              <div className="text-xs text-muted-foreground font-mono pl-3">
                                 Parent: {item.parent_sku}
                               </div>
                             )}
@@ -1106,7 +1119,7 @@ const StockIn = () => {
                           +{item.quantity}
                         </TableCell>
 
-                        <TableCell className="text-[11px] text-muted-foreground truncate max-w-[140px]">
+                        <TableCell className="text-xs text-muted-foreground truncate max-w-[140px]">
                           {item.notes || '—'}
                         </TableCell>
 
@@ -1116,9 +1129,10 @@ const StockIn = () => {
                             variant="ghost"
                             size="icon"
                             onClick={() => setPreviewItems(prev => prev.filter(x => x.tempId !== item.tempId))}
-                            className="h-6 w-6 text-muted-foreground hover:text-destructive rounded-lg cursor-pointer"
+                            className="h-8 w-8 min-h-[44px] min-w-[44px] sm:min-h-8 sm:min-w-8 text-muted-foreground hover:text-destructive rounded-lg cursor-pointer flex items-center justify-center mx-auto"
+                            aria-label={t('common.delete', 'ลบรายการ')}
                           >
-                            <Trash2 className="w-3 h-3" />
+                            <Trash2 className="w-3.5 h-3.5" />
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -1181,7 +1195,7 @@ const StockIn = () => {
           <form onSubmit={handleSubmitOrder}>
             <DialogHeader className="border-b border-border/40 pb-3">
               <DialogTitle className="text-xl font-bold flex items-center gap-2">
-                <ArrowDownToLine className="w-6 h-6 text-green-600" />
+                <ArrowDownToLine className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
                 <span>Direct Stock Receipt (Parent/Child Hierarchy)</span>
               </DialogTitle>
             </DialogHeader>
@@ -1190,6 +1204,7 @@ const StockIn = () => {
               {/* Destination Project & Storage Location Selection */}
               <div className="bg-muted/30 p-4 rounded-xl border border-border space-y-3">
                 <ProjectLocationSelector
+                  id="direct-project-selector"
                   projects={projects}
                   value={formData.project_id}
                   onChange={handleDirectProjectChange}
@@ -1216,9 +1231,9 @@ const StockIn = () => {
                           setLineItems(allAgg);
                           toast.success('Showing total balance across all warehouses');
                         }}
-                        className="h-6 text-[10px] rounded-lg font-bold flex items-center gap-1"
+                        className="min-h-[44px] sm:min-h-7 h-auto py-1 px-2.5 text-xs rounded-lg font-bold flex items-center gap-1"
                       >
-                        <BarChart3 className="w-3 h-3 text-emerald-600" />
+                        <BarChart3 className="w-3.5 h-3.5 text-emerald-600" />
                         <span>Total Balance</span>
                       </Button>
                       {csvDetectedWarehouses.map(wh => (
@@ -1232,9 +1247,9 @@ const StockIn = () => {
                             setLineItems(whAgg);
                             toast.success(`Filtered for [${wh}]: ${whAgg.length} item(s)`);
                           }}
-                          className="h-6 text-[10px] rounded-lg font-bold border-indigo-500/30 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-500/10 flex items-center gap-1"
+                          className="min-h-[44px] sm:min-h-7 h-auto py-1 px-2.5 text-xs rounded-lg font-bold border-indigo-500/30 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-500/10 flex items-center gap-1"
                         >
-                          <Building2 className="w-3 h-3 text-indigo-500" />
+                          <Building2 className="w-3.5 h-3.5 text-indigo-500" />
                           <span>{wh}</span>
                         </Button>
                       ))}
@@ -1305,7 +1320,7 @@ const StockIn = () => {
                 </div>
 
                 <div className="border border-border rounded-xl overflow-x-auto shadow-xs max-h-[44vh] overflow-y-auto">
-                  <Table>
+                  <Table aria-label="Direct Entry Line Items Table">
                     <TableHeader className="bg-muted/40 sticky top-0 z-10 backdrop-blur">
                       <TableRow className="text-xs">
                         <TableHead className="w-[8%] min-w-[75px]">Type</TableHead>
@@ -1334,9 +1349,10 @@ const StockIn = () => {
                             <TableRow key={row.tempId} className={isChild ? "bg-blue-50/30 dark:bg-blue-950/10" : ""}>
                               <TableCell className="align-top">
                                 <select 
+                                  aria-label={`Item Type ${row.name || row.tempId}`}
                                   value={row.item_type} 
                                   onChange={e => handleUpdateLineItem(row.tempId, 'item_type', e.target.value)}
-                                  className={`h-9 w-full rounded-lg border px-1 text-[11px] font-bold ${isChild ? 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900 dark:text-blue-200' : 'bg-green-100 text-green-800 border-green-300 dark:bg-green-900 dark:text-green-200'}`}
+                                  className={`h-9 w-full rounded-lg border px-1 text-xs font-bold ${isChild ? 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/60 dark:text-blue-200 dark:border-blue-700' : 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-900/60 dark:text-emerald-200 dark:border-emerald-700'}`}
                                 >
                                   <option value="PARENT">PARENT</option>
                                   <option value="CHILD">CHILD</option>
@@ -1345,6 +1361,7 @@ const StockIn = () => {
 
                               <TableCell className="align-top">
                                 <Input 
+                                  aria-label={`SKU ${row.name || row.tempId}`}
                                   placeholder="SKU-001" 
                                   value={row.sku} 
                                   onChange={e => handleUpdateLineItem(row.tempId, 'sku', e.target.value)} 
@@ -1354,6 +1371,7 @@ const StockIn = () => {
 
                               <TableCell className="align-top">
                                 <Input 
+                                  aria-label={`Parent SKU ${row.name || row.tempId}`}
                                   placeholder={isChild ? "Parent SKU" : "-"} 
                                   disabled={!isChild}
                                   value={row.parent_sku} 
@@ -1364,8 +1382,9 @@ const StockIn = () => {
 
                               <TableCell className={`align-top ${isChild ? 'pl-6' : ''}`}>
                                 <div className="flex items-center gap-1">
-                                  {isChild && <span className="text-blue-500 font-mono text-xs select-none">└─</span>}
+                                  {isChild && <CornerDownRight className="w-3.5 h-3.5 text-blue-500 shrink-0 inline-block select-none" aria-hidden="true" />}
                                   <Input 
+                                    aria-label={`Item Name ${row.tempId}`}
                                     required
                                     placeholder={isChild ? "Enter child item name" : "Enter item name"} 
                                     value={row.name} 
@@ -1377,6 +1396,7 @@ const StockIn = () => {
 
                               <TableCell className="align-top">
                                 <Input 
+                                  aria-label={`Model ${row.name || row.tempId}`}
                                   placeholder="Model (optional)" 
                                   value={row.model} 
                                   onChange={e => handleUpdateLineItem(row.tempId, 'model', e.target.value)} 
@@ -1386,6 +1406,7 @@ const StockIn = () => {
 
                               <TableCell className="align-top">
                                 <Input 
+                                  aria-label={`Quantity ${row.name || row.tempId}`}
                                   type="number" 
                                   min="1" 
                                   required 
@@ -1397,6 +1418,7 @@ const StockIn = () => {
 
                               <TableCell className="align-top">
                                 <Input 
+                                  aria-label={`Serial Number ${row.name || row.tempId}`}
                                   placeholder="S/N (optional)" 
                                   value={row.serial_number} 
                                   onChange={e => handleUpdateLineItem(row.tempId, 'serial_number', e.target.value)} 
@@ -1406,6 +1428,7 @@ const StockIn = () => {
 
                               <TableCell className="align-top">
                                 <Input 
+                                  aria-label={`Part Number ${row.name || row.tempId}`}
                                   placeholder="Part No." 
                                   value={row.part_number} 
                                   onChange={e => handleUpdateLineItem(row.tempId, 'part_number', e.target.value)} 
@@ -1415,6 +1438,7 @@ const StockIn = () => {
 
                               <TableCell className="align-top">
                                 <Input 
+                                  aria-label={`Notes ${row.name || row.tempId}`}
                                   placeholder="Notes" 
                                   value={row.notes} 
                                   onChange={e => handleUpdateLineItem(row.tempId, 'notes', e.target.value)} 
@@ -1427,8 +1451,9 @@ const StockIn = () => {
                                   type="button" 
                                   variant="ghost" 
                                   size="sm" 
-                                  className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive cursor-pointer"
+                                  className="h-8 w-8 min-h-[44px] min-w-[44px] sm:min-h-8 sm:min-w-8 p-0 text-muted-foreground hover:text-destructive cursor-pointer flex items-center justify-center mx-auto"
                                   onClick={() => handleRemoveLineItem(row.tempId)}
+                                  aria-label={t('common.delete', 'ลบรายการ')}
                                 >
                                   <Trash2 className="w-4 h-4" />
                                 </Button>
@@ -1446,9 +1471,9 @@ const StockIn = () => {
               <div className="flex items-center justify-between bg-muted/30 p-3 rounded-xl border border-border text-sm">
                 <div className="flex gap-6 text-xs sm:text-sm font-medium flex-wrap">
                   <span>Total Items: <strong className="text-foreground font-bold">{totalItemsCount}</strong></span>
-                  <span>Parent Items: <strong className="text-green-600 font-bold">{lineItems.filter(i => i.item_type === 'PARENT').length}</strong></span>
-                  <span>Child Items: <strong className="text-blue-600 font-bold">{lineItems.filter(i => i.item_type === 'CHILD').length}</strong></span>
-                  <span>Total Quantity: <strong className="text-emerald-600 font-bold">{totalQuantitySum}</strong> pcs</span>
+                  <span>Parent Items: <strong className="text-emerald-600 dark:text-emerald-400 font-bold">{lineItems.filter(i => i.item_type === 'PARENT').length}</strong></span>
+                  <span>Child Items: <strong className="text-blue-600 dark:text-blue-400 font-bold">{lineItems.filter(i => i.item_type === 'CHILD').length}</strong></span>
+                  <span>Total Quantity: <strong className="text-emerald-600 dark:text-emerald-400 font-bold">{totalQuantitySum}</strong> pcs</span>
                 </div>
               </div>
             </div>

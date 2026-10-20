@@ -2,9 +2,9 @@ import React from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { ArrowDownToLine, Package } from 'lucide-react';
-import { format } from 'date-fns';
+import { ArrowDownToLine, Package, CornerDownRight } from 'lucide-react';
 import { useTranslation } from '@/i18n';
+import { formatI18nDate } from '@/lib/i18n-format';
 
 export const StockInOrderDetailModal = ({
   selectedOrder,
@@ -19,7 +19,7 @@ export const StockInOrderDetailModal = ({
         <DialogHeader className="pb-3 border-b shrink-0">
           <div className="flex items-center justify-between">
             <DialogTitle className="text-xl font-bold flex items-center gap-2 text-foreground">
-              <div className="p-2 rounded-lg bg-green-500/10 text-green-600 dark:text-green-400">
+              <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                 <ArrowDownToLine className="w-5 h-5" aria-hidden="true" />
               </div>
               <span>Stock Receipt Details</span>
@@ -59,25 +59,25 @@ export const StockInOrderDetailModal = ({
             <div className="space-y-1">
               <span className="text-muted-foreground font-medium block">Receipt Date</span>
               <span className="font-semibold font-mono text-foreground block">
-                {selectedOrder && format(new Date(selectedOrder.created_at), 'dd/MM/yyyy HH:mm')}
+                {formatI18nDate(selectedOrder?.created_at, 'dd/MM/yyyy HH:mm')}
               </span>
             </div>
           </div>
           
           {/* Items Summary Header */}
           <div className="flex items-center justify-between pt-1">
-            <h4 className="font-bold text-sm flex items-center gap-2 text-foreground">
+            <h3 className="font-bold text-sm flex items-center gap-2 text-foreground">
               <Package className="w-4 h-4 text-emerald-500" aria-hidden="true" />
               <span>Items in this Receipt ({orderDetails.length} {orderDetails.length === 1 ? 'item' : 'items'})</span>
-            </h4>
+            </h3>
             <span className="text-xs text-muted-foreground font-mono">
               Total Quantity: {orderDetails.reduce((sum, item) => sum + (item.quantity || 0), 0)} pcs
             </span>
           </div>
 
           {/* Scrollable Items Table */}
-          <div className="border border-border rounded-xl overflow-hidden shadow-xs max-h-[50vh] overflow-y-auto">
-            <Table>
+          <div className="border border-border rounded-xl overflow-hidden shadow-xs max-h-[50vh] overflow-y-auto overflow-x-auto">
+            <Table className="min-w-[650px]" aria-label="Stock Receipt Details Table">
               <TableHeader className="bg-muted/60 sticky top-0 z-10 backdrop-blur text-xs">
                 <TableRow className="border-b">
                   <TableHead className="w-[10%] font-bold">Type</TableHead>
@@ -120,7 +120,7 @@ export const StockInOrderDetailModal = ({
                         <TableCell className={`align-top ${isChild ? 'pl-6' : ''}`}>
                           <div className="space-y-0.5">
                             <div className="flex items-center gap-1.5 flex-wrap">
-                              {isChild && <span className="text-blue-500 font-mono text-xs select-none">└─</span>}
+                              {isChild && <CornerDownRight className="w-3.5 h-3.5 text-blue-500 shrink-0 inline-block select-none" aria-hidden="true" />}
                               {item.items?.sku && (
                                 <span className="font-mono font-bold text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground border">
                                   [{item.items.sku}]
@@ -131,8 +131,9 @@ export const StockInOrderDetailModal = ({
                               </span>
                             </div>
                             {item.parent_sku && (
-                              <div className="text-xs text-muted-foreground font-mono pl-4">
-                                └─ Parent SKU: <span className="font-bold text-blue-600 dark:text-blue-400">{item.parent_sku}</span>
+                              <div className="text-xs text-muted-foreground font-mono pl-4 flex items-center gap-1">
+                                <CornerDownRight className="w-3 h-3 text-blue-500 shrink-0 inline-block select-none" aria-hidden="true" />
+                                <span>Parent SKU: <span className="font-bold text-blue-600 dark:text-blue-400">{item.parent_sku}</span></span>
                               </div>
                             )}
                           </div>
@@ -177,7 +178,7 @@ export const StockInOrderDetailModal = ({
           <Button 
             type="button" 
             variant="outline" 
-            className="h-9 px-5 rounded-lg text-xs font-semibold hover:bg-muted cursor-pointer"
+            className="min-h-[44px] sm:min-h-9 h-auto px-5 rounded-lg text-xs font-semibold hover:bg-muted cursor-pointer"
             onClick={onClose}
           >
             {t('common.close')}

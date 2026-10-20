@@ -82,7 +82,7 @@ export const ProjectLocationSelector = ({
           {required && <span className="text-destructive font-bold">*</span>}
         </label>
         {showCount && (
-          <span className="text-[11px] text-muted-foreground font-normal">
+          <span className="text-xs text-muted-foreground font-normal">
             {projects.length} {t('common.location')}
           </span>
         )}
