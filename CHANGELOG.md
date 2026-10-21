@@ -1,5 +1,11 @@
 # Changelog
 
+## [2026-10-21 14:45] - v1.25.23
+### Fixed (CI Quality Gate — ESLint Clean)
+- **Vendored Skill Scripts Excluded from Lint**: เพิ่ม `.github/skills` และ `.github/agents` เข้า ESLint global ignores ใน `eslint.config.js` เนื่องจากเป็นสคริปต์ third-party ที่ vendored/build มา (มี `modern-screenshot.umd.js` แบบ minified UMD และ `live-browser.js` ที่เป็น generated bundle) ทำให้ `npm run lint` fail 25 errors จากโค้ดที่โปรเจกต์ไม่ได้เป็นเจ้าของและไม่ควรแก้ที่ต้นทาง — ใช้ path แคบเฉพาะ `skills`/`agents` เพื่อให้ `.github/workflows/**` ยังถูกตรวจตามปกติ
+- **Missing `DialogDescription` Import**: เพิ่ม named import `DialogDescription` ใน `WithdrawalDetailModal.jsx` ซึ่งถูกใช้ใน JSX บรรทัด 63 แต่ไม่ได้ import (symbol มีอยู่จริงและถูก export จาก `src/components/ui/dialog.jsx`) จุดเดียวนี้ทำให้เกิด 2 errors (`no-undef` + `react/jsx-no-undef`) และทำให้ Radix Dialog ขาด Description สำหรับ a11y
+- **Result**: `npm run lint` ผ่านด้วย 0 errors (exit code 0) — เหลือ 20 warnings เดิมใน `src/**` ซึ่งอยู่นอก scope ของงานนี้
+
 ## [2026-10-20 12:00] - v1.25.22
 ### Fixed & Enhanced (StockIn Audit Remediation — Full Suite: P1, P2, P3)
 - **Responsive Tables in Modals (P1)**: เพิ่ม `overflow-x-auto` และกำหนด `min-w-[650px]` / `min-w-[700px]` ให้ตารางแสดงผลใน `StockInOrderDetailModal.jsx` และ CSV Import Preview ใน `StockIn.jsx` ป้องกันตารางบีบอัดจนอ่านไม่ได้บน Mobile/Tablet
