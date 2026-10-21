@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-10-21 14:55] - v1.25.24
+### Security (Dependabot Alerts Resolution — vite)
+- **Vite Upgraded to Close 3 Advisories**: อัปเกรด `vite` จาก `7.3.6` → `7.3.7` (PATCH ภายใน major 7 ตามที่ `npm audit` ระบุ `fixAvailable` แบบ non-major) ปิด advisory ทั้ง 3 รายการที่ GitHub Dependabot แจ้ง:
+  - `GHSA-587h-7wmj-h5pm` — High (CWE-77): `launch-editor` `fs.existsSync()` existence check can be bypassed on Windows
+  - `GHSA-698v-4r3x-3vcv` — Moderate (CWE-78): `launch-editor` `escapeCmdArgs()` omits `%` escaping on Windows
+  - `GHSA-r825-w8mm-5pxw` — Moderate (CWE-88): `launch-editor` Editor CLI flag misinterpretation causing arbitrary command execution
+- **Root Cause Clarified**: `launch-editor` **ไม่ใช่** dependency ที่ติดตั้งแยกในโปรเจกต์นี้ (ตรวจแล้วว่ามี 0 ครั้งใน `package-lock.json`, `node_modules` และไม่เคยอยู่ในประวัติ lockfile) — GitHub Advisory ผูก advisory เข้ากับ **ตัวแพ็กเกจ `vite` เอง** ตามช่วงเวอร์ชัน `>=7.0.0 <=7.3.6` จึงต้องแก้ที่เวอร์ชันของ vite ไม่ใช่พยายามลบ `launch-editor` (การ dismiss alert จะไม่แก้ช่องโหว่จริง)
+- **Lockfile Drift Fixed**: `package-lock.json` ยังบันทึก `"version": "1.25.8"` ค้างมา 15 releases ไม่ตรงกับ `package.json` ซึ่งเสี่ยงทำให้ `npm ci` ใน CI fail — regenerate lockfile ให้ตรงแล้ว โดยตรวจ diff ยืนยันว่า **ไม่มีแพ็กเกจเพิ่ม/ลด (742 → 742) และมีเพียง root version stamp ที่เปลี่ยน** จึงไม่มีความเสี่ยง transitive dependency เปลี่ยน
+- **Result**: `npm audit` ไม่รายงาน `vite` อีกต่อไป, `npm ci` ผ่าน, lint 0 errors, build ผ่าน
+
 ## [2026-10-21 14:45] - v1.25.23
 ### Fixed (CI Quality Gate — ESLint Clean)
 - **Vendored Skill Scripts Excluded from Lint**: เพิ่ม `.github/skills` และ `.github/agents` เข้า ESLint global ignores ใน `eslint.config.js` เนื่องจากเป็นสคริปต์ third-party ที่ vendored/build มา (มี `modern-screenshot.umd.js` แบบ minified UMD และ `live-browser.js` ที่เป็น generated bundle) ทำให้ `npm run lint` fail 25 errors จากโค้ดที่โปรเจกต์ไม่ได้เป็นเจ้าของและไม่ควรแก้ที่ต้นทาง — ใช้ path แคบเฉพาะ `skills`/`agents` เพื่อให้ `.github/workflows/**` ยังถูกตรวจตามปกติ
