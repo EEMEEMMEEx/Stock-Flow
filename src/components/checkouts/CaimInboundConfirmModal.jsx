@@ -33,6 +33,7 @@ const CaimInboundConfirmModal = ({
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [rejectedAction, setRejectedAction] = useState('confirm'); // 'confirm' (แทงจำหน่าย) | 'retry_internal' (ส่งกลับคิวซ่อมภายใน)
 
   const order = log?.checkout_orders || {};
   const checkoutItem = log?.checkout_items || {};
@@ -41,6 +42,7 @@ const CaimInboundConfirmModal = ({
   const payload = log?.caim_inbound_payload || {};
 
   const isRestoration = repairResult === 'repaired' || repairResult === 'replaced_new';
+  const isRejected = repairResult === 'rejected';
 
   const ticketId = log?.caim_ticket_id || payload?.ticketId || '-';
   const ticketUrl = log?.caim_ticket_url || `https://claims-nu-taupe.vercel.app/tickets?search=${encodeURIComponent(ticketId)}`;
@@ -50,9 +52,10 @@ const CaimInboundConfirmModal = ({
     setErrorMessage('');
     try {
       setSubmitting(true);
+      const action = isRejected ? rejectedAction : 'confirm';
       const res = await confirmCaimInboundResolution({
         returnLogId: log.id,
-        action: 'confirm',
+        action,
         notes: notes.trim()
       });
 
@@ -79,6 +82,10 @@ const CaimInboundConfirmModal = ({
                 <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                   <PackageCheck className="w-5 h-5" />
                 </div>
+              ) : isRejected ? (
+                <div className="p-1.5 rounded-lg bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20">
+                  <AlertCircle className="w-5 h-5" />
+                </div>
               ) : (
                 <div className="p-1.5 rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
                   <PackageX className="w-5 h-5" />
@@ -87,12 +94,16 @@ const CaimInboundConfirmModal = ({
               <DialogTitle className="text-base text-foreground font-bold">
                 {isRestoration
                   ? 'ยืนยันรับอุปกรณ์คืนเข้าคลัง (สต็อก +1 หน่วย)'
+                  : isRejected
+                  ? 'ผลการเคลม: CAIM ปฏิเสธการเคลม (Rejected)'
                   : 'ยืนยันแทงจำหน่ายของเสีย (สต็อกไม่เปลี่ยนแปลง)'}
               </DialogTitle>
             </div>
             <DialogDescription className="text-xs text-muted-foreground">
               {isRestoration
                 ? 'CAIM แจ้งว่าอุปกรณ์ซ่อมเสร็จหรือได้เปลี่ยนเครื่องใหม่ เมื่อยืนยันระบบจะสร้างใบรับเข้าคลังทันที'
+                : isRejected
+                ? 'CAIM ปฏิเสธการเคลมเนื่องจากไม่อยู่ในเงื่อนไขการรับประกัน คุณสามารถเลือกแทงจำหน่ายหรือส่งกลับเข้าคิวซ่อมภายใน'
                 : 'CAIM สรุปผลว่าอุปกรณ์ชำรุดเสียหายถาวรไม่สามารถซ่อมได้ เมื่อยืนยันระบบจะบันทึกลงทะเบียนของเสีย'}
             </DialogDescription>
           </DialogHeader>
@@ -162,6 +173,37 @@ const CaimInboundConfirmModal = ({
             )}
           </div>
 
+          {/* Action selection for rejected claims */}
+          {isRejected && (
+            <div className="space-y-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-xs">
+              <Label className="font-semibold text-foreground">เลือกแนวทางการจัดการพัสดุ:</Label>
+              <div className="space-y-1.5 pt-1">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="rejectedAction"
+                    value="confirm"
+                    checked={rejectedAction === 'confirm'}
+                    onChange={() => setRejectedAction('confirm')}
+                    className="text-primary focus:ring-primary"
+                  />
+                  <span className="text-foreground">แทงจำหน่ายเป็นของเสีย (Scrap Disposal) — สต็อกไม่เปลี่ยนแปลง</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="rejectedAction"
+                    value="retry_internal"
+                    checked={rejectedAction === 'retry_internal'}
+                    onChange={() => setRejectedAction('retry_internal')}
+                    className="text-primary focus:ring-primary"
+                  />
+                  <span className="text-foreground">ส่งกลับเข้าคิวรอซ่อม/จัดการภายใน (แท็บรอตรวจสอบ/ซ่อม)</span>
+                </label>
+              </div>
+            </div>
+          )}
+
           {/* User confirmation notes */}
           <div>
             <Label htmlFor="inboundNotes" className="text-xs font-semibold">
@@ -197,6 +239,8 @@ const CaimInboundConfirmModal = ({
               className={`h-8 text-xs gap-1.5 font-semibold text-white cursor-pointer shadow-xs ${
                 isRestoration
                   ? 'bg-emerald-600 hover:bg-emerald-700'
+                  : isRejected
+                  ? 'bg-red-600 hover:bg-red-700'
                   : 'bg-rose-600 hover:bg-rose-700'
               }`}
             >
@@ -209,6 +253,11 @@ const CaimInboundConfirmModal = ({
                 <>
                   <PackageCheck className="w-3.5 h-3.5" />
                   <span>ยืนยันรับเข้าสต็อก (+1)</span>
+                </>
+              ) : isRejected ? (
+                <>
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  <span>{rejectedAction === 'retry_internal' ? 'ยืนยันส่งซ่อมภายใน' : 'ยืนยันแทงจำหน่าย'}</span>
                 </>
               ) : (
                 <>

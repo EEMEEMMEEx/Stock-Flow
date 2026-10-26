@@ -128,6 +128,8 @@ check('payload without ticketId is rejected', validateCaimPayload({ ...basePaylo
 check('unsupported event is rejected', validateCaimPayload({ ...basePayload, event: 'claim.opened' }).status, 422);
 check('unsupported repairResult is rejected', validateCaimPayload({ ...basePayload, repairResult: 'pending' }).status, 422);
 check('valid payload passes', validateCaimPayload(basePayload).valid, true);
+check('rejected repairResult is accepted', validateCaimPayload({ ...basePayload, repairResult: 'rejected' }).valid, true);
+check('claim.rejected event is accepted', validateCaimPayload({ ...basePayload, event: 'claim.rejected', repairResult: 'rejected' }).valid, true);
 
 // --- 4. Idempotency key -----------------------------------------------------
 check('eventId comes from the payload', resolveEventId(basePayload, 'header-id'), basePayload.eventId);

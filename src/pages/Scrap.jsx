@@ -14,6 +14,7 @@ import {
   Boxes,
   Loader2,
   AlertTriangle,
+  AlertCircle,
   PackageCheck,
   Send,
   ExternalLink,
@@ -900,6 +901,8 @@ const Scrap = () => {
                                 ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30'
                                 : repairResult === 'replaced_new'
                                 ? 'bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30'
+                                : repairResult === 'rejected'
+                                ? 'bg-red-500/15 text-red-700 dark:text-red-300 border-red-500/30'
                                 : 'bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30'
                             }`}
                           >
@@ -907,6 +910,8 @@ const Scrap = () => {
                               ? t('scrap.caimResultRepaired')
                               : repairResult === 'replaced_new'
                               ? t('scrap.caimResultReplaced')
+                              : repairResult === 'rejected'
+                              ? t('scrap.caimResultRejected', 'ปฏิเสธเคลม')
                               : t('scrap.caimResultUnrepairable')}
                           </span>
                         </td>
@@ -928,6 +933,8 @@ const Scrap = () => {
                               className={`h-7 px-2.5 text-[11px] gap-1 font-semibold text-white cursor-pointer shadow-2xs ${
                                 isRestoration
                                   ? 'bg-emerald-600 hover:bg-emerald-700'
+                                  : repairResult === 'rejected'
+                                  ? 'bg-red-600 hover:bg-red-700'
                                   : 'bg-rose-600 hover:bg-rose-700'
                               }`}
                             >
@@ -935,6 +942,11 @@ const Scrap = () => {
                                 <>
                                   <PackageCheck className="w-3 h-3" />
                                   <span>{t('scrap.confirmStockInAction')}</span>
+                                </>
+                              ) : repairResult === 'rejected' ? (
+                                <>
+                                  <AlertCircle className="w-3 h-3" />
+                                  <span>{t('scrap.manageRejectedAction', 'จัดการรายการ')}</span>
                                 </>
                               ) : (
                                 <>

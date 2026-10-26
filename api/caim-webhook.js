@@ -24,8 +24,8 @@ const SIGNATURE_HEADER = 'x-caim-signature';
 const TIMESTAMP_HEADER = 'x-caim-timestamp';
 const EVENT_ID_HEADER = 'x-caim-event-id';
 export const MAX_TIMESTAMP_DRIFT_SECONDS = 300;
-export const SUPPORTED_EVENTS = ['claim.closed'];
-export const SUPPORTED_REPAIR_RESULTS = ['unrepairable', 'repaired', 'replaced_new'];
+export const SUPPORTED_EVENTS = ['claim.closed', 'claim.rejected'];
+export const SUPPORTED_REPAIR_RESULTS = ['unrepairable', 'repaired', 'replaced_new', 'rejected'];
 
 /** Normalize the "sha256=<hex>" header value into a lowercase hex digest. */
 export function normalizeSignature(value) {

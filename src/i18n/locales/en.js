@@ -2232,6 +2232,8 @@ export default {
     "caimResultRepaired": "Repaired",
     "caimResultReplaced": "Replaced with New Unit",
     "caimResultUnrepairable": "Unrepairable / Scrapped",
+    "caimResultRejected": "Claim Rejected",
+    "manageRejectedAction": "Manage Resolution",
     "noDisposedItems": "No scrap records found",
     "orderNumber": "Order Number",
     "itemName": "Item Name",

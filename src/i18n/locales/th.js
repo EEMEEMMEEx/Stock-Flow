@@ -2232,6 +2232,8 @@ export default {
     "caimResultRepaired": "ซ่อมสำเร็จ",
     "caimResultReplaced": "เปลี่ยนตัวใหม่",
     "caimResultUnrepairable": "ซ่อมไม่ได้/แทงจำหน่าย",
+    "caimResultRejected": "ปฏิเสธเคลม",
+    "manageRejectedAction": "จัดการผลเคลม",
     "noDisposedItems": "ไม่มีข้อมูลในทะเบียนของเสีย",
     "orderNumber": "เลขที่คำขอยืม",
     "itemName": "ชื่อพัสดุ",
