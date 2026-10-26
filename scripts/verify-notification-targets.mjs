@@ -68,6 +68,15 @@ check('withdrawal.completed -> orders + id (never the POS tab)',
   resolveNotificationTarget({ event_type: 'withdrawal.completed', target_path: '/withdrawals', reference_id: ORDER_ID }),
   `/withdrawals?tab=orders&id=${ORDER_ID}`);
 
+// --- caim events ------------------------------------------------------------
+check('caim.claim_required -> /scrap?tab=outbound_claim + id',
+  resolveNotificationTarget({ event_type: 'caim.claim_required', target_path: '/scrap', reference_id: ORDER_ID }),
+  `/scrap?tab=outbound_claim&id=${ORDER_ID}`);
+
+check('caim.claim_closed -> /scrap?tab=inbound_caim + id',
+  resolveNotificationTarget({ event_type: 'caim.claim_closed', target_path: '/scrap', reference_id: ORDER_ID }),
+  `/scrap?tab=inbound_caim&id=${ORDER_ID}`);
+
 // --- pass-through / fallbacks ----------------------------------------------
 check('stock.received target_path is preserved',
   resolveNotificationTarget({ event_type: 'stock.received', target_path: '/stock-in', reference_id: ORDER_ID }),

@@ -83,3 +83,32 @@ export async function syncReturnLogToCaim({
 
   return result;
 }
+
+/**
+ * Confirm or reject an inbound claim resolution from CAIM in the /scrap page.
+ *
+ * @param {Object} params
+ * @param {string} params.returnLogId - UUID of the checkout_return_logs record
+ * @param {'confirm' | 'reject'} [params.action='confirm']
+ * @param {string} [params.notes]
+ * @returns {Promise<Object>}
+ */
+export async function confirmCaimInboundResolution({ returnLogId, action = 'confirm', notes = '' }) {
+  if (!returnLogId) {
+    throw new Error('Missing returnLogId for CAIM inbound confirmation');
+  }
+
+  const { data, error } = await supabase.rpc('confirm_caim_inbound_resolution', {
+    p_payload: {
+      return_log_id: returnLogId,
+      action,
+      notes,
+    },
+  });
+
+  if (error) {
+    throw new Error(error.message || 'Failed to confirm CAIM inbound resolution');
+  }
+
+  return data;
+}

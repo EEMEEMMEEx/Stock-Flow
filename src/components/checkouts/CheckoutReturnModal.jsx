@@ -14,7 +14,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n';
 import SignatureRequiredModal from '@/components/common/SignatureRequiredModal';
 import StatusBadge from '@/components/ui/StatusBadge';
-import { syncReturnLogToCaim } from '@/lib/caimSync';
 
 const CheckoutReturnModal = ({
   isOpen,
@@ -147,35 +146,16 @@ const CheckoutReturnModal = ({
 
       toast.success(data.completed ? t('checkouts.toasts.allReturnedSuccess') : t('checkouts.toasts.partialReturnedSuccess'));
 
-      // Auto-sync consumed returns with replaced S/N to CAIM RMA system
-      const consumedReturns = (data?.returns || []).filter(
-        r => r.condition === 'consumed' && r.replaced_serial_number && r.return_log_id
+      // If any items are consumed or damaged, notify user to review in /scrap
+      const claimEligibleReturns = (data?.returns || []).filter(
+        r => ['consumed', 'damaged', 'needs_repair'].includes(r.condition)
       );
 
-      if (consumedReturns.length > 0) {
-        consumedReturns.forEach(async (cr) => {
-          try {
-            const originalItem = itemsToProcess.find(i => i.checkout_item_id === cr.checkout_item_id);
-            const syncRes = await syncReturnLogToCaim({
-              returnLogId: cr.return_log_id,
-              orderNumber: order.order_number,
-              borrowerName: order.borrower_name,
-              projectName: order.projects?.name,
-              serialNumber: cr.replaced_serial_number,
-              itemName: originalItem?.item_name || 'อุปกรณ์',
-              problemDesc: cr.damage_notes,
-              reporterName: profile?.full_name,
-            });
-            if (syncRes?.ticket_id) {
-              toast.success(
-                t('checkouts.toasts.caimTicketCreated', { ticket: syncRes.ticket_id }) ||
-                  `เปิดใบแจ้งเคลมใน CAIM สำเร็จ: ${syncRes.ticket_id}`
-              );
-            }
-          } catch (syncErr) {
-            console.warn('[CheckoutReturnModal] CAIM sync notice:', syncErr.message);
-          }
-        });
+      if (claimEligibleReturns.length > 0) {
+        toast(
+          t('checkouts.toasts.claimReviewRequired', 'มีรายการอุปกรณ์รับคืนสภาพชำรุด/ทดแทน สามารถตรวจสอบและยืนยันส่งเคลม CAIM ได้ที่หน้า Scrap'),
+          { icon: '📦' }
+        );
       }
 
       if (onReturnSuccess) onReturnSuccess(data);

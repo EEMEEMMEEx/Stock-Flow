@@ -123,6 +123,20 @@ const notificationPresentation = (eventType, t) => {
         badge: t('notifications.badges.criticalStock'),
         badgeClass: 'bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-300'
       };
+    case 'caim.claim_required':
+      return {
+        icon: AlertTriangle,
+        className: 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/20',
+        badge: t('notifications.badges.caimClaimRequired', 'รอส่งเคลม CAIM'),
+        badgeClass: 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300'
+      };
+    case 'caim.claim_closed':
+      return {
+        icon: PackageCheck,
+        className: 'bg-teal-500/15 text-teal-700 dark:text-teal-300 border-teal-500/20',
+        badge: t('notifications.badges.caimClaimClosed', 'ผลเคลม CAIM'),
+        badgeClass: 'bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-300'
+      };
     default:
       return { 
         icon: FileClock, 
@@ -161,7 +175,8 @@ const NotificationBell = () => {
         return (
           type.includes('submitted') ||
           type.includes('overdue') ||
-          type.includes('low_stock')
+          type.includes('low_stock') ||
+          type.includes('caim')
         );
       });
     }
@@ -173,7 +188,7 @@ const NotificationBell = () => {
       const type = n.event_type || '';
       return (
         !n.read_at &&
-        (type.includes('submitted') || type.includes('overdue') || type.includes('low_stock'))
+        (type.includes('submitted') || type.includes('overdue') || type.includes('low_stock') || type.includes('caim'))
       );
     }).length;
   }, [notifications]);

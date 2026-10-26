@@ -3,7 +3,7 @@
 
 // Database producers store these modules without a query string, so the event
 // type decides which tab must open.
-const BARE_MODULE_PATHS = new Set(['/checkouts', '/withdrawals']);
+const BARE_MODULE_PATHS = new Set(['/checkouts', '/withdrawals', '/scrap']);
 
 const withReferenceId = (path, referenceId) =>
   (referenceId ? `${path}&id=${encodeURIComponent(referenceId)}` : path);
@@ -25,6 +25,11 @@ export function resolveNotificationTarget(notification) {
 
   if (event.includes('withdrawal')) {
     return withReferenceId('/withdrawals?tab=orders', referenceId);
+  }
+
+  if (event.includes('caim')) {
+    if (event.includes('closed')) return withReferenceId('/scrap?tab=inbound_caim', referenceId);
+    return withReferenceId('/scrap?tab=outbound_claim', referenceId);
   }
 
   // Unknown event without an explicit target: keep the previous behaviour of not navigating.
