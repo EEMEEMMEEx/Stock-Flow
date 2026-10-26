@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-10-26 08:25] - v1.25.25
+### Chore (Node.js Runtime Pin — v26.12.1)
+- **Runtime Pinned to v26.12.1**: กำหนดเวอร์ชัน Node.js ของโปรเจกต์ไว้ที่ `26.12.1` เป็นแหล่งอ้างอิงเดียว ผ่าน 3 จุดที่เคยไม่ตรงกัน ได้แก่
+  - `.github/workflows/deploy-gh-pages.yml`: `node-version: 22` → `node-version: 26.12.1` (เดิม CI รัน Node 22 ขณะที่เครื่องพัฒนาใช้ 26.12.1 ทำให้พฤติกรรม build/test ต่างจาก production ได้)
+  - `wiki/Setup-and-Installation.md`: ข้อกำหนดเบื้องต้น `>= 22.0.0` → `>= 26.12.1`
+  - `package.json`: เพิ่มฟิลด์ `engines.node` = `>=26.12.1` (เดิมไม่มี `engines` เลย)
+- **Non-Blocking Engine Constraint**: ตั้งใจ **ไม่** เปิด `engine-strict` เพื่อให้ `npm install` ยังทำงานได้แม้ Node ไม่ตรง (แจ้งเตือนอย่างเดียว) — ลดความเสี่ยงที่ CI หรือเครื่องเพื่อนร่วมงานจะติดตั้ง dependency ไม่ได้ทันที
+- **`.nvmrc` Added**: เพิ่มไฟล์ `.nvmrc` ระบุ `26.12.1` เพื่อให้เครื่อง dev ใช้ `nvm use` แล้วได้เวอร์ชันตรงกันอัตโนมัติ
+- **Lockfile Synchronized**: อัปเดต `package-lock.json` ให้เวอร์ชันตรงกับ `package.json` (`1.25.25`) พร้อมบันทึก `engines.node` เพื่อป้องกัน lockfile drift ใน CI
+- **Verified Upstream**: ตรวจสอบกับ nodejs.org ว่า release `v26.11.1` และ `v26.12.1` มีอยู่จริง รวมถึงตรวจ `versions-manifest.json` ของ `actions/setup-node` ว่ามี Node 26.12.1 ให้ติดตั้งใน CI ได้
+- **Result**: ไม่มีการเปลี่ยนแปลงโค้ดแอปพลิเคชัน (configuration-only) — `package.json` เวอร์ชัน `1.25.24` → `1.25.25`
+
 ## [2026-10-21 14:55] - v1.25.24
 ### Security (Dependabot Alerts Resolution — vite)
 - **Vite Upgraded to Close 3 Advisories**: อัปเกรด `vite` จาก `7.3.6` → `7.3.7` (PATCH ภายใน major 7 ตามที่ `npm audit` ระบุ `fixAvailable` แบบ non-major) ปิด advisory ทั้ง 3 รายการที่ GitHub Dependabot แจ้ง:
