@@ -27,7 +27,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 26.12.1
+          node-version: 24.x
           cache: 'npm'
 
       - name: Install dependencies
@@ -35,7 +35,8 @@ jobs:
 
       - name: Run quality gates & verification
         run: |
-          npm run test:email
+          npm run check:i18n
+          npm run verify:notifications
           npm run lint
 
       - name: Build production bundle
