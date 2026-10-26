@@ -1,11 +1,11 @@
-import { Mail, useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
-  UserCog, Plus, Search, RefreshCw, Edit, KeyRound, 
+  Mail, UserCog, Plus, Search, RefreshCw, Edit, KeyRound, 
   UserX, UserCheck, FolderKanban, Phone, Trash2, AlertCircle 
 } from 'lucide-react';
 import { format } from 'date-fns';

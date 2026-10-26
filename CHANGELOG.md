@@ -1,5 +1,9 @@
 # Changelog
 
+## [2026-10-26 09:40] - v1.26.1
+### Fixed (UserManagement Icon Import)
+- **Fix Undefined Mail Component**: ย้าย `Mail` import ใน `src/pages/UserManagement.jsx` จาก package `'react'` ไปยัง `'lucide-react'` แก้ปัญหา React runtime warning: `React.jsx: type is invalid -- expected a string ... but got: undefined` เมื่อแสดงตารางและรายการผู้ใช้
+
 ## [2026-10-26 09:25] - v1.26.0
 ### Removed (Email Notification System & SMTP Infrastructure Decommissioned)
 - **Decommissioned Email Notification System**: ถอดระบบแจ้งเตือนทางอีเมล (Email Notification System), เมลเซิร์ฟเวอร์ SMTP, และการตั้งค่าที่เกี่ยวข้องออกจากระบบทั้งหมด:
