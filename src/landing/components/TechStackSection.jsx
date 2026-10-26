@@ -3,7 +3,6 @@ import {
   Code2, 
   Database, 
   Cpu, 
-  Mail, 
   FileText, 
   Server, 
   Cloud 
@@ -39,9 +38,9 @@ export default function TechStackSection() {
       category: 'Cloud Storage',
     },
     {
-      title: 'Vercel Serverless Email Engine',
-      description: 'Dedicated serverless endpoints for secure transactional email invitations',
-      icon: Mail,
+      title: 'Vercel Serverless Functions',
+      description: 'Dedicated serverless endpoints for secure backend APIs and presigned URLs',
+      icon: Server,
       category: 'Backend Microservice',
     },
     {

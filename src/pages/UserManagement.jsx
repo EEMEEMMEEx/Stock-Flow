@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { Mail, useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
   UserCog, Plus, Search, RefreshCw, Edit, KeyRound, 
-  UserX, UserCheck, FolderKanban, Phone, Mail, Trash2, AlertCircle 
+  UserX, UserCheck, FolderKanban, Phone, Trash2, AlertCircle 
 } from 'lucide-react';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
@@ -19,8 +19,6 @@ import RoleBadge from '@/components/ui/RoleBadge';
 import UserStatusDot from '@/components/ui/UserStatusDot';
 import { getRoleLabel } from '@/lib/roleUtils';
 import { uploadAvatarImage } from '@/lib/avatarUpload';
-import { sendUserInvitationEmail } from '@/lib/emailService';
-import { fetchEmailBranding } from '@/lib/notificationDispatcher';
 import { useTranslation } from '@/i18n';
 
 const UserManagement = () => {
@@ -44,7 +42,6 @@ const UserManagement = () => {
   const [selectedUserForDelete, setSelectedUserForDelete] = useState(null);
 
   const [rpcMissing, setRpcMissing] = useState(false);
-  const [resendingInvitationId, setResendingInvitationId] = useState(null);
 
   const fetchDbRoles = useCallback(async () => {
     try {
@@ -218,22 +215,6 @@ const UserManagement = () => {
         }
 
         toast.success('User account created successfully');
-        if (userPayload.send_invitation) {
-          try {
-            await sendUserInvitationEmail({
-              recipientEmail: userPayload.email,
-              userName: userPayload.full_name,
-              roleName: userPayload.roleName || getRoleLabel(userPayload.role),
-              projectAccessSummary: userPayload.all_projects ? 'All Projects' : `${userPayload.project_ids?.length || 0} selected projects`,
-              actionUrl: window.location.origin,
-              branding: await fetchEmailBranding()
-            });
-            toast.success('User created and invitation email sent successfully');
-          } catch (emailError) {
-            console.error('Invitation Email Error:', emailError);
-            toast.error('User created, but invitation email failed to send. You can resend the invitation later.');
-          }
-        }
         await fetchUsers();
       } else {
         toast.error(data?.message || 'Failed to create user');
@@ -243,23 +224,6 @@ const UserManagement = () => {
       toast.error(error.message || 'An error occurred while creating user');
       throw error;
     }
-  };
-
-  const handleResendInvitation = async (user) => {
-    try {
-      setResendingInvitationId(user.id);
-      await sendUserInvitationEmail({
-        recipientEmail: user.email,
-        userName: user.full_name,
-        roleName: user.role,
-        projectAccessSummary: user.all_projects ? 'All Projects' : `${user.assigned_project_ids?.length || 0} assigned projects`,
-        actionUrl: window.location.origin,
-        branding: await fetchEmailBranding()
-      });
-      toast.success(`Invitation email resent to ${user.email} successfully`);
-    } catch (error) {
-      toast.error(`Failed to resend invitation email: ${error.message}`);
-    } finally { setResendingInvitationId(null); }
   };
 
   const handleUpdateUser = async (userId, userPayload) => {
@@ -717,7 +681,6 @@ const UserManagement = () => {
 
                     // RBAC Permission checks with System Administrator hierarchy enforcement
                     const canEditUser = (!isTargetSuper || isSuperAdmin) && can('users.update');
-                    const canResendInvite = (!isTargetSuper || isSuperAdmin) && can('users.create');
                     const canResetPassword = (!isTargetSuper || isSuperAdmin) && can('users.reset_password');
                     const canDeactivate = (!isTargetSuper || isSuperAdmin) && can('users.deactivate') && !isSelf && !isLastActiveAdmin;
                     const canDeleteUser = !isTargetSuper && isSuperAdmin && can('users.delete') && !isSelf && !isLastActiveAdmin;
@@ -829,26 +792,6 @@ const UserManagement = () => {
                               <Edit className="w-4 h-4" />
                             </Button>
 
-                            {/* Resend Invitation */}
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              title={
-                                !canResendInvite
-                                  ? "Missing permission to send invitation email"
-                                  : "Resend Invitation"
-                              }
-                              onClick={() => handleResendInvitation(u)}
-                              disabled={resendingInvitationId === u.id || !canResendInvite}
-                              className="h-9 w-9 sm:h-8 sm:w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-                            >
-                              {resendingInvitationId === u.id ? (
-                                <RefreshCw className="w-4 h-4 animate-spin text-blue-600" />
-                              ) : (
-                                <Mail className="w-4 h-4" />
-                              )}
-                            </Button>
-
                             {/* Reset Password */}
                             <Button
                               variant="ghost"
@@ -925,7 +868,6 @@ const UserManagement = () => {
                 const isLastActiveAdmin = isTargetAdmin && u.status === 'active' && activeAdminsCount <= 1;
 
                 const canEditUser = (!isTargetSuper || isSuperAdmin) && can('users.update');
-                const canResendInvite = (!isTargetSuper || isSuperAdmin) && can('users.create');
                 const canResetPassword = (!isTargetSuper || isSuperAdmin) && can('users.reset_password');
                 const canDeactivate = (!isTargetSuper || isSuperAdmin) && can('users.deactivate') && !isSelf && !isLastActiveAdmin;
                 const canDeleteUser = !isTargetSuper && isSuperAdmin && can('users.delete') && !isSelf && !isLastActiveAdmin;
@@ -1037,22 +979,6 @@ const UserManagement = () => {
                           </Button>
                         )}
 
-                        {canResendInvite && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            title="Resend Invitation"
-                            onClick={() => handleResendInvitation(u)}
-                            disabled={resendingInvitationId === u.id}
-                            className="h-9 w-9 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950 rounded-lg cursor-pointer"
-                          >
-                            {resendingInvitationId === u.id ? (
-                              <RefreshCw className="w-4 h-4 animate-spin text-blue-600" />
-                            ) : (
-                              <Mail className="w-4 h-4" />
-                            )}
-                          </Button>
-                        )}
 
                         {canResetPassword && (
                           <Button

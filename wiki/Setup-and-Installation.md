@@ -56,15 +56,6 @@ R2_BUCKET_NAME=stockflow-assets
 VITE_R2_PUBLIC_URL=https://pub-your-id.r2.dev
 
 # ==========================================
-# 3. Enterprise SMTP Notification
-# ==========================================
-SMTP_HOST=smtp.office365.com
-SMTP_PORT=587
-SMTP_SECURE=false
-SMTP_USER=warehouse-alert@forth.co.th
-SMTP_PASS=your-secure-app-password
-SMTP_FROM_NAME="Stock-Flow System"
-NOTIFICATION_EMAIL_TO=manager@forth.co.th
 ```
 
 > [!CAUTION]
@@ -80,7 +71,6 @@ NOTIFICATION_EMAIL_TO=manager@forth.co.th
 | `npm run dev` | รันเซิร์ฟเวอร์ Local Development ผ่าน Vite (พอร์ตปกติ `http://localhost:5173`) |
 | `npm run build` | คอมไพล์และสร้าง Production Bundle ที่โฟลเดอร์ `dist/` |
 | `npm run preview` | พรีวิวผลลัพธ์ของ Production Build บนเครื่อง Local |
-| `npm run test:email` | ทดสอบการเชื่อมต่อและการส่งอีเมลผ่าน SMTP Configuration |
 | `npm run db:backup` | รันสคริปต์สำรองข้อมูลและสกีมาฐานข้อมูล Supabase |
 | `npm run migrate:r2` | รันสคริปต์ตรวจสอบหรือย้ายรูปภาพเก่าขึ้นสู่ Cloudflare R2 |
 
@@ -91,8 +81,6 @@ NOTIFICATION_EMAIL_TO=manager@forth.co.th
 หลังจากกำหนดค่าเสร็จสิ้น ให้รันการตรวจสอบเพื่อความมั่นใจ:
 
 ```bash
-# ทดสอบระบบส่งอีเมล
-npm run test:email
 
 # ทดสอบการ Build Production Bundle
 npm run build

@@ -38,7 +38,6 @@ web
   - การติดตาม Serial Number พร้อมระบบป้องกันหมายเลขซ้ำ
   - การควบคุมสิทธิ์แบบละเอียด (Granular RBAC 12+ Permission Keys พร้อม PermissionRoute Guard)
   - ศูนย์การแจ้งเตือนในระบบพร้อมปุ่มอนุมัติทันที (`NotificationBell.jsx`)
-  - ระบบส่งอีเมลแจ้งเตือนผ่าน Serverless API พร้อม Template สวยงาม (`/api/send-email`)
   - ระบบอัปโหลดไฟล์สื่อตรงสู่ Cloudflare R2 ด้วย S3 Presigned URLs (`/api/r2-upload-url`)
   - การสร้างเอกสาร PDF ใบเบิกพัสดุในเบราว์เซอร์ผ่าน `@react-pdf/renderer`
 - **ข้อจำกัดและกฎเชิงเทคนิค:**

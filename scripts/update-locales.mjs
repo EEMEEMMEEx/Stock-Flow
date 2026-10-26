@@ -255,7 +255,6 @@ const enExtensions = {
   settings: {
     tabs: {
       general: 'General System',
-      smtp: 'SMTP Configuration',
       security: 'Security & Access',
       system: 'System Information',
     },
@@ -518,7 +517,6 @@ const thExtensions = {
   settings: {
     tabs: {
       general: 'การตั้งค่าทั่วไป',
-      smtp: 'การตั้งค่าระบบอีเมล (SMTP)',
       security: 'ความปลอดภัยและการเข้าถึง',
       system: 'ข้อมูลสถานะระบบ',
     },

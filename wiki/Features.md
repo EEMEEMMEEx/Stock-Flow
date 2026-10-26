@@ -36,11 +36,9 @@
 
 ### 4. ระบบการอนุมัติหลายระดับ (Multi-Tier Approval Workflow)
 * **Configurable Rules:** กำหนดเงื่อนไขมูลค่าพัสดุ หรือประเภทพัสดุพิเศษที่ต้องผ่านการอนุมัติจากผู้จัดการฝ่าย
-* **One-Click Email Approval:** ผู้อนุมัติสามารถกดปุ่ม Approve หรือ Reject ผ่านลิงก์ในอีเมลได้อย่างสะดวกและปลอดภัย
 * **Live Status Tracking:** ผู้ขอเบิกสามารถตรวจสอบสถานะคำขอ (Pending, Approved, Dispatched, Rejected) ได้ตลอดเวลา
 
 ### 5. ระบบแจ้งเตือนแบบเรียลไทม์ (Real-Time Notification System)
-* **Enterprise Email Delivery:** เชื่อมต่อกับระบบอีเมล Forth Corporation ผ่าน SMTP พร้อมระบบรับมือ Fallback
 * **In-App Alerts:** แสดงแถบแจ้งเตือนเตือนภัยสต็อกต่ำ (Low Stock Alert) และงานที่ต้องรอการดำเนินการ
 * **Safety Threshold:** ตั้งค่าจุดสั่งซื้อซ้ำ (Reorder Point) รายหมวดหมู่และแจ้งเตือนจัดซื้ออัตโนมัติ
 

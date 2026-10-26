@@ -57,7 +57,6 @@
 
 * **Fine-Grained Permissions:** 12+ modular permission keys (Dashboard, Projects, Items, Stock-In, Withdrawals, Checkouts, History, Reports, Users, Roles, Settings).
 * **PermissionRoute Guards:** Protected client-side routing and database Row Level Security (RLS).
-* **Email Invitation Engine:** Integrated serverless email invitation service (`/api/send-email`) with branded HTML templates.
 * **Self-Service Profile:** User profile management with password change policies and forced reset enforcement.
 
 ### 8. Batch Stock-In & Canonical CSV/Excel Validation
@@ -84,7 +83,7 @@
 | **Data & Tables** | TanStack Table v8 + Recharts | High-performance virtualized tables and analytical charts |
 | **Backend & DB** | Supabase (PostgreSQL 15) | Auth, Row Level Security (RLS), Realtime, and Atomic RPCs |
 | **Object Storage** | Cloudflare R2 + AWS S3 SDK | Zero-egress global object storage for images & media |
-| **Serverless APIs** | Vercel Serverless Functions | Presigned URL generator (`/api/r2-upload-url`), Email dispatcher (`/api/send-email`) |
+| **Serverless APIs** | Vercel Serverless Functions | Presigned URL generator (`/api/r2-upload-url`) |
 | **Document Engine** | `@react-pdf/renderer`, `jspdf`, `xlsx` | In-browser PDF issue voucher and spreadsheet generation |
 | **Mobile & PWA** | `vite-plugin-pwa` | Progressive Web App with offline caching & install prompt |
 
@@ -109,7 +108,6 @@ graph TD
         SPA <--> |Presigned PUT Upload| R2Bucket[(Cloudflare R2 Bucket)]
         SPA <--> |Serverless Signer| VercelAPI[Vercel Serverless Functions]
         VercelAPI <--> |Generate Presigned URLs| R2Bucket
-        VercelAPI <--> |SMTP Relay| MailServer[SMTP Email Server]
     end
 ```
 

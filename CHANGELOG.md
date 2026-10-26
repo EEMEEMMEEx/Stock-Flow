@@ -1,5 +1,18 @@
 # Changelog
 
+## [2026-10-26 09:25] - v1.26.0
+### Removed (Email Notification System & SMTP Infrastructure Decommissioned)
+- **Decommissioned Email Notification System**: ถอดระบบแจ้งเตือนทางอีเมล (Email Notification System), เมลเซิร์ฟเวอร์ SMTP, และการตั้งค่าที่เกี่ยวข้องออกจากระบบทั้งหมด:
+  - ลบ UI จัดการเทมเพลตอีเมลและประวัติการส่ง: `EmailTemplateManager.jsx` และ `EmailDeliveryLogs.jsx`
+  - ลบ Service และ Logic Layer: `notificationDispatcher.js`, `emailService.js`, `emailRenderer.js`, `emailSettings.js`
+  - ถอด Trigger ส่งอีเมลออกจากทุกโมดูล: `Settings.jsx`, `useNotifications.js`, `Withdrawals.jsx`, `StockIn.jsx`, `Checkouts.jsx`, `CheckoutPosTerminal.jsx`, `CheckoutReturnModal.jsx`
+  - ลบ Serverless Functions และ Cron: `api/send-email.js`, `api/checkouts-cron.js` และ `vercel.json`
+  - ลบ Dependency: ถอด `nodemailer` ออกจาก `package.json`
+  - ถอดระบบเทียบเชิญผู้ใช้ทางอีเมล: ปรับปรุง `UserManagement.jsx`, `AddUserModal.jsx`, `TechStackSection.jsx`
+  - ลบเอกสารเฉพาะกิจ 10 ไฟล์ใน `docs/` และสคริปต์ `scripts/verify-email-branding.mjs`
+  - สร้าง Forward Migration: `supabase/migrations/98_remove_email_notification_system.sql`
+- **In-App Bell Notifications Strictly Preserved**: ระบบแจ้งเตือนกระดิ่งในแอป (`NotificationBell.jsx`, `public.notifications`, PostgreSQL Triggers, Realtime) ยังคงทำงานได้สมบูรณ์ 100% (ผ่านการทดสอบ 17/17 cases)
+
 ## [2026-10-26 08:25] - v1.25.25
 ### Chore (Node.js Runtime Pin — v26.12.1)
 - **Runtime Pinned to v26.12.1**: กำหนดเวอร์ชัน Node.js ของโปรเจกต์ไว้ที่ `26.12.1` เป็นแหล่งอ้างอิงเดียว ผ่าน 3 จุดที่เคยไม่ตรงกัน ได้แก่
@@ -150,52 +163,7 @@
     - เพิ่ม `min-h-[44px] sm:min-h-0` ให้กับปุ่ม Cancel และ Close เพื่อให้ได้ Touch Target ที่เหมาะสมสำหรับหน้าจอสัมผัสและอุปกรณ์พกพา
     - อัปเดตสคริปต์ตรวจสอบ Invariants `scripts/verify-withdrawal-detail-modal.mjs` เพิ่มการตรวจ `flex-col`, `flex-1 min-h-0`, และ `shrink-0` (20/20 Checks PASS)
 
-## [2026-10-19 19:52] - v1.25.9
 
-- **Files Modified:** `package.json`, `package-lock.json`, `CHANGELOG.md`
-- **Changes:**
-  - **อัปเดต Nodemailer เป็น Latest Stable Release (Dependency Bump):**
-    - ยกเล็งเวอร์ชัน `nodemailer` จาก `10.0.10` → `10.1.7` (npm registry latest stable) พร้อมอัปเดต `package-lock.json` ตาม Lockfile Conventions ของโปรเจกต์ (npm)
-    - ตรวจสอบและยืนยัน Integration ที่มีอยู่แล้วครบถ้วน ไม่มีการแก้ไข Source Code ใดๆ (Zero Code Change): Vercel Serverless `/api/send-email` (Transporter แบบ Pool + TLS + Timeouts), Dynamic SMTP Config จาก Supabase (`system_settings`/`system_secrets`) ตามลำดับความสำคัญ Admin Override > DB Config > Environment Variables
-    - ยืนยันความปลอดภัย: SMTP Credentials อยู่เฉพาะ Environment Variables (`.env` ที่ gitignore แล้ว) และ Supabase Secrets Vault เท่านั้น ไม่มีการ Hardcode/Log รหัสผ่าน และไม่รั่วไหลสู่ Frontend (`smtpOverrides` ใช้ได้เฉพาะ Admin ที่ผ่านการตรวจสอบสิทธิ์เท่านั้น)
-    - ยืนยัน Business Safety: การส่งอีเมลล้มเหลวไม่บล็อก/ย้อนกลับธุรกรรม (Dispatch แบบ Fire-and-forget พร้อม `.catch()` ทุก Call Site ของ ยืม-คืน/เบิกจ่าย), มี Dedup Cache ป้องกันส่งซ้ำ และมี `email_delivery_logs` บันทึก Audit Trail ทั้งสำเร็จ/ล้มเหลว
-    - ตรวจสอบด้วย `npm run test:email` (33/33 Tests ผ่าน — ใช้ `jsonTransport` Mocked Transport ไม่มีการส่งอีเมลจริง), `npm run lint` (0 errors), `npm run build` (สำเร็จ)
-
-## [2026-10-19 16:40] - v1.25.8
-
-- **Files Modified:** `supabase/migrations/20261020000000_email_delivery_logs_and_event_seeds.sql` (ใหม่), `api/send-email.js`, `src/lib/emailService.js`, `src/lib/emailRenderer.js`, `src/lib/notificationDispatcher.js`, `src/hooks/useNotifications.js`, `src/pages/Checkouts.jsx`, `src/components/settings/EmailTemplateManager.jsx`, `src/components/settings/EmailDeliveryLogs.jsx` (ใหม่), `src/pages/Settings.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `scripts/verify-email-branding.mjs`, `package.json`, `CHANGELOG.md`, `docs/notification-email-settings-implementation-plan.md` (ใหม่)
-- **Changes:**
-  - **ตรวจสอบและยกระดับระบบการตั้งค่าการแจ้งเตือนและอีเมล (Notification and Email Settings) ครบทั้ง 15 เหตุการณ์:**
-    - พัฒนา Migration `20261020000000_email_delivery_logs_and_event_seeds.sql`:
-      - สร้างตาราง `public.email_delivery_logs` พร้อม RLS (Super/Admin ดูประวัติได้, Service Role แทรกประวัติ) และ Index บน `event_type`, `status`, `created_at`
-      - Seed เหตุการณ์แจ้งเตือนที่ขาดหาย (`stock_in_created`, `withdrawal_reverted`, `checkout_reverted`) เข้าสู่ `system_settings.notification_events` ครบถ้วน 15 เหตุการณ์
-    - ปรับปรุง Backend `api/send-email.js`:
-      - เพิ่มการบันทึกประวัติผลการส่งอีเมลลงใน `email_delivery_logs` ทั้งกรณีสำเร็จ (`sent`) และกรณีล้มเหลว (`failed` พร้อม error message)
-      - แก้ไขช่องโหว่ CORS Origin reflection ให้ตรวจสอบความถูกต้องก่อนสะท้อนกลับ
-      - รับและบันทึก `eventType` จาก payload
-    - ปรับปรุง `src/lib/emailRenderer.js`:
-      - เพิ่มชุดข้อมูลจำลอง (Mock Data) สำหรับเหตุการณ์ 14 (`withdrawal_reverted`) และ 15 (`checkout_reverted`) ใน `SAMPLE_EMAIL_DATA_BY_EVENT`
-      - แก้ไข RegEx Special Replacement Character (`$`) ใน `resolveEmailVariables` ด้วย Replacer Function `() => String(value)`
-      - เพิ่ม Sanitization `escapeHtml()` ให้กับ `item.status_label` และ `item.due_date`
-      - เสริม Outlook MSO Conditional Width Table และ Fallback Font Stack ให้รองรับภาษาไทย
-    - แก้ไขปัญหา Checkout Double-Fire ใน `src/pages/Checkouts.jsx`:
-      - ตัดการส่งอีเมล `checkout_handed_over` ซ้ำซ้อนขณะกดอนุมัติใบยืม โดยจะส่งเฉพาะ `checkout_approved` และส่งมอบอุปกรณ์เฉพาะขั้นตอนส่งมอบจริง
-    - ปรับปรุง Notification Bell Parity ใน `src/hooks/useNotifications.js`:
-      - เชื่อมโยงการอนุมัติใบเบิกด่วน (`approveQuickWithdrawal`) ให้ส่งอีเมล `withdrawal_approved` และตรวจสอบสต็อกขั้นต่ำ (`checkAndDispatchOrderLowStock`) ให้เท่าเทียมกับหน้าใบเบิกปกติ
-    - ปรับปรุง Cache Keys และ Plain Text ใน `src/lib/notificationDispatcher.js`:
-      - แก้ไข Cache Key ของ `stock_in_created` และ Partial Return ใน `checkout_returned` ป้องกันการส่งอีเมลซ้ำซ้อน
-      - สลับมาใช้ `renderEmailText()` เพื่อสร้างเนื้อหา Plain Text ทางเลือกที่ถูกต้อง
-    - เพิ่ม UI บันทึกประวัติการส่งอีเมล `src/components/settings/EmailDeliveryLogs.jsx`:
-      - แสดงตารางประวัติการส่งอีเมลสถานะ (Sent/Failed), ตัวกรองสถานะ, ค้นหาตามผู้รับ/หัวข้อ/เหตุการณ์, การแบ่งหน้า, และ Modal ดูข้อผิดพลาดทางเทคนิค
-      - ติดตั้งในหน้า `src/pages/Settings.jsx` ภายใต้แท็บการตั้งค่าอีเมล
-    - เพิ่มการตรวจสอบความถูกต้องของฟอร์มเทมเพลตใน `src/components/settings/EmailTemplateManager.jsx` ป้องกันการบันทึกหัวข้อว่าง หรือใส่ตัวแปรผิดรูปแบบ
-    - เพิ่มคำแปลสองภาษา (TH/EN) สำหรับเหตุการณ์ 14, 15 และโมดูล `emailLogs` ใน `src/i18n/locales/th.js` และ `en.js`
-  - **Verification:**
-    - `npm run test:email` — **33/33 PASS** (Template Shells, Revert Notifications, Nodemailer transport & error normalization)
-    - `node scripts/verify-email-branding.mjs` — **103/103 PASS** (15 notification events, self-hosted logo, accent color, route retention)
-    - `npm run check:i18n` — **PASS** (100% key parity 2,107/2,107 keys ระหว่าง en.js และ th.js)
-    - `npm run verify:notifications` — **17/17 PASS**
-    - `npm run build` — **PASS** (Vite v7.3.6 production build 4,001 modules transformed ใน 9.79s)
 
 ## [2026-10-19 15:45] - v1.25.7
 
@@ -779,7 +747,7 @@
   - **Return Modal:** เพิ่มตัวเลือก `consumed` ใน select สภาพ, บังคับกรอกเหตุผล/จุดติดตั้ง (toast `checkouts.consumedReasonRequired` ถ้าว่าง), เพิ่มช่อง `replaced_serial_number` (`maxLength=100` ตรงกับ CHECK ฝั่ง DB) แสดงเฉพาะเมื่อเลือก `consumed`, ส่ง `replaced_serial_number` ไปกับ payload ของ `process_return_order`, และปรับ dominant condition สำหรับอีเมลให้รู้จัก `consumed`
   - **สูตรคงค้าง/ยอดเคลียร์:** บวก `quantity_consumed` เข้าสูตร remaining/completed ทั้งหมด — `CheckoutReturnModal`, `CheckoutActiveList`, `CheckoutHistoryList`, `Checkouts.jsx` (ตัวนับ active), `CheckoutDetailModal` และเงื่อนไข "มีการคืนแล้ว" ของ `CheckoutExtendModal`; ไม่แตะสูตรที่ใช้ `quantity_borrowed` อย่างเดียว (Pending/Approve/Dispatch)
   - **Detail Modal:** เพิ่ม `totalConsumed` แยกจากยอดชำรุด/สูญหาย, แสดงยอดต่อรายการ, แถบสรุป "ใช้ทดแทน" พร้อมหมายเหตุว่าไม่คืนสต็อก, และใน audit log แสดง `replaced_serial_number` เป็น `ทดแทน S/N:` พร้อม badge สีเหลือง (ไม่ปนสีแดงของชำรุด/สูญหาย) โดยแมป label ผ่าน i18n แทนการโชว์ raw code
-  - **PDF/อีเมล:** `checkout-pdf-templates.jsx` แสดง `นำไปใช้ทดแทน (n)` นำหน้าสภาพชำรุด/สูญหาย และเพิ่ม `consumed` ใน `RETURN_CONDITION_LABELS` ของ `emailRenderer.js` (ใช้ทั้งอีเมลและ fallback ของ PDF) พร้อม unit test
+  - **PDF:** `checkout-pdf-templates.jsx` แสดง `นำไปใช้ทดแทน (n)` นำหน้าสภาพชำรุด/สูญหาย และเพิ่ม `consumed` ใน `RETURN_CONDITION_LABELS` ของ `emailRenderer.js` (ใช้ทั้งอีเมลและ fallback ของ PDF) พร้อม unit test
   - **i18n:** เพิ่มคีย์ `checkouts.consumed`, `consumedShort`, `consumedReason`, `consumedReasonPlaceholder`, `consumedReasonRequired`, `consumedNoStockNote`, `replacedSerial`, `replacedSerialPlaceholder`, `replacedSerialTag` ครบทั้ง `th` และ `en`
   - **ไม่แก้ (ตรวจแล้ว):** `api/checkouts-cron.js` ไม่อ่าน `quantity_damaged`/`quantity_lost`/`quantity_consumed` จึงไม่ต้องแก้; `scripts/backup-full-database.mjs` เป็นสำเนาสคีมาที่ล้าสมัยอยู่แล้ว (ไม่มี auth check ของ migration 65 และไม่มี `stock_in_orders` กรณีคืนข้ามโครงการ) — ต้องกระทบยอดแยก ไม่แก้ในรอบนี้
   - **หมายเหตุ deploy:** โค้ดฝั่ง UI นี้ใช้ได้เฉพาะหลัง migration 77 ถูก apply; ถ้ารันก่อน migration ตัวเลือก `consumed` จะชน CHECK constraint เดิม
@@ -835,20 +803,6 @@
 
 og
 
-## [2026-10-03 12:38] - v1.13.6
-
-- **Files Modified:** `src/lib/emailSettings.js`, `src/lib/emailSettings.test.js`, `src/lib/emailRenderer.js`, `src/lib/emailRenderer.test.js`, `src/lib/notificationDispatcher.js`, `src/components/settings/EmailTemplateManager.jsx`, `src/pages/Settings.jsx`, `src/pages/UserManagement.jsx`, `api/send-email.js`, `api/checkouts-cron.js`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `scripts/verify-email-branding.mjs` (ใหม่), `package.json`, `package-lock.json`, `CHANGELOG.md`, `docs/global-branding-audit-and-fix-plan.md`
-- **Changes:**
-  - **Bug #1 (Link Truncation) + Bug #2 (Double Slash / Scheme-less)**: เพิ่มฟังก์ชันบริสุทธิ์ `normalizeBaseUrl` + `buildActionUrl` ใน `src/lib/emailSettings.js` (โมดูลเดิมที่ทดสอบใน Node ได้ ไม่มี dependency) แล้วใช้แทนการต่อสตริงด้วยมือทั้ง 4 จุดใน `notificationDispatcher` — เดิม `withdrawal` ใช้ `branding.public_base_url || '.../withdrawals'` ทำให้ **path `/withdrawals` ถูกตัดทิ้ง** เมื่อผู้ดูแลตั้งค่า Public Base URL และ `stock-in`/`items` ต่อสตริงตรง ๆ ทำให้เกิด `//stock-in` เมื่อค่า Base URL มี `/` ปิดท้าย รวมถึงกรณีไม่ใส่ `https://` ที่เดิมถูก `sanitizeHttpUrl` ทิ้งทั้งค่า; ปรับ `buildCheckoutEmailData` และ `api/checkouts-cron.js` ให้ normalizeBaseUrl เช่นเดียวกัน (ค่าเดิมที่มี `/` ปิดท้ายให้ผลลัพธ์เท่าเดิม — ไม่มี breaking change)
-  - **Bug #6 (User Invitation ไม่มีโลโก้)**: `renderUserInvitationEmailHtml` เรนเดอร์ `<img>` จาก `branding.logo_url` ด้วยรูปแบบเดียวกับเทมเพลตหลัก (fallback เป็นตัวอักษรชื่อแอปเมื่อไม่มีโลโก้)
-  - **ความเสี่ยง Logo Hotlink**: เพิ่ม `DEFAULT_LOGO_URL = https://stockflowth.online/images/logo.png` (ไฟล์ `public/images/logo.png` มีอยู่ในโปรเจกต์แล้ว ขนาด 300x90) ใช้เป็นค่า fallback เมื่อ `branding.logo_url` ว่าง — อีเมลต้องใช้ URL แบบ absolute เท่านั้น จึงไม่ใช้ path แบบ relative
-  - **Bug #4 (From header ไม่ผูกกับ Global Branding)**: `api/send-email.js` อ่าน `system_settings` key `branding` ด้วย service role แล้วใช้ `branding.app_name` เป็นชื่อผู้ส่ง ลำดับความสำคัญ: `smtpOverrides.sender_name` (ปุ่มทดสอบของผู้ดูแล) > `branding.app_name` > `smtp_config.sender_name` > `SMTP_SENDER_NAME`/`EMAIL_FROM_NAME` > `StockFlow Notification`; ตัดอักขระ `"`, `\`, CR/LF และยุบช่องว่างในชื่อก่อนประกอบ header เพื่อกัน header injection และชื่อที่ทำให้ header เพี้ยน
-  - **Bug #3 (เทมเพลตทดสอบไม่ส่ง branding)**: `handleSendTestEmail` ส่ง `branding` ไปกับเทมเพลตที่เลือก และปุ่ม "ทดสอบส่งอีเมล" ใน `Settings.jsx` (บรรทัด 344) ส่ง `{ branding: emailBranding }` ไปด้วย
-  - **ช่องว่างที่เอกสาร audit ไม่พบ (ปิดเพิ่ม)**: `UserManagement.jsx` ไม่เคยส่ง `branding` เข้า `sendUserInvitationEmail` ทั้ง 2 จุด (สร้างผู้ใช้ใหม่ + ส่งคำเชิญซ้ำ) ทำให้แก้เทมเพลตแล้วโลโก้ก็ยังไม่ขึ้น — เพิ่ม `fetchEmailBranding()` ที่ export จาก `notificationDispatcher` (ใช้ `fetchNotificationSettings` เดิม ไม่มี query ใหม่) แล้วส่งค่าเข้าไปทั้ง 2 จุด
-  - **Bug #5 (ไม่มี Input Validation)**: `handleSaveAll` ตรวจ URL ก่อนบันทึก — บล็อกการบันทึกเมื่อ Base URL/Logo URL ไม่ใช่ http(s) ที่สมบูรณ์ (มี toast ตาม i18n) แล้วเติม `https://` และตัด trailing slash ให้อัตโนมัติ; เตือน (ไม่บล็อก) เมื่อ Logo URL ไม่มีนามสกุลไฟล์รูปภาพ ผ่าน `isLikelyImageUrl`; เพิ่มคีย์ i18n 3 คีย์ (`invalidBaseUrl`, `invalidLogoUrl`, `logoExtensionWarning`) ครบทั้ง TH/EN
-  - **การพิสูจน์ (รันจริง)**: `npm run verify:email-branding` (สคริปต์ใหม่) — เรนเดอร์เทมเพลตทั้ง 13 เหตุการณ์ + เทมเพลตคำเชิญด้วยค่า branding ที่จงใจ "โหด" (ไม่มี scheme, มี trailing slash, โลโก้ภายนอก) แล้วตรวจโลโก้/สี/ลิงก์ไม่ให้มี `//` ซ้ำ + audit ซอร์สของจุดที่แก้ — **93/93 PASS**; `npm run test:email` **31/31 PASS** (เพิ่ม 5 เคสใน `emailSettings.test.js` และ 1 เคสใน `emailRenderer.test.js`); `npm run lint` 0 errors (19 warnings เดิม ไม่มีไฟล์ที่แก้เพิ่ม warning ใหม่); `npm run check:i18n` **1802/1802 คีย์ 100%**; `npm run build` ผ่าน
-  - **ข้อจำกัดที่ทราบ**: ยังไม่ได้ทดสอบส่งอีเมลจริงเข้าอินบ็อกซ์ (ต้องใช้ SMTP credential ของ production จึงไม่รันในสภาพแวดล้อมนี้) และค่า `branding.logo_url` ในฐานข้อมูล production ยังชี้ URL ภายนอก `forth.co.th` — โค้ดมี fallback โลโก้ที่โฮสต์เองแล้ว แต่ต้องให้ผู้ดูแลแก้ค่าช่อง Logo Image URL เป็น `https://stockflowth.online/images/logo.png` ในหน้า Settings > Global Email Branding เพื่อตัดความเสี่ยง hotlink ให้หมด
-  - ปรับ version ของระบบเป็น `v1.13.6` (PATCH)
 
 ## [2026-10-03 11:51] - v1.13.5
 
@@ -946,37 +900,7 @@ og
   - อัปเดตสถานะใน `docs/hide-rejected-withdrawal-pdf-button-plan.md` เป็น "ดำเนินการแล้ว" พร้อมบันทึกส่วนที่ปรับจากแผนเดิม
   - ปรับ version ของระบบเป็น `v1.12.7` (PATCH)
 
-## [2026-10-02 21:56] - v1.12.6
 
-- **Files Modified:** `src/lib/notificationDispatcher.js`, `src/lib/emailSettings.js` (ใหม่), `src/lib/emailSettings.test.js` (ใหม่), `src/pages/Withdrawals.jsx`, `src/pages/StockIn.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `package.json`, `package-lock.json`, `CHANGELOG.md`
-- **Changes:**
-  - **สาเหตุที่อีเมลแจ้งเตือนของ `/withdrawals` ไม่ส่งเลย (แก้ 4 จุด)**
-    1. `admin_get_system_settings` ถูกป้องกันด้วย `has_permission(uid,'settings.view')` ซึ่งมีเฉพาะ `ADMIN`/`SUPER` (ยืนยันจาก migration 54/58/59/62) → เมื่อ `STAFF`/`SUPERVISOR` เป็นผู้ทำรายการ ค่าที่ได้เป็น `null` ทำให้ `notificationEvents` ว่าง → ไม่มี `roles`, ไม่มี `to_extra`, ไม่เห็น `enabled` เปลี่ยนไปอ่านตาราง `system_settings` โดยตรง (RLS "Authenticated Read Settings" เปิดให้ authenticated อ่านได้อยู่แล้ว) โดยคง RPC เดิมไว้เป็น fallback
-    2. **bug ที่ทำให้การอนุมัติ/ปฏิเสธ/ยืนยันรับของพังสนิท**: embed `projects:project_id (id, name, code)` อ้างคอลัมน์ `code` ที่ไม่มีในตาราง `projects` (จริงคือ `project_code`) → PostgREST คืน HTTP 400 → ฟังก์ชันคืน `ORDER_NOT_FOUND` ก่อนถึงขั้นส่งอีเมล → เปลี่ยนเป็น `project_code` (และแก้ `.from('projects').select('id, name, code, ...)`, `project?.code` ของ stock-in ที่ผิดหลักเดียวกัน)
-    3. regex กรองอีเมลเสีย: `/^[^s@]+@[^s@]+.[^s@]+$/` (ตกเครื่องหมาย backslash) กลายเป็นคลาส "ต้องไม่ใช่ตัวอักษร s" → **อีเมลที่ local part มี `s` ถูกกรองทิ้งทั้งหมด** (`staff@...`, `user@...`, `sakdipath.s@forth.co.th`, `sureerat.r@forth.co.th`) รวมถึง `cc_extra` → รวมเป็นแหล่งเดียว `EMAIL_REGEX` ในไฟล์ใหม่ `emailSettings.js` พร้อม unit test ล็อกบั๊กไว้
-    4. `withdrawal_completed` ไม่เคยเพิ่มผู้ขอเบิกเป็นผู้รับ (เงื่อนไขเดิมมีแค่ `withdrawal_approved`/`withdrawal_rejected`) → เพิ่ม `withdrawal_completed` เข้าเงื่อนไข
-  - **แก้ข้อมูลในอีเมลให้ตรงกับฐานข้อมูล**: `{{request_no}}` เดิมอ่าน `order.order_no \|\| order.request_no` ซึ่งไม่มีคอลัมน์ทั้งคู่ (จริงคือ `work_order_no`) → เลขที่เอกสารในเมลเป็นค่า fallback; ชื่อผู้ดำเนินการเดิมอ่าน `approved_by_name`/`rejected_by_name`/`completed_by_name` ที่ไม่มีในตาราง → เปลี่ยนไปดึง `full_name` จาก `profiles` ตาม `*_by` UUID; `{{project_code}}` ของ stock-in เดิมอ่าน `project.code`; และค่า `supplier_name`/`po_number` ของ stock-in ที่เดิม **hardcode** ว่า `'Forth Supply Co., Ltd.'`/`'-'` → รับค่าจริงจากฟอร์ม (`StockIn.jsx` ส่ง `supplier`/`poNumber` เข้า dispatcher)
-  - **เพิ่มจุดกระตุ้น `low_stock_alert` (event 6) ที่ถูกต้อง**: แผนเดิมระบุให้ทำตอน Complete Order แต่ `complete_inventory_request` อัปเดตแค่สถานะ (สต็อกถูกตัดตอน Approve) → ตรวจหลังอนุมัติสำเร็จใน `handleApproveOrder` โดยอ่าน `stock_balance` ของโครงการ เทียบกับ `items.min_stock` (ถ้าเป็น 0/NULL ใช้ `low_stock_threshold` จาก `system_settings`) และข้ามรายการที่ไม่มีแถว balance (ไม่ถือเป็น 0)
-  - `Withdrawals.jsx` ส่งชื่อผู้ดำเนินการจริงใน `withdrawal_rejected`/`withdrawal_completed` (เดิมไม่ได้ส่ง ทำให้ `{{rejected_by}}`/`{{completed_by}}` ไม่มีค่า); CC ใช้ `parseEmailList` ที่ตัดอีเมลซ้ำกับ TO อัตโนมัติ; เพิ่มคีย์ i18n `withdrawals.toasts.lowStockAlerted`/`lowStockAlertFailed` ครบ th/en
-  - `package.json` เพิ่ม `src/lib/emailSettings.test.js` เข้า `npm run test:email`
-  - **ไม่มีการเปลี่ยนสคีมา/RPC/migration** — ใช้ RLS policy ที่มีอยู่แล้ว; สัญญาของฟังก์ชัน dispatch เดิมไม่เปลี่ยน (เพิ่มแค่พารามิเตอร์ optional `supplier`/`poNumber`)
-  - **ข้อจำกัดที่ทราบ (นอกขอบเขต)**: `complete_inventory_request` เรียก `has_permission(uid,'withdrawals.manage')` แต่ไม่พบ permission code นี้ใน catalog → เงื่อนไขนั้นเป็น dead code; และ dedup ของ `low_stock_alert` เป็น cache ในหน่วยความจำเบราว์เซอร์เท่านั้น (reload แล้วอนุมัติรายการเดิมซ้ำอาจเตือนซ้ำได้)
-  - ปรับ version ของระบบเป็น `v1.12.6` (PATCH)
-
-## [2026-10-02 20:21] - v1.12.5
-
-- **Files Modified:** `src/lib/emailRenderer.js`, `src/lib/notificationDispatcher.js`, `src/components/settings/EmailTemplateManager.jsx`, `src/components/checkouts/CheckoutPosTerminal.jsx`, `src/components/checkouts/CheckoutReturnModal.jsx`, `src/pages/Checkouts.jsx`, `src/pages/Settings.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `src/lib/emailRenderer.test.js`, `api/checkouts-cron.js`, `vercel.json`, `supabase/migrations/20261002200000_add_email_dispatch_logs.sql`, `supabase/migrations/20261002200100_extend_notification_events_defaults.sql`, `supabase/migrations/20261002200200_allow_service_role_user_email_lookup.sql`, `scripts/backup-full-database.mjs`, `package.json`, `package-lock.json`, `CHANGELOG.md`
-- **Changes:**
-  - **เพิ่มเหตุการณ์อีเมลแจ้งเตือนโมดูล `/checkouts` ลำดับ 7–13** ต่อจากของเดิม 6 รายการ โดยใช้สถาปัตยกรรมเดิมทั้งหมด (UI `EmailTemplateManager` → `emailRenderer` → `notificationDispatcher` → `/api/send-email`) ไม่มีระบบคู่ขนาน: `checkout_submitted`, `checkout_approved`, `checkout_rejected`, `checkout_handed_over`, `checkout_due_soon`, `checkout_overdue`, `checkout_returned`
-  - **`emailRenderer.js`**: เพิ่ม `EVENT_DEFAULTS`, `SAMPLE_EMAIL_DATA_BY_EVENT`, `SUPPORTED_EVENT_VARIABLES`, `summaryByEvent`, `defaultPreheaders` ของทั้ง 7 เหตุการณ์ (Mock data เป็นข้อมูลอุปกรณ์ยืม-คืน ไม่ใช่วัสดุเบิก), เพิ่ม branch "อุปกรณ์" ใน `renderMaterialDetails` (แสดงรหัสทรัพย์สิน/S/N + กำหนดคืน + สภาพเมื่อรับคืนเฉพาะเมื่อมีค่า), เพิ่ม `formatThaiDate`/`formatThaiDateOrDateTime` (วันที่ล้วนไม่ถูกเติม `เวลา 00:00 น.`), เพิ่ม `formatReturnCondition` และ export helper กลาง `buildCheckoutEmailItems` / `buildCheckoutEmailData` ให้ client และ cron ใช้ตัวเดียวกัน
-  - **`notificationDispatcher.js`**: ขยาย `dispatchCheckoutNotification` ให้รองรับ 5 เหตุการณ์, **อ่านรายการอุปกรณ์จากฐานข้อมูลเป็นหลัก** (payload จาก POS มีชื่อฟิลด์ต่างจาก row จริง เช่น `quantity`/`item_id` และไม่มีชื่อสินค้า → เดิมแสดงผลผิด), เพิ่มพารามิเตอร์ `extraData` (สภาพ/วันที่คืน/`suppress`), เพิ่ม CC ตาม `cc_roles`, เปลี่ยนการแทนตัวแปรใน Subject มาใช้ `resolveEmailVariables` (แก้ปัญหา `{{checkout_id}}`, `{{days_overdue}}` ค้างเป็นตัวอักษรเพราะเดิมแทนเฉพาะ `{{request_no}}`/`{{project_name}}`)
-  - **`api/checkouts-cron.js` (ใหม่) + `vercel.json`**: Vercel Cron รายวัน `0 1 * * *` (08:00 น. ไทย) สำหรับ `checkout_due_soon` (กำหนดคืน = วันพรุ่งนี้) และ `checkout_overdue` (เลยกำหนดและยังคืนไม่ครบ) คำนวณวันที่ด้วยโซน `Asia/Bangkok` อย่างชัดเจน, ตรวจสิทธิ์ด้วย `Authorization: Bearer $CRON_SECRET` (fallback `INTERNAL_SERVICE_KEY`), ส่งอีเมลผ่าน `/api/send-email` ด้วย internal secret เดิม และ **claim แถว log ก่อนส่ง** เพื่อกันการส่งซ้ำแบบ atomic (ลบ claim เมื่อส่งล้มเหลวเพื่อให้ retry ได้)
-  - **Migration ใหม่ 3 ไฟล์**: `email_dispatch_logs` (ตาราง ledger + UNIQUE `(order_id, event_type, dispatched_date, recipient_email)`, เปิด RLS และไม่ให้สิทธิ์ client ใด ๆ), merge คีย์เริ่มต้นของ 7 เหตุการณ์ใหม่เข้า `system_settings.notification_events` ด้วย `||` (คีย์เดิมชนะ → ไม่ทับค่าที่แอดมินตั้งไว้) และแก้ `public.get_user_emails` ให้ยอมรับผู้เรียกที่เป็น background job (`auth.role() = 'service_role'`) — จำเป็นเพราะ cron ไม่มี JWT ของผู้ใช้ และก่อนหน้านี้จะได้ error `Unauthorized: User is not authenticated.` ทุกครั้ง (ยังคง REVOKE จาก `PUBLIC`/`anon` และคงสิทธิ์เดิมของ `authenticated` ไว้ให้ client dispatcher ทำงานได้เหมือนเดิม)
-  - **Lifecycle**: `CheckoutPosTerminal` ส่ง `checkout_submitted` เฉพาะเมื่อสถานะ `pending` และส่ง `checkout_handed_over` เมื่อจ่ายตรง (`active`); `Checkouts.jsx` ส่ง `checkout_approved` + `checkout_handed_over` หลังอนุมัติ (ระงับอีเมลซ้ำด้วย `suppress` เมื่อผู้อนุมัติเป็นผู้ขอยืมเอง); `CheckoutReturnModal` ส่ง `checkout_returned` พร้อมสภาพอุปกรณ์และหมายเหตุ
-  - **i18n + UI**: เพิ่มคีย์ `settings.emailTemplates.events.*` ครบทั้ง `th.js`/`en.js` (parity 100%), เพิ่ม 7 เหตุการณ์ใน `DEFAULT_EVENTS_CONFIG`, ปรับช่องค้นหาให้ค้น `event key` และ `primary_recipient` ได้, เพิ่มค่า fallback ใน `Settings.jsx`
-  - **การเบี่ยงเบนจากแผนเดิม (พร้อมเหตุผล)**: (1) ใช้ `{{request_no}}` แทน `{{checkoutId}}` เพราะตัวแทนที่เดิมรองรับเฉพาะ snake_case (2) cron ใช้ `INTERNAL_SERVICE_KEY` ร่วมกับ `CRON_SECRET` แทนการเพิ่ม env ใหม่ (3) insert claim **ก่อน** ส่ง เพื่อให้กันการส่งซ้ำได้จริงแม้รันพร้อมกัน (4) **ไม่**ให้ cron เขียนสถานะ `overdue` อัตโนมัติ เพื่อไม่แตะ state/writer ที่มีอยู่
-  - **ช่องว่างที่ทราบและอยู่นอกขอบเขต**: ยังไม่มีตัวเขียนสถานะ `overdue` อัตโนมัติในระบบ จึงยังไม่มี in-app notification `checkout.overdue` จากเส้นทางนี้ (อีเมลแจ้งเตือนทำงานจากวันที่ครบกำหนดโดยตรง)
-  - ปรับ version ของระบบเป็น `v1.12.5` (PATCH)
 
 ## [2026-10-02 21:05] - v1.12.4
 
@@ -1023,8 +947,7 @@ og
 - **Files Modified:** `supabase/migrations/20261002190000_add_get_user_emails_rpc.sql`, `src/components/checkouts/CheckoutDetailModal.jsx`, `src/pages/Checkouts.jsx`, `src/pages/Profile.jsx`, `src/lib/notificationDispatcher.js`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `package.json`, `package-lock.json`, `CHANGELOG.md`
 - **Changes:**
   - **Root cause (HTTP 400 จาก profiles SELECT):** capture error body จริงได้ `{"code":"42703","message":"column profiles.email does not exist"}` — ตัวการคือคอลัมน์ **`email`** ไม่ใช่ `signature_url` (ทดสอบแล้ว `signature_url` คืน 200 ปกติ) โดย `public.profiles` **ไม่มีคอลัมน์ email ตามการออกแบบ** อีเมลเข้าสู่ระบบเก็บที่ `auth.users.email` เท่านั้น (ระบุไว้ในคอมเมนต์ของ `archive/38_fix_admin_create_user_profiles_pkey_conflict.sql`)
-  - แก้ query ที่อ้าง `profiles.email` ครบทุกจุดในโค้ดเบส: `CheckoutDetailModal` (โปรไฟล์ผู้อนุมัติ + เจ้าหน้าที่คลัง), `Checkouts` (enrich โปรไฟล์ผู้สร้าง) และ `notificationDispatcher` อีก 6 จุด (4 role query + 2 embedded join `profiles:requested_by (id, email, …)` และ `borrower:borrower_id (id, email, …)`) ซึ่งทำให้ **กระบวนการส่งอีเมลแจ้งเตือนทั้งหมดล้มเหลวก่อนเริ่ม** (คืน `ORDER_NOT_FOUND` เงียบ ๆ)
-  - **ไม่เพิ่มคอลัมน์ email ซ้ำลงใน `profiles`** ตามหลัก "อีเมลอยู่ที่อื่นให้ไปดึงจากที่ถูกต้อง" จึงเพิ่ม RPC `public.get_user_emails(p_user_ids UUID[], p_roles TEXT[])` แบบ `SECURITY DEFINER` + `search_path` ตรึงค่า เรียกได้เฉพาะผู้ใช้ที่ล็อกอินแล้ว, บังคับให้ระบุเงื่อนไขอย่างน้อยหนึ่งอย่าง (กันการดึงอีเมลทั้งระบบ), คืนเฉพาะผู้ใช้สถานะ `active` และ REVOKE จาก `PUBLIC`/`anon`
+  - แก้ query ที่อ้าง `profiles.email` ครบทุกจุดในโค้ดเบส: `CheckoutDetailModal` (โปรไฟล์ผู้อนุมัติ + เจ้าหน้าที่คลัง), `Checkouts` (enrich โปรไฟล์ผู้สร้าง)   - **ไม่เพิ่มคอลัมน์ email ซ้ำลงใน `profiles`** ตามหลัก "อีเมลอยู่ที่อื่นให้ไปดึงจากที่ถูกต้อง" จึงเพิ่ม RPC `public.get_user_emails(p_user_ids UUID[], p_roles TEXT[])` แบบ `SECURITY DEFINER` + `search_path` ตรึงค่า เรียกได้เฉพาะผู้ใช้ที่ล็อกอินแล้ว, บังคับให้ระบุเงื่อนไขอย่างน้อยหนึ่งอย่าง (กันการดึงอีเมลทั้งระบบ), คืนเฉพาะผู้ใช้สถานะ `active` และ REVOKE จาก `PUBLIC`/`anon`
   - จุดที่ต้องใช้อีเมล (ผู้ขอเบิก, ผู้ขอยืม, ผู้รับพัสดุ, ผู้รับตามบทบาท) เปลี่ยนมาดึงผ่าน RPC นี้แทน
   - **Harden ฝั่ง frontend:** ทุกจุดที่โหลดโปรไฟล์มีการ log `error.code`, `error.message`, `error.details`, `error.hint` ครบถ้วน (เดิมกลืน error เงียบ) พร้อมแปลงเป็นข้อความไทยบน UI ผ่านคีย์ใหม่ `checkouts.toasts.officerProfileLoadFailed` และแสดงแบนเนอร์เตือนในโมดัลรายละเอียดแทนการปล่อยให้ข้อมูลลายเซ็นหายไปเงียบ ๆ
   - **แก้บั๊กที่สองจากการ align schema:** หน้า Profile เดิมเขียน `email` ลงตาราง `profiles` ในจังหวะที่ Supabase Auth อัปเดตอีเมลสำเร็จทันที → ทั้งการบันทึกโปรไฟล์ (ชื่อ/เบอร์/ตำแหน่ง/รูป) ล้มเหลวด้วย HTTP 400 ตอนนี้ตัดการเขียนนั้นออก ใช้อีเมลจาก `auth.users` ผ่าน `supabase.auth.updateUser()` ตามเดิม
@@ -1060,7 +983,7 @@ og
 
 - **Files Modified:** `src/pages/UserManagement.jsx`, `src/components/users/EditUserModal.jsx`, `src/components/users/AddUserModal.jsx`, `src/pages/RoleManagement.jsx`, `src/components/roles/PermissionManagementModal.jsx`, `src/pages/Profile.jsx`, `src/components/profile/SignatureCanvas.jsx`, `docs/mobile-responsive-overhaul-plan.md`, `package.json`, `package-lock.json`, `CHANGELOG.md`
 - **Changes:**
-  - **User Management (Phase 4):** เพิ่ม Dual-View ให้กับหน้าจัดการผู้ใช้ โดยคงตาราง Desktop 6 คอลัมน์เดิม 100% (`hidden md:block`) และแสดง Mobile Card List View ที่สวยงามบนมือถือ (`block md:hidden`) แสดงรูปโปรไฟล์, ตำแหน่ง, รหัสอีเมล, ป้ายบทบาท RoleBadge, สถานะ UserStatusDot, โครงการที่ได้รับมอบหมาย และแถบปุ่ม Action Buttons แถวล่างขนาดสัมผัส `h-9 w-9` (แก้ไข, ส่งคำเชิญซ้ำ, รีเซ็ตรหัสผ่าน, สลับสถานะเปิด/ปิด, ลบบัญชี) หมดปัญหาตารางล้นจอ
+  - **User Management (Phase 4):** เพิ่ม Dual-View ให้กับหน้าจัดการผู้ใช้ โดยคงตาราง Desktop 6 คอลัมน์เดิม 100% (`hidden md:block`) และแสดง Mobile Card List View ที่สวยงามบนมือถือ (`block md:hidden`) แสดงรูปโปรไฟล์, ตำแหน่ง, รหัสอีเมล, ป้ายบทบาท RoleBadge, สถานะ UserStatusDot, โครงการที่ได้รับมอบหมาย และแถบปุ่ม Action Buttons แถวล่างขนาดสัมผัส `h-9 w-9` (แก้ไข, รีเซ็ตรหัสผ่าน, สลับสถานะเปิด/ปิด, ลบบัญชี) หมดปัญหาตารางล้นจอ
   - **User Modals (EditUserModal & AddUserModal):** ปรับปรุงแท็บเลือกหมวดหมู่ข้อมูล (Account, RBAC Roles, Project Access) ให้เป็น Swipeable Tab Bar เลื่อนแนวนอนได้คล่องตัว (`overflow-x-auto scrollbar-none whitespace-nowrap min-h-[40px]`), ปรับขนาด Padding กรอบ Modal บนมือถือให้เป็น `p-4 sm:p-6` ป้องกันการล้นขอบจอ
   - **Role & Permission Management (Phase 4):** ขยายพื้นที่สัมผัสปุ่มควบคุมการ์ดบทบาท (จัดการสิทธิ์, แก้ไขบทบาท, ลบบทบาท) ให้มีขนาดขั้นต่ำ `h-9 sm:h-8` และ `h-9 w-9 sm:h-8 sm:w-8`, ปรับปรุงปุ่ม Select All / Clear All ใน PermissionManagementModal ให้แตะง่ายด้วยนิ้วสัมผัส `h-9 sm:h-7 min-h-[36px] sm:min-h-0`
   - **Profile & Digital Signature (Phase 4):** ปรับปรุงแท็บข้อมูลโปรไฟล์ให้เลื่อนแนวนอนได้ (`overflow-x-auto min-h-[40px]`), ขยายปุ่มบันทึกข้อมูลส่วนตัวและเปลี่ยนรหัสผ่านให้เต็มความกว้างบนมือถือ (`w-full sm:w-auto h-10 sm:h-9`), ปรับปรุง Digital Signature Canvas ให้รองรับการวาดบนหน้าจอสัมผัสได้อย่างลื่นไหลไร้การกระตุก (`touch-action: none`) พร้อมปุ่มล้างกระดานและบันทึกลายเซ็นขนาดใหญ่เต็มความกว้าง
@@ -1134,8 +1057,7 @@ og
   - สร้าง Atomic PostgreSQL RPC `approve_checkout_order` พร้อม `SELECT ... FOR UPDATE` แถวคำขอและ `stock_balance` เพื่อตัดสต็อก `checkout_out` และบันทึก `approved_by`, `approved_at`
   - สร้าง Atomic PostgreSQL RPC `reject_checkout_order` บันทึก `rejected_by`, `rejected_at`, `rejection_reason`
   - ปรับปรุง PDF ใบยืมพัสดุ (`MaterialCheckoutPDF`) แสดงชื่อและลายเซ็นดิจิทัลของผู้อนุมัติ/ผู้จ่ายพัสดุจริง (หากยังไม่อนุมัติจะแสดงเส้นประว่างรอลงนาม)
-  - เพิ่มระบบแจ้งเตือนอีเมลอัตโนมัติ (`dispatchCheckoutNotification`) รองรับ `checkout_submitted`, `checkout_approved`, และ `checkout_rejected`
-  - ปรับปรุงการแสดงผลใน `CheckoutActiveList`, `CheckoutHistoryList` และ `CheckoutDetailModal` ให้รองรับสถานะ `pending` และ `rejected`
+    - ปรับปรุงการแสดงผลใน `CheckoutActiveList`, `CheckoutHistoryList` และ `CheckoutDetailModal` ให้รองรับสถานะ `pending` และ `rejected`
   - เพิ่มชุดคีย์ภาษา i18n จำนวน 48 คีย์ใน `src/i18n/locales/th.js` และ `src/i18n/locales/en.js` ผ่านการตรวจสอบ 100% Key Parity
   - ปรับ version ของระบบเป็น `v1.11.0` (MINOR)
 
@@ -1657,17 +1579,6 @@ og
   - ตรวจสอบผ่าน `npm run lint` (0 errors), `npm run test:email` (PASS 9/9), `npm run check:i18n` (PASS), และ `npm run build` (Vite production bundle built successfully)
 - **Reason:** ป้องกันข้อผิดพลาด `ERESOLVE could not resolve peer dependency` ในขั้นตอนการ Build บน Vercel
 
-## [2026-09-15 12:00] - v1.9.0
-- **Files Modified:** `api/send-email.js`, `src/lib/emailService.js`, `src/lib/nodemailerTransport.test.js`, `package.json`, `CHANGELOG.md`
-- **Changes:**
-  - ยกระดับและบูรณาการขีดความสามารถของ **Nodemailer** (`https://github.com/nodemailer/nodemailer.git`) เพื่อประสิทธิภาพการจัดส่งอีเมลระดับองค์กร:
-    1. **Connection Pooling & Socket Reuse:** เปิดใช้งาน `pool: true` (สูงสุด 3 connections, 100 messages) เพื่อนำ Socket TLS connection เดิมกลับมาใช้ซ้ำ ลด Latency ในการส่งอีเมลแจ้งเตือนซ้ำๆ และป้องกันการถูก Gmail / Microsoft 365 ทำ Rate Limiting
-    2. **TLS Certificate Options (`reject_unauthorized`):** เชื่อมต่อการตั้งค่า TLS `reject_unauthorized` จากฐานข้อมูล (`system_settings.smtp_config`) และ UI หน้า Settings เข้าสู่ออปชัน `tls: { rejectUnauthorized }` ของ Nodemailer อย่างสมบูรณ์ รองรับทั้ง Public SMTP และ Corporate Internal Mail Relay ที่ใช้ Self-signed Certificate
-    3. **Inline Image Branding (CID Embedding):** เพิ่มการรองรับการส่งภาพโลโก้หรือตราระบบแบบ Inline ด้วย Content-ID (`cid:logo`) ใน MIME structure ของ Nodemailer ช่วยให้แสดงภาพแบรนดิ้งใน Microsoft Outlook / Enterprise Inboxes ได้ทันทีโดยไม่ถูกบล็อกจากการโหลดภาพภายนอก
-    4. **Nodemailer Error Normalization:** เพิ่มฟังก์ชันแปลงรหัสข้อผิดพลาดของ Nodemailer (`EAUTH`/535, `ESOCKET`/`ETIMEDOUT`, `ENOTFOUND`, `EENVELOPE`) เป็นข้อความภาษาไทยที่ชัดเจน แนะนำแนวทางแก้ไขได้ถูกต้อง (เช่น การสร้าง Google App Password) และไม่เปิดเผย Credential
-    5. **Automated Unit Testing:** เพิ่มชุดทดสอบ `src/lib/nodemailerTransport.test.js` โดยใช้ Nodemailer `jsonTransport` ทดสอบการประกอบ Headers, Thai Subject Encoding, Multipart Structure, CID Attachments, และ Error Normalization แบบ Offline 100%
-  - คงค่าคอนฟิก SMTP เดิมใน Environment Variables และ Supabase ไว้อย่างครบถ้วน 100% (100% Backward Compatible)
-- **Reason:** ยกระดับประสิทธิภาพ เสถียรภาพ และความเข้ากันได้ของการส่งอีเมลด้วย Nodemailer ตามคำขอของผู้ใช้
 
 ## [2026-09-15 11:35] - v1.8.8
 - **Files Modified:** `package.json`, `package-lock.json`, `CHANGELOG.md`
@@ -2159,8 +2070,7 @@ og
   - ปรับปรุง unused state และ logic ให้กระชับ ไม่กระทบต่อ runtime behavior เดิม
 - **Verification Results:**
   - `npm run lint`: **0 errors, 0 warnings** (ลดลงจาก 300 warnings เหลือ 0 ครบถ้วนสมบูรณ์)
-  - `npm run test:email`: **5/5 tests PASS** (100% pass)
-  - `npm run build`: **PASS** (3936 modules transformed, zero build errors, PWA service worker generated)
+    - `npm run build`: **PASS** (3936 modules transformed, zero build errors, PWA service worker generated)
 - **Mandatory System Version Management (Rule 10):**
   - ขยับเวอร์ชันระบบจาก `1.4.75` → `1.4.76` ใน `package.json`, `README.md`, `wiki/Home.md`, `wiki/_Footer.md`
 
@@ -2182,8 +2092,7 @@ og
   - `src/pages/Profile.jsx`: เพิ่ม error logging ใน catch block ของฟังก์ชัน `fetchProjects` แทนที่ empty block
 - **Verification Results:**
   - `npm run lint`: **0 errors**, 300 warnings (ลดลงจากเดิม 53 errors, 301 warnings)
-  - `npm run test:email`: **5/5 tests PASS**
-  - `npm run build`: **PASS** (3932 modules transformed, exit code 0)
+    - `npm run build`: **PASS** (3932 modules transformed, exit code 0)
 - **Mandatory System Version Management (Rule 10):**
   - ขยับเวอร์ชันระบบจาก `1.4.74` → `1.4.75` ใน `package.json`, `README.md`, `wiki/Home.md`, `wiki/_Footer.md`
 
@@ -2329,8 +2238,7 @@ og
   - `wiki/Home.md`, `wiki/_Footer.md`: ปรับเวอร์ชันระบบเป็น `v1.4.70`
 - **Verification:**
   - `npm run build` ผ่าน 100% (24.13s)
-  - `npm run test:email` ผ่าน 5/5 tests
-
+  
 ## [v1.4.69] [2026-09-06] Enterprise UI/UX Migration — Dashboard & Items Catalog (Ticket 05)
 
 - **Operational Dashboard Modernization:**
@@ -2368,8 +2276,7 @@ og
   - `wiki/Home.md`, `wiki/_Footer.md`: ปรับเวอร์ชันระบบเป็น `v1.4.69`
 - **Verification:**
   - `npm run build` ผ่าน 100% (25.88s)
-  - `npm run test:email` ผ่าน 5/5 tests
-
+  
 ## [v1.4.68] [2026-09-06] Enterprise UI/UX Migration — Global App Shell & Navigation (Ticket 04)
 
 - **Application Shell & Navigation Architecture:**
@@ -2395,8 +2302,7 @@ og
   - `wiki/Home.md`, `wiki/_Footer.md`: ปรับเวอร์ชันระบบเป็น `v1.4.68`
 - **Verification:**
   - `npm run build` ผ่าน 100% (26.83s)
-  - `npm run test:email` ผ่าน 5/5 tests
-
+  
 ## [v1.4.67] [2026-09-06] Enterprise UI/UX Migration — Core UI Primitives Modernization (Ticket 03)
 
 - **Shared UI Primitives Modernization:**
@@ -2427,8 +2333,7 @@ og
   - `wiki/Home.md`, `wiki/_Footer.md`: ปรับเวอร์ชันระบบเป็น `v1.4.67`
 - **Verification:**
   - `npm run build` ผ่าน 100% (26.61s)
-  - `npm run test:email` ผ่าน 5/5 tests
-
+  
 ## [v1.4.66] [2026-09-06] Enterprise UI/UX Migration — Design Tokens & Compatibility Shims (Tickets 01-02)
 
 - **UI/UX Architecture & Modernization:**
@@ -2447,8 +2352,7 @@ og
   - `wiki/Home.md`, `wiki/_Footer.md`: ปรับเวอร์ชันระบบเป็น `v1.4.66`
 - **Verification:**
   - `npm run build` ผ่าน 100% (25.05s)
-  - `npm run test:email` ผ่าน 5/5 tests
-- **Reason:** ผู้ใช้ต้องการเอกสารแผนเพื่อ review ก่อน implementation
+  - **Reason:** ผู้ใช้ต้องการเอกสารแผนเพื่อ review ก่อน implementation
 
 ## [2026-09-06]
 
@@ -2660,21 +2564,7 @@ og
 - **Changes:** ปรับ version ของแอปเป็น `1.4.51` ตามขั้นตอน commit ของ repository
 - **Verification:** `git diff --check` ไม่พบข้อผิดพลาด
 
-## [2026-09-02] - URL Configuration Update
 
-- **Files Modified:** `src/components/settings/EmailTemplateManager.jsx`, `src/lib/emailRenderer.js`, `src/lib/emailRenderer.test.js`, `src/lib/notificationDispatcher.js`
-- **Changes:** เปลี่ยน default public URL และ CTA URL ของ notification email จาก `stockflow.app` เป็น `stockflowth.online` พร้อมปรับ test ที่เกี่ยวข้อง
-- **Verification:** `npm.cmd run test:email` ผ่านครบ 5 tests และ `git diff --check` ไม่พบข้อผิดพลาด
-
-## [v1.4.51] [2026-09-02] เปลี่ยนการอ้างอิง URL ทั้งหมดจาก stockflow.app เป็น stockflowth.online
-
-- **Modified files:**
-  - `src/lib/notificationDispatcher.js`: เปลี่ยนการสร้าง `action_url` พื้นฐานจาก `stockflow.app` เป็น `stockflowth.online`
-  - `src/lib/emailRenderer.js`: เปลี่ยน `action_url` ตัวอย่างและ fallback URL ในระบบเรนเดอร์อีเมลเป็น `stockflowth.online`
-  - `src/lib/emailRenderer.test.js`: อัปเดตชุดการทดสอบอีเมลให้รองรับ `stockflowth.online` (ทดสอบผ่าน 5/5)
-  - `src/components/settings/EmailTemplateManager.jsx`: เปลี่ยน `public_base_url` เริ่มต้นและ placeholder ในหน้าจัดการ Email Branding เป็น `stockflowth.online`
-  - `package.json`: อัปเดตเวอร์ชันเป็น `1.4.51`
-- **Verification:** `npm run test:email` และ `npm run build` ผ่านเรียบร้อย
 
 ## [v1.4.50] [2026-09-02] ปรับเปลี่ยนเป้าหมายปลายทางปุ่มเชื่อมโยงใน Landing Page เป็น stockflowth.online
 
@@ -2781,40 +2671,9 @@ og
   - `package.json`: ปรับเวอร์ชันเป็น `1.4.39`
 - **Verification:** ทดสอบเรียกใช้งาน Supabase REST API `GET /rest/v1/projects` และตรวจสอบการโหลดข้อมูลโครงการและชื่อผู้สร้างสำเร็จ 100% (200 OK)
 
-## [v1.4.38] [2026-09-01 13:12] ปรับปรุงระบบ Send Invitation Email ให้ใช้ Shared Master Responsive Shell และภาษาทางการระดับองค์กร (EOP Filter Friendly)
 
-- **Modified files:**
-  - `src/lib/emailRenderer.js`: ปรับปรุง `renderUserInvitationEmailHtml` และ `renderUserInvitationEmailText` ให้ใช้โครงสร้าง Master Responsive HTML เดียวกันกับระบบแจ้งเตือนหลัก (100% Shared Shell, 620px Centered Table, Brand Header, Preheader, Action Button) พร้อมปรับภาษาเป็น Clean Onboarding Notice ปราศจากคีย์เวิร์ดล่อแหลมด้านความปลอดภัย
-  - `src/lib/emailService.js`: ปรับ Subject Line ของ `sendUserInvitationEmail` เป็น `[AppName] แจ้งเปิดสิทธิ์การใช้งานระบบ AppName — คุณ User` เพื่อป้องกันตัวกรอง Phishing Heuristics บน Microsoft 365 EOP
-  - `src/lib/emailRenderer.test.js`: อัปเดตการตรวจสอบ Unit Test ให้รองรับโครงสร้างใหม่ (5/5 PASS)
-  - `package.json`: ปรับเวอร์ชันเป็น `1.4.38`
-- **Verification:** `npm run test:email` ผ่าน 5/5, Live Dispatch ไปยัง `watchara.m@forth.co.th` สำเร็จ 100% (SMTP 250 2.0.0 OK, Message-ID: `<20cfd9b0-a156-4029-b470-ce9f63d623c0@smtp.gmail.com>`)
 
-## [v1.4.37] [2026-09-01 06:05] ปรับโครงสร้าง HTML เทมเพลต Invitation เป็น Clean Table ไร้ DOCTYPE Nested Tags ตามมาตรฐาน M365 Deliverability
 
-- **Modified files:**
-  - `src/lib/emailRenderer.js`: ปรับโครงสร้าง `renderUserInvitationEmailHtml` ให้ใช้รูปแบบ Root Presentation Table ขนาด 600px พร้อมฟอนต์ `'Sarabun', 'Noto Sans Thai'` และภาษาทางการ Clean Administrative Notification โดยถอด DOCTYPE/HTML wrapper ซ้อน และถอดคำล่อแหลมออก เพื่อให้ผ่านตัวกรอง EOP/Microsoft Defender เข้า Outlook Inbox ของ `@forth.co.th` ได้อย่างสมบูรณ์
-  - `src/lib/emailRenderer.test.js`: ปรับปรุง Test Assertion รองรับโครงสร้างใหม่
-  - `package.json`: ปรับเวอร์ชันเป็น `1.4.37`
-- **Verification:** รัน `npm run test:email` (5/5 PASS) และทดสอบส่งจริงผ่าน `test-invitation-deliverability.mjs` (250 2.0.0 OK)
-
-## [v1.4.36] [2026-09-01 05:58] ปรับปรุงกลไกการส่ง Invitation Email ให้ใช้มาตรฐานเดียวกันกับ Gmail SMTP Deliverability Diagnostic Test
-
-- **Modified files:**
-  - `api/send-email.js`: เพิ่มการส่งกลับค่า `response` (SMTP Server 250 Response), `accepted` (รายชื่อผู้รับที่ยอมรับ), และ `rejected` ใน JSON payload เพื่อการตรวจสอบสถานะการส่งจริง
-  - `src/lib/emailService.js`: ปรับรูปแบบ Subject Header ให้ใช้พรีฟิกซ์ `[AppName]` และคั่นด้วยเครื่องหมาย Hyphen มาตรฐาน ป้องกันการติดสแปมหรือปัญหาอักขระพิเศษบน Mail Gateways
-  - `scripts/test-invitation-deliverability.mjs`: สร้างสคริปต์ Diagnostic ตรวจสอบการส่ง Invitation Email แบบครบวงจร (SMTP Auth -> TLS 465 -> Envelope Matching -> RFC Headers -> 250 OK)
-  - `package.json`: ปรับเวอร์ชันเป็น `1.4.36`
-- **Verification:** ทดสอบส่งไปยัง `watchara.m@forth.co.th` สำเร็จ 100% (SMTP 250 2.0.0 OK, Accepted: `['watchara.m@forth.co.th']`, Rejected: `[]`)
-
-## [v1.4.35] [2026-09-01 05:00] ยกระดับความปลอดภัยและมาตรฐาน Deliverability สำหรับระบบ Send/Resend Invitation Email (/gmail-smtp)
-
-- **Modified files:**
-  - `src/lib/emailService.js`: ถอดรหัสผ่าน Hardcoded `tempPassword` ออก และกำหนด Fallback URL แบบไดนามิกตาม `window.location.origin`
-  - `src/pages/UserManagement.jsx`: ปรับปรุงฟังก์ชัน `handleCreateUser` และ `handleResendInvitation` โดยส่งเป็น Clean Administrative Notification โดยไม่แนบ Plaintext Password ตามมาตรฐาน Anti-Phishing (ป้องกัน Microsoft 365 Defender SCL 9 Quarantine) และส่งลิงก์ URL อัตโนมัติตาม Environment ปัจจุบัน
-  - `src/components/users/AddUserModal.jsx`: ปรับข้อความคำอธิบาย Checkbox ส่งเทียบเชิญให้สอดคล้องกับมาตรฐานความปลอดภัย
-  - `package.json`: ปรับเวอร์ชันเป็น `1.4.35`
-- **Verification:** รัน `npm run test:email` (5/5 PASS), ตรวจสอบโครงสร้าง HTML ตาราง Inline CSS 620px รองรับ Gmail/Outlook 100%
 
 ## [v1.4.34] [2026-09-01 04:40] ปรับปรุงชื่อ Parameter ของ RPC Functions ทั้ง 33 รายการให้ตรงกับ Frontend 100%
 
@@ -2898,99 +2757,13 @@ og
   - `package.json`: ปรับเวอร์ชันเป็น `1.4.26`
 - **Verification:** Unit tests `npm run test:email` ผ่าน 5/5, Database Full Backup ทำงานสำเร็จ
 
-## [v1.4.25] [2026-09-01 00:35] ปรับปรุง Email Template Manager ใน Webapp พร้อมปุ่ม Reset to Defaults และอัปเดตคำทางการ "ไม่ได้รับการอนุมัติ"
 
-- **Modified files:**
-  - `src/components/settings/EmailTemplateManager.jsx`: เพิ่มฟังก์ชัน `handleResetCurrentEvent` และ `handleResetAllEvents` พร้อมปุ่ม "คืนค่าเริ่มต้น" สำหรับแต่ละแม่แบบและปุ่ม "รีเซ็ตทั้งหมด", ปรับปรุง `mergeEventsWithDefaults` เพื่ออัปเกรดคำเดิมที่เป็น Legacy ในฐานข้อมูล (เช่น 'ไม่อนุมัติ', 'เตือนภัย') ให้เปลี่ยนเป็นค่ามาตรฐานปัจจุบันโดยอัตโนมัติ
-  - `src/lib/emailRenderer.js`: อัปเดตแม่แบบ `withdrawal_rejected` ให้ใช้คำว่า "ไม่ได้รับการอนุมัติ" ในทุกจุด (Heading, Badge, Preheader, Intro) และปรับการจัดวาง `low_stock_alert` ภายใต้ Shared Renderer
-  - `src/lib/notificationDispatcher.js`: ปรับปรุง Fallback Subject และ Status Label ของ `withdrawal_rejected` ให้ใช้คำว่า "ไม่ได้รับการอนุมัติ"
-  - `src/lib/emailRenderer.test.js`: อัปเดตชุดทดสอบครอบคลุมทั้ง 6 เหตุการณ์ผ่าน 5/5
-  - `package.json`: ปรับเวอร์ชันเป็น `1.4.25`
-- **Verification:** Unit tests `npm run test:email` ผ่าน 5/5, `npx vite build` ผ่านสมบูรณ์
 
-## [v1.4.24] [2026-08-31 23:42] เพิ่ม Event Dispatcher และปรับปรุง Template สำหรับ Stock In และ Low Stock Alert
 
-- **Modified files:**
-  - `src/lib/notificationDispatcher.js`: เพิ่มฟังก์ชัน `dispatchStockInNotification` และ `dispatchLowStockAlertNotification` สำหรับส่งอีเมลแจ้งเตือนการรับเข้าสต็อกและพัสดุคงเหลือต่ำกว่าเกณฑ์อัตโนมัติ พร้อมการดึง Role ผู้รับ (`ADMIN`, `SUPERVISOR`) และการทำ Deduplication Cache
-  - `src/pages/StockIn.jsx`: เชื่อมต่อ `dispatchStockInNotification` เข้ากับการบันทึกรับเข้าพัสดุจริง
-  - `src/lib/emailRenderer.js`: ปรับปรุงระบบ Preheader แยกตาม Event ทั้ง 6 ประเภทเพื่อไม่ให้เกิดช่องว่างตกหล่น (Whitespace / Missing Variable) ที่กระตุ้นตัวกรอง Spam ของ Microsoft 365 และปรับ Label รายการพัสดุของ `stock_in_created` เป็น "จำนวนที่รับเข้า"
-  - `package.json`: ปรับเวอร์ชันเป็น `1.4.24`
-- **Verification:** Unit tests `npm run test:email` ผ่าน 5/5, Live API Test สำหรับ `stock_in_created` และ `low_stock_alert` ผ่าน 100%, `npx vite build` ผ่านสมบูรณ์
 
-## [v1.4.23] [2026-08-31 23:20] ปรับปรุง Vercel API / Web UI Connectivity Test Template ให้ตรงกับ RFC Diagnostic Format และสอดคล้องกับ Zero-Credential Policy
 
-- **Modified files:**
-  - `src/lib/emailRenderer.js`: ปรับปรุง `renderTestEmailHtml` ในโหมด Connectivity Test (ปุ่มทดสอบส่งอีเมลจากหน้าการตั้งค่า) ให้ใช้โครงสร้าง Table การ์ด 2 แถว (`เวลาที่ส่ง`, `สถานะ: จัดส่งสำเร็จ`) ตามมาตรฐานเดียวกับ RFC Deliverability Diagnostic Test โดยไม่มีข้อมูลจำลองคำขอเบิกพัสดุติดไป และถอด plaintext password ออกจากแม่แบบเทียบเชิญผู้ใช้งาน
-  - `src/lib/emailService.js`: ปรับปรุง `sendTestEmail` ให้รองรับทั้ง Connectivity Test และ Draft Event Template พร้อม dynamic Subject/Text fallback
-  - `src/lib/emailRenderer.test.js`: ครอบคลุมการทดสอบทั้ง 6 Event Notification, Connectivity Test และ User Invitation
-  - `api/send-email.js`: ทำความสะอาด RFC Headers และ Envelope Sender Alignment
-  - `package.json`: เพิ่มคำสั่ง `test:email` และอัปเดตเวอร์ชันเป็น `1.4.23`
-- **Verification:** Unit tests `npm run test:email` ผ่าน 5/5, Live API Dispatch Test ผ่าน 100% (`250 2.0.0 OK`), `npx vite build` ผ่านสมบูรณ์ (`built in 14.29s`)
 
-## [2026-08-31 22:54] สร้างรายงานฉบับเต็มของเหตุการณ์ Email Delivery และ Outlook Junk Placement
 
-- **Modified / Created files:**
-  - `EMAIL_DELIVERY_INCIDENT_REPORT.md` [DETAILED INCIDENT REPORT COVERING ROOT CAUSE, INVESTIGATION, FINDINGS, CHANGES, VERIFICATION, DELIVERY SUCCESS, AND JUNK EMAIL FOLLOW-UP]
-- **Details:**
-  - รวมสาเหตุ HTTP 404 จาก Vite route ที่ไม่ส่งต่อ `/api/send-email` ไปยัง serverless handler
-  - บันทึก request flow ตั้งแต่ EmailTemplateManager, shared renderer, emailService, Nodemailer, Gmail SMTP จนถึง Outlook
-  - แยกผลสำเร็จของ transport/HTML rendering ออกจากปัญหา Outlook Inbox placement ที่ยังเข้า Junk Email
-  - รวมรายละเอียด shared six-event template system, plain-text fallback, dynamic data escaping, Gmail/Outlook compatibility และ test/build verification
-  - ระบุข้อจำกัดของหลักฐานและขั้นตอนตรวจ SPF, DKIM, DMARC, message headers และ Outlook filtering metadata เพิ่มเติม
-- **Reason:** จัดทำเอกสาร incident แบบละเอียดสำหรับตรวจสอบย้อนหลังและป้องกันการสรุปสาเหตุ Junk Email เกินกว่าหลักฐานที่มี
-
-## [2026-08-31 22:45] ปรับปรุง UX/UI ของ HTML Email ทั้ง 6 ประเภทให้ใช้ shared visual language เดียวกับ Connectivity Test
-
-- **Modified / Created files:**
-  - `src/lib/emailRenderer.js` [SHARED EMAIL THEME, SECTION-CARD COMPONENT, PREHEADER, AND GMAIL/OUTLOOK-SAFE VISUAL HIERARCHY]
-  - `src/lib/emailService.js` [CONSISTENT EVENT TEMPLATE/DATA/BRANDING COMPOSITION FOR TEST EMAIL DELIVERY]
-  - `src/lib/emailRenderer.test.js` [VALIDATION FOR ALL SIX EVENT TEMPLATES AND SHARED DESIGN MARKERS]
-- **Details:**
-  - ใช้แนวทาง Minimalism/Swiss จาก `ui-ux-pro-max` ด้วย slate typography, whitespace, accent rail, high-contrast CTA และการจัดลำดับข้อมูลแบบชัดเจน
-  - ประยุกต์แนวคิด React Bits เช่น SpotlightCard, ShinyText และ Magnet ให้เหมาะกับ static HTML email โดยไม่ใช้ React runtime, JavaScript, animation หรือ external CSS
-  - รวม Summary, Workflow และ Notes ผ่าน `renderSectionCard()` เพื่อลด markup ซ้ำ และเพิ่ม hidden preheader สำหรับ email clients
-  - คงเนื้อหา dynamic/status/CTA เฉพาะของ `withdrawal_submitted`, `withdrawal_approved`, `withdrawal_rejected`, `withdrawal_completed`, `stock_in_created` และ `low_stock_alert`
-- **Reason:** ทำให้ทุก notification ใช้โครงสร้างและ visual language เดียวกับ Connectivity Test พร้อมรักษาความเข้ากันได้ของ Gmail/Outlook และไม่ทำลาย `sendTestEmail`
-
-## [2026-08-31 22:33] ปรับ UI/UX ของ HTML Email ให้เป็น shared design system เดียวกันทั้ง 6 Notification Templates
-
-- **Modified / Created files:**
-  - `src/lib/emailRenderer.js` [REFINE SHARED EMAIL DESIGN TOKENS, SECTION CARDS, PREHEADER, AND OUTLOOK-SAFE VISUAL HIERARCHY]
-  - `src/lib/emailService.js` [ALLOW EVENT TEST PAYLOADS TO CARRY TEMPLATE DATA AND BRANDING CONSISTENTLY]
-  - `src/lib/emailRenderer.test.js` [VERIFY SHARED DESIGN MARKERS, PREHEADER, EVENT CONTENT, AND PLAIN-TEXT FALLBACK]
-- **Details:**
-  - ปรับทุก event ให้ใช้ visual hierarchy แบบ Minimalism/Swiss สำหรับระบบ SaaS องค์กร: พื้นที่ว่างที่ชัดเจน, slate typography, accent rail และ high-contrast CTA
-  - แยก `renderSectionCard()` เป็น shared rendering component สำหรับ summary, workflow และ notes เพื่อลด markup ซ้ำ
-  - เพิ่ม hidden preheader ที่ปลอดภัยกับ email clients และคง table-based inline CSS สำหรับ Gmail/Outlook
-  - ประยุกต์แนวคิดจาก React Bits เช่น SpotlightCard, ShinyText และ Magnet เป็น static-email-safe design language โดยไม่ฝัง React, JavaScript, animation หรือ external CSS ในอีเมล
-  - คงเนื้อหา dynamic/status/CTA เฉพาะของ `withdrawal_submitted`, `withdrawal_approved`, `withdrawal_rejected`, `withdrawal_completed`, `stock_in_created` และ `low_stock_alert`
-- **Reason:** ทำให้ notification emails ทั้ง 6 ประเภทมีหน้าตาและโครงสร้างระดับเดียวกับ Connectivity Test โดยไม่ทำลาย `sendTestEmail`, plain-text fallback หรือความเข้ากันได้กับ Gmail/Outlook
-
-## [2026-08-31 22:28] เพิ่มรายงานเหตุการณ์การส่งอีเมลสำเร็จและปัญหา Outlook Junk Email
-
-- **Modified / Created files:**
-  - `EMAIL_DELIVERY_INCIDENT_REPORT.md` [DETAILED EMAIL DELIVERY ROOT-CAUSE, INVESTIGATION, EVIDENCE, CHANGES, VERIFICATION, AND JUNK-PLACEMENT FOLLOW-UP REPORT]
-- **Details:**
-  - บันทึกสาเหตุ HTTP 404 เดิมจากการที่ Vite development middleware ยังไม่ได้ route `/api/send-email`
-  - บันทึกการตรวจสอบ request flow ตั้งแต่ `EmailTemplateManager` ถึง Gmail SMTP และผลการยืนยันว่า Outlook ได้รับและ render อีเมลสำเร็จ
-  - แยกปัญหา transport/delivery ที่แก้แล้วออกจาก inbox placement ที่ Outlook จัดเข้า Junk Email
-  - ระบุข้อจำกัดของหลักฐานจากภาพแนบและรายการ message headers ที่ต้องใช้เพื่อยืนยันสาเหตุ Junk อย่างเด็ดขาด
-- **Reason:** จัดทำเอกสาร incident แบบตรวจสอบย้อนหลังได้ โดยไม่สรุปเกินหลักฐานว่าเหตุใด Outlook จึงจัดประเภทข้อความเป็น Junk
-
-## [2026-08-31 22:17] ใช้ระบบอีเมล renderer เดียวกันสำหรับการแจ้งเตือนทั้ง 6 ประเภท และแก้เส้นทาง Vite Dev API
-
-- **Modified / Created files:**
-  - `src/lib/emailRenderer.js` [SHARED RESPONSIVE HTML/TEXT RENDERER FOR SIX NOTIFICATION EVENTS]
-  - `src/lib/emailService.js` [EVENT-AWARE TEMPLATE BUILDING, PLAIN-TEXT FALLBACK, AND API PAYLOAD ROUTING]
-  - `src/lib/emailRenderer.test.js` [COVERAGE FOR SIX EVENTS, SHARED EMAIL SHELL, VARIABLES, TEXT FALLBACK, AND HTML ESCAPING]
-  - `src/components/settings/EmailTemplateManager.jsx` [SELECTED EVENT SAMPLE DATA AND TEST EMAIL PREVIEW/SEND WIRING]
-  - `vite.config.js` [ROUTE /API/SEND-EMAIL TO THE SERVERLESS HANDLER DURING VITE DEVELOPMENT]
-- **Details:**
-  - เพิ่ม sample data, dynamic variables, status, summary, workflow, CTA และข้อความ plain text เฉพาะสำหรับ `withdrawal_submitted`, `withdrawal_approved`, `withdrawal_rejected`, `withdrawal_completed`, `stock_in_created` และ `low_stock_alert`
-  - ให้ทุก notification ใช้ table-based inline HTML shell เดียวกับ Connectivity Test เพื่อรองรับ Gmail และ Outlook พร้อมคง multipart plain-text fallback
-  - เชื่อมปุ่มส่งอีเมลทดสอบและ preview ใน `EmailTemplateManager` ให้ใช้ event ที่เลือกจริง ไม่ fallback เป็น Connectivity Test content
-  - เพิ่ม `/api/send-email` ใน Vite dev middleware และส่ง `cc` ผ่าน `emailService` ให้ครบถ้วน
-- **Reason:** แก้ 404 ในสภาพแวดล้อม Vite development และทำให้ template ที่ส่งจริงมีดีไซน์/โครงสร้างเดียวกัน โดยยังคงเนื้อหาเฉพาะของแต่ละเหตุการณ์
 
 ## [2026-08-31 00:48] จำกัดสิทธิ์และป้องกันลำดับชั้น RBAC ให้เฉพาะ Super Admin เท่านั้นที่จัดการ Super Admin ได้ (v1.4.19)
 
@@ -3837,13 +3610,6 @@ og
     - ปรับปรุง Footer เอกสารแบบ Multi-Page แสดงชื่อระบบ, วันที่พิมพ์ และเลขหน้าแบบไดนามิก (`หน้า X จาก Y`)
 - **Reason:** ยกระดับความสวยงาม อ่านง่าย ชัดเจน ถูกต้องตามมาตรฐานเอกสารองค์กร และแก้ปัญหาการแสดงผลตัวอักษรตกหล่น/ถูกตัดขอบ
 
-## [2026-08-27 09:35] แก้ไข TypeError ใน Notification Dispatcher (Fix RPC .catch Error)
-
-- **Modified files:**
-  - `src/lib/notificationDispatcher.js`
-- **Details:**
-  - แก้ไขการเรียก `supabase.rpc('admin_get_system_settings')` โดยตัดการต่อ `.catch()` บน PostgrestBuilder ที่ทำให้เกิด `TypeError: supabase.rpc(...).catch is not a function` เมื่อส่งอีเมลแจ้งเตือนคำขอเบิกจ่าย
-- **Reason:** PostgrestBuilder เป็น Thenable ไม่ใช่ native Promise จึงไม่มีเมธอด `.catch()` โดยตรง การแก้ไขช่วยให้ระบบ Dispatch Email แจ้งเตือนทำงานได้อย่างถูกต้องและราบรื่น
 
 ## [2026-08-26 17:35] เพิ่มระบบเปิด/ปิดปุ่มลบรายการวัสดุ Master (Enable/Disable Delete Item Button)
 
@@ -3885,13 +3651,6 @@ og
   - เพิ่ม Script สำหรับลบ 10 SKUs เป้าหมาย (`SKU-1YMAPDB`, `SKU-VZJQSZ`, `SKU-1SS0QOD`, `SKU-28DJXOF`, `SKU-ARFNLB4`, `SKU-3TMA1K8`, `SKU-2PC1KIP`, `SKU-1NEMK2E`, `SKU-2H1I5O`, `SKU-365GEW7`) ในคลัง EMS (SAP) / ทั้งระบบ
 - **Reason:** แก้ไขปัญหาไม่สามารถลบรายการวัสดุที่มีประวัติธุรกรรมตกค้างในระบบได้ และให้ผู้ใช้สามารถจัดการลบรายการที่ต้องการได้ตามต้องการ
 
-## [2026-08-25 00:00] ปิดการส่งอีเมลเชิญ (Invitation Email) เป็นค่าเริ่มต้นตอนสร้างผู้ใช้ใหม่
-
-- **Modified files:**
-  - `src/components/users/AddUserModal.jsx`
-- **Details:**
-  - เปลี่ยนค่าเริ่มต้นของ `send_invitation` จาก `true` เป็น `false` ทั้งใน initial state และ `resetForm` ทำให้การสร้างผู้ใช้ใหม่ไม่ส่งอีเมลเชิญโดยอัตโนมัติ (แอดมินยังสามารถติ๊กเลือกส่งได้)
-- **Reason:** ปิดการส่ง invitation email ระหว่างขั้นตอน sign-up เป็นค่าเริ่มต้น
 
 ## [2026-08-18 17:20] 🎯 Restore Exact Aug 17 (20:32) Proven Working Template & Initial Access Password
 
@@ -4163,61 +3922,8 @@ og
     - ป้องกันปัญหา Relative Path `/api/send-email` คืนค่า HTTP 404 บน GitHub Pages ซึ่งเคยเป็นสาเหตุให้ระบบสลับไปใช้ Supabase Auth Native Fallback (`resetPasswordForEmail`) และส่งอีเมล "Reset your password" ภาษาอังกฤษแทนแม่แบบภาษาไทยของ StockFlow
 - **Reason:** แก้ไขปัญหาระบบส่งอีเมลตกไปที่ Supabase Password Reset แทนที่จะส่งผ่าน Vercel Serverless Function
 
-## [2026-08-17 20:00] ✉️ Support EMAIL_FROM & EMAIL_FROM_NAME Environment Variable Aliases in Serverless Dispatcher
 
-- **Modified files:**
-  - `api/send-email.js`
-- **Details:**
-  - `api/send-email.js`:
-    - เพิ่ม Fallback รองรับชื่อตัวแปร `EMAIL_FROM` และ `EMAIL_FROM_NAME` ควบคู่กับ `SMTP_SENDER_EMAIL` และ `SMTP_SENDER_NAME` เพื่อให้สามารถใช้งานร่วมกับ `.env` และการตั้งค่าบน Vercel ได้อย่างยืดหยุ่น
-- **Reason:** รองรับการตั้งค่า Environment Variables รูปแบบมาตรฐานสำหรับการส่งอีเมลผ่าน Vercel Serverless Function
 
-## [2026-08-17 19:44] 🛡️ Refactor User Invitation Email Template (Anti-Phishing & Deliverability Optimization)
-
-- **Modified files:**
-  - `src/lib/emailRenderer.js`
-  - `src/lib/emailService.js`
-- **Details:**
-  - `src/lib/emailRenderer.js`:
-    - ปรับโครงสร้างแม่แบบอีเมลเชิญผู้ใช้ใหม่ (`renderUserInvitationEmailHtml` และ `renderUserInvitationEmailText`) ให้ถอดคำและสัญลักษณ์ที่เป็นตัวกระตุ้นระบบตรวจจับ Phishing ของ Microsoft 365 EOP / Defender / Gmail (เช่น `⚠️`, `Security Notice`, `Temporary Password`, `รหัสผ่านชั่วคราว`)
-    - จัดวางข้อมูลรหัสผ่านตั้งต้น (`Initial Access`) ในรูปแบบการต้อนรับอย่างมืออาชีพด้วย Neutral Clean Tag และเปลี่ยนกล่องแจ้งเตือนความปลอดภัยสีเหลือง/แดงให้เป็นกล่องคำแนะนำสำหรับการเข้าสู่ระบบครั้งแรกแบบสุภาพและเป็นมิตรกับระบบกรองสแปม
-    - เพิ่ม Badge สถานะ "เปิดใช้งานบัญชีผู้ใช้ใหม่" ที่หัวข้อตาราง พร้อมจัดโครงสร้าง HTML Table ให้มีขนาดเบาและสอดคล้องกับมาตรฐานของ 'Test Email Notification' ที่ส่งผ่าน 100%
-    - ปรับปรุง Preheader และข้อความท้ายตาราง (Footer) ให้มีความชัดเจนและเป็นทางการ
-  - `src/lib/emailService.js`:
-    - ปรับหัวข้ออีเมล (Subject Line) ใน `sendUserInvitationEmail` ให้เป็นข้อความต้อนรับและแจ้งข้อมูลการเข้าใช้งานที่สะอาดและปลอดภัย (`ยินดีต้อนรับสู่ ${appName} — ข้อมูลการเข้าใช้งานสำหรับคุณ ${userName}`)
-- **Reason:** แก้ปัญหาอีเมลเทียบเชิญผู้ใช้งานใหม่ถูกระงับ (Blocked) หรือถูกจัดเข้าโฟลเดอร์ Quarantine/Junk จากการตรวจพบ Phishing Keyword Heuristics ตามคู่มือ `/gmail-smtp`
-
-## [2026-08-17 17:30] ⚙️ Fix SMTP Server Configuration Form State Binding & Save Handler
-
-- **Modified files:**
-  - `src/pages/Settings.jsx`
-  - `api/send-email.js`
-- **Details:**
-  - `src/pages/Settings.jsx`:
-    - แก้ไข State Binding ของฟิลด์ `sender_email`, `sender_name`, `host`, `port`, `user`, `new_password` ให้เป็น Controlled Components อย่างสมบูรณ์พร้อม Fallback ค่าว่าง ป้องกันปัญหา `null`/`undefined` ขัดขวางการพิมพ์และการส่งฟอร์ม
-    - แก้ไข `fetchSettingsFromDb` ให้รองรับการ parse `smtp_config` ทั้งในรูปแบบ JSON Object และ Stringified JSONB
-    - แก้ไข `handleSaveNotificationSettings` ให้อัปเดต State `smtpForm` ทันทีหลังบันทึก และเรียก `fetchSettingsFromDb()` เพื่อ Sync สถานะล่าสุดกับ Supabase
-    - แก้ไขการแสดงผลคอนฟิกที่มีผล (Effective Configuration Summary) ให้แสดงอีเมลผู้ส่ง (`sender_email`) แบบ Live Preview
-  - `api/send-email.js`:
-    - รองรับการใช้งาน `sender_email` (และ Environment Variable `SMTP_SENDER_EMAIL`) เพื่อนำมาใช้ใน Header `From: "${senderName}" <${senderEmail}>` ได้อย่างถูกต้อง แทนที่จะผูกติดกับบัญชี SMTP `user` เพียงอย่างเดียว
-- **Reason:** แก้ไขปัญหาการแก้ไขและบันทึกข้อมูล Sender Email (`#sender_email`) หรือการตั้งค่า SMTP อื่นๆ ไม่สะท้อนผลและไม่ถูกบันทึกลงในระบบ
-
-- **Modified files:**
-  - `api/send-email.js`
-  - `src/lib/emailRenderer.js`
-  - `src/lib/emailService.js`
-- **Details:**
-  - `api/send-email.js`:
-    - ปรับปรุงการเชื่อมต่อ Gmail SMTP ไปใช้ **Port 465 (Implicit TLS, `secure: true`)** เป็นค่าเริ่มต้นตามมาตรฐานสูงสุดของ Gmail SMTP
-    - กำหนดค่า `envelope: { from: user, to }` เพื่อให้ Envelope From และ Header From ตรงกัน 100% ทำให้ผ่านการตรวจสอบ SPF (`_spf.google.com`) และ Google DKIM Signature โดยสมบูรณ์
-    - บังคับสร้างโครงสร้าง MIME แบบ `multipart/alternative` (RFC 2046) ที่มีทั้ง `text/plain` และ `text/html` เสมอ เพื่อลดคะแนน Spam Score จากระบบกรองสแปม
-    - เพิ่ม RFC Message-ID, Date และ Header `X-Priority: 3` (Normal) เพื่อป้องกันการถูกจัดเป็น Bulk/Spam
-  - `src/lib/emailRenderer.js`:
-    - เพิ่มฟังก์ชัน `renderUserInvitationEmailText` สำหรับสร้าง Plain Text Alternative ที่สมบูรณ์
-    - เพิ่ม Preheader Text (`div` ซ่อน) เพื่อป้องกันไม่ให้ Preview ใน Gmail/Outlook แสดงแท็ก HTML ดิบหรือโค้ดสไตล์
-    - ปรับปรุงโครงสร้างตาราง HTML ให้ได้มาตรฐาน Responsive และปลอดภัยต่อ Content Filter
-  - `src/lib/emailService.js`: ส่งข้อมูล `text` ควบคู่กับ `html` ใน `sendUserInvitationEmail` และ `sendTestEmail` ทุกครั้ง
-- **Reason:** แก้ปัญหาอีเมลเทียบเชิญและอีเมลแจ้งเตือนถูกบล็อก (Blocked) หรือถูกจัดเข้าโฟลเดอร์ Spam/Junk โดย Mail Providers (Google Workspace, Gmail, Microsoft 365) ตามคำแนะนำในคู่มือ `/gmail-smtp`
 
 ## [2026-08-17 16:30] ✉️ Update User Creation Email Template (Default Password & GitHub Pages CTA)
 
@@ -4503,20 +4209,7 @@ og
   - `supabase/migrations/40_fix_admin_rpc_drop_and_recreate.sql`: แก้ไขคอลัมน์ในการบันทึก `INSERT INTO public.audit_logs` จาก `(user_id, entity_type, entity_id)` เป็น `(actor_id, target_user_id)` แก้ไขข้อผิดพลาด `column "user_id" of relation "audit_logs" does not exist`
 - **Reason:** แมปชื่อคอลัมน์ของตาราง `public.audit_logs` ให้ตรงกับโครงสร้างจริงใน Supabase Cloud
 
-## [2026-08-11 09:57]
 
-- **Files Modified:** `api/send-email.js` (New), `src/lib/emailService.js`
-- **Details:**
-  - `api/send-email.js`: สร้าง Vercel Serverless Function ใหม่สำหรับการส่งอีเมล HTML ปรับแต่งด้วย Nodemailer SMTP บน Vercel โดยตรง
-  - `src/lib/emailService.js`: อัปเดตให้ส่งรูปแบบ HTML ทดสอบของ StockFlow (โลโก้, เวลา, กล่องข้อมูลสีเทา โดยไม่มีปุ่มตั้งรหัสผ่าน) ผ่าน Vercel API `/api/send-email` และสลับเป็น Supabase Native Auth เมื่อเซิร์ฟเวอร์ออฟไลน์
-- **Reason:** คืนค่ารูปแบบอีเมลทดสอบของ StockFlow ให้เหมือนกับเวอร์ชันดั้งเดิม 100% โดยไม่ต้องพึ่งไมโครเซอร์วิสพอร์ต 3001
-
-## [2026-08-11 08:58]
-
-- **Files Modified:** `src/lib/emailService.js`
-- **Details:**
-  - `src/lib/emailService.js`: ปรับปรุงโค้ดส่งอีเมลให้เรียกใช้ Supabase Auth (`resetPasswordForEmail`) โดยตรง ปราศจากข้อผิดพลาด 404 / Network Error จากไมโครเซอร์วิสเก่า และการันตี Redirect URI เป็น Production Domain
-- **Reason:** การันตีความรวดเร็ว แม่นยำ และไม่มี Error 404 ในคอลโซลขณะส่งอีเมล
 
 ## [2026-08-10 17:10]
 
@@ -4572,12 +4265,6 @@ og
   - สร้าง Migration 39 อัปเดตคอลัมน์ `confirmation_token`, `recovery_token`, `email_change_token_new`, `reauthentication_token`, `email_change` ใน `auth.users` จาก `NULL` เป็นสตริงว่าง `''` และปรับปรุง `admin_create_user` RPC เพื่อป้องกันปัญหา Go Scan Error บน Supabase GoTrue Auth
 - **Reason:** แก้ไขปัญหาส่งอีเมลเทียบเชิญและลิงก์กู้คืนรหัสผ่านล้มเหลว (HTTP 500 Error) บน Supabase Auth
 
-## [2026-08-10 15:36]
-
-- **Files Modified:** `src/lib/emailService.js`
-- **Details:**
-  - `src/lib/emailService.js`: ปรับปรุงระบบจัดการ Error Handling และ Structured Logging สำหรับการส่งอีเมลผ่าน Supabase Auth ป้องกันการดักจับข้าม Error (Error Swallowing) และแสดงข้อความแจ้งเตือนตามจริงเมื่อ Supabase Auth คืนค่า HTTP 500 หรือเชื่อมต่อ Custom SMTP ไม่สำเร็จ
-- **Reason:** วินิจฉัยปัญหาระบบส่งอีเมลทดสอบและเทียบเชิญผู้ใช้บน Vercel Production พร้อมให้แนวทางแก้ไขคอนฟิก Supabase Dashboard
 
 ## [2026-08-10 15:16]
 
@@ -4600,14 +4287,6 @@ og
   - `docs/pdf_generation_guide.html`: สร้างเอกสารคู่มือสถาปัตยกรรม PDF Client-Side `@react-pdf/renderer` และบันทึกการ Deprecate/Remove สถาปัตยกรรมเดิม
 - **Reason:** ย้ายระบบสร้างเอกสาร PDF ทั้งหมดมาใช้ `@react-pdf/renderer` ฝั่ง Client-Side 100% เพื่อประสิทธิภาพสูงสุด ประหยัดทรัพยากรเซิร์ฟเวอร์ และลดความซับซ้อนของโครงสร้างระบบ
 
-## [2026-08-10 14:19]
-
-- **Files Modified:** `src/lib/emailService.js`, `src/pages/UserManagement.jsx`, `src/lib/supabase.js`, `vite.config.js`, `package.json`, `vercel.json`, `pdf-service/package.json`, `pdf-service/server.js`
-- **Details:**
-  - `src/lib/emailService.js`: ปรับปรุง Error handling การเชื่อมต่ออีเมลแบ็กเอนด์ให้วิเคราะห์แยกแยะระหว่าง Localhost กับ Production URL อย่างแม่นยำ ป้องกันการแสดงข้อความสับสน "พอร์ต 3001" เมื่อรันบนโปรดักชัน
-  - `src/pages/UserManagement.jsx`: ปรับปรุงปุ่ม "ส่งอีเมลเชิญซ้ำ (Resend Invitation)" พร้อม Loading Spinner (`RefreshCw animate-spin`) และ Tooltip ภาษาไทย และรักษาสิทธิ์การสร้างผู้ใช้แม้ส่งอีเมลล้มเหลว
-  - `src/lib/supabase.js`: เพิ่ม Fallback value และ Warning log ป้องกันหน้าเว็บ Crash กรณีตัวแปรแวดล้อมยังไม่ถูกฉีด
-- **Reason:** วินิจฉัยและแก้ปัญหาระบบส่งอีเมลเชิญผู้ใช้บน Production พร้อมเพิ่มฟีเจอร์ส่งอีเมลเชิญซ้ำ (Resend Invitation) แบบสมบูรณ์
 
 ## [2026-08-10 13:25]
 
@@ -4698,37 +4377,8 @@ og
   - เพิ่ม migration สำหรับตาราง notification ที่เปิด RLS, policy อ่าน/อัปเดตได้เฉพาะเจ้าของ, index unread, Realtime publication และ trigger จาก withdrawal workflow โดยรออนุมัติก่อน deploy ไปยัง production
 - **Reason:** Topbar เดิมไม่มี Theme Toggle/Notification ที่ทำงานจริง, mobile drawer ยังขาด accessibility behavior และไม่มี data source ที่ปลอดภัยสำหรับ in-app notification
 
-## [2026-08-09 16:05]
 
-- **Files Modified:** `pdf-service/server.js`, `src/lib/emailRenderer.js`, `src/pages/Withdrawals.jsx`, `CHANGELOG.md`
-- **Changes:**
-  - ออกแบบ transactional withdrawal email ใหม่เป็นข้อมูลตามเหตุการณ์: สรุปคำขอ, รายการวัสดุรายบรรทัด, สถานะ/ผู้ดำเนินการ, วัตถุประสงค์หรือหมายเหตุ, CTA เฉพาะเหตุการณ์, preheader และ fallback link ที่ไม่ใช้ localhost
-  - ปรับ data contract ของ notification ให้ใช้ field ที่มีอยู่จริงใน schema ได้แก่ `available_at_approval`, `deducted_quantity` และ `shortage_quantity` แทน `approved_quantity` พร้อมแสดงจำนวนที่ขอ/อนุมัติ/จ่ายและความต่างของจำนวนอย่างชัดเจน
-  - เพิ่มข้อมูลผู้ขอเบิก, อีเมลผู้ขอ, รหัสโครงการ, ผู้อนุมัติ/ผู้ปฏิเสธ/ผู้จ่าย, เวลาภาษาไทยตาม `Asia/Bangkok`, เหตุผลการไม่อนุมัติ และ note โดยละเว้นแถวที่ไม่มีข้อมูล
-  - เพิ่มการแจ้งอีเมล `withdrawal_completed` หลังยืนยันรับวัสดุ เพื่อให้ workflow ครบทั้งส่งคำขอ, อนุมัติ, ไม่อนุมัติ และจ่ายวัสดุแล้ว
-- **Reason:** อีเมลเดิมสรุปรายการวัสดุแบบย่อจนผู้รับไม่สามารถตัดสินใจหรือเข้าใจผลการอนุมัติได้ครบถ้วน และ backend อ้างอิงคอลัมน์จำนวนอนุมัติที่ไม่มีในฐานข้อมูลจริง
 
-## [2026-08-09 15:35]
-
-- **Files Modified:** `pdf-service/server.js`, `CHANGELOG.md`
-- **Changes:**
-  - แก้ query ของ transactional withdrawal notification ให้ใช้คอลัมน์ `requested_at` ซึ่งมีอยู่จริงใน `withdrawal_orders` แทน `created_at` ที่ไม่มีใน schema
-  - ใช้ `requested_at` เป็นวันที่แสดงในข้อมูลแม่แบบอีเมล และ restart `pdf-service` เพื่อโหลดการแก้ไข
-- **Reason:** Supabase ตอบ HTTP 400 ในการอ่านคำขอเบิก ทำให้ backend แปลงเป็น `SUPABASE_SERVICE_REQUEST_FAILED` / HTTP 502 เมื่อ Staff ส่งคำขอเบิก
-
-## [2026-08-09 14:48]
-
-- **Files Modified:** `pdf-service/server.js`, `src/lib/emailRenderer.js`, `src/lib/emailService.js`, `src/components/settings/EmailTemplateManager.jsx`, `src/pages/Settings.jsx`, `supabase/migrations/32_harden_smtp_password_rpc_search_path.sql`, `CHANGELOG.md`
-- **Changes:**
-  - ให้ backend สำหรับ notification การเบิกอ่าน `smtp_config`, `branding` และ `notification_events` ที่บันทึกใน `system_settings` จริง พร้อมใช้แม่แบบ, role recipients, Extra To, CC, การตัดผู้รับซ้ำ และผลตอบรับ SMTP
-  - ให้หน้าจอแม่แบบอีเมลโหลด Branding ที่บันทึกไว้กลับมา และให้การส่งอีเมลทดสอบจากหน้าแม่แบบใช้แม่แบบ/Branding ที่บันทึกผ่าน backend SMTP เดียวกับระบบ
-  - ลบค่า SMTP host/username เริ่มต้นที่ฝังใน browser เพื่อไม่ให้ Test Email เปลี่ยนไปใช้ปลายทางเก่าเมื่อโหลดการตั้งค่าไม่สำเร็จ
-  - ป้องกัน placeholder ที่ไม่รู้จัก, ข้อมูล runtime ที่ไม่ escape, URL logo/CTA ที่ไม่ใช่ HTTP(S) และ header injection ในหัวเรื่อง/ชื่อผู้ส่ง
-  - ไม่สร้างลิงก์ `localhost` ในอีเมลเมื่อ backend ทำงานแบบ production และเพิ่ม log ขั้นตอนการส่งโดยไม่บันทึก secret
-  - เพิ่มจำนวนผู้รับที่ SMTP ยอมรับ/ปฏิเสธในผลลัพธ์ของ Test Email เพื่อแยกความสำเร็จของ API ออกจากการยอมรับข้อความโดย SMTP
-  - ส่งต่อ metadata การยอมรับ/ปฏิเสธจาก backend กลับสู่ client service สำหรับแสดงผลหรือใช้ตรวจสอบต่อได้
-  - กำหนด `search_path` ของ `admin_update_smtp_password()` แบบตายตัวและ deploy migration ไปยัง Supabase แล้ว
-- **Reason:** ค่า SMTP และแม่แบบที่บันทึกผ่าน Settings เคยไม่ถูกใช้โดย transactional withdrawal sender ทำให้การตั้งค่า UI ไม่ตรงกับอีเมลที่ส่งจริง
 
 ## [2026-08-09 14:10]
 
@@ -4774,20 +4424,6 @@ og
   - ลบข้อมูลเข้าสู่ระบบแบบ plaintext ออกจากเอกสารสถานะ
 - **เหตุผล:** ป้องกันการเผยแพร่ข้อมูลลับใน repository และทำให้รายการงานค้างสอดคล้องกับระบบปัจจุบัน
 
-## [2026-08-09 10:36]
-
-- **ไฟล์ที่สร้าง/แก้ไข:**
-  - `src/lib/emailService.js`
-  - `pdf-service/server.js`
-  - `supabase/migrations/20260809033254_secure_email_audit_rpc.sql` [NEW]
-  - `supabase/migrations/20260809035032_restrict_email_audit_rpc_execution.sql` [NEW]
-- **รายละเอียด:**
-  - ย้ายการบันทึก `EMAIL_SENT` ออกจาก browser ไปยัง backend และ Supabase RPC
-  - ส่ง JWT จาก frontend ให้ backend ตรวจสอบสิทธิ์ `settings.update` ผ่าน `admin_authorize_email_send()` ก่อนเชื่อมต่อ SMTP
-  - เพิ่ม `admin_record_email_sent_audit()` เพื่อบันทึกผู้ส่ง ผู้รับ หัวเรื่อง และ message ID หลังส่งอีเมลสำเร็จ โดยไม่เปิด `INSERT` policy ให้ browser เขียนตาราง `audit_logs` โดยตรง
-  - จำกัดการเรียก RPC ไว้ที่ role `authenticated` และถอนสิทธิ์ `PUBLIC`
-  - ถอนสิทธิ์ `anon` โดยตรงเพิ่มเติมหลัง security advisor ตรวจพบ grant ที่ตกค้าง
-- **เหตุผล:** แก้ไข HTTP 403 จาก RLS พร้อมป้องกันการปลอม audit log และการส่งอีเมลจากผู้ใช้ที่ไม่มีสิทธิ์
 
 ## [2026-08-09 04:05]
 
@@ -5113,47 +4749,9 @@ og
     - **การตรวจสอบมาตรฐานความปลอดภัย (Security Audit & Standards):** เพิ่มคุณลักษณะ `autoComplete="new-password"` ให้กับทุกอินพุตรหัสผ่าน ป้องกันการบันทึกหรือหลุดของ Plaintext Passwords ใน Console, Logs หรือ Client Storage
 - **เหตุผล:** ป้องกันความสับสนระหว่างรหัสผ่านสร้างบัญชีใหม่กับรหัสผ่านชั่วคราวสำหรับรีเซ็ตโดย Admin และยกระดับมาตรฐานความปลอดภัยระบบ
 
-## [2026-08-09 02:18]
 
-- **ไฟล์ที่สร้าง/แก้ไข:**
-  - `src/lib/emailRenderer.js` [MODIFY]
-  - `src/lib/emailService.js` [MODIFY]
-- **รายละเอียด:**
-  - **ปรับปรุงรูปแบบแม่แบบอีเมลทดสอบระบบ (Redesign Test Email Notification Template):**
-    - **การกำหนดหัวข้ออีเมลมาตรฐาน:** กำหนดหัวข้ออีเมลทดสอบเป๊ะตามข้อกำหนด: `"ทดสอบการเชื่อมต่ออีเมล — StockFlow"`
-    - **โครงสร้างเนื้อหาอีเมลตามมาตรฐาน Transactional:** แสดงชื่อระบบ `StockFlow`, หัวข้อคำแจ้งเตือน, ข้อความ `นี่คืออีเมลทดสอบจากระบบ` และประทับตราเวลาเซิร์ฟเวอร์แบบ ISO (`เวลา: {ISO_TIMESTAMP}`)
-    - **การออกแบบเลย์เอาต์เน้นความเรียบหรูระดับมืออาชีพ:** ใช้เทมเพลต HTML ตารางรองรับการแสดงผลทุก Email Client (Outlook, Gmail, Apple Mail) ด้วย Inline CSS ไร้การโฆษณาหรือองค์ประกอบ Marketing ที่ไม่จำเป็น
-- **เหตุผล:** เพื่อให้อีเมลทดสอบระบบมีรูปแบบสอดคล้องกับมาตรฐาน Transactional System Notification ของ StockFlow
 
-## [2026-08-09 02:11]
 
-- **ไฟล์ที่สร้าง/แก้ไข:**
-  - `pdf-service/server.js` [MODIFY]
-  - `pdf-service/.env` [NEW]
-- **รายละเอียด:**
-  - **แก้ไขการโหลดไฟล์สภาพแวดล้อมฝั่งแบ็กเอนด์ (`pdf-service/server.js` & `pdf-service/.env`):** เพิ่มการระบุพาท `path.resolve(__dirname, '../.env')` ใน `dotenv.config()` เพื่อให้เซิร์ฟเวอร์แบ็กเอนด์ดึงค่าตัวแปรแวดล้อม (`SMTP_PASS`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) จากทั้งโฟลเดอร์หลักของโปรเจกต์และโฟลเดอร์ `pdf-service/` ได้อย่างถูกต้อง ขจัดสาเหตุที่ทำให้แบ็กเอนด์มองไม่เห็นรหัสผ่านจนเกิดคำเตือน `Password is blank/missing`
-- **เหตุผล:** แก้ไข Root Cause ที่แท้จริงของการดึงไฟล์สภาพแวดล้อมไม่เจอเนื่องจากตำแหน่งไดเรกทอรี CWD ที่แตกต่างกัน
-
-## [2026-08-09 02:08]
-
-- **ไฟล์ที่สร้าง/แก้ไข:**
-  - `pdf-service/server.js` [MODIFY]
-  - `src/pages/Settings.jsx` [MODIFY]
-- **รายละเอียด:**
-  - **แก้ไขปัญหารายงานเตือนรหัสผ่านเป็นค่าว่างจากการพรางตัวรหัสผ่าน (Fix SMTP Masked Placeholder Filtering & Single Source of Truth):**
-    - **การตรวจจับและละเว้นข้อความพรางตัว (`pdf-service/server.js`):** พัฒนาฟังก์ชัน `isValidPasswordSecret()` เพื่อตรวจสอบและตัดข้อความพรางตัวจากหน้าบ้าน (เช่น `••••••••` หรือ `null`/`undefined`) ออกจากการประมวลผล การันตีว่าเซิร์ฟเวอร์จะไม่นำรหัสผ่านพรางตัวไปพยายามใช้ยืนยันตัวตนกับ Gmail
-    - **ลำดับการดึงรหัสผ่านจริงที่แน่นอน (Single Source of Truth):** เมื่อพบว่าหน้าบ้านไม่ได้ส่งรหัสผ่านใหม่ แบ็กเอนด์จะดึงรหัสผ่านจริงจากคลัง Supabase Vault (`system_secrets`) หรือจากตัวแปรแวดล้อม (`SMTP_PASS`) โดยอัตโนมัติ
-    - **การปรับแต่งรูปแบบรหัสผ่าน Google App Password:** ตัดช่องว่างภายในรหัสผ่านอัตโนมัติ (เช่น `yito soxa bxyc xdij` ➔ `yitosoxabxycxdij`) เพื่อความสมบูรณ์ 100% ในการเชื่อมต่อกับ Nodemailer & Gmail SASL
-    - **การปรับปรุงการบันทึกสถานะการวินิจฉัย:** แสดงสถานะการดึงรหัสผ่าน เช่น `SMTP_PASSWORD: configured (source: supabase vault / .env)` โดยไม่เปิดเผยรหัสผ่านจริงลงใน Logs หรือ API Payload
-- **เหตุผล:** ขจัดปัญหาคำเตือนแจ้งว่ารหัสผ่านเป็นค่าว่างเมื่อผู้ใช้กดทดสอบส่งอีเมลจากหน้าเว็บ และการันตีว่าระบบดึงรหัสผ่านจริงจากคลังมาใช้งานได้ถูกต้องเสมอ
-
-## [2026-08-09 01:59]
-
-- **ไฟล์ที่สร้าง/แก้ไข:**
-  - `.env` [MODIFY]
-- **รายละเอียด:**
-  - **กำหนดค่ารหัสผ่าน Gmail App Password ในไฟล์สภาพแวดล้อมฝั่งแบ็กเอนด์ (`.env`):** บันทึกค่า `SMTP_PASS` (Google App Password 16 หลัก) ลงในไฟล์ `.env` ป้องกันปัญหารหัสผ่านหลุดไปยังสคริปต์หน้าบ้าน การันตีว่าตัวส่งจดหมายแบ็กเอนด์มีรหัสผ่านยืนยันตัวตนสำหรับ `stockflow.noreply.app@gmail.com` เสมอ
-- **เหตุผล:** รองรับการยืนยันตัวตน Gmail SMTP แบบอัตโนมัติ ไม่ต้องกรอกรหัสผ่านใหม่ทุกครั้ง
 
 ## [2026-08-09 01:28]
 

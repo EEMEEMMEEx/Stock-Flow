@@ -21,12 +21,11 @@ import CheckoutApproveModal from '@/components/checkouts/CheckoutApproveModal';
 import CheckoutRejectModal from '@/components/checkouts/CheckoutRejectModal';
 import CheckoutCancelModal from '@/components/checkouts/CheckoutCancelModal';
 import SuperRevertActionModal from '@/components/common/SuperRevertActionModal';
-import { dispatchCheckoutNotification, dispatchRevertNotification } from '@/lib/notificationDispatcher';
 
 const CHECKOUT_TABS = ['pending', 'active', 'pos', 'history'];
 
 const Checkouts = () => {
-  const { can, user, profile, isAdmin, isSuperAdmin, canRevertAction } = useAuth();
+  const { can, isAdmin, isSuperAdmin, canRevertAction } = useAuth();
   const { t } = useTranslation();
 
   const canCreate = can('checkouts.create');
@@ -364,17 +363,6 @@ const Checkouts = () => {
       setIsApproveModalOpen(false);
       setSelectedOrderForApprove(null);
 
-      // Async notification dispatch: approval decision email to borrower and staff
-      const approverLabel = profile?.full_name || user?.email || 'Admin';
-      const orderForNotification = { ...order, approved_by_name: approverLabel };
-
-      dispatchCheckoutNotification({
-        eventType: 'checkout_approved',
-        orderId: order.id,
-        orderData: orderForNotification,
-        approverName: approverLabel
-      }).catch(err => console.warn('Checkout approval notification notice:', err));
-
       await fetchCheckoutData();
     } catch (err) {
       console.error('Approve checkout error:', err);
@@ -399,15 +387,6 @@ const Checkouts = () => {
       toast.success(data?.message || t('checkouts.rejectSuccess', 'ปฏิเสธคำขอยืมเรียบร้อยแล้ว'));
       setIsRejectModalOpen(false);
       setSelectedOrderForReject(null);
-
-      // Async notification dispatch
-      dispatchCheckoutNotification({
-        eventType: 'checkout_rejected',
-        orderId: order.id,
-        orderData: order,
-        approverName: profile?.full_name || user?.email || 'Admin',
-        rejectionReason
-      }).catch(err => console.warn('Checkout rejection notification notice:', err));
 
       await fetchCheckoutData();
     } catch (err) {
@@ -731,19 +710,7 @@ const Checkouts = () => {
         kind={revertTarget?.kind}
         order={revertTarget?.order}
         returnLog={revertTarget?.returnLog}
-        onSuccess={(data, reason) => {
-          const orderId = data?.order_id || revertTarget?.order?.id;
-          if (orderId) {
-            dispatchRevertNotification({
-              eventType: 'checkout_reverted',
-              orderId,
-              kind: 'checkout',
-              actorName: profile?.full_name || 'SUPER',
-              reason,
-              previousStatus: data?.previous_status,
-              newStatus: data?.new_status
-            }).catch(err => console.warn('[Revert Notification Warning]:', err));
-          }
+        onSuccess={(_data, _reason) => {
           setIsDetailModalOpen(false);
           fetchCheckoutData();
         }}

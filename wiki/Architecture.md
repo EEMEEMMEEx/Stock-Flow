@@ -45,7 +45,6 @@
 | **Database & Auth** | **Supabase (PostgreSQL 15)** | ระบบจัดการฐานข้อมูลหลัก, การควบคุมสิทธิ์ (RLS), และ Stored Procedures |
 | **Object Storage** | **Cloudflare R2** | จัดเก็บภาพถ่ายพัสดุและหลักฐานการเบิกจ่าย ค่า Egress 0 บาท |
 | **Serverless API** | **Vercel Functions** | Edge runtime สำหรับ API หลังบ้านที่ต้องการ Secret Key |
-| **Email Delivery** | **Nodemailer 6.10** | จัดส่งอีเมลแจ้งเตือนการอนุมัติผ่าน Enterprise SMTP |
 
 ---
 
@@ -70,7 +69,6 @@
 
 ### 3.4 Vercel Serverless Functions
 - **`/api/r2-upload-url`**: ให้บริการ S3 Presigned URL โดยเก็บบัญชี `R2_ACCESS_KEY_ID` และ `R2_SECRET_ACCESS_KEY` ไว้ในเซิร์ฟเวอร์อย่างปลอดภัย
-- **`/api/send-email`**: ให้บริการส่งอีเมลแจ้งเตือนผู้บริหารและผู้อนุมัติเมื่อมีการขอเบิกวัสดุไซต์งาน หรือรายการเบิกด่วน พร้อมระบบ Retry และ Fallback
 
 ---
 

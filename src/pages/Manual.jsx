@@ -136,8 +136,8 @@ const SECTION_CONFIGS = [
     permissions: ['reports.view', 'reports.export', 'history.view'],
   },
   {
-    id: 'system-settings-branding',
-    key: 'systemSettingsAndBranding',
+    id: 'system-settings',
+    key: 'systemSettings',
     category: ['admin'],
     icon: Settings,
     iconColor: 'text-slate-600 dark:text-slate-300',

@@ -706,8 +706,6 @@ export default {
       "dispatchNoteDownloaded": "Dispatch note downloaded",
       "dispatchNotePdfFailed": "Failed to generate dispatch note PDF",
       "insufficientStock": "Insufficient inventory in this project",
-      "lowStockAlerted": "Reorder point alert sent: {{item}}",
-      "lowStockAlertFailed": "Failed to send the reorder point alert email",
       "loadFailed": "Failed to load withdrawal data"
     },
     "detailModalDesc": "Requisition details and item breakdown",
@@ -1537,17 +1535,13 @@ export default {
   },
   "settings": {
     "title": "System Settings",
-    "subtitle": "Manage system preferences, mail server (SMTP), and security configurations",
+    "subtitle": "Manage system preferences, inventory rules, and security configurations",
     "generalSettings": "General System",
-    "notificationSettings": "Email Notifications",
-    "smtpSettings": "SMTP Configuration",
-    "testConnection": "Test SMTP Connection",
     "saveChanges": "Save Settings",
     "defaultLangDesc": "Configure application default display language (Thai / English)",
     "readOnlyNotice": "Your account has read-only access to settings (Requires {{perm}} to save changes)",
     "tabs": {
       "general": "General System",
-      "smtp": "SMTP Configuration",
       "security": "Security & Access",
       "system": "System Information"
     },
@@ -1560,20 +1554,16 @@ export default {
         "title": "2. Inventory & Withdrawal Rules",
         "description": "Configure low-stock threshold, withdrawal purpose requirements, and transaction policies"
       },
-      "notification": {
-        "title": "3. Notification & Email Settings",
-        "description": "Configure SMTP server and recipient roles for event-based notifications"
-      },
       "security": {
-        "title": "4. User & Security Policy",
+        "title": "3. User & Security Policy",
         "description": "Password policy, user account management, and application-level security"
       },
       "storage": {
-        "title": "5. Storage Status",
+        "title": "4. Storage Status",
         "description": "Status of Cloudflare R2 Object Storage and image asset policies"
       },
       "system": {
-        "title": "6. System Information",
+        "title": "5. System Information",
         "description": "Summary of version metadata, environment, and database connectivity"
       }
     },
@@ -1601,197 +1591,6 @@ export default {
       "directStockAdjustmentWarning": "Warning: Adjust physical stock before enabling direct stock editing.",
       "saveBtn": "Save Inventory Rules",
       "savingBtn": "Saving..."
-    },
-    "smtp": {
-      "serverConfig": "SMTP Server Configuration",
-      "testEmailBtn": "Test Email",
-      "host": "SMTP Host",
-      "hostPlaceholder": "smtp.gmail.com",
-      "port": "SMTP Port",
-      "portPlaceholder": "465",
-      "username": "SMTP Username",
-      "userPlaceholder": "user@example.com",
-      "senderEmail": "Sender Email",
-      "senderEmailPlaceholder": "noreply@stockflow.com",
-      "senderName": "Sender Name",
-      "password": "SMTP Password",
-      "passwordConfigured": "(Configured)",
-      "passwordPlaceholderConfigured": "•••••••• (Enter new to change)",
-      "passwordPlaceholderEmpty": "Enter SMTP password",
-      "securityProtocol": "Security Protocol",
-      "implicitTls": "Implicit SSL/TLS (Port 465)",
-      "startTls": "STARTTLS (Port 587 / 25)",
-      "implicitTlsDesc": "Implicit TLS: Encrypts socket immediately upon connection to SMTP server (recommended for Port 465)",
-      "startTlsDesc": "STARTTLS: Connects normally then upgrades to TLS before sending data (recommended for Port 587/25)",
-      "verifyTls": "Verify TLS Certificate",
-      "verifyTlsCheckbox": "Verify certificate is issued by a trusted CA",
-      "verifyTlsHint": "Always recommended. Disabling allows internal self-signed certificates",
-      "warnPort465": "Warning: Port 465 typically requires implicit SSL/TLS (secure = true). Selecting STARTTLS on port 465 may cause socket timeouts (ETIMEDOUT)",
-      "warnPort587": "Warning: Port 587 typically requires STARTTLS (secure = false). Selecting implicit SSL/TLS on port 587 may cause 'Greeting never received' errors",
-      "warnTlsDisabled": "Security Warning: Only disable TLS certificate verification if your SMTP server uses a self-signed certificate or custom internal CA",
-      "activeConfig": "Active Config:",
-      "senderLabel": "Sender:",
-      "tlsCertVerified": "VERIFIED",
-      "tlsCertDisabled": "DISABLED",
-      "tlsCertCheck": "TLS Cert Check: {{status}}",
-      "saveBtn": "Save SMTP Settings",
-      "savingBtn": "Saving..."
-    },
-    "emailTemplates": {
-      "branding": {
-        "title": "Global Email Branding",
-        "description": "Configure logo, accent color, and public base URL for all email notifications",
-        "unsaved": "Unsaved changes",
-        "senderName": "Sender Display Name",
-        "senderNamePlaceholder": "StockFlow",
-        "logoUrl": "Logo Image URL",
-        "logoUrlPlaceholder": "https://domain.com/logo.png",
-        "publicBaseUrl": "Public Base URL",
-        "publicBaseUrlPlaceholder": "https://stockflowth.online",
-        "accentColor": "Accent Color",
-        "invalidBaseUrl": "Public Base URL is invalid — use the format https://domain.com",
-        "invalidLogoUrl": "Logo Image URL is invalid — use a full http(s) URL",
-        "logoExtensionWarning": "The logo URL has no image file extension; some email clients may not render it"
-      },
-      "events": {
-        "withdrawal_submitted": {
-          "title": "1. Withdrawal Submitted",
-          "desc": "Notify approvers and administrators when a new withdrawal request is submitted",
-          "primaryRecipient": "Approver / Administrator"
-        },
-        "withdrawal_approved": {
-          "title": "2. Withdrawal Approved",
-          "desc": "Notify requester and warehouse staff when a request is approved",
-          "primaryRecipient": "Requester"
-        },
-        "withdrawal_rejected": {
-          "title": "3. Withdrawal Rejected",
-          "desc": "Notify requester when a request is rejected with reason",
-          "primaryRecipient": "Requester"
-        },
-        "withdrawal_completed": {
-          "title": "4. Withdrawal Completed",
-          "desc": "Notify when materials have been issued and stock is deducted",
-          "primaryRecipient": "Requester / Administrator"
-        },
-        "stock_in_created": {
-          "title": "5. Stock In Recorded",
-          "desc": "Notify when new material stock-in lot is recorded in a project",
-          "primaryRecipient": "Warehouse Staff / Administrator"
-        },
-        "low_stock_alert": {
-          "title": "6. Low Stock Alert",
-          "desc": "Automatically notify when project material stock reaches reorder point",
-          "primaryRecipient": "Warehouse Staff / Approver"
-        },
-        "checkout_submitted": {
-          "title": "7. Checkout Request Submitted",
-          "desc": "Notify approvers and administrators when a new equipment borrow request is submitted",
-          "primaryRecipient": "Approver / Administrator"
-        },
-        "checkout_approved": {
-          "title": "8. Checkout Request Approved",
-          "desc": "Notify the borrower when their equipment borrow request is approved",
-          "primaryRecipient": "Borrower"
-        },
-        "checkout_rejected": {
-          "title": "9. Checkout Request Rejected",
-          "desc": "Notify the borrower when their equipment borrow request is rejected with reason",
-          "primaryRecipient": "Borrower"
-        },
-        "checkout_handed_over": {
-          "title": "10. Equipment Handed Over",
-          "desc": "Notify the borrower when equipment is physically handed over (handover receipt)",
-          "primaryRecipient": "Borrower / Administrator"
-        },
-        "checkout_due_soon": {
-          "title": "11. Return Due Reminder",
-          "desc": "Scheduled reminder sent one day before the equipment return due date",
-          "primaryRecipient": "Borrower"
-        },
-        "checkout_overdue": {
-          "title": "12. Overdue Return Alert",
-          "desc": "Scheduled alert when equipment is past its return due date, with administrators in CC",
-          "primaryRecipient": "Borrower + CC Administrator"
-        },
-        "checkout_returned": {
-          "title": "13. Equipment Returned",
-          "desc": "Notify the borrower when returned equipment is inspected and recorded",
-          "primaryRecipient": "Borrower / Administrator"
-        },
-        "withdrawal_reverted": {
-          "title": "14. Withdrawal Reverted",
-          "desc": "Notify when an administrator reverts a withdrawal order status and returns stock",
-          "primaryRecipient": "Requester / Administrator"
-        },
-        "checkout_reverted": {
-          "title": "15. Checkout Reverted",
-          "desc": "Notify when an administrator reverts an equipment borrow order status",
-          "primaryRecipient": "Borrower / Administrator"
-        }
-      },
-      "list": {
-        "title": "Notification Events ({{count}})",
-        "resetAll": "Reset All",
-        "resetAllConfirm": "Reset all email templates to system defaults successfully",
-        "searchPlaceholder": "Search templates...",
-        "primaryLabel": "Primary: {{recipient}}",
-        "rolesCount_one": "+{{count}} role",
-        "rolesCount_other": "+{{count}} roles"
-      },
-      "editor": {
-        "resetCurrent": "Reset to Default",
-        "resetCurrentConfirm": "Reset template \"{{title}}\" to default successfully",
-        "status": "Status:",
-        "enabled": "Enabled",
-        "disabled": "Disabled",
-        "tabs": {
-          "content": "Content",
-          "recipients": "Recipients",
-          "preview": "Live Preview",
-          "test": "Test"
-        },
-        "content": {
-          "subjectLine": "Subject Line",
-          "variableHint": "Click variable chips to insert into subject",
-          "badgeLabel": "Badge Label",
-          "badgeTheme": "Badge Color Theme",
-          "themes": {
-            "warning": "Amber / Pending (Warning)",
-            "approved": "Emerald / Approved (Success)",
-            "rejected": "Rose / Rejected (Error)",
-            "info": "Blue / Info"
-          },
-          "heading": "Heading",
-          "intro": "Intro Message",
-          "ctaLabel": "CTA Button Label",
-          "ctaUrl": "CTA Target URL",
-          "footerNote": "Footer Note"
-        },
-        "recipients": {
-          "primaryTitle": "Primary Recipient by Role",
-          "primaryDesc": "The system will automatically send to {{recipient}} associated with the request.",
-          "ccRoles": "CC Additional Roles:",
-          "directTo": "Direct Extra Recipients (To)",
-          "directCc": "Direct Extra CC Recipients",
-          "commaHint": "Separate multiple email addresses with commas (,)"
-        },
-        "preview": {
-          "title": "Live HTML Renderer Preview",
-          "desktop": "Desktop (620px)",
-          "mobile": "Mobile (375px)"
-        },
-        "test": {
-          "title": "Send Test Email",
-          "description": "Send a test email rendered with current branding and sample data to your email address.",
-          "recipient": "Test Recipient Email *",
-          "recipientPlaceholder": "your-email@company.com",
-          "sendBtn": "Send Test Email",
-          "sendingBtn": "Sending test email..."
-        },
-        "saveFooterHint": "* Saved changes take effect immediately for outgoing notification emails",
-        "saveAllBtn": "Save Settings & Templates"
-      }
     },
     "securityPolicy": {
       "passwordPolicyTitle": "Password Policy",
@@ -1844,34 +1643,6 @@ export default {
       "roles_one": "{{count}} Role",
       "roles_other": "{{count}} Roles"
     },
-    "emailLogs": {
-      "title": "Email Delivery Logs",
-      "subtitle": "Audit log of notification dispatch attempts and SMTP delivery status",
-      "searchPlaceholder": "Search by recipient, subject, or event...",
-      "allStatus": "All Statuses",
-      "sentOnly": "Sent Only",
-      "failedOnly": "Failed Only",
-      "timestamp": "Timestamp",
-      "event": "Event",
-      "recipient": "Recipient",
-      "subject": "Subject",
-      "status": "Status",
-      "noLogs": "No email delivery logs recorded yet",
-      "sentBadge": "Sent",
-      "failedBadge": "Failed",
-      "pageSummary": "Showing {{from}} - {{to}} of {{total}} logs",
-      "detailTitle": "Email Delivery Details",
-      "errorMessage": "Error Message"
-    },
-    "testEmailModal": {
-      "title": "Test Email Notification",
-      "description": "Send a test notification message through the application SMTP delivery system",
-      "recipientLabel": "Test Recipient Email *",
-      "recipientPlaceholder": "target@company.com",
-      "cancelBtn": "Cancel",
-      "sendBtn": "Send Test Email",
-      "sendingBtn": "Sending..."
-    },
     "toasts": {
       "saved": "Settings saved successfully",
       "saveFailed": "Failed to save settings",
@@ -1879,12 +1650,6 @@ export default {
       "appSaved": "Application and footer settings saved successfully",
       "migration11Required": "Please run Migration 11 in Supabase SQL Editor to enable settings table",
       "inventorySaved": "Inventory and withdrawal rules saved successfully",
-      "notificationSaved": "Notification settings saved successfully",
-      "invalidEmail": "Please enter a valid recipient email (e.g., name@domain.com)",
-      "testEmailSent": "Test email sent to {{email}} successfully",
-      "testEmailFailed": "Failed to send test email",
-      "emailTemplatesSaved": "Saved email settings and templates successfully",
-      "emailTemplatesSaveFailed": "Failed to save email templates",
       "generatePasswordSuccess": "Generated secure password matching policy successfully",
       "defaultPasswordSaved": "Default reset password saved successfully",
       "defaultPasswordSaveFailed": "An error occurred while saving default reset password",
@@ -1992,7 +1757,7 @@ export default {
     "proTipTitle": "Pro-Tip",
     "warningsTitle": "Safety rules & warnings",
     "helpTitle": "Need more help or want to report an issue?",
-    "helpDesc": "If you encounter stock calculation issues, menu access problems, email notification delivery issues, or need a custom role, please contact your organization's System Administrator.",
+    "helpDesc": "If you encounter stock calculation issues, menu access problems, or need a custom role, please contact your organization's System Administrator.",
     "roles": {
       "staff": "Staff / Requester",
       "supervisor": "Supervisor / Approver",
@@ -2009,7 +1774,7 @@ export default {
       "supervisorDesc": "Approve or reject both material withdrawals and equipment checkout requests, record stock receipts, adjust balances, transfer between warehouses, and export summary reports.",
       "adminTitle": "System Administrator (ADMIN)",
       "adminBadge": "Administrator",
-      "adminDesc": "Full administrative access: manage projects and items, user accounts, project access scopes, configure RBAC at /roles, and system/email settings at /settings."
+      "adminDesc": "Full administrative access: manage projects and items, user accounts, project access scopes, configure RBAC at /roles, and system settings at /settings."
     },
     "sections": {
       "sidebarNav": {
@@ -2178,22 +1943,6 @@ export default {
         "proTips": "The Site Kits tab reveals assembly readiness and bottlenecks, and narrowing the date range speeds up large exports.",
         "warnings": "Exporting requires reports.export, and large datasets should be narrowed by date range before processing."
       },
-      "systemSettingsAndBranding": {
-        "title": "12. System Settings & Email Notifications (Settings & Branding)",
-        "shortDesc": "Configure SMTP, manage email templates with Live Preview, and define email branding.",
-        "whatItDoes": "The system settings hub with four tabs: General, Email (SMTP), Security & Access, and System Status. It supports notification email template management with Live Preview, test sending, Global Branding (logo, accent color, Base URL), and security policies such as Last Admin Protection.",
-        "whoCanUse": "Administrators holding settings.view / settings.update.",
-        "steps": [
-          "Go to Settings at /settings",
-          "General Settings tab: set the app name, organization, subtitle, low-stock threshold, and requisition policy",
-          "Email (SMTP) tab: enter host, port, user, and sender, choose the TLS mode (STARTTLS/SSL), and test sending",
-          "Manage email templates: enable or disable notification events, set recipients by role, and edit templates with live preview",
-          "Global Branding: define the logo, accent color, and Base URL used across all emails",
-          "Security & Access tab: review the password policy, secure vault storage, and Last Admin Protection"
-        ],
-        "proTips": "Use the Test Email button after every SMTP change, and check Live Preview before saving a template to confirm correct rendering.",
-        "warnings": "settings.update is required to save (accounts without it see read-only mode), and the SMTP password is stored securely in the vault and never echoed back in responses."
-      },
       "userProfileAndSignatures": {
         "title": "13. User Profile & Digital Signature",
         "shortDesc": "Manage personal details, change your password, and draw a digital signature for documents.",
@@ -2208,6 +1957,21 @@ export default {
         ],
         "proTips": "Create your signature before transacting (withdraw, checkout, or approve), because the system blocks and redirects you to create one first, and you can jump straight to the Signature tab from the prompt.",
         "warnings": "A signature is bound to your account and validates document transactions; never share your account, and without a signature you cannot perform document-based transactions."
+      },
+      "systemSettings": {
+        "title": "12. System Settings",
+        "shortDesc": "Manage application preferences, inventory rules, and security policies",
+        "whatItDoes": "Central system configuration across 5 sections: Application metadata, Inventory & withdrawal rules, User & security policy, Storage status (Cloudflare R2), and System information",
+        "whoCanUse": "Administrators with settings.view / settings.update permissions",
+        "steps": [
+          "Navigate to Settings at /settings",
+          "Application & Footer section: configure app name, organization, description, and footer display",
+          "Inventory Rules section: configure low-stock threshold, withdrawal purpose requirements, and transaction policies",
+          "User & Security Policy section: manage default password reset credentials and Last Admin Protection",
+          "Storage Status & System Information sections: verify Cloudflare R2 connectivity and database health"
+        ],
+        "proTips": "Ensure the default low stock threshold aligns with your operational reorder cycles",
+        "warnings": "Requires settings.update permission to save changes (read-only for unprivileged accounts)"
       }
     }
   },

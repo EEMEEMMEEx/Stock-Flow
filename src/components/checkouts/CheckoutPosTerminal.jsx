@@ -15,7 +15,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n';
 import { ProjectLocationSelector } from '@/components/common/ProjectLocationSelector';
 import SignatureRequiredModal from '@/components/common/SignatureRequiredModal';
-import { dispatchCheckoutNotification } from '@/lib/notificationDispatcher';
 import { cleanRpcMessage, isSchemaMismatchError } from '@/lib/rpcErrors';
 
 const CheckoutPosTerminal = ({
@@ -382,34 +381,6 @@ const CheckoutPosTerminal = ({
       });
 
       if (error) throw error;
-
-      // Pending requisition by staff -> notify approvers for a decision.
-      if (data?.status === 'pending') {
-        dispatchCheckoutNotification({
-          eventType: 'checkout_submitted',
-          orderId: data?.order_id,
-          orderData: {
-            id: data?.order_id,
-            order_number: data?.order_number,
-            projects: projects.find(p => p.id === orderProjectId)
-          }
-        }).catch(err => console.warn('Checkout submitted notification notice:', err));
-      }
-
-      // Direct checkout by an approver -> equipment is handed over immediately
-      // (no approval step ever runs), so send the handover receipt now.
-      if (data?.status === 'active') {
-        dispatchCheckoutNotification({
-          eventType: 'checkout_handed_over',
-          orderId: data?.order_id,
-          approverName: profile?.full_name || user?.email || 'เจ้าหน้าที่คลัง',
-          orderData: {
-            id: data?.order_id,
-            order_number: data?.order_number,
-            projects: projects.find(p => p.id === orderProjectId)
-          }
-        }).catch(err => console.warn('Checkout handover notification notice:', err));
-      }
 
       toast.success(data?.message || t('checkouts.checkoutOrderCreated', {
         orderNo: data?.order_number || ''

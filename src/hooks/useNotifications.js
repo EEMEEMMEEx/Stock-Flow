@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { isSchemaMismatchError } from '@/lib/rpcErrors';
-import { dispatchWithdrawalNotification, checkAndDispatchOrderLowStock } from '@/lib/notificationDispatcher';
 
 const PAGE_SIZE = 15;
 
@@ -138,18 +137,6 @@ export const useNotifications = (userId) => {
       if (notificationId) {
         await markAsRead(notificationId);
       }
-
-      // Dispatch approval email & low stock checks
-      dispatchWithdrawalNotification({
-        eventType: 'withdrawal_approved',
-        orderId,
-        approverName: _approverName
-      }).catch(err => console.warn('[useNotifications] Dispatch withdrawal_approved notice:', err));
-
-      checkAndDispatchOrderLowStock({
-        orderId,
-        approvedByName: _approverName
-      }).catch(err => console.warn('[useNotifications] Check low stock notice:', err));
 
       // Reload notifications list
       await loadNotifications();

@@ -17,7 +17,6 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
-import { dispatchStockInNotification } from '@/lib/notificationDispatcher';
 
 import { 
   parseDopaStockCsv, 
@@ -586,15 +585,6 @@ const StockIn = () => {
       }
 
       toast.success(t('stockIn.toasts.created'));
-
-      dispatchStockInNotification({
-        orderId: orderId,
-        projectId,
-        items: payloadItems,
-        receivedBy: user?.user_metadata?.full_name || user?.email || 'Warehouse Admin',
-        supplier: formData.supplier || '',
-        poNumber: formData.po_number || ''
-      }).catch(err => console.warn('[StockIn Notification Warning]:', err));
 
       setIsCreateDialogOpen(false);
       setIsImportPreviewOpen(false);

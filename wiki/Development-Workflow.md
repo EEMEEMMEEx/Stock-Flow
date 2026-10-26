@@ -40,7 +40,6 @@
 feat(pos): add audio beep feedback upon successful barcode scan
 fix(storage): extend presigned URL expiration to 15 minutes
 docs(wiki): add architecture and operational runbooks
-chore(deps): bump nodemailer to 10.0.0 to fix security alert
 refactor(auth): simplify role verification guard clauses
 ```
 
@@ -64,7 +63,7 @@ refactor(auth): simplify role verification guard clauses
 ก่อนรวมโค้ด (Merge PR) หรือปิดงาน จะต้องผ่านเกณฑ์ DoD ดังนี้:
 
 - [ ] **Build Check:** รัน `npm run build` สำเร็จโดยไม่มีคำเตือนหรือข้อผิดพลาดร้ายแรง
-- [ ] **Testing:** รันชุดทดสอบที่เกี่ยวข้อง (เช่น `npm run test:email`) ผ่าน 100%
+- [ ] **Testing:** รันชุดทดสอบที่เกี่ยวข้อง ผ่าน 100%
 - [ ] **Version Bump:** ปรับเวอร์ชันใน `package.json` ตามระดับการเปลี่ยนแปลง
 - [ ] **Changelog Updated:** บันทึกสรุปการแก้ไขลงในไฟล์ `CHANGELOG.md`
 - [ ] **UI Icon Policy Check:** ตรวจสอบว่าไม่มีการใช้ Unicode Emoji เป็นไอคอนใน UI ซอร์สโค้ด (ให้ใช้ Lucide SVG หรือ ReactBits SVG เสมอ)

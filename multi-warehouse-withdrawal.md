@@ -54,7 +54,7 @@
 - [ ] สร้าง `CheckoutCancelModal.jsx` สำหรับกรอกเหตุผลการยกเลิก
 - [ ] อัปเดต `CheckoutDetailModal.jsx` เพิ่มปุ่มยกเลิกสำหรับ SUPER
 
-### Phase 5: PDF Templates & Email Dispatch
+### Phase 5: PDF Templates
 - [ ] ปรับปรุง `MaterialWithdrawalPDF.jsx` แสดงคลังต้นทาง
 - [ ] ปรับปรุง `MaterialDispatchPDF.jsx` จัดกลุ่มรายการตามคลังต้นทาง
 

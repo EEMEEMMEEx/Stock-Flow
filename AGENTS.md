@@ -139,7 +139,7 @@ Skills are strictly subordinate to safety constraints: a skill may **never** ove
 ---
 
 ## Security Gate (Repo Credentials & RPC Security)
-- **Project Named Secrets**: ห้าม hardcode หรือเปิดเผย `SUPABASE_SERVICE_ROLE_KEY`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, Database Connection String, หรือ SMTP Password ใช้ `.env` เท่านั้น (ในเอกสาร/คอมเมนต์ให้ใส่ `***`)
+- **Project Named Secrets**: ห้าม hardcode หรือเปิดเผย `SUPABASE_SERVICE_ROLE_KEY`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, Database Connection String ใช้ `.env` เท่านั้น (ในเอกสาร/คอมเมนต์ให้ใส่ `***`)
 - **Supabase RPC Security**: ทุกฟังก์ชัน PL/pgSQL ต้องกำหนด `SECURITY DEFINER`, `SET search_path = public, auth, pg_temp` และตรวจสอบสิทธิ์ผู้เรียกผ่าน `auth.uid()` หรือ `has_permission()` เสมอ
 
 ---
@@ -205,6 +205,5 @@ Skills are strictly subordinate to safety constraints: a skill may **never** ove
   - `npm run build`: ทดสอบ Build และตรวจจับ Syntax/Bundle Error
   - `npm run lint`: ตรวจสอบ Code Quality ด้วย ESLint
   - `npm run check:i18n`: ตรวจสอบความครบถ้วนของคีย์ภาษา (Thai & English Parity)
-  - `npm run test:email`: ทดสอบการ Render เทมเพลตอีเมลและ Nodemailer
   - `npm run db:backup`: สำรองข้อมูลฐานข้อมูล Supabase ทั้งหมด
 

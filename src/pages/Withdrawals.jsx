@@ -9,7 +9,6 @@ import { toSafeFileToken } from '@/lib/utils';
 import { isSchemaMismatchError } from '@/lib/rpcErrors';
 import { ALL_WAREHOUSES, buildCartKey, buildWarehouseMap, clampQuantity, getWarehouseBalance, getWarehouseLabel, getWarehousesForItem, pickDefaultWarehouse, resolveSourceWarehouse } from '@/lib/withdrawalStock';
 import toast from 'react-hot-toast';
-import { dispatchWithdrawalNotification, dispatchLowStockAlertNotification, dispatchRevertNotification } from '@/lib/notificationDispatcher';
 
 // Modular Withdrawal Subcomponents
 import WithdrawalPosTerminal from '@/components/withdrawals/WithdrawalPosTerminal';
@@ -597,100 +596,6 @@ const Withdrawals = () => {
    * (`items.min_stock`), falling back to the global `low_stock_threshold` when the
    * item has none. Items with no balance row are skipped rather than treated as 0.
    */
-  const notifyLowStockItems = async ({ orderId, fallbackProjectId, approvedByName }) => {
-    if (!orderId) return;
-
-    try {
-      // Read the lines that were actually approved. In multi-warehouse mode each
-      // line deducts from its own source project, so the alert is evaluated per
-      // (project_id, item_id) pair instead of one balance for the whole order.
-      const lineSelect = lineSourceEnabled
-        ? 'item_id, project_id, deducted_quantity'
-        : 'item_id, deducted_quantity';
-      const [linesRes, orderRes, thresholdRes] = await Promise.all([
-        supabase
-          .from('withdrawal_items')
-          .select(lineSelect)
-          .eq('order_id', orderId),
-        supabase
-          .from('withdrawal_orders')
-          .select('project_id')
-          .eq('id', orderId)
-          .maybeSingle(),
-        supabase
-          .from('system_settings')
-          .select('value')
-          .eq('key', 'low_stock_threshold')
-          .maybeSingle()
-      ]);
-
-      const headerProjectId = orderRes.data?.project_id || fallbackProjectId || null;
-      const pairMap = new Map();
-      for (const line of linesRes.data || []) {
-        const deducted = Number(line.deducted_quantity);
-        if (!Number.isFinite(deducted) || deducted <= 0) continue;
-
-        const projectId = (lineSourceEnabled && line.project_id) || headerProjectId;
-        if (!projectId || !line.item_id) continue;
-        pairMap.set(`${projectId}::${line.item_id}`, { projectId, itemId: line.item_id });
-      }
-
-      const pairs = [...pairMap.values()];
-      if (!pairs.length) return;
-
-      const itemIds = [...new Set(pairs.map(pair => pair.itemId))];
-      const [balanceRes, itemRes] = await Promise.all([
-        supabase
-          .from('stock_balance')
-          .select('project_id, item_id, balance, project_name, unit')
-          .in('item_id', itemIds),
-        supabase
-          .from('items')
-          .select('id, name, sku, unit, min_stock')
-          .in('id', itemIds)
-      ]);
-
-      const balanceByPair = new Map((balanceRes.data || []).map(row => [`${row.project_id}::${row.item_id}`, row]));
-      const itemById = new Map((itemRes.data || []).map(row => [row.id, row]));
-      const globalThreshold = Number(thresholdRes.data?.value);
-      const fallbackThreshold = Number.isFinite(globalThreshold) ? globalThreshold : 10;
-
-      for (const pair of pairs) {
-        const balanceRow = balanceByPair.get(`${pair.projectId}::${pair.itemId}`);
-        if (!balanceRow || balanceRow.balance === null || balanceRow.balance === undefined) continue;
-
-        const itemRow = itemById.get(pair.itemId) || {};
-        const itemThreshold = Number(itemRow.min_stock);
-        const effectiveThreshold = itemThreshold > 0 ? itemThreshold : fallbackThreshold;
-        const currentStock = Number(balanceRow.balance);
-
-        if (!(currentStock <= effectiveThreshold)) continue;
-
-        const projectRow = projects.find(p => p.id === pair.projectId);
-        const projectName = projectRow?.name || balanceRow.project_name || 'โครงการทั่วไป';
-        const warehouseName = getWarehouseLabel(projectRow) || balanceRow.project_name || 'คลังโครงการ';
-
-        const result = await dispatchLowStockAlertNotification({
-          itemId: pair.itemId,
-          itemName: itemRow.name || 'วัสดุ',
-          itemCode: itemRow.sku || '-',
-          currentStock,
-          threshold: effectiveThreshold,
-          projectName,
-          warehouseName,
-          projectId: pair.projectId,
-          triggeredBy: approvedByName
-        });
-
-        if (result?.dispatched) {
-          toast.success(t('withdrawals.toasts.lowStockAlerted', { item: itemRow.name || '' }));
-        }
-      }
-    } catch (lowStockError) {
-      console.warn('[Withdrawals] Low stock alert notice:', lowStockError?.message);
-      toast.error(t('withdrawals.toasts.lowStockAlertFailed'));
-    }
-  };
 
   // Submit Requisition Order
   const handleSubmitOrder = async ({ projectId, purpose, deliveryAddress }) => {
@@ -752,17 +657,6 @@ const Withdrawals = () => {
 
       toast.success(t('withdrawals.toasts.submitted'), { id: toastId });
 
-      // 3. Dispatch transactional notification email
-      dispatchWithdrawalNotification({
-        eventType: 'withdrawal_submitted',
-        orderId: orderData.id,
-        orderData: {
-          ...orderData,
-          projects: projects.find(p => p.id === targetProjectId),
-          profiles: profile
-        }
-      }).catch(err => console.warn('[Notification Dispatch Warning]:', err));
-
       // Reset cart and switch to tracking tab
       setCart([]);
       fetchData();
@@ -796,22 +690,6 @@ const Withdrawals = () => {
       if (error) throw error;
 
       toast.success(data?.message || t('withdrawals.toasts.approved'), { id: toastId });
-
-      // Dispatch notification email
-      dispatchWithdrawalNotification({
-        eventType: 'withdrawal_approved',
-        orderId: orderId,
-        approverName: profile?.full_name || 'Admin',
-        overrideReason: overrideReason
-      }).catch(err => console.warn('[Notification Dispatch Warning]:', err));
-
-      // Reorder-point alerts for the source warehouses this approval deducted from
-      notifyLowStockItems({
-        orderId,
-        fallbackProjectId: selectedOrder?.project_id
-          || (selectedProjectId !== ALL_WAREHOUSES ? selectedProjectId : null),
-        approvedByName: profile?.full_name || 'Admin'
-      }).catch(err => console.warn('[Low Stock Notification Warning]:', err));
 
       setIsShortageModalOpen(false);
       setShortageData(null);
@@ -899,14 +777,6 @@ const Withdrawals = () => {
 
       toast.success(t('withdrawals.toasts.rejected'), { id: toastId });
 
-      // Dispatch rejection notification
-      dispatchWithdrawalNotification({
-        eventType: 'withdrawal_rejected',
-        orderId: orderToReject.id,
-        approverName: profile?.full_name || 'Admin',
-        rejectionReason: rejectReason.trim()
-      }).catch(err => console.warn('[Notification Dispatch Warning]:', err));
-
       setIsRejectDialogOpen(false);
       setOrderToReject(null);
       setRejectReason('');
@@ -939,12 +809,6 @@ const Withdrawals = () => {
       if (error) throw error;
 
       toast.success(t('withdrawals.toasts.completed'), { id: toastId });
-
-      dispatchWithdrawalNotification({
-        eventType: 'withdrawal_completed',
-        orderId,
-        approverName: profile?.full_name || 'Admin'
-      }).catch(err => console.warn('[Notification Dispatch Warning]:', err));
 
       fetchData();
       if (selectedOrder?.id === orderId) {
@@ -1348,18 +1212,7 @@ const Withdrawals = () => {
         }}
         kind={revertTarget?.kind}
         order={revertTarget?.order}
-        onSuccess={(data, reason) => {
-          if (data?.order_id) {
-            dispatchRevertNotification({
-              eventType: 'withdrawal_reverted',
-              orderId: data.order_id,
-              kind: 'withdrawal',
-              actorName: profile?.full_name || 'SUPER',
-              reason,
-              previousStatus: data.previous_status,
-              newStatus: data.new_status
-            }).catch(err => console.warn('[Revert Notification Warning]:', err));
-          }
+        onSuccess={(_data, _reason) => {
           setIsDetailsModalOpen(false);
           fetchData();
         }}

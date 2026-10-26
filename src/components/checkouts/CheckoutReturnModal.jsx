@@ -14,7 +14,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n';
 import SignatureRequiredModal from '@/components/common/SignatureRequiredModal';
 import StatusBadge from '@/components/ui/StatusBadge';
-import { dispatchCheckoutNotification } from '@/lib/notificationDispatcher';
 import { syncReturnLogToCaim } from '@/lib/caimSync';
 
 const CheckoutReturnModal = ({
@@ -147,33 +146,6 @@ const CheckoutReturnModal = ({
       if (error) throw error;
 
       toast.success(data.completed ? t('checkouts.toasts.allReturnedSuccess') : t('checkouts.toasts.partialReturnedSuccess'));
-
-      // Notify the borrower that the returned equipment was inspected and recorded.
-      // A single return may mix conditions; the dominant condition is reported and
-      // any mixed conditions are appended so nothing is silently hidden.
-      const conditionByItem = itemsToProcess.map(i => i.condition || 'normal');
-      const dominantCondition = conditionByItem.includes('lost')
-        ? 'lost'
-        : (conditionByItem.includes('damaged') ? 'damaged'
-          : (conditionByItem.includes('needs_repair') ? 'needs_repair'
-            : (conditionByItem.includes('consumed') ? 'consumed' : 'normal')));
-      const mixedConditionNote = new Set(conditionByItem).size > 1
-        ? conditionByItem.join(', ')
-        : '';
-      const damageNotes = itemsToProcess.map(i => i.damage_notes).filter(Boolean).join(' | ');
-
-      dispatchCheckoutNotification({
-        eventType: 'checkout_returned',
-        orderId: order.id,
-        orderData: order,
-        approverName: profile?.full_name || 'เจ้าหน้าที่คลัง',
-        extraData: {
-          condition: dominantCondition,
-          conditionDetails: [damageNotes, mixedConditionNote].filter(Boolean).join(' | ') || null,
-          returnsCompleted: Boolean(data.completed),
-          returnedAt: new Date().toISOString()
-        }
-      }).catch(err => console.warn('Checkout return notification notice:', err));
 
       // Auto-sync consumed returns with replaced S/N to CAIM RMA system
       const consumedReturns = (data?.returns || []).filter(

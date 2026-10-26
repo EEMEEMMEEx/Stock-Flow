@@ -48,7 +48,7 @@
 * **Automated Scans:** ใช้งาน **GitHub Dependabot** สแกนตรวจจับช่องโหว่ประจำสัปดาห์ (Weekly Cadence) ทั้งฝั่ง `npm` และ `github-actions`
 * **Dependency Hygiene:**
   * ถอนแพ็กเกจที่มีช่องโหว่และไม่ได้ถูกเรียกใช้งานออกทันที (เช่น `jspdf`, `express`, `cors`, `multer`)
-  * อัปเกรดแพ็กเกจที่มีช่องโหว่สู่อัปเดตปลอดภัยล่าสุด (เช่น `nodemailer` เป็น `^10.0.0`)
+  * อัปเกรดแพ็กเกจที่มีช่องโหว่สู่อัปเดตปลอดภัยล่าสุด
   * สลับแพ็กเกจ `xlsx` สู่ Official Verified Release ของ SheetJS (`https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz`) เพื่อปิดช่องโหว่ ReDoS / Prototype Pollution
 
 ---

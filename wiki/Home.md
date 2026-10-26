@@ -43,8 +43,7 @@
        │                          └── Presigned Direct Uploads
        │
        └─── Serverless  ───> [ Vercel Edge API Functions ]
-                                  ├── /api/r2-upload-url (S3 Presigner)
-                                  └── /api/send-email (SMTP Notifier)
+                                  └── /api/r2-upload-url (S3 Presigner)
 ```
 
 ---

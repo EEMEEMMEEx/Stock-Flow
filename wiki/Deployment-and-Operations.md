@@ -19,7 +19,7 @@
         └─── Webhook ──> [ Vercel Production Platform ]
                                 │
                                 ├── Build Single Page App (SPA)
-                                └── Edge Functions (/api/send-email, /api/r2-upload-url)
+                                └── Edge Functions (/api/r2-upload-url)
                                 URL: https://stockflowth.online
 ```
 
@@ -36,11 +36,6 @@
 | `R2_SECRET_ACCESS_KEY` | ✅ Required | - | S3 Secret Key สำหรับ Presigned Upload |
 | `R2_BUCKET_NAME` | ✅ Required | - | ชื่อ Bucket ใน Cloudflare R2 |
 | `VITE_R2_PUBLIC_URL` | ✅ Required | - | Public CDN Domain สำหรับโหลดรูปภาพ |
-| `SMTP_HOST` | ✅ Required | - | โฮสต์เซิร์ฟเวอร์ SMTP ของ Forth Corp |
-| `SMTP_PORT` | ✅ Required | - | พอร์ต SMTP (ปกติ 587) |
-| `SMTP_USER` | ✅ Required | - | บัญชีผู้ส่งอีเมลแจ้งเตือน |
-| `SMTP_PASS` | ✅ Required | - | รหัสผ่าน App Password |
-| `NOTIFICATION_EMAIL_TO` | ✅ Required | - | อีเมลผู้จัดการคลังสินค้า/ผู้อนุมัติหลัก |
 
 ---
 

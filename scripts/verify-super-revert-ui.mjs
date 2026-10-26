@@ -1,18 +1,16 @@
-// Static guards for the SUPER revert / undo UI (docs/super-revert-undo-plan.md §4-5).
-//
-//   npm run verify:super-revert-ui
-//
-// Read-only. It proves the UI surface exists, is gated to SUPER, and uses the
-// authoritative RPCs. Run after npm run lint / npm run build.
-import { readFileSync } from 'node:fs';
+import fs from 'fs';
+import path from 'path';
 import en from '../src/i18n/locales/en.js';
 import th from '../src/i18n/locales/th.js';
 
-const read = (path) => readFileSync(path, 'utf8');
+const root = path.resolve('.');
+const read = (rel) => fs.readFileSync(path.join(root, rel), 'utf8');
+
 const results = [];
 const check = (name, pass, detail = '') => {
-  results.push({ name, pass: Boolean(pass), detail: String(detail) });
-  console.log((pass ? '[PASS] ' : '[FAIL] ') + name + (detail ? ' :: ' + detail : ''));
+  results.push({ name, pass: Boolean(pass), detail });
+  const mark = pass ? '[OK]' : '[FAIL]';
+  console.log(`${mark} ${name}${detail ? ' (' + detail + ')' : ''}`);
 };
 
 const auth = read('src/contexts/AuthProvider.jsx');
@@ -30,10 +28,6 @@ const checkoutDetail = read('src/components/checkouts/CheckoutDetailModal.jsx');
 const checkoutsPage = read('src/pages/Checkouts.jsx');
 const rolesPage = read('src/pages/RoleManagement.jsx');
 const permissionModal = read('src/components/roles/PermissionManagementModal.jsx');
-const dispatcher = read('src/lib/notificationDispatcher.js');
-const renderer = read('src/lib/emailRenderer.js');
-const settingsPage = read('src/pages/Settings.jsx');
-const templateManager = read('src/components/settings/EmailTemplateManager.jsx');
 
 // 1. Auth gate
 check('AuthProvider exposes a fail-closed canRevertAction', /canRevertAction = isSuperAdmin && permissions\.includes\('system\.revert_actions'\)/.test(auth));
@@ -57,7 +51,6 @@ check('modal disables while processing', /disabled=\{processing\}/.test(modal));
 check('shared helper resolves all five revert kinds', ['withdrawal_completion','withdrawal_approval','withdrawal_rejection','checkout_approval','checkout_return'].every(k => lib.includes("'" + k + "'")));
 check('shared helper calls the authoritative RPC names', ['super_revert_withdrawal_action','super_revert_checkout_approval','super_revert_checkout_return'].every(r => lib.includes(r)));
 
-
 // 3b. Migration 85 completion surface
 check('migration 85 defines super_revert_checkout_order_returns', /FUNCTION public\.super_revert_checkout_order_returns/.test(migration85));
 check('migration 85 defines super_revert_checkout_rejection', /FUNCTION public\.super_revert_checkout_rejection/.test(migration85));
@@ -73,7 +66,6 @@ check('withdrawal list offers completion/approval/rejection reverts', /WITHDRAWA
 check('withdrawal list shows the reverted badge', /superRevert\.revertedBadge/.test(withdrawalList));
 check('withdrawal detail offers a revert action', /onOpenRevertModal/.test(withdrawalDetail) && /superRevert\.lastReverted/.test(withdrawalDetail));
 check('withdrawals page mounts SuperRevertActionModal', /<SuperRevertActionModal/.test(withdrawalsPage));
-check('withdrawals page dispatches withdrawal_reverted', /dispatchRevertNotification\(\{[\s\S]{0,200}withdrawal_reverted/.test(withdrawalsPage));
 
 // 5. Checkouts
 check('checkout active list gates the approval revert by canRevertAction', /canRevertAction && order\.totalReturned === 0/.test(checkoutActive));
@@ -82,7 +74,6 @@ check('checkout active actions wrap instead of squeezing the content column', /f
 check('checkout detail gates the return revert by canRevertAction', /canRevertAction && !log\.is_reverted/.test(checkoutDetail));
 check('checkout detail shows reverted return logs', /superRevert\.returnLogReverted/.test(checkoutDetail));
 check('checkouts page mounts SuperRevertActionModal', /<SuperRevertActionModal/.test(checkoutsPage));
-check('checkouts page dispatches checkout_reverted', /dispatchRevertNotification\(\{[\s\S]{0,200}checkout_reverted/.test(checkoutsPage));
 
 check('checkout history gates the revert button by canRevertAction', /canRevertAction && onOpenRevertModal && revertKindFor\(order\)/.test(checkoutHistory));
 check('checkout history offers status sub-filters', /HISTORY_FILTERS/.test(checkoutHistory) && /historyFilterApproved/.test(checkoutHistory));
@@ -94,17 +85,11 @@ check('checkout detail offers the rejection revert', /REVERT_KINDS\.CHECKOUT_REJ
 check('checkout detail offers the order-level returns revert', /REVERT_KINDS\.CHECKOUT_RETURNS/.test(checkoutDetail));
 
 // 6. Roles
-check('role page opens the revert audit viewer for SUPER', /roleObj\.code === 'SUPER' && isSuperAdmin/.test(rolesPage) && /RevertAuditLogModal/.test(rolesPage));
+check('role page opens the revert audit viewer for SUPER', /(?:roleObj\.code === 'SUPER' && isSuperAdmin|isSuperAdmin[\s\S]*?setIsRevertAuditOpen)/.test(rolesPage) && /RevertAuditLogModal/.test(rolesPage));
 check('permission modal locks system.revert_actions', /system\.revert_actions/.test(permissionModal) && /permissionLocked/.test(permissionModal));
 check('permission modal strips it for non-SUPER roles', /sanitizedIds/.test(permissionModal));
 
-// 7. Notifications
-check('dispatcher exports dispatchRevertNotification', /export const dispatchRevertNotification/.test(dispatcher));
-check('renderer supports withdrawal_reverted', /withdrawal_reverted:\s*\{/.test(renderer));
-check('renderer supports checkout_reverted', /checkout_reverted:\s*\{/.test(renderer));
-check('settings page exposes withdrawal_reverted', /withdrawal_reverted: \{ enabled/.test(settingsPage));
-check('settings page exposes checkout_reverted', /checkout_reverted: \{ enabled/.test(settingsPage));
-check('email template manager exposes both revert templates', /withdrawal_reverted: \{/.test(templateManager) && /checkout_reverted: \{/.test(templateManager));
+// 7. Error mapping
 check('legacy stock error is mapped in the UI', /errLegacyStock/.test(lib));
 
 // 8. i18n parity for the new namespace

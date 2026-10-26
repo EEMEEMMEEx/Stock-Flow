@@ -1,7 +1,7 @@
 {
   "name": "stock-flow-app",
   "private": true,
-  "version": "1.25.25",
+  "version": "1.26.0",
   "type": "module",
   "engines": {
     "node": ">=26.12.1"
@@ -16,7 +16,6 @@
     "verify:pdf": "node scripts/verify-pdf-signatures.mjs",
     "verify:reports-pdf-warehouse": "node scripts/verify-reports-pdf-warehouse.mjs",
     "verify:notifications": "node scripts/verify-notification-targets.mjs",
-    "verify:email-branding": "node scripts/verify-email-branding.mjs",
     "verify:runtime-guards": "node scripts/verify-runtime-guards.mjs",
     "verify:checkout-pdf-guards": "node scripts/verify-checkout-pdf-guards.mjs",
     "verify:consumed-ui": "node scripts/verify-consumed-ui.mjs",
@@ -55,7 +54,6 @@
     "test:checkout-display": "node --test src/lib/checkoutDisplay.test.js",
     "verify:checkout-layout": "node scripts/verify-checkout-active-layout.mjs",
     "preview": "vite preview",
-    "test:email": "node --test src/lib/emailRenderer.test.js src/lib/nodemailerTransport.test.js src/lib/emailSettings.test.js",
     "test:withdrawal-stock": "node --test src/lib/withdrawalStock.test.js",
     "migrate:r2": "node scripts/migrate-legacy-images-to-r2.mjs",
     "db:backup": "node scripts/backup-full-database.mjs",
@@ -87,7 +85,6 @@
     "i18next": "^26.4.2",
     "i18next-browser-languagedetector": "^8.2.1",
     "lucide-react": "^0.577.0",
-    "nodemailer": "^10.1.7",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hot-toast": "^2.6.0",

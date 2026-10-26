@@ -73,7 +73,7 @@ export const landingTranslations = {
       stat3Desc: 'สต็อกไม่มีวันติดลบแม้มีคำขอเบิกพร้อมกันหลายจุด',
       stat4Value: '15+ สิทธิ์',
       stat4Label: 'ควบคุมสิทธิ์ RBAC ละเอียด',
-      stat4Desc: 'ควบคุมสิทธิ์รายโมดูล พร้อมระบบ Self-service Profile และ Email Invite',
+      stat4Desc: 'ควบคุมสิทธิ์รายโมดูล พร้อมระบบ Self-service Profile',
     },
     features: {
       badge: 'โครงสร้างระบบและโมดูลหลัก',
@@ -97,7 +97,7 @@ export const landingTranslations = {
       extendDueDateDesc: 'ขยายกำหนดวันส่งคืนพัสดุสำหรับรายการยืมคงค้าง พร้อมคำนวณสถานะ Overdue -> Active แบบ Realtime และเก็บบันทึกประวัติการขยายเวลา',
       extendDueDateBadge: 'ยืดหยุ่น & ไร้ข้อผิดพลาด',
       rbacTitle: 'Granular RBAC Matrix',
-      rbacDesc: 'กำหนดสิทธิ์ละเอียดแยกตามรายหน้าและฟังก์ชัน (View, Manage, Approve) พร้อมระบบเชิญสมาชิกทาง Email และ Self-service Profile',
+      rbacDesc: 'กำหนดสิทธิ์ละเอียดแยกตามรายหน้าและฟังก์ชัน (View, Manage, Approve) และ Self-service Profile',
       rbacBadge: 'ความปลอดภัยรายโมดูล',
       r2Title: 'Cloudflare R2 Object Storage',
       r2Desc: 'อัปโหลดรูปภาพสินค้าและโปรไฟล์ตรงสู่ Cloudflare R2 ผ่าน S3 Presigned URL ไร้ค่า Egress พร้อม Global CDN Cache โหลดไวทันที',
@@ -218,7 +218,7 @@ export const landingTranslations = {
       stat3Desc: 'Stock never falls into negative balances across concurrent users',
       stat4Value: '15+ Types',
       stat4Label: 'Granular RBAC Matrix',
-      stat4Desc: 'Module-level permissions, self-service profile, and email invitations',
+      stat4Desc: 'Module-level permissions, and self-service profile',
     },
     features: {
       badge: 'CORE ARCHITECTURE & MODULES',
@@ -242,7 +242,7 @@ export const landingTranslations = {
       extendDueDateDesc: 'Extend expected return dates for active loan orders with real-time Overdue-to-Active recalculation and full extension logs.',
       extendDueDateBadge: 'Flexible Asset Reminders',
       rbacTitle: 'Granular RBAC Matrix',
-      rbacDesc: 'Configure precise permissions per page and action (View, Manage, Approve) with branded email invitations and self-service profile settings.',
+      rbacDesc: 'Configure precise permissions per page and action (View, Manage, Approve) with self-service profile settings.',
       rbacBadge: 'Module-Level Security',
       r2Title: 'Cloudflare R2 Object Storage',
       r2Desc: 'Direct browser-to-R2 upload via S3 Presigned URLs with zero egress fees and global edge CDN caching for ultra-fast media delivery.',
@@ -292,7 +292,7 @@ export const landingTranslations = {
     tech: {
       badge: 'ENTERPRISE ARCHITECTURE',
       title: 'Engineered for Stability & Performance',
-      subtitle: 'A production-grade tech stack uniting Modern Web, Serverless Email Functions, and Relational ACID Databases.',
+      subtitle: 'A production-grade tech stack uniting Modern Web, Serverless Functions, and Relational ACID Databases.',
     },
     cta: {
       badge: 'INSTANT PRODUCTION ACCESS',

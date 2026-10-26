@@ -57,7 +57,6 @@ const TABLES_IN_DEPENDENCY_ORDER = [
   'checkout_items',
   'checkout_return_logs',
   'checkout_extension_logs',
-  'email_dispatch_logs',
   'stock_transactions',
   'stock_adjustment_logs',
   'user_project_assignments',
@@ -387,19 +386,6 @@ CREATE TABLE IF NOT EXISTS public.checkout_extension_logs (
 );
 
 -- Idempotency ledger for scheduled checkout reminder emails (cron)
-CREATE TABLE IF NOT EXISTS public.email_dispatch_logs (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  order_id UUID NOT NULL REFERENCES public.checkout_orders(id) ON DELETE CASCADE,
-  event_type TEXT NOT NULL,
-  dispatched_date DATE NOT NULL DEFAULT CURRENT_DATE,
-  recipient_email TEXT NOT NULL,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  CONSTRAINT uq_email_dispatch_daily UNIQUE (order_id, event_type, dispatched_date, recipient_email)
-);
-
-CREATE INDEX IF NOT EXISTS idx_email_dispatch_logs_lookup
-  ON public.email_dispatch_logs (order_id, event_type, dispatched_date);
-
 -- 3.10 Stock Transactions Ledger & Adjustment Logs
 CREATE TABLE IF NOT EXISTS public.stock_transactions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -1781,7 +1767,6 @@ ALTER TABLE public.checkout_orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.checkout_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.checkout_return_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.checkout_extension_logs ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.email_dispatch_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.stock_transactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.stock_adjustment_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.system_settings ENABLE ROW LEVEL SECURITY;
@@ -1971,7 +1956,6 @@ transaction_type IN (
 ALTER TABLE public.stock_transactions
 VALIDATE CONSTRAINT stock_transactions_transaction_type_check;
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.email_dispatch_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.stock_transactions
 DROP CONSTRAINT IF EXISTS stock_transactions_transaction_type_check;
 ALTER TABLE public.stock_transactions DROP CONSTRAINT IF EXISTS stock_transactions_transaction_type_check;
@@ -1987,7 +1971,6 @@ transaction_type IN (
 ALTER TABLE public.stock_transactions
 VALIDATE CONSTRAINT stock_transactions_transaction_type_check;
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.email_dispatch_logs ENABLE ROW LEVEL SECURITY;
 
 -- 8.2 Latest definition of every migrated RPC (identity = argument types)
 CREATE OR REPLACE FUNCTION public.adjust_item_current_stock(
@@ -3253,41 +3236,6 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION public.admin_update_smtp_password(p_password TEXT)
-RETURNS JSONB
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public, auth, pg_temp
-AS $$
-BEGIN
-  IF NOT public.has_permission(auth.uid(), 'settings.update') THEN
-    RAISE EXCEPTION 'Permission denied: Requires settings.update permission.';
-  END IF;
-
-  IF p_password IS NULL OR length(trim(p_password)) = 0 THEN
-    DELETE FROM public.system_secrets WHERE key = 'smtp_password';
-  ELSE
-    INSERT INTO public.system_secrets (key, secret_value, updated_at, updated_by)
-    VALUES ('smtp_password', p_password, NOW(), auth.uid())
-    ON CONFLICT (key) DO UPDATE
-    SET secret_value = EXCLUDED.secret_value,
-        updated_at = NOW(),
-        updated_by = auth.uid();
-  END IF;
-
-  INSERT INTO public.audit_logs (actor_id, action, details)
-  VALUES (
-    auth.uid(),
-    'SMTP_PASSWORD_UPDATED',
-    jsonb_build_object(
-      'has_password', (p_password IS NOT NULL AND length(trim(p_password)) > 0),
-      'timestamp', NOW()
-    )
-  );
-
-  RETURN jsonb_build_object('success', true, 'message', 'SMTP password saved to secure vault.');
-END;
-$$;
 
 CREATE OR REPLACE FUNCTION public.admin_update_system_settings(
   p_settings JSONB,
@@ -4324,58 +4272,6 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION public.get_user_emails(
-  p_user_ids UUID[] DEFAULT NULL,
-  p_roles TEXT[] DEFAULT NULL
-)
-RETURNS TABLE (user_id UUID, email TEXT, role TEXT, full_name TEXT)
-LANGUAGE plpgsql
-STABLE
-SECURITY DEFINER
-SET search_path = public, auth, pg_temp
-AS $$
-DECLARE
-  v_roles TEXT[];
-  -- Two independent, service-role-only signals are accepted: whether PostgREST
-  -- exposes the role through the JWT claim (auth.role()) or through the
-  -- database role. \`authenticated\` JWT sessions satisfy neither, so client
-  -- callers keep the original "must be authenticated" behaviour.
-  v_is_service_role BOOLEAN := (
-    auth.role() = 'service_role'
-    OR current_setting('role', true) = 'service_role'
-  );
-BEGIN
-  IF NOT v_is_service_role AND auth.uid() IS NULL THEN
-    RAISE EXCEPTION 'Unauthorized: User is not authenticated.';
-  END IF;
-
-  IF p_roles IS NOT NULL THEN
-    SELECT array_agg(DISTINCT LOWER(BTRIM(r)))
-      INTO v_roles
-    FROM unnest(p_roles) AS r
-    WHERE BTRIM(r) <> '';
-  END IF;
-
-  IF p_user_ids IS NULL AND v_roles IS NULL THEN
-    RAISE EXCEPTION 'กรุณาระบุรายชื่อผู้ใช้หรือบทบาทที่ต้องการค้นหาอีเมล';
-  END IF;
-
-  RETURN QUERY
-  SELECT p.id,
-         u.email::TEXT,
-         p.role,
-         p.full_name
-  FROM public.profiles p
-  JOIN auth.users u ON u.id = p.id
-  WHERE p.status = 'active'
-    AND COALESCE(u.email, '') <> ''
-    AND (
-      (p_user_ids IS NOT NULL AND p.id = ANY(p_user_ids))
-      OR (v_roles IS NOT NULL AND LOWER(COALESCE(p.role, '')) = ANY(v_roles))
-    )
-  ORDER BY p.full_name;
-END;
-$$;
 
 CREATE OR REPLACE FUNCTION public.get_user_permissions(p_user_id UUID DEFAULT auth.uid())
 RETURNS TABLE (permission_code TEXT)
@@ -6427,7 +6323,6 @@ CREATE INDEX IF NOT EXISTS idx_checkout_orders_borrow_type
 ON public.checkout_orders (borrow_type);
 CREATE INDEX IF NOT EXISTS idx_checkout_orders_rejected_by
 ON public.checkout_orders(rejected_by);
-CREATE INDEX IF NOT EXISTS idx_email_dispatch_logs_lookup
 ON public.email_dispatch_logs (order_id, event_type, dispatched_date);
 CREATE INDEX IF NOT EXISTS idx_items_category_name ON public.items (category_id, name);
 CREATE INDEX IF NOT EXISTS idx_items_sku ON public.items (sku);
@@ -6488,7 +6383,6 @@ GRANT EXECUTE ON FUNCTION public.admin_update_system_settings(JSONB, TEXT) TO au
 GRANT EXECUTE ON FUNCTION public.admin_get_default_password_status() TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.admin_update_default_password(TEXT) TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.admin_get_default_password_for_reset() TO authenticated, service_role;
-GRANT EXECUTE ON FUNCTION public.admin_update_smtp_password(TEXT) TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.admin_create_role(TEXT, TEXT, TEXT, TEXT, TEXT) TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.admin_reset_user_password(UUID, TEXT) TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.admin_toggle_user_status(UUID, TEXT) TO authenticated, service_role;
@@ -6506,7 +6400,6 @@ GRANT EXECUTE ON FUNCTION public.admin_update_system_settings(JSONB, TEXT) TO au
 GRANT EXECUTE ON FUNCTION public.admin_get_default_password_status() TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.admin_update_default_password(TEXT) TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.admin_get_default_password_for_reset() TO authenticated, service_role;
-GRANT EXECUTE ON FUNCTION public.admin_update_smtp_password(TEXT) TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.admin_create_role(TEXT, TEXT, TEXT, TEXT, TEXT) TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.admin_reset_user_password(UUID, TEXT) TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.admin_toggle_user_status(UUID, TEXT) TO authenticated, service_role;
@@ -6568,9 +6461,7 @@ REVOKE ALL ON FUNCTION public.notify_checkout_submitted() FROM PUBLIC, anon;
 REVOKE ALL ON FUNCTION public.notify_checkout_status() FROM PUBLIC, anon;
 REVOKE ALL ON FUNCTION public.notify_stock_in_received() FROM PUBLIC, anon;
 REVOKE ALL ON FUNCTION public.get_user_emails(UUID[], TEXT[]) FROM PUBLIC, anon;
-GRANT EXECUTE ON FUNCTION public.get_user_emails(UUID[], TEXT[]) TO authenticated, service_role;
 REVOKE ALL ON FUNCTION public.get_user_emails(UUID[], TEXT[]) FROM PUBLIC, anon;
-GRANT EXECUTE ON FUNCTION public.get_user_emails(UUID[], TEXT[]) TO authenticated, service_role;
 REVOKE ALL ON FUNCTION public.is_checkout_delegate(UUID) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.is_checkout_delegate(UUID) TO authenticated, service_role;
 REVOKE ALL ON FUNCTION public.get_checkout_borrowers() FROM PUBLIC, anon;
@@ -6592,9 +6483,7 @@ REVOKE ALL ON FUNCTION public.notify_checkout_submitted() FROM PUBLIC, anon;
 REVOKE ALL ON FUNCTION public.notify_checkout_status() FROM PUBLIC, anon;
 REVOKE ALL ON FUNCTION public.notify_stock_in_received() FROM PUBLIC, anon;
 REVOKE ALL ON FUNCTION public.get_user_emails(UUID[], TEXT[]) FROM PUBLIC, anon;
-GRANT EXECUTE ON FUNCTION public.get_user_emails(UUID[], TEXT[]) TO authenticated, service_role;
 REVOKE ALL ON FUNCTION public.get_user_emails(UUID[], TEXT[]) FROM PUBLIC, anon;
-GRANT EXECUTE ON FUNCTION public.get_user_emails(UUID[], TEXT[]) TO authenticated, service_role;
 
 `;
 }
