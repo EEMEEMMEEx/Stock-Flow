@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 
   Search, Clock, AlertTriangle, CheckCircle2, RotateCcw, 
-  Eye, User, Building2, Phone, Layers, CalendarClock, Infinity as InfinityIcon, FileSpreadsheet
+  Eye, User, Building2, Phone, Layers, CalendarClock, Infinity as InfinityIcon, FileSpreadsheet, Camera
 } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 import { pdf } from '@react-pdf/renderer';
@@ -20,7 +20,10 @@ const CheckoutActiveList = ({
   loading = false,
   canReturn = true,
   canExtend = true,
+  canApprove = false,
+  currentUserId = null,
   onOpenReturnModal,
+  onOpenReturnReviewModal,
   onOpenDetailModal,
   onOpenExtendModal,
   canRevertAction = false,
@@ -68,6 +71,15 @@ const CheckoutActiveList = ({
       const totalBorrowed = (order.checkout_items || []).reduce((sum, i) => sum + Number(i.quantity_borrowed || 0), 0);
       const totalReturned = (order.checkout_items || []).reduce((sum, i) => sum + Number(i.quantity_returned || 0) + Number(i.quantity_damaged || 0) + Number(i.quantity_lost || 0) + Number(i.quantity_consumed || 0), 0);
       const remainingUnits = Math.max(0, totalBorrowed - totalReturned);
+      const pendingReturnLogs = (order.checkout_return_logs || []).filter(
+        (l) => l.verification_status === 'pending_review' && !l.is_reverted
+      );
+      const pendingReturnCount = pendingReturnLogs.length;
+      const pendingReturnUnits = pendingReturnLogs.reduce(
+        (sum, l) => sum + Number(l.returned_quantity || 0),
+        0
+      );
+      const unsubmittedRemainingUnits = Math.max(0, remainingUnits - pendingReturnUnits);
       const isCompleted = order.status === 'completed' || Boolean(order.actual_returned_date) || remainingUnits <= 0;
 
       if (!isIndefinite && order.expected_return_date) {
@@ -87,6 +99,10 @@ const CheckoutActiveList = ({
         totalBorrowed,
         totalReturned,
         remainingUnits,
+        pendingReturnLogs,
+        pendingReturnCount,
+        pendingReturnUnits,
+        unsubmittedRemainingUnits,
         isCompleted
       };
     });
@@ -291,6 +307,13 @@ const CheckoutActiveList = ({
                             {t('checkouts.processing')} ({order.totalReturned}/{order.totalBorrowed})
                           </span>
                         )}
+
+                        {order.pendingReturnCount > 0 && (
+                          <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 inline-flex items-center gap-1 whitespace-nowrap shrink-0">
+                            <Camera className="w-3 h-3" />
+                            <span>{t('checkouts.pendingReturnReviewBadge')} ({order.pendingReturnCount})</span>
+                          </span>
+                        )}
                       </div>
 
                       <div className="flex flex-wrap items-center gap-3 text-xs text-foreground font-semibold">
@@ -407,7 +430,18 @@ const CheckoutActiveList = ({
                         </Button>
                       )}
 
-                      {canReturn && !order.isCompleted && order.remainingUnits > 0 && (
+                      {canApprove && order.pendingReturnCount > 0 && onOpenReturnReviewModal && (
+                        <Button
+                          size="sm"
+                          onClick={() => onOpenReturnReviewModal(order)}
+                          className="rounded-lg h-9 px-3.5 bg-amber-600 hover:bg-amber-700 text-white text-xs gap-1.5 font-semibold shadow-xs cursor-pointer"
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>{t('checkouts.reviewReturnBtn')} ({order.pendingReturnCount})</span>
+                        </Button>
+                      )}
+
+                      {(canReturn || (Boolean(currentUserId) && (order.borrower_id === currentUserId || order.created_by === currentUserId))) && !order.isCompleted && order.unsubmittedRemainingUnits > 0 && (
                         <Button
                           size="sm"
                           onClick={() => onOpenReturnModal(order)}

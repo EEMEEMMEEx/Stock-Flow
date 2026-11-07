@@ -14,6 +14,7 @@ import CheckoutPosTerminal from '@/components/checkouts/CheckoutPosTerminal';
 import CheckoutActiveList from '@/components/checkouts/CheckoutActiveList';
 import CheckoutPendingList from '@/components/checkouts/CheckoutPendingList';
 import CheckoutReturnModal from '@/components/checkouts/CheckoutReturnModal';
+import CheckoutReturnReviewModal from '@/components/checkouts/CheckoutReturnReviewModal';
 import CheckoutDetailModal from '@/components/checkouts/CheckoutDetailModal';
 import CheckoutExtendModal from '@/components/checkouts/CheckoutExtendModal';
 import CheckoutHistoryList from '@/components/checkouts/CheckoutHistoryList';
@@ -25,7 +26,7 @@ import SuperRevertActionModal from '@/components/common/SuperRevertActionModal';
 const CHECKOUT_TABS = ['pending', 'active', 'pos', 'history'];
 
 const Checkouts = () => {
-  const { can, isAdmin, isSuperAdmin, canRevertAction } = useAuth();
+  const { user, can, isAdmin, isSuperAdmin, canRevertAction } = useAuth();
   const { t } = useTranslation();
 
   const canCreate = can('checkouts.create');
@@ -61,6 +62,8 @@ const Checkouts = () => {
   // Modal states
   const [selectedOrderForReturn, setSelectedOrderForReturn] = useState(null);
   const [isReturnModalOpen, setIsReturnModalOpen] = useState(false);
+  const [selectedOrderForReturnReview, setSelectedOrderForReturnReview] = useState(null);
+  const [isReturnReviewModalOpen, setIsReturnReviewModalOpen] = useState(false);
   const [selectedOrderForExtend, setSelectedOrderForExtend] = useState(null);
   const [isExtendModalOpen, setIsExtendModalOpen] = useState(false);
   const [selectedOrderForDetail, setSelectedOrderForDetail] = useState(null);
@@ -126,7 +129,8 @@ const Checkouts = () => {
             checkout_items (
               *,
               items (*)
-            )
+            ),
+            checkout_return_logs (*)
           `)
           .order('created_at', { ascending: false })
       ]);
@@ -319,12 +323,19 @@ const Checkouts = () => {
 
   // Modal triggers
   const handleOpenReturnModal = (order) => {
-    if (!canReturn) {
+    const isOrderBorrower = Boolean(user?.id) && (order?.borrower_id === user.id || order?.created_by === user.id);
+    if (!canReturn && !isOrderBorrower) {
       toast.error(t('checkouts.toasts.noReturnPermission'));
       return;
     }
     setSelectedOrderForReturn(order);
     setIsReturnModalOpen(true);
+  };
+
+  const handleOpenReturnReviewModal = (order) => {
+    if (!canApprove) return;
+    setSelectedOrderForReturnReview(order);
+    setIsReturnReviewModalOpen(true);
   };
 
   const handleOpenExtendModal = (order) => {
@@ -581,7 +592,10 @@ const Checkouts = () => {
           loading={loading}
           canReturn={canReturn}
           canExtend={canExtend}
+          canApprove={canApprove}
+          currentUserId={user?.id || null}
           onOpenReturnModal={handleOpenReturnModal}
+          onOpenReturnReviewModal={handleOpenReturnReviewModal}
           onOpenExtendModal={handleOpenExtendModal}
           onOpenDetailModal={handleOpenDetailModal}
           canRevertAction={canRevertAction}
@@ -656,6 +670,19 @@ const Checkouts = () => {
         }}
       />
 
+      {/* Admin Return Photo Review Modal */}
+      <CheckoutReturnReviewModal
+        isOpen={isReturnReviewModalOpen}
+        onClose={() => {
+          setIsReturnReviewModalOpen(false);
+          setSelectedOrderForReturnReview(null);
+        }}
+        order={selectedOrderForReturnReview}
+        onConfirmSuccess={() => {
+          fetchCheckoutData();
+        }}
+      />
+
       {/* Extend Return Due Date Modal */}
       <CheckoutExtendModal
         isOpen={isExtendModalOpen}
@@ -679,6 +706,7 @@ const Checkouts = () => {
         order={selectedOrderForDetail}
         canReturn={canReturn}
         canExtend={canExtend}
+        canApprove={canApprove}
         isSuperAdmin={isSuperAdmin}
         canCancel={canCancel}
         canRevertAction={canRevertAction}
@@ -686,6 +714,7 @@ const Checkouts = () => {
         onOpenExtendModal={handleOpenExtendModal}
         onOpenCancelModal={handleOpenCancelModal}
         onOpenRevertModal={handleOpenRevertModal}
+        onConfirmReturnSuccess={fetchCheckoutData}
       />
 
       {/* Cancel Modal (SUPER Role) */}

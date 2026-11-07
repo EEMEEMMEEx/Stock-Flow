@@ -129,6 +129,7 @@ const Scrap = () => {
           )
         `)
         .in('item_condition', ['consumed', 'damaged', 'needs_repair'])
+        .neq('verification_status', 'pending_review')
         .is('caim_ticket_id', null)
         .neq('caim_sync_status', 'synced')
         .eq('repair_resolution_status', 'unresolved')
@@ -215,6 +216,7 @@ const Scrap = () => {
           )
         `)
         .in('item_condition', ['damaged', 'needs_repair'])
+        .neq('verification_status', 'pending_review')
         .eq('repair_resolution_status', 'unresolved')
         .order('returned_at', { ascending: false });
 

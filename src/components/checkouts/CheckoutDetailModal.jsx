@@ -6,7 +6,7 @@ import {
   User, Building2, Calendar, Phone, Layers, RotateCcw,
   CalendarClock, ArrowRight, Infinity as InfinityIcon, XCircle, AlertTriangle, FileSpreadsheet,
   ExternalLink, Ban, Wrench, PackageCheck, Recycle, Trash2,
-  Plus, Hash, Info
+  Plus, Hash, Info, CheckCircle2, Camera, Loader2, Maximize2
 } from 'lucide-react';
 import { pdf } from '@react-pdf/renderer';
 import { MaterialCheckoutPDF, MaterialReturnPDF } from '@/lib/checkout-pdf-templates';
@@ -66,6 +66,7 @@ const REPAIR_STATUS_META = {
 const RepairResolutionRow = ({ log, canResolveRepair, canEditSerial, syncingCaimId, onOpenRepair, onSyncCaim, onOpenEditSerial }) => {
   const { t } = useTranslation();
 
+  if (log.verification_status === 'pending_review') return null;
   if (log.item_condition !== 'damaged' && log.item_condition !== 'needs_repair') return null;
 
   const status = log.repair_resolution_status || 'unresolved';
@@ -181,13 +182,15 @@ const CheckoutDetailModal = ({
   order,
   canReturn = true,
   canExtend = true,
+  canApprove = false,
   isSuperAdmin = false,
   canCancel = false,
   canRevertAction = false,
   onOpenReturnModal,
   onOpenExtendModal,
   onOpenCancelModal,
-  onOpenRevertModal
+  onOpenRevertModal,
+  onConfirmReturnSuccess
 }) => {
   const { t, lang } = useTranslation();
   const { can } = useAuth();
@@ -205,6 +208,8 @@ const CheckoutDetailModal = ({
   const [isRepairModalOpen, setIsRepairModalOpen] = useState(false);
   const [editSerialLog, setEditSerialLog] = useState(null);
   const [isEditSerialModalOpen, setIsEditSerialModalOpen] = useState(false);
+  const [confirmingLogId, setConfirmingLogId] = useState(null);
+  const [previewPhotoUrl, setPreviewPhotoUrl] = useState(null);
 
   useEffect(() => {
     if (order?.id && isOpen) {
@@ -338,6 +343,29 @@ const CheckoutDetailModal = ({
       setReturnLogs(data || []);
     } catch (err) {
       console.error('Fetch return logs error:', err);
+    }
+  };
+
+  const handleConfirmReturnLog = async (log) => {
+    if (!order?.id || !log?.id || confirmingLogId) return;
+    try {
+      setConfirmingLogId(log.id);
+      const { data, error } = await supabase.rpc('confirm_checkout_return', {
+        p_payload: {
+          order_id: order.id,
+          return_log_id: log.id
+        }
+      });
+      if (error) throw error;
+
+      toast.success(data?.message || t('checkouts.toasts.confirmReturnSuccess'));
+      await fetchReturnLogs(order.id);
+      onConfirmReturnSuccess?.();
+    } catch (err) {
+      console.error('Confirm return log error:', err);
+      toast.error(err.message || t('checkouts.toasts.confirmReturnFailed'));
+    } finally {
+      setConfirmingLogId(null);
     }
   };
 
@@ -728,92 +756,139 @@ const CheckoutDetailModal = ({
 
               <div className="space-y-2">
                 {returnLogs.map(log => (
-                  <div key={log.id} className="p-2.5 rounded-xl bg-muted/25 border border-border/40 text-xs flex items-center justify-between">
-                    <div>
-                      <div className="font-semibold text-foreground flex items-center gap-1.5 flex-wrap">
-                        <span>{log.checkout_items?.items?.name || t('dashboard.item')}</span>
-                        {log.checkout_items?.serial_number && (
-                          <span className="font-mono text-[10px] text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 px-1.5 py-0.2 rounded font-bold">
-                            S/N: {log.checkout_items.serial_number}
-                          </span>
-                        )}
-                        <span>— {t('checkouts.returnQty')} {log.returned_quantity} {log.checkout_items?.items?.unit || t('common.piece')}</span>
-                        <span className={`ml-1 px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                          log.item_condition === 'normal'
-                            ? 'bg-emerald-500/10 text-emerald-600'
-                            : log.item_condition === 'consumed'
-                            ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400'
-                            : 'bg-red-500/10 text-red-600'
-                        }`}>
-                          {RETURN_CONDITION_LABEL_KEYS[log.item_condition]
-                            ? t(RETURN_CONDITION_LABEL_KEYS[log.item_condition])
-                            : log.item_condition}
-                        </span>
-                        {log.replaced_serial_number && (
-                          <span className="font-mono text-[10px] text-amber-700 dark:text-amber-400 bg-amber-500/10 px-1.5 py-0.2 rounded font-bold">
-                            {t('checkouts.replacedSerialTag')} {log.replaced_serial_number}
-                          </span>
-                        )}
-                        {log.is_reverted && (
-                          <span className="inline-flex items-center gap-1 rounded-md border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-300">
-                            <RotateCcw className="w-2.5 h-2.5" aria-hidden="true" />
-                            {t('superRevert.returnLogReverted', { date: formatRevertDate(log.reverted_at, lang) })}
-                          </span>
-                        )}
-                        {log.caim_ticket_id ? (
-                          <a
-                            href={log.caim_ticket_url || `https://claims-nu-taupe.vercel.app/tickets?search=${encodeURIComponent(log.caim_ticket_id)}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="inline-flex items-center gap-1 font-mono text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 px-1.5 py-0.5 rounded-md transition-colors"
-                            title={t('checkouts.viewInCaim', 'ดูใบแจ้งเคลมในระบบ CAIM')}
-                          >
-                            <span>Ticket: {log.caim_ticket_id}</span>
-                            <ExternalLink className="w-2.5 h-2.5" />
-                          </a>
-                        ) : log.item_condition === 'consumed' && log.replaced_serial_number && (
-                          <button
-                            type="button"
-                            disabled={syncingCaimId === log.id}
-                            onClick={() => handleManualCaimSync(log)}
-                            className="inline-flex items-center gap-1 text-[10px] font-semibold text-blue-600 dark:text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 px-1.5 py-0.5 rounded-md transition-colors cursor-pointer disabled:opacity-50"
-                            title={t('checkouts.syncToCaimTitle', 'ส่งข้อมูลไปเปิด Ticket ในระบบ CAIM')}
-                          >
-                            <span>{syncingCaimId === log.id ? t('common.pleaseWait') : t('checkouts.syncToCaim', 'ส่งเคลม CAIM')}</span>
-                            <ExternalLink className="w-2.5 h-2.5" />
-                          </button>
-                        )}
-                      </div>
-                      <div className="text-[10px] text-muted-foreground mt-0.5">
-                        {t('items.location')}: {log.projects?.name} • {t('history.performedBy')}: {log.profiles?.full_name || 'Staff'}
-                      </div>
-                      <RepairResolutionRow
-                        log={log}
-                        canResolveRepair={canResolveRepair}
-                        canEditSerial={canEditSerial}
-                        syncingCaimId={syncingCaimId}
-                        onOpenRepair={(target) => {
-                          setRepairLog(target);
-                          setIsRepairModalOpen(true);
-                        }}
-                        onSyncCaim={handleManualCaimSync}
-                        onOpenEditSerial={(target) => {
-                          setEditSerialLog(target);
-                          setIsEditSerialModalOpen(true);
-                        }}
-                      />
-                      {log.is_reverted && log.revert_reason && (
-                        <div className="text-[10px] text-amber-700 dark:text-amber-300 mt-0.5">
-                          <span className="font-semibold">{t('superRevert.returnLogRevertedReason')}:</span> {log.revert_reason}
-                        </div>
+                  <div key={log.id} className="p-2.5 rounded-xl bg-muted/25 border border-border/40 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-start gap-3 min-w-0">
+                      {log.evidence_photo_url && (
+                        <button
+                          type="button"
+                          onClick={() => setPreviewPhotoUrl(log.evidence_photo_url)}
+                          className="group relative w-14 h-14 rounded-lg overflow-hidden border border-border bg-muted shrink-0 cursor-pointer"
+                          title={t('checkouts.viewReturnPhoto')}
+                        >
+                          <img
+                            src={log.evidence_photo_url}
+                            alt={t('checkouts.returnProofPhoto')}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                          />
+                          <div className="absolute inset-0 bg-black/35 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <Maximize2 className="w-3.5 h-3.5 text-white" />
+                          </div>
+                        </button>
                       )}
+                      <div className="min-w-0">
+                        <div className="font-semibold text-foreground flex items-center gap-1.5 flex-wrap">
+                          <span>{log.checkout_items?.items?.name || t('dashboard.item')}</span>
+                          {log.checkout_items?.serial_number && (
+                            <span className="font-mono text-[10px] text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 px-1.5 py-0.2 rounded font-bold">
+                              S/N: {log.checkout_items.serial_number}
+                            </span>
+                          )}
+                          <span>— {t('checkouts.returnQty')} {log.returned_quantity} {log.checkout_items?.items?.unit || t('common.piece')}</span>
+                          <span className={`ml-1 px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                            log.item_condition === 'normal'
+                              ? 'bg-emerald-500/10 text-emerald-600'
+                              : log.item_condition === 'consumed'
+                              ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400'
+                              : 'bg-red-500/10 text-red-600'
+                          }`}>
+                            {RETURN_CONDITION_LABEL_KEYS[log.item_condition]
+                              ? t(RETURN_CONDITION_LABEL_KEYS[log.item_condition])
+                              : log.item_condition}
+                          </span>
+                          {!log.is_reverted && log.verification_status === 'pending_review' && (
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30">
+                              <Clock className="w-2.5 h-2.5" />
+                              <span>{t('checkouts.pendingAdminReviewBadge')}</span>
+                            </span>
+                          )}
+                          {!log.is_reverted && log.verification_status === 'confirmed' && (
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
+                              <CheckCircle2 className="w-2.5 h-2.5" />
+                              <span>{t('checkouts.confirmedReturnBadge')}</span>
+                            </span>
+                          )}
+                          {log.replaced_serial_number && (
+                            <span className="font-mono text-[10px] text-amber-700 dark:text-amber-400 bg-amber-500/10 px-1.5 py-0.2 rounded font-bold">
+                              {t('checkouts.replacedSerialTag')} {log.replaced_serial_number}
+                            </span>
+                          )}
+                          {log.is_reverted && (
+                            <span className="inline-flex items-center gap-1 rounded-md border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-300">
+                              <RotateCcw className="w-2.5 h-2.5" aria-hidden="true" />
+                              {t('superRevert.returnLogReverted', { date: formatRevertDate(log.reverted_at, lang) })}
+                            </span>
+                          )}
+                          {log.caim_ticket_id ? (
+                            <a
+                              href={log.caim_ticket_url || `https://claims-nu-taupe.vercel.app/tickets?search=${encodeURIComponent(log.caim_ticket_id)}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-1 font-mono text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 px-1.5 py-0.5 rounded-md transition-colors"
+                              title={t('checkouts.viewInCaim', 'ดูใบแจ้งเคลมในระบบ CAIM')}
+                            >
+                              <span>Ticket: {log.caim_ticket_id}</span>
+                              <ExternalLink className="w-2.5 h-2.5" />
+                            </a>
+                          ) : log.verification_status !== 'pending_review' && log.item_condition === 'consumed' && log.replaced_serial_number && (
+                            <button
+                              type="button"
+                              disabled={syncingCaimId === log.id}
+                              onClick={() => handleManualCaimSync(log)}
+                              className="inline-flex items-center gap-1 text-[10px] font-semibold text-blue-600 dark:text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 px-1.5 py-0.5 rounded-md transition-colors cursor-pointer disabled:opacity-50"
+                              title={t('checkouts.syncToCaimTitle', 'ส่งข้อมูลไปเปิด Ticket ในระบบ CAIM')}
+                            >
+                              <span>{syncingCaimId === log.id ? t('common.pleaseWait') : t('checkouts.syncToCaim', 'ส่งเคลม CAIM')}</span>
+                              <ExternalLink className="w-2.5 h-2.5" />
+                            </button>
+                          )}
+                        </div>
+                        <div className="text-[10px] text-muted-foreground mt-0.5">
+                          {t('items.location')}: {log.projects?.name} • {t('history.performedBy')}: {log.profiles?.full_name || 'Staff'}
+                        </div>
+                        <RepairResolutionRow
+                          log={log}
+                          canResolveRepair={canResolveRepair}
+                          canEditSerial={canEditSerial}
+                          syncingCaimId={syncingCaimId}
+                          onOpenRepair={(target) => {
+                            setRepairLog(target);
+                            setIsRepairModalOpen(true);
+                          }}
+                          onSyncCaim={handleManualCaimSync}
+                          onOpenEditSerial={(target) => {
+                            setEditSerialLog(target);
+                            setIsEditSerialModalOpen(true);
+                          }}
+                        />
+                        {log.is_reverted && log.revert_reason && (
+                          <div className="text-[10px] text-amber-700 dark:text-amber-300 mt-0.5">
+                            <span className="font-semibold">{t('superRevert.returnLogRevertedReason')}:</span> {log.revert_reason}
+                          </div>
+                        )}
+                      </div>
                     </div>
 
-                    <div className="flex flex-col items-end gap-1.5">
+                    <div className="flex flex-col items-end gap-1.5 shrink-0">
                       <div className="text-[11px] text-muted-foreground font-mono">
                         {format(new Date(log.returned_at), 'dd/MM/yyyy HH:mm')}
                       </div>
-                      {canRevertAction && !log.is_reverted && onOpenRevertModal && (
+                      {canApprove && !log.is_reverted && log.verification_status === 'pending_review' && (
+                        <Button
+                          type="button"
+                          size="sm"
+                          disabled={confirmingLogId === log.id}
+                          onClick={() => handleConfirmReturnLog(log)}
+                          className="rounded-lg h-8 px-3 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] gap-1.5 font-semibold shadow-2xs cursor-pointer"
+                        >
+                          {confirmingLogId === log.id ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                          )}
+                          <span>{t('checkouts.confirmReturn')}</span>
+                        </Button>
+                      )}
+                      {canRevertAction && !log.is_reverted && log.verification_status !== 'pending_review' && onOpenRevertModal && (
                         <Button
                           type="button"
                           variant="outline"
@@ -1115,6 +1190,26 @@ const CheckoutDetailModal = ({
       order={order}
       onSuccess={handleSerialUpdated}
     />
+
+    <Dialog open={Boolean(previewPhotoUrl)} onOpenChange={(open) => !open && setPreviewPhotoUrl(null)}>
+      <DialogContent className="sm:max-w-2xl rounded-xl bg-card p-4 border border-border shadow-xl">
+        <DialogHeader className="pb-2">
+          <DialogTitle className="text-sm font-bold text-foreground flex items-center gap-2">
+            <Camera className="w-4 h-4 text-emerald-600" />
+            <span>{t('checkouts.returnProofPhoto')}</span>
+          </DialogTitle>
+        </DialogHeader>
+        {previewPhotoUrl && (
+          <div className="rounded-lg overflow-hidden bg-black/5 flex items-center justify-center max-h-[70vh]">
+            <img
+              src={previewPhotoUrl}
+              alt={t('checkouts.returnProofPhoto')}
+              className="max-w-full max-h-[70vh] object-contain"
+            />
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
     </>
   );
 };
