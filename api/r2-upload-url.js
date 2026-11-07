@@ -5,6 +5,7 @@ import crypto from 'node:crypto';
 
 const ALLOWED_FOLDERS = ['avatars', 'items', 'documents', 'receipts', 'attachments', 'uploads'];
 const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg', 'pdf', 'csv', 'xlsx', 'txt'];
+const FALLBACK_STORAGE_BUCKET = 'stockflow-assets';
 
 export default async function handler(req, res) {
   // 1. Set robust CORS and Security headers
@@ -30,6 +31,11 @@ export default async function handler(req, res) {
   try {
     const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const supabaseKey =
+      serviceRoleKey ||
+      process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+      process.env.VITE_SUPABASE_ANON_KEY ||
+      process.env.SUPABASE_ANON_KEY;
 
     // 2. Authenticate Caller via Supabase JWT Bearer Token or Internal Secret
     const authHeader = req.headers.authorization || req.headers.Authorization || '';
@@ -40,12 +46,12 @@ export default async function handler(req, res) {
 
     if (internalSecret && process.env.INTERNAL_SERVICE_KEY && internalSecret === process.env.INTERNAL_SERVICE_KEY) {
       isAuthorized = true;
-    } else if (token && supabaseUrl && serviceRoleKey) {
+    } else if (token && supabaseUrl && supabaseKey) {
       try {
-        const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
+        const supabaseAuthClient = createClient(supabaseUrl, supabaseKey, {
           auth: { autoRefreshToken: false, persistSession: false }
         });
-        const { data: { user }, error: authErr } = await supabaseAdmin.auth.getUser(token);
+        const { data: { user }, error: authErr } = await supabaseAuthClient.auth.getUser(token);
         if (!authErr && user) {
           isAuthorized = true;
         }
@@ -61,7 +67,10 @@ export default async function handler(req, res) {
       });
     }
 
-    const { fileName, contentType, folder = 'uploads' } = req.body || {};
+    const parsedBody = typeof req.body === 'string'
+      ? JSON.parse(req.body || '{}')
+      : (req.body || {});
+    const { fileName, contentType, folder = 'uploads', fileBase64 = null } = parsedBody;
 
     if (!fileName || typeof fileName !== 'string') {
       return res.status(400).json({ success: false, message: 'fileName is required and must be a string' });
@@ -97,6 +106,7 @@ export default async function handler(req, res) {
     const safeBaseName = fileName.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 80);
     const uniqueId = crypto.randomUUID();
     const key = `${cleanFolder}/${uniqueId}-${safeBaseName}.${extension}`;
+    const effectiveContentType = contentType || 'application/octet-stream';
 
     // 5. Load R2 Credentials from environment variables
     const accountId = process.env.R2_ACCOUNT_ID;
@@ -109,7 +119,128 @@ export default async function handler(req, res) {
       'https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev'
     ).replace(/\/+$/, '');
 
-    if (!accountId || !accessKeyId || !secretAccessKey) {
+    const hasR2Credentials = Boolean(accountId && accessKeyId && secretAccessKey);
+
+    // 6. Direct Server-Side Upload when fileBase64 is provided (eliminates browser CORS & checksum mismatch)
+    if (fileBase64 && typeof fileBase64 === 'string') {
+      const cleanBase64 = fileBase64.replace(/^data:[^;]+;base64,/, '');
+      const fileBuffer = Buffer.from(cleanBase64, 'base64');
+
+      if (fileBuffer.length > 0) {
+        let r2Error = null;
+
+        if (hasR2Credentials) {
+          try {
+            const s3Client = new S3Client({
+              region: 'auto',
+              endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
+              credentials: {
+                accessKeyId,
+                secretAccessKey,
+              },
+              requestChecksumCalculation: 'WHEN_REQUIRED',
+              responseChecksumValidation: 'WHEN_REQUIRED',
+            });
+
+            const directPutCommand = new PutObjectCommand({
+              Bucket: bucketName,
+              Key: key,
+              Body: fileBuffer,
+              ContentType: effectiveContentType,
+            });
+            await s3Client.send(directPutCommand);
+
+            return res.status(200).json({
+              success: true,
+              uploaded: true,
+              uploadUrl: null,
+              publicUrl: `${publicBaseUrl}/${key}`,
+              key,
+              provider: 'r2',
+            });
+          } catch (err) {
+            r2Error = err;
+            console.warn('[R2 API] Direct R2 upload failed, attempting Supabase Storage fallback:', err.message);
+          }
+        }
+
+        // Automatic fallback to Supabase Storage if R2 credentials are missing or R2 upload failed
+        if (supabaseUrl && serviceRoleKey) {
+          try {
+            const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
+              auth: { autoRefreshToken: false, persistSession: false }
+            });
+
+            await supabaseAdmin.storage.createBucket(FALLBACK_STORAGE_BUCKET, {
+              public: true,
+            }).catch(() => {});
+
+            const { error: uploadErr } = await supabaseAdmin.storage
+              .from(FALLBACK_STORAGE_BUCKET)
+              .upload(key, fileBuffer, {
+                contentType: effectiveContentType,
+                upsert: true,
+              });
+
+            if (uploadErr) {
+              throw uploadErr;
+            }
+
+            const { data: pubData } = supabaseAdmin.storage
+              .from(FALLBACK_STORAGE_BUCKET)
+              .getPublicUrl(key);
+
+            if (pubData?.publicUrl) {
+              return res.status(200).json({
+                success: true,
+                uploaded: true,
+                uploadUrl: null,
+                publicUrl: pubData.publicUrl,
+                key,
+                provider: 'supabase-storage',
+              });
+            }
+          } catch (fallbackErr) {
+            console.error('[R2 API] Supabase Storage fallback error:', fallbackErr.message);
+          }
+        }
+
+        if (r2Error) {
+          throw r2Error;
+        }
+      }
+    }
+
+    // 7. Presigned URL generation when fileBase64 is not sent
+    if (!hasR2Credentials) {
+      if (supabaseUrl && serviceRoleKey) {
+        const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
+          auth: { autoRefreshToken: false, persistSession: false }
+        });
+        await supabaseAdmin.storage.createBucket(FALLBACK_STORAGE_BUCKET, {
+          public: true,
+        }).catch(() => {});
+
+        const { data: signedData, error: signedErr } = await supabaseAdmin.storage
+          .from(FALLBACK_STORAGE_BUCKET)
+          .createSignedUploadUrl(key);
+
+        if (!signedErr && signedData?.signedUrl) {
+          const { data: pubData } = supabaseAdmin.storage
+            .from(FALLBACK_STORAGE_BUCKET)
+            .getPublicUrl(key);
+
+          return res.status(200).json({
+            success: true,
+            uploaded: false,
+            uploadUrl: signedData.signedUrl,
+            publicUrl: pubData?.publicUrl || '',
+            key,
+            provider: 'supabase-storage',
+          });
+        }
+      }
+
       console.error('[R2 API] Missing R2 credentials in environment variables');
       return res.status(500).json({
         success: false,
@@ -117,7 +248,6 @@ export default async function handler(req, res) {
       });
     }
 
-    // 6. Initialize S3 Client configured for Cloudflare R2
     const s3Client = new S3Client({
       region: 'auto',
       endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
@@ -125,11 +255,10 @@ export default async function handler(req, res) {
         accessKeyId,
         secretAccessKey,
       },
+      requestChecksumCalculation: 'WHEN_REQUIRED',
+      responseChecksumValidation: 'WHEN_REQUIRED',
     });
 
-    const effectiveContentType = contentType || 'application/octet-stream';
-
-    // 7. Generate Presigned PUT URL (valid for 5 minutes / 300 seconds)
     const putCommand = new PutObjectCommand({
       Bucket: bucketName,
       Key: key,
@@ -141,16 +270,17 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       success: true,
+      uploaded: false,
       uploadUrl,
       publicUrl,
       key,
+      provider: 'r2',
     });
   } catch (error) {
-    console.error('[R2 API] Error generating presigned URL:', error);
+    console.error('[R2 API] Error generating presigned URL or uploading:', error);
     return res.status(500).json({
       success: false,
       message: error.message || 'Failed to generate upload URL',
     });
   }
 }
-
