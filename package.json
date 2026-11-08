@@ -1,7 +1,7 @@
 {
   "name": "stock-flow-app",
   "private": true,
-  "version": "1.28.1",
+  "version": "1.28.2",
   "type": "module",
   "engines": {
     "node": "24.x"

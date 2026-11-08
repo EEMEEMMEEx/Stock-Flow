@@ -1132,6 +1132,7 @@ export default {
     "reviewReturnModalTitle": "Review Return Photos & Confirm Return",
     "reviewReturnModalDesc": "Inspect the proof-of-return photo uploaded by the borrower for each returned item, then click Confirm Return to complete the return and update item status to Returned.",
     "reviewAndConfirmReturnBtn": "Review & Confirm Return",
+    "reviewReturnBtn": "Review Returns",
     "confirmAllReturnsBtn": "Confirm Return ({{count}})",
     "confirmSingleReturnBtn": "Confirm Return",
     "submittedByLabel": "Submitted by",

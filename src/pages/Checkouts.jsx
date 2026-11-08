@@ -704,7 +704,7 @@ const Checkouts = () => {
           setSelectedOrderForDetail(null);
         }}
         order={selectedOrderForDetail}
-        canReturn={canReturn}
+        canReturn={canReturn || (Boolean(user?.id) && (selectedOrderForDetail?.borrower_id === user?.id || selectedOrderForDetail?.created_by === user?.id))}
         canExtend={canExtend}
         canApprove={canApprove}
         isSuperAdmin={isSuperAdmin}

@@ -1,5 +1,13 @@
 # Changelog
 
+## [2026-11-08 09:45] - v1.28.2
+### Changed (Borrow/Return UI Label Standardization)
+- **Standardized Return Button Label for Borrower**: ปรับปรุงข้อความปุ่มทำรายการคืนในหน้ายืม-คืนพัสดุ (`Checkouts`) จากเดิม "รับคืนอุปกรณ์และเครื่องมือ" (มุมมองเจ้าหน้าที่คลัง/แอดมิน) ให้เป็น "ส่งคืนอุปกรณ์และเครื่องมือ" (มุมมองผู้ยืมที่กดทำรายการ) ใน `CheckoutActiveList.jsx`, `CheckoutDetailModal.jsx` และ `CheckoutReturnModal.jsx` ผ่าน `t('checkouts.returnEquipment')`
+- **Distinguish Admin Confirmation Labels**: แยกคำศัพท์สำหรับการตรวจรับและยืนยันรับคืนของเจ้าหน้าที่/แอดมินอย่างชัดเจน ("ยืนยันการรับคืน", "ตรวจรับคืน", "ตรวจรูป & ยืนยันรับคืน")
+- **Consistent Borrower Return Toasts**: ปรับข้อความแจ้งเตือนที่เกี่ยวข้องให้สอดคล้องกับมุมมองผู้ยืม (`noReturnPermission`, `allReturnedSuccess`, `partialReturnedSuccess`, `returnFailed`)
+- **i18n Parity & Borrower Detail Access**: เพิ่ม `reviewReturnBtn` ใน `th.js` ("ตรวจรับคืน") และ `en.js` ("Review Returns") คง Key Parity 100% พร้อมให้สิทธิ์ผู้ยืมเปิดทำรายการส่งคืนจาก `CheckoutDetailModal` ได้
+
+
 ## [2026-10-26 09:40] - v1.26.1
 ### Fixed (UserManagement Icon Import)
 - **Fix Undefined Mail Component**: ย้าย `Mail` import ใน `src/pages/UserManagement.jsx` จาก package `'react'` ไปยัง `'lucide-react'` แก้ปัญหา React runtime warning: `React.jsx: type is invalid -- expected a string ... but got: undefined` เมื่อแสดงตารางและรายการผู้ใช้
