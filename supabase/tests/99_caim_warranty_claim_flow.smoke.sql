@@ -24,8 +24,9 @@ BEGIN
   -- 0. Find active SUPER/Admin actor
   SELECT p.id INTO v_actor
   FROM public.profiles p
+  LEFT JOIN public.roles r ON r.id = p.role_id
   WHERE p.status = 'active'
-    AND (public.is_super_admin(p.id) OR public.is_admin(p.id))
+    AND (public.is_super_admin(p.id) OR r.code IN ('ADMIN', 'SUPER'))
   ORDER BY p.id
   LIMIT 1;
 

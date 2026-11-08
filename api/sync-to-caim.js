@@ -5,8 +5,13 @@ const CAIM_BASE_DEFAULT_URL = 'https://claims-nu-taupe.vercel.app';
 
 export default async function handler(req, res) {
   // CORS & Security Headers
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  const requestOrigin = req.headers.origin;
+  if (requestOrigin) {
+    res.setHeader('Access-Control-Allow-Origin', requestOrigin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  }
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
   res.setHeader(
     'Access-Control-Allow-Headers',
@@ -52,7 +57,29 @@ export default async function handler(req, res) {
       const { data: { user: authUser }, error: authErr } = await supabaseAdmin.auth.getUser(token);
       if (!authErr && authUser) {
         callerUser = authUser;
-        isAuthorized = true;
+        // Verify RBAC permission for the caller
+        const [permScrap, permRepair, permReturn, isSuper] = await Promise.all([
+          supabaseAdmin.rpc('has_permission', { p_user_id: authUser.id, p_permission_code: 'scrap.view' }).then(r => Boolean(r.data)).catch(() => false),
+          supabaseAdmin.rpc('has_permission', { p_user_id: authUser.id, p_permission_code: 'checkouts.resolve_repair' }).then(r => Boolean(r.data)).catch(() => false),
+          supabaseAdmin.rpc('has_permission', { p_user_id: authUser.id, p_permission_code: 'checkouts.return' }).then(r => Boolean(r.data)).catch(() => false),
+          supabaseAdmin.rpc('is_super_admin', { p_user_id: authUser.id }).then(r => Boolean(r.data)).catch(() => false)
+        ]);
+
+        if (permScrap || permRepair || permReturn || isSuper) {
+          isAuthorized = true;
+        } else {
+          // Check role name fallback
+          const { data: profile } = await supabaseAdmin
+            .from('profiles')
+            .select('role_id, roles(code)')
+            .eq('id', authUser.id)
+            .single();
+
+          const roleCode = profile?.roles?.code;
+          if (roleCode === 'ADMIN' || roleCode === 'SUPER') {
+            isAuthorized = true;
+          }
+        }
       }
     } catch (authEx) {
       console.warn('[sync-to-caim] Token verification error:', authEx.message);
@@ -60,9 +87,9 @@ export default async function handler(req, res) {
   }
 
   if (!isAuthorized) {
-    return res.status(401).json({
+    return res.status(403).json({
       success: false,
-      message: 'Unauthorized: Valid authentication token required to sync with CAIM.'
+      message: 'Forbidden: Requires scrap.view, checkouts.resolve_repair, or Admin privilege to submit claims to CAIM.'
     });
   }
 
@@ -88,12 +115,59 @@ export default async function handler(req, res) {
     return res.status(400).json({ success: false, message: 'serial_number is required to open a claim ticket' });
   }
 
+  // 3. Pre-flight Concurrency & State Check
+  const { data: returnLog, error: fetchErr } = await supabaseAdmin
+    .from('checkout_return_logs')
+    .select('id, caim_ticket_id, caim_sync_status, repair_resolution_status, caim_inbound_status, is_reverted')
+    .eq('id', return_log_id)
+    .single();
+
+  if (fetchErr || !returnLog) {
+    return res.status(404).json({ success: false, message: 'Return log not found' });
+  }
+
+  if (returnLog.is_reverted) {
+    return res.status(400).json({ success: false, message: 'รายการนี้ถูกย้อนคืน (Reverted) ไปแล้ว ไม่สามารถส่งเคลมได้' });
+  }
+
+  if (returnLog.caim_ticket_id || returnLog.caim_sync_status === 'synced') {
+    return res.status(409).json({
+      success: false,
+      message: `รายการนี้ได้ส่งเคลมไปยัง CAIM แล้ว (Ticket: ${returnLog.caim_ticket_id || '-'})`
+    });
+  }
+
+  if (returnLog.repair_resolution_status !== 'unresolved') {
+    return res.status(400).json({
+      success: false,
+      message: `รายการนี้ได้รับการจัดการผลซ่อมภายในไปแล้ว (${returnLog.repair_resolution_status}) ไม่สามารถส่งเคลมได้`
+    });
+  }
+
+  if (returnLog.caim_inbound_status === 'pending_confirmation') {
+    return res.status(400).json({
+      success: false,
+      message: 'รายการนี้อยู่ระหว่างรอการยืนยันผลเคลมจาก CAIM'
+    });
+  }
+
+  // Atomic pre-flight lock: mark sync status as pending
+  const { error: lockErr } = await supabaseAdmin
+    .from('checkout_return_logs')
+    .update({ caim_sync_status: 'pending' })
+    .eq('id', return_log_id)
+    .is('caim_ticket_id', null);
+
+  if (lockErr) {
+    return res.status(409).json({ success: false, message: 'รายการนี้อยู่ระหว่างดำเนินการส่งเคลม' });
+  }
+
   const trimmedSerial = String(serial_number).trim();
-  const trimmedProblem = String(problem_desc || '').trim() || 'อุปกรณ์ชำรุดจากการใช้งานหน้างาน นำอุปกรณ์ใหม่ไปทดแทนแล้ว';
+  const trimmedProblem = String(problem_desc || '').trim() || 'อุปกรณ์ชำรุดจากการใช้งานหน้างาน';
   const caimApiUrl = process.env.CAIM_API_URL || CAIM_API_DEFAULT_URL;
   const caimBaseUrl = process.env.CAIM_BASE_URL || CAIM_BASE_DEFAULT_URL;
 
-  // 3. Prepare CAIM Ticket Payload
+  // 4. Prepare CAIM Ticket Payload
   const caimPayload = {
     title: `แจ้งเคลมอุปกรณ์จากการยืมทดแทน (${order_number || 'Stock-Flow'})`,
     serialNo: trimmedSerial,
@@ -106,7 +180,7 @@ export default async function handler(req, res) {
   };
 
   try {
-    // 4. Send Request to CAIM with 10-second timeout
+    // 5. Send Request to CAIM with 10-second timeout
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
 
@@ -126,8 +200,7 @@ export default async function handler(req, res) {
 
     if (!caimResponse.ok || !caimData.success) {
       const errorMsg = caimData.error || caimData.message || `CAIM responded with status ${caimResponse.status}`;
-      
-      // Update return log to 'failed'
+
       await supabaseAdmin.rpc('update_checkout_return_caim_sync', {
         p_payload: {
           return_log_id,
@@ -143,11 +216,10 @@ export default async function handler(req, res) {
       });
     }
 
-    // 5. Success: Extract ticket ID and build link
+    // 6. Success: Extract ticket ID and build link
     const ticketId = caimData.ticket?.id || caimData.id || `CLM-${Date.now().toString().slice(-4)}`;
     const ticketUrl = `${caimBaseUrl}/tickets?search=${encodeURIComponent(ticketId)}`;
 
-    // Update return log to 'synced'
     const { error: dbError } = await supabaseAdmin.rpc('update_checkout_return_caim_sync', {
       p_payload: {
         return_log_id,
@@ -177,7 +249,6 @@ export default async function handler(req, res) {
 
     console.error('[sync-to-caim] Error:', err);
 
-    // Record failure in DB non-blockingly
     await supabaseAdmin.rpc('update_checkout_return_caim_sync', {
       p_payload: {
         return_log_id,

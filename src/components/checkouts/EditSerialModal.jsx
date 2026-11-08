@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import { supabase } from '@/lib/supabase';
 import { useTranslation } from '@/i18n';
 import { cleanRpcMessage } from '@/lib/rpcErrors';
+import { resolveDefectiveSerial } from '@/lib/scrapSerial';
 
 /**
  * Modal สำหรับระบุหรือแก้ไขหมายเลขเครื่อง (Serial Number) ย้อนหลัง
@@ -31,7 +32,7 @@ const EditSerialModal = ({
   // Initialise fields when modal opens
   useEffect(() => {
     if (isOpen && log) {
-      const currentSerial = log.replaced_serial_number || log.checkout_items?.serial_number || '';
+      const currentSerial = resolveDefectiveSerial(log);
       setSerialNumber(currentSerial);
       setReason('');
       setErrorMessage('');
