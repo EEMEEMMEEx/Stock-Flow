@@ -22,6 +22,21 @@
     - เปลี่ยนชื่อ `supabase/migrations/100_photo_return_verification_workflow.sql` เป็น `supabase/migrations/101_photo_return_verification_workflow.sql` เพื่อไม่ให้ชนกับ `100_caim_support_rejected_claim_outcome.sql` ที่บันทึก `version = 100` ไปก่อนแล้ว
     - อัปเดต `scripts/verify-photo-return-verification-sandbox.mjs` ให้ตรวจสอบความไม่ซ้ำของเลขเวอร์ชันทุกไฟล์ใน `supabase/migrations/` บน `supabase_migrations.schema_migrations` (PGlite) และยืนยันการทำงานแบบ Idempotent เมื่อรันซ้ำ
 
+## [2026-11-08 15:40] - v1.28.4
+### Improved (Mobile UX/UI for Checkout History /checkouts?tab=history)
+- **5-Row Mobile Card Architecture**: ออกแบบโครงสร้างบัตรประวัติยืม-คืน 5 แถวที่กระชับและไม่ล้นจอ (360px - 390px):
+  - Row 1: รหัสคำขอ (`order_number`) + ป้ายสถานะ (มีไอคอน + ข้อความชัดเจนตามเกณฑ์ WCAG AA)
+  - Row 2: ชื่อผู้ขอยืม (`borrower_name` พร้อมแผนก) + วันที่และเวลาที่ขอทำรายการ (สี muted สบายตา)
+  - Row 3: โครงการ/สถานที่ (`location`) 1 บรรทัด (`truncate`) พร้อมฟังก์ชันแตะเพื่อขยายดูข้อความเต็ม (Tap to expand)
+  - Row 4: รายการพัสดุฟอนต์ Regular พร้อมบรรทัดสรุปยอด (`N รายการ · M ชิ้น`), แสดง 2 รายการแรก และมีปุ่ม `+ อีก N รายการ` ขยาย/ย่อ
+  - Row 5: Action Button เด่นเพียงปุ่มเดียวตามสถานะ ย้ายคำสั่งรองเข้าสู่เมนู "⋯" (DropdownMenu touch target ≥ 44px) และซ่อนปุ่มยกเลิกในรายการที่ปฏิเสธหรือยกเลิกแล้ว
+- **Merged Neutral Compact Reason & Revert Box**: ยุบรวมกล่องเหตุผลปฏิเสธสีแดงและกล่องย้อนสถานะสีส้มที่ซ้อนกัน ให้เป็นบล็อก Neutral บรรทัดเดียว พร้อมระบบ Deduplicate ไม่แสดงเหตุผลซ้ำซ้อนหากเป็นข้อความเดียวกัน
+- **Thin Left Accent Border**: เพิ่มแถบสีขอบซ้าย 4px (`border-l-4`) ตามสถานะของ Order (เขียว/แดง/ส้ม/ม่วง/เทา)
+- **Sticky Search & Filter Chips**: แถบค้นหาแบบ Sticky ด้านบน พร้อมชิปตัวกรองสถานะและชิปช่วงเวลา (วันนี้, 7 วัน, 30 วัน, เดือนนี้)
+- **Result Count, Clear Filters & Skeleton Loaders**: แสดงจำนวนผลลัพธ์ที่ค้นพบ, แสดงปุ่มล้างตัวกรองในกล่องว่าง, และแสดง Skeleton Cards ขณะโหลด
+- **100% i18n Key Parity**: เพิ่มคีย์ภาษาสำหรับฟิลเตอร์และการแสดงผลครบทั้ง TH/EN รวม 2,057 คีย์
+
+
 ## [2026-11-08 10:00] - v1.28.3
 ### Fixed (Missing i18n Keys & Amber Return Review Badge)
 - **Fix Raw i18n Key in Amber Return Review Badge**: เพิ่มคำแปลสำหรับ `checkouts.pendingReturnReviewBadge` (และ alias `returnPendingBadge`) ใน `th.js` ("รอตรวจสอบการคืน") และ `en.js` ("Pending return review") เพื่อให้ Badge สีส้มรูปกล้องในหน้ารายการยืมแสดงผลข้อความอย่างถูกต้อง เช่น "รอตรวจสอบการคืน (1)" พร้อมคงไอคอนกล้องและสไตล์สีส้มเดิมไว้ 100%
