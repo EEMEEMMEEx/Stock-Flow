@@ -3,7 +3,13 @@
 
 // Database producers store these modules without a query string, so the event
 // type decides which tab must open.
-const BARE_MODULE_PATHS = new Set(['/checkouts', '/withdrawals', '/scrap']);
+const BARE_MODULE_PATHS = new Set([
+  '/checkouts',
+  '/withdrawals',
+  '/scrap',
+  '/scrap?tab=outbound_claim',
+  '/scrap?tab=inbound_caim'
+]);
 
 const withReferenceId = (path, referenceId) =>
   (referenceId ? `${path}&id=${encodeURIComponent(referenceId)}` : path);

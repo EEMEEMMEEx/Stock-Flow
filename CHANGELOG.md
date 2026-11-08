@@ -1,5 +1,20 @@
 # Changelog
 
+## [2026-11-08 12:40] - v1.29.0
+- **Files Modified:** `src/pages/Scrap.jsx`, `src/components/checkouts/RepairResolutionModal.jsx`, `src/components/checkouts/CaimInboundConfirmModal.jsx`, `src/components/checkouts/CaimClaimSubmitModal.jsx`, `src/components/checkouts/EditSerialModal.jsx`, `src/components/checkouts/CheckoutDetailModal.jsx`, `src/lib/scrapSerial.js`, `src/lib/scrapSerial.test.js`, `src/lib/notificationTargets.js`, `scripts/verify-notification-targets.mjs`, `api/sync-to-caim.js`, `supabase/migrations/102_fix_scrap_caim_state_machine_and_constraints.sql`, `supabase/tests/99_caim_warranty_claim_flow.smoke.sql`, `scripts/apply-migration-102.mjs`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `package.json`, `docs/scrap-system-fix-implementation-plan.md`, `CHANGELOG.md`
+- **Changes:**
+  - **Overhaul ระบบ `/scrap` และแก้ไขข้อผิดพลาดทั้ง 16 รายการ (P0–P2):**
+    - **P0-1**: แก้ไข `RepairResolutionModal` ให้เปิดใช้งานได้บน Tab 3 (แก้ชื่อ prop `returnLog` และ callback `onResolved`) และรองรับ prop fallback ทั้งสองแบบ
+    - **P0-2**: แก้ไขข้อผิดพลาด SQL `23514` เมื่อยืนยันรับเข้าจาก CAIM โดยใช้ `repair_resolution_status = 'restored_to_stock'` ให้ตรงกับ CHECK constraint
+    - **P0-3**: ลบการเรียก `public.is_admin(uuid)` ที่ไม่มีในฐานข้อมูลทั้งใน `process_caim_webhook_event` และ `confirm_caim_inbound_resolution` แทนด้วย permission/super admin check แก้ปัญหา notification หายและ smoke test พัง
+    - **P0-4 & Single Triage**: ปรับปรุง State Machine เป็นแบบ Single Triage Queue ไม่ให้ Tab 1 และ Tab 3 ซ้อนทับกัน, เพิ่มปุ่ม "ส่งซ่อมภายใน" บน Tab 1, และสร้าง Mutual Exclusion Guard ป้องกันการรับเข้าสต็อกซ้ำ (+2 หน่วย)
+    - **P1-1**: เพิ่มสถานะ `retried_internal` และ `internal_repair` ใน `caim_inbound_status`, ปลดล็อกให้รายการ `damaged` และ `consumed` ที่ถูกปฏิเสธเคลมกลับเข้าคิวซ่อมภายในได้จริง
+    - **P1-2**: เพิ่มคอลัมน์ `project_id` ใน query Tab 4 แก้ปัญหา Filter โครงการได้ 0 แถว และรองรับ cross-warehouse return ด้วย `COALESCE(destination_project_id, checkout_orders.project_id)`
+    - **P1-3**: กรอง `is_reverted = false` และ `verification_status = 'confirmed'` ทุกแท็บ และตัดสิทธิ์ revert ที่มี CAIM stock-in ใน `CheckoutDetailModal`
+    - **P1-4**: สร้างโมดูล `scrapSerial.js` พร้อม unit test แก้ไขการสับสนระหว่าง S/N เครื่องใหม่และเครื่องเก่าสำหรับรายการ `consumed` และแก้ไข `update_checkout_item_serial` ไม่ให้เขียนทับ S/N เครื่องใหม่
+    - **P1-5**: เพิ่มการตรวจสอบสิทธิ์ RBAC, Pre-flight concurrency lock, และแก้ CORS ใน `api/sync-to-caim.js`, ปิด Client direct DML บน `scrap_disposal_items`
+    - **P2-1 ถึง P2-7**: Migration 102 พร้อม transaction wrapper, รองรับ `technicianNotes`/`disposalMethod`/`replacedNewSerialNo`, บันทึก `closed_by` ใน `resolve_damaged_return_item`, รองรับ deep-link `?id=` จาก notification และ 100% i18n Key Parity
+
 ## [2026-11-08 10:25] - v1.28.4
 - **Files Modified:** `supabase/migrations/100_photo_return_verification_workflow.sql` (เปลี่ยนชื่อเป็น `101_photo_return_verification_workflow.sql`), `scripts/verify-photo-return-verification-sandbox.mjs`, `docs/fix-duplicate-migration-100-plan.md`, `package.json`, `package-lock.json`, `README.md`, `CHANGELOG.md`
 - **Changes:**

@@ -2314,6 +2314,11 @@ export default {
     "disposalHarvest": "Harvest Spare Parts",
     "disposalElectronic": "Electronic Waste (E-Waste)",
     "disposalRecycle": "Recycle",
-    "disposalDispose": "Dispose / Destroy"
+    "disposalDispose": "Dispose / Destroy",
+    "specifySerial": "Specify S/N",
+    "sendToInternalRepairAction": "Internal Repair",
+    "sendToInternalRepairTitle": "Send to in-house repair queue",
+    "sentToInternalRepairSuccess": "Item moved to internal repair queue successfully",
+    "sentToInternalRepairFailed": "Failed to move item to internal repair queue"
   }
 };

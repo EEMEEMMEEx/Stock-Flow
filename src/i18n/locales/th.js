@@ -2314,6 +2314,11 @@ export default {
     "disposalHarvest": "แยกชิ้นส่วนอะไหล่",
     "disposalElectronic": "ขยะอิเล็กทรอนิกส์ (E-Waste)",
     "disposalRecycle": "รีไซเคิล",
-    "disposalDispose": "ทำลายทิ้ง"
+    "disposalDispose": "ทำลายทิ้ง",
+    "specifySerial": "ระบุ S/N",
+    "sendToInternalRepairAction": "ส่งซ่อมภายใน",
+    "sendToInternalRepairTitle": "ส่งเข้าคิวซ่อมภายในคลัง",
+    "sentToInternalRepairSuccess": "ย้ายอุปกรณ์เข้าคิวซ่อมภายในเรียบร้อยแล้ว",
+    "sentToInternalRepairFailed": "เกิดข้อผิดพลาดในการย้ายเข้าคิวซ่อมภายใน"
   }
 };

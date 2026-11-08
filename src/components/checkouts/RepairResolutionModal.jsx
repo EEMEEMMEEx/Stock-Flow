@@ -11,6 +11,7 @@ import { supabase } from '@/lib/supabase';
 import { useTranslation } from '@/i18n';
 import { cleanRpcMessage, isSchemaMismatchError } from '@/lib/rpcErrors';
 import { ProjectLocationSelector } from '@/components/common/ProjectLocationSelector';
+import { resolveDefectiveSerial, formatDefectiveSerial } from '@/lib/scrapSerial';
 
 /**
  * บันทึกผลการซ่อมของรายการรับคืนสภาพ 'damaged' / 'needs_repair'
@@ -42,10 +43,14 @@ const RepairResolutionModal = ({
   isOpen = false,
   onClose,
   returnLog = null,
+  log = null,
   order = null,
-  onResolved
+  onResolved,
+  onSuccess
 }) => {
   const { t } = useTranslation();
+  const effectiveReturnLog = returnLog || log;
+  const effectiveOnResolved = onResolved || onSuccess;
 
   const [resolution, setResolution] = useState('restored_to_stock');
   const [projectId, setProjectId] = useState('');
@@ -69,17 +74,17 @@ const RepairResolutionModal = ({
   const [loadingSpare, setLoadingSpare] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  const returnedQuantity = Number(returnLog?.returned_quantity || 1);
+  const returnedQuantity = Number(effectiveReturnLog?.returned_quantity || 1);
 
   // Reset form ทุกครั้งที่เปิดโมดอลให้ตรงกับรายการที่เลือก
   useEffect(() => {
-    if (!isOpen || !returnLog) return;
+    if (!isOpen || !effectiveReturnLog) return;
     setResolution('restored_to_stock');
-    setProjectId(returnLog.destination_project_id || order?.project_id || 'all');
+    setProjectId(effectiveReturnLog.destination_project_id || order?.project_id || 'all');
     setQuantity(String(returnedQuantity));
     setRepairNotes('');
     setReferenceNumber('');
-    setSerialNumber(returnLog.checkout_items?.serial_number || returnLog.replaced_serial_number || '');
+    setSerialNumber(resolveDefectiveSerial(effectiveReturnLog));
     setDisposalMethod('parts_harvest');
     setSpareEnabled(false);
     setSpareItemId('');
@@ -87,7 +92,7 @@ const RepairResolutionModal = ({
     setHarvestEnabled(false);
     setHarvestItemId('');
     setHarvestQty('1');
-  }, [isOpen, returnLog, order?.project_id, returnedQuantity]);
+  }, [isOpen, effectiveReturnLog, order?.project_id, returnedQuantity]);
 
   // โหลดข้อมูลอ้างอิง (โครงการ/คลัง + รายการวัสดุสำหรับเลือกชิ้นส่วนที่รับเข้า)
   useEffect(() => {
@@ -129,7 +134,7 @@ const RepairResolutionModal = ({
         setLoadingSpare(true);
         const targetProjectId = (projectId && projectId !== 'all')
           ? projectId
-          : (returnLog?.destination_project_id || order?.project_id || projects[0]?.id);
+          : (effectiveReturnLog?.destination_project_id || order?.project_id || projects[0]?.id);
 
         if (!targetProjectId) {
           setSpareOptions([]);
@@ -157,9 +162,9 @@ const RepairResolutionModal = ({
     })();
 
     return () => { cancelled = true; };
-  }, [isOpen, resolution, spareEnabled, projectId, returnLog?.destination_project_id, order?.project_id, projects]);
+  }, [isOpen, resolution, spareEnabled, projectId, effectiveReturnLog?.destination_project_id, order?.project_id, projects]);
 
-  if (!returnLog) return null;
+  if (!effectiveReturnLog) return null;
 
   const selectedSpare = spareOptions.find((option) => option.item_id === spareItemId) || null;
   const selectedHarvestItem = items.find((item) => item.id === harvestItemId) || null;
@@ -202,7 +207,7 @@ const RepairResolutionModal = ({
 
     const resolvedProjectId = (projectId && projectId !== 'all')
       ? projectId
-      : (returnLog?.destination_project_id || order?.project_id || projects[0]?.id || null);
+      : (effectiveReturnLog?.destination_project_id || order?.project_id || projects[0]?.id || null);
 
     if (!resolvedProjectId) {
       toast.error(t('checkouts.repairProjectRequired'));
@@ -210,7 +215,7 @@ const RepairResolutionModal = ({
     }
 
     const payload = {
-      return_log_id: returnLog.id,
+      return_log_id: effectiveReturnLog.id,
       resolution,
       project_id: resolvedProjectId,
       quantity: Number(quantity),
@@ -234,7 +239,7 @@ const RepairResolutionModal = ({
       else if (isHarvest) toast.success(t('checkouts.repairSuccessHarvest'));
       else toast.success(t('checkouts.repairSuccessScrap'));
 
-      onResolved?.(data);
+      effectiveOnResolved?.(data);
       onClose?.();
     } catch (err) {
       console.error('[RepairResolutionModal] resolve failed:', err);
@@ -245,9 +250,9 @@ const RepairResolutionModal = ({
     }
   };
 
-  const itemName = returnLog.checkout_items?.items?.name || order?.checkout_items?.[0]?.items?.name || t('dashboard.item');
-  const unit = returnLog.checkout_items?.items?.unit || t('common.piece');
-  const serial = returnLog.checkout_items?.serial_number || returnLog.replaced_serial_number || '-';
+  const itemName = effectiveReturnLog.checkout_items?.items?.name || order?.checkout_items?.[0]?.items?.name || t('dashboard.item');
+  const unit = effectiveReturnLog.checkout_items?.items?.unit || t('common.piece');
+  const serial = formatDefectiveSerial(effectiveReturnLog);
   const submitTone = isRestore
     ? 'bg-emerald-600 hover:bg-emerald-700'
     : 'bg-amber-600 hover:bg-amber-700';
@@ -332,9 +337,9 @@ const RepairResolutionModal = ({
                     <span>
                       {t('checkouts.repairAllProjectsHint')}:{' '}
                       <span className="font-semibold text-foreground">
-                        {projects.find((p) => p.id === (returnLog?.destination_project_id || order?.project_id || projects[0]?.id))?.name || ''}
-                        {projects.find((p) => p.id === (returnLog?.destination_project_id || order?.project_id || projects[0]?.id))?.location
-                          ? ` — ${projects.find((p) => p.id === (returnLog?.destination_project_id || order?.project_id || projects[0]?.id))?.location}`
+                        {projects.find((p) => p.id === (effectiveReturnLog?.destination_project_id || order?.project_id || projects[0]?.id))?.name || ''}
+                        {projects.find((p) => p.id === (effectiveReturnLog?.destination_project_id || order?.project_id || projects[0]?.id))?.location
+                          ? ` — ${projects.find((p) => p.id === (effectiveReturnLog?.destination_project_id || order?.project_id || projects[0]?.id))?.location}`
                           : ''}
                       </span>
                     </span>

@@ -15,6 +15,7 @@ import toast from 'react-hot-toast';
 import { useTranslation } from '@/i18n';
 import { syncReturnLogToCaim } from '@/lib/caimSync';
 import { useAuth } from '@/contexts/AuthContext';
+import { resolveDefectiveSerial } from '@/lib/scrapSerial';
 
 /**
  * Modal สำหรับตรวจสอบข้อมูลและยืนยันเปิดใบแจ้งเคลมใน CAIM จากหน้า /scrap
@@ -36,7 +37,7 @@ const CaimClaimSubmitModal = ({
   const order = log?.checkout_orders || {};
   const checkoutItem = log?.checkout_items || {};
   const masterItem = checkoutItem?.items || {};
-  const serialNo = log?.replaced_serial_number || checkoutItem?.serial_number || '';
+  const serialNo = resolveDefectiveSerial(log);
 
   useEffect(() => {
     if (isOpen && log) {
@@ -66,7 +67,7 @@ const CaimClaimSubmitModal = ({
         returnLogId: log.id,
         orderNumber: order.order_number,
         borrowerName: order.borrower_name,
-        projectName: order.projects?.name,
+        projectName: log.destination_project?.name || order.projects?.name,
         serialNumber: serialNo.trim(),
         itemName: masterItem.name || 'อุปกรณ์',
         vendor: vendor.trim() || masterItem.vendor || 'Other',

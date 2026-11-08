@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -34,6 +34,12 @@ const CaimInboundConfirmModal = ({
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [rejectedAction, setRejectedAction] = useState('confirm'); // 'confirm' (แทงจำหน่าย) | 'retry_internal' (ส่งกลับคิวซ่อมภายใน)
+
+  useEffect(() => {
+    setNotes('');
+    setErrorMessage('');
+    setRejectedAction('confirm');
+  }, [log?.id]);
 
   const order = log?.checkout_orders || {};
   const checkoutItem = log?.checkout_items || {};
@@ -135,6 +141,8 @@ const CaimInboundConfirmModal = ({
                     ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30'
                     : repairResult === 'replaced_new'
                     ? 'bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30'
+                    : repairResult === 'rejected'
+                    ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30'
                     : 'bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30'
                 }`}
               >
@@ -142,6 +150,8 @@ const CaimInboundConfirmModal = ({
                   ? 'ซ่อมสำเร็จ'
                   : repairResult === 'replaced_new'
                   ? 'เปลี่ยนเครื่องใหม่'
+                  : repairResult === 'rejected'
+                  ? 'ปฏิเสธเคลม (Rejected)'
                   : 'ซ่อมไม่ได้ (Scrap)'}
               </span>
             </div>
@@ -161,14 +171,14 @@ const CaimInboundConfirmModal = ({
               </div>
               <div className="truncate">
                 <span className="font-medium text-foreground">โครงการ: </span>
-                {order.projects?.name || '-'}
+                {log?.destination_project?.name || order.projects?.name || '-'}
               </div>
             </div>
 
-            {payload?.notes && (
+            {(payload?.technicianNotes || payload?.notes) && (
               <div className="pt-1 border-t border-border/30 text-xs text-muted-foreground">
                 <span className="font-medium text-foreground">บันทึกจาก CAIM: </span>
-                {payload.notes}
+                {payload.technicianNotes || payload.notes}
               </div>
             )}
           </div>
