@@ -1,4 +1,4 @@
--- Migration 100: Photo-Based Return Verification & Admin Confirmation Workflow
+-- Migration 101: Photo-Based Return Verification & Admin Confirmation Workflow
 -- ---------------------------------------------------------------------------
 -- CONTEXT:
 --   1. Require the borrower to upload exactly 1 photo per returned item as proof of return.

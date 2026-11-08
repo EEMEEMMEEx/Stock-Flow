@@ -1,5 +1,12 @@
 # Changelog
 
+## [2026-11-08 10:25] - v1.28.4
+- **Files Modified:** `supabase/migrations/100_photo_return_verification_workflow.sql` (เปลี่ยนชื่อเป็น `101_photo_return_verification_workflow.sql`), `scripts/verify-photo-return-verification-sandbox.mjs`, `docs/fix-duplicate-migration-100-plan.md`, `package.json`, `package-lock.json`, `README.md`, `CHANGELOG.md`
+- **Changes:**
+  - **แก้ไขปัญหา Migration Version 100 ซ้ำซ้อนบน Supabase Preview (`schema_migrations_pkey` SQLSTATE 23505):**
+    - เปลี่ยนชื่อ `supabase/migrations/100_photo_return_verification_workflow.sql` เป็น `supabase/migrations/101_photo_return_verification_workflow.sql` เพื่อไม่ให้ชนกับ `100_caim_support_rejected_claim_outcome.sql` ที่บันทึก `version = 100` ไปก่อนแล้ว
+    - อัปเดต `scripts/verify-photo-return-verification-sandbox.mjs` ให้ตรวจสอบความไม่ซ้ำของเลขเวอร์ชันทุกไฟล์ใน `supabase/migrations/` บน `supabase_migrations.schema_migrations` (PGlite) และยืนยันการทำงานแบบ Idempotent เมื่อรันซ้ำ
+
 ## [2026-11-08 10:00] - v1.28.3
 ### Fixed (Missing i18n Keys & Amber Return Review Badge)
 - **Fix Raw i18n Key in Amber Return Review Badge**: เพิ่มคำแปลสำหรับ `checkouts.pendingReturnReviewBadge` (และ alias `returnPendingBadge`) ใน `th.js` ("รอตรวจสอบการคืน") และ `en.js` ("Pending return review") เพื่อให้ Badge สีส้มรูปกล้องในหน้ารายการยืมแสดงผลข้อความอย่างถูกต้อง เช่น "รอตรวจสอบการคืน (1)" พร้อมคงไอคอนกล้องและสไตล์สีส้มเดิมไว้ 100%

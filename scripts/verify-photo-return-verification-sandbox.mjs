@@ -1,9 +1,9 @@
 // ==============================================================================
-// Verification script for Photo-Based Return Verification (Migration 100 + UI)
+// Verification script for Photo-Based Return Verification (Migration 101 + UI)
 //   node scripts/verify-photo-return-verification-sandbox.mjs
 // ==============================================================================
 
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import assert from 'node:assert/strict';
@@ -18,7 +18,7 @@ const check = (name, pass, detail = '') => {
 };
 
 const compressionLib = read('src/lib/imageCompression.js');
-const migration100 = read('supabase/migrations/100_photo_return_verification_workflow.sql');
+const migration101 = read('supabase/migrations/101_photo_return_verification_workflow.sql');
 const returnModal = read('src/components/checkouts/CheckoutReturnModal.jsx');
 const reviewModal = read('src/components/checkouts/CheckoutReturnReviewModal.jsx');
 const detailModal = read('src/components/checkouts/CheckoutDetailModal.jsx');
@@ -45,24 +45,42 @@ check(
     /'attachments'/.test(compressionLib)
 );
 
-// 2. Database migration 100 guards
+// 2. Database migration 101 & schema_migrations uniqueness guards
+const migrationFiles = readdirSync(path.join(root, 'supabase/migrations'))
+  .filter((file) => file.endsWith('.sql'))
+  .sort();
+const seenMigrationVersions = new Map();
+const duplicateMigrationVersions = [];
+for (const file of migrationFiles) {
+  const version = file.split('_')[0];
+  if (seenMigrationVersions.has(version)) {
+    duplicateMigrationVersions.push(`${version}: ${seenMigrationVersions.get(version)} vs ${file}`);
+  } else {
+    seenMigrationVersions.set(version, file);
+  }
+}
 check(
-  'migration 100 adds evidence_photo_url and verification_status columns to checkout_return_logs',
-  /ADD COLUMN IF NOT EXISTS evidence_photo_url TEXT/.test(migration100) &&
-    /ADD COLUMN IF NOT EXISTS verification_status TEXT/.test(migration100)
+  'all supabase/migrations/*.sql files have unique schema_migrations version prefixes',
+  duplicateMigrationVersions.length === 0,
+  duplicateMigrationVersions.join('; ')
 );
 check(
-  'migration 100 enforces photo presence in process_return_order and sets pending_review',
-  /Missing return proof photo/.test(migration100) &&
-    /'pending_review'/.test(migration100) &&
-    /FUNCTION public\.process_return_order/.test(migration100)
+  'migration 101 adds evidence_photo_url and verification_status columns to checkout_return_logs',
+  /ADD COLUMN IF NOT EXISTS evidence_photo_url TEXT/.test(migration101) &&
+    /ADD COLUMN IF NOT EXISTS verification_status TEXT/.test(migration101)
 );
 check(
-  'migration 100 defines confirm_checkout_return RPC that updates status to returned and credits stock',
-  /FUNCTION public\.confirm_checkout_return/.test(migration100) &&
-    /verification_status = 'confirmed'/.test(migration100) &&
+  'migration 101 enforces photo presence in process_return_order and sets pending_review',
+  /Missing return proof photo/.test(migration101) &&
+    /'pending_review'/.test(migration101) &&
+    /FUNCTION public\.process_return_order/.test(migration101)
+);
+check(
+  'migration 101 defines confirm_checkout_return RPC that updates status to returned and credits stock',
+  /FUNCTION public\.confirm_checkout_return/.test(migration101) &&
+    /verification_status = 'confirmed'/.test(migration101) &&
     /WHEN \(v_new_returned_total \+ v_new_damaged_total \+ v_new_lost_total \+ v_new_consumed_total\) >= quantity_borrowed THEN 'returned'/.test(
-      migration100
+      migration101
     )
 );
 
@@ -119,12 +137,37 @@ async function loadPGlite() {
 
 const PGlite = await loadPGlite();
 if (PGlite) {
-  console.log('\nRunning PGlite SQL Sandbox for Migration 100...');
+  console.log('\nRunning PGlite SQL Sandbox for Migration 101...');
   const db = new PGlite();
+  await db.exec(`
+    CREATE SCHEMA IF NOT EXISTS supabase_migrations;
+    CREATE TABLE supabase_migrations.schema_migrations (
+      version TEXT NOT NULL PRIMARY KEY,
+      statements TEXT[],
+      name TEXT
+    );
+  `);
+  let schemaMigrationsInserted = 0;
+  for (const file of migrationFiles) {
+    const sep = file.indexOf('_');
+    const version = file.slice(0, sep);
+    const name = file.slice(sep + 1, -4);
+    await db.query(
+      `INSERT INTO supabase_migrations.schema_migrations(version, name, statements) VALUES ($1, $2, $3)`,
+      [version, name, []]
+    );
+    schemaMigrationsInserted += 1;
+  }
+  check(
+    'PGlite: supabase_migrations.schema_migrations inserts all migration versions without SQLSTATE 23505 collision',
+    schemaMigrationsInserted === migrationFiles.length,
+    `${schemaMigrationsInserted} migrations registered`
+  );
   const fixtureSql = read('supabase/tests/fixtures/mock_supabase_schema.sql');
   await db.exec(fixtureSql);
 
   await db.exec(`
+    ALTER TABLE public.projects ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'active';
     ALTER TABLE public.checkout_orders ALTER COLUMN id SET DEFAULT gen_random_uuid();
     ALTER TABLE public.checkout_orders ADD COLUMN IF NOT EXISTS borrower_id UUID;
     ALTER TABLE public.checkout_orders ADD COLUMN IF NOT EXISTS created_by UUID;
@@ -154,7 +197,7 @@ if (PGlite) {
       created_at TIMESTAMPTZ DEFAULT now()
     );
 
-    CREATE OR REPLACE FUNCTION public.has_permission(p_user_id UUID, p_permission TEXT)
+    CREATE OR REPLACE FUNCTION public.has_permission(p_user_id UUID, p_perm_code TEXT)
     RETURNS BOOLEAN
     LANGUAGE sql
     AS $$
@@ -164,7 +207,7 @@ if (PGlite) {
       );
     $$;
 
-    CREATE OR REPLACE FUNCTION public.is_super_admin(p_user_id UUID)
+    CREATE OR REPLACE FUNCTION public.is_super_admin(p_user_id UUID DEFAULT auth.uid())
     RETURNS BOOLEAN
     LANGUAGE sql
     AS $$
@@ -175,7 +218,9 @@ if (PGlite) {
     $$;
   `);
 
-  await db.exec(migration100);
+  await db.exec(migration101);
+  await db.exec(migration101);
+  check('PGlite: migration 101 executes idempotently across repeated runs', true);
 
   const adminId = '00000000-0000-0000-0000-000000000001';
   const borrowerId = '00000000-0000-0000-0000-000000000002';
