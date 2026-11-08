@@ -101,6 +101,8 @@ CREATE POLICY "Authorized manage checkout_return_logs" ON public.checkout_return
   );
 
 -- 4. RPC: mark_return_for_internal_repair
+DROP FUNCTION IF EXISTS public.mark_return_for_internal_repair(UUID);
+
 CREATE OR REPLACE FUNCTION public.mark_return_for_internal_repair(p_return_log_id UUID)
 RETURNS JSONB
 LANGUAGE plpgsql
@@ -818,9 +820,11 @@ END;
 $$;
 
 -- 8. Fix update_checkout_item_serial: do not overwrite checkout_items on consumed returns
+DROP FUNCTION IF EXISTS public.update_checkout_item_serial(UUID, TEXT, TEXT, UUID);
+
 CREATE OR REPLACE FUNCTION public.update_checkout_item_serial(
   p_checkout_item_id UUID,
-  p_new_serial TEXT,
+  p_new_serial_number TEXT,
   p_reason TEXT,
   p_return_log_id UUID DEFAULT NULL
 )
@@ -831,7 +835,7 @@ SET search_path = public, auth, pg_temp
 AS $$
 DECLARE
   v_caller_id UUID := auth.uid();
-  v_new_serial TEXT := NULLIF(TRIM(p_new_serial), '');
+  v_new_serial TEXT := NULLIF(TRIM(p_new_serial_number), '');
   v_reason TEXT := NULLIF(TRIM(p_reason), '');
   v_item RECORD;
   v_order RECORD;
@@ -956,6 +960,13 @@ BEGIN
   );
 END;
 $$;
+
+-- Permissions on RPCs
+REVOKE ALL ON FUNCTION public.mark_return_for_internal_repair(UUID) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.mark_return_for_internal_repair(UUID) TO authenticated, service_role;
+
+REVOKE ALL ON FUNCTION public.update_checkout_item_serial(UUID, TEXT, TEXT, UUID) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.update_checkout_item_serial(UUID, TEXT, TEXT, UUID) TO authenticated, service_role;
 
 COMMIT;
 
