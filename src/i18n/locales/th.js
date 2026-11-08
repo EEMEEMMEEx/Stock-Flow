@@ -710,7 +710,9 @@ export default {
     },
     "detailModalDesc": "รายละเอียดคำขอเบิกพัสดุและรายการวัสดุ",
     "workflowNav": "ขั้นตอนการขอเบิกพัสดุ",
-    "insufficientInventory": "พัสดุในคลังมีไม่เพียงพอสำหรับการอนุมัติ"
+    "insufficientInventory": "พัสดุในคลังมีไม่เพียงพอสำหรับการอนุมัติ",
+    "stockCount": "สต็อก: {{count}} {{unit}}",
+    "otherCount": "คลังอื่น ({{count}})"
   },
   "checkouts": {
     "title": "ระบบยืม-คืนอุปกรณ์",
@@ -1026,7 +1028,9 @@ export default {
       "returnPhotoTooLarge": "ขนาดไฟล์รูปภาพเกินกำหนดสูงสุด 20 MB",
       "returnSubmittedPendingReview": "ส่งข้อมูลแจ้งคืนพร้อมรูปถ่ายแล้ว — รอแอดมินตรวจสอบและกดยืนยันรับคืน",
       "returnConfirmedSuccess": "ยืนยันการรับคืนและอัปเดตสถานะอุปกรณ์เป็นคืนแล้ว (Returned) เรียบร้อย",
-      "returnConfirmFailed": "ไม่สามารถยืนยันการรับคืนอุปกรณ์ได้"
+      "returnConfirmFailed": "ไม่สามารถยืนยันการรับคืนอุปกรณ์ได้",
+      "confirmReturnSuccess": "ยืนยันการรับคืนและอัปเดตสถานะอุปกรณ์เป็นคืนแล้ว (Returned) เรียบร้อย",
+      "confirmReturnFailed": "ไม่สามารถยืนยันการรับคืนอุปกรณ์ได้"
     },
     "fullyReturnedDesc": "อุปกรณ์ในรายการนี้ได้รับการส่งคืนครบถ้วนแล้ว",
     "printCheckoutSlip": "พิมพ์ใบยืมพัสดุ (PDF)",
@@ -1137,7 +1141,14 @@ export default {
     "confirmSingleReturnBtn": "ยืนยันการรับคืน",
     "submittedByLabel": "ผู้แจ้งคืน",
     "verifiedByLabel": "ผู้ยืนยันรับคืน",
-    "noPendingReturnsToReview": "ไม่มีรายการแจ้งคืนที่รอการตรวจสอบ"
+    "noPendingReturnsToReview": "ไม่มีรายการแจ้งคืนที่รอการตรวจสอบ",
+    "pendingReturnReviewBadge": "รอตรวจสอบการคืน",
+    "returnPendingBadge": "รอตรวจสอบการคืน",
+    "pendingAdminReviewBadge": "รอแอดมินยืนยันรับคืน",
+    "confirmedReturnBadge": "ยืนยันรับคืนแล้ว",
+    "viewReturnPhoto": "ดูรูปหลักฐาน",
+    "returnProofPhoto": "รูปถ่ายหลักฐานการคืนพัสดุ",
+    "item": "รายการอุปกรณ์"
   },
   "history": {
     "title": "ประวัติรายการย้อนหลัง",
@@ -1190,7 +1201,8 @@ export default {
     "project": "โครงการ",
     "requester": "ผู้ขอเบิก",
     "items": "รายการพัสดุ",
-    "totalQty": "จำนวนรวม"
+    "totalQty": "จำนวนรวม",
+    "orderDetails": "รายละเอียดคำขอเบิก #{{id}}"
   },
   "reports": {
     "title": "รายงานและสถิติคลังพัสดุ",
@@ -1207,6 +1219,7 @@ export default {
       "fetchFailed": "โหลดข้อมูลรายงานไม่สำเร็จ กรุณาลองใหม่อีกครั้ง"
     },
     "tabs": {
+      "label": "แท็บประเภทรายงาน",
       "stockIn": "1. รายงานรับเข้าพัสดุ",
       "withdrawals": "2. รายงานการเบิกจ่าย",
       "balance": "3. รายงานยอดคงเหลือพัสดุ",
@@ -1248,6 +1261,8 @@ export default {
     },
     "filters": {
       "title": "ตัวกรองรายงาน",
+      "hideFilters": "ซ่อนตัวกรอง",
+      "showFilters": "แสดงตัวกรอง",
       "active": "ใช้งานอยู่",
       "hideVisuals": "ซ่อนกราฟสถิติ",
       "showVisuals": "แสดงกราฟสถิติ",
@@ -1321,6 +1336,7 @@ export default {
       "consumedDateTooltip": "วันที่บันทึกนำไปใช้งานทดแทน (ไม่ใช่วันที่ยื่นขอเบิก)"
     },
     "pagination": {
+      "page": "หน้า {{current}} จาก {{total}}",
       "showing": "กำลังแสดง",
       "to": "ถึง",
       "of": "จากทั้งหมด",
@@ -1337,6 +1353,7 @@ export default {
       "resetFilters": "รีเซ็ตตัวกรองทั้งหมด"
     },
     "siteKits": {
+      "warehouseFilter": "คลังพัสดุ",
       "allCategories": "ทั้งหมด ({{count}} {{unit}})",
       "category": "หมวดหมู่",
       "categories": "หมวดหมู่",
@@ -1372,6 +1389,7 @@ export default {
       "loadFailed": "ไม่สามารถโหลดข้อมูลความพร้อม Site Kits ได้"
     },
     "export": {
+      "mainStorage": "คลังหลัก",
       "noData": "ไม่มีข้อมูลสำหรับส่งออก",
       "excelSuccess": "ส่งออกรายงาน Excel เรียบร้อยแล้ว",
       "excelFailed": "ส่งออกรายงาน Excel ไม่สำเร็จ",
@@ -1672,6 +1690,9 @@ export default {
       "maxFileSizeValue": "5 MB (JPG / PNG / WebP)"
     },
     "system": {
+      "projects": "{{count}} โครงการ",
+      "users": "{{count}} ผู้ใช้",
+      "roles": "{{count}} บทบาท",
       "version": "เวอร์ชัน",
       "environment": "สภาพแวดล้อม",
       "database": "ฐานข้อมูล",

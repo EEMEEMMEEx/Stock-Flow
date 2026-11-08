@@ -710,7 +710,9 @@ export default {
     },
     "detailModalDesc": "Requisition details and item breakdown",
     "workflowNav": "Requisition Workflow",
-    "insufficientInventory": "Insufficient stock for approval"
+    "insufficientInventory": "Insufficient stock for approval",
+    "stockCount": "Stock: {{count}} {{unit}}",
+    "otherCount": "Other ({{count}})"
   },
   "checkouts": {
     "title": "Equipment Checkout & Return",
@@ -1026,7 +1028,9 @@ export default {
       "returnPhotoTooLarge": "Image file size exceeds the 20 MB limit",
       "returnSubmittedPendingReview": "Return submitted with photo proof — awaiting Admin review and confirmation",
       "returnConfirmedSuccess": "Return confirmed and item status updated to Returned",
-      "returnConfirmFailed": "Failed to confirm equipment return"
+      "returnConfirmFailed": "Failed to confirm equipment return",
+      "confirmReturnSuccess": "Return confirmed and item status updated to Returned successfully",
+      "confirmReturnFailed": "Failed to confirm equipment return"
     },
     "fullyReturnedDesc": "All equipment in this order has already been fully returned.",
     "printCheckoutSlip": "Print Checkout Slip (PDF)",
@@ -1137,7 +1141,14 @@ export default {
     "confirmSingleReturnBtn": "Confirm Return",
     "submittedByLabel": "Submitted by",
     "verifiedByLabel": "Confirmed by",
-    "noPendingReturnsToReview": "No pending return items awaiting confirmation."
+    "noPendingReturnsToReview": "No pending return items awaiting confirmation.",
+    "pendingReturnReviewBadge": "Pending return review",
+    "returnPendingBadge": "Pending return review",
+    "pendingAdminReviewBadge": "Pending Admin Confirmation",
+    "confirmedReturnBadge": "Return Confirmed",
+    "viewReturnPhoto": "View Proof Photo",
+    "returnProofPhoto": "Proof of Return Photo",
+    "item": "Item"
   },
   "history": {
     "title": "Transaction History Audit Log",
@@ -1190,7 +1201,8 @@ export default {
     "project": "Project",
     "requester": "Requester",
     "items": "Items",
-    "totalQty": "Total Qty"
+    "totalQty": "Total Qty",
+    "orderDetails": "Withdrawal Request Details #{{id}}"
   },
   "reports": {
     "title": "Reports & Inventory Analytics",
@@ -1207,6 +1219,7 @@ export default {
       "fetchFailed": "Failed to load report data. Please try again."
     },
     "tabs": {
+      "label": "Report Tabs",
       "stockIn": "1. Stock-In Report",
       "withdrawals": "2. Withdrawals Report",
       "balance": "3. Stock Balance Report",
@@ -1248,6 +1261,8 @@ export default {
     },
     "filters": {
       "title": "Report Filters",
+      "hideFilters": "Hide Filters",
+      "showFilters": "Show Filters",
       "active": "Active",
       "hideVisuals": "Hide Visuals",
       "showVisuals": "Show Visuals",
@@ -1321,6 +1336,7 @@ export default {
       "consumedDateTooltip": "Date recorded as used for replacement (not the withdrawal request date)"
     },
     "pagination": {
+      "page": "Page {{current}} of {{total}}",
       "showing": "Showing",
       "to": "to",
       "of": "of",
@@ -1337,6 +1353,7 @@ export default {
       "resetFilters": "Reset All Filters"
     },
     "siteKits": {
+      "warehouseFilter": "Warehouse",
       "allCategories": "All ({{count}} {{unit}})",
       "category": "Category",
       "categories": "Categories",
@@ -1372,6 +1389,7 @@ export default {
       "loadFailed": "Failed to load site kits availability data"
     },
     "export": {
+      "mainStorage": "Main Storage",
       "noData": "No data to export",
       "excelSuccess": "Excel report exported successfully",
       "excelFailed": "Failed to export Excel report",
@@ -1672,6 +1690,9 @@ export default {
       "maxFileSizeValue": "5 MB (JPG / PNG / WebP)"
     },
     "system": {
+      "projects": "{{count}} Projects",
+      "users": "{{count}} Users",
+      "roles": "{{count}} Roles",
       "version": "Version",
       "environment": "Environment",
       "database": "Database",

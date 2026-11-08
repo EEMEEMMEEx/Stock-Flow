@@ -1,5 +1,12 @@
 # Changelog
 
+## [2026-11-08 10:00] - v1.28.3
+### Fixed (Missing i18n Keys & Amber Return Review Badge)
+- **Fix Raw i18n Key in Amber Return Review Badge**: เพิ่มคำแปลสำหรับ `checkouts.pendingReturnReviewBadge` (และ alias `returnPendingBadge`) ใน `th.js` ("รอตรวจสอบการคืน") และ `en.js` ("Pending return review") เพื่อให้ Badge สีส้มรูปกล้องในหน้ารายการยืมแสดงผลข้อความอย่างถูกต้อง เช่น "รอตรวจสอบการคืน (1)" พร้อมคงไอคอนกล้องและสไตล์สีส้มเดิมไว้ 100%
+- **Resolve Critical Missing Checkouts Keys**: เพิ่มคำแปลสำหรับคีย์อื่นๆ ในโมดูลยืม-คืนที่ไม่มี fallback ได้แก่ `pendingAdminReviewBadge`, `confirmedReturnBadge`, `viewReturnPhoto`, `returnProofPhoto`, `item`, และ toasts `confirmReturnSuccess` / `confirmReturnFailed`
+- **Codebase-wide i18n Audit & Parity**: ตรวจสอบการใช้งาน `t()` ทั่วทั้ง codebase ผ่านสคริปต์ audit พบและเติมคีย์ที่ขาดหายในโมดูล `reports`, `withdrawals`, `history`, `settings` ส่งผลให้บรรลุ 100% Key Parity ระหว่าง `th.js` และ `en.js` (รวม 2,042 คีย์)
+
+
 ## [2026-11-08 09:45] - v1.28.2
 ### Changed (Borrow/Return UI Label Standardization)
 - **Standardized Return Button Label for Borrower**: ปรับปรุงข้อความปุ่มทำรายการคืนในหน้ายืม-คืนพัสดุ (`Checkouts`) จากเดิม "รับคืนอุปกรณ์และเครื่องมือ" (มุมมองเจ้าหน้าที่คลัง/แอดมิน) ให้เป็น "ส่งคืนอุปกรณ์และเครื่องมือ" (มุมมองผู้ยืมที่กดทำรายการ) ใน `CheckoutActiveList.jsx`, `CheckoutDetailModal.jsx` และ `CheckoutReturnModal.jsx` ผ่าน `t('checkouts.returnEquipment')`
