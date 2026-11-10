@@ -1,7 +1,7 @@
 {
   "name": "stock-flow-app",
   "private": true,
-  "version": "1.31.0",
+  "version": "1.31.1",
   "type": "module",
   "engines": {
     "node": "24.x"
@@ -11,6 +11,7 @@
     "tunnel": "cloudflared tunnel --url http://localhost:5173",
     "build": "vite build",
     "lint": "eslint .",
+    "test:chunk-recovery": "node --test src/lib/__tests__/chunkErrorRecovery.test.js",
     "test:email": "echo \"Email notification system decommissioned (migration 98)\"",
     "check:i18n": "node scripts/check-i18n-parity.mjs",
     "verify:admin-delete-user": "node scripts/verify-admin-delete-user-sandbox.mjs",

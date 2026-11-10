@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-11-11 06:50] - v1.31.1
+### Fixed (Dynamic Import Stale Chunk Load Error Recovery)
+- **Vite Preload Error Handler**: ติดตั้ง `initVitePreloadErrorHandler` ใน `src/main.jsx` ดักจับ CustomEvent `vite:preloadError` จาก `__vitePreload` ของ Vite เมื่อ Client โหลด dynamic import chunk เก่าที่ถูกลบไปหลังการ deploy ใหม่ สั่ง reload หน้าเว็บอัตโนมัติเพื่อให้ได้ bundle ล่าสุด
+- **Reload Loop Protection (SessionStorage Guard)**: สร้างโมดูล `src/lib/chunkErrorRecovery.js` พร้อมฟังก์ชัน `canTriggerChunkReload`, `markChunkReload`, `clearChunkReloadCooldown` กำหนด cooldown 15 วินาที ป้องกันปัญหา infinite reload loop หากเกิดข้อผิดพลาดของเครือข่ายอย่างต่อเนื่อง
+- **Resilient ErrorBoundary**:
+  - เพิ่ม `isChunkLoadError` ตรวจจับ error patterns สำคัญ เช่น `dynamically imported module`, `Failed to fetch dynamically imported module`, `Failed to load module script`, `Importing a module script failed`, `Expected a JavaScript-or-Wasm module script but the server responded with a MIME type of text/html`
+  - ใน `componentDidCatch`: ทำ auto-reload ทันที 1 ครั้งผ่าน sessionStorage guard
+  - ใน UI Fallback: แสดงหัวข้อ "ระบบมีการอัปเดตเวอร์ชันใหม่ (Application Updated)" พร้อมปุ่ม "อัปเดตเป็นเวอร์ชันล่าสุด (Refresh Page)" สำหรับรีโหลดดึงเวอร์ชันล่าสุด
+  - ใน `handleReset`: รีโหลดหน้าเว็บแทนการเรียก setState เพื่อล้าง cache promise ของ React.lazy
+- **Vercel Cache-Control Optimization**: เพิ่ม cache headers ใน `vercel.json` ป้องกัน browser แคชไฟล์ `index.html` และ `sw.js` (`no-cache, no-store, must-revalidate`) พร้อมตั้ง `public, max-age=31536000, immutable` สำหรับ `/assets/(.*)`
+- **Unit Tests**: เพิ่มชุดทดสอบ `src/lib/__tests__/chunkErrorRecovery.test.js` (11/11 tests pass)
+
 ## [2026-11-10 17:00] - v1.30.0
 ### Added (AI StockFlow Copilot & Gemini 3.8 Flash Integration)
 - **AI StockFlow Copilot**: เพิ่มผู้ช่วย AI อัจฉริยะขับเคลื่อนด้วย Google Gemini API (`gemini-3.8-flash` ผ่าน SDK `@google/genai`) สำหรับการค้นหาและวิเคราะห์สต็อกสินค้าด้วยภาษาธรรมชาติ:
