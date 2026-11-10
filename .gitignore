@@ -141,3 +141,5 @@ CONTEXT.md
 Portal UI-UX Design Specification.md
 UI-UX-Migration-Plan-Enterprise.md
 .tmp_pstack/
+unslop-output/
+.github/context-mode/

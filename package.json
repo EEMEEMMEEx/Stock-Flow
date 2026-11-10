@@ -1,7 +1,7 @@
 {
   "name": "stock-flow-app",
   "private": true,
-  "version": "1.28.14",
+  "version": "1.29.0",
   "type": "module",
   "engines": {
     "node": "24.x"
@@ -54,6 +54,7 @@
     "test:super-revert": "node --test src/lib/superRevert.test.js",
     "test:checkout-display": "node --test src/lib/checkoutDisplay.test.js",
     "verify:checkout-layout": "node scripts/verify-checkout-active-layout.mjs",
+    "verify:gemini-copilot": "node scripts/verify-gemini-copilot.mjs",
     "preview": "vite preview",
     "test:withdrawal-stock": "node --test src/lib/withdrawalStock.test.js",
     "migrate:r2": "node scripts/migrate-legacy-images-to-r2.mjs",
@@ -68,6 +69,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1132.0",
     "@aws-sdk/s3-request-presigner": "^3.1142.0",
+    "@google/genai": "^3.0.0",
     "@radix-ui/react-dialog": "^1.1.23",
     "@radix-ui/react-dropdown-menu": "^2.1.24",
     "@radix-ui/react-label": "^2.1.15",

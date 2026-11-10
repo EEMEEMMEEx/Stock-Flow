@@ -1,11 +1,41 @@
 # Changelog
 
+## [2026-11-10 17:00] - v1.29.0
+### Added (AI StockFlow Copilot & Gemini 3.8 Flash Integration)
+- **AI StockFlow Copilot**: เพิ่มผู้ช่วย AI อัจฉริยะขับเคลื่อนด้วย Google Gemini API (`gemini-3.8-flash` ผ่าน SDK `@google/genai`) สำหรับการค้นหาและวิเคราะห์สต็อกสินค้าด้วยภาษาธรรมชาติ:
+  - ปุ่มลัด AI Copilot บน Topbar พร้อมคีย์ลัด `Ctrl+K` / `Cmd+K` สำหรับเรียกใช้งานได้ทันทีจากทุกหน้า
+  - หน้าต่างแชทอัจฉริยะ (Modal UI) พร้อม Quick Prompt Chips (สินค้าสต็อกต่ำ, สรุปคลังสินค้า, กิจกรรมล่าสุด, แนะนำการจัดซื้อ)
+  - Live Inventory Context: ส่งข้อมูลบริบทพัสดุและยอดคงเหลือล่าสุดเข้าโมเดลแบบ Dynamic และปลอดภัย
+  - สถาปัตยกรรม Hybrid: รองรับทั้ง Vercel Serverless Function (`api/gemini-copilot.js`) และ Client Direct Fallback (`src/lib/geminiCopilot.js`)
+### Changed (Full Application Unslop across 12 Core Pages)
+- **12 Pages Unslop Master**: กวาดล้างรอยแผลความไม่ประณีต (AI slop) ทั่วทั้ง 12 หน้าจอหลัก (`/dashboard`, `/projects`, `/items`, `/stock-in`, `/withdrawals`, `/checkouts`, `/scrap`, `/history`, `/reports`, `/users`, `/manual`, `/settings`):
+  - **Dashboard**: กำจัดคำทักทายสำเร็จรูป ("ยินดีต้อนรับกลับ...") สู่หัวข้อสถานะคลังสินค้าแบบมืออาชีพ
+  - **Site Installation Kits (BOM)**: ปรับ Grid 5 คอลัมน์ (`xl:grid-cols-5`) สมดุลไร้การ์ดตกค้าง, แก้ปัญหาชื่อการ์ดถูกตัดทอน (`...`), ลบป้ายประดับหลอกตา (`Real-time BOM`, `Admin Editable`), และแปลไทยสมบูรณ์
+  - **Icons & Animations**: กำจัดไอคอน `Sparkles` และสายฟ้า `Zap` ทั่วทั้งระบบ แทนที่ด้วยไอคอนเชิงความหมาย (`Check`, `FileEdit`, `ShoppingCart`, `ShieldCheck`, `BookOpen`, `Camera`, `ListOrdered`), ลบจุดกะพริบ `animate-ping` และ `animate-pulse` บนป้ายนับ
+  - **Projects & Forms**: แปลภาษาไทยฟอร์มและปุ่มการจัดการโครงการครบ 100%, ปรับสไตล์โมดัลตาม Design System
+### Improved (Mobile UX/UI for Checkout History)
+- **5-Row Mobile Card Architecture**: บัตรประวัติยืม-คืน 5 แถวกระชับ รองรับหน้าจอ 360px - 390px พร้อมแถบสีสถานะ `border-l-4`, ค้นหาแบบ Sticky, ชิปตัวกรอง, และระบบรวมเหตุผลแบบ Deduplicated Neutral Box
+- **Parity & Verification**: 100% i18n key parity (2,057 คีย์) ระหว่าง `th.js` และ `en.js`, ผ่านการทดสอบ runtime guards 10/10, และผ่าน production build 100%
+
+## [2026-11-08 15:40] - v1.28.4
+### Improved (Mobile UX/UI for Checkout History /checkouts?tab=history)
+- **5-Row Mobile Card Architecture**: ออกแบบโครงสร้างบัตรประวัติยืม-คืน 5 แถวที่กระชับและไม่ล้นจอ (360px - 390px):
+  - Row 1: รหัสคำขอ (`order_number`) + ป้ายสถานะ (มีไอคอน + ข้อความชัดเจนตามเกณฑ์ WCAG AA)
+  - Row 2: ชื่อผู้ขอยืม (`borrower_name` พร้อมแผนก) + วันที่และเวลาที่ขอทำรายการ (สี muted สบายตา)
+  - Row 3: โครงการ/สถานที่ (`location`) 1 บรรทัด (`truncate`) พร้อมฟังก์ชันแตะเพื่อขยายดูข้อความเต็ม (Tap to expand)
+  - Row 4: รายการพัสดุฟอนต์ Regular พร้อมบรรทัดสรุปยอด (`N รายการ · M ชิ้น`), แสดง 2 รายการแรก และมีปุ่ม `+ อีก N รายการ` ขยาย/ย่อ
+  - Row 5: Action Button เด่นเพียงปุ่มเดียวตามสถานะ ย้ายคำสั่งรองเข้าสู่เมนู "⋯" (DropdownMenu touch target ≥ 44px) และซ่อนปุ่มยกเลิกในรายการที่ปฏิเสธหรือยกเลิกแล้ว
+- **Merged Neutral Compact Reason & Revert Box**: ยุบรวมกล่องเหตุผลปฏิเสธสีแดงและกล่องย้อนสถานะสีส้มที่ซ้อนกัน ให้เป็นบล็อก Neutral บรรทัดเดียว พร้อมระบบ Deduplicate ไม่แสดงเหตุผลซ้ำซ้อนหากเป็นข้อความเดียวกัน
+- **Thin Left Accent Border**: เพิ่มแถบสีขอบซ้าย 4px (`border-l-4`) ตามสถานะของ Order (เขียว/แดง/ส้ม/ม่วง/เทา)
+- **Sticky Search & Filter Chips**: แถบค้นหาแบบ Sticky ด้านบน พร้อมชิปตัวกรองสถานะและชิปช่วงเวลา (วันนี้, 7 วัน, 30 วัน, เดือนนี้)
+- **Result Count, Clear Filters & Skeleton Loaders**: แสดงจำนวนผลลัพธ์ที่ค้นพบ, แสดงปุ่มล้างตัวกรองในกล่องว่าง, และแสดง Skeleton Cards ขณะโหลด
+- **100% i18n Key Parity**: เพิ่มคีย์ภาษาสำหรับฟิลเตอร์และการแสดงผลครบทั้ง TH/EN รวม 2,057 คีย์
+
 ## [2026-11-08 10:25] - v1.28.4
-- **Files Modified:** `supabase/migrations/100_photo_return_verification_workflow.sql` (เปลี่ยนชื่อเป็น `101_photo_return_verification_workflow.sql`), `scripts/verify-photo-return-verification-sandbox.mjs`, `docs/fix-duplicate-migration-100-plan.md`, `package.json`, `package-lock.json`, `README.md`, `CHANGELOG.md`
-- **Changes:**
-  - **แก้ไขปัญหา Migration Version 100 ซ้ำซ้อนบน Supabase Preview (`schema_migrations_pkey` SQLSTATE 23505):**
-    - เปลี่ยนชื่อ `supabase/migrations/100_photo_return_verification_workflow.sql` เป็น `supabase/migrations/101_photo_return_verification_workflow.sql` เพื่อไม่ให้ชนกับ `100_caim_support_rejected_claim_outcome.sql` ที่บันทึก `version = 100` ไปก่อนแล้ว
-    - อัปเดต `scripts/verify-photo-return-verification-sandbox.mjs` ให้ตรวจสอบความไม่ซ้ำของเลขเวอร์ชันทุกไฟล์ใน `supabase/migrations/` บน `supabase_migrations.schema_migrations` (PGlite) และยืนยันการทำงานแบบ Idempotent เมื่อรันซ้ำ
+### Fixed (Migration Version Collision on 100_photo_return_verification_workflow.sql)
+- **แก้ไขปัญหา Migration Version 100 ซ้ำซ้อนบน Supabase Preview (`schema_migrations_pkey` SQLSTATE 23505):**
+  - เปลี่ยนชื่อ `supabase/migrations/100_photo_return_verification_workflow.sql` เป็น `supabase/migrations/101_photo_return_verification_workflow.sql` เพื่อไม่ให้ชนกับ `100_caim_support_rejected_claim_outcome.sql` ที่บันทึก `version = 100` ไปก่อนแล้ว
+  - อัปเดต `scripts/verify-photo-return-verification-sandbox.mjs` ให้ตรวจสอบความไม่ซ้ำของเลขเวอร์ชันทุกไฟล์ใน `supabase/migrations/` บน `supabase_migrations.schema_migrations` (PGlite) และยืนยันการทำงานแบบ Idempotent เมื่อรันซ้ำ
 
 ## [2026-11-08 10:00] - v1.28.3
 ### Fixed (Missing i18n Keys & Amber Return Review Badge)

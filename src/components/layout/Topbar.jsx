@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   ChevronDown, HelpCircle, LogOut, Menu, Moon, 
-  Settings, ShieldCheck, Sun, UserRound
+  Settings, ShieldCheck, Sun, UserRound, Bot
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/components/theme-provider';
@@ -14,6 +14,7 @@ import NotificationBell from './NotificationBell';
 import LanguageSwitcher from '@/components/common/LanguageSwitcher';
 import RoleBadge from '@/components/ui/RoleBadge';
 import { getRoleLabel, getRoleTextColorClass } from '@/lib/roleUtils';
+import StockFlowCopilotModal from '@/components/copilot/StockFlowCopilotModal';
 
 const controlClassName = 'h-10 w-10 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 shrink-0 inline-flex items-center justify-center rounded-lg border border-input bg-background text-foreground shadow-xs transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 cursor-pointer';
 const menuContentClassName = 'z-50 w-[min(20rem,calc(100vw-1.5rem))] overflow-hidden rounded-xl border border-border bg-popover p-1.5 text-popover-foreground shadow-xl outline-none data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0';
@@ -39,6 +40,19 @@ const Topbar = ({ onMenuClick, menuButtonRef, isMobileMenuOpen }) => {
   const { theme, resolvedTheme, setTheme } = useTheme();
   const { t } = useTranslation();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [copilotOpen, setCopilotOpen] = useState(false);
+
+  // Keyboard shortcut Ctrl+K / Cmd+K to toggle StockFlow Copilot
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setCopilotOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
   const roleLabel = getRoleLabel(profile?.roles?.code || profile?.role || 'STAFF', profile?.roles?.name);
   const roleColorClass = getRoleTextColorClass(profile?.roles?.code || profile?.role || 'STAFF', profile?.roles?.name, profile?.roles);
   const themeLabel = resolvedTheme === 'dark' ? t('nav.lightMode') : t('nav.darkMode');
@@ -73,6 +87,20 @@ const Topbar = ({ onMenuClick, menuButtonRef, isMobileMenuOpen }) => {
 
       {/* Right side: Global Actions & User Profile Dropdown */}
       <div className="flex items-center gap-2 ml-auto" aria-label="Header controls">
+        {/* Gemini AI Copilot Trigger */}
+        <Button
+          variant="ghost"
+          size="icon"
+          type="button"
+          title="StockFlow Copilot (AI ผู้ช่วยอัจฉริยะ - Ctrl+K)"
+          aria-label="StockFlow Copilot (AI ผู้ช่วยอัจฉริยะ - Ctrl+K)"
+          onClick={() => setCopilotOpen(true)}
+          className={cn(controlClassName, 'text-amber-500 hover:text-amber-600 hover:bg-amber-500/10 dark:hover:bg-amber-500/15 relative')}
+        >
+          <Bot className="h-[18px] w-[18px]" />
+          <span className="sr-only">StockFlow Copilot</span>
+        </Button>
+
         {/* Language Switcher Dropdown */}
         <LanguageSwitcher />
 
@@ -135,6 +163,9 @@ const Topbar = ({ onMenuClick, menuButtonRef, isMobileMenuOpen }) => {
           </DropdownMenu.Portal>
         </DropdownMenu.Root>
       </div>
+
+      {/* StockFlow Copilot AI Dialog */}
+      <StockFlowCopilotModal open={copilotOpen} onOpenChange={setCopilotOpen} />
     </header>
   );
 };
