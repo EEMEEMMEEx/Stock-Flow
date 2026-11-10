@@ -109,21 +109,39 @@ ${inventorySummaryText}
       parts: [{ text: query }]
     });
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.8-flash',
-      contents,
-      config: {
-        systemInstruction,
-        temperature: 0.2,
-      }
-    });
+    // Try candidate models with fast models first to prevent timeout / 503 high demand
+    const candidateModels = ['gemini-3.5-flash-lite', 'gemini-flash-lite-latest', 'gemini-3.8-flash'];
+    let lastError = null;
+    let answer = null;
+    let successfulModel = candidateModels[0];
 
-    const answer = response.text || 'ขออภัย ไม่สามารถประมวลผลคำตอบได้ในขณะนี้';
+    for (const model of candidateModels) {
+      try {
+        const response = await ai.models.generateContent({
+          model,
+          contents,
+          config: {
+            systemInstruction,
+            temperature: 0.2,
+          }
+        });
+        answer = response.text;
+        successfulModel = model;
+        if (answer) break;
+      } catch (genErr) {
+        lastError = genErr;
+        console.warn(`[Gemini Copilot API] Model ${model} failed, trying fallback:`, genErr.message);
+      }
+    }
+
+    if (!answer && lastError) {
+      throw lastError;
+    }
 
     return res.status(200).json({
       success: true,
-      answer,
-      model: 'gemini-3.8-flash',
+      answer: answer || 'ขออภัย ไม่สามารถประมวลผลคำตอบได้ในขณะนี้',
+      model: successfulModel,
       user: currentUser ? currentUser.email : 'guest'
     });
   } catch (error) {

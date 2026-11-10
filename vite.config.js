@@ -14,6 +14,7 @@ function devApiPlugin() {
     '/api/r2-upload-url': './api/r2-upload-url.js',
     '/api/sync-to-caim': './api/sync-to-caim.js',
     '/api/caim-webhook': './api/caim-webhook.js',
+    '/api/gemini-copilot': './api/gemini-copilot.js',
   };
 
   return {
