@@ -176,7 +176,7 @@ const WithdrawalOrdersList = ({
               className={`h-8 px-2.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 statusFilter === 'pending'
                   ? 'bg-amber-600 text-white shadow-xs'
-                  : 'border-amber-500/30 text-amber-700 dark:text-amber-300 hover:bg-amber-500/10'
+                  : 'border-border/60 text-muted-foreground hover:text-foreground hover:bg-muted'
               }`}
             >
               {t('common.pending', 'Pending')} ({pendingOrdersCount})
@@ -190,7 +190,7 @@ const WithdrawalOrdersList = ({
               className={`h-8 px-2.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 statusFilter === 'approved'
                   ? 'bg-blue-600 text-white shadow-xs'
-                  : 'border-blue-500/30 text-blue-700 dark:text-blue-300 hover:bg-blue-500/10'
+                  : 'border-border/60 text-muted-foreground hover:text-foreground hover:bg-muted'
               }`}
             >
               {t('common.approved', 'Approved')} ({approvedOrdersCount})
@@ -204,7 +204,7 @@ const WithdrawalOrdersList = ({
               className={`h-8 px-2.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 statusFilter === 'completed'
                   ? 'bg-emerald-600 text-white shadow-xs'
-                  : 'border-emerald-500/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/10'
+                  : 'border-border/60 text-muted-foreground hover:text-foreground hover:bg-muted'
               }`}
             >
               {t('common.completed', 'Completed')} ({completedOrdersCount})
@@ -218,7 +218,7 @@ const WithdrawalOrdersList = ({
               className={`h-8 px-2.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 statusFilter === 'rejected'
                   ? 'bg-red-600 text-white shadow-xs'
-                  : 'border-red-500/30 text-red-700 dark:text-red-300 hover:bg-red-500/10'
+                  : 'border-border/60 text-muted-foreground hover:text-foreground hover:bg-muted'
               }`}
             >
               {t('common.rejected', 'Rejected')} ({rejectedOrdersCount})
@@ -272,7 +272,7 @@ const WithdrawalOrdersList = ({
           <TableBody className="text-xs">
             {loading ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-12 text-muted-foreground animate-pulse">
+                <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
                   {t('withdrawals.loadingRequests', 'Loading requisition requests...')}
                 </TableCell>
               </TableRow>
@@ -321,7 +321,7 @@ const WithdrawalOrdersList = ({
                     {sourceWarehouseNames.length > 1 && (
                       <div className="flex flex-wrap items-center gap-1 mt-1">
                         {sourceWarehouseNames.slice(0, 2).map(name => (
-                          <span key={name} className="px-1.5 py-0.5 rounded-md bg-indigo-500/10 border border-indigo-500/20 text-[10px] font-bold text-indigo-600 dark:text-indigo-400">
+                          <span key={name} className="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-muted text-muted-foreground border border-border/60">
                             {name}
                           </span>
                         ))}

@@ -748,7 +748,7 @@ const StockIn = () => {
         {/* Results Counter */}
         {(debouncedSearch || warehouseFilter !== 'all') && (
           <div className="text-xs text-muted-foreground shrink-0 flex items-center gap-1.5 font-medium">
-            <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span className="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
             <span>{t('stockIn.showingResults', { count: totalCount, defaultValue: `พบ ${totalCount} รายการ` })}</span>
           </div>
         )}
@@ -819,10 +819,10 @@ const StockIn = () => {
                     {o.matched_items_snippet && (
                       <div className="mt-1 flex items-center gap-1.5">
                         <span
-                          className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 max-w-md truncate"
+                          className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium bg-muted text-foreground border border-border/60 max-w-md truncate"
                           title={o.matched_items_snippet}
                         >
-                          <span className="font-semibold mr-1">{t('stockIn.matchedItem', 'พบพัสดุ')}:</span>
+                          <span className="font-semibold text-muted-foreground mr-1">{t('stockIn.matchedItem', 'พบพัสดุ')}:</span>
                           {o.matched_items_snippet}
                         </span>
                       </div>
@@ -909,16 +909,16 @@ const StockIn = () => {
 
               {/* Summary Badges */}
               <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-emerald-500/15 text-emerald-600 border border-emerald-500/30 font-mono">
+                <span className="px-2 py-0.5 rounded text-xs font-mono font-medium bg-muted text-foreground border border-border/80">
                   {t('stockIn.totalItems')}: {previewItems.length}
                 </span>
-                <span className="px-2 py-0.5 rounded-lg text-xs font-bold bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30">
+                <span className="px-2 py-0.5 rounded text-xs font-mono font-medium bg-muted text-muted-foreground border border-border/60">
                   PARENT: {previewParentCount}
                 </span>
-                <span className="px-2 py-0.5 rounded-lg text-xs font-bold bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30">
+                <span className="px-2 py-0.5 rounded text-xs font-mono font-medium bg-muted text-muted-foreground border border-border/60">
                   CHILD: {previewChildCount}
                 </span>
-                <span className="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 font-mono">
+                <span className="px-2 py-0.5 rounded text-xs font-mono font-medium bg-muted text-foreground border border-border/80">
                   {t('stockIn.totalUnits')}: {formatI18nNumber(previewTotalQty)} {t('common.piece')}
                 </span>
               </div>
@@ -1071,13 +1071,13 @@ const StockIn = () => {
                         </TableCell>
 
                         <TableCell>
-                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold border ${
+                          <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-mono font-medium border ${
                             isChild 
-                              ? 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/60 dark:text-blue-200' 
-                              : 'bg-indigo-100 text-indigo-800 border-indigo-300 dark:bg-indigo-900/60 dark:text-indigo-200'
+                              ? 'bg-muted text-muted-foreground border-border/60' 
+                              : 'bg-muted text-foreground border-border/80'
                           }`}>
                             <span>{isChild ? 'CHILD' : 'PARENT'}</span>
-                            {isChild && <CornerDownRight className="w-3 h-3 text-blue-600 dark:text-blue-300 shrink-0" />}
+                            {isChild && <CornerDownRight className="w-3 h-3 text-muted-foreground/70 shrink-0" />}
                           </span>
                         </TableCell>
 
@@ -1088,8 +1088,8 @@ const StockIn = () => {
                         <TableCell className={isChild ? 'pl-6' : ''}>
                           <div className="space-y-0.5">
                             <div className="flex items-center gap-1">
-                              {isChild && <CornerDownRight className="w-3.5 h-3.5 text-blue-500 shrink-0 select-none" />}
-                              <span className={`font-semibold ${isChild ? 'text-blue-950 dark:text-blue-200' : 'text-foreground'}`}>
+                              {isChild && <CornerDownRight className="w-3.5 h-3.5 text-muted-foreground/70 shrink-0 select-none" />}
+                              <span className="font-semibold text-foreground">
                                 {item.name}
                               </span>
                             </div>
@@ -1249,9 +1249,9 @@ const StockIn = () => {
               </div>
 
               {/* CSV Tools Action Bar */}
-              <div className="flex flex-wrap items-center justify-between gap-3 bg-emerald-500/10 p-3 rounded-xl border border-emerald-500/20">
-                <div className="flex items-center gap-2 text-sm text-emerald-900 dark:text-emerald-200">
-                  <Upload className="w-4 h-4 text-emerald-600" />
+              <div className="flex flex-wrap items-center justify-between gap-3 bg-muted/40 p-3 rounded-xl border border-border">
+                <div className="flex items-center gap-2 text-sm text-foreground">
+                  <Upload className="w-4 h-4 text-muted-foreground" />
                   <span className="font-semibold">Import CSV with Parent-Child structure or multi-warehouse columns (UTF-8 BOM)</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -1259,7 +1259,7 @@ const StockIn = () => {
                     type="button" 
                     variant="outline" 
                     size="sm"
-                    className="h-8 text-xs gap-1 border-emerald-500/30 hover:bg-emerald-500/10 font-bold"
+                    className="h-8 text-xs gap-1 font-medium"
                     onClick={handleDownloadCsvTemplate}
                   >
                     <Download className="w-3.5 h-3.5" /> Download CSV Template
@@ -1268,7 +1268,7 @@ const StockIn = () => {
                   <Button 
                     type="button" 
                     size="sm"
-                    className="h-8 text-xs gap-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold cursor-pointer"
+                    className="h-8 text-xs gap-1 bg-primary text-primary-foreground hover:bg-primary/90 font-medium cursor-pointer"
                     onClick={() => fileInputRef.current?.click()}
                   >
                     <Upload className="w-3.5 h-3.5" /> Import CSV File
@@ -1287,23 +1287,23 @@ const StockIn = () => {
                       type="button" 
                       variant="outline" 
                       size="sm"
-                      className="h-8 text-xs gap-1.5 px-3 rounded-lg text-emerald-700 dark:text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/10 font-bold shadow-2xs cursor-pointer"
+                      className="h-8 text-xs gap-1.5 px-3 rounded-lg font-medium shadow-2xs cursor-pointer"
                       onClick={() => handleAddLineItem('PARENT')}
                     >
-                      <Plus className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                      <Plus className="w-3.5 h-3.5" />
                       <span>Add Parent Item</span>
                     </Button>
                     <Button 
                       type="button" 
                       variant="outline" 
                       size="sm"
-                      className="h-8 text-xs gap-1.5 px-3 rounded-lg text-blue-700 dark:text-blue-300 border-blue-500/30 hover:bg-blue-500/10 font-bold shadow-2xs cursor-pointer"
+                      className="h-8 text-xs gap-1.5 px-3 rounded-lg font-medium shadow-2xs cursor-pointer"
                       onClick={() => {
                         const lastParent = lineItems.slice().reverse().find(i => i.item_type === 'PARENT');
                         handleAddLineItem('CHILD', lastParent?.sku || '');
                       }}
                     >
-                      <Plus className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                      <Plus className="w-3.5 h-3.5" />
                       <span>Add Child Item</span>
                     </Button>
                   </div>
@@ -1336,13 +1336,13 @@ const StockIn = () => {
                         lineItems.map((row) => {
                           const isChild = row.item_type === 'CHILD';
                           return (
-                            <TableRow key={row.tempId} className={isChild ? "bg-blue-50/30 dark:bg-blue-950/10" : ""}>
+                            <TableRow key={row.tempId} className={isChild ? "bg-muted/30" : ""}>
                               <TableCell className="align-top">
                                 <select 
                                   aria-label={`Item Type ${row.name || row.tempId}`}
                                   value={row.item_type} 
                                   onChange={e => handleUpdateLineItem(row.tempId, 'item_type', e.target.value)}
-                                  className={`h-9 w-full rounded-lg border px-1 text-xs font-bold ${isChild ? 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/60 dark:text-blue-200 dark:border-blue-700' : 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-900/60 dark:text-emerald-200 dark:border-emerald-700'}`}
+                                  className={`h-9 w-full rounded-lg border px-1 text-xs font-mono font-medium ${isChild ? 'bg-muted text-muted-foreground border-border/60' : 'bg-muted text-foreground border-border/80'}`}
                                 >
                                   <option value="PARENT">PARENT</option>
                                   <option value="CHILD">CHILD</option>
@@ -1372,14 +1372,14 @@ const StockIn = () => {
 
                               <TableCell className={`align-top ${isChild ? 'pl-6' : ''}`}>
                                 <div className="flex items-center gap-1">
-                                  {isChild && <CornerDownRight className="w-3.5 h-3.5 text-blue-500 shrink-0 inline-block select-none" aria-hidden="true" />}
+                                  {isChild && <CornerDownRight className="w-3.5 h-3.5 text-muted-foreground/70 shrink-0 inline-block select-none" aria-hidden="true" />}
                                   <Input 
                                     aria-label={`Item Name ${row.tempId}`}
                                     required
                                     placeholder={isChild ? "Enter child item name" : "Enter item name"} 
                                     value={row.name} 
                                     onChange={e => handleUpdateLineItem(row.tempId, 'name', e.target.value)} 
-                                    className={`h-9 text-xs rounded-lg ${isChild ? 'font-medium text-blue-950 dark:text-blue-200' : 'font-semibold'}`}
+                                    className={`h-9 text-xs rounded-lg ${isChild ? 'font-medium text-foreground' : 'font-semibold'}`}
                                   />
                                 </div>
                               </TableCell>

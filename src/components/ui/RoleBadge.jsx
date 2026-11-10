@@ -1,4 +1,4 @@
-import { Shield, Sparkles } from 'lucide-react';
+import { Shield, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { 
   getRoleLabel, 
@@ -58,8 +58,8 @@ export const RoleBadge = ({
         )}
       >
         {showIcon && (
-          isGradient || isSuper ? (
-            <Sparkles className={cn(iconSizes, 'text-amber-500 shrink-0')} />
+          isSuper ? (
+            <ShieldCheck className={cn(iconSizes, 'text-amber-500 shrink-0')} />
           ) : (
             <Shield className={cn(iconSizes, 'opacity-80 shrink-0')} />
           )
@@ -69,36 +69,35 @@ export const RoleBadge = ({
     );
   }
 
-  // 2. System Administrator Badge Default Style: Elegant Rose/Amber/Purple Glow
+  // 2. System Administrator Badge Default Style: Amber Authority
   if (isSuper) {
     return (
       <span
         className={cn(
-          'inline-flex items-center rounded-full font-bold tracking-wide',
-          'bg-gradient-to-r from-amber-500/15 via-purple-500/15 to-rose-500/15',
-          'text-purple-900 dark:text-purple-200 border border-purple-300/80 dark:border-purple-700/80 shadow-2xs',
+          'inline-flex items-center rounded-full font-bold',
+          'bg-amber-500/15 text-amber-900 dark:text-amber-200 border border-amber-500/30 shadow-2xs',
           sizeClasses,
           className
         )}
       >
-        {showIcon && <Sparkles className={cn(iconSizes, 'text-amber-500 dark:text-amber-400 shrink-0')} />}
+        {showIcon && <ShieldCheck className={cn(iconSizes, 'text-amber-600 dark:text-amber-400 shrink-0')} />}
         <span>{label}</span>
       </span>
     );
   }
 
-  // 3. Administrator Badge Default Style: Distinctive Rich Purple
+  // 3. Administrator Badge Default Style: Sky Authority
   if (isAdmin) {
     return (
       <span
         className={cn(
-          'inline-flex items-center rounded-full font-bold tracking-wide',
-          'bg-purple-100 text-purple-700 dark:bg-purple-950/80 dark:text-purple-300 border border-purple-300 dark:border-purple-800 shadow-2xs',
+          'inline-flex items-center rounded-full font-bold',
+          'bg-sky-500/15 text-sky-800 dark:text-sky-300 border border-sky-500/30 shadow-2xs',
           sizeClasses,
           className
         )}
       >
-        {showIcon && <Shield className={cn(iconSizes, 'text-purple-600 dark:text-purple-400 shrink-0')} />}
+        {showIcon && <Shield className={cn(iconSizes, 'text-sky-600 dark:text-sky-400 shrink-0')} />}
         <span>{label}</span>
       </span>
     );

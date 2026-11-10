@@ -8,7 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { 
   User, Mail, KeyRound, Save, Camera, 
-  RefreshCw, CheckCircle2, Lock, FolderKanban, Sparkles, Globe, PenTool
+  RefreshCw, CheckCircle2, Lock, FolderKanban, Globe, PenTool
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { uploadAvatarImage } from '@/lib/avatarUpload';
@@ -412,7 +412,7 @@ const Profile = () => {
           <Card className="rounded-xl bg-card border border-border shadow-xs">
             <CardContent className="p-4 sm:p-6 space-y-6">
               <div className="font-bold text-sm text-foreground flex items-center gap-2 pb-2 border-b border-border">
-                <Sparkles className="w-4 h-4 text-primary" />
+                <User className="w-4 h-4 text-primary" />
                 {t('profile.editPersonalInfo')}
               </div>
 

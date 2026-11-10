@@ -66,17 +66,6 @@
   }
 }
 
-@layer utilities {
-  @keyframes shiny-text-shimmer {
-    0% {
-      background-position: 200% 0;
-    }
-    100% {
-      background-position: -200% 0;
-    }
-  }
-}
-
 @layer base {
   :root {
     /* Clean Enterprise Palette — Light Mode */
@@ -150,6 +139,11 @@
 @layer base {
   * {
     @apply border-border;
+  }
+
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
   }
   body {
     @apply bg-background text-foreground;

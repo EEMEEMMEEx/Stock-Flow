@@ -106,7 +106,7 @@ const DefaultPasswordManager = ({ canUpdate }) => {
     <div className="p-4 rounded-xl bg-card border border-border shadow-xs space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/20 pb-3">
         <div className="flex items-center gap-2">
-          <KeyRound className="w-5 h-5 text-purple-600 dark:text-purple-400 shrink-0" />
+          <KeyRound className="w-5 h-5 text-primary shrink-0" />
           <div>
             <h4 className="text-sm font-bold text-foreground">
               {t('settings.defaultPassword.title')}
@@ -148,7 +148,7 @@ const DefaultPasswordManager = ({ canUpdate }) => {
                 size="sm"
                 onClick={handleSetRandomPassword}
                 disabled={!canUpdate || saving}
-                className="text-[11px] text-purple-600 hover:text-purple-700 dark:text-purple-400 hover:underline h-6 px-2 flex items-center gap-1 cursor-pointer"
+                className="text-[11px] text-primary hover:underline h-6 px-2 flex items-center gap-1 cursor-pointer"
               >
                 <RefreshCw className="w-3 h-3" />
                 {t('settings.defaultPassword.generateBtn', 'Generate Secure Default')}

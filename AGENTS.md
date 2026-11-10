@@ -63,7 +63,7 @@ If multiple skills match a task, invoke all that apply. If their instructions co
 ### Safety Constraints Subordination
 Skills are strictly subordinate to safety constraints: a skill may **never** override user confirmation requirements, secret-handling rules, or destructive-action restrictions.
 
-### Installed Skills Registry (All 68 Skills)
+### Installed Skills Registry (All 69 Skills)
 
 | Skill Name | Path | When to Invoke (Documented Trigger from SKILL.md) |
 |---|---|---|
@@ -125,6 +125,7 @@ Skills are strictly subordinate to safety constraints: a skill may **never** ove
 | `to-spec` | `.agents/skills/to-spec/SKILL.md` | 'Turn the current conversation into a spec and publish it to the project issue tracker: no interview, just synthesis of what you've already discussed.' |
 | `to-tickets` | `.agents/skills/to-tickets/SKILL.md` | Break a plan, spec, or the current conversation into a set of tracer-bullet tickets, each declaring its blocking edges, published to the configured tracker (edges as text in one file per ticket locally, or native blocking links on a real tracker). |
 | `ultracave` | `.agents/skills/ultracave/SKILL.md` | Invoke only with /ultracave or /caveman ultra. Stays on until 'stop caveman' or 'normal mode'. |
+| `unslop` | `.agents/skills/unslop/SKILL.md` | Use when the user asks to unslop, polish, clean up or redesign a screen so it stops looking AI-generated, or when a UI shows tells like purple gradients, glows, gradient text, emoji labels, "New ✨" badges, or uneven spacing. |
 | `using-git-worktrees` | `.agents/skills/using-git-worktrees/SKILL.md` | Use when starting feature work that needs isolation from current workspace or before executing implementation plans - ensures an isolated workspace exists via native tools or git worktree fallback |
 | `using-superpowers` | `.agents/skills/using-superpowers/SKILL.md` | Use when starting any conversation - establishes how to find and use skills, requiring skill invocation before ANY response including clarifying questions |
 | `verification-before-completion` | `.agents/skills/verification-before-completion/SKILL.md` | Use when about to claim work is complete, fixed, or passing, before committing or creating PRs - requires running verification commands and confirming output before making any success claims; evidence before assertions always |

@@ -1,9 +1,14 @@
 ---
 name: Stock-Flow
-description: Enterprise Inventory & Material Flow OS
+description: Industrial Precision Design System for Enterprise Inventory & Material Flow
+version: 1.28.13
 colors:
   primary: "#4338ca"
+  primary-hover: "#3730a3"
   primary-foreground: "#f8fafc"
+  accent: "#0284c7"
+  accent-hover: "#0369a1"
+  accent-foreground: "#f8fafc"
   background: "#f8fafc"
   foreground: "#0f172a"
   card: "#ffffff"
@@ -11,21 +16,20 @@ colors:
   secondary: "#f1f5f9"
   secondary-foreground: "#0f172a"
   muted: "#f1f5f9"
-  muted-foreground: "#5b6a7e"
-  accent: "#eef2f6"
-  accent-foreground: "#0f172a"
-  destructive: "#dc2626"
-  destructive-foreground: "#f8fafc"
+  muted-foreground: "#64748b"
   border: "#e2e8f0"
   input: "#e2e8f0"
-  ring: "#4338ca"
-  status-success: "#059669"
-  status-warning: "#d97706"
-  status-error: "#e11d48"
+  ring: "#0284c7"
+  status-success: "#10b981"
+  status-warning: "#f59e0b"
+  status-error: "#ef4444"
+  status-neutral: "#64748b"
   dark-background: "#090d16"
   dark-foreground: "#f8fafc"
   dark-card: "#141b27"
   dark-border: "#253041"
+  dark-muted: "#1e293b"
+  dark-muted-foreground: "#94a3b8"
 typography:
   display:
     fontFamily: "Sarabun, Inter, sans-serif"
@@ -52,179 +56,196 @@ typography:
     fontSize: "0.75rem"
     fontWeight: 600
     lineHeight: 1.4
+  mono-figure:
+    fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace"
+    fontSize: "0.875rem"
+    fontWeight: 600
+    fontFeature: "tabular-nums"
 rounded:
+  none: "0px"
+  xs: "4px"
   sm: "6px"
   md: "8px"
   lg: "12px"
   xl: "16px"
+  full: "9999px"
 spacing:
-  xs: "4px"
-  sm: "8px"
-  md: "16px"
-  lg: "24px"
-  xl: "32px"
+  nudge: "2px"
+  1: "4px"
+  2: "8px"
+  3: "12px"
+  4: "16px"
+  5: "20px"
+  6: "24px"
+  8: "32px"
+  10: "40px"
+  12: "48px"
 components:
   button-primary:
     backgroundColor: "{colors.primary}"
     textColor: "{colors.primary-foreground}"
     rounded: "{rounded.md}"
     padding: "8px 16px"
-  button-primary-hover:
-    backgroundColor: "#3730a3"
   button-secondary:
     backgroundColor: "{colors.secondary}"
     textColor: "{colors.secondary-foreground}"
     rounded: "{rounded.md}"
     padding: "8px 16px"
   button-destructive:
-    backgroundColor: "{colors.destructive}"
-    textColor: "{colors.destructive-foreground}"
+    backgroundColor: "{colors.status-error}"
+    textColor: "#ffffff"
     rounded: "{rounded.md}"
     padding: "8px 16px"
+  card:
+    backgroundColor: "{colors.card}"
+    rounded: "{rounded.lg}"
+    padding: "20px"
+  table-cell:
+    padding: "10px 14px"
+    typography: "{typography.body}"
 ---
 
 # Design System: Stock-Flow
 
 ## Overview
 
-**Creative North Star: "The Precision Depot"**
+**Creative North Star: "The Precision Depot" (Industrial Telecom Precision)**
 
-Stock-Flow ถูกออกแบบภายใต้ปรัชญา **Enterprise Industrial & Disciplined** — พื้นที่ทำงานดิจิทัลของศูนย์กระจายสินค้าและคลังพัสดุระดับองค์กรขนาดใหญ่ (Forth Corporation Public Company Limited) ที่ต้องการความแม่นยำสูงสุด รวดเร็ว ไร้ความคลุมเครือ และรองรับภาระงานหนัก (Heavy Operational Load) ทุกองค์ประกอบบนหน้าจอมีหน้าที่ชัดเจน (Purpose-Driven) ปราศจากการตกแต่งที่ฟุ่มเฟือยหรือลูกเล่นการตลาดที่ไม่จำเป็น
+Stock-Flow ถูกออกแบบภายใต้ปรัชญา **Enterprise Industrial & Disciplined** — สถาปัตยกรรมอินเทอร์เฟซสำหรับศูนย์กระจายสินค้า พัสดุ และอุปกรณ์โทรคมนาคม/ระบบโครงข่าย (Forth Corporation Public Company Limited) ที่ต้องรองรับการปฏิบัติงานต่อเนื่องของเจ้าหน้าที่คลังสินค้าและวิศวกรสนาม
 
-การออกแบบผสานความคล่องตัวของสถานีเบิกจ่ายหน้าร้าน (POS Terminal) เข้ากับความสุขุมรอบคอบของระบบจัดการคลังและวิศวกรรมภาคสนาม ใน Light Mode ระบบใช้มิติ Soft Tactical Layering ที่มีเส้นขอบคมชัด (1px crisp border) เงาบางเบาที่ให้สัมผัสจับต้องได้ และใน Dark Mode เลือกใช้พื้นหลัง Deep Charcoal ตัดกับแผ่น Card ที่ลอยตัวอย่างชัดเจน เพื่อลดความล้าของสายตาเมื่อใช้งานในสภาพแสงน้อย
+ระบบยึดหลัก **"Anti-Slop Craft"** ตามข้อกำหนด `@unslop` และ `@design-spec`:
+- **Quiet Chrome:** ส่วนนำทาง, ปุ่ม, บาร์หัวเรื่อง และตารางใช้สี Neutral Ramp (Slate) นิ่งสนิท ปราศจากแสงฟุ้ง (no glows), ปราศจาก Gradient หลากสี, และไร้เงาหนาเกินจริง เพื่อให้เนื้อหาและข้อมูลสต็อกเป็นจุดสนใจหลัก
+- **One Focal Element:** ในแต่ละหน้าจอจะมีจุดเด่น (Focal Point) เพียงจุดเดียว เช่น KPI Chart สรุปยอด, ตารางจัดการพัสดุหลัก, หรือ POS Cart Panel
+- **Data-Dense Scanability:** ข้อมูลตัวเลข รหัสพัสดุ วันที่ และสถานะสต็อก ต้องอ่านและกวาดสายตาได้อย่างแม่นยำด้วยฟอนต์ Monospace แบบ Tabular Numbers
+- **Zero Decorative Noise:** ปราศจาก Emoji Unicode ใน UI โดยสิ้นเชิง ใช้ไอคอน 100% Vector SVG (`lucide-react`) ขนาดและเส้นขีดสม่ำเสมอ
 
-**Key Characteristics:**
-- **Strictly Purpose-Driven:** ทุกพิกเซลมีเหตุผลเพื่อการปฏิบัติงาน ข้อมูลตารางและรหัสพัสดุต้องสแกนสายตาได้ทันที (High Scanability)
-- **Soft Tactical Layering:** มิติของวัตถุเกิดจากการซ้อนทับระดับเฉดสีและเส้นขอบ 1px เป็นหลัก เงาทำหน้าที่เพียงบอกสถานะสัมผัส
-- **Pure Vector Fidelity:** ไอคอนทั้งหมดในระบบเป็น 100% Vector SVG ผ่าน Lucide React ปราศจาก Unicode Emojis โดยเด็ดขาด
-- **Dual Script Harmony:** จัดจังหวะช่องไฟและ Line-height ให้ข้อความภาษาไทย (Sarabun) และอังกฤษ (Inter) แสดงผลคู่กันได้อย่างสมดุล
+---
 
 ## Colors
 
-ระบบสีของ Stock-Flow วางอยู่บนโทนสุขุมของ Enterprise Indigo ตัดกับ Slate Neutral Palette โดยแบ่งแยกบทบาทของสีไว้อย่างเด็ดขาดเพื่อป้องกันการรบกวนสายตาของผู้ปฏิบัติงาน
+ระบบสีของ Stock-Flow วางอยู่บนโทนสุขุมของ Slate Neutral Ramp ผสานกับ Primary Enterprise Indigo และ Sky Blue Accent:
 
-### Primary
-- **Enterprise Indigo** (`#4338ca` / `hsl(242 82% 60%)`): สีประจำตัวของระบบ ใช้สำหรับ Action สำคัญอันดับหนึ่ง (Primary Buttons, Active Nav Rail, Links, Selection Rings) สื่อถึงความน่าเชื่อถือทางวิศวกรรมและเทคโนโลยี
-- **Indigo Contrast Foreground** (`#f8fafc` / `hsl(210 40% 98%)`): สีตัวอักษรสีขาวสว่างบนพื้นหลัง Indigo ผ่านเกณฑ์คอนทราสต์ WCAG AAA
+### 1. Neutral Ramp (Slate System)
+- **Base Canvas (Light):** `#f8fafc` (`slate-50`) — พื้นหลังสะอาดตา สบายตาเมื่อทำงานต่อเนื่องหลายชั่วโมง
+- **Base Canvas (Dark):** `#090d16` — ถ่านชาร์โคลลึก ลดแสงจ้าในสภาพแสงน้อย
+- **Elevated Card (Light):** `#ffffff` (`card`) — พื้นหลังการ์ด ตาราง โมดอล ตัดขอบ 1px คมชัด
+- **Elevated Card (Dark):** `#141b27` (`dark-card`) — พื้นหลังยกตัวใน Dark Mode
+- **Crisp Structural Border:** `#e2e8f0` (`slate-200`) ใน Light, `#253041` ใน Dark — เส้นขอบ Hairline 1px สำหรับกั้นแบ่งสัดส่วน
+- **Typography Scale:**
+  - *Primary Text:* `#0f172a` (`slate-900`) ใน Light, `#f8fafc` (`slate-50`) ใน Dark
+  - *Secondary / Muted Text:* `#64748b` (`slate-500`) ใน Light, `#94a3b8` (`slate-400`) ใน Dark (ผ่านเกณฑ์ WCAG AA ≥ 4.5:1)
 
-### Secondary & Accent
-- **Slate Secondary** (`#f1f5f9` / `hsl(210 40% 96.1%)`): พื้นหลังปุ่มรอง แถบฟิลเตอร์ และแถบส่วนหัวของตาราง
-- **Tactical Accent** (`#eef2f6` / `hsl(210 40% 94%)`): สีพื้นผิวเมื่อเกิด Hover บนปุ่มหรือเมนูรายการ
+### 2. Primary & Accent Colors
+- **Enterprise Indigo (`#4338ca` / `indigo-700`):** สีแบรนด์หลักของระบบ ใช้สำหรับ Action สำคัญอันดับหนึ่ง (Submit, Primary Buttons, Active Rail)
+- **Precision Sky Blue (`#0284c7` / `sky-600`):** สี Accent สำหรับเน้นจุดข้อมูลสำคัญ เช่น แถบชาร์ตเดี่ยว, โฟกัสริง, ลิงก์ดาวน์โหลดเอกสาร PDF
 
-### Status Accents
-- **Signal Emerald** (`#059669` / `emerald-600`): สำหรับสถานะ "Approved", "Completed", และความพร้อม 100% ของชุด BOM
-- **Signal Amber** (`#d97706` / `amber-600`): สำหรับสถานะ "Pending", คำขอรออนุมัติ, และคำเตือนสต็อกไม่พอ (Shortage)
-- **Signal Rose / Destructive** (`#dc2626` / `hsl(0 84.2% 48.5%)`): สำหรับสถานะ "Rejected", ปุ่มลบรายการ, ยกเลิกบิล และข้อผิดพลาด
+### 3. Functional Status Semantics
+- **Signal Emerald (`#10b981` / `emerald-500`):** สต็อกปกติ, อนุมัติแล้ว (Approved), พร้อมใช้งาน (Completed)
+- **Signal Amber (`#f59e0b` / `amber-500`):** คำขอรออนุมัติ (Pending), สต็อกใกล้หมด, คำเตือน Shortage
+- **Signal Rose (`#ef4444` / `rose-500`):** สินค้าชำรุด (Damaged), ปฏิเสธ (Rejected), ยกเลิกคำขอ (Cancelled)
+- **Neutral Slate (`#64748b` / `slate-500`):** ยืมไม่กำหนดเวลา (Indefinite Loan), สินค้าทดแทน (Consumed), แบบร่าง (Draft)
 
-### Neutral
-- **Clean Slate Mist (Light Background)** (`#f8fafc` / `hsl(210 20% 98%)`): พื้นหลังแอปพลิเคชันหลัก สบายตา ไม่สะท้อนแสงจ้า
-- **Deep Tactical Charcoal (Dark Background)** (`#090d16` / `hsl(222.2 47.4% 8%)`): พื้นหลังโหมดมืดลึก ช่วยขับข้อมูลให้เด่นชัด
-- **Elevated White Card (Light)** (`#ffffff` / `hsl(0 0% 100%)`): พื้นหลังการ์ด ตาราง และโมดอลในโหมดสว่าง
-- **Elevated Slate Card (Dark)** (`#141b27` / `hsl(222.2 40% 13%)`): พื้นหลังการ์ดในโหมดมืด
-- **Crisp Structural Border** (`#e2e8f0` / `hsl(214.3 31.8% 91.4%)` ใน Light, `#253041` ใน Dark): เส้นขอบ 1px สำหรับแบ่งบล็อกโครงสร้าง
-- **Muted Slate Typography** (`#5b6a7e` / `hsl(215.4 16.3% 44%)`): สีข้อความคำอธิบายรอง ผ่านเกณฑ์ WCAG AA 4.81:1
+### Named Rules:
+- **The Zero-Purple-Slop Rule:** ห้ามใช้สีม่วง (`purple`, `fuchsia`, `violet`) แบบสุ่มตกแต่งหรือใช้กับป้ายสถานะที่ไม่เกี่ยวข้องกับแบรนด์
+- **The Monochrome Chart Rule:** ชาร์ตสถิติหลักต้องใช้คู่สี Accent เดียว (`#0284c7`) เป็นตัวนำ หรือใช้คู่สี Semantic ที่มีความหมายชัดเจน ห้ามใช้ชาร์ตรุ้งหลากสี
 
-### Named Rules
-**The Pure Vector Rule.** ทุกสัญลักษณ์ ไอคอน และการแสดงสถานะในระบบต้องใช้ Vector SVG ผ่าน `lucide-react` เท่านั้น ห้ามใช้อิโมจิ Unicode ใน UI โดยเด็ดขาด เพื่อคงความน่าเชื่อถือระดับ Enterprise
-**The Single Accent Rule.** สี Primary Enterprise Indigo ต้องใช้ไม่เกิน 15% ของพื้นที่หน้าจอทั้งหมด จุดเด่นของสีเน้นคือการนำสายตาไปยัง Action ถัดไป ไม่ใช่การแต่งแต้มรอบจอ
-**The High Contrast Baseline Rule.** ทุกคู่สีข้อความและพื้นหลังต้องผ่านเกณฑ์ WCAG AA (≥ 4.5:1 สำหรับข้อความปกติ และ ≥ 3.0:1 สำหรับข้อความขนาดใหญ่) เสมอ
+---
 
 ## Typography
 
-**Display & Headline Font:** Sarabun, Inter, sans-serif
-**Body & UI Controls Font:** Sarabun, Inter, sans-serif
-**Numeric & Code Font:** Inter, ui-monospace, monospace
+ระบบตัวอักษรผสานความชัดเจนของภาษาไทยและตัวเลขทางบัญชี/พัสดุ:
+- **UI & Prose Font:** `Sarabun`, `Inter`, `sans-serif`
+- **Numbers, Barcodes & Currencies:** `ui-monospace`, `SFMono-Regular`, `Menlo`, `Monaco`, `Consolas`, `monospace` พร้อมคุณสมบัติ `tabular-nums`
 
-**Character:** การประกบคู่ระหว่างฟอนต์ Sarabun ซึ่งเป็นฟอนต์ทางการสำหรับภาษาไทยที่อ่านง่ายในขนาดเล็ก กับ Inter ซึ่งเป็นฟอนต์มาตรฐานของ UI สากล ทำให้ระบบอ่านสบายตา ไม่ติดขัด ทั้งในหน้า Dashboard ที่เต็มไปด้วยตัวเลข และหน้าแบบฟอร์มเอกสารใบเบิกพัสดุ
+### Hierarchy & Scale:
+| Role | Size | Weight | Line Height | Use Case |
+|---|---|---|---|---|
+| **Display** | 30px (`1.875rem`) | 700 (Bold) | 1.2 | Page Header, Landing Hero Title |
+| **Headline** | 24px (`1.5rem`) | 600 (Semibold) | 1.3 | Section Titles, Modal Headers |
+| **Title** | 18px (`1.125rem`) | 600 (Semibold) | 1.4 | Card Titles, Table Group Headers |
+| **Body** | 14px (`0.875rem`) | 400 (Regular) | 1.6 | Table Data, Form Labels, Prose |
+| **Label / Micro** | 12px (`0.75rem`) | 600 (Semibold) | 1.4 | Badges, Table Headers, Form Help |
+| **Mono Metric** | 14px–20px | 600 / 700 | 1.2 | Stock Balances, Quantities, Serial Numbers |
 
-### Hierarchy
-- **Display** (Bold 700, `1.875rem` / 30px, Line-height 1.2): ใช้สำหรับหัวข้อหลักของหน้า (Page Title) และตัวเลขสถิติภาพรวมขนาดใหญ่
-- **Headline** (Semi-bold 600, `1.5rem` / 24px, Line-height 1.3): ใช้สำหรับหัวข้อการ์ดสำคัญ (Section Headers, Modal Titles)
-- **Title** (Semi-bold 600, `1.125rem` / 18px, Line-height 1.4): ใช้สำหรับหัวข้อกลุ่มย่อย ชื่อตาราง และชื่อการ์ดพัสดุ
-- **Body** (Regular 400 / Medium 500, `0.875rem` / 14px, Line-height 1.6): ใช้สำหรับเนื้อหาหลัก ข้อมูลในแถวตาราง และคำอธิบาย
-- **Label** (Semi-bold 600, `0.75rem` / 12px, Line-height 1.4, Letter-spacing 0.02em): ใช้สำหรับป้ายกำกับฟิลด์ (Input Labels), Badges, และปุ่มขนาดเล็ก
+### Named Rules:
+- **The Tabular Figures Rule:** ตัวเลขทั้งหมดที่ใช้ในตาราง, บัตร KPI, จำนวนสต็อก, ราคา และรหัสพัสดุ **ต้อง** มีคลาส `font-mono tabular-nums` เสมอ และจัดตำแหน่งชิดขวา (`text-right`) ในตาราง
+- **The Sentence Case Rule:** ป้ายกำกับ, หัวข้อ, และเมนูทั้งหมดต้องใช้ Sentence case (เช่น `Navigation`, `Current inventory`) ห้ามใช้ ALL-CAPS แบบ Wide-Tracking (`NAVIGATION`)
 
-### Named Rules
-**The Dual Script Rhythm Rule.** ข้อความที่มีภาษาไทยต้องกำหนด `line-height: 1.6` และ `letter-spacing: 0.01em` เสมอ เพื่อป้องกันสระและวรรณยุกต์ชนกับบรรทัดถัดไป
-**The Tabular Numbers Rule.** ตัวเลขรหัสพัสดุ จำนวนสต็อก ราคา และยอดคงเหลือในตารางต้องแสดงผลด้วย `font-variant-numeric: tabular-nums` เพื่อให้ตัวเลขตรงหลักกันในแนวตั้ง
+---
 
 ## Layout
 
-ระบบ Layout ของ Stock-Flow เป็นแบบ Responsive Operational Shell ที่ปรับตัวตามอุปกรณ์และบริบทการใช้งาน:
+ระบบ Layout แบบ Responsive Industrial Shell ยึดกริด 4px:
+- **4px Spacing Grid:** ค่า Padding, Margin, Gap, และความสูงทั้งหมดต้องหารด้วย 4 ลงตัว (เช่น 4, 8, 12, 16, 20, 24, 32, 40, 48px) อนุญาตให้ใช้ 2px เฉพาะการ Nudge ขยับองค์ประกอบภายในคอนโทรลขนาดจิ๋ว
+- **Desktop Shell:**
+  - Sidebar นำทางด้านซ้าย: พับเป็น Rail 64px (`w-16`) หรือขยายเต็ม 256px (`w-64`)
+  - Topbar ความสูงคงที่ 64px (`h-16`) พร้อมเส้นขอบล่าง 1px
+  - Content Container จำกัดความกว้างสูงสุดที่ 1536px (`max-w-384`) กึ่งกลางจอ
+- **Density Rules:**
+  - Dense Navigation: ความสูงแถว 32px–36px, ระยะห่างระหว่างไอคอนและป้ายกำกับ 8px คงที่
+  - Master Tables: ระยะเว้นบรรทัดเซลล์ 10px–12px เพื่อให้อ่านข้อมูลได้หลายสิบแถวในหนึ่งหน้าจอ
 
-- **Global Shell (`PageWrapper`):** หน้าจอความสูงเต็ม `100dvh` แบบ `overflow-hidden` ป้องกันการเลื่อนหลุดกรอบ แบ่งพื้นที่เป็น Sidebar นำทางด้านซ้าย และเนื้อหาหลักทางขวา
-- **Navigation Rail / Drawer:**
-  - *Desktop (≥ 768px):* Sidebar สามารถย่อเป็น Rail ขนาดบาง 64px (`w-16`) แสดงเฉพาะไอคอนพร้อม Tooltip หรือขยายเต็ม 256px (`w-64`) พร้อมจดจำสถานะผ่าน `localStorage`
-  - *Mobile / Tablet (< 768px):* ซ่อนเป็น Off-canvas Drawer เลื่อนเปิดจากซ้ายพร้อม Backdrop Overlay และ Focus Trap
-- **Top Navigation Bar (`Topbar`):** ความสูงคงที่ 64px (`h-16`) ขึงชิดขอบบนพร้อมเส้นขอบล่าง 1px เป็นจุดศูนย์รวมปุ่มสลับคลัง (Warehouse Selector), ศูนย์แจ้งเตือนด่วน (`NotificationBell`), ตัวสลับธีม/ภาษา และโปรไฟล์
-- **Content Container:** ความกว้างสูงสุดจำกัดที่ `max-w-384` (1536px) กึ่งกลางหน้าจอ พร้อมระยะเว้นขอบแบบก้าวหน้า: `p-3` (มือถือ), `sm:p-4`, `md:p-6`, `lg:p-8`
+---
 
 ## Elevation & Depth
 
-Stock-Flow ใช้หลักการ **Soft Tactical Layering** — มิติความลึกไม่ได้เกิดจากเงาฟุ้งขนาดใหญ่ แต่เกิดจากการตัดกันของพื้นผิวและเส้นขอบเฉียบคม
+มิติของ Stock-Flow เกิดจาก **Structural Borders** และ **Tonal Step Layering**:
+- **Borders over Shadows:** องค์ประกอบทุกชิ้น (Cards, Inputs, Modals, Panels) แยกชั้นด้วยเส้นขอบ Hairline 1px (`border-border`) เป็นหลัก
+- **Soft Minimal Shadows:**
+  - At-Rest: `shadow-xs` หรือ `shadow-sm`
+  - Interactive Hover: `shadow-md` (ไม่มีเงานีออนหรือเงาสี)
+  - Modal Overlays: `shadow-lg` ร่วมกับ `bg-black/50 backdrop-blur-xs`
+- **Zero Glassmorphism:** ห้ามใช้ `backdrop-blur-xl`, `bg-card/40` หรือเอฟเฟกต์กระจกฝ้าหนาที่ทำให้ตัวอักษรเบลอและเสียคอนทราสต์
 
-- **พื้นผิวระนาบหลัก (Base Canvas):** อยู่ที่ระดับล่างสุดด้วยสี `--background` (`#f8fafc` ใน Light / `#090d16` ใน Dark)
-- **การ์ดและตาราง (Surfaces):** ยกตัวขึ้นด้วยสี `--card` (`#ffffff` ใน Light / `#141b27` ใน Dark) ตัดขอบด้วยเส้น 1px `--border` ที่มองเห็นได้ชัดเจน
-- **เงาตอบสนองสถานะ (State Shadows):** เงาถูกจำกัดไว้ที่ `box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05)` (`shadow-xs`) สำหรับปุ่มและการ์ด และจะขยายขึ้นเป็น `shadow-md` เฉพาะเมื่อมี Interaction (Hover หรือลากวาง)
-- **โอเวอร์เลย์และโมดอล (Overlays):** ชั้น Dialog และ Sheet ใช้เงาความลึกระดับ `shadow-2xl` ร่วมกับฉากหลังโปร่งแสง `backdrop-blur-sm bg-black/50` เพื่อดึงความสนใจของผู้ใช้มาที่งานตรงหน้า
-
-### Named Rules
-**The Border Definition Rule.** ทุกการ์ด อินพุต และโมดอลต้องมีเส้นขอบ 1px ชัดเจน ห้ามพึ่งพาเงาฟุ้งเพียงอย่างเดียวในการแยกขอบเขตขององค์ประกอบ
-**The Grounded Rest Rule.** วัตถุที่ไม่ได้ถูกกระทำ (At Rest) จะมีมิติเงาที่สงบนิ่งและแนบชิดพื้นผิว เงาจะลอยขึ้นเฉพาะเมื่อผู้ใช้แตะหรือชี้เมาส์เท่านั้น
+---
 
 ## Shapes
 
-รูปทรงเรขาคณิตของ Stock-Flow สื่อถึงความทนทาน มีระเบียบ และหยิบจับง่ายแบบอุปกรณ์ช่างอุตสาหกรรม:
+รูปทรงเรขาคณิตมีระเบียบและใช้สูตร Nested Radius:
+- **Nested Radius Arithmetic:** รัศมีขอบในเท่ากับรัศมีขอบนอกลบด้วยระยะเว้นขอบ ($R_{inner} = R_{outer} - Padding$) โดยไม่น้อยกว่า 4px
+- **Interactive Controls:** 8px (`rounded-lg` หรือ `rounded-md`) สำหรับ Buttons, Inputs, Dropdowns
+- **Content Cards:** 12px–16px (`rounded-xl`)
+- **Status Chips & Pills:** 6px–8px (`rounded-md` หรือ `rounded-lg`) สำหรับป้ายข้อมูล, ห้ามทำเป็น Capsule Pill ลอยๆ ทุกจุด
 
-- **Small Controls & Badges (`rounded-sm` - 6px):** ใช้กับ Status Badges, Tooltips, ป้าย Tag โครงการ, และปุ่มขนาดกะทัดรัด
-- **Default Interactive Elements (`rounded-md` - 8px / `--radius`):** ใช้กับ Button ปกติ, Input Fields, Select Dropdowns, Checkboxes
-- **Surface Containers (`rounded-lg` - 12px / `rounded-xl` - 16px):** ใช้กับการ์ดเนื้อหา (Content Cards), โมดอล (Dialogs), และบานหน้าต่างเลื่อน (Drawers)
-- **Indicator Dots (`rounded-full`):** ใช้กับจุดแสดงสถานะความพร้อม (UserStatusDot, Indicator Dots ในตาราง)
+---
 
 ## Components
 
-### Buttons
-- **Shape:** มนพอดี 8px (`rounded-md` หรือ `rounded-lg`)
-- **Primary:** พื้นหลัง Enterprise Indigo (`#4338ca`), ตัวอักษรสีขาว, เงา `shadow-xs`, ความสูงมาตรฐาน 36px (`h-9 px-4`) หรือ 40px (`h-10 px-6` สำหรับปุ่ม Action หลัก)
-- **Hover / Focus:** เปลี่ยนเฉดสีเข้มขึ้น (`hover:bg-primary/90`), แสดง Focus Ring 2px สี Indigo พร้อม Ring Offset 2px
-- **Secondary / Ghost:** พื้นหลัง Slate 100 ในโหมดสว่าง ตัวอักษรสีเข้ม หรือโปร่งใสสำหรับปุ่ม Ghost พร้อม Hover สลับสีนุ่มนวล
+### 1. Buttons
+- **Primary:** `bg-primary text-primary-foreground h-9 px-4 rounded-lg font-semibold shadow-xs hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2`
+- **Outline / Ghost:** `border border-border/80 bg-background hover:bg-muted text-foreground h-9 px-4 rounded-lg font-semibold`
+- **Destructive:** `bg-destructive text-destructive-foreground hover:bg-destructive/90 h-9 px-4 rounded-lg`
 
-### Cards / Containers
-- **Corner Style:** มุมมน 12px ถึง 16px (`rounded-xl`)
-- **Background:** สีขาวบริสุทธิ์ (`bg-card`) ใน Light, Slate เข้มลึก (`#141b27`) ใน Dark
-- **Border:** เส้นขอบ 1px สี `--border` สม่ำเสมอรอบทิศทาง
-- **Padding:** 20px บนมือถือ ขยายเป็น 24px บนเดสก์ท็อป (`p-5 sm:p-6`)
+### 2. Master Tables (`Items.jsx`, `StockIn.jsx`, `Withdrawals.jsx`)
+- **Header:** `bg-muted/80 text-muted-foreground font-semibold text-xs py-2.5 px-3`
+- **Row:** `border-b border-border/40 hover:bg-muted/40 transition-colors`
+- **Numbers Column:** `font-mono tabular-nums text-right font-semibold`
+- **Actions Column:** ชิดขวา รวมปุ่มขนาดกะทัดรัด `h-8 px-2`
 
-### Inputs / Search Fields
-- **Style:** ความสูง 36px (`h-9`), เส้นขอบ 1px สี `--input`, พื้นหลัง `--background`, Padding แนวนอน 12px (`px-3`)
-- **Focus:** ขอบเปลี่ยนสีตามโทน Ring พร้อม Focus Ring ชัดเจน ไม่ขยายขนาดกล่อง
-- **Autofill Protection:** ป้องกันสีพื้นหลังเหลืองของเบราว์เซอร์ด้วยการใช้ Inset Box-Shadow สีพื้นหลังของแอป
+### 3. Status Badges (`StatusBadge.jsx`)
+- **Visuals:** ไอคอน Vector SVG ขนาด 14px–16px พร้อมพื้นหลังโปร่งแสง 10% และเส้นขอบ 20%
+- **Motion:** ปราศจาก `animate-ping` หรือ `animate-pulse` ที่กะพริบไม่หยุดนิ่ง
 
-### Status Badges (`StatusBadge.jsx`)
-- **Style:** ทรงกลมกะทัดรัด (`w-7 h-7`), เส้นขอบสีเดียวกับสัญลักษณ์แต่โปร่งแสง 30%, พื้นหลังสีจาง 10%
-- **Icon Only:** ภายในบรรจุเฉพาะไอคอน Vector SVG พร้อมข้อความแบบ `sr-only` และ Tooltip เพื่อการเข้าถึง (Accessibility)
-- **Variants:**
-  - *Approved / Completed:* สีเขียว Emerald (`CheckCircle2`)
-  - *Pending / Shortage:* สีส้ม Amber (`Clock` หรือ `AlertTriangle`) พร้อมลูกเล่นกะพริบเบาๆ (`animate-pulse`) เมื่อเป็น Pending
-  - *Rejected:* สีแดง Rose (`XCircle`)
-  - *Cancelled:* สีเทา Slate (`Ban`)
+### 4. Stat Cards (KPIs)
+- **Structure:** ป้ายชื่อตัวเล็ก, ตัวเลขขนาดใหญ่ `text-xl font-bold font-mono tabular-nums`, และบริบทเปรียบเทียบ (เช่น `vs last month`)
+- **Anti-Slop:** ห้ามใส่ Sparkline หรือชาร์ตแท่งจิ๋วเป็นของประดับ ห้ามใส่ `group-hover:scale-105`
 
-### Navigation Rail & Tabs
-- **Sidebar Nav Link:** ความสูง 40px (`py-2.5 px-3`), มุมมน 8px, มีแถบสี Indigo กว้าง 4px นูนชิดขอบซ้ายเมื่อเป็น Active Link
-- **Notification Hub (`NotificationBell`):** กล่อง Popover กว้าง 380px แสดงรายการแจ้งเตือนคำขอเบิก แบ่งแท็บ "All", "Unread", "Action Required" พร้อมปุ่ม Quick Approval ทันทีในการ์ด
+---
 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** ใช้ไอคอน Vector SVG จาก `lucide-react` เท่านั้นสำหรับทุกองค์ประกอบอินเทอร์เฟซ
-- **Do** ตรวจสอบให้ข้อความทุกจุดผ่านเกณฑ์ WCAG AA Contrast (4.5:1) เสมอ
-- **Do** ใช้ `tabular-nums` กับตัวเลขสต็อก ยอดเบิกจ่าย และรหัสเอกสารทุกครั้ง
-- **Do** ให้ความสำคัญกับสถานะ Loading, Empty State, และ Error State ของทุกหน้าจอ
-- **Do** ใช้เส้นขอบ 1px ควบคู่กับเงาเบาบาง เพื่อสร้างความชัดเจนในโครงสร้างหน้าจอ
+1. **Do** ใช้ `font-mono tabular-nums` สำหรับตัวเลข วันที่ รหัสสต็อก และจำนวนเงินทุกจุดในระบบ
+2. **Do** รักษาระยะ Spacing บน 4px Grid System เสมอ
+3. **Do** ตรวจสอบคอนทราสต์ของข้อความและพื้นหลังให้ผ่านเกณฑ์ WCAG AA (≥ 4.5:1) ทุกกรณี
+4. **Do** ใช้ไอคอน Vector SVG จาก `lucide-react` เท่านั้น ขนาดมาตรฐาน 14px–16px เส้นขีด 1.5–2px
+5. **Do** ให้ความสำคัญกับ Data Scanability และความเร็วในการปฏิบัติงานของเจ้าหน้าที่คลังสินค้า
+6. **Do** ใช้เส้นขอบ 1px (`border-border`) เพื่อแบ่งแยกบล็อกข้อมูลแทนการใช้เงาฟุ้ง
 
 ### Don't:
-- **Don't** ใส่อิโมจิ Unicode (เช่น 📦, 🚀, ⚠️) ในส่วนของ UI, ไอคอนปุ่ม, หรือป้ายสถานะโดยเด็ดขาด
-- **Don't** ใช้สีฉูดฉาดหรือสีสะท้อนแสงโดยไม่มีความหมายเชิงฟังก์ชันกำกับ
-- **Don't** สร้างปุ่มหรืออินพุตที่ไม่มี Focus State หรือมองไม่เห็นเส้น Focus Ring ขณะนำทางด้วยคีย์บอร์ด
-- **Don't** ใช้เงาฟุ้งขนาดใหญ่แบบแอปโซเชียลมีเดียที่ทำให้องค์ประกอบดูเบลอหรือไม่มั่นคง
-- **Don't** แก้ไขสีพื้นหลังโดยตรงแบบ Hardcoded (เช่น `bg-blue-600`) ให้ใช้โทเค็นของระบบเสมอ (`bg-primary`)
+1. **Don't** ใส่ Gradient สีม่วง ชมพู หรือ Rainbow Gradient บนพื้นหลัง ตัวอักษร หรือ Avatar
+2. **Don't** ใช้อนิเมชันวนซ้ำไร้ประโยชน์ เช่น `animate-pulse`, `animate-ping`, หรือ Bouncy Hover Scale (`hover:scale-105`)
+3. **Don't** ใส่อิโมจิ Unicode (📦, 🚀, ✨, ⚠️) ในส่วนของอินเทอร์เฟซ, ปุ่ม, หรือป้ายข้อความ
+4. **Don't** ใช้ชาร์ตสีรุ้งโดยไม่มีเหตุผลทางข้อมูล ชาร์ตเดี่ยวต้องใช้ Accent Blue (`#0284c7`) เสมอ
+5. **Don't** ใช้ข้อความโอ้อวด (Hype words) เช่น `Supercharged`, `Magic AI`, `Game-changing` ในเอกสารหรือระบบ
+6. **Don't** ใช้ Glassmorphism หรือ Backdrop Blur หนาๆ ที่ทำให้ตัวอักษรสูญเสียความคมชัด

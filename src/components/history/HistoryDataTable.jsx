@@ -159,10 +159,10 @@ const HistoryDataTable = ({
                           size="sm"
                           variant="outline"
                           onClick={() => onDownloadPDF(order)}
-                          className="h-8 px-2.5 rounded-lg text-xs font-semibold text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-900/60 hover:bg-purple-50 dark:hover:bg-purple-950/40 cursor-pointer gap-1"
+                          className="h-8 px-2.5 rounded-lg text-xs font-semibold text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-900/60 hover:bg-sky-50 dark:hover:bg-sky-950/40 cursor-pointer gap-1"
                           title="Print / Download PDF"
                         >
-                          <FileText className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+                          <FileText className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
                           <span>{t('history.pdf', 'PDF')}</span>
                         </Button>
                       )}

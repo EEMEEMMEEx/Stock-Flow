@@ -86,11 +86,11 @@ export const getRoleTextColorClass = (roleInput, roleNameInput, roleObj) => {
   const code = normalizeRoleCode(roleObj?.code || roleInput);
 
   if (isSuperRole(code)) return 'text-amber-600 dark:text-amber-400 font-bold';
-  if (isAdminRole(code)) return 'text-purple-600 dark:text-purple-400 font-bold';
+  if (isAdminRole(code)) return 'text-sky-700 dark:text-sky-400 font-bold';
   if (isSupervisorRole(code)) return 'text-emerald-600 dark:text-emerald-400 font-semibold';
   if (isRequesterRole(code)) return 'text-blue-600 dark:text-blue-400 font-medium';
 
-  return 'text-purple-600 dark:text-purple-400 font-semibold';
+  return 'text-slate-700 dark:text-slate-300 font-semibold';
 };
 
 /**

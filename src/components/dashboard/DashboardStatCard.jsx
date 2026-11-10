@@ -20,8 +20,8 @@ const TONE_CLASSES = {
     valueText: 'text-blue-600 dark:text-blue-400',
   },
   indigo: {
-    iconBg: 'bg-purple-500/10 dark:bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/20',
-    valueText: 'text-purple-600 dark:text-purple-400',
+    iconBg: 'bg-muted text-foreground border-border/80',
+    valueText: 'text-foreground',
   },
   success: {
     iconBg: 'bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
@@ -87,7 +87,7 @@ const DashboardStatCard = ({
         ) : error ? (
           <span className="text-xl font-bold text-muted-foreground/60" title={t('common.noData', 'Unable to load data')}>—</span>
         ) : (
-          <span className={`text-xl sm:text-2xl font-bold tracking-tight ${style.valueText}`}>
+          <span className={`text-xl sm:text-2xl font-bold font-mono tabular-nums tracking-tight ${style.valueText}`}>
             {typeof value === 'number' ? value.toLocaleString(language === 'en' ? 'en-US' : 'th-TH') : (value ?? 0)}
           </span>
         )}

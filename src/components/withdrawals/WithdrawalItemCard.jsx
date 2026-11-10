@@ -33,15 +33,15 @@ const WithdrawalItemCard = React.memo(({
     <Card
       className={`p-3.5 rounded-xl bg-card border shadow-xs transition-colors flex flex-col justify-between relative overflow-hidden group select-none ${
         isInCart
-          ? 'ring-2 ring-indigo-500 border-indigo-500/50 bg-indigo-500/5 dark:bg-indigo-950/20 shadow-xs'
+          ? 'ring-2 ring-primary border-primary/50 bg-primary/5 shadow-xs'
           : completelyEmpty
             ? 'opacity-40 bg-muted/20 border-border/40'
-            : 'hover:border-indigo-500/40 border-border shadow-xs'
+            : 'hover:border-border/80 border-border shadow-xs'
       }`}
     >
       {/* Top Left: In-Cart Ribbon Indicator */}
       {isInCart && (
-        <div className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded text-[10px] font-extrabold font-mono bg-indigo-600 text-white shadow-xs flex items-center gap-1">
+        <div className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-primary text-primary-foreground shadow-xs flex items-center gap-1">
           <Check className="w-3 h-3 stroke-[2.5]" />
           <span>{cartQuantity} {t('withdrawals.inCart', 'in cart')}</span>
         </div>
@@ -49,7 +49,7 @@ const WithdrawalItemCard = React.memo(({
 
       <div className="space-y-2.5">
         {/* Product Image & Stock Badge Overlay */}
-        <div className="aspect-square bg-muted/30 dark:bg-muted/10 rounded-lg flex items-center justify-center p-3 relative overflow-hidden border border-border group-hover:border-indigo-500/30 transition-colors">
+        <div className="aspect-square bg-muted/30 dark:bg-muted/10 rounded-lg flex items-center justify-center p-3 relative overflow-hidden border border-border group-hover:border-border/80 transition-colors">
           {item.image_url ? (
             <img
               src={item.image_url}
@@ -72,14 +72,14 @@ const WithdrawalItemCard = React.memo(({
                 }
               }}
               title={t('withdrawals.viewLocationBreakdown', 'Click to view location breakdown')}
-              className={`absolute top-2 right-2 px-2 py-0.5 rounded text-[10px] font-bold font-mono shadow-xs transition-colors cursor-pointer ${
+              className={`absolute top-2 right-2 px-1.5 py-0.5 rounded text-[10px] font-mono font-medium tabular-nums shadow-2xs transition-colors cursor-pointer ${
                 isLowStock
-                  ? 'bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 hover:bg-amber-500/30'
+                  ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30 hover:bg-amber-500/20'
                   : availableStock > 0
-                    ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/30'
+                    ? 'bg-background/90 text-foreground border border-border/80 hover:bg-background'
                     : hasStockInOtherWarehouse
-                      ? 'bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-500/30 hover:bg-blue-500/30'
-                      : 'bg-muted text-muted-foreground border border-border'
+                      ? 'bg-muted/80 text-muted-foreground border border-border/60 hover:bg-muted'
+                      : 'bg-muted/60 text-muted-foreground/60 border border-border/40'
               }`}
             >
               {isLowStock

@@ -13,17 +13,12 @@ import {
   CalendarClock,
   PackageCheck,
   TrendingUp,
-  Sparkles
+  FileEdit
 } from 'lucide-react';
-import Squares from '@/components/reactbits/Squares';
-import DecryptedText from '@/components/reactbits/DecryptedText';
-import ShinyText from '@/components/reactbits/ShinyText';
-import Magnet from '@/components/reactbits/Magnet';
-import TiltedCard from '@/components/reactbits/TiltedCard';
 import { useLandingLanguage } from '../context/LandingLanguageContext';
 
 export default function HeroSection() {
-  const { t, lang } = useLandingLanguage();
+  const { t } = useLandingLanguage();
   const [activeTab, setActiveTab] = useState('pos'); // 'pos' | 'stock' | 'duedate' | 'sitekits'
 
   // Interactive local states for mockup simulations
@@ -34,21 +29,11 @@ export default function HeroSection() {
 
   return (
     <section className="relative min-h-[94dvh] flex flex-col justify-center items-center pt-28 pb-16 px-4 sm:px-6 lg:px-8 overflow-hidden bg-zinc-950 text-white">
-      {/* Background Interactive Squares Grid */}
-      <div className="absolute inset-0 z-0 opacity-40">
-        <Squares
-          direction="diagonal"
-          speed={0.3}
-          squareSize={48}
-          borderColor="rgba(255, 255, 255, 0.05)"
-          hoverFillColor="rgba(16, 185, 129, 0.12)"
-        />
-      </div>
-
-      {/* Radial Gradient Ambient Lighting */}
-      <div className="pointer-events-none absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[380px] bg-gradient-to-tr from-emerald-500/20 via-teal-500/15 to-cyan-500/10 rounded-full blur-[130px] z-0" />
-      <div className="pointer-events-none absolute top-1/2 right-10 w-[320px] h-[320px] bg-cyan-500/10 rounded-full blur-[100px] z-0" />
-      <div className="pointer-events-none absolute bottom-10 left-10 w-[300px] h-[300px] bg-emerald-600/10 rounded-full blur-[110px] z-0" />
+      {/* Background Subtle Grid Pattern */}
+      <div 
+        className="absolute inset-0 z-0 opacity-15 pointer-events-none bg-[radial-gradient(#3f3f46_1px,transparent_1px)] [background-size:24px_24px]" 
+        aria-hidden="true" 
+      />
 
       <div className="relative z-10 max-w-5xl mx-auto text-center flex flex-col items-center">
         {/* Top Status & Announcement Pill */}
@@ -56,20 +41,15 @@ export default function HeroSection() {
           initial={{ opacity: 0, y: -16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-zinc-900/80 border border-emerald-500/30 backdrop-blur-md mb-6 shadow-lg shadow-emerald-500/5"
+          className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-zinc-900 border border-zinc-800 mb-6 shadow-xs"
         >
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping motion-reduce:animate-none absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          <span className="inline-block w-2 h-2 rounded-full bg-emerald-500" />
+          <span className="text-xs font-mono uppercase tracking-widest font-semibold text-zinc-300">
+            {t.hero.pill}
           </span>
-          <ShinyText
-            text={t.hero.pill}
-            speed={3.5}
-            className="text-xs font-mono uppercase tracking-widest font-semibold text-emerald-300"
-          />
         </motion.div>
 
-        {/* Main Display Headline with Decrypted Text */}
+        {/* Main Display Headline */}
         <motion.h1
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -77,15 +57,8 @@ export default function HeroSection() {
           className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white max-w-4xl leading-[1.08]"
         >
           <span>{t.hero.headlinePrefix}</span>
-          <span className="text-emerald-400">
-            <DecryptedText
-              key={lang}
-              text={t.hero.headlineDynamic}
-              speed={45}
-              maxIterations={14}
-              animateOn="view"
-              className="inline-block"
-            />
+          <span className="text-emerald-400 ml-2">
+            {t.hero.headlineDynamic}
           </span>
         </motion.h1>
 
@@ -106,19 +79,17 @@ export default function HeroSection() {
           transition={{ duration: 0.7, delay: 0.3 }}
           className="mt-8 flex flex-wrap items-center justify-center gap-4"
         >
-          <Magnet padding={40} magnetStrength={3}>
-            <a
-              href="https://stockflowth.online"
-              className="flex items-center gap-2.5 px-6 py-3.5 rounded-xl font-semibold text-sm text-zinc-950 bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-400 hover:from-emerald-300 hover:to-teal-200 transition-all duration-200 shadow-xl shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:scale-[1.02] active:scale-[0.98] border border-emerald-300/40"
-            >
-              <span>{t.hero.launchCta}</span>
-              <ArrowUpRight className="w-4 h-4" strokeWidth={2.5} />
-            </a>
-          </Magnet>
+          <a
+            href="https://stockflowth.online"
+            className="flex items-center gap-2.5 px-6 py-3.5 rounded-xl font-semibold text-sm text-zinc-950 bg-emerald-400 hover:bg-emerald-300 transition-colors shadow-md border border-emerald-300/40 cursor-pointer"
+          >
+            <span>{t.hero.launchCta}</span>
+            <ArrowUpRight className="w-4 h-4" strokeWidth={2.5} />
+          </a>
 
           <a
             href="#simulator"
-            className="flex items-center gap-2 px-5 py-3.5 rounded-xl font-medium text-sm text-zinc-300 bg-zinc-900/80 hover:bg-zinc-800 border border-white/10 hover:border-emerald-500/30 transition-all duration-200 backdrop-blur-sm shadow-sm"
+            className="flex items-center gap-2 px-5 py-3.5 rounded-xl font-medium text-sm text-zinc-300 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 transition-colors shadow-xs"
           >
             <span>{t.hero.exploreCta}</span>
             <ChevronDown className="w-4 h-4 text-emerald-400" strokeWidth={2} />
@@ -154,8 +125,8 @@ export default function HeroSection() {
         transition={{ duration: 0.9, delay: 0.4 }}
         className="relative z-10 mt-12 w-full max-w-5xl mx-auto px-2"
       >
-        <TiltedCard maxTilt={5} className="w-full">
-          <div className="w-full bg-zinc-950/95 border border-white/15 rounded-2xl p-4 sm:p-6 shadow-2xl backdrop-blur-2xl">
+        <div className="w-full">
+          <div className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl p-4 sm:p-6 shadow-xl">
             {/* Window header with Tab Switcher */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-4 border-b border-white/10">
               <div className="flex items-center gap-2">
@@ -362,7 +333,7 @@ export default function HeroSection() {
 
                     <div className="p-2.5 rounded-xl bg-zinc-950/60 border border-white/5 space-y-1">
                       <span className="text-xs text-zinc-400 font-bold flex items-center gap-1">
-                        <Sparkles className="w-3 h-3 text-amber-400" />
+                        <FileEdit className="w-3 h-3 text-emerald-400" />
                         <span>เหตุผลในการปรับปรุงยอดสต็อก (Mandatory Reason) *</span>
                       </span>
                       <input
@@ -538,7 +509,7 @@ export default function HeroSection() {
               </div>
             )}
           </div>
-        </TiltedCard>
+        </div>
       </motion.div>
     </section>
   );

@@ -212,7 +212,7 @@ const CheckoutPendingList = ({
                         <span>{t('checkouts.expectedReturnDate', 'กำหนดส่งคืน')}:</span>
                         <span className="font-medium text-foreground">
                           {isIndefinite ? (
-                            <span className="inline-flex items-center gap-1 text-purple-600 dark:text-purple-400 font-semibold">
+                            <span className="inline-flex items-center gap-1 text-slate-600 dark:text-slate-400 font-semibold">
                               <InfinityIcon className="w-3 h-3" />
                               <span>{t('checkouts.indefinite', 'ไม่มีกำหนด')}</span>
                             </span>

@@ -271,7 +271,7 @@ const NotificationBell = () => {
           <Bell className="h-[18px] w-[18px]" />
           {unreadCount > 0 && (
             <span
-              className="absolute -right-1 -top-1 inline-flex min-w-5 h-5 items-center justify-center rounded-full border-2 border-background bg-rose-500 px-1 text-[10px] font-bold leading-4 text-white shadow-md motion-safe:animate-pulse"
+              className="absolute -right-1 -top-1 inline-flex min-w-5 h-5 items-center justify-center rounded-full border-2 border-background bg-rose-500 px-1 text-[10px] font-bold leading-4 text-white shadow-xs"
               aria-hidden="true"
             >
               {unreadLabel}
@@ -370,7 +370,7 @@ const NotificationBell = () => {
             >
               <span>{t('notifications.tabAction')}</span>
               {pendingActionCount > 0 && (
-                <span className="text-[10px] bg-amber-500 text-white px-1.5 py-0.2 rounded-full font-mono animate-pulse">
+                <span className="text-[10px] bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 px-1.5 py-0.2 rounded-full font-mono font-semibold">
                   {pendingActionCount}
                 </span>
               )}

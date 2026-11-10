@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { 
   CalendarClock, Calendar, AlertTriangle, CheckCircle2, 
-  User, Building2, Sparkles, Plus, Infinity as InfinityIcon
+  User, Building2, FileEdit, Plus, Infinity as InfinityIcon
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { format, addDays, differenceInDays, isAfter, parseISO } from 'date-fns';
@@ -331,9 +331,9 @@ const CheckoutExtendModal = ({
             </Label>
 
             {isIndefiniteChoice ? (
-              <div className="p-3 rounded-lg border border-purple-500/30 bg-purple-500/10 text-purple-950 dark:text-purple-200 flex items-center justify-between transition-all">
+              <div className="p-3 rounded-lg border border-slate-500/30 bg-slate-500/10 text-slate-900 dark:text-slate-100 flex items-center justify-between transition-all">
                 <div className="flex items-center gap-2">
-                  <InfinityIcon className="w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0" />
+                  <InfinityIcon className="w-4 h-4 text-slate-600 dark:text-slate-400 shrink-0" />
                   <div>
                     <div className="font-bold text-xs">{t('checkouts.indefiniteLoan')}</div>
                     <div className="text-[11px] opacity-80">{t('checkouts.indefiniteDescription')}</div>
@@ -347,7 +347,7 @@ const CheckoutExtendModal = ({
                     setIsIndefiniteChoice(false);
                     handleQuickAddDays(7);
                   }}
-                  className="h-7 px-2 text-[11px] font-medium border-purple-500/40 text-purple-700 dark:text-purple-300 hover:bg-purple-500/20 cursor-pointer"
+                  className="h-7 px-2 text-[11px] font-medium border-slate-500/40 text-slate-700 dark:text-slate-300 hover:bg-slate-500/15 cursor-pointer"
                 >
                   {t('checkouts.specifyDate')}
                 </Button>
@@ -379,7 +379,7 @@ const CheckoutExtendModal = ({
                   variant="outline"
                   size="sm"
                   onClick={() => handleQuickAddDays(preset.days)}
-                  className="h-7 px-2.5 rounded-lg text-[11px] font-semibold border-border/80 hover:bg-indigo-500/10 hover:text-indigo-600 hover:border-indigo-500/30 cursor-pointer transition-all"
+                  className="h-7 px-2.5 rounded-lg text-[11px] font-semibold border-border/80 hover:bg-primary/10 hover:text-primary hover:border-primary/30 cursor-pointer transition-all"
                 >
                   <Plus className="w-2.5 h-2.5 mr-0.5" />
                   {t(preset.labelKey)}
@@ -393,8 +393,8 @@ const CheckoutExtendModal = ({
                 onClick={handleSelectIndefinite}
                 className={`h-7 px-2.5 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
                   isIndefiniteChoice
-                    ? 'bg-purple-600 text-white border-purple-600 hover:bg-purple-700 hover:text-white shadow-xs'
-                    : 'border-purple-500/30 bg-purple-500/5 text-purple-700 dark:text-purple-300 hover:bg-purple-500/15 hover:border-purple-500/50'
+                    ? 'bg-primary text-primary-foreground border-primary hover:bg-primary/90 shadow-xs'
+                    : 'border-slate-500/30 bg-slate-500/5 text-slate-700 dark:text-slate-300 hover:bg-slate-500/15 hover:border-slate-500/50'
                 }`}
               >
                 <InfinityIcon className="w-3 h-3 mr-1" />
@@ -407,14 +407,14 @@ const CheckoutExtendModal = ({
           {previewData && (
             <div className={`p-3 rounded-xl border text-xs flex items-center justify-between transition-all ${
               isIndefiniteChoice
-                ? 'bg-purple-500/10 border-purple-500/30 text-purple-900 dark:text-purple-300'
+                ? 'bg-slate-500/10 border-slate-500/30 text-slate-900 dark:text-slate-200'
                 : previewData.isValid
                   ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-900 dark:text-emerald-300'
                   : 'bg-red-500/10 border-red-500/30 text-red-900 dark:text-red-300'
             }`}>
               <div className="flex items-center gap-2">
                 {isIndefiniteChoice ? (
-                  <InfinityIcon className="w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0" />
+                  <InfinityIcon className="w-4 h-4 text-slate-600 dark:text-slate-400 shrink-0" />
                 ) : previewData.isValid ? (
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                 ) : (
@@ -439,7 +439,7 @@ const CheckoutExtendModal = ({
           {/* Reason / Notes Textarea */}
           <div className="space-y-1.5">
             <Label htmlFor="extend-reason" className="text-xs font-bold flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+              <FileEdit className="w-3.5 h-3.5 text-muted-foreground" />
               <span>{t('checkouts.extensionReason')}</span>
               <span className="text-[11px] text-muted-foreground font-normal">({t('common.optional')})</span>
             </Label>
@@ -470,7 +470,7 @@ const CheckoutExtendModal = ({
                 type="submit"
                 size="sm"
                 disabled={submitting}
-                className="rounded-lg h-9 px-4 bg-purple-600 hover:bg-purple-700 text-white text-xs gap-1.5 font-semibold shadow-xs cursor-pointer transition-colors"
+                className="rounded-lg h-9 px-4 bg-primary hover:bg-primary/90 text-primary-foreground text-xs gap-1.5 font-semibold shadow-xs cursor-pointer transition-colors"
               >
                 <InfinityIcon className="w-3.5 h-3.5" />
                 <span>{submitting ? t('common.saving') : t('checkouts.confirmIndefiniteLoan')}</span>

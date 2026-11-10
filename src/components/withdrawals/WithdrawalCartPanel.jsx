@@ -117,16 +117,16 @@ const WithdrawalCartPanel = ({
       {/* Target Project Validation Notice */}
       <div className={`p-3 rounded-xl border transition-all text-xs ${
         isValidProject
-          ? 'bg-indigo-500/5 border-indigo-500/20 text-indigo-900 dark:text-indigo-200'
-          : 'bg-amber-500/10 border-amber-500/30 text-amber-900 dark:text-amber-200 animate-pulse'
+          ? 'bg-muted/40 border-border text-foreground'
+          : 'bg-amber-500/10 border-amber-500/30 text-amber-800 dark:text-amber-300'
       }`}>
         <div className="flex items-start gap-2">
-          <Building2 className={`w-4 h-4 shrink-0 mt-0.5 ${isValidProject ? 'text-indigo-600 dark:text-indigo-400' : 'text-amber-600 dark:text-amber-400'}`} />
+          <Building2 className={`w-4 h-4 shrink-0 mt-0.5 ${isValidProject ? 'text-muted-foreground' : 'text-amber-600 dark:text-amber-400'}`} />
           <div className="min-w-0 flex-1">
             <div className="font-bold flex items-center justify-between">
               <span>{t('common.location', 'Location')}:</span>
               {selectedProjectId === 'all' && (
-                <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-medium">
+                <span className="text-[10px] text-muted-foreground font-medium">
                   {t('withdrawals.multiWarehouseAuto', 'เบิกตามคลังพัสดุ')}
                 </span>
               )}
@@ -184,7 +184,7 @@ const WithdrawalCartPanel = ({
             return (
               <div
                 key={item.cartKey || item.id}
-                className="p-3 rounded-xl bg-card border border-border shadow-2xs space-y-2 transition-all hover:border-indigo-500/30"
+                className="p-3 rounded-xl bg-card border border-border shadow-2xs space-y-2 transition-all hover:border-border/80"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0 flex-1">
@@ -248,7 +248,7 @@ const WithdrawalCartPanel = ({
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="h-7 w-7 text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg shrink-0 cursor-pointer"
+                    className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg shrink-0 cursor-pointer"
                     onClick={() => onRemoveFromCart(lineKeyOf(item))}
                     title={t('withdrawals.removeItem', 'Remove item')}
                   >

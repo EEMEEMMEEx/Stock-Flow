@@ -220,8 +220,8 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
               <div className="p-2 rounded-lg bg-primary/10 text-primary shrink-0">
                 <Package className="w-5 h-5" />
               </div>
-              <span className="text-lg font-bold bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent truncate whitespace-nowrap">
-                StockFlow
+              <span className="text-lg font-bold tracking-tight text-foreground truncate whitespace-nowrap">
+                Stock<span className="text-primary">Flow</span>
               </span>
             </div>
 
@@ -290,7 +290,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
                     <div
                       id={`sidebar-group-${group.id}`}
                       className={cn(
-                        "px-3 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 transition-all duration-200 whitespace-nowrap",
+                        "px-3 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground transition-all duration-200 whitespace-nowrap",
                         isNavCollapsed ? "sr-only" : "block"
                       )}
                     >

@@ -519,8 +519,8 @@ const CheckoutDetailModal = ({
                     {order.order_number}
                   </span>
                   {isIndefinite && (
-                    <span className="text-[11px] font-bold text-purple-700 dark:text-purple-300 bg-purple-500/15 border border-purple-500/30 px-2 py-0.5 rounded-md flex items-center gap-1">
-                      <InfinityIcon className="w-3 h-3 text-purple-600 dark:text-purple-400" />
+                    <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 bg-slate-500/10 border border-slate-500/20 px-2 py-0.5 rounded-md flex items-center gap-1">
+                      <InfinityIcon className="w-3 h-3 text-slate-600 dark:text-slate-400" />
                       {t('checkouts.indefiniteLoan')}
                     </span>
                   )}
@@ -674,7 +674,7 @@ const CheckoutDetailModal = ({
                 </strong>
               </div>
               <div className={`flex items-center gap-2 pl-5.5 font-semibold ${
-                isIndefinite ? 'text-purple-600 dark:text-purple-400' : 'text-red-600 dark:text-red-400'
+                isIndefinite ? 'text-slate-600 dark:text-slate-400' : 'text-red-600 dark:text-red-400'
               }`}>
                 {isIndefinite ? <InfinityIcon className="w-3 h-3" /> : <Calendar className="w-3 h-3" />}
                 <span>
@@ -968,7 +968,7 @@ const CheckoutDetailModal = ({
                             {format(new Date(log.new_due_date), 'dd/MM/yyyy')}
                           </span>
                         ) : (
-                          <span className="font-bold text-purple-600 dark:text-purple-400 font-mono inline-flex items-center gap-1">
+                          <span className="font-bold text-slate-600 dark:text-slate-400 font-mono inline-flex items-center gap-1">
                             <InfinityIcon className="w-3 h-3" />
                             {t('checkouts.indefiniteLoan')}
                           </span>
@@ -1041,8 +1041,8 @@ const CheckoutDetailModal = ({
 
           <div className="flex items-center gap-2 flex-wrap">
             {isIndefinite ? (
-              <div className="inline-flex items-center gap-1.5 px-3 rounded-lg h-9 bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-500/30 text-xs font-semibold select-none">
-                <InfinityIcon className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+              <div className="inline-flex items-center gap-1.5 px-3 rounded-lg h-9 bg-slate-500/10 text-slate-700 dark:text-slate-300 border border-slate-500/20 text-xs font-semibold select-none">
+                <InfinityIcon className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
                 <span>{t('checkouts.indefiniteLoan')}</span>
               </div>
             ) : (

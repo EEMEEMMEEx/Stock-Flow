@@ -74,23 +74,21 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-background">
       {/* Top right language switcher */}
       <div className="absolute top-4 right-4 z-20">
         <LanguageSwitcher />
       </div>
-
-      {/* Background decoration */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-200/40 blur-[120px]" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-purple-200/40 blur-[120px]" />
       
-      <Card className="w-full max-w-md relative z-10 shadow-2xl border-slate-200">
-        <CardHeader className="space-y-3 pb-6">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center mb-2 mx-auto">
-            <Package className="w-6 h-6 text-white" />
+      <Card className="w-full max-w-md relative z-10 shadow-xs border-border bg-card">
+        <CardHeader className="space-y-2 pb-6">
+          <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary border border-primary/20 flex items-center justify-center mb-1 mx-auto">
+            <Package className="w-6 h-6 text-primary" />
           </div>
-          <CardTitle className="text-3xl font-bold text-center"><h1 className="text-3xl font-bold">StockFlow</h1></CardTitle>
-          <CardDescription className="text-center text-base">
+          <CardTitle className="text-2xl font-bold text-center tracking-tight text-foreground">
+            <h1 className="text-2xl font-bold tracking-tight">Stock<span className="text-primary">Flow</span></h1>
+          </CardTitle>
+          <CardDescription className="text-center text-xs text-muted-foreground">
             {t('auth.welcomeBack')}
           </CardDescription>
         </CardHeader>

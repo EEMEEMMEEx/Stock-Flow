@@ -53,8 +53,8 @@ const WithdrawalDetailModal = ({
         <DialogHeader className="min-w-0 space-y-3 border-b border-border/40 pb-4 shrink-0">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-lg bg-indigo-500/10 dark:bg-indigo-950/40 border border-indigo-500/20 flex items-center justify-center shrink-0">
-                <FileText className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+              <div className="w-12 h-12 rounded-lg bg-muted border border-border flex items-center justify-center shrink-0">
+                <FileText className="w-6 h-6 text-foreground" />
               </div>
               <div>
                 <DialogTitle className="text-lg font-extrabold text-foreground tracking-tight flex items-center gap-2">
@@ -124,7 +124,7 @@ const WithdrawalDetailModal = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-muted/40 dark:bg-muted/20 p-4 rounded-xl border border-border text-xs">
             <div className="space-y-1">
               <span className="text-muted-foreground flex items-center gap-1.5 font-semibold">
-                <Building2 className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                <Building2 className="w-3.5 h-3.5 text-muted-foreground" />
                 {t('common.location', 'Location')}:
               </span>
               <p className="font-bold text-foreground">
@@ -134,7 +134,7 @@ const WithdrawalDetailModal = ({
 
             <div className="space-y-1">
               <span className="text-muted-foreground flex items-center gap-1.5 font-semibold">
-                <User className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                <User className="w-3.5 h-3.5 text-muted-foreground" />
                 {t('common.requester', 'Requester')}:
               </span>
               <p className="font-bold text-foreground">{order.profiles?.full_name || t('common.user', 'User')}</p>
@@ -142,7 +142,7 @@ const WithdrawalDetailModal = ({
 
             <div className="space-y-1 sm:col-span-2">
               <span className="text-muted-foreground flex items-center gap-1.5 font-semibold">
-                <FileText className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                <FileText className="w-3.5 h-3.5 text-muted-foreground" />
                 {t('withdrawals.purpose', 'Purpose')}:
               </span>
               <p className="font-semibold text-foreground">{order.purpose || t('withdrawals.notSpecified', 'Not specified')}</p>
@@ -151,7 +151,7 @@ const WithdrawalDetailModal = ({
             {order.delivery_address && (
               <div className="space-y-1 sm:col-span-2">
                 <span className="text-muted-foreground flex items-center gap-1.5 font-semibold">
-                  <MapPin className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                  <MapPin className="w-3.5 h-3.5 text-muted-foreground" />
                   {t('withdrawals.deliveryDestinationRecipient', 'Delivery Destination / Recipient')}:
                 </span>
                 <p className="font-semibold text-foreground">{order.delivery_address}</p>
@@ -231,7 +231,7 @@ const WithdrawalDetailModal = ({
           {/* Requested Items Table */}
           <div className="space-y-2">
             <h4 className="text-xs font-extrabold uppercase tracking-wider text-foreground flex items-center gap-1.5">
-              <Package className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+              <Package className="w-4 h-4 text-muted-foreground" />
               <span>{t('withdrawals.requestedItems', 'Requested Items')} ({orderDetails.length} {t('common.items', 'items')})</span>
             </h4>
 
@@ -307,7 +307,7 @@ const WithdrawalDetailModal = ({
                         <TableCell className="text-muted-foreground text-xs">
                           <div>{item.delivery_to || order.delivery_address || '-'}</div>
                           {item.serial_number && (
-                            <div className="text-xs text-indigo-600 dark:text-indigo-400 font-mono truncate max-w-[140px]" title={item.serial_number}>
+                            <div className="text-xs text-muted-foreground font-mono truncate max-w-[140px]" title={item.serial_number}>
                               S/N: {item.serial_number}
                             </div>
                           )}

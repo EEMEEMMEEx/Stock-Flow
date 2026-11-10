@@ -17,12 +17,12 @@ import { BarChart3, PieChart as PieChartIcon, TrendingUp } from 'lucide-react';
 import { useTheme } from '@/components/theme-provider';
 import { useTranslation } from '@/i18n';
 
-const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4'];
+const COLORS = ['#0284c7', '#0d9488', '#f59e0b', '#64748b', '#0369a1', '#10b981', '#334155'];
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-popover/95 backdrop-blur border border-border p-2.5 rounded-xl shadow-md text-xs space-y-1">
+      <div className="bg-popover border border-border p-2.5 rounded-lg shadow-sm text-xs space-y-1">
         <p className="font-semibold text-popover-foreground">{label}</p>
         {payload.map((entry, index) => (
           <p key={`item-${index}`} className="flex items-center gap-2" style={{ color: entry.color }}>

@@ -208,7 +208,7 @@ const UserActionModal = ({
                 }}
               />
             ) : (
-              <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-primary to-purple-600 flex items-center justify-center text-white font-bold text-base shadow-md shrink-0">
+              <div className="w-12 h-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-base shrink-0">
                 {getInitials(user.full_name)}
               </div>
             )}

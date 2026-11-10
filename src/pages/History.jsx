@@ -530,9 +530,9 @@ const History = () => {
                 variant="outline"
                 size="sm"
                 onClick={() => handleDownloadPDF(selectedOrder)}
-                className="text-purple-500 border-purple-500/30 bg-purple-500/10 hover:bg-purple-500/20 font-semibold cursor-pointer gap-1.5"
+                className="text-sky-600 dark:text-sky-400 border-sky-500/30 bg-sky-500/10 hover:bg-sky-500/20 font-semibold cursor-pointer gap-1.5"
               >
-                <FileText className="w-4 h-4 text-purple-500" />
+                <FileText className="w-4 h-4 text-sky-600 dark:text-sky-400" />
                 <span>{t('history.printPdf', 'Print / Download PDF')}</span>
               </Button>
             )}

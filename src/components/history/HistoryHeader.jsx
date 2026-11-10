@@ -11,11 +11,11 @@ const HistoryHeader = ({
   const { t } = useTranslation();
 
   return (
-    <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-card/60 backdrop-blur border border-border/60 p-4 sm:p-5 rounded-2xl shadow-sm">
+    <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-card border border-border p-4 sm:p-5 rounded-xl shadow-xs">
       {/* Title & Description */}
       <div className="space-y-1">
         <div className="flex items-center gap-2.5">
-          <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 ring-1 ring-indigo-500/20">
+          <div className="p-2.5 rounded-xl bg-primary/10 text-primary border border-primary/20 shadow-xs">
             <HistoryIcon className="w-6 h-6" />
           </div>
           <div>

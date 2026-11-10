@@ -154,8 +154,8 @@ const CheckoutHistoryList = ({
                         {order.order_number}
                       </span>
                       {order.borrow_type === 'indefinite' && (
-                        <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-500/30 flex items-center gap-1">
-                          <InfinityIcon className="w-3 h-3 text-purple-600 dark:text-purple-400" />
+                        <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-slate-500/10 text-slate-700 dark:text-slate-300 border border-slate-500/20 flex items-center gap-1">
+                          <InfinityIcon className="w-3 h-3 text-slate-600 dark:text-slate-400" />
                           {t('checkouts.noReturnDate')}
                         </span>
                       )}

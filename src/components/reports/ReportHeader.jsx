@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { FileText, Download, ArrowDownToLine, ArrowUpFromLine, Scale, Sparkles, RefreshCw, Layers } from 'lucide-react';
+import { FileText, Download, ArrowDownToLine, ArrowUpFromLine, Scale, RefreshCw, Layers } from 'lucide-react';
 import { useTranslation } from '@/i18n';
 
 const ReportHeader = ({
@@ -67,18 +67,15 @@ const ReportHeader = ({
   return (
     <div className="space-y-4">
       {/* Top Bar: Title & Primary Actions */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-card/60 backdrop-blur border border-border/60 p-4 sm:p-5 rounded-2xl shadow-sm">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-card border border-border p-4 sm:p-5 rounded-xl shadow-xs">
         <div className="space-y-1">
           <div className="flex items-center gap-2.5">
-            <div className="p-2.5 rounded-xl bg-primary/10 text-primary ring-1 ring-primary/20">
+            <div className="p-2.5 rounded-xl bg-primary/10 text-primary border border-primary/20 shadow-xs">
               <FileText className="w-6 h-6" />
             </div>
             <div>
               <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
                 {t('reports.title')}
-                <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
-                  <Sparkles className="w-3 h-3" /> {t('reports.liveAnalytics')}
-                </span>
               </h1>
               <p className="text-xs sm:text-sm text-muted-foreground">
                 {t('reports.subtitle')}

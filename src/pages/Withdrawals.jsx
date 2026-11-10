@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
-import { Zap, ClipboardList } from 'lucide-react';
+import { ShoppingCart, ClipboardList } from 'lucide-react';
 // Dynamic import used in handleDownloadPDF and handleDownloadDispatchPDF
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n';
@@ -1038,7 +1038,7 @@ const Withdrawals = () => {
                 : 'text-muted-foreground hover:text-foreground hover:bg-accent/60'
             }`}
           >
-            <Zap className="w-3.5 h-3.5 text-amber-400 fill-amber-400/30" aria-hidden="true" />
+            <ShoppingCart className="w-3.5 h-3.5" aria-hidden="true" />
             <span>{t('withdrawals.posTab')}</span>
             {cart.length > 0 && (
               <span className={`px-2 py-0.5 rounded-full text-xs font-mono font-extrabold ${
@@ -1064,11 +1064,11 @@ const Withdrawals = () => {
                 : 'text-muted-foreground hover:text-foreground hover:bg-accent/60'
             }`}
           >
-            <ClipboardList className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" />
+            <ClipboardList className="w-3.5 h-3.5" aria-hidden="true" />
             <span>{t('withdrawals.requisitionsTab')}</span>
             {pendingOrdersCount > 0 && (
               <span
-                className="px-2 py-0.5 rounded-full text-xs font-mono font-extrabold bg-amber-500 text-slate-950 animate-pulse motion-reduce:animate-none"
+                className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30"
                 title={`${pendingOrdersCount} ${t('common.pending')}`}
                 aria-label={`${pendingOrdersCount} ${t('common.pending')}`}
               >
@@ -1080,7 +1080,7 @@ const Withdrawals = () => {
 
         {/* Status Indicator */}
         <div className="hidden md:flex items-center gap-2 text-xs font-semibold text-muted-foreground pr-3">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping motion-reduce:animate-none" aria-hidden="true" />
+          <span className="w-2 h-2 rounded-full bg-emerald-500" aria-hidden="true" />
           <span>{t('withdrawals.systemReady')}</span>
         </div>
       </div>

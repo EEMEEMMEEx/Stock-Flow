@@ -105,13 +105,13 @@ export const StockInOrderDetailModal = ({
                     return (
                       <TableRow 
                         key={item.id} 
-                        className={`transition-colors hover:bg-muted/40 ${isChild ? "bg-blue-50/30 dark:bg-blue-950/20" : ""}`}
+                        className={`transition-colors hover:bg-muted/40 ${isChild ? "bg-muted/20" : ""}`}
                       >
                         <TableCell className="align-top">
-                          <span className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-md border ${
+                          <span className={`inline-block text-[11px] font-mono font-medium px-1.5 py-0.5 rounded border ${
                             isChild 
-                              ? 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/60 dark:text-blue-200 dark:border-blue-700' 
-                              : 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-900/60 dark:text-emerald-200 dark:border-emerald-700'
+                              ? 'bg-muted text-muted-foreground border-border/60' 
+                              : 'bg-muted text-foreground border-border/80'
                           }`}>
                             {item.item_type || (isChild ? 'CHILD' : 'PARENT')}
                           </span>
@@ -120,20 +120,20 @@ export const StockInOrderDetailModal = ({
                         <TableCell className={`align-top ${isChild ? 'pl-6' : ''}`}>
                           <div className="space-y-0.5">
                             <div className="flex items-center gap-1.5 flex-wrap">
-                              {isChild && <CornerDownRight className="w-3.5 h-3.5 text-blue-500 shrink-0 inline-block select-none" aria-hidden="true" />}
+                              {isChild && <CornerDownRight className="w-3.5 h-3.5 text-muted-foreground/70 shrink-0 inline-block select-none" aria-hidden="true" />}
                               {item.items?.sku && (
                                 <span className="font-mono font-bold text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground border">
                                   [{item.items.sku}]
                                 </span>
                               )}
-                              <span className={`font-semibold ${isChild ? 'text-blue-950 dark:text-blue-200' : 'text-foreground'}`}>
+                              <span className="font-semibold text-foreground">
                                 {itemName}
                               </span>
                             </div>
                             {item.parent_sku && (
                               <div className="text-xs text-muted-foreground font-mono pl-4 flex items-center gap-1">
-                                <CornerDownRight className="w-3 h-3 text-blue-500 shrink-0 inline-block select-none" aria-hidden="true" />
-                                <span>Parent SKU: <span className="font-bold text-blue-600 dark:text-blue-400">{item.parent_sku}</span></span>
+                                <CornerDownRight className="w-3 h-3 text-muted-foreground/70 shrink-0 inline-block select-none" aria-hidden="true" />
+                                <span>Parent SKU: <span className="font-semibold text-foreground/80">{item.parent_sku}</span></span>
                               </div>
                             )}
                           </div>

@@ -421,7 +421,7 @@ const WithdrawalPosTerminal = ({
                         key={item.id}
                         className={`transition-colors ${
                           isInCart
-                            ? 'bg-indigo-500/5 dark:bg-indigo-950/20'
+                            ? 'bg-primary/5'
                             : completelyEmpty
                               ? 'opacity-50'
                               : 'hover:bg-accent/50'
@@ -434,7 +434,7 @@ const WithdrawalPosTerminal = ({
                           <div className="font-bold text-foreground flex items-center gap-2">
                             <span>{item.name}</span>
                             {isInCart && (
-                              <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-indigo-600 text-white shadow-2xs">
+                              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-primary text-primary-foreground shadow-2xs">
                                 {t('withdrawals.inCartBadge', '{{count}} in cart', { count: cartQuantityTotal })}
                               </span>
                             )}
@@ -444,7 +444,7 @@ const WithdrawalPosTerminal = ({
                         <TableCell className="font-mono text-[11px]">
                           <div>{item.sku || '-'}</div>
                           {item.model && (
-                            <div className="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold">{item.model}</div>
+                            <div className="text-[10px] text-muted-foreground font-mono">{item.model}</div>
                           )}
                         </TableCell>
                         <TableCell className="text-center">
@@ -455,14 +455,14 @@ const WithdrawalPosTerminal = ({
                                 setBreakdownModalItem(item);
                               }
                             }}
-                            className={`px-2.5 py-1 rounded-md text-[11px] font-bold font-mono inline-flex items-center gap-1 cursor-pointer transition-all ${
+                            className={`px-2 py-0.5 rounded text-[11px] font-mono tabular-nums font-semibold inline-flex items-center gap-1 cursor-pointer transition-all ${
                               isLowStock
-                                ? 'bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30'
+                                ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30'
                                 : availableStock > 0
-                                  ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30'
+                                  ? 'bg-muted/80 text-foreground border border-border/80'
                                   : hasStockInOtherWarehouse
-                                    ? 'bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-500/30'
-                                    : 'bg-muted text-muted-foreground border border-border'
+                                    ? 'bg-muted/60 text-muted-foreground border border-border/60'
+                                    : 'bg-muted/40 text-muted-foreground/60 border border-border/40'
                             }`}
                           >
                             {availableStock > 0
@@ -649,7 +649,7 @@ const WithdrawalPosTerminal = ({
           <Button
             type="button"
             onClick={() => setIsMobileCartOpen(true)}
-            className="w-full h-12 min-h-[48px] rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-lg flex items-center justify-between px-4 gap-2 border border-indigo-500 cursor-pointer"
+            className="w-full h-12 min-h-[48px] rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-xs flex items-center justify-between px-4 gap-2 border border-primary cursor-pointer"
           >
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-white/20">

@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { 
   Settings as SettingsIcon, AppWindow, Package, ShieldCheck, 
-  Database, Server, Save, ChevronDown, ChevronRight, RefreshCw, Lock, Sparkles, AlertTriangle, Globe
+  Database, Server, Save, ChevronDown, ChevronRight, RefreshCw, Lock, Eye, AlertTriangle, Globe
 } from 'lucide-react';
 import { APP_CONFIG } from '@/config/appConfig';
 import toast from 'react-hot-toast';
@@ -317,7 +317,7 @@ const Settings = () => {
               {/* Live Preview Box */}
               <div className="p-3.5 rounded-lg bg-muted/30 border border-border/50 space-y-1.5">
                 <div className="flex items-center gap-1.5 text-xs font-semibold text-primary">
-                  <Sparkles className="w-3.5 h-3.5" />
+                  <Eye className="w-3.5 h-3.5" />
                   <span>{t('settings.app.liveFooterPreview', 'Live Footer Preview:')}</span>
                 </div>
                 <div className="p-2.5 rounded-lg bg-background border border-border/50 text-xs text-muted-foreground flex flex-wrap items-center gap-2 justify-between">
@@ -469,7 +469,7 @@ const Settings = () => {
           className="cursor-pointer hover:bg-muted/40 transition-colors flex flex-row items-center justify-between py-4"
         >
           <div className="flex items-center gap-2.5">
-            <ShieldCheck className="w-5 h-5 text-purple-600" />
+            <ShieldCheck className="w-5 h-5 text-primary" />
             <div>
               <CardTitle className="text-base font-bold">{t('settings.sections.security.title', '3. User & Security Policy')}</CardTitle>
               <CardDescription className="text-xs">{t('settings.sections.security.description', 'Password policy, user account management, and application-level security')}</CardDescription>
@@ -497,7 +497,7 @@ const Settings = () => {
                 <span className="font-bold text-foreground block text-sm">{t('settings.securityPolicy.lifecycleTitle', 'User Account Lifecycle & Protection')}</span>
                 <ul className="list-disc list-inside text-muted-foreground space-y-1">
                   <li><strong className="text-foreground font-semibold">{t('settings.securityPolicy.inactiveRecommendTitle', 'Recommended: Inactive Status:')}</strong> {t('settings.securityPolicy.inactiveRecommendDesc', 'Accounts with transaction history should be marked Inactive rather than permanently deleted.')}</li>
-                  <li><strong className="text-purple-600 font-bold">{t('settings.securityPolicy.lastAdminTitle', 'Last Admin Protection:')}</strong> {t('settings.securityPolicy.lastAdminDesc', 'Prevents deleting or demoting the last active administrator across both client UI and database triggers.')}</li>
+                  <li><strong className="text-foreground font-bold">{t('settings.securityPolicy.lastAdminTitle', 'Last Admin Protection:')}</strong> {t('settings.securityPolicy.lastAdminDesc', 'Prevents deleting or demoting the last active administrator across both client UI and database triggers.')}</li>
                 </ul>
               </div>
             </div>
@@ -595,7 +595,7 @@ const Settings = () => {
 
               <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
                 <span className="text-[10px] text-muted-foreground block">{t('common.allRoles', 'Roles')}</span>
-                <span className="font-bold text-xs text-purple-600 dark:text-purple-400">
+                <span className="font-bold text-xs text-foreground font-mono tabular-nums">
                   {t('settings.system.roles', { count: systemStats.roles, defaultValue: `${systemStats.roles} Roles` })}
                 </span>
               </div>

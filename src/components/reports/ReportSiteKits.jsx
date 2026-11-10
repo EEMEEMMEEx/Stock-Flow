@@ -176,7 +176,7 @@ const ReportSiteKits = ({ projects = [] }) => {
 
   return (
     <div className="space-y-6 animate-in fade-in-50 duration-200">
-      <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 bg-card/60 backdrop-blur-md p-4 rounded-3xl border border-border/80 shadow-xs">
+      <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 bg-card p-4 rounded-xl border border-border shadow-xs">
         <div className="flex items-center gap-1.5 flex-wrap">
           <Button
             type="button"
@@ -288,7 +288,7 @@ const ReportSiteKits = ({ projects = [] }) => {
           const isReady = cat.complete_sets > 0;
 
           return (
-            <Card key={cat.category_id} className="rounded-3xl border border-border/80 bg-card/60 backdrop-blur-md shadow-xs">
+            <Card key={cat.category_id} className="rounded-xl border border-border bg-card shadow-xs">
               <CardContent className="p-4 space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -320,11 +320,11 @@ const ReportSiteKits = ({ projects = [] }) => {
         })}
       </div>
 
-      <Card className="rounded-3xl border border-border/80 bg-card/60 backdrop-blur-md shadow-md overflow-hidden">
+      <Card className="rounded-xl border border-border bg-card shadow-xs overflow-hidden">
         <CardHeader className="border-b border-border/60 pb-3 px-6">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-sm font-bold tracking-wide uppercase text-foreground flex items-center gap-2">
+              <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
                 <Layers className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 <span>{t('reports.siteKits.bomSpecsTitle')}</span>
               </CardTitle>

@@ -4,7 +4,7 @@ import {
   Warehouse, 
   ShoppingCart, 
   FileCheck2, 
-  Sparkles,
+  Layers,
   CheckCircle2
 } from 'lucide-react';
 import { useLandingLanguage } from '../context/LandingLanguageContext';
@@ -52,7 +52,7 @@ export default function WorkflowSection() {
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono font-medium mb-3">
-            <Sparkles className="w-3.5 h-3.5" />
+            <Layers className="w-3.5 h-3.5" />
             <span>{t.workflows.badge}</span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">

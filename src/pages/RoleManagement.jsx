@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { 
-  ShieldCheck, Plus, RefreshCw, Edit, Trash2, Shield, Users, Lock, AlertCircle, Sparkles, History
+  ShieldCheck, Plus, RefreshCw, Edit, Trash2, Shield, Users, Lock, AlertCircle, History
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import toast from 'react-hot-toast';
@@ -471,9 +471,9 @@ const fetchRoles = useCallback(async () => {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between gap-2 mb-2">
                   {/* Badge with live theme colors */}
-                  <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${roleObj.badge_background || 'bg-purple-100 dark:bg-purple-950'} ${roleObj.badge_text_color || 'text-purple-700 dark:text-purple-300'}`}>
-                    {(roleObj.code === 'SUPER' || (roleObj.badge_background || '').includes('gradient')) ? (
-                      <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                  <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${roleObj.badge_background || 'bg-sky-100 dark:bg-sky-950'} ${roleObj.badge_text_color || 'text-sky-700 dark:text-sky-300'}`}>
+                    {(roleObj.code === 'SUPER') ? (
+                      <ShieldCheck className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                     ) : (
                       <Shield className="w-3.5 h-3.5 shrink-0" />
                     )}

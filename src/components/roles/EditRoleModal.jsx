@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Shield, Sparkles, Lock } from 'lucide-react';
+import { Shield, ShieldCheck, Lock } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { BADGE_COLOR_PRESETS } from '@/config/badgePresets';
 
@@ -104,11 +104,10 @@ const EditRoleModal = ({ isOpen, onClose, onSave, role }) => {
           <div className="p-3.5 rounded-lg bg-muted/30 border border-border/50 space-y-3">
             <div className="flex items-center justify-between">
               <Label className="text-sm font-medium">Badge Theme</Label>
-              <div className="flex items-center gap-1.5 text-xs">
-                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <span>Live Preview:</span>
                 <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold ${formData.badge_background} ${formData.badge_text_color}`}>
-                  {formData.badge_background.includes('gradient') ? <Sparkles className="w-3 h-3 text-amber-500 shrink-0" /> : <Shield className="w-3 h-3 shrink-0" />}
+                  <ShieldCheck className="w-3 h-3 shrink-0" />
                   {formData.name || role?.name || role?.code || 'ROLE'}
                 </span>
               </div>

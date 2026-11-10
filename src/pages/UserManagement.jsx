@@ -721,7 +721,7 @@ const UserManagement = () => {
                                 onError={(e) => { e.target.onerror = null; e.target.src = ''; }}
                               />
                             ) : (
-                              <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
+                              <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-sm shrink-0">
                                 {getInitials(u.full_name)}
                               </div>
                             )}
@@ -908,7 +908,7 @@ const UserManagement = () => {
                             onError={(e) => { e.target.onerror = null; e.target.src = ''; }}
                           />
                         ) : (
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-xs shrink-0">
+                          <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-sm shrink-0">
                             {getInitials(u.full_name)}
                           </div>
                         )}

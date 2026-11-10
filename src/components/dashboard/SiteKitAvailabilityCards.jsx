@@ -478,28 +478,19 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div className="space-y-0.5">
           <div className="flex items-center gap-2">
-            <Layers className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-            <h3 className="text-base font-bold tracking-tight text-foreground">
-              Site Installation Kits BOM Availability
+            <Layers className="w-4 h-4 text-primary" />
+            <h3 className="text-sm font-bold tracking-tight text-foreground">
+              {t('siteKits.title')}
             </h3>
-            <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 text-[10px] font-semibold">
-              Real-time BOM
-            </Badge>
-            {canEditBom && (
-              <Badge variant="outline" className="bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/30 text-[10px] font-semibold flex items-center gap-1">
-                <ShieldCheck className="w-3 h-3" />
-                <span>Admin Editable</span>
-              </Badge>
-            )}
           </div>
           <p className="text-xs text-muted-foreground">
-            Calculates completely assembled kits according to the BOM specification of each site, and alerts when components have limited stock {canEditBom ? '(Admin can click to edit BOM specifications)' : ''}
+            {t('siteKits.viewBomDesc')}
           </p>
         </div>
       </div>
 
       {/* Responsive BOM Category Cards Grid (Data-driven) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3.5">
         {siteKits.map((cat) => (
           <SiteKitCategoryCard
             key={cat.category_id}

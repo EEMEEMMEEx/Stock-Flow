@@ -5,15 +5,15 @@
 export const BADGE_COLOR_PRESETS = [
   { 
     name: 'Super', 
-    bg: 'bg-gradient-to-r from-amber-500/15 via-purple-500/15 to-rose-500/15', 
-    text: 'text-purple-900 dark:text-purple-200',
-    border: 'border-purple-300/80 dark:border-purple-700/80'
+    bg: 'bg-amber-500/15', 
+    text: 'text-amber-800 dark:text-amber-300',
+    border: 'border-amber-500/30'
   },
   { 
-    name: 'Purple', 
-    bg: 'bg-purple-100 dark:bg-purple-950', 
-    text: 'text-purple-700 dark:text-purple-300',
-    border: 'border-purple-300 dark:border-purple-800'
+    name: 'Admin', 
+    bg: 'bg-sky-500/15', 
+    text: 'text-sky-800 dark:text-sky-300',
+    border: 'border-sky-500/30'
   },
   { 
     name: 'Blue', 

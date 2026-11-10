@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion';
 import { Zap, ShieldCheck, Database, Lock } from 'lucide-react';
-import ShinyText from '@/components/reactbits/ShinyText';
 import { useLandingLanguage } from '../context/LandingLanguageContext';
 
 export default function StatsSection() {
@@ -52,8 +51,8 @@ export default function StatsSection() {
                   <div className="w-9 h-9 rounded-xl bg-zinc-800/80 border border-white/10 flex items-center justify-center mb-4 text-emerald-400">
                     <Icon className="w-4 h-4" strokeWidth={2} />
                   </div>
-                  <div className="text-2xl sm:text-3xl font-extrabold tracking-tight font-mono text-white mb-1">
-                    <ShinyText text={stat.value} speed={4} shimmerColor="#34d399" />
+                  <div className="text-2xl sm:text-3xl font-extrabold tracking-tight font-mono text-emerald-400 mb-1">
+                    {stat.value}
                   </div>
                   <div className="text-sm font-semibold text-zinc-200">{stat.label}</div>
                 </div>

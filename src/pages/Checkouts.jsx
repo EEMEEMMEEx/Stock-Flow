@@ -501,7 +501,7 @@ const Checkouts = () => {
             <Button
               size="sm"
               onClick={() => setActiveTab('pos')}
-              className="rounded-lg h-9 px-4 bg-indigo-600 hover:bg-indigo-700 text-white text-xs gap-1.5 font-semibold cursor-pointer shadow-xs transition-colors"
+              className="rounded-lg h-9 px-4 bg-primary hover:bg-primary/90 text-primary-foreground text-xs gap-1.5 font-semibold cursor-pointer shadow-xs transition-colors"
             >
               <Plus className="w-4 h-4" />
               <span>{t('checkouts.newCheckout')}</span>

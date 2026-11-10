@@ -36,7 +36,7 @@ export default function LandingNavbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
         {/* Brand Logo with Strict SVG */}
         <a href="#" className="flex items-center gap-3 group shrink-0">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center shadow-lg shadow-emerald-500/20 ring-1 ring-white/20 group-hover:scale-105 transition-transform duration-200">
+          <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center border border-primary/30 shadow-xs">
             <svg
               className="w-5 h-5 text-white"
               viewBox="0 0 24 24"

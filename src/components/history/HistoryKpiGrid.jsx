@@ -91,7 +91,7 @@ const HistoryKpiGrid = ({ historyData = [] }) => {
           <Card key={card.id} className="relative overflow-hidden border border-border/60 hover:border-border transition-all duration-200 shadow-xs hover:shadow-sm group">
             <CardContent className="p-4 flex flex-col justify-between h-full">
               <div className="flex items-start justify-between gap-2 mb-2">
-                <div className={`p-2 rounded-xl border ${card.iconBg} transition-transform group-hover:scale-105`}>
+                <div className={`p-2 rounded-lg border ${card.iconBg}`}>
                   <Icon className="w-4 h-4 shrink-0" />
                 </div>
                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${card.badgeBg}`}>
@@ -104,7 +104,7 @@ const HistoryKpiGrid = ({ historyData = [] }) => {
                   {card.title}
                 </p>
                 <div className="flex items-baseline gap-1 mt-0.5">
-                  <h2 className="text-xl font-bold tracking-tight text-foreground truncate">
+                  <h2 className="text-xl font-bold font-mono tabular-nums tracking-tight text-foreground truncate">
                     {card.value}
                   </h2>
                   {card.unit && (

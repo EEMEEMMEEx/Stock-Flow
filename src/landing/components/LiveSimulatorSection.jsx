@@ -7,11 +7,10 @@ import {
   SlidersHorizontal, 
   CalendarClock, 
   PackageCheck, 
-  Sparkles, 
+  FileEdit, 
   ArrowRight,
   ShieldCheck
 } from 'lucide-react';
-import SpotlightCard from '@/components/reactbits/SpotlightCard';
 import { useLandingLanguage } from '../context/LandingLanguageContext';
 
 export default function LiveSimulatorSection() {
@@ -66,7 +65,7 @@ export default function LiveSimulatorSection() {
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-14">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono font-medium mb-3">
-            <Sparkles className="w-3.5 h-3.5" />
+            <Play className="w-3.5 h-3.5" />
             <span>{t.simulator.badge || 'INTERACTIVE LIVE PLAYGROUND'}</span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
@@ -131,10 +130,7 @@ export default function LiveSimulatorSection() {
 
         {/* Live Simulator Content Card */}
         <div className="max-w-4xl mx-auto">
-          <SpotlightCard
-            spotlightColor="rgba(16, 185, 129, 0.15)"
-            className="p-6 sm:p-8 rounded-3xl bg-zinc-950/90 border border-white/15 backdrop-blur-xl shadow-2xl"
-          >
+          <div className="p-6 sm:p-8 rounded-2xl bg-zinc-950 border border-zinc-800 shadow-xl">
             {/* Feedback Alert Banner */}
             {simSuccessMsg && (
               <motion.div
@@ -254,7 +250,7 @@ export default function LiveSimulatorSection() {
 
                 <div className="p-3 rounded-xl bg-zinc-900/40 border border-white/5 space-y-1">
                   <label className="text-xs font-semibold text-zinc-300 flex items-center gap-1">
-                    <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                    <FileEdit className="w-3.5 h-3.5 text-emerald-400" />
                     <span>เหตุผลในการปรับปรุงยอดสต็อก (Mandatory Reason) *</span>
                   </label>
                   <input
@@ -425,7 +421,7 @@ export default function LiveSimulatorSection() {
                 </div>
               </div>
             )}
-          </SpotlightCard>
+          </div>
         </div>
       </div>
     </section>

@@ -1,7 +1,7 @@
 {
   "name": "stock-flow-app",
   "private": true,
-  "version": "1.28.4",
+  "version": "1.28.14",
   "type": "module",
   "engines": {
     "node": "24.x"
@@ -108,6 +108,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.5.7",
     "globals": "^15.15.0",
+    "playwright": "^1.65.0",
     "supabase": "^2.117.0",
     "tailwindcss": "^4.3.3",
     "vite": "7.3.7",

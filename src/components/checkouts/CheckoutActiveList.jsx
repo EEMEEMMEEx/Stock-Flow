@@ -282,12 +282,12 @@ const CheckoutActiveList = ({
 
                         {/* Status Badges */}
                         {order.isIndefinite ? (
-                          <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-500/30 inline-flex items-center gap-1 whitespace-nowrap shrink-0">
-                            <InfinityIcon className="w-3 h-3 text-purple-600 dark:text-purple-400" />
+                          <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-slate-500/10 text-slate-700 dark:text-slate-300 border border-slate-500/20 inline-flex items-center gap-1 whitespace-nowrap shrink-0">
+                            <InfinityIcon className="w-3 h-3 text-slate-600 dark:text-slate-400" />
                             {t('checkouts.indefiniteLoan')}
                           </span>
                         ) : order.isOverdue ? (
-                          <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30 inline-flex items-center gap-1 whitespace-nowrap shrink-0 animate-pulse">
+                          <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30 inline-flex items-center gap-1 whitespace-nowrap shrink-0">
                             <AlertTriangle className="w-3 h-3" />
                             {t('checkouts.overdueBy', { days: Math.abs(order.daysDiff) })}
                           </span>
@@ -365,7 +365,7 @@ const CheckoutActiveList = ({
                           order.isOverdue 
                             ? 'text-red-600 dark:text-red-400' 
                             : order.isIndefinite 
-                            ? 'text-purple-600 dark:text-purple-400' 
+                            ? 'text-slate-600 dark:text-slate-400 font-medium' 
                             : 'text-foreground'
                         }`}>
                           {t('checkouts.dueDate')}: {order.isIndefinite ? t('checkouts.indefiniteLoan') : (order.expected_return_date ? format(new Date(order.expected_return_date), 'dd/MM/yyyy') : '-')}
@@ -398,8 +398,8 @@ const CheckoutActiveList = ({
                       )}
 
                       {order.isIndefinite ? (
-                        <div className="inline-flex items-center gap-1 px-2.5 rounded-lg h-9 bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-500/30 text-xs font-semibold select-none" title={t('checkouts.indefiniteLoan')}>
-                          <InfinityIcon className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+                        <div className="inline-flex items-center gap-1 px-2.5 rounded-lg h-9 bg-slate-500/10 text-slate-700 dark:text-slate-300 border border-slate-500/20 text-xs font-semibold select-none" title={t('checkouts.indefiniteLoan')}>
+                          <InfinityIcon className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
                           <span className="hidden sm:inline">{t('checkouts.indefiniteLoan')}</span>
                         </div>
                       ) : (

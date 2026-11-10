@@ -636,12 +636,12 @@ const CheckoutPosTerminal = ({
                     onClick={() => setBorrowType('indefinite')}
                     className={`p-2.5 rounded-lg border text-left transition-all cursor-pointer flex flex-col justify-between ${
                       borrowType === 'indefinite'
-                        ? 'bg-purple-500/15 border-purple-600 dark:border-purple-400 ring-1 ring-purple-500/40 text-foreground'
+                        ? 'bg-primary/10 border-primary ring-1 ring-primary/30 text-foreground'
                         : 'bg-muted/30 hover:bg-muted/60 border-border/70 text-muted-foreground'
                     }`}
                   >
-                    <div className="flex items-center gap-1.5 font-semibold text-xs text-purple-700 dark:text-purple-300">
-                      <InfinityIcon className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+                    <div className="flex items-center gap-1.5 font-semibold text-xs text-primary">
+                      <InfinityIcon className="w-3.5 h-3.5 text-primary" />
                       <span>{t('checkouts.indefiniteLoan')}</span>
                     </div>
                     <p className="text-[10px] text-muted-foreground mt-1">
@@ -677,10 +677,10 @@ const CheckoutPosTerminal = ({
                     />
                   </div>
                 ) : (
-                  <div className="p-2.5 rounded-lg bg-purple-500/10 dark:bg-purple-950/30 border border-purple-500/30 flex items-start gap-2">
-                    <InfinityIcon className="w-4 h-4 shrink-0 mt-0.5 text-purple-600 dark:text-purple-400" />
+                  <div className="p-2.5 rounded-lg bg-slate-500/10 dark:bg-slate-900/40 border border-slate-500/20 flex items-start gap-2">
+                    <InfinityIcon className="w-4 h-4 shrink-0 mt-0.5 text-slate-600 dark:text-slate-400" />
                     <div className="space-y-0.5 min-w-0">
-                      <div className="text-xs font-semibold text-purple-700 dark:text-purple-300">
+                      <div className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                         {t('checkouts.noReturnDate')}
                       </div>
                       <div className="text-[10px] text-muted-foreground leading-tight">

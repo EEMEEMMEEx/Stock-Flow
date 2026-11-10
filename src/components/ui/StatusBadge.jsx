@@ -35,7 +35,7 @@ export const StatusBadge = ({
         icon: Clock,
         label: t('common.pending', 'Pending'),
         colorClass: 'text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/30',
-        pulse: true,
+        pulse: false,
       };
       break;
 

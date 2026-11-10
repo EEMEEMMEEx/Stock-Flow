@@ -586,11 +586,11 @@ const Projects = () => {
                   </DialogHeader>
                   <div className="grid gap-3.5 py-4">
                     <div className="space-y-1.5">
-                      <Label htmlFor="name" className="text-xs font-bold text-foreground">Project Name <span className="text-destructive">*</span></Label>
+                      <Label htmlFor="name" className="text-xs font-bold text-foreground">{t('projects.projectName', 'ชื่อโครงการ')} <span className="text-destructive">*</span></Label>
                       <Input 
                         id="name" 
                         required 
-                        placeholder="e.g. DTRS-DOPA" 
+                        placeholder={t('projects.namePlaceholder', 'เช่น DTRS-DOPA')} 
                         value={formData.name} 
                         onChange={e => setFormData({...formData, name: e.target.value})} 
                         className="rounded-lg h-9 text-xs" 
@@ -601,30 +601,30 @@ const Projects = () => {
                     <div className="space-y-1.5">
                       <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
                         <Layers className="w-3.5 h-3.5 text-primary" />
-                        <span>Project Codes</span>
+                        <span>{t('projects.projectCodes', 'รหัสโครงการ')}</span>
                       </Label>
                       <ProjectCodeTagInput
                         codes={formData.project_codes || []}
                         onChange={(newCodes) => setFormData({ ...formData, project_codes: newCodes })}
-                        placeholder="e.g. 20317-9999 (press Enter to add multiple codes)"
+                        placeholder={t('projects.codePlaceholder', 'เช่น 20317-9999 (กด Enter เพื่อเพิ่มหลายรหัส)')}
                       />
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label htmlFor="location" className="text-xs font-bold text-foreground">Location / Default Warehouse</Label>
+                      <Label htmlFor="location" className="text-xs font-bold text-foreground">{t('projects.locationLabel', 'สถานที่จัดเก็บเริ่มต้น')}</Label>
                       <Input 
                         id="location" 
-                        placeholder="e.g. FORTH HQ" 
+                        placeholder={t('projects.locationPlaceholder', 'เช่น คลังหลัก FORTH HQ')} 
                         value={formData.location} 
                         onChange={e => setFormData({...formData, location: e.target.value})} 
                         className="rounded-lg h-9 text-xs" 
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label htmlFor="description" className="text-xs font-bold text-foreground">Description / Notes</Label>
+                      <Label htmlFor="description" className="text-xs font-bold text-foreground">{t('common.description', 'คำอธิบาย / บันทึกเพิ่มเติม')}</Label>
                       <Input 
                         id="description" 
-                        placeholder="Enter notes or sub-location details" 
+                        placeholder={t('projects.notesPlaceholder', 'บันทึกเพิ่มเติมหรือรายละเอียดจุดติดตั้ง')} 
                         value={formData.description} 
                         onChange={e => setFormData({...formData, description: e.target.value})} 
                         className="rounded-lg h-9 text-xs" 
@@ -632,8 +632,8 @@ const Projects = () => {
                     </div>
                   </div>
                   <DialogFooter className="gap-2 sm:gap-0 border-t border-border pt-3">
-                    <Button type="button" variant="outline" className="rounded-lg text-xs h-9" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
-                    <Button type="submit" className="rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs h-9 cursor-pointer shadow-xs">Save Project</Button>
+                    <Button type="button" variant="outline" className="rounded-lg text-xs h-9" onClick={() => setIsCreateOpen(false)}>{t('common.cancel', 'ยกเลิก')}</Button>
+                    <Button type="submit" className="rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs h-9 cursor-pointer shadow-xs">{t('common.save', 'บันทึกโครงการ')}</Button>
                   </DialogFooter>
                 </form>
               </DialogContent>
@@ -671,7 +671,7 @@ const Projects = () => {
                           {group.canonicalName}
                         </CardTitle>
                         <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
-                          {group.status.toUpperCase()}
+                          {group.status === 'active' ? t('status.active', 'ใช้งาน') : group.status}
                         </span>
                       </div>
                       
@@ -701,7 +701,7 @@ const Projects = () => {
                           onClick={() => openAddLocationDialog(group)}
                         >
                           <Plus className="w-3.5 h-3.5 text-primary" />
-                          <span>Add Location</span>
+                          <span>{t('projects.addLocation', 'เพิ่มสถานที่')}</span>
                         </Button>
                       )}
 
@@ -710,7 +710,7 @@ const Projects = () => {
                           variant="ghost" 
                           size="icon" 
                           className="h-9 w-9 sm:h-8 sm:w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg cursor-pointer"
-                          title="Delete entire project"
+                          title={t('projects.deleteEntireProject', 'ลบโครงการและโอนย้ายสต็อก')}
                           disabled={isCheckingStock}
                           onClick={() => startDeleteProcess('project', group.canonicalName, allGroupProjectIds)}
                         >
@@ -726,7 +726,7 @@ const Projects = () => {
                   <div className="flex items-center justify-between text-xs pb-1 border-b border-border">
                     <span className="font-semibold text-muted-foreground flex items-center gap-1.5">
                       <MapPin className="w-3.5 h-3.5 text-primary" />
-                      <span>Locations ({group.records.length})</span>
+                      <span>{t('projects.location')} ({group.records.length})</span>
                     </span>
                     <Button 
                       variant="ghost" 
@@ -735,9 +735,9 @@ const Projects = () => {
                       onClick={() => toggleExpand(group.key)}
                     >
                       {isExpanded ? (
-                        <><span>Collapse</span> <ChevronUp className="w-3 h-3" /></>
+                        <><span>{t('common.collapse', 'ย่อ')}</span> <ChevronUp className="w-3 h-3" /></>
                       ) : (
-                        <><span>Expand all ({group.records.length})</span> <ChevronDown className="w-3 h-3" /></>
+                        <><span>{t('common.expandAll', 'ขยายทั้งหมด')} ({group.records.length})</span> <ChevronDown className="w-3 h-3" /></>
                       )}
                     </Button>
                   </div>
@@ -813,40 +813,40 @@ const Projects = () => {
 
       {/* Add Location Modal */}
       <Dialog open={isAddLocationOpen} onOpenChange={setIsAddLocationOpen}>
-        <DialogContent className="sm:max-w-[450px] rounded-xl bg-card text-card-foreground p-6 border border-border shadow-xl">
+        <DialogContent className="sm:max-w-[450px] rounded-xl bg-card text-card-foreground p-6 border border-border shadow-lg">
           <form onSubmit={handleAddLocationToProject}>
             <DialogHeader>
               <DialogTitle className="text-lg font-bold flex items-center gap-2 text-foreground">
                 <div className="p-2 rounded-lg bg-primary/10 text-primary">
                   <MapPin className="w-5 h-5" />
                 </div>
-                <span>Add Project Location</span>
+                <span>{t('projects.addLocationModalTitle', 'เพิ่มสถานที่จัดเก็บภายใต้โครงการ')}</span>
               </DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground">
-                Add a new location under project <strong>{selectedLogicalProject?.canonicalName}</strong>
+                {t('projects.addLocationUnder', 'เพิ่มจุดจัดเก็บภายใต้โครงการ')} <strong>{selectedLogicalProject?.canonicalName}</strong>
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-3.5 py-4">
               <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-foreground">Project Name</Label>
+                <Label className="text-xs font-bold text-foreground">{t('projects.projectName', 'ชื่อโครงการ')}</Label>
                 <Input disabled value={selectedLogicalProject?.canonicalName || ''} className="rounded-lg font-semibold bg-muted/50 text-xs h-9" />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-foreground">Project Codes</Label>
+                <Label className="text-xs font-bold text-foreground">{t('projects.projectCodes', 'รหัสโครงการ')}</Label>
                 <Input disabled value={selectedLogicalProject?.canonicalCode || '-'} className="rounded-lg font-mono bg-muted/50 text-xs h-9" />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="add-location" className="text-xs font-bold text-foreground">Location / Sub-warehouse Name <span className="text-destructive">*</span></Label>
-                <Input id="add-location" required placeholder="e.g. FORTH EMS2 (TAOBIN)" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} className="rounded-lg text-xs h-9" />
+                <Label htmlFor="add-location" className="text-xs font-bold text-foreground">{t('projects.locationNameLabel', 'ชื่อสถานที่ / คลังย่อย')} <span className="text-destructive">*</span></Label>
+                <Input id="add-location" required placeholder={t('projects.locationPlaceholder', 'เช่น FORTH EMS2 (TAOBIN)')} value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} className="rounded-lg text-xs h-9" />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="add-description" className="text-xs font-bold text-foreground">Description / Notes</Label>
-                <Input id="add-description" placeholder="Warehouse details or storage zone" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="rounded-lg text-xs h-9" />
+                <Label htmlFor="add-description" className="text-xs font-bold text-foreground">{t('common.description', 'คำอธิบาย / บันทึกเพิ่มเติม')}</Label>
+                <Input id="add-description" placeholder={t('projects.notesPlaceholder', 'รายละเอียดคลังหรือโซนจัดเก็บ')} value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="rounded-lg text-xs h-9" />
               </div>
             </div>
             <DialogFooter className="gap-2 sm:gap-0 border-t border-border pt-3">
-              <Button type="button" variant="outline" className="rounded-lg text-xs h-9" onClick={() => setIsAddLocationOpen(false)}>Cancel</Button>
-              <Button type="submit" className="rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs h-9 cursor-pointer shadow-xs">Confirm Add Location</Button>
+              <Button type="button" variant="outline" className="rounded-lg text-xs h-9" onClick={() => setIsAddLocationOpen(false)}>{t('common.cancel', 'ยกเลิก')}</Button>
+              <Button type="submit" className="rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs h-9 cursor-pointer shadow-xs">{t('projects.confirmAddLocation', 'ยืนยันเพิ่มสถานที่')}</Button>
             </DialogFooter>
           </form>
         </DialogContent>
@@ -854,19 +854,19 @@ const Projects = () => {
 
       {/* Edit Record Dialog */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="sm:max-w-[480px] rounded-xl bg-card text-card-foreground p-6 border border-border shadow-xl">
+        <DialogContent className="sm:max-w-[480px] rounded-xl bg-card text-card-foreground p-6 border border-border shadow-lg">
           <form onSubmit={handleEditRecord}>
             <DialogHeader>
               <DialogTitle className="text-lg font-bold flex items-center gap-2 text-foreground">
                 <div className="p-2 rounded-lg bg-primary/10 text-primary">
                   <Edit className="w-5 h-5" />
                 </div>
-                <span>Edit Project / Location</span>
+                <span>{t('projects.editTitle', 'แก้ไขโครงการ / สถานที่จัดเก็บ')}</span>
               </DialogTitle>
             </DialogHeader>
             <div className="grid gap-3.5 py-4">
               <div className="space-y-1.5">
-                <Label htmlFor="edit-name" className="text-xs font-bold text-foreground">Project Name <span className="text-destructive">*</span></Label>
+                <Label htmlFor="edit-name" className="text-xs font-bold text-foreground">{t('projects.projectName', 'ชื่อโครงการ')} <span className="text-destructive">*</span></Label>
                 <Input id="edit-name" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="rounded-lg text-xs h-9" />
               </div>
 
@@ -874,40 +874,40 @@ const Projects = () => {
               <div className="space-y-1.5">
                 <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
                   <Layers className="w-3.5 h-3.5 text-primary" />
-                  <span>Project Codes</span>
+                  <span>{t('projects.projectCodes', 'รหัสโครงการ')}</span>
                 </Label>
                 <ProjectCodeTagInput
                   codes={formData.project_codes || []}
                   onChange={(newCodes) => setFormData({ ...formData, project_codes: newCodes })}
-                  placeholder="e.g. 20317-9999 (press Enter to add multiple codes)"
+                  placeholder={t('projects.codePlaceholder', 'เช่น 20317-9999 (กด Enter เพื่อเพิ่มหลายรหัส)')}
                 />
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="edit-location" className="text-xs font-bold text-foreground">Location</Label>
+                <Label htmlFor="edit-location" className="text-xs font-bold text-foreground">{t('projects.locationLabel', 'สถานที่จัดเก็บ')}</Label>
                 <Input id="edit-location" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} className="rounded-lg text-xs h-9" />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="edit-description" className="text-xs font-bold text-foreground">Description / Notes</Label>
+                <Label htmlFor="edit-description" className="text-xs font-bold text-foreground">{t('common.description', 'คำอธิบาย / บันทึกเพิ่มเติม')}</Label>
                 <Input id="edit-description" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="rounded-lg text-xs h-9" />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="edit-status" className="text-xs font-bold text-foreground">Project Status</Label>
+                <Label htmlFor="edit-status" className="text-xs font-bold text-foreground">{t('common.status', 'สถานะโครงการ')}</Label>
                 <select
                   id="edit-status"
                   className="flex h-9 w-full rounded-lg border border-input bg-background px-3 text-xs font-medium focus:ring-1 focus:ring-primary cursor-pointer"
                   value={formData.status || 'active'}
                   onChange={e => setFormData({ ...formData, status: e.target.value })}
                 >
-                  <option value="active">ACTIVE (In Progress)</option>
-                  <option value="completed">COMPLETED</option>
-                  <option value="inactive">INACTIVE</option>
+                  <option value="active">{t('status.active', 'กำลังดำเนินการ')}</option>
+                  <option value="completed">{t('common.completed', 'เสร็จสิ้น')}</option>
+                  <option value="inactive">{t('status.inactive', 'ปิดใช้งาน')}</option>
                 </select>
               </div>
             </div>
             <DialogFooter className="gap-2 sm:gap-0 border-t border-border pt-3">
-              <Button type="button" variant="outline" className="rounded-lg text-xs h-9" onClick={() => setIsEditOpen(false)}>Cancel</Button>
-              <Button type="submit" className="rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs h-9 cursor-pointer shadow-xs">Update Project</Button>
+              <Button type="button" variant="outline" className="rounded-lg text-xs h-9" onClick={() => setIsEditOpen(false)}>{t('common.cancel', 'ยกเลิก')}</Button>
+              <Button type="submit" className="rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs h-9 cursor-pointer shadow-xs">{t('common.save', 'บันทึกการแก้ไข')}</Button>
             </DialogFooter>
           </form>
         </DialogContent>
@@ -915,7 +915,7 @@ const Projects = () => {
 
       {/* Delete & Stock Transfer Modal */}
       <Dialog open={isDeleteModalOpen} onOpenChange={(open) => !open && setIsDeleteModalOpen(false)}>
-        <DialogContent className="sm:max-w-[540px] rounded-xl bg-card text-card-foreground p-6 border border-border shadow-xl">
+        <DialogContent className="sm:max-w-[540px] rounded-xl bg-card text-card-foreground p-6 border border-border shadow-lg">
           <DialogHeader className="space-y-2 border-b border-border pb-3">
             <DialogTitle className="text-lg font-bold flex items-center gap-2.5 text-foreground">
               <div className={`p-2 rounded-lg ${deleteTarget?.stockItems?.length > 0 ? 'bg-amber-500/15 text-amber-600' : 'bg-destructive/10 text-destructive'}`}>

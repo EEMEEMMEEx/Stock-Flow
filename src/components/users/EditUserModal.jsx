@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { 
   User, Shield, ShieldCheck, Check, FolderKanban, 
   Phone, Mail, Briefcase, Building2, Lock, AlertCircle, AlertTriangle, 
-  Search, RefreshCw, KeyRound, Sparkles, ExternalLink, ArrowRight
+  Search, RefreshCw, KeyRound, Camera, ExternalLink, ArrowRight
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import AvatarUpload from '@/components/users/AvatarUpload';
@@ -499,7 +499,7 @@ const EditUserModal = ({
               {/* Avatar Upload */}
               <div className="p-4 rounded-lg bg-muted/30 border border-border/50 space-y-2">
                 <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-primary" /> {t('users.editModal.avatarTitle', 'Profile Avatar')}
+                  <Camera className="w-3.5 h-3.5 text-primary" /> {t('users.editModal.avatarTitle', 'Profile Avatar')}
                 </Label>
                 <AvatarUpload
                   value={formData.avatar_url}
@@ -785,7 +785,7 @@ const EditUserModal = ({
                   <div className="space-y-3">
                     {rolePermissionsList.length === totalCatalogCount && totalCatalogCount > 0 && (
                       <div className="p-3 rounded-lg bg-primary/10 border border-primary/20 text-primary text-xs flex items-center gap-2">
-                        <Sparkles className="w-4 h-4 text-primary shrink-0" />
+                        <ShieldCheck className="w-4 h-4 text-primary shrink-0" />
                         <span>
                           {t('users.editModal.fullPrivilegesNotice', 'This role has full system privileges, with access to all {{count}} system permissions.', {
                             count: rolePermissionsList.length

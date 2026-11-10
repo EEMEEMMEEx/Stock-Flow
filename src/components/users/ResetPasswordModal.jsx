@@ -66,8 +66,8 @@ const ResetPasswordModal = ({ isOpen, onClose, onResetPassword, user }) => {
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) { setNewPassword(''); onClose(); } }}>
       <DialogContent className="max-w-md bg-card text-card-foreground rounded-xl border border-border shadow-xl">
         <DialogHeader>
-          <DialogTitle className="text-lg font-bold flex items-center gap-2 text-purple-600 dark:text-purple-400">
-            <KeyRound className="w-5 h-5" />
+          <DialogTitle className="text-lg font-bold flex items-center gap-2 text-foreground">
+            <KeyRound className="w-5 h-5 text-primary" />
             Reset Password
           </DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
@@ -86,7 +86,7 @@ const ResetPasswordModal = ({ isOpen, onClose, onResetPassword, user }) => {
                   size="sm"
                   disabled={fetchingDefault}
                   onClick={handleUseDefaultPassword}
-                  className="text-[11px] text-purple-600 hover:text-purple-700 hover:underline flex items-center gap-1 h-7 px-2 cursor-pointer"
+                  className="text-[11px] text-primary hover:underline flex items-center gap-1 h-7 px-2 cursor-pointer"
                 >
                   <ShieldCheck className="w-3 h-3" />
                   {fetchingDefault ? 'Fetching...' : 'Use Default Password'}

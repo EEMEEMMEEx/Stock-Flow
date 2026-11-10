@@ -6,10 +6,10 @@ import { Input } from '@/components/ui/input';
 import { 
   BookOpen, AlertTriangle, ShieldCheck, User, CheckCircle2, 
   Search, Users, Shield, FolderKanban, ArrowDownToLine, 
-  ArrowUpFromLine, FileText, Sparkles, ExternalLink,
+  ArrowUpFromLine, FileText, ExternalLink,
   Package, Clock, Layers,
   HelpCircle, SlidersHorizontal, ArrowLeftRight, Info,
-  BookmarkCheck, Zap, Settings, PenTool
+  BookmarkCheck, ListOrdered, Settings, PenTool
 } from 'lucide-react';
 import { useTranslation } from '@/i18n';
 
@@ -118,8 +118,8 @@ const SECTION_CONFIGS = [
     key: 'dynamicRbacRoleManagement',
     category: ['admin'],
     icon: Shield,
-    iconColor: 'text-purple-600',
-    badgeColor: 'border-l-purple-600',
+    iconColor: 'text-sky-600 dark:text-sky-400',
+    badgeColor: 'border-l-sky-600',
     path: '/roles',
     roles: ['ADMIN'],
     permissions: ['roles.view', 'roles.create', 'roles.manage_permissions'],
@@ -151,8 +151,8 @@ const SECTION_CONFIGS = [
     key: 'userProfileAndSignatures',
     category: ['staff', 'supervisor', 'admin'],
     icon: PenTool,
-    iconColor: 'text-fuchsia-500',
-    badgeColor: 'border-l-fuchsia-500',
+    iconColor: 'text-indigo-600 dark:text-indigo-400',
+    badgeColor: 'border-l-indigo-600',
     path: '/profile',
     roles: ['STAFF', 'SUPERVISOR', 'ADMIN'],
     permissions: [],
@@ -169,7 +169,7 @@ const Manual = () => {
     { id: 'all', label: t('manual.allSections'), icon: BookOpen },
     { id: 'staff', label: t('manual.roles.staff'), icon: User, color: 'text-blue-500' },
     { id: 'supervisor', label: t('manual.roles.supervisor'), icon: ShieldCheck, color: 'text-emerald-500' },
-    { id: 'admin', label: t('manual.roles.admin'), icon: Shield, color: 'text-purple-500' },
+    { id: 'admin', label: t('manual.roles.admin'), icon: Shield, color: 'text-sky-600 dark:text-sky-400' },
     { id: 'checkouts', label: t('manual.roles.checkouts'), icon: ArrowLeftRight, color: 'text-amber-500' },
     { id: 'inventory', label: t('manual.roles.inventory'), icon: Package, color: 'text-cyan-500' },
   ], [t]);
@@ -217,7 +217,7 @@ const Manual = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider">
-              <Sparkles className="w-3.5 h-3.5" /> {t('manual.badgeKnowledgeBase')}
+              <BookmarkCheck className="w-3.5 h-3.5" /> {t('manual.badgeKnowledgeBase')}
             </div>
             <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-3">
               <BookOpen className="w-7 h-7 text-primary shrink-0" />
@@ -323,9 +323,9 @@ const Manual = () => {
         <div className="p-4 rounded-xl border border-border/80 bg-card shadow-xs space-y-2">
           <div className="flex items-center justify-between">
             <span className="font-bold text-sm text-foreground flex items-center gap-2">
-              <Shield className="w-4 h-4 text-purple-500" aria-hidden="true" /> {t('manual.roleMatrix.adminTitle')}
+              <Shield className="w-4 h-4 text-sky-600 dark:text-sky-400" aria-hidden="true" /> {t('manual.roleMatrix.adminTitle')}
             </span>
-            <span className="text-xs bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 font-bold px-2 py-0.5 rounded-full">
+            <span className="text-xs bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300 font-bold px-2 py-0.5 rounded-full">
               {t('manual.roleMatrix.adminBadge')}
             </span>
           </div>
@@ -443,7 +443,7 @@ const Manual = () => {
                   {/* 2. Step-by-Step Instructions */}
                   <div className="space-y-3">
                     <h4 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
-                      <Zap className="w-3.5 h-3.5 text-amber-500" /> {t('manual.instructionsTitle')}
+                      <ListOrdered className="w-3.5 h-3.5 text-primary" /> {t('manual.instructionsTitle')}
                     </h4>
                     <div className="space-y-2">
                       {sec.steps.map((step, index) => (

@@ -352,13 +352,10 @@ const Dashboard = () => {
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2.5">
             <span>{t('dashboard.title', 'Dashboard')}</span>
-            <span className="flex h-2.5 w-2.5 relative">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-            </span>
+            <span className="inline-flex h-2 w-2 rounded-full bg-emerald-500" title="Connected" />
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t('dashboard.welcomeBack', 'Welcome back,')} <span className="font-semibold text-foreground">{profile?.full_name}</span>. {t('dashboard.subtitle', 'Real-time overview of warehouse inventory and operations')}
+          <p className="text-xs text-muted-foreground mt-1">
+            {t('dashboard.subtitle')}
           </p>
         </div>
 
@@ -402,8 +399,8 @@ const Dashboard = () => {
         <Card className="lg:col-span-8 flex flex-col rounded-xl bg-card border border-border shadow-xs">
           <CardHeader className="border-b border-border/40 pb-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="space-y-0.5">
-              <CardTitle className="text-sm font-bold tracking-wide uppercase text-foreground flex items-center gap-2">
-                <BarChart3 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <CardTitle className="text-sm font-semibold tracking-tight text-foreground flex items-center gap-2">
+                <BarChart3 className="w-4 h-4 text-muted-foreground" />
                 <span>
                   {chartViewMode === 'project' 
                     ? t('dashboard.stockBalanceByProject', 'Stock Balance by Active Project') 
@@ -535,7 +532,7 @@ const Dashboard = () => {
                     <Legend wrapperStyle={{ paddingTop: chartViewMode === 'item' ? '24px' : '15px', fontSize: '12px' }} />
                     <Bar dataKey="total_in" name={t('dashboard.totalIn', 'Total In')} fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={28} />
                     <Bar dataKey="total_out" name={t('dashboard.totalOut', 'Total Out')} fill="#f59e0b" radius={[4, 4, 0, 0]} maxBarSize={28} />
-                    <Bar dataKey="balance" name={t('dashboard.balance', 'Balance')} fill="#6366f1" radius={[4, 4, 0, 0]} maxBarSize={28} />
+                    <Bar dataKey="balance" name={t('dashboard.balance', 'Balance')} fill="#0284c7" radius={[4, 4, 0, 0]} maxBarSize={28} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -553,7 +550,7 @@ const Dashboard = () => {
         <Card className="lg:col-span-4 flex flex-col rounded-xl bg-card border border-border shadow-xs">
           <CardHeader className="border-b border-border/40 pb-3">
             <CardTitle className="text-sm font-bold tracking-wide uppercase text-foreground flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <CheckCircle2 className="w-4 h-4 text-muted-foreground" />
               <span>{t('dashboard.recentActivity', 'Recent Activity')}</span>
             </CardTitle>
           </CardHeader>
@@ -589,7 +586,7 @@ const Dashboard = () => {
               <div className="flex flex-col items-center justify-center h-full min-h-[350px] text-muted-foreground p-6">
                 <ArrowUpFromLine className="w-10 h-10 mb-3 opacity-30 stroke-1" />
                 <p className="text-sm font-semibold">{t('dashboard.noRecentActivity', 'No recent activity')}</p>
-                <p className="text-xs mt-1 text-center">{t('dashboard.noRecentActivityDesc', 'When withdrawals occur, real-time activity will show here.')}</p>
+                <p className="text-xs mt-1 text-center">{t('dashboard.noRecentActivityDesc', 'When withdrawals occur, recent activity will show here.')}</p>
               </div>
             )}
           </CardContent>

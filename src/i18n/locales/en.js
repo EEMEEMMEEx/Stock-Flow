@@ -166,7 +166,7 @@ export default {
   },
   "dashboard": {
     "title": "Dashboard",
-    "subtitle": "Real-time overview of warehouse inventory and operations",
+    "subtitle": "Warehouse inventory and operations overview",
     "welcomeBack": "Welcome back,",
     "syncing": "Syncing...",
     "refreshData": "Refresh Data",
@@ -201,11 +201,11 @@ export default {
     "andOtherItems": "and {{count}} other items",
     "centralWarehouse": "Central Warehouse",
     "noRecentActivity": "No recent activity",
-    "noRecentActivityDesc": "When withdrawals occur, real-time activity will show here.",
+    "noRecentActivityDesc": "When withdrawals occur, recent activity will show here.",
     "units": "units",
     "siteKits": {
       "title": "Site Installation Kits Availability (BOM)",
-      "subtitle": "Real-time calculation of complete installation kits possible from current stock",
+      "subtitle": "Calculates complete installation kits possible from current stock",
       "readyToBuild": "Ready to Build",
       "maxKits": "Max Complete Kits",
       "limitingItem": "Limiting Material",

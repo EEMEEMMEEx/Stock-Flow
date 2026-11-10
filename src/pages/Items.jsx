@@ -10,7 +10,7 @@ import {
   Search, Package, Tag, Building2, Edit3, Trash2, 
   LayoutGrid, List, RefreshCw, ImageIcon, Box, 
   SlidersHorizontal, CheckCircle2, AlertCircle, ChevronLeft, ChevronRight,
-  ArrowRightLeft, Lock, Sparkles, History,
+  ArrowRightLeft, Lock, Check, FileEdit, History,
   ChevronDown, ArrowUpDown, ArrowUp, ArrowDown, CornerDownRight, FolderTree,
   MapPin, Plane
 } from 'lucide-react';
@@ -948,12 +948,12 @@ const Items = () => {
     );
   };
 
-  // Source Badge Renderer (Local: Sky / MapPin, Import: Amber / Plane)
+  // Source Badge Renderer (Clean Industrial Micro-tag)
   const renderSourceBadge = (source) => {
     const src = (source || '').trim().toLowerCase();
     if (src === 'local') {
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/20">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-muted/60 text-muted-foreground border border-border/60">
           <MapPin className="w-3 h-3 shrink-0" />
           <span className="hidden sm:inline">{t('items.table.local')}</span>
           <span className="sm:hidden">L</span>
@@ -962,7 +962,7 @@ const Items = () => {
     }
     if (src === 'import') {
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-muted/60 text-muted-foreground border border-border/60">
           <Plane className="w-3 h-3 shrink-0" />
           <span className="hidden sm:inline">{t('items.table.import')}</span>
           <span className="sm:hidden">I</span>
@@ -971,7 +971,7 @@ const Items = () => {
     }
     if (source && source.trim() !== '-' && source.trim() !== '') {
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-muted text-muted-foreground border border-border">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-muted/60 text-muted-foreground border border-border/60">
           <span>{source}</span>
         </span>
       );
@@ -1034,7 +1034,7 @@ const Items = () => {
             </div>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-xl font-bold tracking-tight">{uniqueMasterItemsCount}</span>
+            <span className="text-xl font-bold font-mono tabular-nums tracking-tight">{uniqueMasterItemsCount}</span>
             <span className="text-xs text-muted-foreground font-medium">{t('items.kpis.itemsUnit')}</span>
           </div>
           <div className="mt-1 text-[11px] text-muted-foreground font-mono">
@@ -1050,7 +1050,7 @@ const Items = () => {
             </div>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
+            <span className="text-xl font-bold font-mono tabular-nums tracking-tight text-emerald-600 dark:text-emerald-400">
               {totalStockQuantity.toLocaleString()}
             </span>
             <span className="text-xs text-muted-foreground font-medium">{t('items.kpis.units')}</span>
@@ -1065,7 +1065,7 @@ const Items = () => {
             </div>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-xl font-bold tracking-tight">{activeLocationsWithStockCount}</span>
+            <span className="text-xl font-bold font-mono tabular-nums tracking-tight">{activeLocationsWithStockCount}</span>
             <span className="text-xs text-muted-foreground font-medium">{t('items.kpis.locationsUnit')}</span>
           </div>
         </Card>
@@ -1073,12 +1073,12 @@ const Items = () => {
         <Card className="p-4 rounded-xl bg-card border border-border shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-muted-foreground">{t('items.kpis.categories')}</span>
-            <div className="p-2 rounded-lg bg-violet-500/10 text-violet-600 dark:text-violet-400">
+            <div className="p-2 rounded-lg bg-slate-500/10 text-slate-700 dark:text-slate-400">
               <Tag className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-xl font-bold tracking-tight">{totalCategoriesCount}</span>
+            <span className="text-xl font-bold font-mono tabular-nums tracking-tight">{totalCategoriesCount}</span>
             <span className="text-xs text-muted-foreground font-medium">{t('items.kpis.categoriesUnit')}</span>
           </div>
         </Card>
@@ -1282,17 +1282,17 @@ const Items = () => {
                     onClick={() => handleSort('project_display')}
                     title={t('items.table.sortByLocation')}
                   >
-                    <div className="flex items-center gap-1.5 font-bold text-indigo-600 dark:text-indigo-400">
+                    <div className="flex items-center gap-1.5 font-bold">
                       <span>{t('items.table.location')}</span>
                       {renderSortIcon('project_display')}
                     </div>
                   </TableHead>
                   <TableHead 
-                    className="text-center w-[110px] cursor-pointer hover:text-foreground transition-colors"
+                    className="text-right w-[110px] cursor-pointer hover:text-foreground transition-colors"
                     onClick={() => handleSort('balance')}
                     title={t('items.table.sortByStock')}
                   >
-                    <div className="flex items-center justify-center gap-1.5">
+                    <div className="flex items-center justify-end gap-1.5">
                       <span className="font-bold">{t('items.table.currentStock')}</span>
                       {renderSortIcon('balance')}
                     </div>
@@ -1337,19 +1337,19 @@ const Items = () => {
                       {/* Name & Parent/Child Badge */}
                       <TableCell className="font-semibold text-foreground">
                         {isChild ? (
-                          /* CHILD Row Layout with Tree Branch Guide */
-                          <div className="flex items-start gap-2 pl-2">
-                            <div className="flex items-center gap-1 mt-0.5 text-blue-600 dark:text-blue-400 shrink-0 font-mono font-bold select-none">
-                              <CornerDownRight className="w-4 h-4 stroke-[2.25]" />
-                              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono font-extrabold bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/30">
+                          /* CHILD Row Layout with Clean Branch Guide */
+                          <div className="flex items-start gap-2 pl-3">
+                            <div className="flex items-center gap-1 mt-0.5 text-muted-foreground shrink-0 select-none">
+                              <CornerDownRight className="w-3.5 h-3.5 text-muted-foreground/70" />
+                              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-muted text-muted-foreground border border-border/60">
                                 {t('items.table.child')}
                               </span>
                             </div>
                             <div className="min-w-0 flex-1">
-                              <span className="text-foreground/95 line-clamp-2">{item.name}</span>
+                              <span className="text-foreground line-clamp-2">{item.name}</span>
                               <div className="flex items-center gap-1.5 mt-0.5 text-[10px] text-muted-foreground font-mono">
                                 <span>{t('items.table.parentLabel')}</span>
-                                <span className="font-semibold text-foreground/80 truncate max-w-[200px]" title={item.parentName}>
+                                <span className="font-medium text-foreground/80 truncate max-w-[200px]" title={item.parentName}>
                                   {item.parentName || item.parentSku}
                                 </span>
                                 {item.parentSku && item.parentSku !== '-' && (
@@ -1371,9 +1371,9 @@ const Items = () => {
                                 title={item.isCollapsed ? t('items.table.expandChildren') : t('items.table.collapseChildren')}
                               >
                                 {item.isCollapsed ? (
-                                  <ChevronRight className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                                  <ChevronRight className="w-4 h-4 text-foreground/70" />
                                 ) : (
-                                  <ChevronDown className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                                  <ChevronDown className="w-4 h-4 text-foreground/70" />
                                 )}
                               </Button>
                             )}
@@ -1382,14 +1382,14 @@ const Items = () => {
                               <button
                                 type="button"
                                 onClick={() => toggleGroupCollapse(item.groupKey)}
-                                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/25 shrink-0 hover:bg-indigo-500/20 transition-colors cursor-pointer"
+                                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-muted text-foreground border border-border/60 shrink-0 hover:bg-muted/80 transition-colors cursor-pointer"
                                 title={t('items.table.clickToExpand')}
                               >
-                                <FolderTree className="w-3 h-3" />
+                                <FolderTree className="w-3 h-3 text-muted-foreground" />
                                 <span>{t('items.table.parent', { count: item.childCount })}</span>
                               </button>
                             ) : item.isOrphanChild ? (
-                              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/25 shrink-0">
+                              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-muted text-muted-foreground border border-border/60 shrink-0">
                                 {t('items.table.childSingle')}
                               </span>
                             ) : null}
@@ -1414,8 +1414,7 @@ const Items = () => {
 
                       {/* Category */}
                       <TableCell>
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-muted text-[11px] font-medium text-muted-foreground border">
-                          <Tag className="w-2.5 h-2.5 text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground">
                           {item.category_name}
                         </span>
                       </TableCell>
@@ -1433,23 +1432,23 @@ const Items = () => {
                       {/* Destination Storage Location / Warehouse Tag */}
                       <TableCell>
                         {item.project_location ? (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
-                            <Building2 className="w-3 h-3 shrink-0 inline" />
-                            <span>{item.project_location}</span>
-                          </span>
+                          <div className="flex items-center gap-1.5 text-xs text-foreground/90 font-medium">
+                            <Building2 className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                            <span className="truncate max-w-[200px]" title={item.project_location}>{item.project_location}</span>
+                          </div>
                         ) : item.project_display !== '-' ? (
-                          <span className="text-muted-foreground/50 font-italic text-[11px]">{t('items.table.noLocation')}</span>
+                          <span className="text-muted-foreground/50 italic text-[11px]">{t('items.table.noLocation')}</span>
                         ) : (
-                          <span className="text-muted-foreground/50 font-italic text-[11px]">{t('items.table.noProject')}</span>
+                          <span className="text-muted-foreground/50 italic text-[11px]">{t('items.table.noProject')}</span>
                         )}
                       </TableCell>
 
                       {/* Balance Badge */}
-                      <TableCell className="text-center">
-                        <span className={`inline-flex items-center justify-center px-2.5 py-1 rounded-md text-xs font-bold font-mono shadow-xs ${
+                      <TableCell className="text-right">
+                        <span className={`font-mono tabular-nums text-xs font-semibold ${
                           item.balance > 0 
-                            ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30' 
-                            : 'bg-muted text-muted-foreground border border-border'
+                            ? 'text-foreground' 
+                            : 'text-rose-600 dark:text-rose-400 font-medium'
                         }`}>
                           {item.balance}
                         </span>
@@ -1462,19 +1461,24 @@ const Items = () => {
 
                       {/* Actions */}
                       <TableCell className="text-right">
-                        <div className="flex justify-end gap-1">
+                        <div className="flex justify-end gap-0.5">
                           <Button 
                             variant="ghost" 
                             size="icon" 
-                            className="min-h-[44px] min-w-[44px] sm:min-h-8 sm:min-w-8 h-10 w-10 sm:h-8 sm:w-8 rounded-lg text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950/40" onClick={() => openAdjustmentHistoryDialog(item)} title={t('items.table.stockHistoryTitle')} aria-label={t('items.table.stockHistoryTitle')}
+                            className="h-8 w-8 rounded text-muted-foreground hover:text-foreground hover:bg-muted" 
+                            onClick={() => openAdjustmentHistoryDialog(item)} 
+                            title={t('items.table.stockHistoryTitle')} 
+                            aria-label={t('items.table.stockHistoryTitle')}
                           >
-                            <History className="w-4 h-4" />
+                            <History className="w-3.5 h-3.5" />
                           </Button>
                           {canTransferInventory && (
                             <Button 
                               variant="ghost" 
                               size="icon" 
-                              className="min-h-[44px] min-w-[44px] sm:min-h-8 sm:min-w-8 h-10 w-10 sm:h-8 sm:w-8 rounded-lg text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 disabled:opacity-30 disabled:cursor-not-allowed" onClick={() => openTransferDialog(item)} aria-label={t('items.table.transferLocationTitle')} 
+                              className="h-8 w-8 rounded text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed" 
+                              onClick={() => openTransferDialog(item)} 
+                              aria-label={t('items.table.transferLocationTitle')} 
                               disabled={!item.project_id || (parseInt(item.balance, 10) || 0) <= 0}
                               title={
                                 !item.project_id || (parseInt(item.balance, 10) || 0) <= 0 
@@ -1482,27 +1486,31 @@ const Items = () => {
                                   : t('items.table.transferLocationTitle')
                               }
                             >
-                              <ArrowRightLeft className="w-4 h-4" />
+                              <ArrowRightLeft className="w-3.5 h-3.5" />
                             </Button>
                           )}
                           {can('items.update') && (
                             <Button 
                               variant="ghost" 
                               size="icon" 
-                              className="min-h-[44px] min-w-[44px] sm:min-h-8 sm:min-w-8 h-10 w-10 sm:h-8 sm:w-8 rounded-lg text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/40" onClick={() => openEditDialog(item)} aria-label={t('items.table.editMasterItem')} 
+                              className="h-8 w-8 rounded text-muted-foreground hover:text-foreground hover:bg-muted" 
+                              onClick={() => openEditDialog(item)} 
+                              aria-label={t('items.table.editMasterItem')} 
                               title={t('items.table.editMasterItem')}
                             >
-                              <Edit3 className="w-4 h-4" />
+                              <Edit3 className="w-3.5 h-3.5" />
                             </Button>
                           )}
                           {can('items.delete') && allowItemDeletion && (
                             <Button 
                               variant="ghost" 
                               size="icon" 
-                              className="min-h-[44px] min-w-[44px] sm:min-h-8 sm:min-w-8 h-10 w-10 sm:h-8 sm:w-8 rounded-lg text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40" onClick={() => openDeleteDialog(item.originalItem || item)} aria-label={t('items.table.deleteItem')} 
+                              className="h-8 w-8 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10" 
+                              onClick={() => openDeleteDialog(item.originalItem || item)} 
+                              aria-label={t('items.table.deleteItem')} 
                               title={t('items.table.deleteItem')}
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <Trash2 className="w-3.5 h-3.5" />
                             </Button>
                           )}
                         </div>
@@ -1966,7 +1974,7 @@ const Items = () => {
 
                   {allowDirectStockAdjustment && canAdjustStock ? (
                     <span className="text-[10px] font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full flex items-center gap-1">
-                      <Sparkles className="w-2.5 h-2.5" />
+                      <Check className="w-2.5 h-2.5" />
                       <span>{t('items.dialogs.enabled')}</span>
                     </span>
                   ) : (
@@ -2051,8 +2059,8 @@ const Items = () => {
                     {/* Mandatory reason when stock changes */}
                     {parseInt(newStockQty, 10) !== currentStockQty && !isNaN(parseInt(newStockQty, 10)) && (
                       <div className="space-y-1.5 pt-1 animate-in fade-in-50 duration-200">
-                        <Label htmlFor="adjust-reason" className="text-[11px] font-bold text-primary flex items-center gap-1">
-                          <Sparkles className="w-3 h-3 text-amber-500" />
+                        <Label htmlFor="adjust-reason" className="text-[11px] font-bold text-foreground flex items-center gap-1">
+                          <FileEdit className="w-3 h-3 text-muted-foreground" />
                           <span>{t('items.dialogs.adjustmentReason')} <span className="text-destructive">*</span></span>
                         </Label>
                         <textarea
