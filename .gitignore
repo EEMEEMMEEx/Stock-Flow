@@ -134,6 +134,7 @@ stock-flow-atomic-transaction-workflow.*
 .gemini/
 .qoder/
 .code-review-graph/
+.github/context-mode/
 
 # 13. Project Internal Context Notes & Documentation Plans
 memory.md

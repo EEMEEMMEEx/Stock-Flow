@@ -66,7 +66,7 @@ const REPAIR_STATUS_META = {
 const RepairResolutionRow = ({ log, canResolveRepair, canEditSerial, syncingCaimId, onOpenRepair, onSyncCaim, onOpenEditSerial }) => {
   const { t } = useTranslation();
 
-  if (log.verification_status === 'pending_review') return null;
+  if (log.is_reverted || log.verification_status !== 'confirmed') return null;
   if (log.item_condition !== 'damaged' && log.item_condition !== 'needs_repair') return null;
 
   const status = log.repair_resolution_status || 'unresolved';
@@ -103,7 +103,7 @@ const RepairResolutionRow = ({ log, canResolveRepair, canEditSerial, syncingCaim
           <Wrench className="w-2.5 h-2.5" />
           <span>{t('checkouts.repairPendingTag')}</span>
         </span>
-        {canResolveRepair && (
+        {canResolveRepair && log.caim_inbound_status !== 'pending_confirmation' && (
           <button
             type="button"
             onClick={() => onOpenRepair(log)}
@@ -923,7 +923,7 @@ const CheckoutDetailModal = ({
                         </Button>
                       )}
                       {canRevertAction && !log.is_reverted && onOpenRevertModal
-                        && (log.caim_stock_in_order_id || log.caim_inbound_processed_at) && (
+                        && log.caim_stock_in_order_id && (
                         <Button
                           type="button"
                           variant="outline"

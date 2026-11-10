@@ -30,6 +30,7 @@ import RepairResolutionModal from '@/components/checkouts/RepairResolutionModal'
 import EditSerialModal from '@/components/checkouts/EditSerialModal';
 import CaimClaimSubmitModal from '@/components/checkouts/CaimClaimSubmitModal';
 import CaimInboundConfirmModal from '@/components/checkouts/CaimInboundConfirmModal';
+import { resolveDefectiveSerial, formatDefectiveSerial } from '@/lib/scrapSerial';
 
 const SCRAP_TABS = ['outbound_claim', 'inbound_caim', 'pending', 'disposed'];
 
@@ -67,6 +68,14 @@ const Scrap = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedProjectId, setSelectedProjectId] = useState('all');
   const [selectedMethod, setSelectedMethod] = useState('all');
+
+  const targetId = searchParams.get('id');
+
+  useEffect(() => {
+    if (targetId) {
+      setSearchTerm(targetId);
+    }
+  }, [targetId]);
 
   // Modal states
   const [isRepairModalOpen, setIsRepairModalOpen] = useState(false);
@@ -115,6 +124,8 @@ const Scrap = () => {
           caim_sync_error,
           checkout_order_id,
           destination_project_id,
+          destination_project:projects!destination_project_id (id, name, project_code),
+          evidence_photo_url,
           checkout_orders (
             id,
             order_number,
@@ -129,10 +140,12 @@ const Scrap = () => {
           )
         `)
         .in('item_condition', ['consumed', 'damaged', 'needs_repair'])
-        .neq('verification_status', 'pending_review')
+        .eq('is_reverted', false)
+        .eq('verification_status', 'confirmed')
         .is('caim_ticket_id', null)
         .neq('caim_sync_status', 'synced')
         .eq('repair_resolution_status', 'unresolved')
+        .eq('caim_inbound_status', 'none')
         .order('returned_at', { ascending: false });
 
       if (error) throw error;
@@ -163,6 +176,8 @@ const Scrap = () => {
           caim_inbound_payload,
           checkout_order_id,
           destination_project_id,
+          destination_project:projects!destination_project_id (id, name, project_code),
+          evidence_photo_url,
           checkout_orders (
             id,
             order_number,
@@ -176,6 +191,7 @@ const Scrap = () => {
             items (id, name, model, unit, sku)
           )
         `)
+        .eq('is_reverted', false)
         .eq('caim_inbound_status', 'pending_confirmation')
         .order('caim_closed_at', { ascending: false, nullsFirst: false });
 
@@ -200,6 +216,8 @@ const Scrap = () => {
           repair_resolution_status,
           replaced_serial_number,
           destination_project_id,
+          destination_project:projects!destination_project_id (id, name, project_code),
+          evidence_photo_url,
           caim_ticket_id,
           checkout_order_id,
           checkout_orders (
@@ -215,9 +233,10 @@ const Scrap = () => {
             items (id, name, model, unit, sku)
           )
         `)
-        .in('item_condition', ['damaged', 'needs_repair'])
-        .neq('verification_status', 'pending_review')
+        .eq('is_reverted', false)
+        .eq('verification_status', 'confirmed')
         .eq('repair_resolution_status', 'unresolved')
+        .in('caim_inbound_status', ['internal_repair', 'retried_internal'])
         .order('returned_at', { ascending: false });
 
       if (error) throw error;
@@ -234,6 +253,9 @@ const Scrap = () => {
         .from('scrap_disposal_items')
         .select(`
           id,
+          project_id,
+          checkout_return_log_id,
+          checkout_order_id,
           disposed_at,
           quantity,
           serial_number,
@@ -312,13 +334,28 @@ const Scrap = () => {
     setIsInboundConfirmModalOpen(true);
   };
 
+  // Handle transfer to internal repair queue (Single Triage)
+  const handleSendToInternalRepair = async (log) => {
+    try {
+      const { error } = await supabase.rpc('mark_return_for_internal_repair', {
+        p_return_log_id: log.id
+      });
+      if (error) throw error;
+      toast.success(t('scrap.sentToInternalRepairSuccess', 'ย้ายอุปกรณ์เข้าคิวซ่อมภายในเรียบร้อยแล้ว'));
+      loadData();
+    } catch (err) {
+      console.error('mark_return_for_internal_repair failed:', err);
+      toast.error(err.message || t('scrap.sentToInternalRepairFailed', 'เกิดข้อผิดพลาดในการย้ายเข้าคิวซ่อมภายใน'));
+    }
+  };
+
   // Filtered lists
   const filteredOutbound = useMemo(() => {
     return outboundClaimItems.filter((item) => {
       const matchesSearch =
         !searchTerm.trim() ||
         (item.checkout_items?.items?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (item.checkout_items?.serial_number || item.replaced_serial_number || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        resolveDefectiveSerial(item).toLowerCase().includes(searchTerm.toLowerCase()) ||
         (item.checkout_orders?.order_number || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         (item.checkout_orders?.borrower_name || '').toLowerCase().includes(searchTerm.toLowerCase());
 
@@ -332,7 +369,7 @@ const Scrap = () => {
   const filteredInbound = useMemo(() => {
     return inboundCaimItems.filter((item) => {
       const payload = item.caim_inbound_payload || {};
-      const serialNo = payload.newSerialNo || payload.serialNo || item.replaced_serial_number || item.checkout_items?.serial_number || '';
+      const serialNo = payload.newSerialNo || payload.replacedNewSerialNo || payload.serialNo || resolveDefectiveSerial(item);
 
       const matchesSearch =
         !searchTerm.trim() ||
@@ -353,7 +390,7 @@ const Scrap = () => {
       const matchesSearch =
         !searchTerm.trim() ||
         (item.checkout_items?.items?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (item.checkout_items?.serial_number || item.replaced_serial_number || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        resolveDefectiveSerial(item).toLowerCase().includes(searchTerm.toLowerCase()) ||
         (item.checkout_orders?.order_number || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         (item.checkout_orders?.borrower_name || '').toLowerCase().includes(searchTerm.toLowerCase());
 
@@ -746,10 +783,10 @@ const Scrap = () => {
                   filteredOutbound.map((log) => {
                     const itemName = log.checkout_items?.items?.name || '-';
                     const itemUnit = log.checkout_items?.items?.unit || '';
-                    const itemSerial = log.checkout_items?.serial_number || log.replaced_serial_number || '';
+                    const itemSerial = resolveDefectiveSerial(log);
                     const orderNumber = log.checkout_orders?.order_number || '-';
                     const borrowerName = log.checkout_orders?.borrower_name || '';
-                    const projectName = log.checkout_orders?.projects?.name || '-';
+                    const projectName = log.destination_project?.name || log.checkout_orders?.projects?.name || '-';
                     const hasSerial = Boolean(itemSerial && itemSerial.trim());
 
                     return (
@@ -803,6 +840,20 @@ const Scrap = () => {
                               >
                                 <Hash className="w-3 h-3" />
                                 <span>ระบุ S/N</span>
+                              </Button>
+                            )}
+
+                            {canResolveRepair && (
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleSendToInternalRepair(log)}
+                                className="h-7 px-2 text-[11px] gap-1 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
+                                title={t('scrap.sendToInternalRepairTitle', 'ส่งเข้าคิวซ่อมภายในคลัง')}
+                              >
+                                <Wrench className="w-3 h-3" />
+                                <span>{t('scrap.sendToInternalRepairAction', 'ส่งซ่อมภายใน')}</span>
                               </Button>
                             )}
 
@@ -864,9 +915,9 @@ const Scrap = () => {
                   filteredInbound.map((log) => {
                     const itemName = log.checkout_items?.items?.name || '-';
                     const payload = log.caim_inbound_payload || {};
-                    const serialNo = payload.newSerialNo || payload.serialNo || log.replaced_serial_number || log.checkout_items?.serial_number || '-';
+                    const serialNo = payload.newSerialNo || payload.replacedNewSerialNo || payload.serialNo || formatDefectiveSerial(log);
                     const orderNumber = log.checkout_orders?.order_number || '-';
-                    const projectName = log.checkout_orders?.projects?.name || '-';
+                    const projectName = log.destination_project?.name || log.checkout_orders?.projects?.name || '-';
                     const repairResult = log.caim_repair_result || '';
                     const isRestoration = repairResult === 'repaired' || repairResult === 'replaced_new';
                     const ticketId = log.caim_ticket_id || payload.ticketId || '-';
@@ -923,8 +974,8 @@ const Scrap = () => {
                         <td className="py-3 px-4 text-muted-foreground">
                           {formatDate(log.caim_closed_at)}
                         </td>
-                        <td className="py-3 px-4 max-w-xs truncate text-muted-foreground" title={payload.notes || ''}>
-                          {payload.notes || '-'}
+                        <td className="py-3 px-4 max-w-xs truncate text-muted-foreground" title={payload.technicianNotes || payload.notes || ''}>
+                          {payload.technicianNotes || payload.notes || '-'}
                         </td>
                         <td className="py-3 px-4 text-right">
                           {canConfirmInbound ? (
@@ -1002,10 +1053,11 @@ const Scrap = () => {
                   filteredPending.map((log) => {
                     const itemName = log.checkout_items?.items?.name || '-';
                     const itemUnit = log.checkout_items?.items?.unit || '';
-                    const itemSerial = log.checkout_items?.serial_number || log.replaced_serial_number || '-';
+                    const itemSerial = formatDefectiveSerial(log);
+                    const hasSerial = Boolean(resolveDefectiveSerial(log));
                     const orderNumber = log.checkout_orders?.order_number || '-';
                     const borrowerName = log.checkout_orders?.borrower_name || '';
-                    const projectName = log.checkout_orders?.projects?.name || '-';
+                    const projectName = log.destination_project?.name || log.checkout_orders?.projects?.name || '-';
 
                     return (
                       <tr key={log.id} className="hover:bg-muted/30 transition-colors">
@@ -1043,13 +1095,26 @@ const Scrap = () => {
                         </td>
                         <td className="py-3 px-4 text-right">
                           <div className="flex items-center justify-end gap-1.5">
+                            {!log.caim_ticket_id && !hasSerial && canEditSerial && (
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleOpenEditSerialModal(log)}
+                                className="h-8 px-2 text-xs gap-1 border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 cursor-pointer"
+                              >
+                                <Hash className="w-3.5 h-3.5" />
+                                <span>{t('scrap.specifySerial', 'ระบุ S/N')}</span>
+                              </Button>
+                            )}
                             {!log.caim_ticket_id && canSendClaim && (
                               <Button
                                 type="button"
                                 size="sm"
                                 variant="outline"
+                                disabled={!hasSerial}
                                 onClick={() => handleOpenClaimSubmitModal(log)}
-                                className="h-8 px-2.5 text-xs gap-1 font-semibold border-blue-500/30 text-blue-600 dark:text-blue-400 hover:bg-blue-500/10 cursor-pointer"
+                                className="h-8 px-2.5 text-xs gap-1 font-semibold border-blue-500/30 text-blue-600 dark:text-blue-400 hover:bg-blue-500/10 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                               >
                                 <Send className="w-3.5 h-3.5" />
                                 <span>{t('scrap.sendCaimAction')}</span>
@@ -1170,9 +1235,9 @@ const Scrap = () => {
             setSelectedReturnLog(null);
             setSelectedOrder(null);
           }}
-          log={selectedReturnLog}
+          returnLog={selectedReturnLog}
           order={selectedOrder}
-          onSuccess={() => {
+          onResolved={() => {
             loadData();
           }}
         />

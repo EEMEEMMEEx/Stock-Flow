@@ -1,7 +1,7 @@
 {
   "name": "stock-flow-app",
   "private": true,
-  "version": "1.29.0",
+  "version": "1.30.0",
   "type": "module",
   "engines": {
     "node": "24.x"
@@ -49,6 +49,8 @@
     "apply:migration-95": "node scripts/apply-migration-95.mjs",
     "apply:migration-96": "node scripts/apply-migration-96.mjs",
     "apply:migration-97": "node scripts/apply-migration-97.mjs",
+    "apply:migration-102": "node scripts/apply-migration-102.mjs",
+    "test:scrap-serial": "node --test src/lib/scrapSerial.test.js",
     "verify:checkout-locking-sandbox": "node scripts/verify-process-checkout-order-locking-sandbox.mjs",
     "verify:super-revert-ui": "node scripts/verify-super-revert-ui.mjs",
     "test:super-revert": "node --test src/lib/superRevert.test.js",
