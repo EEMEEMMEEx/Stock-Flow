@@ -18,6 +18,7 @@ import {
   Eye,
   RefreshCw,
   Clock,
+  Barcode,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { supabase } from '@/lib/supabase';
@@ -71,6 +72,7 @@ const CheckoutReturnModal = ({
           sku: item.items?.sku || '',
           unit: item.items?.unit || 'ชิ้น',
           serial_number: item.serial_number || '',
+          returned_serial_number: item.serial_number || '',
           quantity_borrowed: item.quantity_borrowed,
           quantity_already_returned: item.quantity_returned,
           pending_review_quantity: pendingReviewQty,
@@ -309,6 +311,7 @@ const CheckoutReturnModal = ({
           destination_project_id: i.destination_project_id || order.project_id,
           damage_notes: i.damage_notes?.trim() || null,
           replaced_serial_number: i.replaced_serial_number?.trim() || null,
+          returned_serial_number: i.returned_serial_number?.trim() || null,
           evidence_photo_url: i.evidence_photo_url.trim(),
         })),
       };
@@ -588,6 +591,39 @@ const CheckoutReturnModal = ({
                               ))}
                             </select>
                           </div>
+
+                          {/* Returned serial number (when condition !== 'consumed') */}
+                          {item.condition !== 'consumed' && (
+                            <div className="col-span-12 space-y-1 pt-1">
+                              <div className="flex items-center justify-between gap-2">
+                                <Label className="text-[10px] text-foreground font-bold flex items-center gap-1.5">
+                                  <Barcode className="w-3.5 h-3.5 text-indigo-500" />
+                                  <span>{t('checkouts.returnedSerialNumber')}</span>
+                                </Label>
+                                <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-muted text-muted-foreground border border-border/50">
+                                  {t('checkouts.returnedSerialOptional')}
+                                </span>
+                              </div>
+                              <Input
+                                placeholder={t('checkouts.returnedSerialPlaceholder')}
+                                value={item.returned_serial_number ?? ''}
+                                onChange={(e) =>
+                                  handleUpdateItem(
+                                    item.checkout_item_id,
+                                    'returned_serial_number',
+                                    e.target.value.toUpperCase()
+                                  )
+                                }
+                                maxLength={100}
+                                className="h-8 text-xs rounded-lg font-mono"
+                              />
+                              {Number(item.returned_quantity) > 1 && (
+                                <p className="text-[10px] text-muted-foreground leading-tight">
+                                  {t('checkouts.multiQtySerialHint')}
+                                </p>
+                              )}
+                            </div>
+                          )}
 
                           {/* Replaced serial number (consumed = used as replacement) */}
                           {item.condition === 'consumed' && (

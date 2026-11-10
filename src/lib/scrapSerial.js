@@ -10,10 +10,13 @@
  */
 export const resolveDefectiveSerial = (log) => {
   if (!log) return '';
+  const returned = (log.returned_serial_number || '').trim();
+  const replaced = (log.replaced_serial_number || '').trim();
   if (log.item_condition === 'consumed') {
-    return (log.replaced_serial_number || '').trim();
+    return returned || replaced || '';
   }
-  return (log.replaced_serial_number || log.checkout_items?.serial_number || '').trim();
+  const original = (log.checkout_items?.serial_number || '').trim();
+  return returned || replaced || original || '';
 };
 
 /**

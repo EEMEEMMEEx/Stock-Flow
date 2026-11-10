@@ -138,7 +138,12 @@ const CheckoutReturnReviewModal = ({
       joinedItem?.items?.unit ||
       fallbackItem?.items?.unit ||
       t('common.piece');
-    const serialNumber = joinedItem?.serial_number || fallbackItem?.serial_number || '';
+    const serialNumber =
+      log.returned_serial_number ||
+      log.replaced_serial_number ||
+      joinedItem?.serial_number ||
+      fallbackItem?.serial_number ||
+      '';
     return { name, unit, serialNumber };
   };
 

@@ -52,7 +52,7 @@ const CaimInboundConfirmModal = ({
 
   const ticketId = log?.caim_ticket_id || payload?.ticketId || '-';
   const ticketUrl = log?.caim_ticket_url || `https://claims-nu-taupe.vercel.app/tickets?search=${encodeURIComponent(ticketId)}`;
-  const serialNo = payload?.newSerialNo || payload?.replacedNewSerialNo || payload?.serialNo || log?.replaced_serial_number || checkoutItem?.serial_number || '-';
+  const serialNo = payload?.newSerialNo || payload?.replacedNewSerialNo || payload?.serialNo || log?.returned_serial_number || log?.replaced_serial_number || checkoutItem?.serial_number || '-';
 
   const handleConfirm = async () => {
     setErrorMessage('');

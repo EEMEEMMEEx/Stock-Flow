@@ -583,8 +583,21 @@ export const MaterialReturnPDF = ({ order, returnLogs = [], staffProfile }) => {
               ? `สูญหาย (${item.quantity_lost})` 
               : 'ปกติสมบูรณ์';
 
+            const matchingLogs = (returnLogs || []).filter(
+              (l) => l.checkout_item_id === item.id && !l.is_reverted
+            );
+            const matchingLogWithSerial = matchingLogs.find(
+              (l) => (l.returned_serial_number || '').trim() || (l.replaced_serial_number || '').trim()
+            );
+            const activeLog = matchingLogWithSerial || matchingLogs[0];
+            const effectiveSerial =
+              (activeLog?.returned_serial_number || '').trim() ||
+              (activeLog?.replaced_serial_number || '').trim() ||
+              item.returned_serial_number ||
+              item.serial_number;
+
             const serialNotes = [
-              item.serial_number,
+              effectiveSerial,
               item.notes
             ].filter(Boolean).join(' ');
 

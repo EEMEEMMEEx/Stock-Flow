@@ -23,6 +23,7 @@ import { useTranslation } from '@/i18n';
 import StatusBadge from '@/components/ui/StatusBadge';
 import { REVERT_KINDS, formatRevertDate } from '@/lib/superRevert';
 import { formatProjectLocation } from '@/lib/checkoutDisplay';
+import { resolveDefectiveSerial } from '@/lib/scrapSerial';
 
 /**
  * public.profiles has NO email column (canonical emails live in auth.users only),
@@ -94,7 +95,7 @@ const RepairResolutionRow = ({ log, canResolveRepair, canEditSerial, syncingCaim
     );
   }
 
-  const serialForCaim = log.replaced_serial_number || log.checkout_items?.serial_number;
+  const serialForCaim = resolveDefectiveSerial(log) || log?.replaced_serial_number || log?.checkout_items?.serial_number;
 
   return (
     <div className="mt-1.5 flex flex-col gap-1.5">
@@ -370,9 +371,7 @@ const CheckoutDetailModal = ({
   };
 
   const handleManualCaimSync = async (log) => {
-    // รายการ 'ชำรุด/ส่งซ่อม' ไม่มี replaced_serial_number (ฟิลด์นั้นใช้กับ 'consumed')
-    // จึง fallback ไปใช้ S/N ของอุปกรณ์ที่ยืมไปจาก checkout_items
-    const serialNumber = log?.replaced_serial_number || log?.checkout_items?.serial_number;
+    const serialNumber = resolveDefectiveSerial(log) || log?.replaced_serial_number || log?.checkout_items?.serial_number;
     if (!log?.id || !serialNumber) return;
     try {
       setSyncingCaimId(log.id);
@@ -778,11 +777,15 @@ const CheckoutDetailModal = ({
                       <div className="min-w-0">
                         <div className="font-semibold text-foreground flex items-center gap-1.5 flex-wrap">
                           <span>{log.checkout_items?.items?.name || t('dashboard.item')}</span>
-                          {log.checkout_items?.serial_number && (
+                          {log.returned_serial_number ? (
+                            <span className="font-mono text-[10px] text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 px-1.5 py-0.2 rounded font-bold">
+                              S/N: {log.returned_serial_number}
+                            </span>
+                          ) : log.checkout_items?.serial_number ? (
                             <span className="font-mono text-[10px] text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 px-1.5 py-0.2 rounded font-bold">
                               S/N: {log.checkout_items.serial_number}
                             </span>
-                          )}
+                          ) : null}
                           <span>— {t('checkouts.returnQty')} {log.returned_quantity} {log.checkout_items?.items?.unit || t('common.piece')}</span>
                           <span className={`ml-1 px-1.5 py-0.5 rounded text-[10px] font-bold ${
                             log.item_condition === 'normal'

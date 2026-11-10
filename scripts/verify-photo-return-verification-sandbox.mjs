@@ -115,7 +115,7 @@ check(
 );
 check(
   'Scrap page excludes unconfirmed pending_review return logs from repair/CAIM queues',
-  (scrapPage.match(/\.neq\('verification_status', 'pending_review'\)/g) || []).length >= 2
+  (scrapPage.match(/\.(neq\('verification_status', 'pending_review'\)|eq\('verification_status', 'confirmed'\))/g) || []).length >= 2
 );
 
 // 4. Optional PGlite SQL execution test if PGlite is installed
