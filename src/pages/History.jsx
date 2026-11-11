@@ -7,7 +7,7 @@ import { FileText, Building2, User, Calendar, MapPin, Target } from 'lucide-reac
 // Dynamic import used in handleDownloadPDF to reduce initial bundle
 import toast from 'react-hot-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { applyWithdrawalOrdersScope, canAccessWithdrawalRecord, isOrderHistoryAdmin } from '@/lib/orderHistoryAuth';
+import { applyWithdrawalOrdersScope, canAccessWithdrawalRecord, isOrderHistoryAdmin, filterWithdrawalOrders } from '@/lib/orderHistoryAuth';
 import { format } from 'date-fns';
 import { useTranslation } from '@/i18n';
 
@@ -144,7 +144,16 @@ const History = () => {
 
       const { data, error: err } = await query;
       if (err && err.code !== '42P01') throw err;
-      setHistory(data || []);
+      const scopedHistory = filterWithdrawalOrders(data || [], {
+        user,
+        profile,
+        isAdmin,
+        isSuperAdmin,
+        can,
+        canAny,
+        permissions
+      });
+      setHistory(scopedHistory);
     } catch (err) {
       console.error('Fetch History Error:', err);
       setError(err.message || 'Failed to load withdrawal history');

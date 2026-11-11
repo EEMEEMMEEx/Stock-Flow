@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n';
 import { toSafeFileToken } from '@/lib/utils';
 import { isSchemaMismatchError } from '@/lib/rpcErrors';
-import { applyWithdrawalOrdersScope, canAccessWithdrawalRecord } from '@/lib/orderHistoryAuth';
+import { applyWithdrawalOrdersScope, canAccessWithdrawalRecord, filterWithdrawalOrders } from '@/lib/orderHistoryAuth';
 import { ALL_WAREHOUSES, buildCartKey, buildWarehouseMap, clampQuantity, getWarehouseBalance, getWarehouseLabel, getWarehousesForItem, pickDefaultWarehouse, resolveSourceWarehouse } from '@/lib/withdrawalStock';
 import toast from 'react-hot-toast';
 
@@ -290,7 +290,16 @@ const Withdrawals = () => {
             : o
         ));
       }
-      setOrders(ordersWithReverter);
+      const scopedOrders = filterWithdrawalOrders(ordersWithReverter, {
+        user,
+        profile,
+        isAdmin,
+        isSuperAdmin,
+        can,
+        canAny,
+        permissions
+      });
+      setOrders(scopedOrders);
 
       const pData = pRes.data;
       const iData = iRes.data;

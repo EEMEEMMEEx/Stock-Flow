@@ -87,6 +87,34 @@ test('isOrderHistoryAdmin identifies privileged roles and approvals', () => {
     permissions: ['items.view', 'withdrawals.create']
   }), false);
 
+  // Default STAFF permissions from database including withdrawals.complete must NOT make user an admin
+  assert.equal(isOrderHistoryAdmin({
+    profile: {
+      role: 'staff',
+      roles: { code: 'STAFF', name: 'Staff / Requester' },
+      permissions: [
+        'withdrawals.create',
+        'checkouts.view',
+        'history.view',
+        'withdrawals.complete',
+        'projects.view',
+        'dashboard.view',
+        'checkouts.create',
+        'withdrawals.view'
+      ]
+    },
+    can: (perm) => [
+      'withdrawals.create',
+      'checkouts.view',
+      'history.view',
+      'withdrawals.complete',
+      'projects.view',
+      'dashboard.view',
+      'checkouts.create',
+      'withdrawals.view'
+    ].includes(perm)
+  }), false);
+
   // Edge cases
   assert.equal(isOrderHistoryAdmin(null), false);
   assert.equal(isOrderHistoryAdmin({}), false);
@@ -171,13 +199,21 @@ test('applyCheckoutOrdersScope scopes queries for regular staff and bypasses for
   applyCheckoutOrdersScope(approverQuery, { profile: { role: 'APPROVER' } });
   assert.equal(approverQuery.calls.length, 0);
 
-  // 3. Regular staff - filtered by borrower_id OR created_by
+  // 3. Regular staff - filtered by borrower_id OR created_by (and fullName if present)
   const staffQuery = createMockQuery();
   applyCheckoutOrdersScope(staffQuery, {
     profile: { id: 'user-99', role: 'STAFF' }
   });
   assert.deepEqual(staffQuery.calls, [
     { method: 'or', clause: 'borrower_id.eq.user-99,created_by.eq.user-99' }
+  ]);
+
+  const staffWithNameQuery = createMockQuery();
+  applyCheckoutOrdersScope(staffWithNameQuery, {
+    profile: { id: 'user-99', full_name: 'WATCHARA MANADEE', role: 'STAFF' }
+  });
+  assert.deepEqual(staffWithNameQuery.calls, [
+    { method: 'or', clause: 'borrower_id.eq.user-99,created_by.eq.user-99,borrower_name.eq.WATCHARA MANADEE' }
   ]);
 
   // 4. Missing user - zero UUID fallback
@@ -231,7 +267,10 @@ test('canAccessCheckoutRecord checks detail/export authorization', () => {
   const creatorOrder = { id: 'c-2', borrower_id: 'other', created_by: 'staff-1' };
   const creatorOrderObject = { id: 'c-2', borrower_id: 'other', created_by: { id: 'staff-1' } };
   const nestedBorrowerOrder = { id: 'c-3', borrower: { id: 'staff-1' } };
+  const legacyNamedOrder = { id: 'c-legacy', borrower_id: null, created_by: null, borrower_name: 'WATCHARA MANADEE' };
   const otherOrder = { id: 'c-4', borrower_id: 'other-1', created_by: 'other-2' };
+
+  const staffWithNameCtx = { profile: { id: 'staff-1', full_name: 'WATCHARA MANADEE', role: 'STAFF' } };
 
   // Admin & Approver access
   assert.equal(canAccessCheckoutRecord(otherOrder, adminCtx), true);
@@ -244,6 +283,7 @@ test('canAccessCheckoutRecord checks detail/export authorization', () => {
   assert.equal(canAccessCheckoutRecord(creatorOrder, staffCtx), true);
   assert.equal(canAccessCheckoutRecord(creatorOrderObject, staffCtx), true);
   assert.equal(canAccessCheckoutRecord(nestedBorrowerOrder, staffCtx), true);
+  assert.equal(canAccessCheckoutRecord(legacyNamedOrder, staffWithNameCtx), true);
   assert.equal(canAccessCheckoutRecord(otherOrder, staffCtx), false);
 
   // Falsy inputs

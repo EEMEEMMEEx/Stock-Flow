@@ -9,7 +9,7 @@ import toast from 'react-hot-toast';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n';
-import { applyCheckoutOrdersScope, canAccessCheckoutRecord } from '@/lib/orderHistoryAuth';
+import { applyCheckoutOrdersScope, canAccessCheckoutRecord, filterCheckoutOrders } from '@/lib/orderHistoryAuth';
 
 import CheckoutPosTerminal from '@/components/checkouts/CheckoutPosTerminal';
 import CheckoutActiveList from '@/components/checkouts/CheckoutActiveList';
@@ -301,7 +301,16 @@ const Checkouts = () => {
           ));
         }
 
-        setOrders(loadedOrders);
+        const scopedOrders = filterCheckoutOrders(loadedOrders, {
+          user,
+          profile,
+          isAdmin,
+          isSuperAdmin,
+          can,
+          canAny,
+          permissions
+        });
+        setOrders(scopedOrders);
       }
     } catch (err) {
       console.error('Error fetching checkout data:', err);

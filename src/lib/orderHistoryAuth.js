@@ -10,7 +10,6 @@ export const ORDER_HISTORY_SUPERVISOR_PERMISSIONS = [
   'checkouts.approve',
   'withdrawals.update',
   'withdrawals.reject',
-  'withdrawals.complete',
   'checkouts.update',
   'checkouts.reject'
 ];
@@ -141,6 +140,18 @@ export const applyCheckoutOrdersScope = (query, authContext) => {
   if (!userId) {
     return query.or('borrower_id.eq.00000000-0000-0000-0000-000000000000,created_by.eq.00000000-0000-0000-0000-000000000000');
   }
+
+  const fullName = (
+    authContext.profile?.full_name ||
+    authContext.user?.user_metadata?.full_name ||
+    ''
+  ).trim();
+
+  // If user has a full name, also match legacy checkout records where borrower_id was null but borrower_name matched
+  if (fullName) {
+    return query.or(`borrower_id.eq.${userId},created_by.eq.${userId},borrower_name.eq.${fullName}`);
+  }
+
   return query.or(`borrower_id.eq.${userId},created_by.eq.${userId}`);
 };
 
@@ -184,7 +195,21 @@ export const canAccessCheckoutRecord = (order, authContext) => {
   const rawCreator = order.created_by || (Array.isArray(order.profiles) ? order.profiles[0] : order.profiles);
   const creatorId = (typeof rawCreator === 'object' && rawCreator !== null ? rawCreator.id : rawCreator);
 
-  return isSameId(borrowerId, userId) || isSameId(creatorId, userId);
+  if (isSameId(borrowerId, userId) || isSameId(creatorId, userId)) {
+    return true;
+  }
+
+  const fullName = (
+    authContext.profile?.full_name ||
+    authContext.user?.user_metadata?.full_name ||
+    ''
+  ).trim();
+
+  if (fullName && order.borrower_name && String(order.borrower_name).trim().toLowerCase() === fullName.toLowerCase()) {
+    return true;
+  }
+
+  return false;
 };
 
 /**

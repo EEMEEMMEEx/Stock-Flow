@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-11-11 14:15] - v1.31.13
+- **Files Modified:** `src/lib/orderHistoryAuth.js`, `src/lib/orderHistoryAuth.test.js`, `src/pages/Checkouts.jsx`, `src/pages/Withdrawals.jsx`, `src/pages/History.jsx`, `package.json`
+- **Changes:**
+  - **RBAC Authorization Scoping Fix (`src/lib/orderHistoryAuth.js`)**: แก้ไข root cause ที่ผู้ใช้งานบทบาท Staff / Requester (เช่น `WATCHARA MANADEE`) สามารถมองเห็นรายการของผู้อื่นใน `/history`, `/checkouts?tab=active`, `/checkouts?tab=history`, และ `/withdrawals?tab=orders`
+  - **Remove Non-Supervisor Permission**: ปลด `'withdrawals.complete'` ออกจาก `ORDER_HISTORY_SUPERVISOR_PERMISSIONS` เนื่องจาก `withdrawals.complete` เป็นสิทธิ์ของผู้ขอเบิก (Staff) ในการกดยืนยันรับของสำเร็จ ไม่ใช่สิทธิ์ระดับ Supervisor/Approver ทำให้การตรวจสอบ `authContext.can(perm)` ให้ผลลัพธ์เป็น `true` ส่งผลให้ระบบเข้าใจผิดว่า Staff เป็น Admin และบายพาสการกรองประวัติออกทั้งหมด
+  - **Legacy Order Borrower Matching**: ปรับปรุง `applyCheckoutOrdersScope` และ `canAccessCheckoutRecord` ให้รองรับการค้นหาผ่าน `borrower_name` ในกรณีรายการยืมรุ่นเก่าที่ไม่ได้ผูก `borrower_id` (UUID เป็น null) ทำให้ผู้ใช้สามารถเห็นรายการยืมเดิมของตนเองได้อย่างถูกต้อง
+  - **Defense-in-Depth Client Filtering**: เพิ่มการกรอง `filterCheckoutOrders` ใน `Checkouts.jsx` และ `filterWithdrawalOrders` ใน `Withdrawals.jsx` และ `History.jsx` เพื่อรับประกันความปลอดภัยของข้อมูลในระดับ Frontend ป้องกันการหลุดของข้อมูลข้ามบัญชี
+  - **Unit Test Suite Update**: เพิ่มเทสต์ใน `orderHistoryAuth.test.js` สำหรับยืนยันว่า Default Staff Permissions (รวมถึง `withdrawals.complete`) จะต้องได้ `isOrderHistoryAdmin = false` เสมอ และทดสอบการเข้าถึงรายการยืมที่มี `borrower_name` ผ่าน 8/8 การทดสอบ
+
 ## [2026-11-11 13:20] - v1.31.12
 - **Files Modified:** `src/lib/r2Storage.js`, `src/pages/Profile.jsx`, `src/lib/__tests__/r2Storage.test.js`, `package.json`
 - **Changes:**
