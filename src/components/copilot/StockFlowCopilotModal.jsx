@@ -14,18 +14,14 @@ import {
   RefreshCw,
   Copy,
   Check,
-  Settings2,
   ExternalLink,
   Bot,
-  User,
-  ShieldCheck
+  User
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { cn } from '@/lib/utils';
 import {
-  askStockFlowCopilot,
-  getGeminiApiKey,
-  saveGeminiApiKey
+  askStockFlowCopilot
 } from '@/lib/geminiCopilot';
 
 const QUICK_PROMPTS = [
@@ -172,18 +168,12 @@ export default function StockFlowCopilotModal({ open, onOpenChange }) {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState(null);
-  const [showKeyConfig, setShowKeyConfig] = useState(false);
-  const [customKey, setCustomKey] = useState('');
-  const [hasApiKey, setHasApiKey] = useState(false);
 
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
   useEffect(() => {
     if (open) {
-      const existing = getGeminiApiKey();
-      setHasApiKey(Boolean(existing));
-      setCustomKey(existing || '');
       setTimeout(() => inputRef.current?.focus(), 150);
     }
   }, [open]);
@@ -212,10 +202,6 @@ export default function StockFlowCopilotModal({ open, onOpenChange }) {
         query: text,
         conversationHistory: history
       });
-
-      if (res.needsKey) {
-        setShowKeyConfig(true);
-      }
 
       setMessages(prev => [
         ...prev,
@@ -248,13 +234,6 @@ export default function StockFlowCopilotModal({ open, onOpenChange }) {
     setCopiedIndex(index);
     toast.success('คัดลอกคำตอบแล้ว');
     setTimeout(() => setCopiedIndex(null), 2000);
-  };
-
-  const handleSaveKey = () => {
-    saveGeminiApiKey(customKey);
-    setHasApiKey(Boolean(customKey.trim()));
-    setShowKeyConfig(false);
-    toast.success(customKey.trim() ? 'บันทึก Gemini API Key เรียบร้อยแล้ว' : 'ลบการตั้งค่า API Key แล้ว');
   };
 
   const handleClearHistory = () => {
@@ -294,15 +273,6 @@ export default function StockFlowCopilotModal({ open, onOpenChange }) {
               variant="ghost"
               size="icon"
               className="h-8 w-8 text-muted-foreground hover:text-foreground"
-              title="ตั้งค่า Gemini API Key"
-              onClick={() => setShowKeyConfig(!showKeyConfig)}
-            >
-              <Settings2 className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-muted-foreground hover:text-foreground"
               title="ล้างการสนทนา"
               onClick={handleClearHistory}
             >
@@ -310,46 +280,6 @@ export default function StockFlowCopilotModal({ open, onOpenChange }) {
             </Button>
           </div>
         </DialogHeader>
-
-        {/* API Key Configuration Panel */}
-        {showKeyConfig && (
-          <div className="p-3.5 bg-accent/40 border-b border-border text-xs flex flex-col gap-2.5">
-            <div className="flex items-center justify-between">
-              <span className="font-semibold flex items-center gap-1.5 text-foreground">
-                <ShieldCheck className="h-4 w-4 text-primary" />
-                การตั้งค่า Google Gemini API Key
-                {hasApiKey ? (
-                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium ml-1">● เชื่อมต่อแล้ว</span>
-                ) : (
-                  <span className="text-[10px] text-amber-600 dark:text-amber-400 font-medium ml-1">○ ยังไม่มี Key</span>
-                )}
-              </span>
-              <a
-                href="https://aistudio.google.com/app/apikey"
-                target="_blank"
-                rel="noreferrer"
-                className="text-primary hover:underline flex items-center gap-1 font-medium"
-              >
-                รับ API Key ฟรี (Google AI Studio) <ExternalLink className="h-3 w-3" />
-              </a>
-            </div>
-            <p className="text-muted-foreground leading-normal">
-              สามารถกรอก Gemini API Key ส่วนตัว (บันทึกลงในเบราว์เซอร์ของคุณอย่างปลอดภัย) หรือระบุในไฟล์ <code>.env</code> เป็น <code>VITE_GEMINI_API_KEY</code>
-            </p>
-            <div className="flex items-center gap-2">
-              <Input
-                type="password"
-                placeholder="AIzaSy..."
-                value={customKey}
-                onChange={(e) => setCustomKey(e.target.value)}
-                className="h-8 text-xs font-mono"
-              />
-              <Button size="sm" onClick={handleSaveKey} className="h-8 text-xs shrink-0">
-                บันทึก Key
-              </Button>
-            </div>
-          </div>
-        )}
 
         {/* Messages Scroll Area */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">

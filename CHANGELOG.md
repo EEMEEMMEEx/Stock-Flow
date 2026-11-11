@@ -1,5 +1,20 @@
 # Changelog
 
+## [2026-11-11 07:30] - v1.31.2
+### Refactored (Gemini API Key Relocation to /settings)
+- **Settings Relocation**: ย้ายฟังก์ชันการตั้งค่า Google Gemini API Key จากเดิมที่อยู่บน Modal ผู้ช่วย AI Copilot (`StockFlowCopilotModal.jsx`) ไปไว้ในหน้าการตั้งค่าระบบ (`/settings`) อย่างเป็นทางการใน Section 4 (`4. AI Copilot (Google Gemini)`)
+- **GeminiApiKeyManager Component**: สร้างคอมโพเนนต์ `src/components/settings/GeminiApiKeyManager.jsx` รองรับ:
+  - การแสดงสถานะการเชื่อมต่อ (เชื่อมต่อแล้ว / ยังไม่ได้กำหนดค่า)
+  - การแสดงแหล่งที่มาของ Key (กำหนดจาก `.env: VITE_GEMINI_API_KEY` หรือ บันทึกใน LocalStorage เบราว์เซอร์)
+  - ฟอร์มกรอกและแก้ไข API Key พร้อมปุ่มเปิด/ปิดการมองเห็นรหัสผ่าน (Show/Hide)
+  - ลิงก์ตรงไปยัง Google AI Studio เพื่อขอรับ Key ฟรี
+  - ข้อมูลโควต้า Free Tier (15 RPM / 1,500 RPD) และคำชี้แจงความปลอดภัยข้อมูล
+  - ปุ่มบันทึก Key และปุ่มลบ Key ออกจากหน่วยความจำ
+- **Copilot Modal Cleanup**: ลบปุ่มไอคอน `Settings2` และแผงตั้งค่า Dropdown ภายใน `StockFlowCopilotModal.jsx` ออกอย่างหมดจด ช่วยให้หน้าต่างแชตคลีน มุ่งเน้นการสนทนาและวิเคราะห์สต็อกสินค้า
+- **Live State Synchronization**: ปรับปรุง `saveGeminiApiKey` ใน `src/lib/geminiCopilot.js` ให้กระจาย CustomEvent `stockflow:gemini-key-updated` เพื่อซิงค์สถานะระหว่างหน้าจอทันทีโดยไม่ต้องโหลดหน้าเว็บใหม่
+- **Guidance & Deep Linking**: ปรับปรุงข้อความเมื่อไม่มี Key หรือ Key ไม่ถูกต้องใน `geminiCopilot.js` ให้แนะนำการไปตั้งค่าที่เมนู `/settings`
+- **i18n & Verification**: เพิ่มคำแปลภาษาไทยและอังกฤษครบ 100% (2,087 คีย์ parity สมบูรณ์), เพิ่ม Unit Test `src/lib/__tests__/geminiApiKeyStorage.test.js` (5/5 tests pass), และอัปเดตสคริปต์ตรวจสอบ `scripts/verify-gemini-copilot.mjs`
+
 ## [2026-11-11 06:50] - v1.31.1
 ### Fixed (Dynamic Import Stale Chunk Load Error Recovery)
 - **Vite Preload Error Handler**: ติดตั้ง `initVitePreloadErrorHandler` ใน `src/main.jsx` ดักจับ CustomEvent `vite:preloadError` จาก `__vitePreload` ของ Vite เมื่อ Client โหลด dynamic import chunk เก่าที่ถูกลบไปหลังการ deploy ใหม่ สั่ง reload หน้าเว็บอัตโนมัติเพื่อให้ได้ bundle ล่าสุด

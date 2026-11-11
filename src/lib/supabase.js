@@ -1,9 +1,13 @@
 import { createClient } from '@supabase/supabase-js'
 
-const rawUrl = import.meta.env.VITE_SUPABASE_URL
+const rawUrl = typeof import.meta !== 'undefined' && import.meta.env 
+  ? import.meta.env.VITE_SUPABASE_URL 
+  : globalThis.process?.env?.VITE_SUPABASE_URL
 // Publishable keys are the current recommended browser credential. Keep the
 // legacy anon-key fallback so existing deployments continue to work.
-const rawAnonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY
+const rawAnonKey = typeof import.meta !== 'undefined' && import.meta.env 
+  ? (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY)
+  : (globalThis.process?.env?.VITE_SUPABASE_PUBLISHABLE_KEY || globalThis.process?.env?.VITE_SUPABASE_ANON_KEY)
 
 if (!rawUrl || !rawAnonKey) {
   console.warn('[StockFlow] Missing VITE_SUPABASE_URL and a publishable or anon key. Using placeholder client.')

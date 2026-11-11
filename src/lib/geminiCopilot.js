@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { supabase } from './supabase.js';
 
 const LOCAL_STORAGE_KEY = 'stockflow_gemini_api_key';
 
@@ -6,7 +6,9 @@ const LOCAL_STORAGE_KEY = 'stockflow_gemini_api_key';
  * Retrieve Gemini API key from environment variable or localStorage
  */
 export function getGeminiApiKey() {
-  const envKey = import.meta.env.VITE_GEMINI_API_KEY;
+  const envKey = typeof import.meta !== 'undefined' && import.meta.env 
+    ? import.meta.env.VITE_GEMINI_API_KEY 
+    : globalThis.process?.env?.VITE_GEMINI_API_KEY;
   if (envKey && typeof envKey === 'string' && envKey.trim().length > 0) {
     return envKey.trim();
   }
@@ -19,14 +21,46 @@ export function getGeminiApiKey() {
 }
 
 /**
+ * Retrieve Gemini API key status and source details
+ */
+export function getGeminiApiKeyDetails() {
+  const envKey = typeof import.meta !== 'undefined' && import.meta.env 
+    ? import.meta.env.VITE_GEMINI_API_KEY 
+    : globalThis.process?.env?.VITE_GEMINI_API_KEY;
+  const hasEnvKey = Boolean(envKey && typeof envKey === 'string' && envKey.trim().length > 0);
+  let localKey = '';
+  try {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
+    localKey = stored ? stored.trim() : '';
+  } catch {
+    localKey = '';
+  }
+
+  const activeKey = hasEnvKey ? envKey.trim() : localKey;
+
+  return {
+    hasKey: Boolean(activeKey),
+    source: hasEnvKey ? 'env' : (localKey ? 'local' : 'none'),
+    activeKey,
+    localKey,
+    hasEnvKey
+  };
+}
+
+/**
  * Store user-provided Gemini API key locally
  */
 export function saveGeminiApiKey(key) {
   try {
-    if (!key) {
+    if (!key || !key.trim()) {
       localStorage.removeItem(LOCAL_STORAGE_KEY);
     } else {
       localStorage.setItem(LOCAL_STORAGE_KEY, key.trim());
+    }
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('stockflow:gemini-key-updated', {
+        detail: { hasKey: Boolean(key && key.trim()) }
+      }));
     }
     return true;
   } catch {
@@ -160,7 +194,7 @@ export async function askStockFlowCopilot({ query, conversationHistory = [] }) {
   if (!apiKey) {
     return {
       needsKey: true,
-      answer: 'ยังไม่ได้กำหนดค่า **GEMINI_API_KEY** ในระบบ\n\nคุณสามารถรับ API Key ได้ฟรี (Free Tier) จาก [Google AI Studio](https://aistudio.google.com/) โดยกดที่ปุ่มฟันเฟืองด้านบนเพื่อกรอก API Key หรือตั้งค่าในไฟล์ `.env` เป็น `VITE_GEMINI_API_KEY=AIza...`'
+      answer: 'ยังไม่ได้กำหนดค่า **GEMINI_API_KEY** ในระบบ\n\nคุณสามารถรับ API Key ได้ฟรี (Free Tier) จาก [Google AI Studio](https://aistudio.google.com/) โดยไปที่หน้า **[ตั้งค่าระบบ (/settings)](/settings)** เพื่อระบุ API Key หรือกำหนดในไฟล์ `.env` เป็น `VITE_GEMINI_API_KEY=AIza...`'
     };
   }
 
@@ -254,7 +288,7 @@ ${contextSnippet}
       if (lastError?.message && lastError.message.includes('API key not valid')) {
         return {
           needsKey: true,
-          answer: '⚠️ **API Key ไม่ถูกต้อง** กรุณาตรวจสอบ API Key จาก [Google AI Studio](https://aistudio.google.com/) อีกครั้ง'
+          answer: '⚠️ **API Key ไม่ถูกต้อง** กรุณาตรวจสอบหรืออัปเดต API Key ในเมนู **[ตั้งค่าระบบ (/settings)](/settings)** หรือขอรับ Key ใหม่จาก [Google AI Studio](https://aistudio.google.com/)'
         };
       }
       throw lastError || new Error('ไม่สามารถรับคำตอบจาก Gemini ได้ กรุณาลองใหม่อีกครั้ง');

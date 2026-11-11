@@ -1635,12 +1635,16 @@ export default {
         "title": "3. นโยบายผู้ใช้งานและความปลอดภัย",
         "description": "นโยบายรหัสผ่าน, การจัดการบัญชีผู้ใช้งาน และความปลอดภัยระดับแอปพลิเคชัน"
       },
+      "gemini": {
+        "title": "4. ปัญญาประดิษฐ์ AI Copilot (Google Gemini)",
+        "description": "กำหนดค่า Gemini API Key และการเชื่อมต่อผู้ช่วยอัจฉริยะ StockFlow Copilot"
+      },
       "storage": {
-        "title": "4. สถานะพื้นที่จัดเก็บข้อมูล",
+        "title": "5. สถานะพื้นที่จัดเก็บข้อมูล",
         "description": "สถานะการเชื่อมต่อ Cloudflare R2 Object Storage และนโยบายไฟล์รูปภาพ"
       },
       "system": {
-        "title": "5. ข้อมูลสถานะระบบ",
+        "title": "6. ข้อมูลสถานะระบบ",
         "description": "สรุปข้อมูลเวอร์ชัน, สภาพแวดล้อมระบบ และการเชื่อมต่อฐานข้อมูล"
       }
     },
@@ -1701,6 +1705,25 @@ export default {
       "reqSymbol": "มีอักขระพิเศษอย่างน้อย 1 ตัว (!@#$%^&*)",
       "reqNoSpace": "ไม่มีช่องว่างหน้าหรือหลังรหัสผ่าน"
     },
+    "gemini": {
+      "statusTitle": "สถานะการเชื่อมต่อ Gemini AI",
+      "connected": "เชื่อมต่อแล้ว",
+      "notConfigured": "ยังไม่ได้กำหนดค่า",
+      "sourceEnv": "● กำหนดค่าผ่านตัวแปรระบบ (.env: VITE_GEMINI_API_KEY)",
+      "sourceLocal": "● บันทึกในหน่วยความจำเบราว์เซอร์ (LocalStorage)",
+      "sourceNone": "ยังไม่มีการกำหนด API Key สำหรับ StockFlow Copilot",
+      "getFreeKey": "รับ API Key ฟรี (Google AI Studio)",
+      "inputLabel": "Google Gemini API Key",
+      "envActiveHint": "* ระบบกำลังใช้ Key จาก .env สามารถกรอกค่าด้านล่างเพื่อ Override เฉพาะเครื่องนี้ได้",
+      "inputPlaceholder": "ระบุ API Key ขึ้นต้นด้วย AIzaSy...",
+      "hint": "Gemini API Key จะถูกจัดเก็บไว้ใน LocalStorage ของเบราว์เซอร์อย่างปลอดภัยเพื่อใช้เรียก API สำหรับ StockFlow Copilot",
+      "freeTierTitle": "ข้อมูลโมเดลและโควต้าฟรี (Google AI Studio Free Tier)",
+      "freeTierDesc": "รองรับการวิเคราะห์สต็อกสินค้า ตอบคำถามสถานะคลัง และค้นหาข้อมูลรวดเร็วผ่านหน้าต่าง StockFlow Copilot",
+      "freeTierQuota": "ใช้งานได้ฟรีสูงสุด 15 Requests Per Minute (RPM) และ 1,500 Requests Per Day (RPD) โดยไม่มีค่าใช้จ่าย",
+      "securityDesc": "Key ของคุณจะไม่ถูกส่งไปยังเซิร์ฟเวอร์ภายนอกที่ไม่ได้รับอนุญาต และใช้งานเฉพาะการประมวลผลสต็อกภายในระบบเท่านั้น",
+      "saveBtn": "บันทึก Gemini API Key",
+      "clearBtn": "ลบ Key ออก"
+    },
     "storage": {
       "provider": "ผู้ให้บริการ",
       "providerValue": "Cloudflare R2 (S3 API)",
@@ -1733,6 +1756,8 @@ export default {
       "generatePasswordSuccess": "สร้างรหัสผ่านที่ปลอดภัยตามนโยบายสำเร็จ",
       "defaultPasswordSaved": "บันทึกรหัสผ่านรีเซ็ตเริ่มต้นเรียบร้อยแล้ว",
       "defaultPasswordSaveFailed": "เกิดข้อผิดพลาดในการบันทึกรหัสผ่านรีเซ็ตเริ่มต้น",
+      "geminiSaved": "บันทึก Google Gemini API Key เรียบร้อยแล้ว",
+      "geminiCleared": "ลบการตั้งค่า Gemini API Key ในเบราว์เซอร์แล้ว",
       "fetchError": "โหลดข้อมูลการตั้งค่าระบบล้มเหลว"
     }
   },

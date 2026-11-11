@@ -1635,12 +1635,16 @@ export default {
         "title": "3. User & Security Policy",
         "description": "Password policy, user account management, and application-level security"
       },
+      "gemini": {
+        "title": "4. AI Copilot (Google Gemini)",
+        "description": "Configure Gemini API Key and settings for StockFlow Copilot AI assistant"
+      },
       "storage": {
-        "title": "4. Storage Status",
+        "title": "5. Storage Status",
         "description": "Status of Cloudflare R2 Object Storage and image asset policies"
       },
       "system": {
-        "title": "5. System Information",
+        "title": "6. System Information",
         "description": "Summary of version metadata, environment, and database connectivity"
       }
     },
@@ -1701,6 +1705,25 @@ export default {
       "reqSymbol": "At least 1 special character (!@#$%^&*)",
       "reqNoSpace": "No leading or trailing spaces"
     },
+    "gemini": {
+      "statusTitle": "Gemini AI Connection Status",
+      "connected": "Connected",
+      "notConfigured": "Not Configured",
+      "sourceEnv": "● Configured via system environment (.env: VITE_GEMINI_API_KEY)",
+      "sourceLocal": "● Saved in browser memory (LocalStorage)",
+      "sourceNone": "No Gemini API Key configured for StockFlow Copilot",
+      "getFreeKey": "Get Free API Key (Google AI Studio)",
+      "inputLabel": "Google Gemini API Key",
+      "envActiveHint": "* Active from .env. Enter a key below to override locally on this browser",
+      "inputPlaceholder": "Enter API key starting with AIzaSy...",
+      "hint": "Gemini API Key is stored securely in your browser's LocalStorage to query AI for StockFlow Copilot",
+      "freeTierTitle": "Model & Quota Info (Google AI Studio Free Tier)",
+      "freeTierDesc": "Supports inventory analysis, warehouse status queries, and quick natural language lookups in StockFlow Copilot",
+      "freeTierQuota": "Free tier includes up to 15 Requests Per Minute (RPM) and 1,500 Requests Per Day (RPD) with zero cost",
+      "securityDesc": "Your key is never sent to unauthorized third-party servers and is used exclusively for inventory intelligence requests",
+      "saveBtn": "Save Gemini API Key",
+      "clearBtn": "Remove Key"
+    },
     "storage": {
       "provider": "Provider",
       "providerValue": "Cloudflare R2 (S3 API)",
@@ -1733,6 +1756,8 @@ export default {
       "generatePasswordSuccess": "Generated secure password matching policy successfully",
       "defaultPasswordSaved": "Default reset password saved successfully",
       "defaultPasswordSaveFailed": "An error occurred while saving default reset password",
+      "geminiSaved": "Google Gemini API Key saved successfully",
+      "geminiCleared": "Gemini API Key removed from browser storage",
       "fetchError": "Failed to load system settings"
     }
   },

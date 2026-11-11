@@ -7,11 +7,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { 
   Settings as SettingsIcon, AppWindow, Package, ShieldCheck, 
-  Database, Server, Save, ChevronDown, ChevronRight, RefreshCw, Lock, Eye, AlertTriangle, Globe
+  Database, Server, Save, ChevronDown, ChevronRight, RefreshCw, Lock, Eye, AlertTriangle, Globe, Bot
 } from 'lucide-react';
 import { APP_CONFIG } from '@/config/appConfig';
 import toast from 'react-hot-toast';
 import DefaultPasswordManager from '@/components/settings/DefaultPasswordManager';
+import GeminiApiKeyManager from '@/components/settings/GeminiApiKeyManager';
 import { useTranslation } from '@/i18n';
 import LanguageSwitcher from '@/components/common/LanguageSwitcher';
 
@@ -29,6 +30,7 @@ const Settings = () => {
     app: true,
     inventory: true,
     security: false,
+    gemini: false,
     storage: false,
     system: false
   });
@@ -504,6 +506,29 @@ const Settings = () => {
           </CardContent>
         )}
 
+      </Card>
+
+      {/* SECTION 4: AI Copilot (Google Gemini) */}
+      <Card className="rounded-xl bg-card border border-border shadow-xs overflow-hidden">
+        <CardHeader 
+          onClick={() => toggleSection('gemini')}
+          className="cursor-pointer hover:bg-muted/40 transition-colors flex flex-row items-center justify-between py-4"
+        >
+          <div className="flex items-center gap-2.5">
+            <Bot className="w-5 h-5 text-primary" />
+            <div>
+              <CardTitle className="text-base font-bold">{t('settings.sections.gemini.title', '4. AI Copilot (Google Gemini)')}</CardTitle>
+              <CardDescription className="text-xs">{t('settings.sections.gemini.description', 'Configure Gemini API Key and settings for StockFlow Copilot AI assistant')}</CardDescription>
+            </div>
+          </div>
+          {openSections.gemini ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
+        </CardHeader>
+
+        {openSections.gemini && (
+          <CardContent className="pt-2 pb-6 border-t border-border/40 text-xs">
+            <GeminiApiKeyManager canUpdate={canUpdate} />
+          </CardContent>
+        )}
       </Card>
 
       {/* SECTION 5: Storage Status */}
