@@ -194,7 +194,7 @@ export async function askStockFlowCopilot({ query, conversationHistory = [] }) {
   if (!apiKey) {
     return {
       needsKey: true,
-      answer: 'ยังไม่ได้กำหนดค่า **GEMINI_API_KEY** ในระบบ\n\nคุณสามารถรับ API Key ได้ฟรี (Free Tier) จาก [Google AI Studio](https://aistudio.google.com/) โดยไปที่หน้า **[ตั้งค่าระบบ (/settings)](/settings)** เพื่อระบุ API Key หรือกำหนดในไฟล์ `.env` เป็น `VITE_GEMINI_API_KEY=AIza...`'
+      answer: 'ยังไม่ได้กำหนดค่า **GEMINI_API_KEY** ในตัวแปรระบบ (Vercel Environment Variables)\n\nกรุณากำหนดค่า `VITE_GEMINI_API_KEY` หรือ `GEMINI_API_KEY` ใน Environment Variables ของโครงการบน Vercel หรือในไฟล์ `.env` สำหรับเครื่องพัฒนา'
     };
   }
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [2026-11-11 08:10] - v1.31.3
+### Refactored (Streamline Gemini Settings for Centralized Vercel Environment Variables)
+- **Eliminate Redundant LocalStorage Input Form**: นำช่องกรอก Input API Key, ป้ายข้อความการจัดเก็บบน LocalStorage, และปุ่มบันทึก/ลบ Key ในหน้า `/settings` (Section 4) ออกตามข้อกำหนด เนื่องจากระบบใช้งานผ่าน `VITE_GEMINI_API_KEY` / `GEMINI_API_KEY` ใน Environment Variables ของ Vercel อยู่แล้ว
+- **Centralized Environment Status Display**: ปรับปรุงคอมโพเนนต์ `GeminiApiKeyManager.jsx` ให้แสดงการยืนยันสถานะการเชื่อมต่อส่วนกลางผ่าน Vercel Environment Variables พร้อมรายละเอียดโมเดล (Gemini 3.8 Flash), สถาปัตยกรรมความปลอดภัยระดับ Backend (`/api/gemini-copilot`), และข้อมูลโควต้า Free Tier อย่างชัดเจน
+- **Auto-Cleanup Residual Browser Storage**: เพิ่มการล้างค่าค้างของ `stockflow_gemini_api_key` ออกจากเบราว์เซอร์อัตโนมัติ เพื่อป้องกันการอ้างอิง Key เก่าที่อาจตกค้าง
+- **i18n & Verification**: ปรับปรุงคำอธิบายภาษาไทยและอังกฤษใน `th.js` / `en.js` ให้สะท้อนสถาปัตยกรรมส่วนกลาง (2,087 keys parity 100%) และรันชุดทดสอบผ่าน 100%
+
 ## [2026-11-11 07:30] - v1.31.2
 ### Refactored (Gemini API Key Relocation to /settings)
 - **Settings Relocation**: ย้ายฟังก์ชันการตั้งค่า Google Gemini API Key จากเดิมที่อยู่บน Modal ผู้ช่วย AI Copilot (`StockFlowCopilotModal.jsx`) ไปไว้ในหน้าการตั้งค่าระบบ (`/settings`) อย่างเป็นทางการใน Section 4 (`4. AI Copilot (Google Gemini)`)

@@ -1,36 +1,32 @@
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { 
-  Bot, KeyRound, Eye, EyeOff, Save, Trash2, ExternalLink, 
-  Sparkles, CheckCircle2, AlertCircle 
+  Bot, CheckCircle2, AlertCircle, ShieldCheck, 
+  ExternalLink, Server, Cpu
 } from 'lucide-react';
-import { 
-  saveGeminiApiKey, 
-  getGeminiApiKeyDetails 
-} from '@/lib/geminiCopilot';
-import toast from 'react-hot-toast';
+import { getGeminiApiKeyDetails } from '@/lib/geminiCopilot';
 import { useTranslation } from '@/i18n';
 
-export default function GeminiApiKeyManager({ canUpdate = true }) {
+export default function GeminiApiKeyManager() {
   const { t } = useTranslation();
   const [keyDetails, setKeyDetails] = useState({
     hasKey: false,
     source: 'none',
     activeKey: '',
-    localKey: '',
     hasEnvKey: false
   });
-  const [apiKeyInput, setApiKeyInput] = useState('');
-  const [showKey, setShowKey] = useState(false);
-  const [saving, setSaving] = useState(false);
 
   const refreshKeyStatus = () => {
+    // Clean up any legacy localStorage key to ensure no residual data in browser
+    try {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.removeItem('stockflow_gemini_api_key');
+      }
+    } catch {
+      // Ignore in restricted environments
+    }
+
     const details = getGeminiApiKeyDetails();
     setKeyDetails(details);
-    // Prefill with localKey if exists, or activeKey if user wants to see it
-    setApiKeyInput(details.localKey || (details.hasEnvKey ? '' : ''));
   };
 
   useEffect(() => {
@@ -45,47 +41,6 @@ export default function GeminiApiKeyManager({ canUpdate = true }) {
       window.removeEventListener('stockflow:gemini-key-updated', handleKeyUpdated);
     };
   }, []);
-
-  const handleSave = (e) => {
-    if (e) e.preventDefault();
-    if (!canUpdate) {
-      return toast.error(t('settings.toasts.permissionDenied', { perm: 'settings.update', defaultValue: 'You do not have permission to update settings' }));
-    }
-
-    setSaving(true);
-    try {
-      const trimmed = apiKeyInput.trim();
-      saveGeminiApiKey(trimmed);
-      refreshKeyStatus();
-      if (trimmed) {
-        toast.success(t('settings.toasts.geminiSaved', 'บันทึก Google Gemini API Key เรียบร้อยแล้ว'));
-      } else {
-        toast.success(t('settings.toasts.geminiCleared', 'ลบการตั้งค่า Gemini API Key ในเบราว์เซอร์แล้ว'));
-      }
-    } catch (err) {
-      toast.error(err.message || t('settings.toasts.saveFailed', 'เกิดข้อผิดพลาดในการบันทึก Key'));
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleClearKey = () => {
-    if (!canUpdate) {
-      return toast.error(t('settings.toasts.permissionDenied', { perm: 'settings.update', defaultValue: 'You do not have permission to update settings' }));
-    }
-
-    setSaving(true);
-    try {
-      saveGeminiApiKey('');
-      setApiKeyInput('');
-      refreshKeyStatus();
-      toast.success(t('settings.toasts.geminiCleared', 'ลบการตั้งค่า Gemini API Key ในเบราว์เซอร์แล้ว'));
-    } catch (err) {
-      toast.error(err.message || 'ไม่สามารถลบ Key ได้');
-    } finally {
-      setSaving(false);
-    }
-  };
 
   return (
     <div className="space-y-4">
@@ -113,13 +68,9 @@ export default function GeminiApiKeyManager({ canUpdate = true }) {
               )}
             </div>
             <p className="text-[11px] text-muted-foreground mt-0.5">
-              {keyDetails.hasEnvKey ? (
+              {keyDetails.hasKey ? (
                 <span className="text-primary font-medium">
-                  {t('settings.gemini.sourceEnv', '● กำหนดค่าผ่านตัวแปรระบบ (.env: VITE_GEMINI_API_KEY)')}
-                </span>
-              ) : keyDetails.localKey ? (
-                <span className="text-emerald-600 dark:text-emerald-400 font-medium">
-                  {t('settings.gemini.sourceLocal', '● บันทึกในหน่วยความจำเบราว์เซอร์ (LocalStorage)')}
+                  {t('settings.gemini.sourceEnv', '● กำหนดค่าผ่านตัวแปรระบบ (Vercel Environment Variables: VITE_GEMINI_API_KEY)')}
                 </span>
               ) : (
                 <span>
@@ -141,99 +92,57 @@ export default function GeminiApiKeyManager({ canUpdate = true }) {
         </a>
       </div>
 
-      {/* API Key Form */}
-      <form onSubmit={handleSave} className="space-y-4">
-        <div>
-          <Label htmlFor="gemini_api_key" className="text-xs font-semibold flex items-center justify-between">
-            <span className="flex items-center gap-1.5">
-              <KeyRound className="h-3.5 w-3.5 text-primary" />
-              {t('settings.gemini.inputLabel', 'Google Gemini API Key')}
-            </span>
-            {keyDetails.hasEnvKey && !keyDetails.localKey && (
-              <span className="text-[10px] text-muted-foreground font-normal">
-                {t('settings.gemini.envActiveHint', '* ระบบกำลังใช้ Key จาก .env สามารถกรอกค่าด้านล่างเพื่อ Override เฉพาะเครื่องนี้ได้')}
-              </span>
-            )}
-          </Label>
-
-          <div className="relative mt-1">
-            <Input
-              id="gemini_api_key"
-              type={showKey ? 'text' : 'password'}
-              disabled={!canUpdate || saving}
-              placeholder={
-                keyDetails.hasEnvKey && !keyDetails.localKey
-                  ? '•••••••••••••••••••••••••• (Active from .env)'
-                  : t('settings.gemini.inputPlaceholder', 'ระบุ API Key ขึ้นต้นด้วย AIzaSy...')
-              }
-              value={apiKeyInput}
-              onChange={(e) => setApiKeyInput(e.target.value)}
-              className="h-9 pr-10 text-xs font-mono rounded-lg bg-background border border-input"
-            />
-            <button
-              type="button"
-              onClick={() => setShowKey(!showKey)}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1 rounded"
-              title={showKey ? 'ซ่อน API Key' : 'แสดง API Key'}
-            >
-              {showKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            </button>
-          </div>
-          <p className="text-[11px] text-muted-foreground mt-1">
-            {t('settings.gemini.hint', 'Gemini API Key จะถูกจัดเก็บไว้ใน LocalStorage ของเบราว์เซอร์อย่างปลอดภัยเพื่อใช้เรียก API สำหรับ StockFlow Copilot')}
-          </p>
+      {/* Centralized Configuration Assurance Card */}
+      <div className="p-4 rounded-xl border border-primary/20 bg-primary/5 space-y-2">
+        <div className="flex items-center gap-2 text-foreground font-bold text-xs">
+          <ShieldCheck className="h-4 w-4 text-primary" />
+          <span>การกำหนดค่าส่วนกลางผ่าน Vercel (Centralized Environment Configuration)</span>
         </div>
+        <p className="text-[11px] text-muted-foreground leading-relaxed">
+          {t('settings.gemini.hint', 'ระบบ StockFlow เชื่อมต่อผ่านตัวแปรระบบส่วนกลางของ Vercel (VITE_GEMINI_API_KEY / GEMINI_API_KEY) โดยตรง ไม่จำเป็นต้องกรอกหรือจัดเก็บ Key ไว้ใน LocalStorage ของเบราว์เซอร์ เพื่อความปลอดภัยสูงสุดและพร้อมใช้งานสำหรับเจ้าหน้าที่ทุกคนในระบบ')}
+        </p>
+      </div>
 
-        {/* Feature & Free Tier Note */}
+      {/* Architecture & Quota Information Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {/* Model & Capabilities */}
         <div className="p-3.5 rounded-lg bg-muted/30 border border-border/50 text-xs space-y-2">
           <div className="flex items-center gap-1.5 font-semibold text-foreground">
-            <Sparkles className="h-4 w-4 text-amber-500" />
-            <span>{t('settings.gemini.freeTierTitle', 'ข้อมูลโมเดลและโควต้าฟรี (Google AI Studio Free Tier)')}</span>
+            <Cpu className="h-4 w-4 text-indigo-500" />
+            <span>โมเดลปัญญาประดิษฐ์และฟังก์ชันการทำงาน</span>
           </div>
           <ul className="list-disc list-inside text-muted-foreground space-y-1 pl-1 text-[11px]">
             <li>
-              <strong className="text-foreground">Gemini 3.8 Flash & Gemini 2.5 Flash:</strong> {t('settings.gemini.freeTierDesc', 'รองรับการวิเคราะห์สต็อกสินค้า ตอบคำถามสถานะคลัง และค้นหาข้อมูลรวดเร็วผ่านหน้าต่าง StockFlow Copilot')}
+              <strong className="text-foreground">โมเดลหลัก:</strong> Google Gemini 3.8 Flash (ความเร็วสูง รองรับการวิเคราะห์สต็อกแบบเรียลไทม์)
+            </li>
+            <li>
+              <strong className="text-foreground">โมเดลสำรอง:</strong> Gemini 2.5 Flash / Flash Lite fallback อัตโนมัติ
+            </li>
+            <li>
+              <strong className="text-foreground">ขอบเขตงาน:</strong> วิเคราะห์พัสดุใกล้หมด, รายงานภาพรวมคลัง, สรุปประวัติการเบิกจ่าย
+            </li>
+          </ul>
+        </div>
+
+        {/* Security & Free Tier Quota */}
+        <div className="p-3.5 rounded-lg bg-muted/30 border border-border/50 text-xs space-y-2">
+          <div className="flex items-center gap-1.5 font-semibold text-foreground">
+            <Server className="h-4 w-4 text-emerald-500" />
+            <span>ความปลอดภัยและโควต้าการใช้งาน</span>
+          </div>
+          <ul className="list-disc list-inside text-muted-foreground space-y-1 pl-1 text-[11px]">
+            <li>
+              <strong className="text-foreground">ความปลอดภัยระดับ Backend:</strong> ประมวลผลผ่าน Serverless Function (<code>/api/gemini-copilot</code>) ป้องกันการเปิดเผย Key สู่ Client
             </li>
             <li>
               <strong className="text-foreground">Free Tier Quota:</strong> {t('settings.gemini.freeTierQuota', 'ใช้งานได้ฟรีสูงสุด 15 Requests Per Minute (RPM) และ 1,500 Requests Per Day (RPD) โดยไม่มีค่าใช้จ่าย')}
             </li>
             <li>
-              <strong className="text-foreground">ความปลอดภัยของข้อมูล:</strong> {t('settings.gemini.securityDesc', 'Key ของคุณจะไม่ถูกส่งไปยังเซิร์ฟเวอร์ภายนอกที่ไม่ได้รับอนุญาต และใช้งานเฉพาะการประมวลผลสต็อกภายในระบบเท่านั้น')}
+              <strong className="text-foreground">การปกป้องข้อมูล:</strong> {t('settings.gemini.securityDesc', 'Key ของคุณถูกจัดเก็บใน Vercel Environment Variables อย่างปลอดภัย และใช้งานเฉพาะการประมวลผลสต็อกภายในระบบเท่านั้น')}
             </li>
           </ul>
         </div>
-
-        {/* Action Buttons */}
-        {canUpdate && (
-          <div className="flex items-center justify-between pt-1">
-            <div>
-              {keyDetails.localKey && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleClearKey}
-                  disabled={saving}
-                  className="h-8 px-3 rounded-lg border-destructive/30 text-destructive hover:bg-destructive/10 text-xs font-semibold cursor-pointer shadow-xs flex items-center gap-1.5"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                  {t('settings.gemini.clearBtn', 'ลบ Key ออก')}
-                </Button>
-              )}
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Button
-                type="submit"
-                disabled={saving}
-                className="h-9 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground flex items-center gap-2 text-xs font-semibold cursor-pointer shadow-xs"
-              >
-                <Save className="h-3.5 w-3.5" />
-                {saving ? t('settings.app.savingBtn', 'กำลังบันทึก...') : t('settings.gemini.saveBtn', 'บันทึก Gemini API Key')}
-              </Button>
-            </div>
-          </div>
-        )}
-      </form>
+      </div>
     </div>
   );
 }
