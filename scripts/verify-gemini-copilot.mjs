@@ -9,9 +9,11 @@ const filesToCheck = [
   'api/gemini-copilot.js',
   'src/lib/geminiCopilot.js',
   'src/components/copilot/StockFlowCopilotModal.jsx',
+  'src/components/copilot/StockFlowCopilotFab.jsx',
   'src/components/settings/GeminiApiKeyManager.jsx',
   'docs/gemini-copilot-implementation-plan.md',
-  'docs/gemini-settings-relocation-plan.md'
+  'docs/gemini-settings-relocation-plan.md',
+  'docs/move-copilot-floating-button-plan.md'
 ];
 
 for (const file of filesToCheck) {
@@ -30,12 +32,19 @@ assert.ok(settingsContent.includes('GeminiApiKeyManager'), 'Settings.jsx must im
 assert.ok(settingsContent.includes('AI Copilot (Google Gemini)') || settingsContent.includes('gemini'), 'Settings.jsx must contain Gemini Copilot section');
 console.log('[PASS] Settings.jsx integrates GeminiApiKeyManager in Section 4');
 
-// 4. Check Topbar integration
+// 4. Check Copilot Relocation: StockFlowCopilotFab & PageWrapper & Topbar cleanup
+const fabContent = fs.readFileSync('src/components/copilot/StockFlowCopilotFab.jsx', 'utf-8');
+assert.ok(fabContent.includes('StockFlowCopilotModal'), 'StockFlowCopilotFab must import StockFlowCopilotModal');
+assert.ok(fabContent.includes('Bot'), 'StockFlowCopilotFab must include Bot icon');
+assert.ok(fabContent.includes('fixed bottom-6 right-6'), 'StockFlowCopilotFab must position floating button at bottom-6 right-6');
+
+const pageWrapperContent = fs.readFileSync('src/components/layout/PageWrapper.jsx', 'utf-8');
+assert.ok(pageWrapperContent.includes('StockFlowCopilotFab'), 'PageWrapper must import and render StockFlowCopilotFab');
+
 const topbarContent = fs.readFileSync('src/components/layout/Topbar.jsx', 'utf-8');
-assert.ok(topbarContent.includes('StockFlowCopilotModal'), 'Topbar must import StockFlowCopilotModal');
-assert.ok(topbarContent.includes('copilotOpen'), 'Topbar must define copilotOpen state');
-assert.ok(topbarContent.includes('Bot') || topbarContent.includes('Sparkles'), 'Topbar must include Bot or Sparkles icon for Copilot');
-console.log('[PASS] Topbar includes Copilot button, state, and shortcut');
+assert.ok(!topbarContent.includes('StockFlowCopilotModal'), 'Topbar must NOT contain StockFlowCopilotModal');
+assert.ok(!topbarContent.includes('copilotOpen'), 'Topbar must NOT define copilotOpen state');
+console.log('[PASS] Copilot successfully relocated from Topbar to Floating Action Button (FAB) in PageWrapper');
 
 // 3. Check @google/genai and model in api/gemini-copilot.js
 const apiContent = fs.readFileSync('api/gemini-copilot.js', 'utf-8');

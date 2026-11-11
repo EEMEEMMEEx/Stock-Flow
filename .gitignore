@@ -126,6 +126,7 @@ stock-flow-atomic-transaction-workflow.*
 /PDF Template/
 /request-agent/
 /.agents/
+.agents-archive/
 /docs/
 /docs
 /wiki/

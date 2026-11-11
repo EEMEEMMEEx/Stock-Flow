@@ -1,5 +1,30 @@
 # Changelog
 
+## [2026-11-11 08:52] - v1.31.6
+- **Files Modified:** `src/components/copilot/StockFlowCopilotFab.jsx`, `src/components/layout/PageWrapper.jsx`, `src/components/layout/Topbar.jsx`, `src/components/settings/GeminiApiKeyManager.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `package.json`
+- **Changes:**
+  - **Relocate Copilot to Floating Action Button (FAB)**: ย้ายปุ่มเปิด StockFlow Copilot จากแถบเมนูด้านบน (Topbar Header) ไปเป็นปุ่มลอยมุมขวาล่าง (Floating Action Button) ตามแนวทาง `DESIGN.md` (The Precision Depot - Industrial Telecom Precision)
+  - **Industrial Floating Button Primitives**: สร้างคอมโพเนนต์ `StockFlowCopilotFab.jsx` ใช้โครงสร้าง `fixed bottom-6 right-6 z-40 h-11 w-11 rounded-full border border-border bg-card text-foreground shadow-sm hover:shadow-md hover:bg-accent` (ขนาด 44x44px ตามมาตรฐาน WCAG Touch Target บนกริด 4px) พร้อมไอคอน Vector SVG `Bot` (text-amber-500) ปราศจาก glow, neon shadow หรือแอนิเมชันหวือหวา
+  - **Global Integration & Shortcut**: ติดตั้ง `<StockFlowCopilotFab />` ใน `PageWrapper.jsx` ทำให้ปุ่มลอยแสดงครอบคลุมทุกหน้าจอที่เข้าสู่ระบบ พร้อมรองรับคีย์ลัดระดับสากล `Ctrl+K` / `Cmd+K` และซิงค์สถานะเปิด/ปิดผ่าน RPC `admin_get_system_settings` และ event `stockflow:copilot-toggle`
+  - **Header Cleanup & Copy Updates**: ลบปุ่มและโมดอล Copilot ออกจาก `Topbar.jsx` เพื่อคืนพื้นที่ให้ส่วนหัวของแอป พร้อมอัปเดตคำอธิบายใน `GeminiApiKeyManager.jsx` และ i18n (`th.js`, `en.js`) ให้ระบุว่าเป็น "ปุ่มลอยมุมขวาล่าง (Floating Button)" สอดคล้องกันทั้งระบบ
+
+## [2026-11-11 08:48] - v1.31.5
+- **Files Modified:** `AGENTS.md`, `.gitignore`, `package.json`, `.agents/manifest.json`, `.agents/manifest.lock.json`, `.agents/DEPENDENCY_GRAPH.md`
+- **Changes:**
+  - **Resolve AGENTS.md Truncation Bug & Rules Token Optimization**: นำตาราง `Installed Skills Registry` (69 บรรทัด, ขนาด 16,901 bytes / ~4,500 tokens) ออกจาก `AGENTS.md` เนื่องจากซ้ำซ้อนกับระบบ Customizations Discovery ช่วยลดขนาดไฟล์ลง 64% (จาก 30.2 KB เหลือ 13.9 KB) ป้องกันการถูก Antigravity ตัดทอนเนื้อหา (`<truncated 6170 bytes>`) ทำให้กฎเกณฑ์สำคัญด้านความปลอดภัย (`Security Gate`), การควบคุม Transaction (`SELECT ... FOR UPDATE`), สถาปัตยกรรมพื้นที่จัดเก็บ (Cloudflare R2), และมาตรฐานงาน Frontend/Backend กลับมาโหลดเข้า Context ได้ครบถ้วน 100%
+  - **Archive 36 Foreign & Redundant Skills**: ย้ายชุด Skills แปลกปลอมและชุดที่ซ้ำซ้อน 36 โฟลเดอร์ (รวมถึง Foreign Skills จากโปรเจกต์ `dtrs-app`, ชุดโคลนแอป `replica-*`, สแต็ก NestJS/PHP, และชุด `superpowers-*` ที่ทับซ้อนกับ Skills หลัก) พร้อมโฟลเดอร์ Plugin ซ้ำซ้อน `.agents/plugins/pstack/` (3.5 MB) ไปเก็บสำรองไว้ที่ `.agents-archive/` อย่างปลอดภัย ช่วยลดจำนวน Skills ใน Workspace จาก 70 เหลือ 34 Skills ที่ตรงกับ Stack ของโปรเจกต์อย่างแท้จริง และขจัดปัญหาชื่อชนกัน (Name Collision) ของ `systematic-debugging` และ `brainstorming`
+  - **Update Git Ignore & Agent Manifests**: เพิ่ม `.agents-archive/` ลงใน `.gitignore` และอัปเดตไฟล์ `manifest.json`, `manifest.lock.json`, `DEPENDENCY_GRAPH.md` ให้สอดคล้องกับโครงสร้างใหม่ ผ่านการทดสอบ Antigravity Doctor และ Build ผ่าน 100%
+
+## [2026-11-11 08:35] - v1.31.4
+### Added (Functional On/Off Switch Toggle for StockFlow Copilot)
+- **Functional Enable/Disable Toggle Switch**: เปลี่ยนส่วนแสดงผลการกำหนดค่าในหน้า `/settings` (Section 4: AI Copilot) ให้เป็นสวิตช์เปิด-ปิดการใช้งาน StockFlow Copilot (Toggle Switch On/Off) ใช้งานได้จริง พร้อม badge แสดงสถานะ "เปิดใช้งาน" / "ปิดใช้งาน"
+- **Centralized & Local Persistence**: จัดเก็บสถานะการเปิด/ปิดผ่าน Supabase RPC `admin_update_system_settings` (`enable_copilot`) ร่วมกับ `localStorage` (`stockflow_copilot_enabled`) ให้ซิงค์ข้ามผู้ใช้และแสดงผลทันทีโดยไม่ต้องรอโหลด
+- **Dynamic Topbar & Shortcut Guard**:
+  - เมื่อปิดการใช้งาน: ซ่อนปุ่ม Bot บน Topbar อัตโนมัติ, ปิดการทำงานของคีย์ลัด `Ctrl+K`, และ unmount `StockFlowCopilotModal`
+  - เมื่อเปิดการใช้งาน: แสดงปุ่ม Bot บน Topbar และเปิดใช้งานคีย์ลัด `Ctrl+K` ตามปกติ
+- **Live Event Dispatching**: ซิงค์การเปลี่ยนแปลงแบบเรียลไทม์ระหว่างหน้าจอผ่าน `stockflow:copilot-toggle` และ `stockflow:settings-updated`
+- **i18n & Verification**: เพิ่มคีย์ภาษาไทยและอังกฤษใน `th.js` และ `en.js` (2,091 keys parity 100%), ผ่านการทดสอบ Lint, Build, และ Verification Scripts ทั้งหมด
+
 ## [2026-11-11 08:10] - v1.31.3
 ### Refactored (Streamline Gemini Settings for Centralized Vercel Environment Variables)
 - **Eliminate Redundant LocalStorage Input Form**: นำช่องกรอก Input API Key, ป้ายข้อความการจัดเก็บบน LocalStorage, และปุ่มบันทึก/ลบ Key ในหน้า `/settings` (Section 4) ออกตามข้อกำหนด เนื่องจากระบบใช้งานผ่าน `VITE_GEMINI_API_KEY` / `GEMINI_API_KEY` ใน Environment Variables ของ Vercel อยู่แล้ว

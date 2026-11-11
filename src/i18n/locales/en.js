@@ -1721,6 +1721,10 @@ export default {
       "freeTierDesc": "Supports inventory analysis, warehouse status queries, and quick natural language lookups in StockFlow Copilot",
       "freeTierQuota": "Free tier includes up to 15 Requests Per Minute (RPM) and 1,500 Requests Per Day (RPD) with zero cost",
       "securityDesc": "Your key is stored securely in Vercel Environment Variables and used exclusively for inventory intelligence requests",
+      "enableCopilotTitle": "Enable / Disable StockFlow Copilot",
+      "enableCopilotDesc": "Control visibility of the floating AI Copilot button and Ctrl+K shortcut for all system users",
+      "copilotEnabledToast": "StockFlow Copilot has been enabled",
+      "copilotDisabledToast": "StockFlow Copilot has been disabled",
       "saveBtn": "Save Settings",
       "clearBtn": "Refresh Status"
     },

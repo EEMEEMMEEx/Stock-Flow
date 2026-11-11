@@ -6,6 +6,7 @@ import AppFooter from './AppFooter';
 import InstallPrompt from '@/components/InstallPrompt';
 import { useAuth } from '@/contexts/AuthContext';
 import ForceChangePasswordModal from '@/components/auth/ForceChangePasswordModal';
+import StockFlowCopilotFab from '@/components/copilot/StockFlowCopilotFab';
 
 const PageWrapper = () => {
   const { user, loading, mustChangePassword, refreshProfile } = useAuth();
@@ -96,6 +97,7 @@ const PageWrapper = () => {
         onPasswordChanged={refreshProfile}
       />
       <InstallPrompt />
+      <StockFlowCopilotFab />
     </div>
   );
 };

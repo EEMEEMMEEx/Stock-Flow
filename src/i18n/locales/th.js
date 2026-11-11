@@ -1721,6 +1721,10 @@ export default {
       "freeTierDesc": "รองรับการวิเคราะห์สต็อกสินค้า ตอบคำถามสถานะคลัง และค้นหาข้อมูลรวดเร็วผ่านหน้าต่าง StockFlow Copilot",
       "freeTierQuota": "ใช้งานได้ฟรีสูงสุด 15 Requests Per Minute (RPM) และ 1,500 Requests Per Day (RPD) โดยไม่มีค่าใช้จ่าย",
       "securityDesc": "Key ของคุณถูกจัดเก็บใน Vercel Environment Variables อย่างปลอดภัย และใช้งานเฉพาะการประมวลผลสต็อกภายในระบบเท่านั้น",
+      "enableCopilotTitle": "เปิด-ปิดการใช้งาน StockFlow Copilot",
+      "enableCopilotDesc": "ควบคุมการแสดงผลปุ่มลอย AI Copilot (Floating Button) และคีย์ลัด Ctrl+K สำหรับเจ้าหน้าที่ทุกคนในระบบ",
+      "copilotEnabledToast": "เปิดใช้งาน StockFlow Copilot เรียบร้อยแล้ว",
+      "copilotDisabledToast": "ปิดการใช้งาน StockFlow Copilot เรียบร้อยแล้ว",
       "saveBtn": "บันทึกการตั้งค่า",
       "clearBtn": "รีเฟรชสถานะ"
     },
