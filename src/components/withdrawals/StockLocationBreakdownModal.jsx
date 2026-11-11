@@ -2,6 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from '@/components/ui/button';
 import { Package, Building2, MapPin, CheckCircle2, ArrowRight } from 'lucide-react';
 import { useTranslation } from '@/i18n';
+import { resolveStorageUrl, handleStorageImageError } from '@/lib/r2Storage';
 
 const StockLocationBreakdownModal = ({
   isOpen,
@@ -38,7 +39,12 @@ const StockLocationBreakdownModal = ({
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-lg bg-indigo-500/10 dark:bg-indigo-950/40 border border-indigo-500/20 flex items-center justify-center shrink-0">
               {item.image_url ? (
-                <img src={item.image_url} alt={item.name} className="w-10 h-10 object-contain rounded-md" />
+                <img
+                  src={resolveStorageUrl(item.image_url)}
+                  alt={item.name}
+                  className="w-10 h-10 object-contain rounded-md"
+                  onError={(e) => handleStorageImageError(e, item.image_url)}
+                />
               ) : (
                 <Package className="w-6 h-6 text-indigo-600 dark:text-indigo-400 stroke-[1.75]" />
               )}

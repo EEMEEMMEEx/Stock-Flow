@@ -3,6 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Package, Plus, Minus, Check, Building2 } from 'lucide-react';
 import { useTranslation } from '@/i18n';
+import { resolveStorageUrl, handleStorageImageError } from '@/lib/r2Storage';
 
 const WithdrawalItemCard = React.memo(({
   item,
@@ -52,10 +53,11 @@ const WithdrawalItemCard = React.memo(({
         <div className="aspect-square bg-muted/30 dark:bg-muted/10 rounded-lg flex items-center justify-center p-3 relative overflow-hidden border border-border group-hover:border-border/80 transition-colors">
           {item.image_url ? (
             <img
-              src={item.image_url}
+              src={resolveStorageUrl(item.image_url)}
               alt={item.name}
               className="object-contain w-full h-full"
               loading="lazy"
+              onError={(e) => handleStorageImageError(e, item.image_url)}
             />
           ) : (
             <Package className="w-10 h-10 text-muted-foreground/30 stroke-[1.5]" />

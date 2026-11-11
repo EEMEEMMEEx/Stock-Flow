@@ -14,7 +14,7 @@ import NotificationBell from './NotificationBell';
 import LanguageSwitcher from '@/components/common/LanguageSwitcher';
 import RoleBadge from '@/components/ui/RoleBadge';
 import { getRoleLabel, getRoleTextColorClass } from '@/lib/roleUtils';
-import { resolveStorageUrl } from '@/lib/r2Storage';
+import { resolveStorageUrl, handleStorageImageError } from '@/lib/r2Storage';
 
 const controlClassName = 'h-10 w-10 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 shrink-0 inline-flex items-center justify-center rounded-lg border border-input bg-background text-foreground shadow-xs transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 cursor-pointer';
 const menuContentClassName = 'z-50 w-[min(20rem,calc(100vw-1.5rem))] overflow-hidden rounded-xl border border-border bg-popover p-1.5 text-popover-foreground shadow-xl outline-none data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0';
@@ -27,6 +27,7 @@ const Avatar = ({ profile, user, className = '' }) => profile?.avatar_url ? (
     src={resolveStorageUrl(profile.avatar_url)}
     alt={profile.full_name || user?.email || 'User'}
     className={cn('rounded-full border border-border object-cover', className)}
+    onError={(e) => handleStorageImageError(e, profile.avatar_url)}
   />
 ) : (
   <span className={cn('inline-flex items-center justify-center rounded-full bg-primary/15 font-semibold text-primary', className)}>

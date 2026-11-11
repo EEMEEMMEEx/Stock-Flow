@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { uploadAvatarImage } from '@/lib/avatarUpload';
-import { resolveStorageUrl } from '@/lib/r2Storage';
+import { resolveStorageUrl, handleStorageImageError } from '@/lib/r2Storage';
 import RoleBadge from '@/components/ui/RoleBadge';
 import UserStatusDot from '@/components/ui/UserStatusDot';
 import SignatureCanvas from '@/components/profile/SignatureCanvas';
@@ -299,13 +299,10 @@ const Profile = () => {
             <div className="relative group shrink-0">
               {avatarPreview ? (
                 <img
-                  src={avatarPreview}
+                  src={resolveStorageUrl(avatarPreview)}
                   alt={formData.full_name}
                   className="w-24 h-24 rounded-full object-cover shadow-xs border border-border"
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = '';
-                  }}
+                  onError={(e) => handleStorageImageError(e, avatarFile ? avatarPreview : (profile?.avatar_url || avatarPreview), () => setAvatarPreview(''))}
                 />
               ) : (
                 <div className="w-24 h-24 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-primary font-bold text-2xl shadow-xs">

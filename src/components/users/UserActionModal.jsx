@@ -24,6 +24,7 @@ import {
   RefreshCw,
   Mail,
 } from 'lucide-react';
+import { resolveStorageUrl, handleStorageImageError } from '@/lib/r2Storage';
 
 const UserActionModal = ({
   isOpen,
@@ -199,13 +200,10 @@ const UserActionModal = ({
           <div className="p-4 rounded-lg bg-muted/30 border border-border/50 flex items-start gap-4">
             {user.avatar_url ? (
               <img
-                src={user.avatar_url}
+                src={resolveStorageUrl(user.avatar_url)}
                 alt={user.full_name}
                 className="w-12 h-12 rounded-full object-cover shadow-sm border border-white/40 shrink-0"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = '';
-                }}
+                onError={(e) => handleStorageImageError(e, user.avatar_url)}
               />
             ) : (
               <div className="w-12 h-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-base shrink-0">

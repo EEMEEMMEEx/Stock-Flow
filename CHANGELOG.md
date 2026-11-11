@@ -1,5 +1,29 @@
 # Changelog
 
+## [2026-11-11 13:20] - v1.31.12
+- **Files Modified:** `src/lib/r2Storage.js`, `src/pages/Profile.jsx`, `src/lib/__tests__/r2Storage.test.js`, `package.json`
+- **Changes:**
+  - **Infinite Loop Defense & URL Normalization (`src/lib/r2Storage.js`)**: แก้ไขบั๊กวิกฤต infinite retry loop ใน `handleStorageImageError` เมื่อรูปภาพมีชื่อไฟล์ภาษาไทย (Non-ASCII/Unicode) หรือเว้นวรรค (Spaces) ซึ่งเบราว์เซอร์จะแปลงเป็น percent-encoded (`%E0%B9%80%E0%B8%AB%E0%B8%A5%E0%B9%87%E0%B8%81`, `%20`) ทำให้การเปรียบเทียบ string `src !== fallbackUrl` ผิดพลาดและวนลูปยิงรีเควสต์ไม่สิ้นสุด
+  - **Dataset Guard & OnError Detachment**: เพิ่ม `dataset.fallbackAttempted = 'true'` เพื่อบล็อกการสลับ fallback ซ้ำซ้อน และปลด `onerror = null` เมื่อ fallback ล้มเหลว ป้องกันไม่ให้เบราว์เซอร์ค้างหรือแฮงก์
+  - **Graceful Fallback Callback (`onFallbackExhausted`)**: รองรับ optional callback ใน `handleStorageImageError` เมื่อ fallback หมดความพยายามหรือไม่สามารถโหลดได้
+  - **Profile Avatar Resilience (`src/pages/Profile.jsx`)**: ครอบ `resolveStorageUrl(avatarPreview)` ให้ครบถ้วนตามข้อกำหนด และเชื่อมต่อ `onFallbackExhausted` เพื่อเคลียร์ `avatarPreview` กลับเป็นรูปอักษรย่อ (Initials) อย่างสวยงามเมื่อรูปโปรไฟล์ 404 ทั้งสองระบบ ป้องกันรูปแตก
+  - **Unit Test Suite Expansion (`src/lib/__tests__/r2Storage.test.js`)**: เพิ่มชุดทดสอบครอบคลุมกรณี Thai characters, spaces in URL, consecutive error loop detection, และ fallback exhaustion callback ผ่าน 25/25 การทดสอบ
+
+## [2026-11-11 13:05] - v1.31.11
+- **Files Modified:** `src/components/withdrawals/WithdrawalItemCard.jsx`, `src/components/withdrawals/StockLocationBreakdownModal.jsx`, `src/components/items/TransferItemDialog.jsx`, `src/components/users/EditUserModal.jsx`, `src/components/users/UserActionModal.jsx`, `src/components/layout/Topbar.jsx`, `src/pages/UserManagement.jsx`, `src/pages/Profile.jsx`, `src/lib/r2Storage.js`, `src/lib/__tests__/r2Storage.test.js`, `package.json`
+- **Changes:**
+  - **Zero-Egress Fallback & Relative Storage Key Expansion**: นำ `resolveStorageUrl` และ `handleStorageImageError` ไปปรับใช้กับส่วนแสดงผลรูปภาพและรูปโปรไฟล์ที่ยังค้างอยู่ทั้ง 8 คอมโพเนนต์อย่างครบถ้วน:
+    - `WithdrawalItemCard.jsx`: เพิ่มการ resolve URL และ fallback error handler สำหรับรูปภาพพัสดุในแค็ตตาล็อกการเบิก
+    - `StockLocationBreakdownModal.jsx`: เพิ่มการ resolve URL และ fallback error handler สำหรับรูปพัสดุในหน้าต่างแจกแจงคลัง
+    - `TransferItemDialog.jsx`: เพิ่มการ resolve URL และ fallback error handler สำหรับรูปพัสดุในหน้าต่างโอนย้ายระหว่างคลัง
+    - `EditUserModal.jsx`: ปรับ header avatar ให้ใช้ `resolveStorageUrl` และ fallback error handler แทนการล้างค่า `src=''` แบบเดิม
+    - `UserActionModal.jsx`: ปรับ avatar ในการ์ดยืนยันการจัดการผู้ใช้ให้รองรับ `resolveStorageUrl` และ fallback error handler
+    - `Topbar.jsx`: เพิ่ม `handleStorageImageError` สำหรับ avatar ในแถบนำทางด้านบน
+    - `UserManagement.jsx`: ปรับปรุงทั้งตารางเดสก์ท็อปและมุมมองการ์ดบนมือถือให้ใช้ `handleStorageImageError` แทนการล้างค่าแบบเดิม
+    - `Profile.jsx`: เชื่อมต่อ `handleStorageImageError` สำหรับรูปโปรไฟล์ผู้ใช้งาน
+  - **In-Memory URL Resilience Guard (`src/lib/r2Storage.js`)**: เพิ่มการตรวจสอบเพื่อแยก `blob:` และ `data:` URL ออกจาก storage key ไม่ให้ถูกแปลงเป็น URL สัมพัทธ์ของ Supabase โดยไม่ตั้งใจ ป้องกันปัญหา fallback error loop สำหรับพรีวิวภาพที่เลือกจากเครื่อง
+  - **Thorough Unit Testing Suite (`src/lib/__tests__/r2Storage.test.js`)**: เพิ่มชุดทดสอบ edge cases สำหรับ `handleStorageImageError` (null/empty values, missing currentTarget, blob/data URIs) ผ่าน 21/21 การทดสอบ
+
 ## [2026-11-11 10:11] - v1.31.10
 - **Files Modified:** `src/lib/r2Storage.js`, `src/lib/__tests__/r2Storage.test.js`, `src/components/checkouts/CheckoutReturnReviewModal.jsx`, `src/components/checkouts/CheckoutDetailModal.jsx`, `src/components/checkouts/CheckoutReturnModal.jsx`, `src/pages/Items.jsx`, `src/landing/components/TechStackSection.jsx`, `src/landing/data/landing-translations.js`, `scripts/migrate-storage-to-r2.mjs`, `supabase/migrations/104_allow_relative_storage_keys_in_return_order.sql`, `scripts/verify-migration-104-sandbox.mjs`, `scripts/apply-migration-104.mjs`, `package.json`
 - **Changes:**

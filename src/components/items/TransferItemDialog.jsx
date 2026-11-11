@@ -26,6 +26,7 @@ import {
 import { ProjectLocationSelector } from '@/components/common/ProjectLocationSelector';
 import toast from 'react-hot-toast';
 import { useTranslation } from '@/i18n';
+import { resolveStorageUrl, handleStorageImageError } from '@/lib/r2Storage';
 
 export const TransferItemDialog = ({
   open,
@@ -138,9 +139,10 @@ export const TransferItemDialog = ({
           <div className="p-3.5 rounded-lg bg-muted/40 border border-border/60 flex items-center gap-3.5">
             {item.image_url ? (
               <img
-                src={item.image_url}
+                src={resolveStorageUrl(item.image_url)}
                 alt={item.name}
                 className="w-14 h-14 object-cover rounded-lg border border-border shadow-xs shrink-0"
+                onError={(e) => handleStorageImageError(e, item.image_url)}
               />
             ) : (
               <div className="w-14 h-14 bg-muted/80 rounded-lg flex items-center justify-center border border-border/60 text-muted-foreground/60 shrink-0">

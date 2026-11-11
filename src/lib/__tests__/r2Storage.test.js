@@ -82,12 +82,112 @@ describe('r2Storage helpers', () => {
     it('handles null event gracefully without throwing', () => {
       assert.doesNotThrow(() => handleStorageImageError(null, 'attachments/missing.jpg'));
     });
+
+    it('leaves currentTarget.src untouched when pathOrUrl is empty or null', () => {
+      const mockEvent = { currentTarget: { src: 'https://cdn.example.com/placeholder.png' } };
+      handleStorageImageError(mockEvent, null);
+      assert.equal(mockEvent.currentTarget.src, 'https://cdn.example.com/placeholder.png');
+      handleStorageImageError(mockEvent, '');
+      assert.equal(mockEvent.currentTarget.src, 'https://cdn.example.com/placeholder.png');
+      handleStorageImageError(mockEvent, '   ');
+      assert.equal(mockEvent.currentTarget.src, 'https://cdn.example.com/placeholder.png');
+    });
+
+    it('safely handles missing currentTarget on event', () => {
+      assert.doesNotThrow(() => handleStorageImageError({}, 'attachments/test.jpg'));
+    });
+
+    it('leaves currentTarget.src untouched for blob: or data: URIs', () => {
+      const mockEvent = { currentTarget: { src: 'blob:https://app.com/preview-uuid' } };
+      handleStorageImageError(mockEvent, 'blob:https://app.com/preview-uuid');
+      assert.equal(mockEvent.currentTarget.src, 'blob:https://app.com/preview-uuid');
+
+      const mockDataEvent = { currentTarget: { src: 'data:image/png;base64,abc' } };
+      handleStorageImageError(mockDataEvent, 'data:image/png;base64,abc');
+      assert.equal(mockDataEvent.currentTarget.src, 'data:image/png;base64,abc');
+    });
+
+    it('prevents infinite loop on percent-encoded URLs with Thai characters', () => {
+      const key = 'items/เหล็ก_10mm.png';
+      const rawFallback = `${SUPABASE_STORAGE_PUBLIC_URL}/${key}`;
+      const browserEncodedSrc = encodeURI(rawFallback);
+
+      const mockEvent = {
+        currentTarget: {
+          src: browserEncodedSrc
+        }
+      };
+
+      handleStorageImageError(mockEvent, key);
+      assert.equal(mockEvent.currentTarget.src, browserEncodedSrc, 'Must not mutate or infinite loop on percent-encoded Thai characters');
+    });
+
+    it('prevents infinite loop on percent-encoded URLs with spaces', () => {
+      const key = 'items/steel pipe 10.png';
+      const rawFallback = `${SUPABASE_STORAGE_PUBLIC_URL}/${key}`;
+      const browserEncodedSrc = encodeURI(rawFallback);
+
+      const mockEvent = {
+        currentTarget: {
+          src: browserEncodedSrc
+        }
+      };
+
+      handleStorageImageError(mockEvent, key);
+      assert.equal(mockEvent.currentTarget.src, browserEncodedSrc, 'Must not mutate or infinite loop on percent-encoded spaces');
+    });
+
+    it('stops consecutive error assignments and marks dataset.fallbackAttempted', () => {
+      const key = 'items/missing-all.png';
+      const mockEl = {
+        src: `${R2_PUBLIC_URL}/${key}`,
+        dataset: {},
+        onerror: () => {}
+      };
+
+      // First error: switches to Supabase fallback
+      handleStorageImageError({ currentTarget: mockEl }, key);
+      assert.equal(mockEl.src, `${SUPABASE_STORAGE_PUBLIC_URL}/${key}`);
+      assert.equal(mockEl.dataset.fallbackAttempted, 'true');
+
+      // Second error (fallback also 404s in browser):
+      mockEl.src = `${SUPABASE_STORAGE_PUBLIC_URL}/${key}`;
+      handleStorageImageError({ currentTarget: mockEl }, key);
+      assert.equal(mockEl.src, `${SUPABASE_STORAGE_PUBLIC_URL}/${key}`);
+      assert.equal(mockEl.onerror, null, 'Should detach onerror to stop browser retry loops');
+    });
+
+    it('triggers onFallbackExhausted callback when fallback is exhausted or unavailable', () => {
+      let callbackCount = 0;
+      const onFallback = () => { callbackCount++; };
+
+      // Case 1: missing path
+      const mockEl1 = { currentTarget: { src: 'https://example.com/test.jpg' } };
+      handleStorageImageError(mockEl1, null, onFallback);
+      assert.equal(callbackCount, 1);
+
+      // Case 2: already tried fallback
+      const mockEl2 = {
+        currentTarget: {
+          src: `${SUPABASE_STORAGE_PUBLIC_URL}/test.jpg`,
+          dataset: { fallbackAttempted: 'true' }
+        }
+      };
+      handleStorageImageError(mockEl2, 'test.jpg', onFallback);
+      assert.equal(callbackCount, 2);
+    });
   });
 
   describe('extractStorageKey', () => {
-    it('returns empty string for null or empty values', () => {
+    it('returns empty string for null, empty, or whitespace values', () => {
       assert.equal(extractStorageKey(null), '');
       assert.equal(extractStorageKey(''), '');
+      assert.equal(extractStorageKey('   '), '');
+    });
+
+    it('returns empty string for blob: and data: URLs', () => {
+      assert.equal(extractStorageKey('blob:https://stockflow.app/12345'), '');
+      assert.equal(extractStorageKey('data:image/jpeg;base64,xyz123'), '');
     });
 
     it('extracts object key from Supabase Storage public URLs', () => {

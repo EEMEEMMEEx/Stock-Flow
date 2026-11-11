@@ -17,6 +17,7 @@ import { getRoleLabel } from '@/lib/roleUtils';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n';
+import { resolveStorageUrl, handleStorageImageError } from '@/lib/r2Storage';
 
 // Helper to resolve role ID from code/aliases or existing ID
 const resolveRoleId = (roleCode, existingRoleId, roleList = []) => {
@@ -398,10 +399,10 @@ const EditUserModal = ({
               <div className="flex items-center gap-3">
                 {formData.avatar_url ? (
                   <img
-                    src={formData.avatar_url}
+                    src={resolveStorageUrl(formData.avatar_url)}
                     alt={formData.full_name}
                     className="w-12 h-12 rounded-full object-cover shadow-xs border border-border shrink-0"
-                    onError={(e) => { e.target.onerror = null; e.target.src = ''; }}
+                    onError={(e) => handleStorageImageError(e, formData.avatar_url)}
                   />
                 ) : (
                   <div className="w-12 h-12 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-primary font-bold text-base shadow-xs shrink-0">

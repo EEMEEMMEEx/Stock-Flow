@@ -67,16 +67,60 @@ export function getFallbackStorageUrl(pathOrUrl) {
 /**
  * Image onError handler to seamlessly fallback from primary storage CDN to fallback storage bucket.
  * Prevents broken images when assets have not yet synced or when primary storage returns 404.
+ * Includes loop guards for repeated error events, percent-encoded URLs, spaces, and non-ASCII/Thai file names.
  *
  * @param {Event} event - Image error event
  * @param {string} pathOrUrl - Original key or URL
+ * @param {Function} [onFallbackExhausted] - Optional callback triggered if fallback was already attempted or is unavailable
  */
-export function handleStorageImageError(event, pathOrUrl) {
+export function handleStorageImageError(event, pathOrUrl, onFallbackExhausted) {
   if (!event || !event.currentTarget) return;
-  const fallbackUrl = getFallbackStorageUrl(pathOrUrl);
-  if (fallbackUrl && event.currentTarget.src !== fallbackUrl) {
-    event.currentTarget.src = fallbackUrl;
+  const el = event.currentTarget;
+
+  // Prevent infinite retry loop if this element has already attempted fallback
+  if (el.dataset?.fallbackAttempted) {
+    el.onerror = null;
+    if (typeof onFallbackExhausted === 'function') {
+      onFallbackExhausted();
+    }
+    return;
   }
+
+  const fallbackUrl = getFallbackStorageUrl(pathOrUrl);
+  if (!fallbackUrl) {
+    el.onerror = null;
+    if (typeof onFallbackExhausted === 'function') {
+      onFallbackExhausted();
+    }
+    return;
+  }
+
+  // Check if current target src already points to fallback (handling URL encoding / Thai characters / spaces)
+  const currentSrc = el.src || '';
+  let isAlreadyFallback =
+    currentSrc === fallbackUrl ||
+    currentSrc === encodeURI(fallbackUrl);
+
+  if (!isAlreadyFallback) {
+    try {
+      isAlreadyFallback = decodeURI(currentSrc) === decodeURI(fallbackUrl);
+    } catch {
+      // Ignore malformed URI errors
+    }
+  }
+
+  if (isAlreadyFallback) {
+    el.onerror = null;
+    if (typeof onFallbackExhausted === 'function') {
+      onFallbackExhausted();
+    }
+    return;
+  }
+
+  if (el.dataset) {
+    el.dataset.fallbackAttempted = 'true';
+  }
+  el.src = fallbackUrl;
 }
 
 /**
@@ -89,6 +133,9 @@ export function extractStorageKey(urlOrKey) {
   if (!urlOrKey || typeof urlOrKey !== 'string') return '';
   const trimmed = urlOrKey.trim();
   if (!trimmed) return '';
+
+  // In-memory browser URLs (blob:, data:) are client-only assets, not remote storage keys
+  if (/^(blob:|data:)/i.test(trimmed)) return '';
 
   // Supabase Storage URL: .../stockflow-assets/attachments/...
   if (trimmed.includes('/stockflow-assets/')) {
