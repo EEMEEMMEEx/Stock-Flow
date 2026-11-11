@@ -1,6 +1,7 @@
 import { Document, Page, Text, View, StyleSheet, Font, Image } from '@react-pdf/renderer';
 import { resolveWithdrawalRequester, resolveCheckoutBorrower, resolveDocumentNumber } from '@/lib/pdf-signatures';
 import { hasResolvableWarehouse, resolveWarehouseName } from '@/lib/withdrawalStock';
+import { resolveStorageUrl } from '@/lib/r2Storage';
 
 // Register Thai Font (THSarabunNew)
 Font.register({
@@ -253,12 +254,14 @@ export const MaterialWithdrawalPDF = ({ order, items, profile, projects = [] }) 
   });
 
   // Resolve requester identity + digital signature (array/object/null safe)
-  const { name: requesterName, signatureUrl: requesterSignatureUrl } = resolveWithdrawalRequester(order, profile);
+  const { name: requesterName, signatureUrl: rawRequesterSignatureUrl } = resolveWithdrawalRequester(order, profile);
+  const requesterSignatureUrl = resolveStorageUrl(rawRequesterSignatureUrl);
   const docNumber = resolveDocumentNumber(order);
 
-  const approverSignatureUrl = (profile?.signature_url && profile?.id !== order?.requested_by ? profile.signature_url : order?.approver?.signature_url)
+  const rawApproverSignatureUrl = (profile?.signature_url && profile?.id !== order?.requested_by ? profile.signature_url : order?.approver?.signature_url)
     || order?.approved_by_profile?.signature_url
     || null;
+  const approverSignatureUrl = resolveStorageUrl(rawApproverSignatureUrl);
 
   return (
     <Document>

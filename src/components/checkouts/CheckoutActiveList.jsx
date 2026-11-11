@@ -10,6 +10,8 @@ import { format, differenceInDays } from 'date-fns';
 import { pdf } from '@react-pdf/renderer';
 import { MaterialDispatchPDF } from '@/lib/pdf-templates';
 import { CHECKOUT_DISPATCH_STATUSES, toSafeFileToken } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
+import { canAccessCheckoutRecord } from '@/lib/orderHistoryAuth';
 import toast from 'react-hot-toast';
 import { useTranslation } from '@/i18n';
 import { REVERT_KINDS } from '@/lib/superRevert';
@@ -30,11 +32,18 @@ const CheckoutActiveList = ({
   onOpenRevertModal
 }) => {
   const { t } = useTranslation();
+  const { user, profile, isAdmin, isSuperAdmin, can, canAny, permissions } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all'); // 'all' | 'overdue' | 'due_soon' | 'active'
   const [generatingPdf, setGeneratingPdf] = useState(false);
 
   const handleDownloadDispatchPDF = async (order) => {
+    const authContext = { user, profile, isAdmin, isSuperAdmin, can, canAny, permissions };
+    if (!canAccessCheckoutRecord(order, authContext)) {
+      toast.error(t('common.unauthorized', 'Unauthorized access'));
+      return;
+    }
+
     if (!CHECKOUT_DISPATCH_STATUSES.includes(order.status)) {
       toast.error(t('checkouts.toasts.dispatchNoteNotAllowed', 'Dispatch note is available only for approved or dispensed loans'));
       return;

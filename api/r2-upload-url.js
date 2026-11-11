@@ -241,10 +241,10 @@ export default async function handler(req, res) {
         }
       }
 
-      console.error('[R2 API] Missing R2 credentials in environment variables');
+      console.error('[Storage API] Missing credentials in environment variables');
       return res.status(500).json({
         success: false,
-        message: 'Server configuration error: Missing Cloudflare R2 credentials.',
+        message: 'Server configuration error: Storage credentials not configured.',
       });
     }
 

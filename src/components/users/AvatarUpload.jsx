@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Camera, Upload, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useTranslation } from '@/i18n';
+import { resolveStorageUrl } from '@/lib/r2Storage';
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png'];
@@ -13,13 +14,13 @@ const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png'];
  */
 const sanitizeImageUrl = (url) => {
   if (!url || typeof url !== 'string') return '';
-  const trimmed = url.trim();
+  const resolved = resolveStorageUrl(url).trim();
   // Strictly allow blob URLs created by the browser or safe http/https URLs
-  if (/^blob:http(s)?:\/\/[a-zA-Z0-9._:-]+\/[a-f0-9-]+$/i.test(trimmed)) {
-    return encodeURI(trimmed);
+  if (/^blob:http(s)?:\/\/[a-zA-Z0-9._:-]+\/[a-f0-9-]+$/i.test(resolved)) {
+    return encodeURI(resolved);
   }
-  if (/^https?:\/\/[a-zA-Z0-9\-._~:/?#[\]@!$&'()*+,;=]+$/i.test(trimmed)) {
-    return encodeURI(trimmed);
+  if (/^https?:\/\/[a-zA-Z0-9\-._~:/?#[\]@!$&'()*+,;=]+$/i.test(resolved)) {
+    return encodeURI(resolved);
   }
   return '';
 };

@@ -31,6 +31,7 @@ import {
   validateReturnItemsPhotos,
   formatFileSize,
 } from '@/lib/imageCompression';
+import { resolveStorageUrl, handleStorageImageError } from '@/lib/r2Storage';
 
 const CheckoutReturnModal = ({
   isOpen,
@@ -151,7 +152,7 @@ const CheckoutReturnModal = ({
           item.checkout_item_id === itemId
             ? {
                 ...item,
-                evidence_photo_url: result.publicUrl,
+                evidence_photo_url: result.key || result.publicUrl,
                 photoUploading: false,
                 photoError: '',
                 photoMeta: {
@@ -316,9 +317,27 @@ const CheckoutReturnModal = ({
         })),
       };
 
-      const { data, error } = await supabase.rpc('process_return_order', {
+      let { data, error } = await supabase.rpc('process_return_order', {
         p_payload: payload,
       });
+
+      // Backward compatibility fallback: if legacy database RPC enforces http/https URLs, retry with resolved URL
+      if (error && (error.message?.includes('Missing return proof photo') || error.message?.includes('รูปถ่ายหลักฐานการคืนพัสดุ'))) {
+        const legacyPayload = {
+          ...payload,
+          returns: payload.returns.map((ret) => ({
+            ...ret,
+            evidence_photo_url: resolveStorageUrl(ret.evidence_photo_url),
+          })),
+        };
+        const retryResult = await supabase.rpc('process_return_order', {
+          p_payload: legacyPayload,
+        });
+        if (!retryResult.error) {
+          data = retryResult.data;
+          error = null;
+        }
+      }
 
       if (error) throw error;
 
@@ -735,9 +754,10 @@ const CheckoutReturnModal = ({
                                       title={t('checkouts.viewReturnPhotoBtn')}
                                     >
                                       <img
-                                        src={item.evidence_photo_url}
+                                        src={resolveStorageUrl(item.evidence_photo_url)}
                                         alt={item.item_name}
                                         className="w-full h-full object-cover"
+                                        onError={(e) => handleStorageImageError(e, item.evidence_photo_url)}
                                       />
                                       <span className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                                         <Eye className="w-3.5 h-3.5 text-white" />
@@ -917,9 +937,10 @@ const CheckoutReturnModal = ({
           {previewPhotoItem?.evidence_photo_url && (
             <div className="rounded-xl overflow-hidden border border-border bg-black/5 flex items-center justify-center max-h-[70vh]">
               <img
-                src={previewPhotoItem.evidence_photo_url}
+                src={resolveStorageUrl(previewPhotoItem.evidence_photo_url)}
                 alt={previewPhotoItem.item_name}
                 className="max-w-full max-h-[65vh] object-contain"
+                onError={(e) => handleStorageImageError(e, previewPhotoItem.evidence_photo_url)}
               />
             </div>
           )}

@@ -8,7 +8,7 @@ import {
 import toast from 'react-hot-toast';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
-import { uploadFileToR2 } from '@/lib/r2Storage';
+import { uploadFileWithKey, resolveStorageUrl } from '@/lib/r2Storage';
 import { useTranslation } from '@/i18n';
 
 const SignatureCanvas = () => {
@@ -144,20 +144,22 @@ const SignatureCanvas = () => {
       const dataUrl = canvas.toDataURL('image/png');
       let finalSignatureUrl = dataUrl;
 
-      // 2. Attempt uploading to Cloudflare R2 if accessible
+      // 2. Attempt uploading to object storage if accessible
       try {
         const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
         if (blob) {
           const safeUserId = String(user.id).replace(/[^a-zA-Z0-9_-]/g, '_');
           const customFileName = `signature_${safeUserId}_${Date.now()}.png`;
           const file = new File([blob], customFileName, { type: 'image/png' });
-          const r2Url = await uploadFileToR2(file, 'documents', customFileName, true);
-          if (r2Url) {
-            finalSignatureUrl = r2Url;
+          const uploadRes = await uploadFileWithKey(file, 'documents', customFileName, true);
+          if (uploadRes?.key) {
+            finalSignatureUrl = uploadRes.key;
+          } else if (uploadRes?.publicUrl) {
+            finalSignatureUrl = uploadRes.publicUrl;
           }
         }
       } catch (uploadErr) {
-        console.warn('[SignatureCanvas] Cloudflare R2 upload fallback to Data URL:', uploadErr);
+        console.warn('[SignatureCanvas] Storage upload fallback to Data URL:', uploadErr);
       }
 
       // 3. Update profile table in Supabase
@@ -287,7 +289,7 @@ const SignatureCanvas = () => {
 
             <div className="p-4 rounded-xl border border-dashed border-slate-300 dark:border-slate-700 bg-white flex items-center justify-center min-h-27.5 shadow-2xs relative">
               <img
-                src={savedSignature}
+                src={resolveStorageUrl(savedSignature)}
                 alt="User Signature"
                 className="max-h-24 max-w-full object-contain filter drop-shadow-2xs"
               />

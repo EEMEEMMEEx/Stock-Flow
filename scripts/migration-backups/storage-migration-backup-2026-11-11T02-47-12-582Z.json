@@ -1,0 +1,26 @@
+[
+  {
+    "table": "checkout_return_logs",
+    "id": "564d524e-e992-4d45-8557-b1751e89d9f8",
+    "column": "evidence_photo_url",
+    "original_url": "https://vrnutseacyejnzwcfamv.supabase.co/storage/v1/object/public/stockflow-assets/attachments/b3b71379-d5dd-40c6-aff4-e9bfa6c889d8-return_CHK-202611-0002_7a439d6f-2ea8-4c2d-9a8d-36743e6ded06_1794105412652.jpg?t=1794105417486",
+    "new_key": "attachments/b3b71379-d5dd-40c6-aff4-e9bfa6c889d8-return_CHK-202611-0002_7a439d6f-2ea8-4c2d-9a8d-36743e6ded06_1794105412652.jpg",
+    "migrated_at": "2026-11-11T02:47:11.893Z"
+  },
+  {
+    "table": "checkout_return_logs",
+    "id": "187e2fa3-eff8-4541-85c4-083b4110f2d8",
+    "column": "evidence_photo_url",
+    "original_url": "https://vrnutseacyejnzwcfamv.supabase.co/storage/v1/object/public/stockflow-assets/attachments/5d7384d2-e361-4305-8e5e-e33f1413dae2-return_CHK-202611-0001_e978fa53-8bf6-4204-9f06-e4b3711f79fd_1794104959983.jpg?t=1794104965105",
+    "new_key": "attachments/5d7384d2-e361-4305-8e5e-e33f1413dae2-return_CHK-202611-0001_e978fa53-8bf6-4204-9f06-e4b3711f79fd_1794104959983.jpg",
+    "migrated_at": "2026-11-11T02:47:12.237Z"
+  },
+  {
+    "table": "checkout_return_logs",
+    "id": "d3b82bfe-240b-491f-a6f5-137addc602c2",
+    "column": "evidence_photo_url",
+    "original_url": "https://vrnutseacyejnzwcfamv.supabase.co/storage/v1/object/public/stockflow-assets/attachments/2189a89f-de69-4fc4-bba5-6d7c14e1380f-return_CHK-202611-0007_aa6dbebe-3a20-4efd-bdc9-88fc382df3c1_1794354353052.jpg?t=1794354357931",
+    "new_key": "attachments/2189a89f-de69-4fc4-bba5-6d7c14e1380f-return_CHK-202611-0007_aa6dbebe-3a20-4efd-bdc9-88fc382df3c1_1794354353052.jpg",
+    "migrated_at": "2026-11-11T02:47:12.511Z"
+  }
+]

@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { uploadAvatarImage } from '@/lib/avatarUpload';
+import { resolveStorageUrl } from '@/lib/r2Storage';
 import RoleBadge from '@/components/ui/RoleBadge';
 import UserStatusDot from '@/components/ui/UserStatusDot';
 import SignatureCanvas from '@/components/profile/SignatureCanvas';
@@ -82,7 +83,7 @@ const Profile = () => {
       };
       setFormData(data);
       setInitialData(data);
-      setAvatarPreview(profile.avatar_url || '');
+      setAvatarPreview(resolveStorageUrl(profile.avatar_url) || '');
     }
     fetchProjects();
   }, [profile, user]);

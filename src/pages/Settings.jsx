@@ -541,7 +541,7 @@ const Settings = () => {
             <Database className="w-5 h-5 text-cyan-600" />
             <div>
               <CardTitle className="text-base font-bold">{t('settings.sections.storage.title', '5. Storage Status')}</CardTitle>
-              <CardDescription className="text-xs">{t('settings.sections.storage.description', 'Status of Cloudflare R2 Object Storage and image asset policies')}</CardDescription>
+              <CardDescription className="text-xs">{t('settings.sections.storage.description', 'Status of Object Storage and image asset policies')}</CardDescription>
             </div>
           </div>
           {openSections.storage ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
@@ -552,7 +552,7 @@ const Settings = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div className="p-3 rounded-lg bg-muted/30 border border-border/50 space-y-1">
                 <span className="text-muted-foreground text-[11px] block">{t('settings.storage.provider', 'Provider')}</span>
-                <span className="font-bold text-sm text-foreground">{t('settings.storage.providerValue', 'Cloudflare R2 (S3 API)')}</span>
+                <span className="font-bold text-sm text-foreground">{t('settings.storage.providerValue', 'Object Storage (S3 API)')}</span>
               </div>
 
               <div className="p-3 rounded-lg bg-muted/30 border border-border/50 space-y-1">

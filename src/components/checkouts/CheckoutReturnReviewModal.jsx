@@ -17,12 +17,13 @@ import {
   Loader2,
   Building2,
   User,
-  ExternalLink,
+  FileImage,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 import { supabase } from '@/lib/supabase';
 import { useTranslation } from '@/i18n';
+import { resolveStorageUrl, extractFileName, handleStorageImageError } from '@/lib/r2Storage';
 
 const CONDITION_LABEL_KEYS = {
   normal: 'checkouts.normal',
@@ -291,17 +292,19 @@ const CheckoutReturnReviewModal = ({
                             type="button"
                             onClick={() =>
                               setPreviewPhotoLog({
-                                url: log.evidence_photo_url,
+                                url: resolveStorageUrl(log.evidence_photo_url),
+                                key: log.evidence_photo_url,
                                 name,
                               })
                             }
-                            className="relative w-16 h-16 rounded-lg overflow-hidden border border-border shrink-0 group cursor-pointer"
+                            className="relative w-16 h-16 rounded-lg overflow-hidden border border-border shrink-0 group cursor-pointer shadow-xs bg-muted/40"
                             title={t('checkouts.viewReturnPhotoBtn')}
                           >
                             <img
-                              src={log.evidence_photo_url}
+                              src={resolveStorageUrl(log.evidence_photo_url)}
                               alt={name}
-                              className="w-full h-full object-cover"
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                              onError={(e) => handleStorageImageError(e, log.evidence_photo_url)}
                             />
                             <span className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                               <Eye className="w-4 h-4 text-white" />
@@ -320,7 +323,8 @@ const CheckoutReturnReviewModal = ({
                                 size="sm"
                                 onClick={() =>
                                   setPreviewPhotoLog({
-                                    url: log.evidence_photo_url,
+                                    url: resolveStorageUrl(log.evidence_photo_url),
+                                    key: log.evidence_photo_url,
                                     name,
                                   })
                                 }
@@ -329,15 +333,21 @@ const CheckoutReturnReviewModal = ({
                                 <Eye className="w-3 h-3" />
                                 <span>{t('checkouts.viewReturnPhotoBtn')}</span>
                               </Button>
-                              <a
-                                href={log.evidence_photo_url}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setPreviewPhotoLog({
+                                    url: resolveStorageUrl(log.evidence_photo_url),
+                                    key: log.evidence_photo_url,
+                                    name,
+                                  })
+                                }
+                                className="inline-flex items-center gap-1 text-[11px] font-mono text-muted-foreground hover:text-foreground hover:underline max-w-[220px] truncate cursor-pointer transition-colors"
+                                title={extractFileName(log.evidence_photo_url)}
                               >
-                                <span>Cloudflare R2</span>
-                                <ExternalLink className="w-3 h-3" />
-                              </a>
+                                <FileImage className="w-3 h-3 shrink-0 text-indigo-500" />
+                                <span className="truncate">{extractFileName(log.evidence_photo_url)}</span>
+                              </button>
                             </div>
                           </div>
                         </div>
@@ -405,6 +415,7 @@ const CheckoutReturnReviewModal = ({
                 src={previewPhotoLog.url}
                 alt={previewPhotoLog.name}
                 className="max-w-full max-h-[65vh] object-contain"
+                onError={(e) => handleStorageImageError(e, previewPhotoLog.key || previewPhotoLog.url)}
               />
             </div>
           )}

@@ -1,5 +1,5 @@
 import toast from 'react-hot-toast';
-import { supabase } from './supabase';
+import { supabase } from './supabase.js';
 
 export const ALLOWED_R2_FOLDERS = Object.freeze([
   'avatars',
@@ -9,6 +9,134 @@ export const ALLOWED_R2_FOLDERS = Object.freeze([
   'attachments',
   'uploads'
 ]);
+
+export const R2_PUBLIC_URL = (
+  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_R2_PUBLIC_URL) ||
+  (typeof globalThis !== 'undefined' && (globalThis.process?.env?.VITE_R2_PUBLIC_URL || globalThis.process?.env?.R2_PUBLIC_URL)) ||
+  'https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev'
+).replace(/\/+$/, '');
+
+export const SUPABASE_STORAGE_PUBLIC_URL = (
+  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_URL) ||
+  (typeof globalThis !== 'undefined' && (globalThis.process?.env?.VITE_SUPABASE_URL || globalThis.process?.env?.SUPABASE_URL)) ||
+  'https://vrnutseacyejnzwcfamv.supabase.co'
+).replace(/\/+$/, '') + '/storage/v1/object/public/stockflow-assets';
+
+/**
+ * Resolves a stored path or URL into a fully-qualified accessible media URL.
+ * If the value is an object key (e.g. 'attachments/...', 'items/...'), prepends R2_PUBLIC_URL.
+ * If it's already an absolute URL (http/https/data/blob), returns it as-is.
+ *
+ * @param {string} pathOrUrl - Stored object key or absolute URL
+ * @returns {string} - Fully qualified URL or empty string
+ */
+export function resolveStorageUrl(pathOrUrl) {
+  if (!pathOrUrl || typeof pathOrUrl !== 'string') return '';
+  const trimmed = pathOrUrl.trim();
+  if (!trimmed) return '';
+
+  if (/^(https?:|data:|blob:)/i.test(trimmed)) {
+    return trimmed;
+  }
+
+  const cleanKey = trimmed.replace(/^\/+/, '');
+  return `${R2_PUBLIC_URL}/${cleanKey}`;
+}
+
+/**
+ * Returns the fallback storage URL (Supabase Storage bucket) for a given storage key or URL.
+ * Used when the primary object storage CDN returns 404 or encounters network issues.
+ *
+ * @param {string} pathOrUrl
+ * @returns {string}
+ */
+export function getFallbackStorageUrl(pathOrUrl) {
+  if (!pathOrUrl || typeof pathOrUrl !== 'string') return '';
+  const trimmed = pathOrUrl.trim();
+  if (!trimmed) return '';
+
+  if (trimmed.includes('/storage/v1/object/public/stockflow-assets/')) {
+    return trimmed;
+  }
+
+  const cleanKey = extractStorageKey(trimmed);
+  if (!cleanKey) return '';
+  return `${SUPABASE_STORAGE_PUBLIC_URL}/${cleanKey}`;
+}
+
+/**
+ * Image onError handler to seamlessly fallback from primary storage CDN to fallback storage bucket.
+ * Prevents broken images when assets have not yet synced or when primary storage returns 404.
+ *
+ * @param {Event} event - Image error event
+ * @param {string} pathOrUrl - Original key or URL
+ */
+export function handleStorageImageError(event, pathOrUrl) {
+  if (!event || !event.currentTarget) return;
+  const fallbackUrl = getFallbackStorageUrl(pathOrUrl);
+  if (fallbackUrl && event.currentTarget.src !== fallbackUrl) {
+    event.currentTarget.src = fallbackUrl;
+  }
+}
+
+/**
+ * Normalizes any storage URL (Supabase Storage, R2 CDN, or raw path) into a clean object key.
+ *
+ * @param {string} urlOrKey - Full URL or key
+ * @returns {string} - Relative object key (e.g. 'attachments/xyz.jpg')
+ */
+export function extractStorageKey(urlOrKey) {
+  if (!urlOrKey || typeof urlOrKey !== 'string') return '';
+  const trimmed = urlOrKey.trim();
+  if (!trimmed) return '';
+
+  // Supabase Storage URL: .../stockflow-assets/attachments/...
+  if (trimmed.includes('/stockflow-assets/')) {
+    const afterBucket = trimmed.split('/stockflow-assets/')[1] || '';
+    return afterBucket.split('?')[0].replace(/^\/+/, '');
+  }
+
+  // Standard absolute URL: extract pathname
+  if (/^https?:\/\/[^/]+\/(.+)$/i.test(trimmed)) {
+    try {
+      const parsed = new URL(trimmed);
+      return parsed.pathname.replace(/^\/+/, '').split('?')[0];
+    } catch {
+      // Fallback to manual split
+    }
+  }
+
+  // Raw key or path
+  return trimmed.split('?')[0].replace(/^\/+/, '');
+}
+
+/**
+ * Extracts a human-friendly display file name from an object key or URL.
+ * Strips directory prefixes and random UUID prefixes when present.
+ *
+ * @param {string} urlOrKey
+ * @returns {string}
+ */
+export function extractFileName(urlOrKey) {
+  if (!urlOrKey || typeof urlOrKey !== 'string') return '';
+  const key = extractStorageKey(urlOrKey);
+  const base = key.split('/').pop() || '';
+
+  // Match return photo pattern: return_CHK-XXXX-XXXX
+  const returnMatch = base.match(/(return_[A-Za-z0-9_-]+)/);
+  if (returnMatch) {
+    const ext = base.split('.').pop();
+    return ext && ext !== base ? `${returnMatch[1]}.${ext}` : returnMatch[1];
+  }
+
+  // Match 36-char UUID prefix: e.g. 5d7384d2-e361-4305-8e5e-e33f1413dae2-filename.jpg
+  const uuidPrefixMatch = base.match(/^[0-9a-fA-F-]{36}-(.+)$/);
+  if (uuidPrefixMatch) {
+    return uuidPrefixMatch[1];
+  }
+
+  return base;
+}
 
 const MAX_INLINE_UPLOAD_BYTES = 3.5 * 1024 * 1024; // 3.5 MB limit for single-request serverless upload
 
@@ -89,15 +217,15 @@ async function fileToBase64(file) {
 }
 
 /**
- * Upload any File or Blob directly to Cloudflare R2 via Serverless API / Presigned URL
- * 
+ * Upload any File or Blob via Serverless API / Presigned URL and return both object key and public URL
+ *
  * @param {File|Blob} file - The file object to upload
  * @param {string} folder - Destination folder name (must be one of ALLOWED_R2_FOLDERS)
  * @param {string} [customFileName] - Optional explicit file name or path
- * @param {boolean} [silent] - If true, do not display error toast (useful when caller has fallback)
- * @returns {Promise<string|null>} - Returns the public CDN URL of the uploaded file
+ * @param {boolean} [silent] - If true, do not display error toast
+ * @returns {Promise<{ key: string, publicUrl: string }|null>}
  */
-export async function uploadFileToR2(file, folder = 'uploads', customFileName = null, silent = false) {
+export async function uploadFileWithKey(file, folder = 'uploads', customFileName = null, silent = false) {
   if (!file) {
     throw new Error('No file provided for upload');
   }
@@ -108,7 +236,7 @@ export async function uploadFileToR2(file, folder = 'uploads', customFileName = 
     const errorMsg = folderValidation.error;
     console.error('[r2Storage] Destination folder validation error:', errorMsg);
     if (!silent) {
-      toast.error('Failed to upload file to Cloudflare R2: ' + errorMsg);
+      toast.error('Failed to upload file: ' + errorMsg);
     }
     return null;
   }
@@ -172,11 +300,19 @@ export async function uploadFileToR2(file, folder = 'uploads', customFileName = 
     const presignData = await presignResponse.json().catch(() => ({}));
 
     if (presignResponse.ok && presignData.success) {
+      const resolvedKey = presignData.key || extractStorageKey(presignData.publicUrl) || `${cleanFolder}/${sanitizedFileName}`;
       if (presignData.uploaded && presignData.publicUrl) {
-        return `${presignData.publicUrl}?t=${Date.now()}`;
+        return {
+          key: resolvedKey,
+          publicUrl: `${presignData.publicUrl}?t=${Date.now()}`
+        };
       }
       if (presignData.uploadUrl) {
-        return await executeDirectPutUpload(file, presignData.uploadUrl, presignData.publicUrl);
+        const publicUrl = await executeDirectPutUpload(file, presignData.uploadUrl, presignData.publicUrl);
+        return {
+          key: resolvedKey,
+          publicUrl
+        };
       }
     }
 
@@ -193,11 +329,19 @@ export async function uploadFileToR2(file, folder = 'uploads', customFileName = 
         });
         const fallbackData = await fallbackRes.json().catch(() => ({}));
         if (fallbackRes.ok && fallbackData.success) {
+          const fallbackKey = fallbackData.key || extractStorageKey(fallbackData.publicUrl) || `${cleanFolder}/${sanitizedFileName}`;
           if (fallbackData.uploaded && fallbackData.publicUrl) {
-            return `${fallbackData.publicUrl}?t=${Date.now()}`;
+            return {
+              key: fallbackKey,
+              publicUrl: `${fallbackData.publicUrl}?t=${Date.now()}`
+            };
           }
           if (fallbackData.uploadUrl) {
-            return await executeDirectPutUpload(file, fallbackData.uploadUrl, fallbackData.publicUrl);
+            const publicUrl = await executeDirectPutUpload(file, fallbackData.uploadUrl, fallbackData.publicUrl);
+            return {
+              key: fallbackKey,
+              publicUrl
+            };
           }
         }
       } catch {
@@ -209,14 +353,28 @@ export async function uploadFileToR2(file, folder = 'uploads', customFileName = 
   } catch (error) {
     console.error('[r2Storage] Upload error:', error);
     if (!silent) {
-      toast.error('Failed to upload file to Cloudflare R2: ' + (error.message || 'An error occurred'));
+      toast.error('Failed to upload file: ' + (error.message || 'An error occurred'));
     }
     return null;
   }
 }
 
 /**
- * Execute HTTP PUT upload directly from browser to Cloudflare R2
+ * Upload any File or Blob directly to storage via Serverless API / Presigned URL
+ * 
+ * @param {File|Blob} file - The file object to upload
+ * @param {string} folder - Destination folder name (must be one of ALLOWED_R2_FOLDERS)
+ * @param {string} [customFileName] - Optional explicit file name or path
+ * @param {boolean} [silent] - If true, do not display error toast (useful when caller has fallback)
+ * @returns {Promise<string|null>} - Returns the public CDN URL of the uploaded file
+ */
+export async function uploadFileToR2(file, folder = 'uploads', customFileName = null, silent = false) {
+  const result = await uploadFileWithKey(file, folder, customFileName, silent);
+  return result?.publicUrl || null;
+}
+
+/**
+ * Execute HTTP PUT upload directly from browser to storage endpoint
  */
 async function executeDirectPutUpload(file, uploadUrl, publicUrl) {
   const putResponse = await fetch(uploadUrl, {
@@ -228,7 +386,7 @@ async function executeDirectPutUpload(file, uploadUrl, publicUrl) {
   });
 
   if (!putResponse.ok) {
-    throw new Error(`Cloudflare R2 returned status ${putResponse.status} ${putResponse.statusText}`);
+    throw new Error(`Upload endpoint returned status ${putResponse.status} ${putResponse.statusText}`);
   }
 
   // Append timestamp to bypass browser cache on immediate reload

@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n';
 import { toSafeFileToken } from '@/lib/utils';
 import { isSchemaMismatchError } from '@/lib/rpcErrors';
+import { applyWithdrawalOrdersScope, canAccessWithdrawalRecord } from '@/lib/orderHistoryAuth';
 import { ALL_WAREHOUSES, buildCartKey, buildWarehouseMap, clampQuantity, getWarehouseBalance, getWarehouseLabel, getWarehousesForItem, pickDefaultWarehouse, resolveSourceWarehouse } from '@/lib/withdrawalStock';
 import toast from 'react-hot-toast';
 
@@ -34,7 +35,7 @@ const resolveWithdrawalItems = async (order, existingItems = null) => {
 const WITHDRAWAL_TABS = ['pos', 'orders'];
 
 const Withdrawals = () => {
-  const { isAdmin, isSuperAdmin, can, canAny, canRevertAction, profile } = useAuth();
+  const { isAdmin, isSuperAdmin, can, canAny, canRevertAction, profile, user, permissions } = useAuth();
   const { t } = useTranslation();
   
   const canCreate = can('withdrawals.create');
@@ -235,10 +236,15 @@ const Withdrawals = () => {
         `)
         .order('requested_at', { ascending: false });
 
-      const canViewAllWithdrawals = isAdmin || canAny(['withdrawals.approve', 'withdrawals.update', 'withdrawals.reject', 'withdrawals.complete']);
-      if (!canViewAllWithdrawals) {
-        ordersQuery = ordersQuery.eq('requested_by', profile.id);
-      }
+      ordersQuery = applyWithdrawalOrdersScope(ordersQuery, {
+        user,
+        profile,
+        isAdmin,
+        isSuperAdmin,
+        can,
+        canAny,
+        permissions
+      });
 
       // Parallelize fetching orders, active projects, items, categories, and stock balances
       const [wRes, pRes, iRes, cRes, bRes] = await Promise.all([
@@ -314,7 +320,7 @@ const Withdrawals = () => {
     } finally {
       setLoading(false);
     }
-  }, [profile, isAdmin, selectedProjectId, detectLineSourceCapability, canAny, t]);
+  }, [profile, user, isAdmin, isSuperAdmin, can, canAny, permissions, selectedProjectId, detectLineSourceCapability, t]);
 
   useEffect(() => {
     fetchData();
@@ -877,6 +883,12 @@ const Withdrawals = () => {
 
   // View Order Details
   const viewOrderDetails = useCallback(async (order) => {
+    if (!order) return;
+    const authContext = { user, profile, isAdmin, isSuperAdmin, can, canAny, permissions };
+    if (!canAccessWithdrawalRecord(order, authContext)) {
+      toast.error(t('common.unauthorized', 'Unauthorized access'));
+      return;
+    }
     try {
       const { data, error } = await supabase
         .from('withdrawal_items')
@@ -903,24 +915,41 @@ const Withdrawals = () => {
     } catch {
       toast.error('Failed to load requisition details');
     }
-  }, []);
+  }, [user, profile, isAdmin, isSuperAdmin, can, canAny, permissions, t]);
 
   // Deep-link support: open the detail modal for ?tab=orders&id=<order>
   const handledNotificationIdRef = useRef(null);
   useEffect(() => {
-    if (!idParam || orders.length === 0) return;
+    if (!idParam || loading) return;
     if (handledNotificationIdRef.current === idParam) return;
 
     const targetOrder = orders.find(o => o.id === idParam || o.work_order_no === idParam);
-    if (!targetOrder) return;
+    if (!targetOrder) {
+      handledNotificationIdRef.current = idParam;
+      toast.error(t('common.unauthorized', 'Unauthorized access'));
+      return;
+    }
+
+    const authContext = { user, profile, isAdmin, isSuperAdmin, can, canAny, permissions };
+    if (!canAccessWithdrawalRecord(targetOrder, authContext)) {
+      handledNotificationIdRef.current = idParam;
+      toast.error(t('common.unauthorized', 'Unauthorized access'));
+      return;
+    }
 
     handledNotificationIdRef.current = idParam;
     viewOrderDetails(targetOrder);
-  }, [idParam, orders, viewOrderDetails]);
+  }, [idParam, loading, orders, viewOrderDetails, user, profile, isAdmin, isSuperAdmin, can, canAny, permissions, t]);
 
   // Download PDF
   const handleDownloadPDF = async (order, existingItems = null) => {
     if (!order) return;
+
+    const authContext = { user, profile, isAdmin, isSuperAdmin, can, canAny, permissions };
+    if (!canAccessWithdrawalRecord(order, authContext)) {
+      toast.error(t('common.unauthorized', 'Unauthorized access'));
+      return;
+    }
 
     // Strict Policy: PDF is generated only for approved or completed requests
     if (order.status !== 'approved' && order.status !== 'completed') {
@@ -959,6 +988,12 @@ const Withdrawals = () => {
   // Download Material Dispatch Note (ใบนำส่งเบิกของ)
   const handleDownloadDispatchPDF = async (order, existingItems = null) => {
     if (!order) return;
+
+    const authContext = { user, profile, isAdmin, isSuperAdmin, can, canAny, permissions };
+    if (!canAccessWithdrawalRecord(order, authContext)) {
+      toast.error(t('common.unauthorized', 'Unauthorized access'));
+      return;
+    }
 
     // Strict Policy: dispatch notes are generated only for approved or completed requests
     if (order.status !== 'approved' && order.status !== 'completed') {

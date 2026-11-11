@@ -1,4 +1,4 @@
-import { uploadFileToR2 } from './r2Storage';
+import { uploadFileWithKey } from './r2Storage.js';
 import toast from 'react-hot-toast';
 
 export const uploadAvatarImage = async (userId, file) => {
@@ -9,9 +9,9 @@ export const uploadAvatarImage = async (userId, file) => {
     const safeUserId = String(userId).replace(/[^a-zA-Z0-9_-]/g, '_');
     const fileName = `avatar_${safeUserId}_${Date.now()}.${fileExt}`;
 
-    // Upload directly to Cloudflare R2 (Zero Egress Object Storage)
-    const r2Url = await uploadFileToR2(file, 'avatars', fileName, false);
-    return r2Url;
+    // Upload directly to Object Storage and return object key
+    const result = await uploadFileWithKey(file, 'avatars', fileName, false);
+    return result?.key || result?.publicUrl || null;
   } catch (error) {
     console.error('Upload Avatar Error:', error);
     toast.error('Failed to upload avatar image: ' + (error.message || 'An error occurred'));

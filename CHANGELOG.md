@@ -1,5 +1,45 @@
 # Changelog
 
+## [2026-11-11 10:11] - v1.31.10
+- **Files Modified:** `src/lib/r2Storage.js`, `src/lib/__tests__/r2Storage.test.js`, `src/components/checkouts/CheckoutReturnReviewModal.jsx`, `src/components/checkouts/CheckoutDetailModal.jsx`, `src/components/checkouts/CheckoutReturnModal.jsx`, `src/pages/Items.jsx`, `src/landing/components/TechStackSection.jsx`, `src/landing/data/landing-translations.js`, `scripts/migrate-storage-to-r2.mjs`, `supabase/migrations/104_allow_relative_storage_keys_in_return_order.sql`, `scripts/verify-migration-104-sandbox.mjs`, `scripts/apply-migration-104.mjs`, `package.json`
+- **Changes:**
+  - **Zero-Egress Fallback Resilience (`src/lib/r2Storage.js`)**: เพิ่ม `SUPABASE_STORAGE_PUBLIC_URL`, `getFallbackStorageUrl`, และ `handleStorageImageError` สำหรับรองรับการแสดงผลรูปภาพแบบไร้รอยต่อ หาก CDN ของ Object Storage หลัก (R2) ส่งคืน 404 หรือไฟล์ยังไม่ได้ซิงค์จาก Supabase Storage ระบบจะสลับไปยัง Supabase Storage bucket `stockflow-assets` อัตโนมัติ ป้องกันปัญหา Thumbnail/รูปภาพหลักฐานการคืน (เช่น `CHK-202611-0007`) แสดงเป็นรูปแตก
+  - **Fallback Error Handling ใน UI**: ผูก `handleStorageImageError` เข้ากับ Thumbnail และ Preview Modal ใน `CheckoutReturnReviewModal.jsx`, `CheckoutDetailModal.jsx`, `CheckoutReturnModal.jsx`, และ `Items.jsx`
+  - **PostgreSQL RPC Migration 104 (`104_allow_relative_storage_keys_in_return_order.sql`)**: ปรับปรุงฟังก์ชัน `public.process_return_order` ให้ยอมรับ relative storage key (เช่น `attachments/return_CHK...jpg`) และ full URL โดยตัดข้อกำหนด `LIKE 'http://%'` ออก เพื่อให้บันทึกเฉพาะ Object Key ลงฐานข้อมูลตามสถาปัตยกรรม R2/S3 SSOT พร้อมเขียนชุดทดสอบ PGlite Sandbox (`scripts/verify-migration-104-sandbox.mjs`) ผ่าน 7/7 การทดสอบ
+  - **Client-Side RPC Backward Compatibility (`CheckoutReturnModal.jsx`)**: เพิ่มกลไก retry ใน `handleSubmit` หากฐานข้อมูลปลายทางยังไม่ได้อัปเกรด Migration 104 และปฏิเสธ key แบบสัมพัทธ์ ระบบจะ fallback ส่ง full URL ให้โดยอัตโนมัติ เพื่อไม่ให้การส่งคืนพัสดุล้มเหลว
+  - **Comprehensive Multi-Table Migration & Rollback Script (`scripts/migrate-storage-to-r2.mjs`)**: อัปเกรดสคริปต์ไมเกรชันให้สแกนและแปลง Object Key ครอบคลุม 4 ตารางหลัก ได้แก่ `checkout_return_logs.evidence_photo_url`, `items.image_url`, `profiles.avatar_url`, และ `profiles.signature_url` พร้อมระบบบันทึก Snapshot และย้อนกลับข้อมูล `--rollback` ได้ 100%
+  - **กำจัด Provider Branding ออกจาก UI**: ลบคำว่า "Cloudflare R2" ออกจากหน้า Landing Page ใน `TechStackSection.jsx` และ `landing-translations.js` ทั้งภาษาไทยและภาษาอังกฤษ โดยเปลี่ยนเป็น "S3-Compatible Object Storage"
+
+
+## [2026-11-11 09:48] - v1.31.9
+- **Files Modified:** `src/components/checkouts/CheckoutReturnReviewModal.jsx`, `src/lib/r2Storage.js`, `src/lib/imageCompression.js`, `src/components/checkouts/CheckoutReturnModal.jsx`, `src/components/checkouts/CheckoutDetailModal.jsx`, `src/components/users/AvatarUpload.jsx`, `src/pages/Settings.jsx`, `src/pages/Items.jsx`, `src/pages/Profile.jsx`, `src/pages/UserManagement.jsx`, `src/components/layout/Topbar.jsx`, `src/components/profile/SignatureCanvas.jsx`, `src/lib/checkout-pdf-templates.jsx`, `src/lib/pdf-templates.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `scripts/migrate-storage-to-r2.mjs`, `api/r2-upload-url.js`, `package.json`
+- **Changes:**
+  - **ลบป้ายชื่อ Provider และ External Link ออกจาก UI การคืน**: นำป้าย `Cloudflare R2` พร้อมไอคอน external-link ออกจาก `CheckoutReturnReviewModal.jsx` (รายการประวัติ/รายละเอียดการคืน เช่น `CHK-202611-0007`) โดยเปลี่ยนเป็น Thumbnail ขนาดเล็กพร้อมปุ่มชื่อไฟล์แนบที่สามารถคลิกเปิดดูรูปขยายได้ และกำจัดชื่อ provider ที่ hardcode ออกจาก UI / Settings / i18n ทั้งหมด
+  - **สถาปัตยกรรม Object Key และ Dynamic URL Resolution**: เพิ่ม `resolveStorageUrl`, `extractStorageKey`, `extractFileName` ใน `src/lib/r2Storage.js` ปรับการบันทึกข้อมูลในฐานข้อมูลให้เก็บเฉพาะ Object Key (เช่น `attachments/...`, `items/...`, `avatars/...`) ไม่เก็บ URL เต็ม และประกอบ URL อัตโนมัติจาก `VITE_R2_PUBLIC_URL`
+  - **สคริปต์ไมเกรชันฐานข้อมูลและ Rollback Snapshot**: สร้าง `scripts/migrate-storage-to-r2.mjs` ย้ายไฟล์จาก Supabase Storage Bucket `stockflow-assets` ไปยัง Cloudflare R2 พร้อมอัปเดตแถวข้อมูลในตาราง `checkout_return_logs` และบันทึก snapshot ลงใน `scripts/migration-backups/latest-storage-rollback.json` เพื่อรองรับการย้อนกลับด้วยแฟล็ก `--rollback` ได้อย่างปลอดภัย 100%
+
+## [2026-11-11 09:35] - v1.31.8
+- **Files Modified:** `src/lib/orderHistoryAuth.js`, `src/lib/orderHistoryAuth.test.js`, `src/lib/roleUtils.js`, `src/lib/r2Storage.js`, `src/i18n/locales/en.js`, `src/pages/Withdrawals.jsx`, `src/pages/Checkouts.jsx`, `src/pages/History.jsx`, `src/components/checkouts/CheckoutDetailModal.jsx`, `src/components/checkouts/CheckoutActiveList.jsx`, `src/components/history/HistoryFilterBar.jsx`, `package.json`, `eslint.config.js`
+- **Changes:**
+  - **Centralized RBAC Order History Scoping (`src/lib/orderHistoryAuth.js`)**: สร้างโมดูลศูนย์กลางสำหรับควบคุมการเข้าถึงประวัติรายการของ 3 หน้าหลัก (`/withdrawals?tab=orders`, `/checkouts?tab=history`, `/history`) พร้อมฟังก์ชัน `isOrderHistoryAdmin`, `applyWithdrawalOrdersScope`, `applyCheckoutOrdersScope`, `canAccessWithdrawalRecord`, `canAccessCheckoutRecord`, `filterWithdrawalOrders`, และ `filterCheckoutOrders`
+  - **Supervisor / Approver Privilege Exception**: กำหนดให้ผู้ดูแลระบบ (ADMIN, SUPER) และผู้อนุมัติ (SUPERVISOR, APPROVER, MANAGER หรือผู้มีสิทธิ์อนุมัติคำขอ `withdrawals.approve` / `checkouts.approve`) สามารถมองเห็นประวัติรายการทั้งหมดของทุกผู้ใช้งาน ส่วนผู้ใช้ทั่วไป (STAFF, REQUESTER, VIEWER) จะเห็นเฉพาะประวัติรายการของตนเอง
+  - **Robust Role Code Normalization (`src/lib/roleUtils.js`)**: ปรับปรุง `normalizeRoleCode` ให้รองรับ Display Role Names และ Compound Keys เช่น `SUPERVISOR / APPROVER`, `Supervisor / Approver`, `Super Admin`, `System Administrator`, `Administrator`, `Staff / Requester` ทำให้การตรวจจับสิทธิ์ผู้อนุมัติและผู้ดูแลระบบถูกต้อง 100% ทุกรูปแบบ
+  - **PostgREST Backend Query Scoping**: แนบ Query Filter ไปยัง Supabase โดยตรงตั้งแต่ชั้นดึงข้อมูล (`.eq('requested_by', userId)` สำหรับ withdrawal และ `.or('borrower_id.eq.uid,created_by.eq.uid')` สำหรับ checkout) เพื่อความปลอดภัยและประหยัด bandwidth
+  - **5-Dimensional Security Gate**:
+    - **List & Query**: ตารางแสดงผลเฉพาะรายการที่ตนเองมีสิทธิ์
+    - **Count & Badges**: ตัวเลข KPI สรุปและแท็บนับเฉพาะรายการที่อนุญาต
+    - **Search & Filter**: ค้นหาได้เฉพาะรายการของตนเอง พร้อมซ่อน Requester Filter ใน `HistoryFilterBar.jsx` สำหรับผู้ใช้ทั่วไป
+    - **Export Safeguard**: ป้องกันการดาวน์โหลดเอกสาร PDF (ใบเบิกพัสดุ / ใบนำส่ง / ใบรับคืน) ของผู้ใช้อื่น
+    - **Detail Modal & Deep-link Guard**: ป้องกันการเปิดดูรายละเอียดหรือเข้าถึงผ่าน Direct URL (`?id=...`) ของรายการที่ไม่มีสิทธิ์ พร้อมแสดง Toast แจ้งเตือนสิทธิ์เมื่อค้นหาไม่พบในชุดข้อมูลที่ได้รับอนุญาต
+  - **Automated Tests & Quality Remediation**: เพิ่มชุดทดสอบ Unit Tests `src/lib/orderHistoryAuth.test.js` (8/8 ผ่าน), แก้ไข ESLint undeclared `process` ใน `r2Storage.js`, ลบคีย์ซ้ำซ้อนใน `en.js`, เพิ่มคำสั่ง `"test:order-history-auth"` ใน `package.json`, และ bump version เป็น `1.31.8`
+
+## [2026-11-11 08:58] - v1.31.7
+- **Files Modified:** `.agents/skills/grilling/SKILL.md`, `.agents/skills/grill-me/SKILL.md`, `.agents/skills/grill-with-docs/SKILL.md`, `.agents/manifest.json`, `.agents/manifest.lock.json`, `.agents/DEPENDENCY_GRAPH.md`, `package.json`
+- **Changes:**
+  - **Restore & Adapt Grilling Suite for Stock-Flow-app**: กู้คืนและปรับปรุงชุดทักษะ `grilling`, `grill-me`, และ `grill-with-docs` ให้เข้ากับสถาปัตยกรรมของ Stock-Flow-app (React 18 + Vite 7 + Tailwind CSS v4 + Supabase PostgreSQL RPC + Cloudflare R2) โดยตัดข้อมูลระบบ CCTV (`dtrs-app`, Prisma, MySQL, MinIO) ออก 100%
+  - **Socratic Stress-Test Protocol**: กำหนดกระบวนการสัมภาษณ์เจาะลึกเพื่อทดสอบและตกผลึกแผนงาน (Plan & Design) ทีละกิ่งคำถามพร้อมคำแนะนำ (Recommended Answer) โดยตรวจเช็คความปลอดภัยด้านการล็อกแถวข้อมูลสต็อก (`SELECT ... FOR UPDATE`), ความถูกต้องของ RLS, และ UI Primitives
+  - **Auto-Generate Architecture Decision Records (ADR)**: ปรับปรุง `grill-with-docs` ให้สามารถบันทึกผลการตัดสินใจทางสถาปัตยกรรมลงใน `docs/` โดยตรงหลังจาก grill เสร็จสิ้น
+
 ## [2026-11-11 08:52] - v1.31.6
 - **Files Modified:** `src/components/copilot/StockFlowCopilotFab.jsx`, `src/components/layout/PageWrapper.jsx`, `src/components/layout/Topbar.jsx`, `src/components/settings/GeminiApiKeyManager.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `package.json`
 - **Changes:**

@@ -7,6 +7,7 @@ import { FileText, Building2, User, Calendar, MapPin, Target } from 'lucide-reac
 // Dynamic import used in handleDownloadPDF to reduce initial bundle
 import toast from 'react-hot-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { applyWithdrawalOrdersScope, canAccessWithdrawalRecord, isOrderHistoryAdmin } from '@/lib/orderHistoryAuth';
 import { format } from 'date-fns';
 import { useTranslation } from '@/i18n';
 
@@ -20,7 +21,7 @@ import HistoryEmptyState, { HistoryLoadingSkeleton, HistoryErrorState } from '@/
 
 const History = () => {
   const { t } = useTranslation();
-  const { isAdmin, canAny, profile } = useAuth();
+  const { isAdmin, isSuperAdmin, can, canAny, profile, user, permissions } = useAuth();
   
   // Data State
   const [history, setHistory] = useState([]);
@@ -130,12 +131,17 @@ const History = () => {
         .in('status', ['completed', 'rejected', 'approved'])
         .order('requested_at', { ascending: false })
         .limit(500);
-        
-      const canViewAllWithdrawals = isAdmin || canAny(['withdrawals.approve', 'withdrawals.update', 'withdrawals.reject', 'withdrawals.complete']);
-      if (!canViewAllWithdrawals) {
-        query = query.eq('requested_by', profile.id);
-      }
-      
+
+      query = applyWithdrawalOrdersScope(query, {
+        user,
+        profile,
+        isAdmin,
+        isSuperAdmin,
+        can,
+        canAny,
+        permissions
+      });
+
       const { data, error: err } = await query;
       if (err && err.code !== '42P01') throw err;
       setHistory(data || []);
@@ -145,7 +151,7 @@ const History = () => {
     } finally {
       setLoading(false);
     }
-  }, [profile, isAdmin, canAny, detectLineSourceCapability]);
+  }, [profile, user, isAdmin, isSuperAdmin, can, canAny, permissions, detectLineSourceCapability]);
 
   useEffect(() => {
     fetchHistory();
@@ -277,9 +283,26 @@ const History = () => {
     return sortedData.slice(start, start + pageSize);
   }, [sortedData, currentPage, pageSize]);
 
+  // View Details Handler
+  const handleViewDetails = (order) => {
+    if (!order) return;
+    const authContext = { user, profile, isAdmin, isSuperAdmin, can, canAny, permissions };
+    if (!canAccessWithdrawalRecord(order, authContext)) {
+      toast.error(t('common.unauthorized', 'Unauthorized access'));
+      return;
+    }
+    setSelectedOrder(order);
+  };
+
   // PDF Export Handler
   const handleDownloadPDF = async (order) => {
     if (!order) return;
+
+    const authContext = { user, profile, isAdmin, isSuperAdmin, can, canAny, permissions };
+    if (!canAccessWithdrawalRecord(order, authContext)) {
+      toast.error(t('common.unauthorized', 'Unauthorized access'));
+      return;
+    }
 
     // Strict Policy: PDF is generated only for approved or completed requests
     if (order.status !== 'approved' && order.status !== 'completed') {
@@ -335,6 +358,7 @@ const History = () => {
         onResetFilters={handleResetFilters}
         projectsList={projectsList}
         requestersList={requestersList}
+        canFilterRequester={isOrderHistoryAdmin({ user, profile, isAdmin, isSuperAdmin, can, canAny, permissions })}
       />
 
       {/* 4. Main Data Table / States */}
@@ -351,7 +375,7 @@ const History = () => {
             sortField={sortField}
             sortDirection={sortDirection}
             onSort={handleSort}
-            onViewDetails={setSelectedOrder}
+            onViewDetails={handleViewDetails}
             onDownloadPDF={handleDownloadPDF}
           />
 

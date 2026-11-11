@@ -259,6 +259,16 @@ describe('imageCompression utility', () => {
       assert.equal(res.isValid, true);
       assert.equal(res.missingPhotoItems.length, 0);
     });
+
+    it('passes when returned items use relative storage object keys instead of full URLs', () => {
+      const items = [
+        { checkout_item_id: '1', item_name: 'Drill', returned_quantity: 1, evidence_photo_url: 'attachments/return_CHK-1_item1.jpg' },
+        { checkout_item_id: '2', item_name: 'Meter', returned_quantity: 2, evidence_photo_url: 'attachments/return_CHK-1_item2.jpg' },
+      ];
+      const res = validateReturnItemsPhotos(items);
+      assert.equal(res.isValid, true);
+      assert.equal(res.missingPhotoItems.length, 0);
+    });
   });
 
   describe('formatFileSize', () => {

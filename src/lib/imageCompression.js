@@ -312,27 +312,40 @@ export async function compressAndUploadReturnPhoto(file, params = {}) {
   const safeItem = String(checkoutItemId || 'item').replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 36);
   const customFileName = `return_${safeOrder}_${safeItem}_${Date.now()}.jpg`;
 
-  let publicUrl = null;
+  let rawUploadResult = null;
   try {
-    const effectiveUploadFn = uploadFn || (await import('./r2Storage.js')).uploadFileToR2;
-    publicUrl = await effectiveUploadFn(compressed.file, 'attachments', customFileName, true);
+    const effectiveUploadFn = uploadFn || (await import('./r2Storage.js')).uploadFileWithKey;
+    rawUploadResult = await effectiveUploadFn(compressed.file, 'attachments', customFileName, true);
   } catch (uploadErr) {
     throw new ReturnPhotoError(
       'UPLOAD_FAILED',
-      uploadErr?.message || 'Failed to upload return proof photo to Cloudflare R2.',
+      uploadErr?.message || 'Failed to upload return proof photo.',
       uploadErr
     );
+  }
+
+  let publicUrl = null;
+  let key = null;
+
+  if (typeof rawUploadResult === 'string') {
+    publicUrl = rawUploadResult;
+    const { extractStorageKey } = await import('./r2Storage.js');
+    key = extractStorageKey(rawUploadResult);
+  } else if (rawUploadResult && typeof rawUploadResult === 'object') {
+    publicUrl = rawUploadResult.publicUrl || null;
+    key = rawUploadResult.key || (publicUrl ? (await import('./r2Storage.js')).extractStorageKey(publicUrl) : null);
   }
 
   if (!publicUrl || typeof publicUrl !== 'string') {
     throw new ReturnPhotoError(
       'UPLOAD_FAILED',
-      'Failed to upload return proof photo to Cloudflare R2.'
+      'Failed to upload return proof photo.'
     );
   }
 
   return {
     publicUrl,
+    key: key || publicUrl,
     originalSize: compressed.originalSize,
     compressedSize: compressed.compressedSize,
     width: compressed.width,
@@ -342,7 +355,7 @@ export async function compressAndUploadReturnPhoto(file, params = {}) {
 
 /**
  * Validate that every returned item (returned_quantity > 0) has exactly 1 uploaded photo URL
- * and no pending upload or error state.
+ * or object key, and no pending upload or error state.
  *
  * @param {Array<object>} returnItems
  * @returns {{ isValid: boolean, itemsToProcess: Array<object>, missingPhotoItems: Array<object>, uploadingItems: Array<object>, errorItems: Array<object> }}
@@ -353,8 +366,10 @@ export function validateReturnItemsPhotos(returnItems = []) {
   const uploadingItems = itemsToProcess.filter((item) => Boolean(item?.photoUploading));
   const errorItems = itemsToProcess.filter((item) => Boolean(item?.photoError));
   const missingPhotoItems = itemsToProcess.filter((item) => {
-    const url = String(item?.evidence_photo_url || '').trim();
-    return !url || (!url.startsWith('http://') && !url.startsWith('https://'));
+    const raw = String(item?.evidence_photo_url || '').trim();
+    if (!raw) return true;
+    // Accept valid HTTP/HTTPS URLs OR relative object keys (e.g. 'attachments/...', 'uploads/...')
+    return !/^(https?:\/\/|[a-zA-Z0-9_-]+\/[a-zA-Z0-9._-]+)/i.test(raw);
   });
 
   const isValid =

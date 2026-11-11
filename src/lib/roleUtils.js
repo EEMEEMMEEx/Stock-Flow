@@ -14,7 +14,12 @@ export const normalizeRoleCode = (roleInput) => {
   const raw = typeof roleInput === 'object' 
     ? (roleInput.code || roleInput.role || '') 
     : String(roleInput);
-  return raw.toUpperCase().trim() || 'STAFF';
+  const upper = raw.toUpperCase().trim();
+  if (['SUPER ADMIN', 'SUPER_ADMIN', 'SUPERADMIN', 'SYSTEM ADMINISTRATOR', 'SUPER'].includes(upper)) return 'SUPER';
+  if (['SUPERVISOR / APPROVER', 'SUPERVISOR/APPROVER', 'SUPERVISOR', 'APPROVER', 'MANAGER'].includes(upper)) return 'SUPERVISOR';
+  if (['ADMINISTRATOR', 'ADMIN'].includes(upper)) return 'ADMIN';
+  if (['STAFF / REQUESTER', 'STAFF/REQUESTER', 'STAFF', 'REQUESTER', 'OPERATOR'].includes(upper)) return 'STAFF';
+  return upper || 'STAFF';
 };
 
 export const isRequesterRole = (roleInput) => {

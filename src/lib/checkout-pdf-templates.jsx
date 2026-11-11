@@ -1,5 +1,6 @@
 import { Document, Page, Text, View, StyleSheet, Font, Image } from '@react-pdf/renderer';
 import { resolveCheckoutBorrower } from '@/lib/pdf-signatures';
+import { resolveStorageUrl } from '@/lib/r2Storage';
 
 // Register Thai Font (THSarabunNew) - Identical to MaterialWithdrawalPDF
 Font.register({
@@ -277,7 +278,8 @@ export const MaterialCheckoutPDF = ({ order, staffProfile }) => {
     : null;
 
   // Resolve borrower identity + digital signature (array/object/null safe)
-  const { name: borrowerDisplayName, signatureUrl: borrowerSignatureUrl } = resolveCheckoutBorrower(order);
+  const { name: borrowerDisplayName, signatureUrl: rawBorrowerSignatureUrl } = resolveCheckoutBorrower(order);
+  const borrowerSignatureUrl = resolveStorageUrl(rawBorrowerSignatureUrl);
 
   // Resolve warehouse officer (staff) who approved and dispensed the checkout items
   // Resiliently handles:
@@ -300,9 +302,10 @@ export const MaterialCheckoutPDF = ({ order, staffProfile }) => {
     || '...................................................';
 
   // Resolve dispensing officer digital signature
-  const staffSignatureUrl = isApproved
+  const rawStaffSignatureUrl = isApproved
     ? (officerProfile?.signature_url || (staffProfile && typeof staffProfile === 'object' ? staffProfile.signature_url : null))
     : null;
+  const staffSignatureUrl = resolveStorageUrl(rawStaffSignatureUrl);
 
   return (
     <Document>
@@ -502,15 +505,17 @@ export const MaterialReturnPDF = ({ order, returnLogs = [], staffProfile }) => {
     || '...................................................';
 
   // Resolve digital signature images
-  const returnBorrowerSignatureUrl = order?.borrower_signature_url
+  const rawReturnBorrowerSig = order?.borrower_signature_url
     || order?.signature_url
     || (Array.isArray(order?.borrower) ? order.borrower[0]?.signature_url : order?.borrower?.signature_url)
     || null;
+  const returnBorrowerSignatureUrl = resolveStorageUrl(rawReturnBorrowerSig);
 
-  const returnReceiverSignatureUrl = returnReceiverProfile?.signature_url
+  const rawReturnReceiverSig = returnReceiverProfile?.signature_url
     || creatorProfile?.signature_url
     || staffProfile?.signature_url
     || null;
+  const returnReceiverSignatureUrl = resolveStorageUrl(rawReturnReceiverSig);
 
   return (
     <Document>

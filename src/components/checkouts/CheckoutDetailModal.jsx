@@ -16,6 +16,7 @@ import { syncReturnLogToCaim } from '@/lib/caimSync';
 import RepairResolutionModal from '@/components/checkouts/RepairResolutionModal';
 import EditSerialModal from '@/components/checkouts/EditSerialModal';
 import { useAuth } from '@/contexts/AuthContext';
+import { canAccessCheckoutRecord } from '@/lib/orderHistoryAuth';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 import { supabase } from '@/lib/supabase';
@@ -24,6 +25,7 @@ import StatusBadge from '@/components/ui/StatusBadge';
 import { REVERT_KINDS, formatRevertDate } from '@/lib/superRevert';
 import { formatProjectLocation } from '@/lib/checkoutDisplay';
 import { resolveDefectiveSerial } from '@/lib/scrapSerial';
+import { resolveStorageUrl, handleStorageImageError } from '@/lib/r2Storage';
 
 /**
  * public.profiles has NO email column (canonical emails live in auth.users only),
@@ -194,7 +196,7 @@ const CheckoutDetailModal = ({
   onConfirmReturnSuccess
 }) => {
   const { t, lang } = useTranslation();
-  const { can } = useAuth();
+  const { can, user, profile, isAdmin, isSuperAdmin: authIsSuperAdmin, canAny, permissions } = useAuth();
   // บันทึกผลการซ่อมได้เมื่อมีสิทธิ์ checkouts.resolve_repair หรือรับคืนพัสดุ หรือรับเข้า Stock
   const canResolveRepair = can('checkouts.resolve_repair') || can('checkouts.return') || can('stock_in.create');
   const canEditSerial = can('checkouts.edit_serial');
@@ -435,6 +437,12 @@ const CheckoutDetailModal = ({
 
   // PDF Export Handlers
   const handleDownloadCheckoutPDF = async () => {
+    const authContext = { user, profile, isAdmin, isSuperAdmin: isSuperAdmin || authIsSuperAdmin, can, canAny, permissions };
+    if (!canAccessCheckoutRecord(order, authContext)) {
+      toast.error(t('common.unauthorized', 'Unauthorized access'));
+      return;
+    }
+
     if (!CHECKOUT_DISPATCH_STATUSES.includes(order.status)) {
       toast.error(t('checkouts.toasts.checkoutSlipNotAllowed', 'Checkout slip is available only for approved or dispensed loans'));
       return;
@@ -459,6 +467,12 @@ const CheckoutDetailModal = ({
   };
 
   const handleDownloadReturnPDF = async () => {
+    const authContext = { user, profile, isAdmin, isSuperAdmin: isSuperAdmin || authIsSuperAdmin, can, canAny, permissions };
+    if (!canAccessCheckoutRecord(order, authContext)) {
+      toast.error(t('common.unauthorized', 'Unauthorized access'));
+      return;
+    }
+
     try {
       setGeneratingPdf(true);
       const blob = await pdf(<MaterialReturnPDF order={order} returnLogs={returnLogs} staffProfile={staffProfile} />).toBlob();
@@ -478,6 +492,12 @@ const CheckoutDetailModal = ({
   };
 
   const handleDownloadDispatchPDF = async () => {
+    const authContext = { user, profile, isAdmin, isSuperAdmin: isSuperAdmin || authIsSuperAdmin, can, canAny, permissions };
+    if (!canAccessCheckoutRecord(order, authContext)) {
+      toast.error(t('common.unauthorized', 'Unauthorized access'));
+      return;
+    }
+
     if (!CHECKOUT_DISPATCH_STATUSES.includes(order.status)) {
       toast.error(t('checkouts.toasts.dispatchNoteNotAllowed', 'Dispatch note is available only for approved or dispensed loans'));
       return;
@@ -760,14 +780,15 @@ const CheckoutDetailModal = ({
                       {log.evidence_photo_url && (
                         <button
                           type="button"
-                          onClick={() => setPreviewPhotoUrl(log.evidence_photo_url)}
-                          className="group relative w-14 h-14 rounded-lg overflow-hidden border border-border bg-muted shrink-0 cursor-pointer"
+                          onClick={() => setPreviewPhotoUrl(resolveStorageUrl(log.evidence_photo_url))}
+                          className="group relative w-14 h-14 rounded-lg overflow-hidden border border-border bg-muted shrink-0 cursor-pointer shadow-xs"
                           title={t('checkouts.viewReturnPhoto')}
                         >
                           <img
-                            src={log.evidence_photo_url}
+                            src={resolveStorageUrl(log.evidence_photo_url)}
                             alt={t('checkouts.returnProofPhoto')}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                            onError={(e) => handleStorageImageError(e, log.evidence_photo_url)}
                           />
                           <div className="absolute inset-0 bg-black/35 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                             <Maximize2 className="w-3.5 h-3.5 text-white" />
@@ -1208,6 +1229,7 @@ const CheckoutDetailModal = ({
               src={previewPhotoUrl}
               alt={t('checkouts.returnProofPhoto')}
               className="max-w-full max-h-[70vh] object-contain"
+              onError={(e) => handleStorageImageError(e, previewPhotoUrl)}
             />
           </div>
         )}

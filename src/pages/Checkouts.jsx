@@ -9,6 +9,7 @@ import toast from 'react-hot-toast';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n';
+import { applyCheckoutOrdersScope, canAccessCheckoutRecord } from '@/lib/orderHistoryAuth';
 
 import CheckoutPosTerminal from '@/components/checkouts/CheckoutPosTerminal';
 import CheckoutActiveList from '@/components/checkouts/CheckoutActiveList';
@@ -26,7 +27,7 @@ import SuperRevertActionModal from '@/components/common/SuperRevertActionModal';
 const CHECKOUT_TABS = ['pending', 'active', 'pos', 'history'];
 
 const Checkouts = () => {
-  const { user, can, isAdmin, isSuperAdmin, canRevertAction } = useAuth();
+  const { user, profile, can, canAny, isAdmin, isSuperAdmin, canRevertAction, permissions } = useAuth();
   const { t } = useTranslation();
 
   const canCreate = can('checkouts.create');
@@ -87,24 +88,68 @@ const Checkouts = () => {
   const [revertTarget, setRevertTarget] = useState(null);
   const [isRevertModalOpen, setIsRevertModalOpen] = useState(false);
 
-  // Deep-link support: open the approval modal for ?tab=pending&id=<order>
+  // Deep-link support: open the approval modal for ?tab=pending&id=<order> or detail modal for ?tab=history/active&id=<order>
   const handledNotificationIdRef = useRef(null);
   useEffect(() => {
-    if (!idParam || !canApprove || activeTab !== 'pending' || orders.length === 0) return;
+    if (!idParam || loading) return;
     if (handledNotificationIdRef.current === idParam) return;
 
     const targetOrder = orders.find(o => o.id === idParam || o.order_number === idParam);
-    if (!targetOrder || targetOrder.status !== 'pending') return;
+    if (!targetOrder) {
+      handledNotificationIdRef.current = idParam;
+      toast.error(t('common.unauthorized', 'Unauthorized access'));
+      return;
+    }
 
-    handledNotificationIdRef.current = idParam;
-    setSelectedOrderForApprove(targetOrder);
-    setIsApproveModalOpen(true);
-  }, [idParam, orders, activeTab, canApprove]);
+    if (activeTab === 'pending' && canApprove && targetOrder.status === 'pending') {
+      handledNotificationIdRef.current = idParam;
+      setSelectedOrderForApprove(targetOrder);
+      setIsApproveModalOpen(true);
+      return;
+    }
+
+    if (activeTab === 'history' || activeTab === 'active') {
+      const authContext = { user, profile, isAdmin, isSuperAdmin, can, canAny, permissions };
+      if (!canAccessCheckoutRecord(targetOrder, authContext)) {
+        handledNotificationIdRef.current = idParam;
+        toast.error(t('common.unauthorized', 'Unauthorized access'));
+        return;
+      }
+      handledNotificationIdRef.current = idParam;
+      setSelectedOrderForDetail(targetOrder);
+      setIsDetailModalOpen(true);
+    }
+  }, [idParam, loading, orders, activeTab, canApprove, user, profile, isAdmin, isSuperAdmin, can, canAny, permissions, t]);
 
   // Fetch all checkout orders with line items
   const fetchCheckoutData = useCallback(async () => {
     try {
       setLoading(true);
+
+      let ordQuery = supabase
+        .from('checkout_orders')
+        .select(`
+          *,
+          projects (*),
+          profiles:created_by (*),
+          checkout_items (
+            *,
+            items (*)
+          ),
+          checkout_return_logs (*)
+        `)
+        .order('created_at', { ascending: false });
+
+      // Apply RBAC scope: Admin/Supervisor/Approver sees all, regular staff sees only their own
+      ordQuery = applyCheckoutOrdersScope(ordQuery, {
+        user,
+        profile,
+        isAdmin,
+        isSuperAdmin,
+        can,
+        canAny,
+        permissions
+      });
 
       // Parallelize queries for projects, items, stock balance, and checkout orders
       const [projRes, itemRes, balRes, ordRes] = await Promise.all([
@@ -120,19 +165,7 @@ const Checkouts = () => {
         supabase
           .from('stock_balance')
           .select('project_id, item_id, item_name, unit, project_name, balance'),
-        supabase
-          .from('checkout_orders')
-          .select(`
-            *,
-            projects (*),
-            profiles:created_by (*),
-            checkout_items (
-              *,
-              items (*)
-            ),
-            checkout_return_logs (*)
-          `)
-          .order('created_at', { ascending: false })
+        ordQuery
       ]);
 
       if (projRes.error) throw projRes.error;
@@ -276,7 +309,7 @@ const Checkouts = () => {
     } finally {
       setLoading(false);
     }
-  }, [t]);
+  }, [t, user, profile, isAdmin, isSuperAdmin, can, canAny, permissions]);
 
   useEffect(() => {
     fetchCheckoutData();
@@ -344,6 +377,12 @@ const Checkouts = () => {
   };
 
   const handleOpenDetailModal = (order) => {
+    if (!order) return;
+    const authContext = { user, profile, isAdmin, isSuperAdmin, can, canAny, permissions };
+    if (!canAccessCheckoutRecord(order, authContext)) {
+      toast.error(t('common.unauthorized', 'Unauthorized access'));
+      return;
+    }
     setSelectedOrderForDetail(order);
     setIsDetailModalOpen(true);
   };

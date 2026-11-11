@@ -1,0 +1,1090 @@
+[
+  {
+    "table": "items",
+    "id": "12b0010d-740d-4b90-9dd2-6f2b6208aa5e",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-2JHO858-1787990326764.png?t=1787990327286",
+    "new_key": "items/item-SKU-2JHO858-1787990326764.png",
+    "migrated_at": "2026-11-11T04:52:34.124Z"
+  },
+  {
+    "table": "items",
+    "id": "c5e3383f-5cab-4513-890d-c930b5f83f02",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-30207-0024-04490-1787990304951.png?t=1787990305403",
+    "new_key": "items/item-30207-0024-04490-1787990304951.png",
+    "migrated_at": "2026-11-11T04:52:34.262Z"
+  },
+  {
+    "table": "items",
+    "id": "9f2b94b6-e651-42ab-8b90-1cd464add6c8",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-30207-0024-04488-1787990313241.jpg?t=1787990313650",
+    "new_key": "items/item-30207-0024-04488-1787990313241.jpg",
+    "migrated_at": "2026-11-11T04:52:34.348Z"
+  },
+  {
+    "table": "items",
+    "id": "96d5c4b4-57df-4809-8eea-4f7e71a6b3cc",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-30207-0024-03155-1787990292664.jpg?t=1787990293513",
+    "new_key": "items/item-30207-0024-03155-1787990292664.jpg",
+    "migrated_at": "2026-11-11T04:52:34.436Z"
+  },
+  {
+    "table": "items",
+    "id": "ee7f848d-3db5-4082-8f01-44cb5e41ae87",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-30207-0024-04497-1787990306114.jpg?t=1787990306581",
+    "new_key": "items/item-30207-0024-04497-1787990306114.jpg",
+    "migrated_at": "2026-11-11T04:52:34.550Z"
+  },
+  {
+    "table": "items",
+    "id": "b02267ad-1189-4f37-954b-f689a12a817d",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-30207-0024-04484-1787990314367.png?t=1787990314886",
+    "new_key": "items/item-30207-0024-04484-1787990314367.png",
+    "migrated_at": "2026-11-11T04:52:34.608Z"
+  },
+  {
+    "table": "items",
+    "id": "b6b9f18c-d341-4d2f-bf7b-9727e79d101e",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-1IXDFOL-1787990300658.jpg?t=1787990301098",
+    "new_key": "items/item-SKU-1IXDFOL-1787990300658.jpg",
+    "migrated_at": "2026-11-11T04:52:34.676Z"
+  },
+  {
+    "table": "items",
+    "id": "cc92e42c-dad6-4c5f-9b63-2f9df30921c3",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-30207-0024-04486-1787990312525.png?t=1787990313077",
+    "new_key": "items/item-30207-0024-04486-1787990312525.png",
+    "migrated_at": "2026-11-11T04:52:34.758Z"
+  },
+  {
+    "table": "items",
+    "id": "5c76626b-b09d-4c5e-92cd-1dde50d85982",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-30207-0024-01720-1787990275359.jpg?t=1787990275798",
+    "new_key": "items/item-30207-0024-01720-1787990275359.jpg",
+    "migrated_at": "2026-11-11T04:52:34.848Z"
+  },
+  {
+    "table": "items",
+    "id": "81beb4bc-c576-4813-a453-901a6dbefe25",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-2DSKKJ0-1787990311193.jpg?t=1787990311607",
+    "new_key": "items/item-SKU-2DSKKJ0-1787990311193.jpg",
+    "migrated_at": "2026-11-11T04:52:34.924Z"
+  },
+  {
+    "table": "items",
+    "id": "75796479-ce0e-4f49-93a4-bc5afa6d1746",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-75796479-ce0e-4f49-93a4-bc5afa6d1746-1787990352664.jpg?t=1787990353096",
+    "new_key": "items/item-75796479-ce0e-4f49-93a4-bc5afa6d1746-1787990352664.jpg",
+    "migrated_at": "2026-11-11T04:52:34.992Z"
+  },
+  {
+    "table": "items",
+    "id": "465591fe-cbfa-494f-b366-0e78862f0330",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-30207-0024-04498-1787990307813.jpg?t=1787990308269",
+    "new_key": "items/item-30207-0024-04498-1787990307813.jpg",
+    "migrated_at": "2026-11-11T04:52:35.128Z"
+  },
+  {
+    "table": "items",
+    "id": "247caeec-7312-4f18-8ef3-9117711f7e97",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-HFC0V5-1787990274050.jpg?t=1787990274536",
+    "new_key": "items/item-SKU-HFC0V5-1787990274050.jpg",
+    "migrated_at": "2026-11-11T04:52:35.190Z"
+  },
+  {
+    "table": "items",
+    "id": "5852ae77-c808-46af-8e32-d8f9c1fc9115",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-30207-0024-04377-1787990298620.webp?t=1787990299054",
+    "new_key": "items/item-30207-0024-04377-1787990298620.webp",
+    "migrated_at": "2026-11-11T04:52:35.270Z"
+  },
+  {
+    "table": "items",
+    "id": "23d000a9-c0b8-4409-a216-ec1f64fd096b",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-30207-0024-01908-1787990302119.png?t=1787990302648",
+    "new_key": "items/item-30207-0024-01908-1787990302119.png",
+    "migrated_at": "2026-11-11T04:52:35.338Z"
+  },
+  {
+    "table": "items",
+    "id": "72523f9b-bcdd-4642-bef7-44c998f2fe13",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-30207-0024-04502-1787990306684.jpg?t=1787990307133",
+    "new_key": "items/item-30207-0024-04502-1787990306684.jpg",
+    "migrated_at": "2026-11-11T04:52:35.407Z"
+  },
+  {
+    "table": "items",
+    "id": "dc3f7406-f200-4ef1-9bad-6ea337b00b0a",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-30207-0024-04485-1787990308885.jpg?t=1787990309306",
+    "new_key": "items/item-30207-0024-04485-1787990308885.jpg",
+    "migrated_at": "2026-11-11T04:52:35.487Z"
+  },
+  {
+    "table": "items",
+    "id": "93131238-a98f-4184-bf88-caa06863480e",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-30207-0024-04358-1787990302855.jpg?t=1787990303516",
+    "new_key": "items/item-30207-0024-04358-1787990302855.jpg",
+    "migrated_at": "2026-11-11T04:52:35.622Z"
+  },
+  {
+    "table": "items",
+    "id": "33df15b4-2adb-48e6-8e43-a08224f7da88",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-2IMUMZR-1787990321127.jpg?t=1787990321593",
+    "new_key": "items/item-SKU-2IMUMZR-1787990321127.jpg",
+    "migrated_at": "2026-11-11T04:52:35.678Z"
+  },
+  {
+    "table": "items",
+    "id": "7fb1e0ce-d562-408b-a699-60868232f8a4",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-30207-0024-04417-1787990285496.png?t=1787990285890",
+    "new_key": "items/item-30207-0024-04417-1787990285496.png",
+    "migrated_at": "2026-11-11T04:52:35.749Z"
+  },
+  {
+    "table": "items",
+    "id": "4044a1ea-a430-4fb4-af44-6c05b622de52",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-30207-0024-04500-1787990297841.jpg?t=1787990298429",
+    "new_key": "items/item-30207-0024-04500-1787990297841.jpg",
+    "migrated_at": "2026-11-11T04:52:35.821Z"
+  },
+  {
+    "table": "items",
+    "id": "463119eb-b30a-445b-bbbe-ee71c76181f7",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-1S7Y9W5-1787990329011.jpg?t=1787990329437",
+    "new_key": "items/item-SKU-1S7Y9W5-1787990329011.jpg",
+    "migrated_at": "2026-11-11T04:52:35.882Z"
+  },
+  {
+    "table": "items",
+    "id": "1cd6241a-d466-4052-bbad-b34dac0068c1",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-30207-0024-04489-1787990281600.png?t=1787990282120",
+    "new_key": "items/item-30207-0024-04489-1787990281600.png",
+    "migrated_at": "2026-11-11T04:52:35.992Z"
+  },
+  {
+    "table": "items",
+    "id": "1f9d7c3c-6941-4f11-8ca3-8acf27bd72ab",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-30207-0024-03156-1787990307232.png?t=1787990307665",
+    "new_key": "items/item-30207-0024-03156-1787990307232.png",
+    "migrated_at": "2026-11-11T04:52:36.058Z"
+  },
+  {
+    "table": "items",
+    "id": "3b91c024-dff9-445d-89bf-971c810dad73",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-1LJ39KR-1787990328024.jpg?t=1787990328442",
+    "new_key": "items/item-SKU-1LJ39KR-1787990328024.jpg",
+    "migrated_at": "2026-11-11T04:52:36.116Z"
+  },
+  {
+    "table": "items",
+    "id": "81529f17-9d37-4d19-a57d-74f6bec26515",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-2ZVQEZF-1787990317952.webp?t=1787990318368",
+    "new_key": "items/item-SKU-2ZVQEZF-1787990317952.webp",
+    "migrated_at": "2026-11-11T04:52:36.194Z"
+  },
+  {
+    "table": "items",
+    "id": "cb33fa06-f78d-41bb-8ddc-49781c8f5fc5",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-1QOZ9MT-1787990333309.jpg?t=1787990333752",
+    "new_key": "items/item-SKU-1QOZ9MT-1787990333309.jpg",
+    "migrated_at": "2026-11-11T04:52:36.263Z"
+  },
+  {
+    "table": "items",
+    "id": "e6b6336d-77ae-49de-85be-d445a24bcb06",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-1M3XDFH-1787990329523.png?t=1787990329955",
+    "new_key": "items/item-SKU-1M3XDFH-1787990329523.png",
+    "migrated_at": "2026-11-11T04:52:36.338Z"
+  },
+  {
+    "table": "items",
+    "id": "7411a92d-c4da-4370-8fa6-07f529a85bef",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-47O4GEP-1787990316032.webp?t=1787990316466",
+    "new_key": "items/item-SKU-47O4GEP-1787990316032.webp",
+    "migrated_at": "2026-11-11T04:52:36.412Z"
+  },
+  {
+    "table": "items",
+    "id": "254788ca-5553-4e23-a31c-16d0b2468a5d",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-2NOH98D-1787990315512.webp?t=1787990315926",
+    "new_key": "items/item-SKU-2NOH98D-1787990315512.webp",
+    "migrated_at": "2026-11-11T04:52:36.499Z"
+  },
+  {
+    "table": "items",
+    "id": "fadf19c2-b531-410b-ac46-5e5dd0789dcb",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-F7EBXX-1787990318982.png?t=1787990319517",
+    "new_key": "items/item-SKU-F7EBXX-1787990318982.png",
+    "migrated_at": "2026-11-11T04:52:36.582Z"
+  },
+  {
+    "table": "items",
+    "id": "c3f6d98c-26d3-405c-8904-52ab797b3ae7",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-30207-0024-04503-1787990309968.jpg?t=1787990310429",
+    "new_key": "items/item-30207-0024-04503-1787990309968.jpg",
+    "migrated_at": "2026-11-11T04:52:36.643Z"
+  },
+  {
+    "table": "items",
+    "id": "d79eb1fc-a355-4182-8598-0a6aeab278dd",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-21ZUT09-1787990318464.webp?t=1787990318894",
+    "new_key": "items/item-SKU-21ZUT09-1787990318464.webp",
+    "migrated_at": "2026-11-11T04:52:36.719Z"
+  },
+  {
+    "table": "items",
+    "id": "20aa96d1-08a2-40dc-aa3e-f1fa62ac113c",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-21ZEUB7-1787990337414.jpg?t=1787990337830",
+    "new_key": "items/item-SKU-21ZEUB7-1787990337414.jpg",
+    "migrated_at": "2026-11-11T04:52:36.789Z"
+  },
+  {
+    "table": "items",
+    "id": "d45ec7de-401f-4c47-ab97-ea6b3202d9a7",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-30207-0024-04413-1787990278428.jpg?t=1787990279349",
+    "new_key": "items/item-30207-0024-04413-1787990278428.jpg",
+    "migrated_at": "2026-11-11T04:52:36.861Z"
+  },
+  {
+    "table": "items",
+    "id": "cdfad16e-d750-4e77-85ec-46700f7e1387",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-1JPLW12-1787990347039.jpg?t=1787990347564",
+    "new_key": "items/item-SKU-1JPLW12-1787990347039.jpg",
+    "migrated_at": "2026-11-11T04:52:36.943Z"
+  },
+  {
+    "table": "items",
+    "id": "d1545567-d927-40e0-b1e2-5b5fa8aea110",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-YL7VLW-1787990330047.jpg?t=1787990330459",
+    "new_key": "items/item-SKU-YL7VLW-1787990330047.jpg",
+    "migrated_at": "2026-11-11T04:52:37.004Z"
+  },
+  {
+    "table": "items",
+    "id": "1547a718-30b1-411a-bf27-1030516524b7",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-4E51UUK-1787990322398.jpg?t=1787990322799",
+    "new_key": "items/item-SKU-4E51UUK-1787990322398.jpg",
+    "migrated_at": "2026-11-11T04:52:37.075Z"
+  },
+  {
+    "table": "items",
+    "id": "adf633b3-3a3c-4746-9d93-0f53de55781a",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-1311F57-1787990320615.jpg?t=1787990321036",
+    "new_key": "items/item-SKU-1311F57-1787990320615.jpg",
+    "migrated_at": "2026-11-11T04:52:37.128Z"
+  },
+  {
+    "table": "items",
+    "id": "2b2693e0-0922-48d3-8b8e-112c32fffa07",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-2IQ0LC3-1787990325223.jpg?t=1787990325627",
+    "new_key": "items/item-SKU-2IQ0LC3-1787990325223.jpg",
+    "migrated_at": "2026-11-11T04:52:37.184Z"
+  },
+  {
+    "table": "items",
+    "id": "c12cdbcd-746e-4162-926e-1f32a4e7fcbc",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-56SE7II-1787990325782.jpg?t=1787990326650",
+    "new_key": "items/item-SKU-56SE7II-1787990325782.jpg",
+    "migrated_at": "2026-11-11T04:52:37.250Z"
+  },
+  {
+    "table": "items",
+    "id": "193b1006-e024-4132-a47e-fbe9e1e67979",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-29TSLRL-1787990327390.png?t=1787990327908",
+    "new_key": "items/item-SKU-29TSLRL-1787990327390.png",
+    "migrated_at": "2026-11-11T04:52:37.304Z"
+  },
+  {
+    "table": "items",
+    "id": "6b2cfd07-9a3f-49ff-8b1c-6f87cc3efbb0",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-2JHOBUP-1787990321647.png?t=1787990322286",
+    "new_key": "items/item-SKU-2JHOBUP-1787990321647.png",
+    "migrated_at": "2026-11-11T04:52:37.362Z"
+  },
+  {
+    "table": "items",
+    "id": "5f4a6a0b-faff-49ca-98c3-cb86e5f3abdf",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-2O621ZW-1787990336902.jpg?t=1787990337341",
+    "new_key": "items/item-SKU-2O621ZW-1787990336902.jpg",
+    "migrated_at": "2026-11-11T04:52:37.471Z"
+  },
+  {
+    "table": "items",
+    "id": "21b7a25d-71f3-48df-9947-e4da00064c19",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-30207-0024-04487-1787990308359.jpg?t=1787990308774",
+    "new_key": "items/item-30207-0024-04487-1787990308359.jpg",
+    "migrated_at": "2026-11-11T04:52:37.550Z"
+  },
+  {
+    "table": "items",
+    "id": "a3cb9c42-9afa-43ef-bede-291fdbd7089a",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-36NVY1M-1787990341407.jpg?t=1787990341820",
+    "new_key": "items/item-SKU-36NVY1M-1787990341407.jpg",
+    "migrated_at": "2026-11-11T04:52:37.616Z"
+  },
+  {
+    "table": "items",
+    "id": "bcfb86a3-181e-4702-abb9-61576a16312a",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-1TML9IG-1787990339764.jpg?t=1787990340300",
+    "new_key": "items/item-SKU-1TML9IG-1787990339764.jpg",
+    "migrated_at": "2026-11-11T04:52:37.676Z"
+  },
+  {
+    "table": "items",
+    "id": "78f7e30f-5d78-4ed1-83dd-c9d8d85a5937",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-2PF1NIX-1787990342677.jpg?t=1787990343163",
+    "new_key": "items/item-SKU-2PF1NIX-1787990342677.jpg",
+    "migrated_at": "2026-11-11T04:52:37.753Z"
+  },
+  {
+    "table": "items",
+    "id": "0a892da5-4c95-41f5-9f7e-892fd68f4fba",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-21WXHNK-1787990340384.jpg?t=1787990340805",
+    "new_key": "items/item-SKU-21WXHNK-1787990340384.jpg",
+    "migrated_at": "2026-11-11T04:52:37.814Z"
+  },
+  {
+    "table": "items",
+    "id": "6b508cff-5c7b-4e57-b21a-6059fef7b7e2",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-1S0E68Y-1787990341920.jpg?t=1787990342466",
+    "new_key": "items/item-SKU-1S0E68Y-1787990341920.jpg",
+    "migrated_at": "2026-11-11T04:52:37.871Z"
+  },
+  {
+    "table": "items",
+    "id": "c9b15b3b-744b-484c-91ea-4437bcdeb79f",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-39SY7O-1787990332899.jpg?t=1787990333240",
+    "new_key": "items/item-SKU-39SY7O-1787990332899.jpg",
+    "migrated_at": "2026-11-11T04:52:37.927Z"
+  },
+  {
+    "table": "items",
+    "id": "72282648-68f3-45c5-8ffc-21fa89c7dd95",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-30207-0024-04505-1787990299236.png?t=1787990299675",
+    "new_key": "items/item-30207-0024-04505-1787990299236.png",
+    "migrated_at": "2026-11-11T04:52:37.979Z"
+  },
+  {
+    "table": "items",
+    "id": "fe7e35b1-fcfe-4814-bf11-303a9c721b2d",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-32C94VP-1787990330546.png?t=1787990330956",
+    "new_key": "items/item-SKU-32C94VP-1787990330546.png",
+    "migrated_at": "2026-11-11T04:52:38.031Z"
+  },
+  {
+    "table": "items",
+    "id": "47028a65-24a4-4274-96b9-7bb21021e32d",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-21E81FJ-1787990339047.webp?t=1787990339661",
+    "new_key": "items/item-SKU-21E81FJ-1787990339047.webp",
+    "migrated_at": "2026-11-11T04:52:38.137Z"
+  },
+  {
+    "table": "items",
+    "id": "6717f038-2d60-4451-a5a7-cb23f9c01094",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-1I1XB84-1787990334333.jpg?t=1787990334745",
+    "new_key": "items/item-SKU-1I1XB84-1787990334333.jpg",
+    "migrated_at": "2026-11-11T04:52:38.201Z"
+  },
+  {
+    "table": "items",
+    "id": "b72334bf-c38a-4d76-b1a3-2d5e331e322a",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-17UVL88-1787990335361.jpg?t=1787990335786",
+    "new_key": "items/item-SKU-17UVL88-1787990335361.jpg",
+    "migrated_at": "2026-11-11T04:52:38.259Z"
+  },
+  {
+    "table": "items",
+    "id": "5cb028aa-295d-4f13-bbfa-546a15613628",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-HL3OGR-1787990320103.jpg?t=1787990320553",
+    "new_key": "items/item-SKU-HL3OGR-1787990320103.jpg",
+    "migrated_at": "2026-11-11T04:52:38.330Z"
+  },
+  {
+    "table": "items",
+    "id": "c0fa72c7-5dd5-40df-b9da-142150c6fda1",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-11F2F5B-1787990316558.jpg?t=1787990316962",
+    "new_key": "items/item-SKU-11F2F5B-1787990316558.jpg",
+    "migrated_at": "2026-11-11T04:52:38.386Z"
+  },
+  {
+    "table": "items",
+    "id": "ad8c2111-808d-49a5-b04a-80a97ead9edc",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-17X902C-1787990333820.png?t=1787990334241",
+    "new_key": "items/item-SKU-17X902C-1787990333820.png",
+    "migrated_at": "2026-11-11T04:52:38.447Z"
+  },
+  {
+    "table": "items",
+    "id": "d966e444-96ad-4a00-a5f8-0236e2ee6b6f",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-30207-0024-04415-1787990303732.png?t=1787990304177",
+    "new_key": "items/item-30207-0024-04415-1787990303732.png",
+    "migrated_at": "2026-11-11T04:52:38.503Z"
+  },
+  {
+    "table": "items",
+    "id": "8f90ada8-284e-45b8-93a6-7259de8fb7a9",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-1N9CIVK-1787990331481.png?t=1787990332132",
+    "new_key": "items/item-SKU-1N9CIVK-1787990331481.png",
+    "migrated_at": "2026-11-11T04:52:38.594Z"
+  },
+  {
+    "table": "items",
+    "id": "a119aa72-8aa0-470c-9b3c-f11ababc00c0",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-1JSK8MI-1787990340895.jpg?t=1787990341307",
+    "new_key": "items/item-SKU-1JSK8MI-1787990340895.jpg",
+    "migrated_at": "2026-11-11T04:52:38.663Z"
+  },
+  {
+    "table": "items",
+    "id": "058e1fad-d716-4934-a6ac-873037a9ce88",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-3KF8VUR-1787990335885.jpg?t=1787990336324",
+    "new_key": "items/item-SKU-3KF8VUR-1787990335885.jpg",
+    "migrated_at": "2026-11-11T04:52:38.736Z"
+  },
+  {
+    "table": "items",
+    "id": "0efb40a0-1b0c-41c6-ad20-9ff2262e22e4",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-30207-0024-04499-1787990311709.jpg?t=1787990312422",
+    "new_key": "items/item-30207-0024-04499-1787990311709.jpg",
+    "migrated_at": "2026-11-11T04:52:38.804Z"
+  },
+  {
+    "table": "items",
+    "id": "dc219e52-0000-42fd-9be1-228688155366",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-YM55EB-1787990338542.webp?t=1787990338981",
+    "new_key": "items/item-SKU-YM55EB-1787990338542.webp",
+    "migrated_at": "2026-11-11T04:52:38.880Z"
+  },
+  {
+    "table": "items",
+    "id": "8cdadd3b-50e9-4c70-b7e0-fa8627721d15",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-1PMD8FY-1787990349806.png?t=1787990350244",
+    "new_key": "items/item-SKU-1PMD8FY-1787990349806.png",
+    "migrated_at": "2026-11-11T04:52:38.933Z"
+  },
+  {
+    "table": "items",
+    "id": "a740f431-1c37-416f-afa5-acc1dfc3ab5b",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-219T62H-1787990347648.jpg?t=1787990348081",
+    "new_key": "items/item-SKU-219T62H-1787990347648.jpg",
+    "migrated_at": "2026-11-11T04:52:39.002Z"
+  },
+  {
+    "table": "items",
+    "id": "04fad9df-b059-4354-90f3-014e30f9dfe4",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-2T4XIR6-1787990334844.jpg?t=1787990335296",
+    "new_key": "items/item-SKU-2T4XIR6-1787990334844.jpg",
+    "migrated_at": "2026-11-11T04:52:39.142Z"
+  },
+  {
+    "table": "items",
+    "id": "590b1b4e-24bb-4eb3-9e11-33921e91aec7",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-259GKSW-1787990332282.png?t=1787990332794",
+    "new_key": "items/item-SKU-259GKSW-1787990332282.png",
+    "migrated_at": "2026-11-11T04:52:39.209Z"
+  },
+  {
+    "table": "items",
+    "id": "79be7c48-a73d-4ae2-a9bb-4e98ea38ec2a",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-RQ410R-1787990351557.png?t=1787990352051",
+    "new_key": "items/item-SKU-RQ410R-1787990351557.png",
+    "migrated_at": "2026-11-11T04:52:39.296Z"
+  },
+  {
+    "table": "items",
+    "id": "c7da115a-d451-481d-b99a-82fe50ccfde8",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/7c9d7139-8372-4893-80ff-f2b5945372f2-item---1790159595359.jpg?t=1790159596823",
+    "new_key": "items/7c9d7139-8372-4893-80ff-f2b5945372f2-item---1790159595359.jpg",
+    "migrated_at": "2026-11-11T04:52:39.374Z"
+  },
+  {
+    "table": "items",
+    "id": "5c8f2209-390c-4c11-a97d-3c01cfdcf41b",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-26323TP-1787990322896.jpg?t=1787990323625",
+    "new_key": "items/item-SKU-26323TP-1787990322896.jpg",
+    "migrated_at": "2026-11-11T04:52:39.461Z"
+  },
+  {
+    "table": "items",
+    "id": "0f781a5c-80a1-430e-87b8-c9bdd76952c8",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-30207-0024-01779-1787990348158.webp?t=1787990348586",
+    "new_key": "items/item-30207-0024-01779-1787990348158.webp",
+    "migrated_at": "2026-11-11T04:52:39.513Z"
+  },
+  {
+    "table": "items",
+    "id": "7733bf5a-0f5d-4744-81e3-69de19bc9b3c",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-30207-0024-04412-1787990350342.png?t=1787990350923",
+    "new_key": "items/item-30207-0024-04412-1787990350342.png",
+    "migrated_at": "2026-11-11T04:52:39.570Z"
+  },
+  {
+    "table": "items",
+    "id": "aa44ab20-0ad5-4627-9e83-30a2b5aae9e0",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-ZGQ8RQ-1787990336384.jpg?t=1787990336805",
+    "new_key": "items/item-SKU-ZGQ8RQ-1787990336384.jpg",
+    "migrated_at": "2026-11-11T04:52:39.643Z"
+  },
+  {
+    "table": "items",
+    "id": "135da773-b101-4c2e-b1fd-544e2dc5f010",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-1JFSJAN-1787990349281.png?t=1787990349703",
+    "new_key": "items/item-SKU-1JFSJAN-1787990349281.png",
+    "migrated_at": "2026-11-11T04:52:39.740Z"
+  },
+  {
+    "table": "items",
+    "id": "aa891c5d-17d1-442c-b97b-927db255be74",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-3IBYOCA-1787990350974.png?t=1787990351474",
+    "new_key": "items/item-SKU-3IBYOCA-1787990350974.png",
+    "migrated_at": "2026-11-11T04:52:39.826Z"
+  },
+  {
+    "table": "items",
+    "id": "2519f601-3b88-497d-a257-6baaa8342aaf",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-2DCNLXD-1787990343252.webp?t=1787990343689",
+    "new_key": "items/item-SKU-2DCNLXD-1787990343252.webp",
+    "migrated_at": "2026-11-11T04:52:39.931Z"
+  },
+  {
+    "table": "items",
+    "id": "c2ddcb2c-fb37-4fc5-9a53-69001b7a17ff",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-SQZTR7-1787990343857.jpg?t=1787990344277",
+    "new_key": "items/item-SKU-SQZTR7-1787990343857.jpg",
+    "migrated_at": "2026-11-11T04:52:40.002Z"
+  },
+  {
+    "table": "items",
+    "id": "d03cf821-ccb0-4aa6-bcdc-3728c26e520e",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-d03cf821-ccb0-4aa6-bcdc-3728c26e520e-1787990352104.jpg?t=1787990352607",
+    "new_key": "items/item-d03cf821-ccb0-4aa6-bcdc-3728c26e520e-1787990352104.jpg",
+    "migrated_at": "2026-11-11T04:52:40.058Z"
+  },
+  {
+    "table": "items",
+    "id": "4b63a5ba-9e3c-42e7-ac07-b1cc8ce07391",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-4b63a5ba-9e3c-42e7-ac07-b1cc8ce07391-1787990353176.jpg?t=1787990353642",
+    "new_key": "items/item-4b63a5ba-9e3c-42e7-ac07-b1cc8ce07391-1787990353176.jpg",
+    "migrated_at": "2026-11-11T04:52:40.118Z"
+  },
+  {
+    "table": "items",
+    "id": "92eb5553-cf42-4fbf-8c0d-f403b7fcad43",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-1ELOAHH-1787990344401.png?t=1787990344829",
+    "new_key": "items/item-SKU-1ELOAHH-1787990344401.png",
+    "migrated_at": "2026-11-11T04:52:40.204Z"
+  },
+  {
+    "table": "items",
+    "id": "70c7607f-7dbe-4e11-99dd-f9029bd9fe37",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-NHB905-1787990344924.jpg?t=1787990345317",
+    "new_key": "items/item-SKU-NHB905-1787990344924.jpg",
+    "migrated_at": "2026-11-11T04:52:40.295Z"
+  },
+  {
+    "table": "items",
+    "id": "74336ce2-919b-4591-889b-71550bee7747",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-UA68ID-1787990346520.webp?t=1787990346973",
+    "new_key": "items/item-SKU-UA68ID-1787990346520.webp",
+    "migrated_at": "2026-11-11T04:52:40.356Z"
+  },
+  {
+    "table": "items",
+    "id": "1543bbcc-2beb-4add-b9bc-45901b3793bf",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-2M5H8D4-1787990315005.jpg?t=1787990315427",
+    "new_key": "items/item-SKU-2M5H8D4-1787990315005.jpg",
+    "migrated_at": "2026-11-11T04:52:40.410Z"
+  },
+  {
+    "table": "items",
+    "id": "ec56acf6-a6be-4877-bd92-f49665b66320",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-30207-0024-04504-1787990313753.png?t=1787990314265",
+    "new_key": "items/item-30207-0024-04504-1787990313753.png",
+    "migrated_at": "2026-11-11T04:52:40.480Z"
+  },
+  {
+    "table": "items",
+    "id": "3f5ed9aa-2497-4728-b9c4-e32d8ef806f4",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-3BE8E2B-1787990323692.jpg?t=1787990324138",
+    "new_key": "items/item-SKU-3BE8E2B-1787990323692.jpg",
+    "migrated_at": "2026-11-11T04:52:40.584Z"
+  },
+  {
+    "table": "items",
+    "id": "bcbe580c-28c0-4e72-a2ce-7b2c53778006",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-30207-0024-01903-1787990345433.jpg?t=1787990345905",
+    "new_key": "items/item-30207-0024-01903-1787990345433.jpg",
+    "migrated_at": "2026-11-11T04:52:40.652Z"
+  },
+  {
+    "table": "items",
+    "id": "7eddb45b-25f7-4cf9-98cd-7657df38ba7e",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-YL7U4I-1787990324206.jpg?t=1787990324618",
+    "new_key": "items/item-SKU-YL7U4I-1787990324206.jpg",
+    "migrated_at": "2026-11-11T04:52:40.716Z"
+  },
+  {
+    "table": "items",
+    "id": "58926f2c-4603-4334-b11b-470235ef77b4",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-1S7Y66O-1787990328510.jpg?t=1787990328945",
+    "new_key": "items/item-SKU-1S7Y66O-1787990328510.jpg",
+    "migrated_at": "2026-11-11T04:52:40.796Z"
+  },
+  {
+    "table": "items",
+    "id": "9af26ea9-9332-4a00-884f-8569e10ecc68",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-30207-0024-01725-1787990284586.jpg?t=1787990285101",
+    "new_key": "items/item-30207-0024-01725-1787990284586.jpg",
+    "migrated_at": "2026-11-11T04:52:40.856Z"
+  },
+  {
+    "table": "items",
+    "id": "a83a59a3-3b24-4d83-ab5a-9bc648cf9730",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/083057d9-ddc0-491f-9b49-6a41c7894477-item---1791429882882.png?t=1791429884035",
+    "new_key": "items/083057d9-ddc0-491f-9b49-6a41c7894477-item---1791429882882.png",
+    "migrated_at": "2026-11-11T04:52:40.950Z"
+  },
+  {
+    "table": "items",
+    "id": "6dec4b9b-5a44-40ed-af10-a45fa62099bd",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-37BYHA7-1787990348671.png?t=1787990349179",
+    "new_key": "items/item-SKU-37BYHA7-1787990348671.png",
+    "migrated_at": "2026-11-11T04:52:41.044Z"
+  },
+  {
+    "table": "items",
+    "id": "3d6c0b94-e94c-4f95-8fe3-a70da7621b3e",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-1JQLR9I-1787990299864.png?t=1787990300455",
+    "new_key": "items/item-SKU-1JQLR9I-1787990299864.png",
+    "migrated_at": "2026-11-11T04:52:41.106Z"
+  },
+  {
+    "table": "items",
+    "id": "d787180b-beda-41b2-a3fb-33423ed7237d",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-d787180b-beda-41b2-a3fb-33423ed7237d-1787990354953.png?t=1787990355630",
+    "new_key": "items/item-d787180b-beda-41b2-a3fb-33423ed7237d-1787990354953.png",
+    "migrated_at": "2026-11-11T04:52:41.174Z"
+  },
+  {
+    "table": "items",
+    "id": "2b75db91-df08-4654-a68d-68d157135e01",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-32212UV-1787990337925.png?t=1787990338438",
+    "new_key": "items/item-SKU-32212UV-1787990337925.png",
+    "migrated_at": "2026-11-11T04:52:41.253Z"
+  },
+  {
+    "table": "items",
+    "id": "5fba369c-99c3-4e47-afcb-acc163c222fa",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-30207-0024-01848-1787990270683.jpg?t=1787990272204",
+    "new_key": "items/item-30207-0024-01848-1787990270683.jpg",
+    "migrated_at": "2026-11-11T04:52:41.306Z"
+  },
+  {
+    "table": "items",
+    "id": "b5923bf2-77e8-4ade-8da4-f85906b78ef3",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item---1788503667245.png?t=1788503668125",
+    "new_key": "items/item---1788503667245.png",
+    "migrated_at": "2026-11-11T04:52:41.380Z"
+  },
+  {
+    "table": "items",
+    "id": "5ea44e2c-bc39-4a3b-afdd-1c9d6fd7a5bf",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/59b3874a-be33-40e0-9998-8f16db533bef-item---1790059642085.jpg?t=1790059646498",
+    "new_key": "items/59b3874a-be33-40e0-9998-8f16db533bef-item---1790059642085.jpg",
+    "migrated_at": "2026-11-11T04:52:41.450Z"
+  },
+  {
+    "table": "items",
+    "id": "ec694311-6f8f-416c-9e18-89a4f1caf1bc",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/58269211-aacc-4f6d-a00a-163ff8773654-item---1790159051606.png?t=1790159054656",
+    "new_key": "items/58269211-aacc-4f6d-a00a-163ff8773654-item---1790159051606.png",
+    "migrated_at": "2026-11-11T04:52:41.518Z"
+  },
+  {
+    "table": "items",
+    "id": "74c43e0d-51af-42b2-9810-fd26497a4bdc",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-74c43e0d-51af-42b2-9810-fd26497a4bdc-1787990356989.png?t=1787990357586",
+    "new_key": "items/item-74c43e0d-51af-42b2-9810-fd26497a4bdc-1787990356989.png",
+    "migrated_at": "2026-11-11T04:52:41.613Z"
+  },
+  {
+    "table": "items",
+    "id": "4c521654-d9f7-4681-9017-fea5d6a50988",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/4463d6b4-5fa2-4b75-8d54-635610910095-item---1790159273149.png?t=1790159275396",
+    "new_key": "items/4463d6b4-5fa2-4b75-8d54-635610910095-item---1790159273149.png",
+    "migrated_at": "2026-11-11T04:52:41.684Z"
+  },
+  {
+    "table": "items",
+    "id": "fa893153-f4a6-440a-8ee8-9e19e2f43234",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-30207-0024-04506-1787990310627.jpg?t=1787990311102",
+    "new_key": "items/item-30207-0024-04506-1787990310627.jpg",
+    "migrated_at": "2026-11-11T04:52:41.741Z"
+  },
+  {
+    "table": "items",
+    "id": "2e13408c-c44f-4e0c-ba88-ca7dfa90d1b3",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-5BQ2VG-1787990346009.png?t=1787990346424",
+    "new_key": "items/item-SKU-5BQ2VG-1787990346009.png",
+    "migrated_at": "2026-11-11T04:52:41.837Z"
+  },
+  {
+    "table": "items",
+    "id": "08cdc433-af4b-405b-9c8c-be9c2bb144dc",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-08cdc433-af4b-405b-9c8c-be9c2bb144dc-1787990356367.png?t=1787990356868",
+    "new_key": "items/item-08cdc433-af4b-405b-9c8c-be9c2bb144dc-1787990356367.png",
+    "migrated_at": "2026-11-11T04:52:41.908Z"
+  },
+  {
+    "table": "items",
+    "id": "21b5d0f6-f4cb-4fc8-8a91-f2d7649431e8",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-21b5d0f6-f4cb-4fc8-8a91-f2d7649431e8-1787990355748.png?t=1787990356254",
+    "new_key": "items/item-21b5d0f6-f4cb-4fc8-8a91-f2d7649431e8-1787990355748.png",
+    "migrated_at": "2026-11-11T04:52:41.964Z"
+  },
+  {
+    "table": "items",
+    "id": "d2828ae2-d35a-40dc-93ed-14eeb4408205",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item---1788503638139.png?t=1788503639974",
+    "new_key": "items/item---1788503638139.png",
+    "migrated_at": "2026-11-11T04:52:42.032Z"
+  },
+  {
+    "table": "items",
+    "id": "adab1465-60c3-4990-bb84-dd608c9521fb",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-HL3K0F-1787990319604.jpg?t=1787990320022",
+    "new_key": "items/item-SKU-HL3K0F-1787990319604.jpg",
+    "migrated_at": "2026-11-11T04:52:42.091Z"
+  },
+  {
+    "table": "items",
+    "id": "43756591-0eef-4f17-a0d7-776596a80b28",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-43756591-0eef-4f17-a0d7-776596a80b28-1787990353721.jpg?t=1787990354310",
+    "new_key": "items/item-43756591-0eef-4f17-a0d7-776596a80b28-1787990353721.jpg",
+    "migrated_at": "2026-11-11T04:52:42.157Z"
+  },
+  {
+    "table": "items",
+    "id": "c3fa888c-3024-4f7f-9942-cb7fd4ae6a9e",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-30207-0024-01850-1787990289106.png?t=1787990289684",
+    "new_key": "items/item-30207-0024-01850-1787990289106.png",
+    "migrated_at": "2026-11-11T04:52:42.226Z"
+  },
+  {
+    "table": "items",
+    "id": "ef7358df-9de9-4535-a262-82bc58f70814",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item---1788502612363.png?t=1788502613730",
+    "new_key": "items/item---1788502612363.png",
+    "migrated_at": "2026-11-11T04:52:42.286Z"
+  },
+  {
+    "table": "items",
+    "id": "e5427461-7834-446e-b597-4844b4a46466",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-1ICWUN6-1787990304429.png?t=1787990304794",
+    "new_key": "items/item-SKU-1ICWUN6-1787990304429.png",
+    "migrated_at": "2026-11-11T04:52:42.367Z"
+  },
+  {
+    "table": "items",
+    "id": "ee590575-3dee-443a-82ba-3f1eff7fb0f5",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-ee590575-3dee-443a-82ba-3f1eff7fb0f5-1787990357696.png?t=1787990358188",
+    "new_key": "items/item-ee590575-3dee-443a-82ba-3f1eff7fb0f5-1787990357696.png",
+    "migrated_at": "2026-11-11T04:52:42.431Z"
+  },
+  {
+    "table": "items",
+    "id": "636f930a-4a50-4693-880f-fccd8ce95586",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-5RM9DN9-1787990331059.jpg?t=1787990331414",
+    "new_key": "items/item-SKU-5RM9DN9-1787990331059.jpg",
+    "migrated_at": "2026-11-11T04:52:42.494Z"
+  },
+  {
+    "table": "items",
+    "id": "5bd2d00d-cdb4-4fa8-ab90-a495bb53f881",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-5bd2d00d-cdb4-4fa8-ab90-a495bb53f881-1787990354412.jpg?t=1787990354870",
+    "new_key": "items/item-5bd2d00d-cdb4-4fa8-ab90-a495bb53f881-1787990354412.jpg",
+    "migrated_at": "2026-11-11T04:52:42.550Z"
+  },
+  {
+    "table": "items",
+    "id": "65ef20bb-d4a1-4df5-9f38-3c2492caff41",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-30207-0024-04302-1787990301292.jpg?t=1787990301876",
+    "new_key": "items/item-30207-0024-04302-1787990301292.jpg",
+    "migrated_at": "2026-11-11T04:52:42.604Z"
+  },
+  {
+    "table": "items",
+    "id": "f54deda1-6cce-4988-adad-76d2fb52f8d8",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/e2e70dbc-1fe7-4391-b90b-8232e2368ce5-item-30207-0024-04501-1790154233601.png?t=1790154237783",
+    "new_key": "items/e2e70dbc-1fe7-4391-b90b-8232e2368ce5-item-30207-0024-04501-1790154233601.png",
+    "migrated_at": "2026-11-11T04:52:42.660Z"
+  },
+  {
+    "table": "items",
+    "id": "bb318ee9-bf86-4481-a8a9-3cc898071567",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/b1545516-dd23-45aa-966a-c586fbbd20a4-item-30207-0024-01907-1790159091622.png?t=1790159093075",
+    "new_key": "items/b1545516-dd23-45aa-966a-c586fbbd20a4-item-30207-0024-01907-1790159091622.png",
+    "migrated_at": "2026-11-11T04:52:42.715Z"
+  },
+  {
+    "table": "items",
+    "id": "0174f8d5-d588-49fd-99c6-9a1889e5e4f8",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/46341f90-2a0e-4c5b-bcf9-a407a228a110-item-SKU-2OISKK9-1791429711714.jpg?t=1791429714139",
+    "new_key": "items/46341f90-2a0e-4c5b-bcf9-a407a228a110-item-SKU-2OISKK9-1791429711714.jpg",
+    "migrated_at": "2026-11-11T04:52:42.777Z"
+  },
+  {
+    "table": "items",
+    "id": "39b3221f-0186-4837-8cdd-167142e46c23",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-30207-0024-01718-1787990276892.jpg?t=1787990277428",
+    "new_key": "items/item-30207-0024-01718-1787990276892.jpg",
+    "migrated_at": "2026-11-11T04:52:42.831Z"
+  },
+  {
+    "table": "items",
+    "id": "c6d7a98d-39c3-48fe-bea4-4d1e200e3ba2",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/item-SKU-12IUXHH-1787990317392.jpg?t=1787990317875",
+    "new_key": "items/item-SKU-12IUXHH-1787990317392.jpg",
+    "migrated_at": "2026-11-11T04:52:42.887Z"
+  },
+  {
+    "table": "items",
+    "id": "b724b771-4f8d-4e34-a36e-4e81cf38ee25",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/ae8340fe-365b-4334-acf4-39d5d8d46c08-item-30207-0024-01849-1791429864060.png?t=1791429865343",
+    "new_key": "items/ae8340fe-365b-4334-acf4-39d5d8d46c08-item-30207-0024-01849-1791429864060.png",
+    "migrated_at": "2026-11-11T04:52:42.943Z"
+  },
+  {
+    "table": "items",
+    "id": "a60c0232-2917-4326-b822-675e6c6ff892",
+    "column": "image_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/items/0501f0e8-90f1-4e45-99e1-c798f776389c-item---1793007464531.jpg?t=1793007467880",
+    "new_key": "items/0501f0e8-90f1-4e45-99e1-c798f776389c-item---1793007464531.jpg",
+    "migrated_at": "2026-11-11T04:52:43.001Z"
+  },
+  {
+    "table": "profiles",
+    "id": "6bec03e0-e399-4386-84aa-679aee401b0c",
+    "column": "avatar_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/avatars/6bec03e0-e399-4386-84aa-679aee401b0c/avatar.png?t=1787990968414",
+    "new_key": "avatars/6bec03e0-e399-4386-84aa-679aee401b0c/avatar.png",
+    "migrated_at": "2026-11-11T04:52:43.110Z"
+  },
+  {
+    "table": "profiles",
+    "id": "903c2047-361f-4ce5-ad0a-cf30ac29bc5f",
+    "column": "avatar_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/avatars/903c2047-361f-4ce5-ad0a-cf30ac29bc5f/avatar.jpg?t=1788111088234",
+    "new_key": "avatars/903c2047-361f-4ce5-ad0a-cf30ac29bc5f/avatar.jpg",
+    "migrated_at": "2026-11-11T04:52:43.187Z"
+  },
+  {
+    "table": "profiles",
+    "id": "02db2a9d-f062-4f73-ba9d-273cb5f6b350",
+    "column": "signature_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/documents/c3fb23ab-76cf-4b5a-b501-f42f41305891-signature_02db2a9d-f062-4f73-ba9d-273cb5f6b350_1790931918402.png?t=1790931922005",
+    "new_key": "documents/c3fb23ab-76cf-4b5a-b501-f42f41305891-signature_02db2a9d-f062-4f73-ba9d-273cb5f6b350_1790931918402.png",
+    "migrated_at": "2026-11-11T04:52:43.344Z"
+  },
+  {
+    "table": "profiles",
+    "id": "351a8b98-c724-41b9-a828-21cd697ca224",
+    "column": "signature_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/documents/b9e8ca8d-fd34-4985-87cb-2b0f97b550a4-signature_351a8b98-c724-41b9-a828-21cd697ca224_1791348054849.png?t=1791348057495",
+    "new_key": "documents/b9e8ca8d-fd34-4985-87cb-2b0f97b550a4-signature_351a8b98-c724-41b9-a828-21cd697ca224_1791348054849.png",
+    "migrated_at": "2026-11-11T04:52:43.413Z"
+  },
+  {
+    "table": "profiles",
+    "id": "7d13bab3-f2b4-4da8-94ff-b714036a189a",
+    "column": "signature_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/documents/1bfff9ef-8e8b-40c7-ac6a-bdf3b32979b6-signature_7d13bab3-f2b4-4da8-94ff-b714036a189a_1791428450638.png?t=1791428453112",
+    "new_key": "documents/1bfff9ef-8e8b-40c7-ac6a-bdf3b32979b6-signature_7d13bab3-f2b4-4da8-94ff-b714036a189a_1791428450638.png",
+    "migrated_at": "2026-11-11T04:52:43.476Z"
+  },
+  {
+    "table": "profiles",
+    "id": "ebeda358-da9c-4fe3-af79-0fe80efd0588",
+    "column": "signature_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/documents/b276a6f6-9d10-49ba-9f14-f4b9dd6712c6-signature_ebeda358-da9c-4fe3-af79-0fe80efd0588_1790073553862.png?t=1790073556761",
+    "new_key": "documents/b276a6f6-9d10-49ba-9f14-f4b9dd6712c6-signature_ebeda358-da9c-4fe3-af79-0fe80efd0588_1790073553862.png",
+    "migrated_at": "2026-11-11T04:52:43.529Z"
+  },
+  {
+    "table": "profiles",
+    "id": "1c61958c-ca23-4197-828a-9fe322f733f9",
+    "column": "signature_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/documents/3310983d-4e9b-4342-a5ff-37e9d2a3336f-signature_1c61958c-ca23-4197-828a-9fe322f733f9_1790838813982.png?t=1790838816096",
+    "new_key": "documents/3310983d-4e9b-4342-a5ff-37e9d2a3336f-signature_1c61958c-ca23-4197-828a-9fe322f733f9_1790838813982.png",
+    "migrated_at": "2026-11-11T04:52:43.581Z"
+  },
+  {
+    "table": "profiles",
+    "id": "aa636c53-6577-45fc-9267-91372afe8ec3",
+    "column": "signature_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/documents/533ea7db-970e-423b-a2eb-ef3099183626-signature_aa636c53-6577-45fc-9267-91372afe8ec3_1790841983117.png?t=1790841986299",
+    "new_key": "documents/533ea7db-970e-423b-a2eb-ef3099183626-signature_aa636c53-6577-45fc-9267-91372afe8ec3_1790841983117.png",
+    "migrated_at": "2026-11-11T04:52:43.638Z"
+  },
+  {
+    "table": "profiles",
+    "id": "6bec03e0-e399-4386-84aa-679aee401b0c",
+    "column": "signature_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/documents/ab6114be-f67b-4c1e-8f71-d40b94529bb8-signature_6bec03e0-e399-4386-84aa-679aee401b0c_1789695291235.png?t=1789695294637",
+    "new_key": "documents/ab6114be-f67b-4c1e-8f71-d40b94529bb8-signature_6bec03e0-e399-4386-84aa-679aee401b0c_1789695291235.png",
+    "migrated_at": "2026-11-11T04:52:43.695Z"
+  },
+  {
+    "table": "profiles",
+    "id": "a110ef5d-16dc-450e-bf46-5c73d02fe10f",
+    "column": "signature_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/documents/21615bd2-bf8a-404e-83d5-84aac7f1ff5b-signature_a110ef5d-16dc-450e-bf46-5c73d02fe10f_1793605288274.png?t=1793605289883",
+    "new_key": "documents/21615bd2-bf8a-404e-83d5-84aac7f1ff5b-signature_a110ef5d-16dc-450e-bf46-5c73d02fe10f_1793605288274.png",
+    "migrated_at": "2026-11-11T04:52:43.773Z"
+  },
+  {
+    "table": "profiles",
+    "id": "903c2047-361f-4ce5-ad0a-cf30ac29bc5f",
+    "column": "signature_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/documents/151d5495-c309-4bed-a09d-93b3fcca4329-signature_903c2047-361f-4ce5-ad0a-cf30ac29bc5f_1790829959758.png?t=1790829962954",
+    "new_key": "documents/151d5495-c309-4bed-a09d-93b3fcca4329-signature_903c2047-361f-4ce5-ad0a-cf30ac29bc5f_1790829959758.png",
+    "migrated_at": "2026-11-11T04:52:43.838Z"
+  },
+  {
+    "table": "profiles",
+    "id": "33d7bb54-ac81-44b6-a870-35b5fe2b4f13",
+    "column": "signature_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/documents/803a366a-2da3-4295-b452-139d3ea3e986-signature_33d7bb54-ac81-44b6-a870-35b5fe2b4f13_1790931355628.png?t=1790931358667",
+    "new_key": "documents/803a366a-2da3-4295-b452-139d3ea3e986-signature_33d7bb54-ac81-44b6-a870-35b5fe2b4f13_1790931355628.png",
+    "migrated_at": "2026-11-11T04:52:43.894Z"
+  },
+  {
+    "table": "profiles",
+    "id": "a2f7c8e5-aa13-4e7f-8240-4e9dcad1b860",
+    "column": "signature_url",
+    "original_url": "https://pub-275b37eccbba4e63941708ae5dfa46a7.r2.dev/documents/356c4035-4cf8-4bae-87fa-a4bf49fe2e1a-signature_a2f7c8e5-aa13-4e7f-8240-4e9dcad1b860_1790931356261.png?t=1790931358985",
+    "new_key": "documents/356c4035-4cf8-4bae-87fa-a4bf49fe2e1a-signature_a2f7c8e5-aa13-4e7f-8240-4e9dcad1b860_1790931356261.png",
+    "migrated_at": "2026-11-11T04:52:43.950Z"
+  }
+]

@@ -32,7 +32,7 @@ export default function TechStackSection() {
       category: 'Database & Auth',
     },
     {
-      title: 'Cloudflare R2 Object Storage',
+      title: 'S3-Compatible Object Storage',
       description: 'Zero-egress asset storage with global CDN caching & presigned browser S3 direct upload',
       icon: Cloud,
       category: 'Cloud Storage',

@@ -19,6 +19,7 @@ import RoleBadge from '@/components/ui/RoleBadge';
 import UserStatusDot from '@/components/ui/UserStatusDot';
 import { getRoleLabel } from '@/lib/roleUtils';
 import { uploadAvatarImage } from '@/lib/avatarUpload';
+import { resolveStorageUrl } from '@/lib/r2Storage';
 import { useTranslation } from '@/i18n';
 
 const UserManagement = () => {
@@ -715,7 +716,7 @@ const UserManagement = () => {
                           <div className="flex items-center gap-3">
                             {u.avatar_url ? (
                               <img 
-                                src={u.avatar_url} 
+                                src={resolveStorageUrl(u.avatar_url)} 
                                 alt={u.full_name} 
                                 className="w-10 h-10 rounded-full object-cover shadow-sm border border-white/40"
                                 onError={(e) => { e.target.onerror = null; e.target.src = ''; }}
@@ -902,7 +903,7 @@ const UserManagement = () => {
                       <div className="flex items-center gap-3 min-w-0">
                         {u.avatar_url ? (
                           <img 
-                            src={u.avatar_url} 
+                            src={resolveStorageUrl(u.avatar_url)} 
                             alt={u.full_name} 
                             className="w-10 h-10 rounded-full object-cover shadow-xs border border-border shrink-0"
                             onError={(e) => { e.target.onerror = null; e.target.src = ''; }}

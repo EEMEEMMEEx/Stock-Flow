@@ -12,7 +12,8 @@ const HistoryFilterBar = ({
   onFilterChange,
   onResetFilters,
   projectsList = [],
-  requestersList = []
+  requestersList = [],
+  canFilterRequester = true
 }) => {
   const { t } = useTranslation();
   const [isExpanded, setIsExpanded] = React.useState(true);
@@ -138,22 +139,24 @@ const HistoryFilterBar = ({
               </div>
 
               {/* Requester Filter */}
-              <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-foreground">{t('history.requester', 'Requester')}</Label>
-                <select
-                  name="requester_id"
-                  value={filters.requester_id}
-                  onChange={onFilterChange}
-                  className="flex h-9 w-full rounded-xl border border-input bg-background px-3 py-1 text-xs shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
-                >
-                  <option value="">{t('history.allRequesters', 'All Requesters')}</option>
-                  {requestersList.map((req) => (
-                    <option key={req.id} value={req.id}>
-                      {req.full_name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {canFilterRequester && (
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-foreground">{t('history.requester', 'Requester')}</Label>
+                  <select
+                    name="requester_id"
+                    value={filters.requester_id}
+                    onChange={onFilterChange}
+                    className="flex h-9 w-full rounded-xl border border-input bg-background px-3 py-1 text-xs shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+                  >
+                    <option value="">{t('history.allRequesters', 'All Requesters')}</option>
+                    {requestersList.map((req) => (
+                      <option key={req.id} value={req.id}>
+                        {req.full_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               {/* Date Filters */}
               <div className="space-y-1.5">

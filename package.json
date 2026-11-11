@@ -1,7 +1,7 @@
 {
   "name": "stock-flow-app",
   "private": true,
-  "version": "1.31.6",
+  "version": "1.31.10",
   "type": "module",
   "engines": {
     "node": "24.x"
@@ -11,6 +11,7 @@
     "tunnel": "cloudflared tunnel --url http://localhost:5173",
     "build": "vite build",
     "lint": "eslint .",
+    "test:order-history-auth": "node --test src/lib/orderHistoryAuth.test.js",
     "test:chunk-recovery": "node --test src/lib/__tests__/chunkErrorRecovery.test.js",
     "test:gemini-key": "node --test src/lib/__tests__/geminiApiKeyStorage.test.js",
     "test:email": "echo \"Email notification system decommissioned (migration 98)\"",
@@ -53,6 +54,8 @@
     "apply:migration-97": "node scripts/apply-migration-97.mjs",
     "apply:migration-102": "node scripts/apply-migration-102.mjs",
     "apply:migration-103": "node scripts/apply-migration-103.mjs",
+    "apply:migration-104": "node scripts/apply-migration-104.mjs",
+    "verify:migration-104": "node scripts/verify-migration-104-sandbox.mjs",
     "verify:return-item-sn-sandbox": "node scripts/verify-return-item-sn-sandbox.mjs",
     "test:scrap-serial": "node --test src/lib/scrapSerial.test.js",
     "verify:checkout-locking-sandbox": "node scripts/verify-process-checkout-order-locking-sandbox.mjs",
@@ -63,6 +66,8 @@
     "verify:gemini-copilot": "node scripts/verify-gemini-copilot.mjs",
     "preview": "vite preview",
     "test:withdrawal-stock": "node --test src/lib/withdrawalStock.test.js",
+    "test:r2-storage": "node --test src/lib/__tests__/r2Storage.test.js",
+    "migrate:storage": "node scripts/migrate-storage-to-r2.mjs",
     "migrate:r2": "node scripts/migrate-legacy-images-to-r2.mjs",
     "db:backup": "node scripts/backup-full-database.mjs",
     "wiki:sync": "powershell -ExecutionPolicy Bypass -File scripts/sync-wiki.ps1",

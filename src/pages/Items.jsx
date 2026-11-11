@@ -20,7 +20,7 @@ import { format } from 'date-fns';
 import { ProjectLocationSelector } from '@/components/common/ProjectLocationSelector';
 import { TransferItemDialog } from '@/components/items/TransferItemDialog';
 import { ItemStockHistoryDialog } from '@/components/items/ItemStockHistoryDialog';
-import { uploadFileToR2 } from '@/lib/r2Storage';
+import { uploadFileToR2, resolveStorageUrl, extractStorageKey, handleStorageImageError } from '@/lib/r2Storage';
 import { useTranslation } from '@/i18n';
 import { isSchemaMismatchError, cleanRpcMessage } from '@/lib/rpcErrors';
 
@@ -301,7 +301,8 @@ const Items = () => {
 
       const publicUrl = await uploadFileToR2(file, 'items', customFileName);
       if (publicUrl) {
-        setFormData(prev => ({ ...prev, image_url: publicUrl }));
+        const objectKey = extractStorageKey(publicUrl) || publicUrl;
+        setFormData(prev => ({ ...prev, image_url: objectKey }));
         toast.success(t('items.toasts.imageUploaded'), { id: toastId });
       } else {
         toast.error(t('items.toasts.imageUploadFailed'), { id: toastId });
@@ -1319,11 +1320,12 @@ const Items = () => {
                       <TableCell className="w-14">
                         {item.image_url ? (
                           <img 
-                            src={item.image_url} 
+                            src={resolveStorageUrl(item.image_url)} 
                             alt={item.name} 
                             className={`object-cover rounded-lg border border-border shadow-xs ${
                               isChild ? "w-8 h-8 ml-2" : "w-10 h-10"
-                            }`} 
+                            }`}
+                            onError={(e) => handleStorageImageError(e, item.image_url)} 
                           />
                         ) : (
                           <div className={`bg-muted/60 rounded-lg flex items-center justify-center border border-border/60 text-muted-foreground/60 ${
@@ -1558,7 +1560,7 @@ const Items = () => {
                   {/* Image & Main Info */}
                   <div className="flex items-start gap-3">
                     {item.image_url ? (
-                      <img src={item.image_url} alt={item.name} className="w-12 h-12 object-cover rounded-lg border border-border shadow-xs shrink-0" />
+                      <img src={resolveStorageUrl(item.image_url)} alt={item.name} onError={(e) => handleStorageImageError(e, item.image_url)} className="w-12 h-12 object-cover rounded-lg border border-border shadow-xs shrink-0" />
                     ) : (
                       <div className="w-12 h-12 bg-muted/60 rounded-lg flex items-center justify-center border border-border/60 text-muted-foreground/60 shrink-0">
                         <ImageIcon className="w-5 h-5" />
@@ -1689,7 +1691,7 @@ const Items = () => {
                   {/* Image & Title Header */}
                   <div className="flex items-start gap-3">
                     {item.image_url ? (
-                      <img src={item.image_url} alt={item.name} className="w-12 h-12 object-cover rounded-lg border border-border shadow-xs shrink-0" />
+                      <img src={resolveStorageUrl(item.image_url)} alt={item.name} onError={(e) => handleStorageImageError(e, item.image_url)} className="w-12 h-12 object-cover rounded-lg border border-border shadow-xs shrink-0" />
                     ) : (
                       <div className="w-12 h-12 bg-muted/60 rounded-lg flex items-center justify-center border border-border/60 text-muted-foreground/60 shrink-0">
                         <ImageIcon className="w-5 h-5" />
@@ -1954,7 +1956,7 @@ const Items = () => {
                 <Label htmlFor="edit-image" className="text-xs font-semibold">{t('items.dialogs.itemImage')}</Label>
                 <div className="flex items-center gap-3">
                   {formData.image_url ? (
-                    <img src={formData.image_url} alt="Preview" className="w-14 h-14 object-cover rounded-lg border shadow-xs shrink-0" />
+                    <img src={resolveStorageUrl(formData.image_url)} alt="Preview" onError={(e) => handleStorageImageError(e, formData.image_url)} className="w-14 h-14 object-cover rounded-lg border shadow-xs shrink-0" />
                   ) : (
                     <div className="w-14 h-14 bg-muted rounded-lg flex items-center justify-center border text-muted-foreground shrink-0">
                       <ImageIcon className="w-5 h-5" />

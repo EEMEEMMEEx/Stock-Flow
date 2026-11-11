@@ -504,8 +504,8 @@ export default {
     "toasts": {
       "loadCatalogFailed": "Failed to load items catalog",
       "imageSizeExceeded": "Image file size must not exceed 5MB",
-      "uploadingImage": "Uploading image to Cloudflare R2...",
-      "imageUploaded": "Image uploaded to Cloudflare R2 successfully",
+      "uploadingImage": "Uploading image...",
+      "imageUploaded": "Image uploaded successfully",
       "imageUploadFailed": "Failed to upload image",
       "imageUploadError": "An error occurred during image upload",
       "directAdjustmentDisabled": "Direct stock adjustment is disabled in system settings",
@@ -1027,7 +1027,7 @@ export default {
       "returnPhotoUploadingWait": "Please wait for all return photos to finish compressing and uploading",
       "returnPhotoUploaded": "Return proof photo compressed and uploaded",
       "returnPhotoCompressionFailed": "Failed to compress image: {{reason}}",
-      "returnPhotoUploadFailed": "Failed to upload return photo to Cloudflare R2: {{reason}}",
+      "returnPhotoUploadFailed": "Failed to upload return photo: {{reason}}",
       "returnPhotoInvalidType": "Unsupported file format. Please select a valid image (JPG, PNG, or WebP).",
       "returnPhotoTooLarge": "Image file size exceeds the 20 MB limit",
       "returnSubmittedPendingReview": "Return submitted with photo proof — awaiting Admin review and confirmation",
@@ -1641,7 +1641,7 @@ export default {
       },
       "storage": {
         "title": "5. Storage Status",
-        "description": "Status of Cloudflare R2 Object Storage and image asset policies"
+        "description": "Status of Object Storage and image asset policies"
       },
       "system": {
         "title": "6. System Information",
@@ -1730,7 +1730,7 @@ export default {
     },
     "storage": {
       "provider": "Provider",
-      "providerValue": "Cloudflare R2 (S3 API)",
+      "providerValue": "Object Storage (S3 API)",
       "bucketName": "Bucket Name",
       "maxFileSize": "Max File Size",
       "maxFileSizeValue": "5 MB (JPG / PNG / WebP)"
@@ -1991,24 +1991,24 @@ export default {
         "warnings": "Reducing stock directly affects inventory value, so supervisor approval is recommended before proceeding."
       },
       "projectsAndItemsMaster": {
-        "title": "8. Projects & Items Master Data",
-        "shortDesc": "Create projects/sub-warehouses, register items, upload images via R2, and set the low-stock threshold.",
-        "whatItDoes": "The master data source for project structure, sub-warehouses, and the full materials/equipment catalog. It supports uploading item images to Cloudflare R2 (Zero Egress) and hiding cancelled records with an Inactive toggle.",
+        "title": "8. Master Data: Projects & Items",
+        "shortDesc": "Create projects/sub-warehouses, register items, upload images, and set the low-stock threshold.",
+        "whatItDoes": "The master data source for project structure, sub-warehouses, and the full materials/equipment catalog. It supports uploading item images (Zero Egress) and hiding cancelled records with an Inactive toggle.",
         "whoCanUse": "Administrators.",
         "steps": [
           "Create a project: go to Projects, click + New Project, and specify the code, name, and sub-storage locations",
           "Deactivate: set a project to Inactive to block new transactions while preserving history",
           "Register items: go to Items, click + Add Item, and specify the SKU, name, unit, and category",
-          "Upload item images: choose an image file and the system uploads it to Cloudflare R2, storing only the URL in the database",
+          "Upload item images: choose an image file and the system uploads it to object storage, storing only the key in the database",
           "Set the low-stock threshold: configure low_stock_threshold under /settings on the General Settings tab"
         ],
         "proTips": "Use the Inactive toggle to show or hide cancelled records, and standardize project/SKU codes for faster searching.",
-        "warnings": "Projects set to Inactive are hidden automatically from withdrawal and stock-in forms, and large binary files should never be stored in the database (use R2 only)."
+        "warnings": "Projects set to Inactive are hidden automatically from withdrawal and stock-in forms, and large binary files should never be stored in the database."
       },
       "userManagementAndAvatars": {
         "title": "9. User Management, Project Access & Email Invitations",
         "shortDesc": "Create accounts, send invitation emails, define project scopes, and manage three account statuses.",
-        "whatItDoes": "The user account hub covering profiles, departments, Project Access Scopes, email invitations with a temporary password, and avatars via Cloudflare R2, plus Last Admin Protection.",
+        "whatItDoes": "The user account hub covering profiles, departments, Project Access Scopes, email invitations with a temporary password, and avatars, plus Last Admin Protection.",
         "whoCanUse": "Administrators.",
         "steps": [
           "Go to User Management and click + Add User, or the pencil icon to edit an existing user",
@@ -2055,11 +2055,11 @@ export default {
       "userProfileAndSignatures": {
         "title": "13. User Profile & Digital Signature",
         "shortDesc": "Manage personal details, change your password, and draw a digital signature for documents.",
-        "whatItDoes": "A personal page for every user with three tabs: Personal Info (with avatar upload via Cloudflare R2), self-service password change, and Digital Signature (a Signature Pad drawn with a mouse or finger that is stamped automatically onto vouchers, checkout slips, and return receipts).",
+        "whatItDoes": "A personal page for every user with three tabs: Personal Info (with avatar upload), self-service password change, and Digital Signature (a Signature Pad drawn with a mouse or finger that is stamped automatically onto vouchers, checkout slips, and return receipts).",
         "whoCanUse": "Every signed-in user (Authenticated User) with no special permission required.",
         "steps": [
           "Go to Profile at /profile",
-          "Personal Info tab: edit your name, phone, and position, and upload a profile photo (stored on R2)",
+          "Personal Info tab: edit your name, phone, and position, and upload a profile photo",
           "Change Password tab: enter and confirm a new password to change it yourself",
           "Signature tab: draw your signature in the box with a mouse or finger, then click Save Signature",
           "The signature is stamped onto PDF documents automatically and can be removed or redrawn at any time"
@@ -2070,14 +2070,14 @@ export default {
       "systemSettings": {
         "title": "12. System Settings",
         "shortDesc": "Manage application preferences, inventory rules, and security policies",
-        "whatItDoes": "Central system configuration across 5 sections: Application metadata, Inventory & withdrawal rules, User & security policy, Storage status (Cloudflare R2), and System information",
+        "whatItDoes": "Central system configuration across 5 sections: Application metadata, Inventory & withdrawal rules, User & security policy, Storage status, and System information",
         "whoCanUse": "Administrators with settings.view / settings.update permissions",
         "steps": [
           "Navigate to Settings at /settings",
           "Application & Footer section: configure app name, organization, description, and footer display",
           "Inventory Rules section: configure low-stock threshold, withdrawal purpose requirements, and transaction policies",
           "User & Security Policy section: manage default password reset credentials and Last Admin Protection",
-          "Storage Status & System Information sections: verify Cloudflare R2 connectivity and database health"
+          "Storage Status & System Information sections: verify object storage connectivity and database health"
         ],
         "proTips": "Ensure the default low stock threshold aligns with your operational reorder cycles",
         "warnings": "Requires settings.update permission to save changes (read-only for unprivileged accounts)"
