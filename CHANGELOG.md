@@ -1,5 +1,13 @@
 # Changelog
 
+## [2026-11-13 08:52] - v1.32.0
+- **Files Modified:** `src/landing/components/HeroSection.jsx`, `src/landing/components/LiveSimulatorSection.jsx`, `src/landing/components/WorkflowSection.jsx`, `src/landing/components/BentoFeatures.jsx`, `docs/landing-3d-motion-implementation-plan.md`, `package.json`
+- **Changes:**
+  - **Scene 1 — 3D Multi-Layer Spatial Terminal (`HeroSection.jsx`)**: เพิ่มพื้นหลัง `Squares` grid, `DecryptedText` สำหรับ headline, `Magnet` บนปุ่ม CTA หลัก, ครอบ Terminal ด้วย `TiltedCard` พร้อมป้าย 3D HUD badges ลอยที่ระดับ `translateZ(36px)`, แสงเลเซอร์สแกนบาร์โค้ดในแท็บ POS และ `AnimatePresence` 3D `rotateX` flip เมื่อสลับแท็บทั้ง 4
+  - **Scene 2 — Interactive 3D Exploded BOM & Atomic Lock (`LiveSimulatorSection.jsx`)**: เพิ่ม `AnimatePresence` 3D tab flip, 3D Atomic Lock & Issue Voucher Stage (`DOC #WH-2026-089`) ในแท็บ POS ที่ตอบสนองต่อ `SELECT ... FOR UPDATE`, และ Interactive 3D Exploded BOM Stack พร้อม `BaseStationTowerIcon` ในแท็บ Site Kits ที่ประกบ/แยกชั้นอัตโนมัติตามความพร้อมสต็อก
+  - **Scene 3 — 3D Isometric Conveyor Pipeline (`WorkflowSection.jsx`)**: เพิ่มท่อ SVG 3D Isometric Pipeline Conduit พร้อม energy pulse วิ่งผ่านโหนดทั้ง 4 ขั้นตอน เชื่อมกับการ์ด 3D perspective hover slabs และขอบความลึกด้านล่าง
+  - **Scene 4 — 3D Spotlight Bento Grid (`BentoFeatures.jsx`)**: ครอบการ์ดฟีเจอร์ทั้ง 8 ใบด้วย `SpotlightCard` แยกสีตามหมวดโมดูล เพิ่ม 3D perspective micro-tilt และห่อปุ่ม CTA การ์ดที่ 8 ด้วย `Magnet`
+
 ## [2026-11-11 14:15] - v1.31.13
 - **Files Modified:** `src/lib/orderHistoryAuth.js`, `src/lib/orderHistoryAuth.test.js`, `src/pages/Checkouts.jsx`, `src/pages/Withdrawals.jsx`, `src/pages/History.jsx`, `package.json`
 - **Changes:**
