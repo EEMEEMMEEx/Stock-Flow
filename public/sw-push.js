@@ -45,7 +45,7 @@ self.addEventListener('push', (event) => {
   const notificationTitle = title || 'Stock Flow';
   const notificationOptions = {
     body: body || message || '',
-    icon: icon || '/images/logo.png',
+    ...(icon ? { icon } : {}),
     badge: badge || '/favicon.svg',
     tag: tag || (id ? `stockflow-notif-${id}` : 'stockflow-push'),
     renotify: false,

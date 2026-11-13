@@ -1,5 +1,11 @@
 # Changelog
 
+## [2026-11-13 16:08] - v1.33.1
+- **Files Modified:** `public/sw-push.js`, `src/lib/pushNotifications.js`, `vite.config.js`, `index.html`, `src/components/layout/NotificationBell.jsx`, `package.json`, `CHANGELOG.md`
+- **Changes:**
+  - **Clean Mobile Notification Icon (`public/sw-push.js`, `src/lib/pushNotifications.js`, `vite.config.js`, `index.html`)**: นำ `icon: '/images/logo.png'` ออกจาก notification options, PWA manifest icons และ `apple-touch-icon` เพื่อไม่ให้โลโก้ FORTH แนวนอนแสดงซ้ำซ้อนเป็นภาพย่อด้านขวาของแบนเนอร์แจ้งเตือนบน Android (คงไว้เฉพาะไอคอน Stock Flow `favicon.svg`)
+  - **Auto-Hide Push Setup Banner (`src/components/layout/NotificationBell.jsx`)**: ซ่อนกรอบตั้งค่า Push และปุ่ม Test Push อัตโนมัติเมื่ออุปกรณ์เปิดใช้งานแล้ว พร้อมย้ายปุ่มปิดการแจ้งเตือนเป็นไอคอนกระดิ่งขนาดกะทัดรัดบนหัว Popover
+
 ## [2026-11-13 15:36] - v1.33.0
 - **Files Modified:** `src/lib/webPushCrypto.js`, `src/lib/__tests__/webPushCrypto.test.js`, `supabase/migrations/105_web_push_notifications.sql`, `scripts/verify-migration-105-sandbox.mjs`, `scripts/apply-migration-105.mjs`, `api/web-push.js`, `public/sw-push.js`, `vite.config.js`, `vercel.json`, `index.html`, `.env.example`, `src/lib/pushNotifications.js`, `src/hooks/useNotifications.js`, `src/components/layout/NotificationBell.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `docs/web-push-pwa-implementation-plan.md`, `package.json`, `CHANGELOG.md`
 - **Changes:**

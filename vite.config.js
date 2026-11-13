@@ -107,7 +107,7 @@ export default defineConfig(({ mode }) => {
       devApiPlugin(),
       VitePWA({
         registerType: 'autoUpdate',
-        includeAssets: ['favicon.svg', 'sw-push.js', 'images/logo.png'],
+        includeAssets: ['favicon.svg', 'sw-push.js'],
         workbox: {
           importScripts: ['/sw-push.js'],
           maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
@@ -130,18 +130,6 @@ export default defineConfig(({ mode }) => {
               sizes: '192x192 512x512',
               type: 'image/svg+xml',
               purpose: 'any maskable'
-            },
-            {
-              src: '/images/logo.png',
-              sizes: '192x192',
-              type: 'image/png',
-              purpose: 'any'
-            },
-            {
-              src: '/images/logo.png',
-              sizes: '512x512',
-              type: 'image/png',
-              purpose: 'any'
             }
           ]
         }

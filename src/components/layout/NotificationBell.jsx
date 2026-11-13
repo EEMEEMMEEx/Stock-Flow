@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { useNavigate } from 'react-router-dom';
 import {
-  Bell, BellRing, BellOff, Smartphone, Send, CheckCheck, CircleAlert,
+  Bell, BellRing, BellOff, Smartphone, CheckCheck, CircleAlert,
   ClipboardCheck, ClipboardList, ClipboardPlus, FileClock, PackageCheck,
   PackagePlus, RefreshCw, Check, ArrowRight, RotateCcw, AlertTriangle,
   Package, Trash2, ShieldCheck, Clock
@@ -13,7 +13,6 @@ import { resolveNotificationTarget } from '@/lib/notificationTargets';
 import {
   getCurrentPushSubscription,
   getPushSupportStatus,
-  sendTestPushNotification,
   subscribeUserToPush,
   unsubscribeUserFromPush
 } from '@/lib/pushNotifications';
@@ -355,32 +354,6 @@ const NotificationBell = () => {
     }
   };
 
-  const handleTestPush = async () => {
-    if (pushAction) return;
-    setPushAction('test');
-    try {
-      const token = await getAccessToken();
-      const result = await sendTestPushNotification(token, {
-        title: t('notifications.push.testNotifTitle'),
-        message: t('notifications.push.testNotifBody')
-      });
-      if (result.success) {
-        if (result.mode === 'web-push') {
-          toast.success(t('notifications.push.testSuccessRemote', { count: result.sentCount }));
-        } else {
-          toast.success(t('notifications.push.testSuccessLocal'));
-        }
-      } else {
-        toast.error(result.error || t('notifications.push.testFailed'));
-      }
-    } catch (err) {
-      console.error('Test push error:', err);
-      toast.error(err?.message || t('notifications.push.testFailed'));
-    } finally {
-      setPushAction(null);
-    }
-  };
-
   return (
     <DropdownMenu.Root open={isOpen} onOpenChange={handleOpenChange}>
       <DropdownMenu.Trigger asChild>
@@ -434,18 +407,39 @@ const NotificationBell = () => {
               </div>
             </div>
 
-            {unreadCount > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                type="button"
-                onClick={() => void markAllAsRead()}
-                className="h-8 rounded-lg px-2 text-xs text-primary hover:bg-primary/10 font-semibold flex items-center gap-1"
-              >
-                <CheckCheck className="h-3.5 w-3.5" />
-                <span>{t('notifications.markAllAsRead')}</span>
-              </Button>
-            )}
+            <div className="flex items-center gap-1">
+              {isPushSubscribed && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  type="button"
+                  disabled={Boolean(pushAction)}
+                  title={t('notifications.push.disableAriaLabel')}
+                  aria-label={t('notifications.push.disableAriaLabel')}
+                  onClick={() => void handleDisablePush()}
+                  className="h-8 w-8 rounded-lg text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 hover:text-destructive cursor-pointer"
+                >
+                  {pushAction === 'disable' ? (
+                    <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <BellRing className="h-3.5 w-3.5" />
+                  )}
+                </Button>
+              )}
+
+              {unreadCount > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  type="button"
+                  onClick={() => void markAllAsRead()}
+                  className="h-8 rounded-lg px-2 text-xs text-primary hover:bg-primary/10 font-semibold flex items-center gap-1"
+                >
+                  <CheckCheck className="h-3.5 w-3.5" />
+                  <span>{t('notifications.markAllAsRead')}</span>
+                </Button>
+              )}
+            </div>
           </div>
 
           {/* Filter Tabs Pills */}
@@ -503,118 +497,69 @@ const NotificationBell = () => {
             </button>
           </div>
 
-          {/* Mobile / Web Push Status & Control Bar */}
-          <div className="my-1.5 rounded-xl border border-border/60 bg-muted/40 dark:bg-white/5 px-2.5 py-2">
-            {pushStatus.isIosRequiresInstall ? (
-              <div className="flex items-start gap-2">
-                <Smartphone className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
-                <div className="min-w-0 flex-1">
-                  <p className="text-[11px] font-semibold text-foreground">
-                    {t('notifications.push.iosInstallTitle')}
-                  </p>
-                  <p className="text-[10px] leading-snug text-muted-foreground">
-                    {t('notifications.push.iosInstallHint')}
-                  </p>
+          {/* Mobile / Web Push Setup Bar (hidden once subscribed on this device) */}
+          {!isPushSubscribed && (pushStatus.isIosRequiresInstall || pushStatus.permission === 'denied' || pushStatus.supported) && (
+            <div className="my-1.5 rounded-xl border border-border/60 bg-muted/40 dark:bg-white/5 px-2.5 py-2">
+              {pushStatus.isIosRequiresInstall ? (
+                <div className="flex items-start gap-2">
+                  <Smartphone className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[11px] font-semibold text-foreground">
+                      {t('notifications.push.iosInstallTitle')}
+                    </p>
+                    <p className="text-[10px] leading-snug text-muted-foreground">
+                      {t('notifications.push.iosInstallHint')}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ) : !pushStatus.supported ? (
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <BellOff className="h-3.5 w-3.5 shrink-0" />
-                <span className="text-[11px]">{t('notifications.push.unsupported')}</span>
-              </div>
-            ) : pushStatus.permission === 'denied' ? (
-              <div className="flex items-start gap-2">
-                <BellOff className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
-                <div className="min-w-0 flex-1">
-                  <p className="text-[11px] font-semibold text-foreground">
-                    {t('notifications.push.deniedTitle')}
-                  </p>
-                  <p className="text-[10px] leading-snug text-muted-foreground">
-                    {t('notifications.push.deniedHint')}
-                  </p>
+              ) : !pushStatus.supported ? (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <BellOff className="h-3.5 w-3.5 shrink-0" />
+                  <span className="text-[11px]">{t('notifications.push.unsupported')}</span>
                 </div>
-              </div>
-            ) : isPushSubscribed ? (
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex min-w-0 items-center gap-1.5">
-                  <BellRing className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
-                  <span className="truncate text-[11px] font-medium text-emerald-700 dark:text-emerald-300">
-                    {t('notifications.push.enabledOnDevice')}
-                  </span>
+              ) : pushStatus.permission === 'denied' ? (
+                <div className="flex items-start gap-2">
+                  <BellOff className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[11px] font-semibold text-foreground">
+                      {t('notifications.push.deniedTitle')}
+                    </p>
+                    <p className="text-[10px] leading-snug text-muted-foreground">
+                      {t('notifications.push.deniedHint')}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    disabled={Boolean(pushAction)}
-                    aria-label={t('notifications.push.testAriaLabel')}
-                    onClick={() => void handleTestPush()}
-                    className="h-7 px-2 text-[11px] cursor-pointer"
-                  >
-                    {pushAction === 'test' ? (
-                      <RefreshCw className="h-3 w-3 animate-spin" />
-                    ) : (
-                      <Send className="h-3 w-3" />
-                    )}
-                    <span>
-                      {pushAction === 'test'
-                        ? t('notifications.push.testing')
-                        : t('notifications.push.testButton')}
+              ) : (
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex min-w-0 items-center gap-1.5">
+                    <Smartphone className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                    <span className="truncate text-[11px] text-muted-foreground">
+                      {t('notifications.push.disabledOnDevice')}
                     </span>
-                  </Button>
+                  </div>
                   <Button
                     type="button"
-                    variant="ghost"
                     size="sm"
                     disabled={Boolean(pushAction)}
-                    aria-label={t('notifications.push.disableAriaLabel')}
-                    onClick={() => void handleDisablePush()}
-                    className="h-7 px-2 text-[11px] text-muted-foreground hover:text-destructive cursor-pointer"
+                    aria-label={t('notifications.push.enableAriaLabel')}
+                    onClick={() => void handleEnablePush()}
+                    className="h-7 px-2.5 text-[11px] cursor-pointer"
                   >
-                    {pushAction === 'disable' ? (
+                    {pushAction === 'enable' ? (
                       <RefreshCw className="h-3 w-3 animate-spin" />
                     ) : (
-                      <BellOff className="h-3 w-3" />
+                      <BellRing className="h-3 w-3" />
                     )}
                     <span>
-                      {pushAction === 'disable'
-                        ? t('notifications.push.disabling')
-                        : t('notifications.push.disableButton')}
+                      {pushAction === 'enable'
+                        ? t('notifications.push.enabling')
+                        : t('notifications.push.enableButton')}
                     </span>
                   </Button>
                 </div>
-              </div>
-            ) : (
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex min-w-0 items-center gap-1.5">
-                  <Smartphone className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                  <span className="truncate text-[11px] text-muted-foreground">
-                    {t('notifications.push.disabledOnDevice')}
-                  </span>
-                </div>
-                <Button
-                  type="button"
-                  size="sm"
-                  disabled={Boolean(pushAction)}
-                  aria-label={t('notifications.push.enableAriaLabel')}
-                  onClick={() => void handleEnablePush()}
-                  className="h-7 px-2.5 text-[11px] cursor-pointer"
-                >
-                  {pushAction === 'enable' ? (
-                    <RefreshCw className="h-3 w-3 animate-spin" />
-                  ) : (
-                    <BellRing className="h-3 w-3" />
-                  )}
-                  <span>
-                    {pushAction === 'enable'
-                      ? t('notifications.push.enabling')
-                      : t('notifications.push.enableButton')}
-                  </span>
-                </Button>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
 
           <DropdownMenu.Separator className="my-1.5 h-px bg-border/50" />
 

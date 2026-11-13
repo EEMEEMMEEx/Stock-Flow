@@ -299,7 +299,6 @@ export async function showLocalServiceWorkerNotification(notification) {
     const notifId = notification?.id || Date.now();
     await registration.showNotification(notification?.title || 'Stock Flow', {
       body: notification?.message || '',
-      icon: '/images/logo.png',
       badge: '/favicon.svg',
       tag: `stockflow-notif-${notifId}`,
       renotify: false,
