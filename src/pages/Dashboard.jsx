@@ -6,7 +6,6 @@ import {
   CheckCircle2, RefreshCw, BarChart3, 
   Building2 
 } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { format } from 'date-fns';
 import { 
@@ -65,7 +64,6 @@ const CustomXAxisTick = ({ x, y, payload, isItemMode, theme }) => {
 };
 
 const Dashboard = () => {
-  const { profile } = useAuth();
   const { resolvedTheme } = useTheme();
   const { t } = useTranslation();
   

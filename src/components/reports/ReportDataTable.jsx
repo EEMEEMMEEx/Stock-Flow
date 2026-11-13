@@ -1,6 +1,6 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card } from '@/components/ui/card';
-import { ArrowUpDown, ArrowUp, ArrowDown, AlertCircle, CheckCircle2, Clock, XCircle, Building2 } from 'lucide-react';
+import { ArrowUpDown, ArrowUp, ArrowDown, Building2 } from 'lucide-react';
 import ReportEmptyState from './ReportEmptyState';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTranslation } from '@/i18n';

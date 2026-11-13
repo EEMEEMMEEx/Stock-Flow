@@ -6,7 +6,7 @@ import {
   Layers, 
   PenLine, Plus, 
   Trash2, RotateCcw, Save, Search, 
-  Package, ShieldCheck, Check, Info, GripVertical
+  Package, Check, Info, GripVertical
 } from 'lucide-react';
 import { 
   Dialog, DialogContent, DialogHeader, 
@@ -23,6 +23,10 @@ import {
 import SiteKitCategoryCard, { resolveCategoryVisuals } from './SiteKitCategoryCard';
 
 const COMMON_UNITS = ['ชิ้น', 'ชุด', 'เมตร', 'ลูก', 'ต้น', 'เครื่อง', 'กล่อง', 'ม้วน', 'แพ็ค'];
+
+// Helpers for mutual exclusivity between Complete Set and Spare Equipment
+const isSpareItem = (item) => item.is_mandatory === false || item.notes === 'spare';
+const isCompleteSetItem = (item) => !isSpareItem(item);
 
 const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh }) => {
   const { t } = useTranslation();
@@ -43,10 +47,6 @@ const SiteKitAvailabilityCards = ({ siteKits = [], loading = false, onRefresh })
   // Drag and drop state for reordering items
   const [draggedItem, setDraggedItem] = useState(null); // { index: number, section: 'complete' | 'spare' }
   const [dragOverIndex, setDragOverIndex] = useState(null);
-
-  // Helpers for mutual exclusivity between Complete Set and Spare Equipment
-  const isSpareItem = (item) => item.is_mandatory === false || item.notes === 'spare';
-  const isCompleteSetItem = (item) => !isSpareItem(item);
 
   // Reorder handlers
   const handleDragStart = (e, displayIdx, section) => {

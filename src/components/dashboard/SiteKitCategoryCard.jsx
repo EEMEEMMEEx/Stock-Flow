@@ -18,6 +18,7 @@ import { useTranslation } from '@/i18n';
 /**
  * Resolver for category visual styling and Lucide icons (100% SVG, Zero Emojis)
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export const resolveCategoryVisuals = (category) => {
   const id = category?.category_id || '';
   const rawName = (category?.category_name || category?.name || '').toLowerCase();

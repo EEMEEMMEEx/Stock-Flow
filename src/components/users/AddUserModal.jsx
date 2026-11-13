@@ -59,19 +59,6 @@ const AddUserModal = ({ isOpen, onClose, onSave, projects = [], roles = [] }) =>
     });
   };
 
-  const handleSelectAllProjects = () => {
-    setFormData(prev => ({
-      ...prev,
-      selected_projects: projects.map(p => p.id)
-    }));
-  };
-
-  const handleClearAllProjects = () => {
-    setFormData(prev => ({
-      ...prev,
-      selected_projects: []
-    }));
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();

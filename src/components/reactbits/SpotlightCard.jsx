@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 
 export default function SpotlightCard({
   children,
@@ -7,21 +7,26 @@ export default function SpotlightCard({
   borderColor = 'rgba(255, 255, 255, 0.1)'
 }) {
   const divRef = useRef(null);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [opacity, setOpacity] = useState(0);
+  const overlayRef = useRef(null);
 
   const handleMouseMove = (e) => {
-    if (!divRef.current) return;
+    if (!divRef.current || !overlayRef.current) return;
     const rect = divRef.current.getBoundingClientRect();
-    setPosition({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    overlayRef.current.style.background = `radial-gradient(600px circle at ${x}px ${y}px, ${spotlightColor}, transparent 40%)`;
   };
 
   const handleMouseEnter = () => {
-    setOpacity(1);
+    if (overlayRef.current) {
+      overlayRef.current.style.opacity = '1';
+    }
   };
 
   const handleMouseLeave = () => {
-    setOpacity(0);
+    if (overlayRef.current) {
+      overlayRef.current.style.opacity = '0';
+    }
   };
 
   return (
@@ -34,11 +39,9 @@ export default function SpotlightCard({
       style={{ borderColor }}
     >
       <div
+        ref={overlayRef}
         className="pointer-events-none absolute -inset-px transition-opacity duration-300"
-        style={{
-          opacity,
-          background: `radial-gradient(600px circle at ${position.x}px ${position.y}px, ${spotlightColor}, transparent 40%)`,
-        }}
+        style={{ opacity: 0 }}
       />
       <div className="relative z-10">{children}</div>
     </div>

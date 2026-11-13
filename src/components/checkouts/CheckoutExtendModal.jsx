@@ -62,7 +62,7 @@ const CheckoutExtendModal = ({
       setIsIndefiniteChoice(false);
       setReason('');
     }
-  }, [order, isOpen, onClose]);
+  }, [order, isOpen, onClose, t]);
 
   // Calculate extension preview metrics
   const previewData = useMemo(() => {
@@ -114,7 +114,7 @@ const CheckoutExtendModal = ({
     } catch {
       return null;
     }
-  }, [newDueDate, currentDueDate, order, isIndefiniteChoice]);
+  }, [newDueDate, currentDueDate, order, isIndefiniteChoice, t]);
 
   if (!order) return null;
 

@@ -46,7 +46,6 @@ export const RoleBadge = ({
 
   // 1. If explicit badge theme is configured from /roles, use it directly
   if (roleObj?.badge_background && roleObj?.badge_text_color) {
-    const isGradient = (roleObj.badge_background || '').includes('gradient');
     return (
       <span
         className={cn(

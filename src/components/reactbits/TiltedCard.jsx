@@ -1,5 +1,7 @@
-import { useRef, useState } from 'react';
-import { motion } from 'framer-motion';
+import { useRef } from 'react';
+import { motion, useMotionTemplate, useMotionValue, useSpring } from 'framer-motion';
+
+const SPRING_CONFIG = { stiffness: 260, damping: 20 };
 
 export default function TiltedCard({
   children,
@@ -8,8 +10,17 @@ export default function TiltedCard({
   glare = true
 }) {
   const cardRef = useRef(null);
-  const [tilt, setTilt] = useState({ rotateX: 0, rotateY: 0, glareX: 50, glareY: 50 });
-  const [isHovered, setIsHovered] = useState(false);
+  const rotateXRaw = useMotionValue(0);
+  const rotateYRaw = useMotionValue(0);
+  const scaleRaw = useMotionValue(1);
+  const glareX = useMotionValue(50);
+  const glareY = useMotionValue(50);
+  const glareOpacity = useMotionValue(0);
+
+  const rotateX = useSpring(rotateXRaw, SPRING_CONFIG);
+  const rotateY = useSpring(rotateYRaw, SPRING_CONFIG);
+  const scale = useSpring(scaleRaw, SPRING_CONFIG);
+  const glareBackground = useMotionTemplate`radial-gradient(circle at ${glareX}% ${glareY}%, rgba(255,255,255,0.4) 0%, transparent 60%)`;
 
   const handleMouseMove = (e) => {
     if (!cardRef.current) return;
@@ -19,21 +30,24 @@ export default function TiltedCard({
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
 
-    const rotateX = ((y - centerY) / centerY) * -maxTilt;
-    const rotateY = ((x - centerX) / centerX) * maxTilt;
-    const glareX = (x / rect.width) * 100;
-    const glareY = (y / rect.height) * 100;
-
-    setTilt({ rotateX, rotateY, glareX, glareY });
+    rotateXRaw.set(((y - centerY) / centerY) * -maxTilt);
+    rotateYRaw.set(((x - centerX) / centerX) * maxTilt);
+    glareX.set((x / rect.width) * 100);
+    glareY.set((y / rect.height) * 100);
   };
 
   const handleMouseEnter = () => {
-    setIsHovered(true);
+    scaleRaw.set(1.02);
+    glareOpacity.set(0.35);
   };
 
   const handleMouseLeave = () => {
-    setIsHovered(false);
-    setTilt({ rotateX: 0, rotateY: 0, glareX: 50, glareY: 50 });
+    scaleRaw.set(1);
+    rotateXRaw.set(0);
+    rotateYRaw.set(0);
+    glareX.set(50);
+    glareY.set(50);
+    glareOpacity.set(0);
   };
 
   return (
@@ -46,22 +60,21 @@ export default function TiltedCard({
         onMouseMove={handleMouseMove}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        animate={{
-          rotateX: isHovered ? tilt.rotateX : 0,
-          rotateY: isHovered ? tilt.rotateY : 0,
-          scale: isHovered ? 1.02 : 1
+        style={{
+          rotateX,
+          rotateY,
+          scale,
+          transformStyle: 'preserve-3d'
         }}
-        transition={{ type: 'spring', stiffness: 260, damping: 20 }}
-        style={{ transformStyle: 'preserve-3d' }}
         className="relative w-full h-full rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-zinc-950/80 backdrop-blur-xl"
       >
         {children}
         {glare && (
-          <div
+          <motion.div
             className="pointer-events-none absolute inset-0 transition-opacity duration-300"
             style={{
-              opacity: isHovered ? 0.35 : 0,
-              background: `radial-gradient(circle at ${tilt.glareX}% ${tilt.glareY}%, rgba(255,255,255,0.4) 0%, transparent 60%)`
+              opacity: glareOpacity,
+              background: glareBackground
             }}
           />
         )}

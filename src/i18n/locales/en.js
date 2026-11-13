@@ -2136,7 +2136,35 @@ export default {
       "caimClaimClosed": "CAIM Claim Closed",
       "alert": "Alert"
     },
-    "srOnlyUnread": "{{count}} unread notifications"
+    "srOnlyUnread": "{{count}} unread notifications",
+    "push": {
+      "enabledOnDevice": "Mobile push enabled on this device",
+      "disabledOnDevice": "Push notifications off on this device",
+      "enableButton": "Enable Mobile Push",
+      "enabling": "Enabling...",
+      "enableAriaLabel": "Enable push notifications on this device",
+      "testButton": "Test Push",
+      "testing": "Sending...",
+      "testAriaLabel": "Send a test push notification to this device",
+      "disableButton": "Disable",
+      "disabling": "Disabling...",
+      "disableAriaLabel": "Disable push notifications on this device",
+      "deniedTitle": "Notifications blocked by browser",
+      "deniedHint": "Allow notifications in your browser site settings to enable.",
+      "iosInstallTitle": "Add to Home Screen required (iOS)",
+      "iosInstallHint": "Tap Share then \"Add to Home Screen\" first to enable push.",
+      "unsupported": "Web Push is not supported in this browser or context",
+      "enableSuccess": "Push notifications enabled on this device",
+      "enableFailed": "Failed to enable push notifications",
+      "permissionDeniedToast": "Notification permission denied. Please allow it in browser settings.",
+      "disableSuccess": "Push notifications disabled on this device",
+      "disableFailed": "Failed to disable push notifications",
+      "testSuccessRemote": "Test push sent ({{count}} device(s))",
+      "testSuccessLocal": "Local test notification displayed on this device",
+      "testFailed": "Failed to send test notification",
+      "testNotifTitle": "Stock Flow — Test Notification",
+      "testNotifBody": "This device is ready to receive withdrawal, checkout, and stock alerts."
+    }
   },
   "siteKits": {
     "title": "Site Installation Kits Availability",

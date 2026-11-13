@@ -20,27 +20,59 @@ export default function Squares({
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const renderGrid = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const startX = Math.floor(gridOffset.current.x / squareSize) * squareSize;
+      const startY = Math.floor(gridOffset.current.y / squareSize) * squareSize;
+      const offsetX = gridOffset.current.x % squareSize;
+      const offsetY = gridOffset.current.y % squareSize;
+      const hovered = hoveredSquareRef.current;
+
+      if (hovered) {
+        const hoveredX = startX + hovered.x * squareSize - offsetX;
+        const hoveredY = startY + hovered.y * squareSize - offsetY;
+        ctx.fillStyle = hoverFillColor;
+        ctx.fillRect(hoveredX, hoveredY, squareSize, squareSize);
+      }
+
+      ctx.beginPath();
+      ctx.strokeStyle = borderColor;
+
+      const maxX = canvas.width + squareSize;
+      const maxY = canvas.height + squareSize;
+
+      for (let x = startX; x < maxX; x += squareSize) {
+        const lineX = x - offsetX;
+        ctx.moveTo(lineX, 0);
+        ctx.lineTo(lineX, canvas.height);
+      }
+
+      for (let y = startY; y < maxY; y += squareSize) {
+        const lineY = y - offsetY;
+        ctx.moveTo(0, lineY);
+        ctx.lineTo(canvas.width, lineY);
+      }
+
+      ctx.stroke();
+    };
 
     const resizeCanvas = () => {
       canvas.width = canvas.offsetWidth;
       canvas.height = canvas.offsetHeight;
       numSquaresX.current = Math.ceil(canvas.width / squareSize) + 1;
       numSquaresY.current = Math.ceil(canvas.height / squareSize) + 1;
+      if (prefersReducedMotion) {
+        renderGrid();
+      }
     };
 
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
-
-    // IntersectionObserver to pause loop when scrolled out of view
-    const observer = new IntersectionObserver(([entry]) => {
-      isVisibleRef.current = entry.isIntersecting;
-      if (entry.isIntersecting && !prefersReducedMotion && !requestRef.current) {
-        requestRef.current = requestAnimationFrame(draw);
-      }
-    }, { threshold: 0.05 });
-    observer.observe(canvas);
 
     const draw = () => {
       if (!isVisibleRef.current || prefersReducedMotion) {
@@ -48,30 +80,7 @@ export default function Squares({
         return;
       }
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      const startX = Math.floor(gridOffset.current.x / squareSize) * squareSize;
-      const startY = Math.floor(gridOffset.current.y / squareSize) * squareSize;
-      const hovered = hoveredSquareRef.current;
-
-      for (let x = startX; x < canvas.width + squareSize; x += squareSize) {
-        for (let y = startY; y < canvas.height + squareSize; y += squareSize) {
-          const squareX = x - (gridOffset.current.x % squareSize);
-          const squareY = y - (gridOffset.current.y % squareSize);
-
-          if (
-            hovered &&
-            Math.floor((x - startX) / squareSize) === hovered.x &&
-            Math.floor((y - startY) / squareSize) === hovered.y
-          ) {
-            ctx.fillStyle = hoverFillColor;
-            ctx.fillRect(squareX, squareY, squareSize, squareSize);
-          }
-
-          ctx.strokeStyle = borderColor;
-          ctx.strokeRect(squareX, squareY, squareSize, squareSize);
-        }
-      }
+      renderGrid();
 
       const effectiveSpeed = Math.max(speed, 0.1);
       switch (direction) {
@@ -98,9 +107,17 @@ export default function Squares({
       requestRef.current = requestAnimationFrame(draw);
     };
 
+    // IntersectionObserver to pause loop when scrolled out of view
+    const observer = new IntersectionObserver(([entry]) => {
+      isVisibleRef.current = entry.isIntersecting;
+      if (entry.isIntersecting && !prefersReducedMotion && !requestRef.current) {
+        requestRef.current = requestAnimationFrame(draw);
+      }
+    }, { threshold: 0.05 });
+    observer.observe(canvas);
+
     if (prefersReducedMotion) {
-      // Draw single static frame
-      draw();
+      renderGrid();
     } else {
       draw();
     }

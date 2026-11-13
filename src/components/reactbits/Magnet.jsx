@@ -1,5 +1,7 @@
-import { useState, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { useRef } from 'react';
+import { motion, useMotionValue, useSpring } from 'framer-motion';
+
+const MAGNET_SPRING = { damping: 15, stiffness: 150, mass: 0.1 };
 
 export default function Magnet({
   children,
@@ -8,8 +10,11 @@ export default function Magnet({
   disabled = false,
   magnetStrength = 2
 }) {
-  const [position, setPosition] = useState({ x: 0, y: 0 });
   const magnetRef = useRef(null);
+  const xRaw = useMotionValue(0);
+  const yRaw = useMotionValue(0);
+  const x = useSpring(xRaw, MAGNET_SPRING);
+  const y = useSpring(yRaw, MAGNET_SPRING);
 
   const handleMouseMove = (e) => {
     if (disabled || !magnetRef.current) return;
@@ -21,17 +26,17 @@ export default function Magnet({
     const distY = Math.abs(centerY - e.clientY);
 
     if (distX < width / 2 + padding && distY < height / 2 + padding) {
-      setPosition({
-        x: (e.clientX - centerX) / magnetStrength,
-        y: (e.clientY - centerY) / magnetStrength
-      });
+      xRaw.set((e.clientX - centerX) / magnetStrength);
+      yRaw.set((e.clientY - centerY) / magnetStrength);
     } else {
-      setPosition({ x: 0, y: 0 });
+      xRaw.set(0);
+      yRaw.set(0);
     }
   };
 
   const handleMouseLeave = () => {
-    setPosition({ x: 0, y: 0 });
+    xRaw.set(0);
+    yRaw.set(0);
   };
 
   return (
@@ -39,8 +44,7 @@ export default function Magnet({
       ref={magnetRef}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      animate={{ x: position.x, y: position.y }}
-      transition={{ type: 'spring', damping: 15, stiffness: 150, mass: 0.1 }}
+      style={{ x, y }}
       className={`inline-block ${className}`}
     >
       {children}

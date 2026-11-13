@@ -16,7 +16,6 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import toast from 'react-hot-toast';
-import { format } from 'date-fns';
 import { ProjectLocationSelector } from '@/components/common/ProjectLocationSelector';
 import { TransferItemDialog } from '@/components/items/TransferItemDialog';
 import { ItemStockHistoryDialog } from '@/components/items/ItemStockHistoryDialog';
@@ -233,7 +232,7 @@ const Items = () => {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [t]);
 
   const triggerDebouncedFetch = useCallback(() => {
     if (realtimeTimeoutRef.current) {

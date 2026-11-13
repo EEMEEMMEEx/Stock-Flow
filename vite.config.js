@@ -15,6 +15,7 @@ function devApiPlugin() {
     '/api/sync-to-caim': './api/sync-to-caim.js',
     '/api/caim-webhook': './api/caim-webhook.js',
     '/api/gemini-copilot': './api/gemini-copilot.js',
+    '/api/web-push': './api/web-push.js',
   };
 
   return {
@@ -106,8 +107,9 @@ export default defineConfig(({ mode }) => {
       devApiPlugin(),
       VitePWA({
         registerType: 'autoUpdate',
-        includeAssets: ['favicon.svg'],
+        includeAssets: ['favicon.svg', 'sw-push.js', 'images/logo.png'],
         workbox: {
+          importScripts: ['/sw-push.js'],
           maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
           globPatterns: ['**/*.{js,css,html,svg,ico,woff,woff2}'],
           cleanupOutdatedCaches: true,
@@ -128,6 +130,18 @@ export default defineConfig(({ mode }) => {
               sizes: '192x192 512x512',
               type: 'image/svg+xml',
               purpose: 'any maskable'
+            },
+            {
+              src: '/images/logo.png',
+              sizes: '192x192',
+              type: 'image/png',
+              purpose: 'any'
+            },
+            {
+              src: '/images/logo.png',
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'any'
             }
           ]
         }

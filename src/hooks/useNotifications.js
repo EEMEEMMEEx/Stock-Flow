@@ -1,6 +1,11 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { isSchemaMismatchError } from '@/lib/rpcErrors';
+import {
+  showLocalServiceWorkerNotification,
+  syncAppBadge,
+  triggerPendingWebPushDispatch
+} from '@/lib/pushNotifications';
 
 const PAGE_SIZE = 15;
 
@@ -28,9 +33,18 @@ export const useNotifications = (userId) => {
   const [loading, setLoading] = useState(Boolean(userId));
   const [error, setError] = useState(null);
   const [tableExists, setTableExists] = useState(true);
+  const knownIdsRef = useRef(new Set());
+  const initializedRef = useRef(false);
+
+  useEffect(() => {
+    knownIdsRef.current.clear();
+    initializedRef.current = false;
+  }, [userId]);
 
   const loadNotifications = useCallback(async () => {
     if (!userId) {
+      knownIdsRef.current.clear();
+      initializedRef.current = false;
       setNotifications([]);
       setLoading(false);
       setError(null);
@@ -54,8 +68,37 @@ export const useNotifications = (userId) => {
         setError(queryError);
       }
     } else {
+      const rows = data || [];
+      if (!initializedRef.current) {
+        knownIdsRef.current = new Set(rows.map((item) => item?.id).filter(Boolean));
+        initializedRef.current = true;
+      } else {
+        const newUnread = rows.filter(
+          (item) => item?.id && !knownIdsRef.current.has(item.id) && !item.read_at
+        );
+        rows.forEach((item) => {
+          if (item?.id) knownIdsRef.current.add(item.id);
+        });
+
+        if (newUnread.length > 0) {
+          if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+            newUnread.forEach((item) => {
+              void showLocalServiceWorkerNotification(item);
+            });
+          }
+          void supabase.auth.getSession()
+            .then(({ data: sessionData }) => {
+              const token = sessionData?.session?.access_token;
+              if (token) {
+                triggerPendingWebPushDispatch(token);
+              }
+            })
+            .catch(() => {});
+        }
+      }
+
       setTableExists(true);
-      setNotifications(data || []);
+      setNotifications(rows);
       setError(null);
     }
     setLoading(false);
@@ -174,6 +217,10 @@ export const useNotifications = (userId) => {
     () => notifications.reduce((count, item) => count + (item.read_at ? 0 : 1), 0),
     [notifications]
   );
+
+  useEffect(() => {
+    syncAppBadge(unreadCount);
+  }, [unreadCount]);
 
   return {
     notifications: sortNewestFirst(notifications),

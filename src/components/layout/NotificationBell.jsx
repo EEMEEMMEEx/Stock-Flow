@@ -1,13 +1,22 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { useNavigate } from 'react-router-dom';
 import {
-  Bell, CheckCheck, CircleAlert, ClipboardCheck, ClipboardList, ClipboardPlus,
-  FileClock, PackageCheck, PackagePlus, RefreshCw, Check, ArrowRight,
-  RotateCcw, AlertTriangle, Package, Trash2, ShieldCheck, Clock
+  Bell, BellRing, BellOff, Smartphone, Send, CheckCheck, CircleAlert,
+  ClipboardCheck, ClipboardList, ClipboardPlus, FileClock, PackageCheck,
+  PackagePlus, RefreshCw, Check, ArrowRight, RotateCcw, AlertTriangle,
+  Package, Trash2, ShieldCheck, Clock
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/lib/supabase';
 import { resolveNotificationTarget } from '@/lib/notificationTargets';
+import {
+  getCurrentPushSubscription,
+  getPushSupportStatus,
+  sendTestPushNotification,
+  subscribeUserToPush,
+  unsubscribeUserFromPush
+} from '@/lib/pushNotifications';
 import { useNotifications } from '@/hooks/useNotifications';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -159,6 +168,51 @@ const NotificationBell = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('all'); // 'all' | 'unread' | 'action'
   const [approvingId, setApprovingId] = useState(null);
+  const [pushStatus, setPushStatus] = useState(() => getPushSupportStatus());
+  const [isPushSubscribed, setIsPushSubscribed] = useState(false);
+  const [pushAction, setPushAction] = useState(null); // 'enable' | 'disable' | 'test' | null
+
+  const refreshPushState = useCallback(async () => {
+    const status = getPushSupportStatus();
+    setPushStatus(status);
+    if (!status.supported) {
+      setIsPushSubscribed(false);
+      return;
+    }
+    const existing = await getCurrentPushSubscription();
+    setIsPushSubscribed(Boolean(existing) && status.permission === 'granted');
+  }, []);
+
+  useEffect(() => {
+    void refreshPushState();
+  }, [refreshPushState]);
+
+  useEffect(() => {
+    if (isOpen) {
+      void refreshPushState();
+    }
+  }, [isOpen, refreshPushState]);
+
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return undefined;
+
+    const handleServiceWorkerMessage = (event) => {
+      const payload = event?.data;
+      if (!payload || payload.type !== 'STOCKFLOW_NOTIFICATION_CLICK') return;
+      if (payload.notificationId) {
+        void markAsRead(payload.notificationId);
+      }
+      if (payload.url) {
+        setIsOpen(false);
+        navigate(payload.url);
+      }
+    };
+
+    navigator.serviceWorker.addEventListener('message', handleServiceWorkerMessage);
+    return () => {
+      navigator.serviceWorker.removeEventListener('message', handleServiceWorkerMessage);
+    };
+  }, [markAsRead, navigate]);
 
   const canApproveWithdrawals = can('withdrawals.approve');
   const canApproveCheckouts = can('checkouts.approve');
@@ -253,6 +307,78 @@ const NotificationBell = () => {
     e.stopPropagation();
     await deleteNotification(notificationId);
     toast.success(t('notifications.removedToast'));
+  };
+
+  const getAccessToken = async () => {
+    const { data } = await supabase.auth.getSession();
+    return data?.session?.access_token || null;
+  };
+
+  const handleEnablePush = async () => {
+    if (pushAction) return;
+    setPushAction('enable');
+    try {
+      const token = await getAccessToken();
+      const result = await subscribeUserToPush(token);
+      await refreshPushState();
+
+      if (result.success) {
+        toast.success(t('notifications.push.enableSuccess'));
+      } else if (result.permission === 'denied') {
+        toast.error(t('notifications.push.permissionDeniedToast'));
+      } else if (result.reason === 'ios-install-required') {
+        toast.error(t('notifications.push.iosInstallHint'));
+      } else {
+        toast.error(result.error || t('notifications.push.enableFailed'));
+      }
+    } catch (err) {
+      console.error('Enable push error:', err);
+      toast.error(err?.message || t('notifications.push.enableFailed'));
+    } finally {
+      setPushAction(null);
+    }
+  };
+
+  const handleDisablePush = async () => {
+    if (pushAction) return;
+    setPushAction('disable');
+    try {
+      const token = await getAccessToken();
+      await unsubscribeUserFromPush(token);
+      await refreshPushState();
+      toast.success(t('notifications.push.disableSuccess'));
+    } catch (err) {
+      console.error('Disable push error:', err);
+      toast.error(err?.message || t('notifications.push.disableFailed'));
+    } finally {
+      setPushAction(null);
+    }
+  };
+
+  const handleTestPush = async () => {
+    if (pushAction) return;
+    setPushAction('test');
+    try {
+      const token = await getAccessToken();
+      const result = await sendTestPushNotification(token, {
+        title: t('notifications.push.testNotifTitle'),
+        message: t('notifications.push.testNotifBody')
+      });
+      if (result.success) {
+        if (result.mode === 'web-push') {
+          toast.success(t('notifications.push.testSuccessRemote', { count: result.sentCount }));
+        } else {
+          toast.success(t('notifications.push.testSuccessLocal'));
+        }
+      } else {
+        toast.error(result.error || t('notifications.push.testFailed'));
+      }
+    } catch (err) {
+      console.error('Test push error:', err);
+      toast.error(err?.message || t('notifications.push.testFailed'));
+    } finally {
+      setPushAction(null);
+    }
   };
 
   return (
@@ -375,6 +501,119 @@ const NotificationBell = () => {
                 </span>
               )}
             </button>
+          </div>
+
+          {/* Mobile / Web Push Status & Control Bar */}
+          <div className="my-1.5 rounded-xl border border-border/60 bg-muted/40 dark:bg-white/5 px-2.5 py-2">
+            {pushStatus.isIosRequiresInstall ? (
+              <div className="flex items-start gap-2">
+                <Smartphone className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] font-semibold text-foreground">
+                    {t('notifications.push.iosInstallTitle')}
+                  </p>
+                  <p className="text-[10px] leading-snug text-muted-foreground">
+                    {t('notifications.push.iosInstallHint')}
+                  </p>
+                </div>
+              </div>
+            ) : !pushStatus.supported ? (
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <BellOff className="h-3.5 w-3.5 shrink-0" />
+                <span className="text-[11px]">{t('notifications.push.unsupported')}</span>
+              </div>
+            ) : pushStatus.permission === 'denied' ? (
+              <div className="flex items-start gap-2">
+                <BellOff className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] font-semibold text-foreground">
+                    {t('notifications.push.deniedTitle')}
+                  </p>
+                  <p className="text-[10px] leading-snug text-muted-foreground">
+                    {t('notifications.push.deniedHint')}
+                  </p>
+                </div>
+              </div>
+            ) : isPushSubscribed ? (
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex min-w-0 items-center gap-1.5">
+                  <BellRing className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                  <span className="truncate text-[11px] font-medium text-emerald-700 dark:text-emerald-300">
+                    {t('notifications.push.enabledOnDevice')}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={Boolean(pushAction)}
+                    aria-label={t('notifications.push.testAriaLabel')}
+                    onClick={() => void handleTestPush()}
+                    className="h-7 px-2 text-[11px] cursor-pointer"
+                  >
+                    {pushAction === 'test' ? (
+                      <RefreshCw className="h-3 w-3 animate-spin" />
+                    ) : (
+                      <Send className="h-3 w-3" />
+                    )}
+                    <span>
+                      {pushAction === 'test'
+                        ? t('notifications.push.testing')
+                        : t('notifications.push.testButton')}
+                    </span>
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    disabled={Boolean(pushAction)}
+                    aria-label={t('notifications.push.disableAriaLabel')}
+                    onClick={() => void handleDisablePush()}
+                    className="h-7 px-2 text-[11px] text-muted-foreground hover:text-destructive cursor-pointer"
+                  >
+                    {pushAction === 'disable' ? (
+                      <RefreshCw className="h-3 w-3 animate-spin" />
+                    ) : (
+                      <BellOff className="h-3 w-3" />
+                    )}
+                    <span>
+                      {pushAction === 'disable'
+                        ? t('notifications.push.disabling')
+                        : t('notifications.push.disableButton')}
+                    </span>
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex min-w-0 items-center gap-1.5">
+                  <Smartphone className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                  <span className="truncate text-[11px] text-muted-foreground">
+                    {t('notifications.push.disabledOnDevice')}
+                  </span>
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  disabled={Boolean(pushAction)}
+                  aria-label={t('notifications.push.enableAriaLabel')}
+                  onClick={() => void handleEnablePush()}
+                  className="h-7 px-2.5 text-[11px] cursor-pointer"
+                >
+                  {pushAction === 'enable' ? (
+                    <RefreshCw className="h-3 w-3 animate-spin" />
+                  ) : (
+                    <BellRing className="h-3 w-3" />
+                  )}
+                  <span>
+                    {pushAction === 'enable'
+                      ? t('notifications.push.enabling')
+                      : t('notifications.push.enableButton')}
+                  </span>
+                </Button>
+              </div>
+            )}
           </div>
 
           <DropdownMenu.Separator className="my-1.5 h-px bg-border/50" />

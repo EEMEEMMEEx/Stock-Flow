@@ -8,14 +8,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { 
   ArrowDownToLine, Download, Upload, Plus, Trash2, Check, 
-  RefreshCw, Package, Building2, FileSpreadsheet, Layers, 
+  RefreshCw, Building2, FileSpreadsheet, Layers, 
   Filter, CheckCircle2, Search, X, RotateCcw, SearchX,
   ChevronLeft, ChevronRight,
   ArrowRight, 
   MapPin, SlidersHorizontal, BarChart3, CornerDownRight
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 
 import { 
