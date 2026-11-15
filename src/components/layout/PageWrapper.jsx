@@ -75,7 +75,7 @@ const PageWrapper = () => {
         isCollapsed={isCollapsed}
         onToggleCollapse={toggleCollapse}
       />
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative transition-all duration-300 ease-in-out motion-reduce:transition-none">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative transition-colors duration-300 ease-in-out motion-reduce:transition-none">
         <Topbar
           isMobileMenuOpen={isMobileMenuOpen}
           isCollapsed={isCollapsed}

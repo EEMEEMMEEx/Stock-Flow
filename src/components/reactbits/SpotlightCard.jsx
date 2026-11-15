@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 export default function SpotlightCard({
   children,
@@ -8,22 +8,47 @@ export default function SpotlightCard({
 }) {
   const divRef = useRef(null);
   const overlayRef = useRef(null);
+  const rectRef = useRef(null);
+  const rafRef = useRef(null);
+  const pointerRef = useRef({ x: 0, y: 0 });
+
+  useEffect(() => {
+    return () => {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+      }
+    };
+  }, []);
 
   const handleMouseMove = (e) => {
     if (!divRef.current || !overlayRef.current) return;
-    const rect = divRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    overlayRef.current.style.background = `radial-gradient(600px circle at ${x}px ${y}px, ${spotlightColor}, transparent 40%)`;
+    const rect = rectRef.current || divRef.current.getBoundingClientRect();
+    rectRef.current = rect;
+    pointerRef.current.x = e.clientX - rect.left;
+    pointerRef.current.y = e.clientY - rect.top;
+
+    if (!rafRef.current) {
+      rafRef.current = requestAnimationFrame(() => {
+        rafRef.current = null;
+        if (overlayRef.current) {
+          const { x, y } = pointerRef.current;
+          overlayRef.current.style.background = `radial-gradient(600px circle at ${x}px ${y}px, ${spotlightColor}, transparent 40%)`;
+        }
+      });
+    }
   };
 
   const handleMouseEnter = () => {
+    if (divRef.current) {
+      rectRef.current = divRef.current.getBoundingClientRect();
+    }
     if (overlayRef.current) {
       overlayRef.current.style.opacity = '1';
     }
   };
 
   const handleMouseLeave = () => {
+    rectRef.current = null;
     if (overlayRef.current) {
       overlayRef.current.style.opacity = '0';
     }

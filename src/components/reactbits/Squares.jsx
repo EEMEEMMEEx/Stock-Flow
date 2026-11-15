@@ -15,6 +15,8 @@ export default function Squares({
   const gridOffset = useRef({ x: 0, y: 0 });
   const hoveredSquareRef = useRef(null);
   const isVisibleRef = useRef(true);
+  const rectRef = useRef(null);
+  const lastFrameTimeRef = useRef(0);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -23,6 +25,7 @@ export default function Squares({
     if (!ctx) return;
 
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const BASE_FRAME_MS = 1000 / 60;
 
     const renderGrid = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -64,6 +67,7 @@ export default function Squares({
     const resizeCanvas = () => {
       canvas.width = canvas.offsetWidth;
       canvas.height = canvas.offsetHeight;
+      rectRef.current = canvas.getBoundingClientRect();
       numSquaresX.current = Math.ceil(canvas.width / squareSize) + 1;
       numSquaresY.current = Math.ceil(canvas.height / squareSize) + 1;
       if (prefersReducedMotion) {
@@ -71,18 +75,23 @@ export default function Squares({
       }
     };
 
-    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('resize', resizeCanvas, { passive: true });
     resizeCanvas();
 
-    const draw = () => {
+    const draw = (timestamp = performance.now()) => {
       if (!isVisibleRef.current || prefersReducedMotion) {
         requestRef.current = null;
+        lastFrameTimeRef.current = 0;
         return;
       }
 
+      const elapsed = lastFrameTimeRef.current ? timestamp - lastFrameTimeRef.current : BASE_FRAME_MS;
+      lastFrameTimeRef.current = timestamp;
+      const dtScale = Math.min(Math.max(elapsed / BASE_FRAME_MS, 0.25), 3);
+
       renderGrid();
 
-      const effectiveSpeed = Math.max(speed, 0.1);
+      const effectiveSpeed = Math.max(speed, 0.1) * dtScale;
       switch (direction) {
         case 'right':
           gridOffset.current.x = (gridOffset.current.x - effectiveSpeed + squareSize) % squareSize;
@@ -111,6 +120,7 @@ export default function Squares({
     const observer = new IntersectionObserver(([entry]) => {
       isVisibleRef.current = entry.isIntersecting;
       if (entry.isIntersecting && !prefersReducedMotion && !requestRef.current) {
+        lastFrameTimeRef.current = 0;
         requestRef.current = requestAnimationFrame(draw);
       }
     }, { threshold: 0.05 });
@@ -119,7 +129,7 @@ export default function Squares({
     if (prefersReducedMotion) {
       renderGrid();
     } else {
-      draw();
+      requestRef.current = requestAnimationFrame(draw);
     }
 
     return () => {
@@ -131,10 +141,17 @@ export default function Squares({
     };
   }, [direction, speed, borderColor, hoverFillColor, squareSize]);
 
+  const handleMouseEnter = () => {
+    if (canvasRef.current) {
+      rectRef.current = canvasRef.current.getBoundingClientRect();
+    }
+  };
+
   const handleMouseMove = (event) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const rect = canvas.getBoundingClientRect();
+    const rect = rectRef.current || canvas.getBoundingClientRect();
+    rectRef.current = rect;
     const mouseX = event.clientX - rect.left;
     const mouseY = event.clientY - rect.top;
 
@@ -151,6 +168,7 @@ export default function Squares({
   return (
     <canvas
       ref={canvasRef}
+      onMouseEnter={handleMouseEnter}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       className={`w-full h-full border-none block pointer-events-auto ${className}`}

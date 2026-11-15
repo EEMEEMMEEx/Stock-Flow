@@ -10,6 +10,7 @@ export default function TiltedCard({
   glare = true
 }) {
   const cardRef = useRef(null);
+  const rectRef = useRef(null);
   const rotateXRaw = useMotionValue(0);
   const rotateYRaw = useMotionValue(0);
   const scaleRaw = useMotionValue(1);
@@ -24,7 +25,8 @@ export default function TiltedCard({
 
   const handleMouseMove = (e) => {
     if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
+    const rect = rectRef.current || cardRef.current.getBoundingClientRect();
+    rectRef.current = rect;
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     const centerX = rect.width / 2;
@@ -37,11 +39,15 @@ export default function TiltedCard({
   };
 
   const handleMouseEnter = () => {
+    if (cardRef.current) {
+      rectRef.current = cardRef.current.getBoundingClientRect();
+    }
     scaleRaw.set(1.02);
     glareOpacity.set(0.35);
   };
 
   const handleMouseLeave = () => {
+    rectRef.current = null;
     scaleRaw.set(1);
     rotateXRaw.set(0);
     rotateYRaw.set(0);
@@ -66,7 +72,7 @@ export default function TiltedCard({
           scale,
           transformStyle: 'preserve-3d'
         }}
-        className="relative w-full h-full rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-zinc-950/80 backdrop-blur-xl"
+        className="relative w-full h-full rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-zinc-950/80 backdrop-blur-xl will-change-transform"
       >
         {children}
         {glare && (

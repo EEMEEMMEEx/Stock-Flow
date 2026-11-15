@@ -11,14 +11,23 @@ export default function Magnet({
   magnetStrength = 2
 }) {
   const magnetRef = useRef(null);
+  const rectRef = useRef(null);
   const xRaw = useMotionValue(0);
   const yRaw = useMotionValue(0);
   const x = useSpring(xRaw, MAGNET_SPRING);
   const y = useSpring(yRaw, MAGNET_SPRING);
 
+  const handleMouseEnter = () => {
+    if (!disabled && magnetRef.current) {
+      rectRef.current = magnetRef.current.getBoundingClientRect();
+    }
+  };
+
   const handleMouseMove = (e) => {
     if (disabled || !magnetRef.current) return;
-    const { left, top, width, height } = magnetRef.current.getBoundingClientRect();
+    const rect = rectRef.current || magnetRef.current.getBoundingClientRect();
+    rectRef.current = rect;
+    const { left, top, width, height } = rect;
     const centerX = left + width / 2;
     const centerY = top + height / 2;
 
@@ -35,6 +44,7 @@ export default function Magnet({
   };
 
   const handleMouseLeave = () => {
+    rectRef.current = null;
     xRaw.set(0);
     yRaw.set(0);
   };
@@ -42,10 +52,11 @@ export default function Magnet({
   return (
     <motion.div
       ref={magnetRef}
+      onMouseEnter={handleMouseEnter}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       style={{ x, y }}
-      className={`inline-block ${className}`}
+      className={`inline-block will-change-transform ${className}`}
     >
       {children}
     </motion.div>

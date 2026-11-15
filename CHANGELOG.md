@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-11-15 19:02] - v1.34.3
+- **Files Modified:** `src/components/reactbits/Squares.jsx`, `src/components/reactbits/SpotlightCard.jsx`, `src/components/reactbits/Magnet.jsx`, `src/components/reactbits/TiltedCard.jsx`, `src/components/profile/SignatureCanvas.jsx`, `src/landing/components/LandingNavbar.jsx`, `src/components/layout/PageWrapper.jsx`, `src/App.css`, `docs/high-refresh-rate-120hz-implementation-plan.md`, `package.json`, `CHANGELOG.md`
+- **Changes:**
+  - **Frame-Rate Independent 120Hz+ Canvas Loop (`src/components/reactbits/Squares.jsx`)**: คำนวณ `dtScale` จาก `timestamp` ของ `requestAnimationFrame` เทียบฐาน `1000 / 60` (`16.67ms`) เพื่อให้ความเร็วการเคลื่อนที่ของตารางเท่ากันทุกอัตรารีเฟรช (60Hz / 120Hz / 144Hz+) โดยเรนเดอร์ครบ 120 เฟรมต่อวินาทีอย่างนุ่มนวล พร้อมแคช `BoundingClientRect` ใน `rectRef` และใช้ `{ passive: true }` บน `resize`
+  - **Zero-Reflow 120Hz Pointer Interactions (`src/components/reactbits/SpotlightCard.jsx`, `Magnet.jsx`, `TiltedCard.jsx`)**: แคชขนาดและตำแหน่ง (`rectRef`) ตอน `onMouseEnter` แทนการเรียก `getBoundingClientRect()` ทุกครั้งที่ขยับเมาส์, รวบการอัปเดต `radial-gradient` ของ `SpotlightCard` เข้า `requestAnimationFrame`, และเพิ่ม `will-change-transform` ให้ `Magnet` และ `TiltedCard` เพื่อลด Layout Thrashing ภายใต้เฟรมบัดเจ็ต `< 8.33ms`
+  - **120Hz/240Hz Coalesced Signature Drawing (`src/components/profile/SignatureCanvas.jsx`)**: เปลี่ยนการเก็บพิกัดวาดลายเซ็น (`lastPointRef`, `isDrawingRef`, `rectRef`) เป็น `useRef` เพื่อตัด React state re-render ทุกพิกเซลที่ลากเส้น และรองรับ `e.nativeEvent.getCoalescedEvents()` เพื่อวาดเส้นต่อเนื่องความละเอียดสูงบนจอสัมผัสและ Stylus 120Hz–240Hz
+  - **Compositor-Friendly Scroll & View Transitions (`src/landing/components/LandingNavbar.jsx`, `src/components/layout/PageWrapper.jsx`, `src/App.css`)**: เพิ่ม `{ passive: true }` และ state bailout ใน scroll listener ของ `LandingNavbar`, เปลี่ยน `transition-all` เป็น `transition-colors` บน wrapper หลักใน `PageWrapper.jsx`, และเพิ่ม `will-change: clip-path, opacity` บน `::view-transition-old/new(root)`
+  - **Docs & Version Bump (`docs/high-refresh-rate-120hz-implementation-plan.md`, `package.json`, `CHANGELOG.md`)**: บันทึกแผนการดำเนินงานและปรับเวอร์ชันจาก `v1.34.2` เป็น `v1.34.3` (PATCH)
+
 ## [2026-11-15 11:49] - v1.34.2
 - **Files Modified:** `index.html`, `vite.config.js`, `src/components/ThemeProvider.jsx`, `src/components/theme-provider.jsx`, `src/App.css`, `src/App.jsx`, `src/components/layout/Topbar.jsx`, `src/components/layout/PageWrapper.jsx`, `src/components/layout/Sidebar.jsx`, `src/components/layout/AppFooter.jsx`, `docs/smooth-theme-transition-implementation-plan.md`, `package.json`, `CHANGELOG.md`
 - **Changes:**

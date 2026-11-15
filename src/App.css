@@ -202,6 +202,7 @@
 ::view-transition-new(root) {
   animation: none;
   mix-blend-mode: normal;
+  will-change: clip-path, opacity;
 }
 
 html.theme-vt-crossfade::view-transition-old(root) {

@@ -17,12 +17,13 @@ const SignatureCanvas = () => {
 
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
+  const rectRef = useRef(null);
+  const lastPointRef = useRef(null);
+  const isDrawingRef = useRef(false);
 
-  const [isDrawing, setIsDrawing] = useState(false);
   const [isEmpty, setIsEmpty] = useState(true);
   const [saving, setSaving] = useState(false);
   const [savedSignature, setSavedSignature] = useState(profile?.signature_url || null);
-  const [lastPoint, setLastPoint] = useState(null);
 
   // Sync savedSignature with profile changes
   useEffect(() => {
@@ -46,6 +47,7 @@ const SignatureCanvas = () => {
     canvas.height = height * dpr;
     canvas.style.width = `${width}px`;
     canvas.style.height = `${height}px`;
+    rectRef.current = canvas.getBoundingClientRect();
 
     const ctx = canvas.getContext('2d');
     ctx.scale(dpr, dpr);
@@ -57,31 +59,34 @@ const SignatureCanvas = () => {
 
   useEffect(() => {
     setupCanvas();
-    window.addEventListener('resize', setupCanvas);
+    window.addEventListener('resize', setupCanvas, { passive: true });
     return () => window.removeEventListener('resize', setupCanvas);
   }, [setupCanvas]);
 
   // Coordinate calculation relative to canvas
-  const getCoordinates = (e) => {
+  const getCoordinates = (e, cachedRect) => {
     const canvas = canvasRef.current;
     if (!canvas) return { x: 0, y: 0 };
-    const rect = canvas.getBoundingClientRect();
+    const rect = cachedRect || rectRef.current || canvas.getBoundingClientRect();
+    rectRef.current = rect;
     return {
       x: e.clientX - rect.left,
       y: e.clientY - rect.top
     };
   };
 
-  // Pointer event handlers (works seamlessly for mouse, pen, and touch)
+  // Pointer event handlers (works seamlessly for mouse, pen, and touch at 120Hz+)
   const handlePointerDown = (e) => {
     e.preventDefault();
     const canvas = canvasRef.current;
     if (!canvas) return;
     canvas.setPointerCapture(e.pointerId);
 
-    const coords = getCoordinates(e);
-    setIsDrawing(true);
-    setLastPoint(coords);
+    const rect = canvas.getBoundingClientRect();
+    rectRef.current = rect;
+    const coords = getCoordinates(e, rect);
+    isDrawingRef.current = true;
+    lastPointRef.current = coords;
 
     const ctx = canvas.getContext('2d');
     ctx.beginPath();
@@ -89,34 +94,48 @@ const SignatureCanvas = () => {
   };
 
   const handlePointerMove = (e) => {
-    if (!isDrawing) return;
+    if (!isDrawingRef.current) return;
     e.preventDefault();
 
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
-    const coords = getCoordinates(e);
+    const rect = rectRef.current || canvas.getBoundingClientRect();
+    rectRef.current = rect;
 
-    if (lastPoint) {
-      ctx.beginPath();
-      ctx.moveTo(lastPoint.x, lastPoint.y);
-      ctx.lineTo(coords.x, coords.y);
-      ctx.stroke();
+    const coalesced =
+      typeof e.nativeEvent?.getCoalescedEvents === 'function'
+        ? e.nativeEvent.getCoalescedEvents()
+        : null;
+    const events = coalesced && coalesced.length > 0 ? coalesced : [e];
+
+    let prev = lastPointRef.current;
+    ctx.beginPath();
+    for (let i = 0; i < events.length; i++) {
+      const pt = getCoordinates(events[i], rect);
+      if (prev) {
+        ctx.moveTo(prev.x, prev.y);
+        ctx.lineTo(pt.x, pt.y);
+      }
+      prev = pt;
     }
+    ctx.stroke();
 
-    setLastPoint(coords);
-    setIsEmpty(false);
+    lastPointRef.current = prev;
+    if (isEmpty) {
+      setIsEmpty(false);
+    }
   };
 
   const handlePointerUp = (e) => {
-    if (!isDrawing) return;
+    if (!isDrawingRef.current) return;
     e.preventDefault();
     const canvas = canvasRef.current;
     if (canvas && canvas.hasPointerCapture(e.pointerId)) {
       canvas.releasePointerCapture(e.pointerId);
     }
-    setIsDrawing(false);
-    setLastPoint(null);
+    isDrawingRef.current = false;
+    lastPointRef.current = null;
   };
 
   // Clear canvas
@@ -127,7 +146,7 @@ const SignatureCanvas = () => {
     const dpr = window.devicePixelRatio || 1;
     ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
     setIsEmpty(true);
-    setLastPoint(null);
+    lastPointRef.current = null;
   };
 
   // Save signature to profile
