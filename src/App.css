@@ -68,6 +68,7 @@
 
 @layer base {
   :root {
+    color-scheme: light;
     /* Clean Enterprise Palette — Light Mode */
     --background: 210 20% 98%; /* #f8fafc (Slate 50) */
     --foreground: 222.2 47.4% 11.2%; /* #0f172a (Slate 900) */
@@ -111,6 +112,7 @@
   }
 
   .dark {
+    color-scheme: dark;
     /* Clean Enterprise Palette — Dark Mode */
     --background: 222.2 47.4% 8%; /* #090d16 Deep Charcoal */
     --foreground: 210 40% 98%;
@@ -145,6 +147,26 @@
     outline: 2px solid hsl(var(--ring));
     outline-offset: 2px;
   }
+  html {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+  }
+
+  html,
+  body {
+    transition:
+      background-color 300ms ease-in-out,
+      color 300ms ease-in-out,
+      border-color 300ms ease-in-out;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html,
+    body {
+      transition: none;
+    }
+  }
+
   body {
     @apply bg-background text-foreground;
     color-scheme: light;
@@ -165,6 +187,54 @@
   body[data-mobile-menu-open="true"] {
     overflow: hidden;
   }
+}
+
+@keyframes theme-vt-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+html.theme-vt-crossfade::view-transition-old(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+html.theme-vt-crossfade::view-transition-new(root) {
+  animation: theme-vt-fade-in 300ms ease-in-out both;
+  mix-blend-mode: normal;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.theme-vt-crossfade::view-transition-new(root) {
+    animation: none;
+  }
+}
+
+/* Disable element CSS transitions while View Transitions owns the snapshot, except toggle icons */
+html.theme-vt,
+html.theme-vt *:not([data-theme-toggle-icon]),
+html.theme-vt *::before,
+html.theme-vt *::after {
+  transition: none !important;
+}
+
+/* Fallback transition orchestration when View Transitions API is unavailable */
+html.theme-transitioning *:not([data-theme-toggle-icon]):not(#stockflow-sidebar),
+html.theme-transitioning *::before,
+html.theme-transitioning *::after {
+  transition-property: color, background-color, border-color, outline-color, text-decoration-color, fill, stroke !important;
+  transition-duration: 300ms !important;
+  transition-timing-function: ease-in-out !important;
 }
 
 /*
@@ -193,7 +263,7 @@
     box-shadow: 0 0 0 1000px hsl(var(--background)) inset !important;
     -webkit-text-fill-color: hsl(var(--foreground)) !important;
     caret-color: hsl(var(--foreground)) !important;
-    transition: background-color 9999s ease-in-out 0s;
+    transition: background-color 9999s ease-in-out 0s !important;
   }
 
   /* Chromium also forces a light background on prefilled/selected options. */

@@ -57,9 +57,18 @@ const isLandingSite = () => {
 function HomeRoute() {
   const { user, loading } = useAuth();
   if (loading) {
+    const landing = isLandingSite();
     return (
-      <div className="h-screen w-screen flex items-center justify-center bg-zinc-950">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-400"></div>
+      <div
+        className={`h-screen w-screen flex items-center justify-center ${
+          landing ? 'bg-[#090d16]' : 'bg-background'
+        }`}
+      >
+        <div
+          className={`animate-spin rounded-full h-8 w-8 border-b-2 ${
+            landing ? 'border-emerald-400' : 'border-primary'
+          }`}
+        />
       </div>
     );
   }

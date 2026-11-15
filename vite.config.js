@@ -121,8 +121,8 @@ export default defineConfig(({ mode }) => {
           name: 'Stock Flow System',
           short_name: 'StockFlow',
           description: 'Inventory & Stock Management System',
-          theme_color: '#ffffff',
-          background_color: '#ffffff',
+          theme_color: '#f8fafc',
+          background_color: '#f8fafc',
           display: 'standalone',
           icons: [
             {

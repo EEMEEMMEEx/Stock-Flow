@@ -46,7 +46,7 @@ const AppFooter = () => {
   }, [canViewSettings]);
 
   return (
-    <footer className="relative z-10 w-full border-t border-border bg-card/80 transition-colors duration-200 mt-auto pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+    <footer className="relative z-10 w-full border-t border-border bg-card/80 transition-colors duration-300 ease-in-out motion-reduce:transition-none mt-auto pb-[max(0.75rem,env(safe-area-inset-bottom))]">
       <div className="mx-auto max-w-384 px-4 md:px-6 lg:px-8 py-3 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground text-center sm:text-left">
         
         {/* Left Section: Branding & Copyright */}

@@ -5,16 +5,40 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#ffffff" />
+    <meta name="theme-color" content="#f8fafc" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
     <title>Stock Flow App</title>
     <script>
       (function () {
-        var savedTheme = localStorage.getItem('stock-flow-theme-v2');
-        var theme = savedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-        document.documentElement.classList.add(theme === 'dark' ? 'dark' : 'light');
+        var savedTheme = null;
+        try {
+          savedTheme = localStorage.getItem('stock-flow-theme-v2');
+        } catch (_e) {
+          /* Ignore storage access errors in restricted contexts */
+        }
+        var theme =
+          savedTheme === 'dark' || savedTheme === 'light'
+            ? savedTheme
+            : window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+              ? 'dark'
+              : 'light';
+        var root = document.documentElement;
+        if (root && root.classList) {
+          if (typeof root.classList.remove === 'function') {
+            root.classList.remove('light', 'dark');
+          }
+          if (typeof root.classList.add === 'function') {
+            root.classList.add(theme);
+          }
+        }
+        if (typeof document.querySelector === 'function') {
+          var metaThemeColor = document.querySelector('meta[name="theme-color"]');
+          if (metaThemeColor) {
+            metaThemeColor.setAttribute('content', theme === 'dark' ? '#090d16' : '#f8fafc');
+          }
+        }
 
         // Defensive error isolation for third-party browser extension content scripts only (CHANGELOG v1.4.57).
         // Do NOT re-add guards for DevTools / injected-script console noise here - see CHANGELOG v1.10.22 and

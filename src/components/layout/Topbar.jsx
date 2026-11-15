@@ -16,7 +16,7 @@ import RoleBadge from '@/components/ui/RoleBadge';
 import { getRoleLabel, getRoleTextColorClass } from '@/lib/roleUtils';
 import { resolveStorageUrl, handleStorageImageError } from '@/lib/r2Storage';
 
-const controlClassName = 'h-10 w-10 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 shrink-0 inline-flex items-center justify-center rounded-lg border border-input bg-background text-foreground shadow-xs transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 cursor-pointer';
+const controlClassName = 'h-10 w-10 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 shrink-0 inline-flex items-center justify-center rounded-lg border border-input bg-background text-foreground shadow-xs transition-colors duration-300 ease-in-out motion-reduce:transition-none hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 cursor-pointer';
 const menuContentClassName = 'z-50 w-[min(20rem,calc(100vw-1.5rem))] overflow-hidden rounded-xl border border-border bg-popover p-1.5 text-popover-foreground shadow-xl outline-none data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0';
 const menuItemClassName = 'flex w-full cursor-pointer select-none items-center gap-2.5 rounded-lg px-3 py-2 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50';
 
@@ -38,14 +38,12 @@ const Avatar = ({ profile, user, className = '' }) => profile?.avatar_url ? (
 const Topbar = ({ onMenuClick, menuButtonRef, isMobileMenuOpen }) => {
   const navigate = useNavigate();
   const { profile, user, signOut, can } = useAuth();
-  const { theme, resolvedTheme, setTheme } = useTheme();
+  const { theme, resolvedTheme, toggleTheme } = useTheme();
   const { t } = useTranslation();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const roleLabel = getRoleLabel(profile?.roles?.code || profile?.role || 'STAFF', profile?.roles?.name);
   const roleColorClass = getRoleTextColorClass(profile?.roles?.code || profile?.role || 'STAFF', profile?.roles?.name, profile?.roles);
   const themeLabel = resolvedTheme === 'dark' ? t('nav.lightMode') : t('nav.darkMode');
-
-  const toggleTheme = () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
 
   const handleSignOut = async () => {
     setUserMenuOpen(false);
@@ -54,7 +52,7 @@ const Topbar = ({ onMenuClick, menuButtonRef, isMobileMenuOpen }) => {
   };
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-border bg-card/95 px-3 shadow-xs transition-colors sm:px-4 md:px-6 pt-[env(safe-area-inset-top)]">
+    <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-border bg-card/95 px-3 shadow-xs transition-colors duration-300 ease-in-out motion-reduce:transition-none sm:px-4 md:px-6 pt-[env(safe-area-inset-top)]">
       {/* Left side: Mobile Navigation Drawer Trigger (Visible ONLY on Mobile < md) */}
       <div className="flex items-center gap-2 md:hidden">
         <Button
@@ -86,10 +84,30 @@ const Topbar = ({ onMenuClick, menuButtonRef, isMobileMenuOpen }) => {
           title={themeLabel}
           aria-label={themeLabel}
           aria-pressed={resolvedTheme === 'dark'}
-          onClick={toggleTheme}
-          className={controlClassName}
+          onClick={(event) => toggleTheme(event)}
+          className={cn('relative', controlClassName)}
         >
-          {resolvedTheme === 'dark' ? <Sun className="h-[18px] w-[18px] transition-transform duration-200" /> : <Moon className="h-[18px] w-[18px] transition-transform duration-200" />}
+          <span
+            className="relative inline-flex h-[18px] w-[18px] items-center justify-center pointer-events-none"
+            aria-hidden="true"
+          >
+            <Sun
+              data-theme-toggle-icon="true"
+              aria-hidden="true"
+              className={cn(
+                'absolute h-[18px] w-[18px] transition-[transform,translate,scale,rotate,opacity] duration-300 ease-in-out motion-reduce:transition-none',
+                resolvedTheme === 'dark' ? 'rotate-0 scale-100 opacity-100' : 'rotate-90 scale-0 opacity-0'
+              )}
+            />
+            <Moon
+              data-theme-toggle-icon="true"
+              aria-hidden="true"
+              className={cn(
+                'absolute h-[18px] w-[18px] transition-[transform,translate,scale,rotate,opacity] duration-300 ease-in-out motion-reduce:transition-none',
+                resolvedTheme === 'dark' ? '-rotate-90 scale-0 opacity-0' : 'rotate-0 scale-100 opacity-100'
+              )}
+            />
+          </span>
           <span className="sr-only">Current theme: {theme === 'system' ? 'System' : resolvedTheme === 'dark' ? 'Dark' : 'Light'}</span>
         </Button>
 

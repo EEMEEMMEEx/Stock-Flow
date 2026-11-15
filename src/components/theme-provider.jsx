@@ -2,7 +2,9 @@ import { createContext, useContext } from "react"
 
 const initialState = {
   theme: "system",
+  resolvedTheme: "light",
   setTheme: () => null,
+  toggleTheme: () => null,
 }
 
 export const ThemeProviderContext = createContext(initialState)

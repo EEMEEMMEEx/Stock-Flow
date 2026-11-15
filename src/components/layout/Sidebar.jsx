@@ -184,7 +184,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
         id="stockflow-sidebar"
         aria-label={t('nav.sidebar', 'Sidebar')}
         className={cn(
-          "fixed top-0 z-50 flex h-dvh flex-shrink-0 flex-col border-r border-border bg-card shadow-lg md:shadow-none transition-[width,transform,visibility] duration-200 ease-out md:sticky md:z-20 md:translate-x-0 md:opacity-100 overflow-x-hidden",
+          "fixed top-0 z-50 flex h-dvh flex-shrink-0 flex-col border-r border-border bg-card shadow-lg md:shadow-none transition-[width,transform,visibility,color,background-color,border-color] duration-300 ease-in-out motion-reduce:transition-none md:sticky md:z-20 md:translate-x-0 md:opacity-100 overflow-x-hidden",
           isOpen ? "w-[85vw] max-w-[320px] sm:w-80 translate-x-0 opacity-100" : "w-[85vw] max-w-[320px] sm:w-80 pointer-events-none -translate-x-full opacity-0 max-md:invisible md:pointer-events-auto",
           railWidthClass
         )}

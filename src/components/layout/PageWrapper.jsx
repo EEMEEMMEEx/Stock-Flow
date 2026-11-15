@@ -57,7 +57,7 @@ const PageWrapper = () => {
 
   if (loading) {
     return (
-      <div className="h-screen w-screen flex items-center justify-center bg-background">
+      <div className="h-screen w-screen flex items-center justify-center bg-background transition-colors duration-300 ease-in-out motion-reduce:transition-none">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
@@ -68,14 +68,14 @@ const PageWrapper = () => {
   }
 
   return (
-    <div className="flex h-dvh overflow-hidden bg-background">
+    <div className="flex h-dvh overflow-hidden bg-background text-foreground transition-colors duration-300 ease-in-out motion-reduce:transition-none">
       <Sidebar 
         isOpen={isMobileMenuOpen} 
         onClose={closeMobileMenu}
         isCollapsed={isCollapsed}
         onToggleCollapse={toggleCollapse}
       />
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative transition-all duration-200 ease-out">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative transition-all duration-300 ease-in-out motion-reduce:transition-none">
         <Topbar
           isMobileMenuOpen={isMobileMenuOpen}
           isCollapsed={isCollapsed}
