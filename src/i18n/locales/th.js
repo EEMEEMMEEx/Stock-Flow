@@ -1034,7 +1034,12 @@ export default {
       "returnConfirmedSuccess": "ยืนยันการรับคืนและอัปเดตสถานะอุปกรณ์เป็นคืนแล้ว (Returned) เรียบร้อย",
       "returnConfirmFailed": "ไม่สามารถยืนยันการรับคืนอุปกรณ์ได้",
       "confirmReturnSuccess": "ยืนยันการรับคืนและอัปเดตสถานะอุปกรณ์เป็นคืนแล้ว (Returned) เรียบร้อย",
-      "confirmReturnFailed": "ไม่สามารถยืนยันการรับคืนอุปกรณ์ได้"
+      "confirmReturnFailed": "ไม่สามารถยืนยันการรับคืนอุปกรณ์ได้",
+      "pendingCancelling": "กำลังยกเลิกคำขอยืม...",
+      "pendingCancelled": "ยกเลิกคำขอยืมเรียบร้อยแล้ว",
+      "pendingCancelFailed": "ไม่สามารถยกเลิกคำขอยืมได้",
+      "pendingCancelUnauthorized": "คุณไม่สามารถยกเลิกคำขอยืมนี้ได้",
+      "pendingCancelMigrationMissing": "ยังไม่ได้ติดตั้ง migration 106 (cancel_pending_checkout_order) กรุณาแจ้งผู้ดูแลระบบ"
     },
     "fullyReturnedDesc": "อุปกรณ์ในรายการนี้ได้รับการส่งคืนครบถ้วนแล้ว",
     "printCheckoutSlip": "พิมพ์ใบยืมพัสดุ (PDF)",
@@ -1167,7 +1172,18 @@ export default {
     "cancelledCompactPrefix": "ยกเลิกแล้ว",
     "moreActions": "การดำเนินการเพิ่มเติม",
     "tapToViewFullProject": "แตะเพื่อดูโครงการเต็ม",
-    "item": "รายการอุปกรณ์"
+    "item": "รายการอุปกรณ์",
+    "cancelRequisitionBtn": "ยกเลิก",
+    "cancelRequisitionTitle": "ยกเลิกคำขอยืมนี้",
+    "pendingCancelModalTitle": "ยกเลิกคำขอยืมพัสดุ",
+    "pendingCancelModalDesc": "ยืนยันการยกเลิกคำขอยืมที่ยังรอเจ้าหน้าที่ตรวจสอบ หากยกเลิกแล้วคำขอจะถูกย้ายไปยังประวัติรายการ",
+    "pendingCancelNoticeTitle": "คำขอยังไม่ได้รับการอนุมัติ (ยังไม่ตัดสต็อก)",
+    "pendingCancelNotice": "คำขอยืมนี้ยังอยู่ในสถานะรอตรวจสอบและยังไม่มีการตัดยอดสต็อก การยกเลิกจะเปลี่ยนสถานะเป็นยกเลิก (Cancelled) และไม่สามารถย้อนกลับได้",
+    "pendingCancelReasonLabel": "เหตุผลในการยกเลิก (ไม่บังคับ)",
+    "pendingCancelReasonPlaceholder": "ระบุเหตุผลเพิ่มเติม เช่น ยื่นคำขอซ้ำ, เปลี่ยนแผนการใช้งาน...",
+    "keepRequisitionBtn": "เก็บคำขอไว้",
+    "cancellingRequisition": "กำลังยกเลิกคำขอ...",
+    "confirmPendingCancelBtn": "ยืนยันยกเลิกคำขอ"
   },
   "history": {
     "title": "ประวัติรายการย้อนหลัง",

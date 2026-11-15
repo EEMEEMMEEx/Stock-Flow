@@ -3,22 +3,25 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 
-  Search, Clock, CheckCircle2, XCircle, Eye, 
+  Search, Clock, CheckCircle2, XCircle, Eye, Ban,
   User, Building2, Phone, Calendar, Layers, 
   Infinity as InfinityIcon
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useTranslation } from '@/i18n';
 import { formatProjectLocation } from '@/lib/checkoutDisplay';
+import { canRequesterCancelPendingOrder } from '@/lib/checkoutPendingCancel';
 
 const CheckoutPendingList = ({
   orders = [],
   loading = false,
   canApprove = false,
   canReject = false,
+  currentUserId = null,
   onOpenApproveModal,
   onOpenRejectModal,
-  onOpenDetailModal
+  onOpenDetailModal,
+  onOpenRequesterCancelModal
 }) => {
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
@@ -143,6 +146,9 @@ const CheckoutPendingList = ({
             const totalUnits = items.reduce((s, i) => s + Number(i.quantity_borrowed || 0), 0);
             const isIndefinite = order.borrow_type === 'indefinite';
             const location = formatProjectLocation(order.projects);
+            const showOwnerCancel = Boolean(
+              onOpenRequesterCancelModal && canRequesterCancelPendingOrder(order, currentUserId)
+            );
 
             return (
               <Card 
@@ -270,15 +276,16 @@ const CheckoutPendingList = ({
                 </div>
 
                 {/* Card Action Footer */}
-                <div className="p-3 bg-muted/30 border-t border-border/50 flex items-center justify-between gap-2">
+                <div className="p-3 bg-muted/30 border-t border-border/50 flex flex-wrap items-center justify-between gap-2">
                   <Button
+                    type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => onOpenDetailModal(order)}
-                    className="h-8 px-2.5 text-xs font-medium cursor-pointer rounded-lg text-muted-foreground hover:text-foreground"
+                    onClick={() => onOpenDetailModal?.(order)}
+                    className="min-h-[44px] sm:min-h-0 sm:h-8 px-2.5 text-xs font-medium cursor-pointer rounded-lg text-muted-foreground hover:text-foreground"
                     title={t('checkouts.viewDetail', 'ดูรายละเอียด')}
                   >
-                    <Eye className="w-3.5 h-3.5 mr-1" />
+                    <Eye className="w-3.5 h-3.5 mr-1" aria-hidden="true" />
                     <span>{t('checkouts.detailsBtn', 'รายละเอียด')}</span>
                   </Button>
 
@@ -286,6 +293,7 @@ const CheckoutPendingList = ({
                     <div className="flex items-center gap-1.5">
                       {canReject && (
                         <Button
+                          type="button"
                           variant="outline"
                           size="sm"
                           onClick={() => onOpenRejectModal(order)}
@@ -297,6 +305,7 @@ const CheckoutPendingList = ({
                       )}
                       {canApprove && (
                         <Button
+                          type="button"
                           size="sm"
                           onClick={() => onOpenApproveModal(order)}
                           className="h-8 px-3 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg cursor-pointer shadow-xs transition-colors"
@@ -306,6 +315,18 @@ const CheckoutPendingList = ({
                         </Button>
                       )}
                     </div>
+                  ) : showOwnerCancel ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onOpenRequesterCancelModal(order)}
+                      className="min-h-[44px] sm:min-h-0 sm:h-8 px-2.5 text-xs font-semibold text-destructive border-destructive/30 hover:bg-destructive/10 hover:border-destructive rounded-lg cursor-pointer transition-colors"
+                      title={t('checkouts.cancelRequisitionTitle', 'ยกเลิกคำขอยืมนี้')}
+                    >
+                      <Ban className="w-3.5 h-3.5 mr-1" aria-hidden="true" />
+                      <span>{t('checkouts.cancelRequisitionBtn', 'ยกเลิก')}</span>
+                    </Button>
                   ) : (
                     <span className="text-[11px] text-muted-foreground italic">
                       {t('checkouts.waitingApproval', 'รอเจ้าหน้าที่ตรวจสอบ')}
