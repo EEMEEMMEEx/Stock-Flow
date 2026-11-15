@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { motion, useMotionTemplate, useMotionValue, useSpring } from 'framer-motion';
 
 const SPRING_CONFIG = { stiffness: 260, damping: 20 };
@@ -23,6 +23,23 @@ export default function TiltedCard({
   const scale = useSpring(scaleRaw, SPRING_CONFIG);
   const glareBackground = useMotionTemplate`radial-gradient(circle at ${glareX}% ${glareY}%, rgba(255,255,255,0.4) 0%, transparent 60%)`;
 
+  const invalidateRect = useCallback(() => {
+    rectRef.current = null;
+  }, []);
+
+  const unwatchViewport = useCallback(() => {
+    window.removeEventListener('scroll', invalidateRect, true);
+    window.removeEventListener('resize', invalidateRect);
+  }, [invalidateRect]);
+
+  const watchViewport = useCallback(() => {
+    unwatchViewport();
+    window.addEventListener('scroll', invalidateRect, { capture: true, passive: true });
+    window.addEventListener('resize', invalidateRect, { passive: true });
+  }, [invalidateRect, unwatchViewport]);
+
+  useEffect(() => unwatchViewport, [unwatchViewport]);
+
   const handleMouseMove = (e) => {
     if (!cardRef.current) return;
     const rect = rectRef.current || cardRef.current.getBoundingClientRect();
@@ -42,11 +59,13 @@ export default function TiltedCard({
     if (cardRef.current) {
       rectRef.current = cardRef.current.getBoundingClientRect();
     }
+    watchViewport();
     scaleRaw.set(1.02);
     glareOpacity.set(0.35);
   };
 
   const handleMouseLeave = () => {
+    unwatchViewport();
     rectRef.current = null;
     scaleRaw.set(1);
     rotateXRaw.set(0);

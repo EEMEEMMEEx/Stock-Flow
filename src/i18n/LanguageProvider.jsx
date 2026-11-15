@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { I18nextProvider } from 'react-i18next';
-import i18n, { LOCAL_STORAGE_KEY, SUPPORTED_LANGUAGES } from './i18n';
+import i18n, { LOCAL_STORAGE_KEY, SUPPORTED_LANGUAGES, ensureLocaleLoaded } from './i18n';
 import { LanguageContext } from './LanguageContext';
 
 export const LanguageProvider = ({ children }) => {
@@ -17,9 +17,10 @@ export const LanguageProvider = ({ children }) => {
     };
   }, []);
 
-  const changeLanguage = useCallback((newLang) => {
+  const changeLanguage = useCallback(async (newLang) => {
     if (newLang && (newLang === 'th' || newLang === 'en')) {
-      i18n.changeLanguage(newLang);
+      await ensureLocaleLoaded(newLang);
+      await i18n.changeLanguage(newLang);
       setLang(newLang);
       try {
         localStorage.setItem(LOCAL_STORAGE_KEY, newLang);

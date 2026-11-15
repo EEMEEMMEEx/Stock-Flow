@@ -8,9 +8,6 @@ import {
   ExternalLink, Ban, Wrench, PackageCheck, Recycle, Trash2,
   Plus, Hash, Info, CheckCircle2, Camera, Loader2, Maximize2
 } from 'lucide-react';
-import { pdf } from '@react-pdf/renderer';
-import { MaterialCheckoutPDF, MaterialReturnPDF } from '@/lib/checkout-pdf-templates';
-import { MaterialDispatchPDF } from '@/lib/pdf-templates';
 import { CHECKOUT_DISPATCH_STATUSES, toSafeFileToken } from '@/lib/utils';
 import { syncReturnLogToCaim } from '@/lib/caimSync';
 import RepairResolutionModal from '@/components/checkouts/RepairResolutionModal';
@@ -450,6 +447,10 @@ const CheckoutDetailModal = ({
 
     try {
       setGeneratingPdf(true);
+      const [{ pdf }, { MaterialCheckoutPDF }] = await Promise.all([
+        import('@react-pdf/renderer'),
+        import('@/lib/checkout-pdf-templates'),
+      ]);
       const blob = await pdf(<MaterialCheckoutPDF order={order} staffProfile={approverProfile || staffProfile} />).toBlob();
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -475,6 +476,10 @@ const CheckoutDetailModal = ({
 
     try {
       setGeneratingPdf(true);
+      const [{ pdf }, { MaterialReturnPDF }] = await Promise.all([
+        import('@react-pdf/renderer'),
+        import('@/lib/checkout-pdf-templates'),
+      ]);
       const blob = await pdf(<MaterialReturnPDF order={order} returnLogs={returnLogs} staffProfile={staffProfile} />).toBlob();
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -505,6 +510,10 @@ const CheckoutDetailModal = ({
 
     try {
       setGeneratingPdf(true);
+      const [{ pdf }, { MaterialDispatchPDF }] = await Promise.all([
+        import('@react-pdf/renderer'),
+        import('@/lib/pdf-templates'),
+      ]);
       const blob = await pdf(<MaterialDispatchPDF order={order} items={checkoutItems} mode="checkout" />).toBlob();
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');

@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { motion, useMotionValue, useSpring } from 'framer-motion';
 
 const MAGNET_SPRING = { damping: 15, stiffness: 150, mass: 0.1 };
@@ -17,9 +17,27 @@ export default function Magnet({
   const x = useSpring(xRaw, MAGNET_SPRING);
   const y = useSpring(yRaw, MAGNET_SPRING);
 
+  const invalidateRect = useCallback(() => {
+    rectRef.current = null;
+  }, []);
+
+  const unwatchViewport = useCallback(() => {
+    window.removeEventListener('scroll', invalidateRect, true);
+    window.removeEventListener('resize', invalidateRect);
+  }, [invalidateRect]);
+
+  const watchViewport = useCallback(() => {
+    unwatchViewport();
+    window.addEventListener('scroll', invalidateRect, { capture: true, passive: true });
+    window.addEventListener('resize', invalidateRect, { passive: true });
+  }, [invalidateRect, unwatchViewport]);
+
+  useEffect(() => unwatchViewport, [unwatchViewport]);
+
   const handleMouseEnter = () => {
     if (!disabled && magnetRef.current) {
       rectRef.current = magnetRef.current.getBoundingClientRect();
+      watchViewport();
     }
   };
 
@@ -44,6 +62,7 @@ export default function Magnet({
   };
 
   const handleMouseLeave = () => {
+    unwatchViewport();
     rectRef.current = null;
     xRaw.set(0);
     yRaw.set(0);

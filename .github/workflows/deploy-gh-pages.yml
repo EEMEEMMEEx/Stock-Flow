@@ -38,6 +38,7 @@ jobs:
           npm run check:i18n
           npm run verify:notifications
           npm run lint
+          npm test
 
       - name: Build production bundle
         run: |

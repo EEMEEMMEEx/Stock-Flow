@@ -152,7 +152,8 @@ export default defineConfig(({ mode }) => {
             'vendor-pdf': ['@react-pdf/renderer'],
             'vendor-charts': ['recharts'],
             'vendor-ui': ['lucide-react', 'framer-motion'],
-            'vendor-utils': ['xlsx', 'date-fns'],
+            'vendor-utils': ['date-fns'],
+            'vendor-xlsx': ['xlsx'],
             'vendor-supabase': ['@supabase/supabase-js']
           }
         }

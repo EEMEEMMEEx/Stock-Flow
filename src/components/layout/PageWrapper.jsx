@@ -1,12 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
 import AppFooter from './AppFooter';
 import InstallPrompt from '@/components/InstallPrompt';
 import { useAuth } from '@/contexts/AuthContext';
-import ForceChangePasswordModal from '@/components/auth/ForceChangePasswordModal';
 import StockFlowCopilotFab from '@/components/copilot/StockFlowCopilotFab';
+
+const ForceChangePasswordModal = lazy(() => import('@/components/auth/ForceChangePasswordModal'));
 
 const PageWrapper = () => {
   const { user, loading, mustChangePassword, refreshProfile } = useAuth();
@@ -92,10 +93,14 @@ const PageWrapper = () => {
         </main>
       </div>
 
-      <ForceChangePasswordModal 
-        isOpen={Boolean(user && mustChangePassword)} 
-        onPasswordChanged={refreshProfile}
-      />
+      {Boolean(user && mustChangePassword) && (
+        <Suspense fallback={null}>
+          <ForceChangePasswordModal 
+            isOpen={true} 
+            onPasswordChanged={refreshProfile}
+          />
+        </Suspense>
+      )}
       <InstallPrompt />
       <StockFlowCopilotFab />
     </div>

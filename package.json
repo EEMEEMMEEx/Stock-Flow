@@ -1,7 +1,7 @@
 {
   "name": "stock-flow-app",
   "private": true,
-  "version": "1.34.3",
+  "version": "1.34.4",
   "type": "module",
   "engines": {
     "node": "24.x"
@@ -11,6 +11,8 @@
     "tunnel": "cloudflared tunnel --url http://localhost:5173",
     "build": "vite build",
     "lint": "eslint .",
+    "test": "node --test src/lib/orderHistoryAuth.test.js src/lib/__tests__/chunkErrorRecovery.test.js src/lib/__tests__/geminiApiKeyStorage.test.js src/lib/__tests__/superPermissionsSync.test.js src/lib/stockInSearch.test.js src/lib/__tests__/webPushCrypto.test.js src/lib/__tests__/webPushDispatch.test.js src/lib/scrapSerial.test.js src/lib/superRevert.test.js src/lib/checkoutDisplay.test.js src/lib/withdrawalStock.test.js src/lib/__tests__/r2Storage.test.js",
+    "test:e2e": "playwright test",
     "test:order-history-auth": "node --test src/lib/orderHistoryAuth.test.js",
     "test:chunk-recovery": "node --test src/lib/__tests__/chunkErrorRecovery.test.js",
     "test:gemini-key": "node --test src/lib/__tests__/geminiApiKeyStorage.test.js",

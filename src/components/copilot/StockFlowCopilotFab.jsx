@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { lazy, Suspense, useState, useEffect } from 'react';
 import { Bot } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import StockFlowCopilotModal from './StockFlowCopilotModal';
+
+const StockFlowCopilotModal = lazy(() => import('./StockFlowCopilotModal'));
 
 export default function StockFlowCopilotFab() {
   const [open, setOpen] = useState(false);
@@ -80,7 +81,11 @@ export default function StockFlowCopilotFab() {
       </button>
 
       {/* Copilot Dialog */}
-      <StockFlowCopilotModal open={open} onOpenChange={setOpen} />
+      {open && (
+        <Suspense fallback={null}>
+          <StockFlowCopilotModal open={open} onOpenChange={setOpen} />
+        </Suspense>
+      )}
     </>
   );
 }

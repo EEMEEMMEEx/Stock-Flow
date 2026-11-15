@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 export default function SpotlightCard({
   children,
@@ -12,13 +12,29 @@ export default function SpotlightCard({
   const rafRef = useRef(null);
   const pointerRef = useRef({ x: 0, y: 0 });
 
+  const invalidateRect = useCallback(() => {
+    rectRef.current = null;
+  }, []);
+
+  const unwatchViewport = useCallback(() => {
+    window.removeEventListener('scroll', invalidateRect, true);
+    window.removeEventListener('resize', invalidateRect);
+  }, [invalidateRect]);
+
+  const watchViewport = useCallback(() => {
+    unwatchViewport();
+    window.addEventListener('scroll', invalidateRect, { capture: true, passive: true });
+    window.addEventListener('resize', invalidateRect, { passive: true });
+  }, [invalidateRect, unwatchViewport]);
+
   useEffect(() => {
     return () => {
+      unwatchViewport();
       if (rafRef.current) {
         cancelAnimationFrame(rafRef.current);
       }
     };
-  }, []);
+  }, [unwatchViewport]);
 
   const handleMouseMove = (e) => {
     if (!divRef.current || !overlayRef.current) return;
@@ -42,12 +58,14 @@ export default function SpotlightCard({
     if (divRef.current) {
       rectRef.current = divRef.current.getBoundingClientRect();
     }
+    watchViewport();
     if (overlayRef.current) {
       overlayRef.current.style.opacity = '1';
     }
   };
 
   const handleMouseLeave = () => {
+    unwatchViewport();
     rectRef.current = null;
     if (overlayRef.current) {
       overlayRef.current.style.opacity = '0';

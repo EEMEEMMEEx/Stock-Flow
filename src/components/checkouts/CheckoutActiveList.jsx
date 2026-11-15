@@ -7,8 +7,6 @@ import {
   Eye, User, Building2, Phone, Layers, CalendarClock, Infinity as InfinityIcon, FileSpreadsheet, Camera
 } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
-import { pdf } from '@react-pdf/renderer';
-import { MaterialDispatchPDF } from '@/lib/pdf-templates';
 import { CHECKOUT_DISPATCH_STATUSES, toSafeFileToken } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { canAccessCheckoutRecord } from '@/lib/orderHistoryAuth';
@@ -51,6 +49,10 @@ const CheckoutActiveList = ({
 
     try {
       setGeneratingPdf(true);
+      const [{ pdf }, { MaterialDispatchPDF }] = await Promise.all([
+        import('@react-pdf/renderer'),
+        import('@/lib/pdf-templates'),
+      ]);
       const blob = await pdf(<MaterialDispatchPDF order={order} items={order.checkout_items || []} mode="checkout" />).toBlob();
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
