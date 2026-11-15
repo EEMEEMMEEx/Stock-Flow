@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
+import { dispatchPendingWebPush } from './web-push.js';
 
 /**
  * CAIM Inbound Webhook (Integration Plan Phase 3)
@@ -255,6 +256,12 @@ export default async function handler(req, res) {
     console.info(
       `[caim-webhook] ${eventId} status=${result.status || 'unknown'} repair=${result.repair_result || payload.repairResult}`
     );
+
+    try {
+      await dispatchPendingWebPush(supabaseAdmin);
+    } catch (pushErr) {
+      console.warn('[caim-webhook] Pending Web Push dispatch failed:', pushErr?.message || pushErr);
+    }
 
     return res.status(200).json({
       success: result.success !== false,

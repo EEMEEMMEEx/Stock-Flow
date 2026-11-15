@@ -125,6 +125,27 @@ export const useNotifications = (userId) => {
     };
   }, [loadNotifications, userId, tableExists]);
 
+  useEffect(() => {
+    if (!userId || !tableExists || typeof document === 'undefined') return undefined;
+
+    let lastSyncAt = 0;
+    const syncOnResume = () => {
+      if (document.visibilityState && document.visibilityState !== 'visible') return;
+      const now = Date.now();
+      if (now - lastSyncAt < 5000) return;
+      lastSyncAt = now;
+      void loadNotifications();
+    };
+
+    document.addEventListener('visibilitychange', syncOnResume);
+    window.addEventListener('online', syncOnResume);
+
+    return () => {
+      document.removeEventListener('visibilitychange', syncOnResume);
+      window.removeEventListener('online', syncOnResume);
+    };
+  }, [loadNotifications, userId, tableExists]);
+
   const markAsRead = useCallback(async (notificationId) => {
     if (!tableExists) return { success: true };
     const target = notifications.find((item) => item.id === notificationId);

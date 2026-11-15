@@ -1,7 +1,7 @@
 {
   "name": "stock-flow-app",
   "private": true,
-  "version": "1.34.0",
+  "version": "1.34.1",
   "type": "module",
   "engines": {
     "node": "24.x"
@@ -60,7 +60,7 @@
     "verify:migration-105": "node scripts/verify-migration-105-sandbox.mjs",
     "apply:migration-106": "node scripts/apply-migration-106.mjs",
     "verify:migration-106": "node scripts/verify-migration-106-sandbox.mjs",
-    "test:web-push": "node --test src/lib/__tests__/webPushCrypto.test.js",
+    "test:web-push": "node --test src/lib/__tests__/webPushCrypto.test.js src/lib/__tests__/webPushDispatch.test.js",
     "verify:return-item-sn-sandbox": "node scripts/verify-return-item-sn-sandbox.mjs",
     "test:scrap-serial": "node --test src/lib/scrapSerial.test.js",
     "verify:checkout-locking-sandbox": "node scripts/verify-process-checkout-order-locking-sandbox.mjs",

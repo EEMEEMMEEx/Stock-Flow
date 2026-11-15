@@ -48,7 +48,7 @@ self.addEventListener('push', (event) => {
     ...(icon ? { icon } : {}),
     badge: badge || '/favicon.svg',
     tag: tag || (id ? `stockflow-notif-${id}` : 'stockflow-push'),
-    renotify: false,
+    renotify: true,
     vibrate: [150, 75, 150],
     data: {
       url: url || '/dashboard',
