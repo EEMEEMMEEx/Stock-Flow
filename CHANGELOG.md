@@ -1,5 +1,12 @@
 # Changelog
 
+## [2026-11-15 10:23] - v1.34.1
+- **Files Modified:** `src/lib/supabase.js`, `src/lib/pushNotifications.js`, `api/web-push.js`, `api/caim-webhook.js`, `src/hooks/useNotifications.js`, `public/sw-push.js`, `src/lib/__tests__/webPushDispatch.test.js`, `package.json`, `CHANGELOG.md`
+- **Changes:**
+  - **Root-Cause Fix — Actor-Triggered Background Web Push Dispatch (`src/lib/supabase.js`, `src/lib/pushNotifications.js`, `api/caim-webhook.js`)**: เพิ่ม `createDispatchAwareFetch` และ `shouldTriggerWebPushAfterSupabaseRequest` ใน Supabase browser client (ใช้ dynamic import เพื่อเลี่ยง circular ESM dependency) ให้ฝั่งผู้ทำรายการสั่ง `/api/web-push` (`dispatch-pending`) ทันทีเมื่อ mutation บนตาราง/RPC ที่สร้างแจ้งเตือนสำเร็จ, ปรับ debounce จาก `1500ms` เหลือ `350ms` พร้อม `keepalive: true` และใช้ session token ล่าสุดเสมอ, และเรียก `dispatchPendingWebPush(supabaseAdmin)` หลัง `process_caim_webhook_event` สำเร็จใน `api/caim-webhook.js` เพื่อให้แจ้งเตือนส่งถึงมือถือผู้รับได้จริงแม้แอปผู้รับถูกปิดอยู่
+  - **Reliable Push Batching & PWA Resume Catch-Up (`api/web-push.js`, `src/hooks/useNotifications.js`, `public/sw-push.js`)**: แยก `dispatchPendingWebPush(supabaseAdmin)` ที่ตรวจ VAPID keys ก่อน claim แถว `push_dispatched_at`, จัดลำดับรายการใหม่ล่าสุดก่อน (`ascending: false`), ส่ง Push แบบ concurrent ผ่าน `Promise.allSettled` พร้อม log HTTP status ที่ล้มเหลว; เพิ่ม `visibilitychange`/`online` catch-up sync แบบ throttled (5 วินาที) ใน `useNotifications.js`; และตั้ง `renotify: true` ใน `public/sw-push.js` เพื่อปลุกแจ้งเตือนเมื่อรายการเดิมถูกอัปเดต
+  - **Tests & Version Bump (`src/lib/__tests__/webPushDispatch.test.js`, `package.json`, `CHANGELOG.md`)**: เพิ่ม unit tests ครอบคลุมการกรอง Supabase mutation, `createDispatchAwareFetch`, ลำดับการทำงาน/VAPID guard ของ `dispatchPendingWebPush` และทำความสะอาด subscription `410`; ปรับเวอร์ชันจาก `v1.34.0` เป็น `v1.34.1` (PATCH)
+
 ## [2026-11-15 09:53] - v1.34.0
 - **Files Modified:** `supabase/migrations/106_cancel_pending_checkout_rpc.sql`, `scripts/verify-migration-106-sandbox.mjs`, `scripts/apply-migration-106.mjs`, `src/lib/checkoutPendingCancel.js`, `src/lib/checkoutPendingCancel.test.js`, `src/components/checkouts/CheckoutPendingCancelModal.jsx`, `src/components/checkouts/CheckoutPendingList.jsx`, `src/pages/Checkouts.jsx`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `package.json`, `CHANGELOG.md`
 - **Changes:**

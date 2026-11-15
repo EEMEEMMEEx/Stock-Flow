@@ -2,10 +2,9 @@ import { supabase } from '@/lib/supabase';
 import { resolveNotificationTarget } from '@/lib/notificationTargets';
 
 const SW_READY_TIMEOUT_MS = 5000;
-const DISPATCH_DEBOUNCE_MS = 1500;
+const DISPATCH_DEBOUNCE_MS = 350;
 
 let dispatchTimerId = null;
-let latestDispatchToken = null;
 
 /**
  * Convert a base64url-encoded VAPID public key into a Uint8Array
@@ -379,10 +378,6 @@ export async function sendTestPushNotification(accessToken, fallbackNotification
  * Trigger background Web Push dispatch for pending notifications (debounced, non-blocking).
  */
 export function triggerPendingWebPushDispatch(accessToken) {
-  if (accessToken) {
-    latestDispatchToken = accessToken;
-  }
-
   if (dispatchTimerId) {
     clearTimeout(dispatchTimerId);
   }
@@ -390,11 +385,13 @@ export function triggerPendingWebPushDispatch(accessToken) {
   dispatchTimerId = setTimeout(async () => {
     dispatchTimerId = null;
     try {
-      const token = await resolveAccessToken(latestDispatchToken);
+      if (typeof fetch !== 'function') return;
+      const token = await resolveAccessToken(accessToken);
       if (!token) return;
 
       await fetch('/api/web-push', {
         method: 'POST',
+        keepalive: true,
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`

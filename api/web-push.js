@@ -334,19 +334,15 @@ async function handleTest(res, dbClient, supabaseAdmin, authUser) {
   });
 }
 
-async function handleDispatchPending(res, supabaseAdmin, authUser, hasValidInternalSecret) {
-  if (!authUser && !hasValidInternalSecret) {
-    return res.status(401).json({
-      success: false,
-      message: 'Unauthorized: Bearer token or X-Internal-Secret required.',
-    });
-  }
-
+/**
+ * Atomically claim pending unread notifications and fan out encrypted Web Push deliveries.
+ */
+export async function dispatchPendingWebPush(
+  supabaseAdmin,
+  { sendNotification = sendWebPushNotification } = {}
+) {
   if (!supabaseAdmin) {
-    return res.status(500).json({
-      success: false,
-      message: 'Server configuration error: SUPABASE_SERVICE_ROLE_KEY is required for dispatch-pending.',
-    });
+    throw new Error('Server configuration error: SUPABASE_SERVICE_ROLE_KEY is required for dispatch-pending.');
   }
 
   const cutoffIso = new Date(Date.now() - DISPATCH_LOOKBACK_MS).toISOString();
@@ -356,22 +352,23 @@ async function handleDispatchPending(res, supabaseAdmin, authUser, hasValidInter
     .is('push_dispatched_at', null)
     .is('read_at', null)
     .gte('created_at', cutoffIso)
-    .order('created_at', { ascending: true })
+    .order('created_at', { ascending: false })
     .limit(DISPATCH_BATCH_LIMIT);
 
   if (queryErr) {
-    return res.status(500).json({ success: false, message: queryErr.message });
+    throw new Error(queryErr.message);
   }
 
   if (!candidates || candidates.length === 0) {
-    return res.status(200).json({
-      success: true,
+    return {
       dispatchedNotifications: 0,
       sentCount: 0,
       removedGoneCount: 0,
-    });
+    };
   }
 
+  // Resolve VAPID credentials before claiming rows so config errors leave notifications retryable
+  const vapidKeys = await resolveVapidKeys(supabaseAdmin);
   const candidateIds = candidates.map((row) => row.id);
   const nowIso = new Date().toISOString();
 
@@ -384,29 +381,27 @@ async function handleDispatchPending(res, supabaseAdmin, authUser, hasValidInter
     .select('id, user_id, event_type, title, message, target_path, reference_id, metadata');
 
   if (claimErr) {
-    return res.status(500).json({ success: false, message: claimErr.message });
+    throw new Error(claimErr.message);
   }
 
   if (!claimed || claimed.length === 0) {
-    return res.status(200).json({
-      success: true,
+    return {
       dispatchedNotifications: 0,
       sentCount: 0,
       removedGoneCount: 0,
-    });
+    };
   }
 
   const userIds = [...new Set(claimed.map((n) => n.user_id).filter(Boolean))];
   if (userIds.length === 0) {
-    return res.status(200).json({
-      success: true,
+    return {
       dispatchedNotifications: claimed.length,
       sentCount: 0,
       removedGoneCount: 0,
-    });
+    };
   }
 
-  const [{ data: subscriptions, error: subsErr }, { data: unreadRows }, vapidKeys] =
+  const [{ data: subscriptions, error: subsErr }, { data: unreadRows }] =
     await Promise.all([
       supabaseAdmin
         .from('push_subscriptions')
@@ -418,11 +413,10 @@ async function handleDispatchPending(res, supabaseAdmin, authUser, hasValidInter
         .select('user_id')
         .in('user_id', userIds)
         .is('read_at', null),
-      resolveVapidKeys(supabaseAdmin),
     ]);
 
   if (subsErr) {
-    return res.status(500).json({ success: false, message: subsErr.message });
+    throw new Error(subsErr.message);
   }
 
   const subsByUser = new Map();
@@ -436,14 +430,9 @@ async function handleDispatchPending(res, supabaseAdmin, authUser, hasValidInter
     unreadCountByUser.set(row.user_id, (unreadCountByUser.get(row.user_id) || 0) + 1);
   }
 
-  let sentCount = 0;
-  const succeededSubIds = new Set();
-  const goneSubIds = new Set();
-
+  const deliveryTasks = [];
   for (const notification of claimed) {
-    const userSubs = (subsByUser.get(notification.user_id) || []).filter(
-      (sub) => !goneSubIds.has(sub.id)
-    );
+    const userSubs = subsByUser.get(notification.user_id) || [];
     if (userSubs.length === 0) continue;
 
     const url = resolveNotificationTarget(notification) || '/dashboard';
@@ -459,32 +448,74 @@ async function handleDispatchPending(res, supabaseAdmin, authUser, hasValidInter
     };
 
     for (const sub of userSubs) {
-      try {
-        const result = await sendWebPushNotification(
+      deliveryTasks.push(
+        sendNotification(
           { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
           payload,
           vapidKeys
-        );
-        if (result.ok) {
-          sentCount += 1;
-          succeededSubIds.add(sub.id);
-        } else if (result.gone) {
-          goneSubIds.add(sub.id);
-        }
-      } catch (err) {
-        console.warn('[Web Push API] Dispatch send failed:', err.message);
-      }
+        ).then((result) => ({ subId: sub.id, result }))
+      );
+    }
+  }
+
+  const results = await Promise.allSettled(deliveryTasks);
+  let sentCount = 0;
+  const succeededSubIds = new Set();
+  const goneSubIds = new Set();
+
+  for (const outcome of results) {
+    if (outcome.status === 'rejected') {
+      console.warn('[Web Push API] Dispatch send failed:', outcome.reason?.message || outcome.reason);
+      continue;
+    }
+
+    const { subId, result } = outcome.value;
+    if (result.ok) {
+      sentCount += 1;
+      succeededSubIds.add(subId);
+    } else if (result.gone) {
+      goneSubIds.add(subId);
+    } else {
+      console.warn(`[Web Push API] Push endpoint returned HTTP ${result.status || 'unknown'}`);
     }
   }
 
   await syncSubscriptionLifecycle(supabaseAdmin, [...succeededSubIds], [...goneSubIds]);
 
-  return res.status(200).json({
-    success: true,
+  return {
     dispatchedNotifications: claimed.length,
     sentCount,
     removedGoneCount: goneSubIds.size,
-  });
+  };
+}
+
+async function handleDispatchPending(res, supabaseAdmin, authUser, hasValidInternalSecret) {
+  if (!authUser && !hasValidInternalSecret) {
+    return res.status(401).json({
+      success: false,
+      message: 'Unauthorized: Bearer token or X-Internal-Secret required.',
+    });
+  }
+
+  if (!supabaseAdmin) {
+    return res.status(500).json({
+      success: false,
+      message: 'Server configuration error: SUPABASE_SERVICE_ROLE_KEY is required for dispatch-pending.',
+    });
+  }
+
+  try {
+    const summary = await dispatchPendingWebPush(supabaseAdmin);
+    return res.status(200).json({
+      success: true,
+      ...summary,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: err?.message || 'Failed to dispatch pending Web Push notifications.',
+    });
+  }
 }
 
 export default async function handler(req, res) {
