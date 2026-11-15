@@ -10,6 +10,8 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n';
 import { applyCheckoutOrdersScope, canAccessCheckoutRecord, filterCheckoutOrders } from '@/lib/orderHistoryAuth';
+import { canRequesterCancelPendingOrder } from '@/lib/checkoutPendingCancel';
+import { cleanRpcMessage, isSchemaMismatchError } from '@/lib/rpcErrors';
 
 import CheckoutPosTerminal from '@/components/checkouts/CheckoutPosTerminal';
 import CheckoutActiveList from '@/components/checkouts/CheckoutActiveList';
@@ -22,6 +24,7 @@ import CheckoutHistoryList from '@/components/checkouts/CheckoutHistoryList';
 import CheckoutApproveModal from '@/components/checkouts/CheckoutApproveModal';
 import CheckoutRejectModal from '@/components/checkouts/CheckoutRejectModal';
 import CheckoutCancelModal from '@/components/checkouts/CheckoutCancelModal';
+import CheckoutPendingCancelModal from '@/components/checkouts/CheckoutPendingCancelModal';
 import SuperRevertActionModal from '@/components/common/SuperRevertActionModal';
 
 const CHECKOUT_TABS = ['pending', 'active', 'pos', 'history'];
@@ -83,6 +86,11 @@ const Checkouts = () => {
   const [selectedOrderForCancel, setSelectedOrderForCancel] = useState(null);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+
+  // Requester Pending Cancellation states
+  const [selectedOrderForRequesterCancel, setSelectedOrderForRequesterCancel] = useState(null);
+  const [isRequesterCancelModalOpen, setIsRequesterCancelModalOpen] = useState(false);
+  const [requesterCancelling, setRequesterCancelling] = useState(false);
 
   // Revert states (SUPER Role)
   const [revertTarget, setRevertTarget] = useState(null);
@@ -498,6 +506,51 @@ const Checkouts = () => {
     }
   };
 
+  const handleOpenRequesterCancelModal = (order) => {
+    if (!canRequesterCancelPendingOrder(order, user?.id)) {
+      toast.error(t('checkouts.toasts.pendingCancelUnauthorized', 'คุณไม่สามารถยกเลิกคำขอยืมนี้ได้'));
+      return;
+    }
+    setSelectedOrderForRequesterCancel(order);
+    setIsRequesterCancelModalOpen(true);
+  };
+
+  const handleConfirmRequesterCancel = async (order, reason) => {
+    if (!order?.id || requesterCancelling || !canRequesterCancelPendingOrder(order, user?.id)) {
+      return;
+    }
+    let toastId;
+    try {
+      setRequesterCancelling(true);
+      toastId = toast.loading(t('checkouts.toasts.pendingCancelling', 'กำลังยกเลิกคำขอยืม...'));
+      const { data, error } = await supabase.rpc('cancel_pending_checkout_order', {
+        p_order_id: order.id,
+        p_reason: reason?.trim() || null
+      });
+      if (error) throw error;
+
+      toast.success(
+        data?.message || t('checkouts.toasts.pendingCancelled', 'ยกเลิกคำขอยืมเรียบร้อยแล้ว'),
+        { id: toastId }
+      );
+      setIsRequesterCancelModalOpen(false);
+      setSelectedOrderForRequesterCancel(null);
+      await fetchCheckoutData();
+    } catch (err) {
+      console.error('Requester cancel pending checkout error:', err);
+      const cleanErrMsg = isSchemaMismatchError(err)
+        ? t('checkouts.toasts.pendingCancelMigrationMissing', 'ยังไม่ได้ติดตั้ง migration 106 (cancel_pending_checkout_order) กรุณาแจ้งผู้ดูแลระบบ')
+        : cleanRpcMessage(err) || t('checkouts.toasts.pendingCancelFailed', 'ไม่สามารถยกเลิกคำขอยืมได้');
+      if (toastId) {
+        toast.error(cleanErrMsg, { id: toastId });
+      } else {
+        toast.error(cleanErrMsg);
+      }
+    } finally {
+      setRequesterCancelling(false);
+    }
+  };
+
   const pendingOrdersCount = useMemo(() => {
     return orders.filter(o => o.status === 'pending').length;
   }, [orders]);
@@ -628,9 +681,11 @@ const Checkouts = () => {
           loading={loading}
           canApprove={canApprove}
           canReject={canReject}
+          currentUserId={user?.id || null}
           onOpenApproveModal={handleOpenApproveModal}
           onOpenRejectModal={handleOpenRejectModal}
           onOpenDetailModal={handleOpenDetailModal}
+          onOpenRequesterCancelModal={handleOpenRequesterCancelModal}
         />
       )}
 
@@ -775,6 +830,19 @@ const Checkouts = () => {
         order={selectedOrderForCancel}
         onConfirmCancel={handleConfirmCancel}
         isProcessing={cancelling}
+      />
+
+      {/* Requester Pending Cancel Modal */}
+      <CheckoutPendingCancelModal
+        isOpen={isRequesterCancelModalOpen}
+        onClose={() => {
+          if (requesterCancelling) return;
+          setIsRequesterCancelModalOpen(false);
+          setSelectedOrderForRequesterCancel(null);
+        }}
+        order={selectedOrderForRequesterCancel}
+        onConfirmCancel={handleConfirmRequesterCancel}
+        isProcessing={requesterCancelling}
       />
 
       {/* Revert Modal (SUPER Role) */}
