@@ -1034,7 +1034,12 @@ export default {
       "returnConfirmedSuccess": "Return confirmed and item status updated to Returned",
       "returnConfirmFailed": "Failed to confirm equipment return",
       "confirmReturnSuccess": "Return confirmed and item status updated to Returned successfully",
-      "confirmReturnFailed": "Failed to confirm equipment return"
+      "confirmReturnFailed": "Failed to confirm equipment return",
+      "pendingCancelling": "Cancelling pending requisition...",
+      "pendingCancelled": "Pending requisition cancelled successfully",
+      "pendingCancelFailed": "Failed to cancel pending requisition",
+      "pendingCancelUnauthorized": "You cannot cancel this checkout requisition",
+      "pendingCancelMigrationMissing": "Migration 106 (cancel_pending_checkout_order) is not installed. Please contact an administrator."
     },
     "fullyReturnedDesc": "All equipment in this order has already been fully returned.",
     "printCheckoutSlip": "Print Checkout Slip (PDF)",
@@ -1167,7 +1172,18 @@ export default {
     "cancelledCompactPrefix": "Cancelled",
     "moreActions": "More actions",
     "tapToViewFullProject": "Tap to view full project",
-    "item": "Item"
+    "item": "Item",
+    "cancelRequisitionBtn": "Cancel",
+    "cancelRequisitionTitle": "Cancel this requisition",
+    "pendingCancelModalTitle": "Cancel Pending Requisition",
+    "pendingCancelModalDesc": "Confirm cancelling this requisition while it is still pending review. Once cancelled, it will be moved to history.",
+    "pendingCancelNoticeTitle": "Pending Review (Stock Not Deducted)",
+    "pendingCancelNotice": "This requisition is still pending review and stock has not been deducted. Cancelling will change its status to Cancelled and cannot be undone.",
+    "pendingCancelReasonLabel": "Cancellation Reason (Optional)",
+    "pendingCancelReasonPlaceholder": "Optional reason, e.g., duplicate request, plan changed...",
+    "keepRequisitionBtn": "Keep Request",
+    "cancellingRequisition": "Cancelling...",
+    "confirmPendingCancelBtn": "Confirm Cancellation"
   },
   "history": {
     "title": "Transaction History Audit Log",
