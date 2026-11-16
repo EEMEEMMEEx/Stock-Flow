@@ -1,5 +1,11 @@
 # Changelog
 
+## [2026-11-16 15:11] - v1.34.5
+- **Files Modified:** `supabase/migrations/107_allow_internal_repair_in_resolve_damaged_return.sql`, `docs/fix-consumed-internal-repair-implementation-plan.md`, `package.json`, `CHANGELOG.md`
+- **Changes:**
+  - **Fix `resolve_damaged_return_item` for `consumed` Internal Repair (`supabase/migrations/107_allow_internal_repair_in_resolve_damaged_return.sql`)**: เพิ่ม `'internal_repair'` ในเงื่อนไขตรวจสอบ `COALESCE(v_log.caim_inbound_status, 'none') NOT IN ('retried_internal', 'internal_repair')` ของ RPC `public.resolve_damaged_return_item(p_payload JSONB)` เพื่อแก้ error 400 (`สภาพปัจจุบัน: consumed`) เมื่อบันทึกรายการ `consumed` ที่ถูกย้ายเข้าคิวซ่อมภายในผ่าน `mark_return_for_internal_repair`
+  - **Docs & Version Bump (`docs/fix-consumed-internal-repair-implementation-plan.md`, `package.json`, `CHANGELOG.md`)**: บันทึกแผนการแก้ไขและปรับเวอร์ชันจาก `v1.34.4` เป็น `v1.34.5` (PATCH)
+
 ## [2026-11-15 20:01] - v1.34.4
 - **Files Modified:** `src/components/reactbits/SpotlightCard.jsx`, `src/components/reactbits/Magnet.jsx`, `src/components/reactbits/TiltedCard.jsx`, `vite.config.js`, `src/components/checkouts/CheckoutActiveList.jsx`, `src/components/checkouts/CheckoutDetailModal.jsx`, `src/components/copilot/StockFlowCopilotFab.jsx`, `src/components/layout/PageWrapper.jsx`, `src/i18n/i18n.js`, `src/i18n/LanguageProvider.jsx`, `src/main.jsx`, `playwright.config.js`, `e2e/helpers/supabaseMock.js`, `e2e/login.spec.js`, `e2e/withdrawals.spec.js`, `e2e/checkouts.spec.js`, `e2e/README.md`, `.github/workflows/deploy-gh-pages.yml`, `package.json`, `CHANGELOG.md`
 - **Changes:**
