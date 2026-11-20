@@ -1,5 +1,11 @@
 # Changelog
 
+## [2026-11-20 08:23] - v1.34.10
+- **Files Modified:** `src/lib/geminiCopilot.js`, `api/gemini-copilot.js`, `src/components/copilot/StockFlowCopilotModal.jsx`, `src/components/settings/GeminiApiKeyManager.jsx`, `scripts/verify-gemini-copilot.mjs`, `package.json`, `CHANGELOG.md`
+- **Changes:**
+  - **Switch StockFlow Copilot to Flash Lite Models (`src/lib/geminiCopilot.js`, `api/gemini-copilot.js`)**: เปลี่ยน `candidateModels` เป็น `['gemini-3.5-flash-lite', 'gemini-flash-lite-latest']` แทนที่ `gemini-4-hydrogen`, นำ `thinkingConfig` ออก และปรับ timeout เป็น `30s` (`/api/gemini-copilot`) / `25s` (Direct REST) เพื่อลดเวลารอและรองรับ fallback อัตโนมัติ
+  - **Update Copilot UI & Verification (`StockFlowCopilotModal.jsx`, `GeminiApiKeyManager.jsx`, `verify-gemini-copilot.mjs`, `package.json`, `CHANGELOG.md`)**: อัปเดตชื่อโมเดลใน UI/Settings เป็น `Gemini 3.5 Flash Lite` / `gemini-flash-lite-latest` พร้อมปรับเวอร์ชันจาก `v1.34.9` เป็น `v1.34.10` (PATCH)
+
 ## [2026-11-20 08:10] - v1.34.9
 - **Files Modified:** `src/lib/geminiCopilot.js`, `package.json`, `CHANGELOG.md`
 - **Changes:**

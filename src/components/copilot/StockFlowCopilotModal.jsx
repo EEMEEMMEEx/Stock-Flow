@@ -161,7 +161,7 @@ export default function StockFlowCopilotModal({ open, onOpenChange }) {
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
-      content: 'สวัสดีครับ! ผมคือ **StockFlow Copilot** ขับเคลื่อนด้วย **Google Gemini 4 Hydrogen**\n\nคุณสามารถสอบถามสถานะคลังสินค้า ตรวจสอบสต็อกพัสดุใกล้หมด หรือขอคำแนะนำการสั่งซื้อและกระจายสต็อกได้ทันทีครับ',
+      content: 'สวัสดีครับ! ผมคือ **StockFlow Copilot** ขับเคลื่อนด้วย **Google Gemini 3.5 Flash Lite**\n\nคุณสามารถสอบถามสถานะคลังสินค้า ตรวจสอบสต็อกพัสดุใกล้หมด หรือขอคำแนะนำการสั่งซื้อและกระจายสต็อกได้ทันทีครับ',
       timestamp: new Date()
     }
   ]);
@@ -259,7 +259,7 @@ export default function StockFlowCopilotModal({ open, onOpenChange }) {
               <div className="flex items-center gap-2">
                 <DialogTitle className="text-base font-bold">StockFlow Copilot</DialogTitle>
                 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                  Gemini 4 Hydrogen
+                  Gemini 3.5 Flash Lite
                 </span>
               </div>
               <DialogDescription className="text-xs text-muted-foreground">
@@ -318,7 +318,7 @@ export default function StockFlowCopilotModal({ open, onOpenChange }) {
                     <div className="mt-2.5 pt-1.5 border-t border-border/40 flex items-center justify-between text-[11px] text-muted-foreground">
                       <span className="flex items-center gap-1 font-mono text-[10px]">
                         <Sparkles className="h-3 w-3 text-amber-500" />
-                        {msg.model || 'gemini-4-hydrogen'}
+                        {msg.model || 'gemini-3.5-flash-lite'}
                       </span>
                       <Button
                         variant="ghost"
@@ -348,7 +348,7 @@ export default function StockFlowCopilotModal({ open, onOpenChange }) {
               </div>
               <div className="bg-muted/40 border border-border/80 rounded-2xl rounded-tl-xs px-4 py-2.5 flex items-center gap-2 text-xs text-muted-foreground shadow-xs">
                 <Sparkles className="h-3.5 w-3.5 text-amber-500 animate-bounce" />
-                <span>กำลังวิเคราะห์ข้อมูลคลังสินค้าด้วย Gemini 4 Hydrogen...</span>
+                <span>กำลังวิเคราะห์ข้อมูลคลังสินค้าด้วย Gemini Flash Lite...</span>
               </div>
             </div>
           )}

@@ -156,7 +156,7 @@ export async function askStockFlowCopilot({ query, conversationHistory = [] }) {
   // 1. Fetch live inventory context
   const clientContext = await fetchLiveInventoryContext();
 
-  // 2. Try serverless backend API first (/api/gemini-copilot) with 120s timeout
+  // 2. Try serverless backend API first (/api/gemini-copilot) with 30s timeout
   let backendFailureMessage = null;
   try {
     const { data: { session } } = await supabase.auth.getSession();
@@ -173,7 +173,7 @@ export async function askStockFlowCopilot({ query, conversationHistory = [] }) {
         conversationHistory,
         clientContext
       }),
-      signal: AbortSignal.timeout(120000)
+      signal: AbortSignal.timeout(30000)
     });
 
     if (res.ok) {
@@ -182,7 +182,7 @@ export async function askStockFlowCopilot({ query, conversationHistory = [] }) {
         return {
           answer: data.answer,
           source: 'serverless',
-          model: data.model || 'gemini-4-hydrogen'
+          model: data.model || 'gemini-3.5-flash-lite'
         };
       }
     } else if (res.status !== 404 && res.status !== 405) {
@@ -251,8 +251,8 @@ ${contextSnippet}
       parts: [{ text: query }]
     });
 
-    // Use Gemini 4 Hydrogen exclusively (thinkingLevel LOW + 120s timeout + 1x transient retry)
-    const candidateModels = ['gemini-4-hydrogen'];
+    // Use Flash Lite models (25s timeout per attempt + transient 503/429 retry + model fallback)
+    const candidateModels = ['gemini-3.5-flash-lite', 'gemini-flash-lite-latest'];
     const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
     let lastError = null;
     let answer = null;
@@ -271,11 +271,10 @@ ${contextSnippet}
                 parts: [{ text: systemInstruction }]
               },
               generationConfig: {
-                temperature: 0.2,
-                thinkingConfig: { thinkingLevel: 'LOW' }
+                temperature: 0.2
               }
             }),
-            signal: AbortSignal.timeout(120000)
+            signal: AbortSignal.timeout(25000)
           });
 
           const data = await response.json();
@@ -292,7 +291,7 @@ ${contextSnippet}
             lastError = apiErr;
             console.warn(`[Gemini Client] Model ${model} attempt ${attempt + 1} returned ${response.status}:`, data.error?.message);
             if (attempt === 0 && (response.status === 503 || response.status === 429)) {
-              await sleep(1200);
+              await sleep(800);
               continue;
             }
             break;
@@ -314,10 +313,10 @@ ${contextSnippet}
         };
       }
       if (lastError?.name === 'TimeoutError' || lastError?.name === 'AbortError') {
-        throw new Error('การเชื่อมต่อ Gemini 4 Hydrogen ใช้เวลานานเกินกำหนด (Timeout) กรุณาลองใหม่อีกครั้ง');
+        throw new Error('การเชื่อมต่อ Gemini API ใช้เวลานานเกินกำหนด (Timeout) กรุณาลองใหม่อีกครั้ง');
       }
       if (lastError?.status === 503 || /503|UNAVAILABLE|high demand/i.test(String(lastError?.message || ''))) {
-        throw new Error('ขณะนี้โมเดล Gemini 4 Hydrogen มีผู้ใช้งานหนาแน่นชั่วคราว (503) กรุณารอสักครู่แล้วลองใหม่อีกครั้ง');
+        throw new Error('ขณะนี้โมเดล Gemini มีผู้ใช้งานหนาแน่นชั่วคราว (503) กรุณารอสักครู่แล้วลองใหม่อีกครั้ง');
       }
       if (lastError?.status === 429 || /429|RESOURCE_EXHAUSTED/i.test(String(lastError?.message || ''))) {
         throw new Error('เกินโควตาคำขอชั่วคราวของ Gemini API (429) กรุณารอสักครู่แล้วลองใหม่อีกครั้ง');

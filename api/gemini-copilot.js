@@ -80,7 +80,7 @@ ${(clientContext.recentActivities || []).slice(0, 8).map(act => `  * [${act.type
     }
 
     const systemInstruction = `
-คุณคือ "StockFlow Copilot" ผู้ช่วยปัญญาประดิษฐ์อัจฉริยะประจำระบบจัดการคลังสินค้า StockFlow (ขับเคลื่อนด้วย Google Gemini 4 Hydrogen)
+คุณคือ "StockFlow Copilot" ผู้ช่วยปัญญาประดิษฐ์อัจฉริยะประจำระบบจัดการคลังสินค้า StockFlow (ขับเคลื่อนด้วย Google Gemini 3.5 Flash Lite)
 ภารกิจของคุณ:
 1. ช่วยเหลือเจ้าหน้าที่คลังสินค้าและผู้บริหารในการตรวจสอบสถานะสต็อก, ค้นหาพัสดุ, แจ้งเตือนสินค้าขาดแคลน, และแนะนำการสั่งซื้อ/กระจายสต็อกข้ามคลัง
 2. ตอบคำถามเป็นภาษาไทยที่สุภาพ กระชับ ชัดเจน และเป็นมืออาชีพ (คำศัพท์เฉพาะทาง, รหัส SKU, รหัสโครงการ สามารถใช้ภาษาอังกฤษได้)
@@ -109,8 +109,8 @@ ${inventorySummaryText}
       parts: [{ text: query }]
     });
 
-    // Use Gemini 4 Hydrogen exclusively with transient 503/429 retry
-    const candidateModels = ['gemini-4-hydrogen'];
+    // Use Flash Lite models with transient 503/429 retry
+    const candidateModels = ['gemini-3.5-flash-lite', 'gemini-flash-lite-latest'];
     const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
     const isTransient = (err) => {
       const code = Number(err?.status || err?.code);
@@ -130,7 +130,6 @@ ${inventorySummaryText}
             config: {
               systemInstruction,
               temperature: 0.2,
-              thinkingConfig: { thinkingLevel: 'LOW' }
             }
           });
           answer = response.text;
@@ -140,7 +139,7 @@ ${inventorySummaryText}
           lastError = genErr;
           console.warn(`[Gemini Copilot API] Model ${model} attempt ${attempt + 1} failed:`, genErr.message);
           if (attempt === 0 && isTransient(genErr)) {
-            await sleep(1200);
+            await sleep(800);
             continue;
           }
           break;
@@ -164,7 +163,7 @@ ${inventorySummaryText}
     const rawMsg = String(error?.message || '');
     const status = Number(error?.status) || (/503|UNAVAILABLE|high demand/i.test(rawMsg) ? 503 : /429|RESOURCE_EXHAUSTED/i.test(rawMsg) ? 429 : 500);
     const friendlyMessage = status === 503
-      ? 'ขณะนี้โมเดล Gemini 4 Hydrogen มีผู้ใช้งานหนาแน่นชั่วคราว (503) กรุณาลองใหม่อีกครั้ง'
+      ? 'ขณะนี้โมเดล Gemini มีผู้ใช้งานหนาแน่นชั่วคราว (503) กรุณาลองใหม่อีกครั้ง'
       : status === 429
         ? 'เกินโควตาคำขอชั่วคราวของ Gemini API (429) กรุณารอสักครู่แล้วลองใหม่'
         : (rawMsg || 'Internal Server Error');
