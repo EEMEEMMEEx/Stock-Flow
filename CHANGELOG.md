@@ -1,5 +1,11 @@
 # Changelog
 
+## [2026-11-20 08:10] - v1.34.9
+- **Files Modified:** `src/lib/geminiCopilot.js`, `package.json`, `CHANGELOG.md`
+- **Changes:**
+  - **Extend Gemini 4 Hydrogen Request Timeout to 120s (`src/lib/geminiCopilot.js`)**: ขยาย `AbortSignal.timeout` ของทั้ง `/api/gemini-copilot` และ Direct Gemini REST API จาก `30s`/`45s` เป็น `120000ms` (`120s`) เพื่อรองรับช่วงที่โมเดล `gemini-4-hydrogen` ใช้เวลาประมวลผลนานเกิน 45 วินาที
+  - **Version Bump (`package.json`, `CHANGELOG.md`)**: ปรับเวอร์ชันจาก `v1.34.8` เป็น `v1.34.9` (PATCH)
+
 ## [2026-11-20 07:57] - v1.34.8
 - **Files Modified:** `src/lib/geminiCopilot.js`, `api/gemini-copilot.js`, `package.json`, `CHANGELOG.md`
 - **Changes:**

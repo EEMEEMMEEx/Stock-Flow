@@ -156,7 +156,7 @@ export async function askStockFlowCopilot({ query, conversationHistory = [] }) {
   // 1. Fetch live inventory context
   const clientContext = await fetchLiveInventoryContext();
 
-  // 2. Try serverless backend API first (/api/gemini-copilot) with 30s timeout
+  // 2. Try serverless backend API first (/api/gemini-copilot) with 120s timeout
   let backendFailureMessage = null;
   try {
     const { data: { session } } = await supabase.auth.getSession();
@@ -173,7 +173,7 @@ export async function askStockFlowCopilot({ query, conversationHistory = [] }) {
         conversationHistory,
         clientContext
       }),
-      signal: AbortSignal.timeout(30000)
+      signal: AbortSignal.timeout(120000)
     });
 
     if (res.ok) {
@@ -251,7 +251,7 @@ ${contextSnippet}
       parts: [{ text: query }]
     });
 
-    // Use Gemini 4 Hydrogen exclusively (thinkingLevel LOW + 45s timeout + 1x transient retry)
+    // Use Gemini 4 Hydrogen exclusively (thinkingLevel LOW + 120s timeout + 1x transient retry)
     const candidateModels = ['gemini-4-hydrogen'];
     const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
     let lastError = null;
@@ -275,7 +275,7 @@ ${contextSnippet}
                 thinkingConfig: { thinkingLevel: 'LOW' }
               }
             }),
-            signal: AbortSignal.timeout(45000)
+            signal: AbortSignal.timeout(120000)
           });
 
           const data = await response.json();
