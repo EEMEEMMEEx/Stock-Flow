@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { 
   Settings as SettingsIcon, AppWindow, Package, ShieldCheck, 
-  Database, Server, Save, ChevronDown, ChevronRight, RefreshCw, Lock, Eye, AlertTriangle, Globe, Bot
+  Database, Server, Save, ChevronDown, ChevronRight, RefreshCw, Lock, Eye, AlertTriangle, Globe, Bot, Wrench
 } from 'lucide-react';
 import { APP_CONFIG } from '@/config/appConfig';
 import toast from 'react-hot-toast';
@@ -17,7 +17,7 @@ import { useTranslation } from '@/i18n';
 import LanguageSwitcher from '@/components/common/LanguageSwitcher';
 
 const Settings = () => {
-  const { can } = useAuth();
+  const { can, isSuperAdmin } = useAuth();
   const { t } = useTranslation();
   const canUpdate = can('settings.update');
 
@@ -32,7 +32,8 @@ const Settings = () => {
     security: false,
     gemini: false,
     storage: false,
-    system: false
+    system: false,
+    maintenance: false
   });
 
   // App Settings State
@@ -49,6 +50,13 @@ const Settings = () => {
     allow_inactive_project_view: true,
     allow_item_deletion: true,
     allow_direct_stock_adjustment: false
+  });
+
+  // Maintenance Mode State (SUPER Only)
+  const [maintenanceForm, setMaintenanceForm] = useState({
+    enabled: false,
+    message: '',
+    estimated_end: ''
   });
 
   const toggleSection = (sectionKey) => {
@@ -78,6 +86,13 @@ const Settings = () => {
             allow_inactive_project_view: data.allow_inactive_project_view ?? true,
             allow_item_deletion: data.allow_item_deletion !== undefined ? Boolean(data.allow_item_deletion) : true,
             allow_direct_stock_adjustment: data.allow_direct_stock_adjustment !== undefined ? Boolean(data.allow_direct_stock_adjustment) : false
+          });
+        }
+        if (data.maintenance_mode && typeof data.maintenance_mode === 'object') {
+          setMaintenanceForm({
+            enabled: Boolean(data.maintenance_mode.enabled),
+            message: typeof data.maintenance_mode.message === 'string' ? data.maintenance_mode.message : '',
+            estimated_end: typeof data.maintenance_mode.estimated_end === 'string' ? data.maintenance_mode.estimated_end : ''
           });
         }
       }
@@ -188,7 +203,42 @@ const Settings = () => {
     }
   };
 
+  const handleSaveMaintenanceSettings = async (e) => {
+    e.preventDefault();
+    if (!isSuperAdmin) {
+      return toast.error(t('settings.maintenance.superOnlyError', 'Only System Administrator (SUPER) can modify Maintenance Mode'));
+    }
 
+    setSavingCategory('maintenance');
+    try {
+      const payload = {
+        maintenance_mode: {
+          enabled: Boolean(maintenanceForm.enabled),
+          message: (maintenanceForm.message || '').trim(),
+          estimated_end: (maintenanceForm.estimated_end || '').trim()
+        }
+      };
+
+      const { error } = await supabase.rpc('admin_update_system_settings', {
+        p_settings: payload,
+        p_category: 'maintenance'
+      });
+
+      if (error) throw error;
+
+      toast.success(
+        maintenanceForm.enabled
+          ? t('settings.maintenance.enabledToast', 'Maintenance Mode enabled — regular users are now blocked')
+          : t('settings.maintenance.disabledToast', 'Maintenance Mode disabled — system is back online')
+      );
+      window.dispatchEvent(new Event('stockflow:settings-updated'));
+    } catch (error) {
+      console.error('Save Maintenance Settings Error:', error);
+      toast.error(error.message || t('settings.toasts.saveFailed', 'Failed to save settings'));
+    } finally {
+      setSavingCategory(null);
+    }
+  };
 
   return (
     <div className="space-y-6 pb-16 max-w-5xl mx-auto">
@@ -628,6 +678,112 @@ const Settings = () => {
           </CardContent>
         )}
       </Card>
+
+      {/* SECTION 7: Maintenance Mode (SUPER Only) */}
+      {isSuperAdmin && (
+        <Card className={`rounded-xl bg-card border shadow-xs overflow-hidden ${maintenanceForm.enabled ? 'border-amber-500/50' : 'border-border'}`}>
+          <CardHeader
+            onClick={() => toggleSection('maintenance')}
+            className="cursor-pointer hover:bg-muted/40 transition-colors flex flex-row items-center justify-between py-4"
+          >
+            <div className="flex items-center gap-2.5">
+              <Wrench className={`w-5 h-5 ${maintenanceForm.enabled ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'}`} />
+              <div>
+                <div className="flex items-center gap-2">
+                  <CardTitle className="text-base font-bold">
+                    {t('settings.sections.maintenance.title', '7. Maintenance Mode (SUPER Only)')}
+                  </CardTitle>
+                  {maintenanceForm.enabled && (
+                    <span className="px-2 py-0.5 text-[10px] font-bold uppercase rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30">
+                      {t('settings.maintenance.activeBadge', 'ACTIVE')}
+                    </span>
+                  )}
+                </div>
+                <CardDescription className="text-xs">
+                  {t('settings.sections.maintenance.description', 'Temporarily block regular users from accessing the system during maintenance')}
+                </CardDescription>
+              </div>
+            </div>
+            {openSections.maintenance ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
+          </CardHeader>
+
+          {openSections.maintenance && (
+            <CardContent className="pt-4 pb-6 border-t border-border/40">
+              <form onSubmit={handleSaveMaintenanceSettings} className="space-y-4">
+                <div className="flex items-center justify-between gap-4 p-3.5 rounded-lg bg-muted/30 border border-border/60">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="maintenance_enabled" className="text-sm font-semibold cursor-pointer">
+                      {t('settings.maintenance.toggleLabel', 'Enable Maintenance Mode')}
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      {t('settings.maintenance.toggleHelp', 'When enabled, only System Administrator (SUPER) can access the app.')}
+                    </p>
+                  </div>
+                  <button
+                    id="maintenance_enabled"
+                    type="button"
+                    role="switch"
+                    aria-checked={maintenanceForm.enabled}
+                    aria-label={t('settings.maintenance.toggleLabel', 'Enable Maintenance Mode')}
+                    disabled={savingCategory === 'maintenance'}
+                    onClick={() => setMaintenanceForm(prev => ({ ...prev, enabled: !prev.enabled }))}
+                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50 ${
+                      maintenanceForm.enabled ? 'bg-amber-500' : 'bg-muted-foreground/30'
+                    }`}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${
+                        maintenanceForm.enabled ? 'translate-x-5' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="maintenance_message" className="text-xs font-medium">
+                    {t('settings.maintenance.messageLabel', 'Notice Message (Optional)')}
+                  </Label>
+                  <textarea
+                    id="maintenance_message"
+                    rows={3}
+                    value={maintenanceForm.message}
+                    onChange={(e) => setMaintenanceForm(prev => ({ ...prev, message: e.target.value }))}
+                    disabled={savingCategory === 'maintenance'}
+                    placeholder={t('settings.maintenance.messagePlaceholder', 'e.g. Upgrading database and inventory services. Please try again later.')}
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="maintenance_estimated_end" className="text-xs font-medium">
+                    {t('settings.maintenance.estimatedEndLabel', 'Estimated Completion Time (Optional)')}
+                  </Label>
+                  <Input
+                    id="maintenance_estimated_end"
+                    value={maintenanceForm.estimated_end}
+                    onChange={(e) => setMaintenanceForm(prev => ({ ...prev, estimated_end: e.target.value }))}
+                    disabled={savingCategory === 'maintenance'}
+                    placeholder={t('settings.maintenance.estimatedEndPlaceholder', 'e.g. Today 18:00 (UTC+7)')}
+                  />
+                </div>
+
+                <div className="flex justify-end pt-2">
+                  <Button
+                    type="submit"
+                    disabled={savingCategory === 'maintenance'}
+                    className="min-h-[44px] cursor-pointer"
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    {savingCategory === 'maintenance'
+                      ? t('common.saving', 'Saving...')
+                      : t('settings.maintenance.saveButton', 'Save Maintenance Settings')}
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          )}
+        </Card>
+      )}
     </div>
   );
 };

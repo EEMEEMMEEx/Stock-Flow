@@ -1,7 +1,9 @@
 import { lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './contexts/AuthProvider';
+import { MaintenanceProvider } from './contexts/MaintenanceProvider';
+import { useMaintenance } from './contexts/MaintenanceContext';
 import { ThemeProvider } from './components/ThemeProvider';
 import { LanguageProvider } from './i18n';
 import PageWrapper from './components/layout/PageWrapper';
@@ -25,6 +27,7 @@ const RoleManagement = lazy(() => import('./pages/RoleManagement'));
 const Settings = lazy(() => import('./pages/Settings'));
 const Profile = lazy(() => import('./pages/Profile'));
 const LandingPage = lazy(() => import('./landing/LandingPage'));
+const Maintenance = lazy(() => import('./pages/Maintenance'));
 
 function PageLoadingFallback() {
   return (
@@ -85,6 +88,30 @@ function HomeRoute() {
   return <Navigate to="/login" replace />;
 }
 
+function MaintenanceGate({ children }) {
+  const { isSuperAdmin, loading: authLoading } = useAuth();
+  const { maintenance, loading: maintenanceLoading } = useMaintenance();
+  const location = useLocation();
+
+  if (isLandingSite() || location.pathname === '/landing' || location.pathname === '/login') {
+    return children;
+  }
+
+  if (maintenanceLoading || authLoading) {
+    return (
+      <div className="h-screen w-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
+  }
+
+  if (maintenance.enabled && !isSuperAdmin) {
+    return <Maintenance />;
+  }
+
+  return children;
+}
+
 function App() {
   const baseUrl = import.meta.env.BASE_URL || '/';
 
@@ -92,10 +119,12 @@ function App() {
     <ThemeProvider defaultTheme="system" storageKey="stock-flow-theme-v2">
       <LanguageProvider>
         <AuthProvider>
-          <BrowserRouter basename={baseUrl} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-            <ErrorBoundary>
-              <Suspense fallback={<PageLoadingFallback />}>
-                <Routes>
+          <MaintenanceProvider>
+            <BrowserRouter basename={baseUrl} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+              <ErrorBoundary>
+                <Suspense fallback={<PageLoadingFallback />}>
+                  <MaintenanceGate>
+                    <Routes>
                   {/* Public Routes */}
                   <Route path="/" element={<HomeRoute />} />
                   <Route path="/landing" element={<LandingPage />} />
@@ -121,16 +150,18 @@ function App() {
 
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
-              </Suspense>
-            </ErrorBoundary>
+              </MaintenanceGate>
+            </Suspense>
+          </ErrorBoundary>
 
-            <Toaster 
-              position="top-right" 
-              toastOptions={{
-                className: '!bg-card !text-card-foreground !border !border-border !shadow-lg',
-              }}
-            />
-          </BrowserRouter>
+          <Toaster 
+            position="top-right" 
+            toastOptions={{
+              className: '!bg-card !text-card-foreground !border !border-border !shadow-lg',
+            }}
+          />
+        </BrowserRouter>
+        </MaintenanceProvider>
         </AuthProvider>
       </LanguageProvider>
     </ThemeProvider>

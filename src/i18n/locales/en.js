@@ -1662,7 +1662,24 @@ export default {
       "system": {
         "title": "6. System Information",
         "description": "Summary of version metadata, environment, and database connectivity"
+      },
+      "maintenance": {
+        "title": "7. Maintenance Mode (SUPER Only)",
+        "description": "Temporarily block regular users from accessing the system during maintenance"
       }
+    },
+    "maintenance": {
+      "activeBadge": "ACTIVE",
+      "toggleLabel": "Enable Maintenance Mode",
+      "toggleHelp": "When enabled, only System Administrator (SUPER) can access the app.",
+      "messageLabel": "Notice Message (Optional)",
+      "messagePlaceholder": "e.g. Upgrading database and inventory services. Please try again later.",
+      "estimatedEndLabel": "Estimated Completion Time (Optional)",
+      "estimatedEndPlaceholder": "e.g. Today 18:00 (UTC+7)",
+      "saveButton": "Save Maintenance Settings",
+      "superOnlyError": "Only System Administrator (SUPER) can modify Maintenance Mode",
+      "enabledToast": "Maintenance Mode enabled — regular users are now blocked",
+      "disabledToast": "Maintenance Mode disabled — system is back online"
     },
     "app": {
       "appName": "Application Name",
@@ -2412,5 +2429,17 @@ export default {
     "sendToInternalRepairTitle": "Send to in-house repair queue",
     "sentToInternalRepairSuccess": "Item moved to internal repair queue successfully",
     "sentToInternalRepairFailed": "Failed to move item to internal repair queue"
+  },
+  "maintenance": {
+    "title": "System Under Maintenance",
+    "subtitle": "The system is temporarily unavailable while we perform scheduled maintenance. Please check back shortly.",
+    "estimatedEnd": "Estimated completion:",
+    "checkAgain": "Check Again",
+    "checking": "Checking status...",
+    "signOut": "Sign Out",
+    "adminLogin": "Admin Sign In",
+    "superOnlyNote": "Only System Administrator (SUPER) can access the system during maintenance.",
+    "superBanner": "Maintenance Mode is ACTIVE — Regular users are blocked from accessing the system.",
+    "manageInSettings": "Manage"
   }
 };

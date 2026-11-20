@@ -1,5 +1,18 @@
 # Changelog
 
+## [2026-11-20 16:42] - v1.35.1
+- **Files Modified:** `src/i18n/locales/th.js`, `package.json`, `CHANGELOG.md`
+- **Changes:**
+  - **Update Maintenance Notice Text (`src/i18n/locales/th.js`)**: ปรับข้อความ `maintenance.superOnlyNote` เป็น `เฉพาะผู้ดูแลระบบสูงสุด เท่านั้นที่สามารถเข้าใช้งานได้ระหว่างปิดปรับปรุง` (นำ `(SUPER)` ออก)
+  - **Version Bump (`package.json`, `CHANGELOG.md`)**: ปรับเวอร์ชันจาก `v1.35.0` เป็น `v1.35.1` (PATCH)
+
+## [2026-11-20 16:33] - v1.35.0
+- **Files Modified:** `supabase/migrations/109_maintenance_mode.sql`, `src/contexts/MaintenanceContext.js`, `src/contexts/MaintenanceProvider.jsx`, `src/pages/Maintenance.jsx`, `src/App.jsx`, `src/components/layout/PageWrapper.jsx`, `src/pages/Settings.jsx`, `src/i18n/locales/en.js`, `src/i18n/locales/th.js`, `docs/maintenance-mode-implementation-plan.md`, `package.json`, `CHANGELOG.md`
+- **Changes:**
+  - **System Maintenance Mode (SUPER Only)**: เพิ่มระบบปิดปรับปรุงระบบชั่วคราว (`maintenance_mode` ใน `system_settings`) พร้อม RPC `get_maintenance_status()` (`anon + authenticated`) และบังคับตรวจ `public.is_super_admin(auth.uid())` ใน `admin_update_system_settings`
+  - **Maintenance Gate & UI (`MaintenanceProvider.jsx`, `Maintenance.jsx`, `App.jsx`, `PageWrapper.jsx`, `Settings.jsx`)**: เพิ่มหน้าแจ้งปิดปรับปรุงสำหรับผู้ใช้ทั่วไป, ยกเว้น `/login` และ `/landing`, ให้สิทธิ์เฉพาะ `isSuperAdmin` ควบคุมใน Settings และเข้าใช้งานระบบพร้อมแถบแจ้งเตือนระหว่างเปิด Maintenance Mode
+  - **i18n & Version Bump (`en.js`, `th.js`, `package.json`, `CHANGELOG.md`)**: เพิ่มคีย์ภาษาไทย/อังกฤษครบชุดและปรับเวอร์ชันจาก `v1.34.10` เป็น `v1.35.0` (MINOR)
+
 ## [2026-11-20 08:23] - v1.34.10
 - **Files Modified:** `src/lib/geminiCopilot.js`, `api/gemini-copilot.js`, `src/components/copilot/StockFlowCopilotModal.jsx`, `src/components/settings/GeminiApiKeyManager.jsx`, `scripts/verify-gemini-copilot.mjs`, `package.json`, `CHANGELOG.md`
 - **Changes:**
