@@ -243,8 +243,12 @@ const RepairResolutionModal = ({
       onClose?.();
     } catch (err) {
       console.error('[RepairResolutionModal] resolve failed:', err);
-      if (isSchemaMismatchError(err)) toast.error(t('checkouts.repairMigrationMissing'));
-      else toast.error(cleanRpcMessage(err) || t('checkouts.repairFailed'));
+      if (isSchemaMismatchError(err)) {
+        const detail = cleanRpcMessage(err);
+        toast.error(detail ? `${t('checkouts.repairMigrationMissing')} (${detail})` : t('checkouts.repairMigrationMissing'));
+      } else {
+        toast.error(cleanRpcMessage(err) || t('checkouts.repairFailed'));
+      }
     } finally {
       setSubmitting(false);
     }

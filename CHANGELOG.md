@@ -1,5 +1,12 @@
 # Changelog
 
+## [2026-11-20 07:30] - v1.34.6
+- **Files Modified:** `supabase/migrations/108_fix_resolve_damaged_return_item_schema_and_ledger.sql`, `scripts/apply-migration-108.mjs`, `scripts/verify-migration-108.mjs`, `src/components/checkouts/RepairResolutionModal.jsx`, `docs/fix-resolve-damaged-return-schema-implementation-plan.md`, `package.json`, `CHANGELOG.md`
+- **Changes:**
+  - **Fix `resolve_damaged_return_item` Schema & Ledger Regressions (`supabase/migrations/108_fix_resolve_damaged_return_item_schema_and_ledger.sql`)**: แก้ไขคอลัมน์อัปเดต `checkout_return_logs` จาก `repair_stock_in_order_id` (ไม่มีอยู่จริง, SQLSTATE `42703`) เป็น `restored_stock_in_order_id`, เปลี่ยนการตรวจสต็อกอะไหล่จาก `public.v_current_stock` (ไม่มีอยู่จริง, SQLSTATE `42P01`) เป็น `public.stock_balance(balance)`, เปลี่ยนการตัดอะไหล่จาก `transaction_type = 'withdrawal'` (`-v_spare_qty`) เป็น `'stock_out'` ค่าบวก, คืนค่า `reference_type` มาตรฐาน (`'repair_restored'`, `'repair_spare_part'`, `'parts_harvest'`) ให้ตรงกับ `super_revert_checkout_repair`, และคืน `storage_location_id`, `po_number`, และ `items` row mutex locking โดยคงการรองรับ `internal_repair`/`retried_internal`, `returned_serial_number`, และ `closed_by`
+  - **Surface Real Schema Mismatch Detail (`src/components/checkouts/RepairResolutionModal.jsx`)**: แสดงรายละเอียดจาก `cleanRpcMessage(err)` ต่อท้ายข้อความ `repairMigrationMissing` เมื่อเกิด `isSchemaMismatchError(err)` เพื่อไม่ให้ซ่อน error ระดับคอลัมน์/ตาราง
+  - **Migration Tooling & Version Bump (`scripts/apply-migration-108.mjs`, `scripts/verify-migration-108.mjs`, `package.json`, `CHANGELOG.md`)**: เพิ่มสคริปต์ตรวจสอบและติดตั้ง migration 108 พร้อมปรับเวอร์ชันจาก `v1.34.5` เป็น `v1.34.6` (PATCH)
+
 ## [2026-11-16 15:11] - v1.34.5
 - **Files Modified:** `supabase/migrations/107_allow_internal_repair_in_resolve_damaged_return.sql`, `docs/fix-consumed-internal-repair-implementation-plan.md`, `package.json`, `CHANGELOG.md`
 - **Changes:**
