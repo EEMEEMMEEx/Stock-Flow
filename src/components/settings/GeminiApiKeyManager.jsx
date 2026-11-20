@@ -234,10 +234,7 @@ export default function GeminiApiKeyManager({ canUpdate = true }) {
           </div>
           <ul className="list-disc list-inside text-muted-foreground space-y-1 pl-1 text-[11px]">
             <li>
-              <strong className="text-foreground">โมเดลหลัก:</strong> Google Gemini 3.8 Flash (ความเร็วสูง รองรับการวิเคราะห์สต็อกแบบเรียลไทม์)
-            </li>
-            <li>
-              <strong className="text-foreground">โมเดลสำรอง:</strong> Gemini 2.5 Flash / Flash Lite fallback อัตโนมัติ
+              <strong className="text-foreground">โมเดลหลัก:</strong> Google Gemini 4 Hydrogen (ความเร็วสูง รองรับการวิเคราะห์สต็อกแบบเรียลไทม์)
             </li>
             <li>
               <strong className="text-foreground">ขอบเขตงาน:</strong> วิเคราะห์พัสดุใกล้หมด, รายงานภาพรวมคลัง, สรุปประวัติการเบิกจ่าย

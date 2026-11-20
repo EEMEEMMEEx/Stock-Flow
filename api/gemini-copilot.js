@@ -80,7 +80,7 @@ ${(clientContext.recentActivities || []).slice(0, 8).map(act => `  * [${act.type
     }
 
     const systemInstruction = `
-คุณคือ "StockFlow Copilot" ผู้ช่วยปัญญาประดิษฐ์อัจฉริยะประจำระบบจัดการคลังสินค้า StockFlow (ขับเคลื่อนด้วย Google Gemini 3.8 Flash)
+คุณคือ "StockFlow Copilot" ผู้ช่วยปัญญาประดิษฐ์อัจฉริยะประจำระบบจัดการคลังสินค้า StockFlow (ขับเคลื่อนด้วย Google Gemini 4 Hydrogen)
 ภารกิจของคุณ:
 1. ช่วยเหลือเจ้าหน้าที่คลังสินค้าและผู้บริหารในการตรวจสอบสถานะสต็อก, ค้นหาพัสดุ, แจ้งเตือนสินค้าขาดแคลน, และแนะนำการสั่งซื้อ/กระจายสต็อกข้ามคลัง
 2. ตอบคำถามเป็นภาษาไทยที่สุภาพ กระชับ ชัดเจน และเป็นมืออาชีพ (คำศัพท์เฉพาะทาง, รหัส SKU, รหัสโครงการ สามารถใช้ภาษาอังกฤษได้)
@@ -109,8 +109,8 @@ ${inventorySummaryText}
       parts: [{ text: query }]
     });
 
-    // Try candidate models with fast models first to prevent timeout / 503 high demand
-    const candidateModels = ['gemini-3.5-flash-lite', 'gemini-flash-lite-latest', 'gemini-3.8-flash'];
+    // Use Gemini 4 Hydrogen exclusively
+    const candidateModels = ['gemini-4-hydrogen'];
     let lastError = null;
     let answer = null;
     let successfulModel = candidateModels[0];

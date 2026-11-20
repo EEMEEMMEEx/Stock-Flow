@@ -1,5 +1,11 @@
 # Changelog
 
+## [2026-11-20 07:38] - v1.34.7
+- **Files Modified:** `src/lib/geminiCopilot.js`, `api/gemini-copilot.js`, `src/components/copilot/StockFlowCopilotModal.jsx`, `src/components/settings/GeminiApiKeyManager.jsx`, `scripts/verify-gemini-copilot.mjs`, `docs/copilot-gemini-4-hydrogen-implementation-plan.md`, `package.json`, `CHANGELOG.md`
+- **Changes:**
+  - **Switch StockFlow Copilot to `gemini-4-hydrogen` Exclusively (`src/lib/geminiCopilot.js`, `api/gemini-copilot.js`)**: เปลี่ยน `candidateModels` เป็น `['gemini-4-hydrogen']` เท่านั้น พร้อมปรับค่า fallback `model` และ `systemInstruction` โดยนำ `gemini-3.5-flash-lite`, `gemini-flash-lite-latest` และ `gemini-3.8-flash` ออกทั้งหมด
+  - **Update Copilot UI & Settings Display (`src/components/copilot/StockFlowCopilotModal.jsx`, `src/components/settings/GeminiApiKeyManager.jsx`, `scripts/verify-gemini-copilot.mjs`)**: อัปเดตข้อความต้อนรับ, badge, model label, loading text และการตั้งค่าเป็น `Gemini 4 Hydrogen` / `gemini-4-hydrogen` พร้อมอัปเดตสคริปต์ตรวจ `verify:gemini-copilot` และปรับเวอร์ชันจาก `v1.34.6` เป็น `v1.34.7` (PATCH)
+
 ## [2026-11-20 07:30] - v1.34.6
 - **Files Modified:** `supabase/migrations/108_fix_resolve_damaged_return_item_schema_and_ledger.sql`, `scripts/apply-migration-108.mjs`, `scripts/verify-migration-108.mjs`, `src/components/checkouts/RepairResolutionModal.jsx`, `docs/fix-resolve-damaged-return-schema-implementation-plan.md`, `package.json`, `CHANGELOG.md`
 - **Changes:**

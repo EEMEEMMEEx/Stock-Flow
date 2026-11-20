@@ -49,11 +49,14 @@ console.log('[PASS] Copilot successfully relocated from Topbar to Floating Actio
 // 3. Check @google/genai and model in api/gemini-copilot.js
 const apiContent = fs.readFileSync('api/gemini-copilot.js', 'utf-8');
 assert.ok(apiContent.includes('@google/genai'), 'api/gemini-copilot.js must import @google/genai');
-assert.ok(apiContent.includes('gemini-3.8-flash'), 'api/gemini-copilot.js must target gemini-3.8-flash');
-console.log('[PASS] Serverless API uses @google/genai and gemini-3.8-flash');
+assert.ok(apiContent.includes("['gemini-4-hydrogen']"), 'api/gemini-copilot.js must target only gemini-4-hydrogen');
+assert.ok(!apiContent.includes('gemini-3.8-flash') && !apiContent.includes('gemini-3.5-flash-lite') && !apiContent.includes('gemini-flash-lite-latest'), 'api/gemini-copilot.js must NOT contain legacy models');
+console.log('[PASS] Serverless API uses @google/genai and gemini-4-hydrogen exclusively');
 
 // 6. Check client lib exports
 const clientLibContent = fs.readFileSync('src/lib/geminiCopilot.js', 'utf-8');
+assert.ok(clientLibContent.includes("['gemini-4-hydrogen']"), 'src/lib/geminiCopilot.js must target only gemini-4-hydrogen');
+assert.ok(!clientLibContent.includes('gemini-3.8-flash') && !clientLibContent.includes('gemini-3.5-flash-lite') && !clientLibContent.includes('gemini-flash-lite-latest'), 'src/lib/geminiCopilot.js must NOT contain legacy models');
 assert.ok(clientLibContent.includes('askStockFlowCopilot'), 'src/lib/geminiCopilot.js must export askStockFlowCopilot');
 assert.ok(clientLibContent.includes('getGeminiApiKey'), 'src/lib/geminiCopilot.js must export getGeminiApiKey');
 assert.ok(clientLibContent.includes('saveGeminiApiKey'), 'src/lib/geminiCopilot.js must export saveGeminiApiKey');

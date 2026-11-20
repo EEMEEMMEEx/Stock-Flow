@@ -181,7 +181,7 @@ export async function askStockFlowCopilot({ query, conversationHistory = [] }) {
         return {
           answer: data.answer,
           source: 'serverless',
-          model: data.model || 'gemini-3.5-flash-lite'
+          model: data.model || 'gemini-4-hydrogen'
         };
       }
     }
@@ -242,8 +242,8 @@ ${contextSnippet}
       parts: [{ text: query }]
     });
 
-    // High availability models (fast models first to prevent hanging)
-    const candidateModels = ['gemini-3.5-flash-lite', 'gemini-flash-lite-latest', 'gemini-3.8-flash'];
+    // Use Gemini 4 Hydrogen exclusively
+    const candidateModels = ['gemini-4-hydrogen'];
     let lastError = null;
     let answer = null;
     let successfulModel = candidateModels[0];
