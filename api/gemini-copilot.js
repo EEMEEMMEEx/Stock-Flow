@@ -109,29 +109,44 @@ ${inventorySummaryText}
       parts: [{ text: query }]
     });
 
-    // Use Gemini 4 Hydrogen exclusively
+    // Use Gemini 4 Hydrogen exclusively with transient 503/429 retry
     const candidateModels = ['gemini-4-hydrogen'];
+    const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    const isTransient = (err) => {
+      const code = Number(err?.status || err?.code);
+      return code === 503 || code === 429 || /503|429|UNAVAILABLE|RESOURCE_EXHAUSTED|high demand/i.test(String(err?.message || ''));
+    };
+
     let lastError = null;
     let answer = null;
     let successfulModel = candidateModels[0];
 
     for (const model of candidateModels) {
-      try {
-        const response = await ai.models.generateContent({
-          model,
-          contents,
-          config: {
-            systemInstruction,
-            temperature: 0.2,
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          const response = await ai.models.generateContent({
+            model,
+            contents,
+            config: {
+              systemInstruction,
+              temperature: 0.2,
+              thinkingConfig: { thinkingLevel: 'LOW' }
+            }
+          });
+          answer = response.text;
+          successfulModel = model;
+          if (answer) break;
+        } catch (genErr) {
+          lastError = genErr;
+          console.warn(`[Gemini Copilot API] Model ${model} attempt ${attempt + 1} failed:`, genErr.message);
+          if (attempt === 0 && isTransient(genErr)) {
+            await sleep(1200);
+            continue;
           }
-        });
-        answer = response.text;
-        successfulModel = model;
-        if (answer) break;
-      } catch (genErr) {
-        lastError = genErr;
-        console.warn(`[Gemini Copilot API] Model ${model} failed, trying fallback:`, genErr.message);
+          break;
+        }
       }
+      if (answer) break;
     }
 
     if (!answer && lastError) {
@@ -146,9 +161,16 @@ ${inventorySummaryText}
     });
   } catch (error) {
     console.error('[Gemini Copilot API] Error:', error);
-    return res.status(500).json({
+    const rawMsg = String(error?.message || '');
+    const status = Number(error?.status) || (/503|UNAVAILABLE|high demand/i.test(rawMsg) ? 503 : /429|RESOURCE_EXHAUSTED/i.test(rawMsg) ? 429 : 500);
+    const friendlyMessage = status === 503
+      ? 'ขณะนี้โมเดล Gemini 4 Hydrogen มีผู้ใช้งานหนาแน่นชั่วคราว (503) กรุณาลองใหม่อีกครั้ง'
+      : status === 429
+        ? 'เกินโควตาคำขอชั่วคราวของ Gemini API (429) กรุณารอสักครู่แล้วลองใหม่'
+        : (rawMsg || 'Internal Server Error');
+    return res.status(status).json({
       success: false,
-      message: error.message || 'Internal Server Error'
+      message: friendlyMessage
     });
   }
 }

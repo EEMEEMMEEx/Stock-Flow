@@ -1,5 +1,11 @@
 # Changelog
 
+## [2026-11-20 07:57] - v1.34.8
+- **Files Modified:** `src/lib/geminiCopilot.js`, `api/gemini-copilot.js`, `package.json`, `CHANGELOG.md`
+- **Changes:**
+  - **Fix `gemini-4-hydrogen` Timeout & `503` Masking (`src/lib/geminiCopilot.js`, `api/gemini-copilot.js`)**: ตั้ง `thinkingConfig: { thinkingLevel: 'LOW' }` เพื่อลดเวลาคิดของ `gemini-4-hydrogen`, ขยาย timeout จาก `8s`/`7s` เป็น `30s` (Serverless) และ `45s` (Direct REST), เพิ่ม retry 1 ครั้งสำหรับ `503`/`429` ชั่วคราว, ส่งคืน HTTP status จริง (`503`/`429`) พร้อมข้อความภาษาไทยที่ชัดเจนแทน `500` และ `signal timed out` และป้องกันการแสดง `needsKey` ผิดพลาดเมื่อ backend คืน error
+  - **Version Bump (`package.json`, `CHANGELOG.md`)**: ปรับเวอร์ชันจาก `v1.34.7` เป็น `v1.34.8` (PATCH)
+
 ## [2026-11-20 07:38] - v1.34.7
 - **Files Modified:** `src/lib/geminiCopilot.js`, `api/gemini-copilot.js`, `src/components/copilot/StockFlowCopilotModal.jsx`, `src/components/settings/GeminiApiKeyManager.jsx`, `scripts/verify-gemini-copilot.mjs`, `docs/copilot-gemini-4-hydrogen-implementation-plan.md`, `package.json`, `CHANGELOG.md`
 - **Changes:**

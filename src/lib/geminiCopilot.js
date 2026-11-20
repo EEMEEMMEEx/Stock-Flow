@@ -156,7 +156,8 @@ export async function askStockFlowCopilot({ query, conversationHistory = [] }) {
   // 1. Fetch live inventory context
   const clientContext = await fetchLiveInventoryContext();
 
-  // 2. Try serverless backend API first (/api/gemini-copilot) with 8s timeout
+  // 2. Try serverless backend API first (/api/gemini-copilot) with 30s timeout
+  let backendFailureMessage = null;
   try {
     const { data: { session } } = await supabase.auth.getSession();
     const headers = { 'Content-Type': 'application/json' };
@@ -172,7 +173,7 @@ export async function askStockFlowCopilot({ query, conversationHistory = [] }) {
         conversationHistory,
         clientContext
       }),
-      signal: AbortSignal.timeout(8000)
+      signal: AbortSignal.timeout(30000)
     });
 
     if (res.ok) {
@@ -184,6 +185,11 @@ export async function askStockFlowCopilot({ query, conversationHistory = [] }) {
           model: data.model || 'gemini-4-hydrogen'
         };
       }
+    } else if (res.status !== 404 && res.status !== 405) {
+      const errData = await res.json().catch(() => null);
+      if (errData?.message && !errData?.needsKey) {
+        backendFailureMessage = errData.message;
+      }
     }
   } catch {
     // Backend API unavailable / timeout - smoothly continue to client-side fallback
@@ -192,6 +198,9 @@ export async function askStockFlowCopilot({ query, conversationHistory = [] }) {
   // 3. Client-side direct Google AI API call
   const apiKey = getGeminiApiKey();
   if (!apiKey) {
+    if (backendFailureMessage) {
+      throw new Error(backendFailureMessage);
+    }
     return {
       needsKey: true,
       answer: 'ยังไม่ได้กำหนดค่า **GEMINI_API_KEY** ในตัวแปรระบบ (Vercel Environment Variables)\n\nกรุณากำหนดค่า `VITE_GEMINI_API_KEY` หรือ `GEMINI_API_KEY` ใน Environment Variables ของโครงการบน Vercel หรือในไฟล์ `.env` สำหรับเครื่องพัฒนา'
@@ -242,46 +251,59 @@ ${contextSnippet}
       parts: [{ text: query }]
     });
 
-    // Use Gemini 4 Hydrogen exclusively
+    // Use Gemini 4 Hydrogen exclusively (thinkingLevel LOW + 45s timeout + 1x transient retry)
     const candidateModels = ['gemini-4-hydrogen'];
+    const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
     let lastError = null;
     let answer = null;
     let successfulModel = candidateModels[0];
 
     for (const model of candidateModels) {
-      try {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents,
-            systemInstruction: {
-              parts: [{ text: systemInstruction }]
-            },
-            generationConfig: {
-              temperature: 0.2
-            }
-          }),
-          signal: AbortSignal.timeout(7000)
-        });
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents,
+              systemInstruction: {
+                parts: [{ text: systemInstruction }]
+              },
+              generationConfig: {
+                temperature: 0.2,
+                thinkingConfig: { thinkingLevel: 'LOW' }
+              }
+            }),
+            signal: AbortSignal.timeout(45000)
+          });
 
-        const data = await response.json();
-        if (response.ok) {
-          const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (text) {
-            answer = text;
-            successfulModel = model;
+          const data = await response.json();
+          if (response.ok) {
+            const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (text) {
+              answer = text;
+              successfulModel = model;
+              break;
+            }
+          } else {
+            const apiErr = new Error(data.error?.message || `API Error (${response.status})`);
+            apiErr.status = response.status;
+            lastError = apiErr;
+            console.warn(`[Gemini Client] Model ${model} attempt ${attempt + 1} returned ${response.status}:`, data.error?.message);
+            if (attempt === 0 && (response.status === 503 || response.status === 429)) {
+              await sleep(1200);
+              continue;
+            }
             break;
           }
-        } else {
-          lastError = new Error(data.error?.message || 'API Error');
-          console.warn(`[Gemini Client] Model ${model} returned error:`, data.error?.message);
+        } catch (err) {
+          lastError = err;
+          console.warn(`[Gemini Client] Model ${model} attempt ${attempt + 1} failed:`, err.message);
+          break;
         }
-      } catch (err) {
-        lastError = err;
-        console.warn(`[Gemini Client] Model ${model} failed, trying next:`, err.message);
       }
+      if (answer) break;
     }
 
     if (!answer) {
@@ -290,6 +312,15 @@ ${contextSnippet}
           needsKey: true,
           answer: '⚠️ **API Key ไม่ถูกต้อง** กรุณาตรวจสอบหรืออัปเดต API Key ในเมนู **[ตั้งค่าระบบ (/settings)](/settings)** หรือขอรับ Key ใหม่จาก [Google AI Studio](https://aistudio.google.com/)'
         };
+      }
+      if (lastError?.name === 'TimeoutError' || lastError?.name === 'AbortError') {
+        throw new Error('การเชื่อมต่อ Gemini 4 Hydrogen ใช้เวลานานเกินกำหนด (Timeout) กรุณาลองใหม่อีกครั้ง');
+      }
+      if (lastError?.status === 503 || /503|UNAVAILABLE|high demand/i.test(String(lastError?.message || ''))) {
+        throw new Error('ขณะนี้โมเดล Gemini 4 Hydrogen มีผู้ใช้งานหนาแน่นชั่วคราว (503) กรุณารอสักครู่แล้วลองใหม่อีกครั้ง');
+      }
+      if (lastError?.status === 429 || /429|RESOURCE_EXHAUSTED/i.test(String(lastError?.message || ''))) {
+        throw new Error('เกินโควตาคำขอชั่วคราวของ Gemini API (429) กรุณารอสักครู่แล้วลองใหม่อีกครั้ง');
       }
       throw lastError || new Error('ไม่สามารถรับคำตอบจาก Gemini ได้ กรุณาลองใหม่อีกครั้ง');
     }
