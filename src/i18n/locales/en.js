@@ -518,6 +518,8 @@ export default {
       "duplicateEntry": "Duplicate item entry",
       "categoryNotFound": "Selected category does not exist. Please select a valid category",
       "requiredFields": "Please fill in required fields (Item Name and Unit)",
+      "invalidName": "Item name cannot be empty or a placeholder such as \"-\"",
+      "invalidUnit": "Unit cannot be empty or a placeholder such as \"-\"",
       "validationFailed": "Input validation failed",
       "noEditPermission": "You do not have permission to edit items. Please contact administrator",
       "saveUnexpectedError": "An unexpected error occurred while saving item",
@@ -1413,7 +1415,7 @@ export default {
       "thPerSite": "Per Site",
       "thActualStock": "Actual Stock",
       "thKitsPossible": "Kits Possible",
-      "thMissingForNextSet": "Missing for Next Set",
+      "thMissingForNextSet": "Shortage (Min 1 Set)",
       "thStatus": "Status",
       "matchedInSystem": "Matched in system: {{name}}",
       "complete": "Complete",
@@ -1466,7 +1468,7 @@ export default {
       "colQtyPerSite": "Qty Per Site",
       "colCurrentStock": "Current Stock",
       "colKitsPossible": "Kits Possible",
-      "colMissingForNextSet": "Missing For Next Set"
+      "colMissingForNextSet": "Shortage (Min 1 Set)"
     },
     "generatingPdf": "Generating PDF..."
   },

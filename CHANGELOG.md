@@ -1,5 +1,36 @@
 # Changelog
 
+## [2026-11-21 18:18] - v1.37.2
+- **Files Modified:** `src/lib/reportPdfData.js`, `src/lib/siteKits.js`, `src/i18n/locales/th.js`, `src/i18n/locales/en.js`, `src/lib/reportPdfData.test.js`, `docs/site-kits-shortage-min-one-set-plan.md`, `package.json`, `CHANGELOG.md`
+- **Changes:**
+  - **Site Kits BOM Shortage Minimum-1-Set Calculation (`src/lib/reportPdfData.js`, `src/lib/siteKits.js`)**: เปลี่ยนการคำนวณยอดขาด (`missing_for_next_set` / `missingForNextSet`) ผ่าน `calculateSiteKitShortage()` จากเดิมที่คำนวณเผื่อชุดถัดไป (`(complete_sets + 1) * qty_per_site`) เป็นเทียบขั้นต่ำ 1 ชุด (`Math.max(0, qty_per_site - total_stock)`) เพื่อให้รายการที่ประกอบได้อย่างน้อย 1 ชุด (เช่น 2 ชุด) แสดงขาดเป็น `0` (ครบถ้วน) โดยยังคงสถานะ `สต็อกจำกัด` (`isLimiting`) สำหรับตัวคอขวดไว้ตามเดิม
+  - **Labels, Tests & Version Bump (`src/i18n/locales/{th,en}.js`, `src/lib/reportPdfData.test.js`, `package.json`, `CHANGELOG.md`)**: ปรับป้ายคอลัมน์ในตาราง/Excel (`ขาด (ขั้นต่ำ 1 ชุด)` / `Shortage (Min 1 Set)`), เพิ่ม unit tests ครอบคลุมกรณีจัดได้หลายชุดและจัดไม่ได้สักชุด, และปรับเวอร์ชันจาก `v1.37.1` เป็น `v1.37.2` (PATCH)
+
+## [2026-11-21 17:24] - v1.37.1
+- **Files Modified:** `src/lib/itemValidation.js`, `src/lib/itemValidation.test.js`, `src/pages/Items.jsx`, `src/i18n/locales/en.js`, `src/i18n/locales/th.js`, `supabase/migrations/110_items_update_audit_and_guard.sql`, `package.json`, `CHANGELOG.md`
+- **Changes:**
+  - **Item Edit Defensive Guard & Audit Trail (`src/lib/itemValidation.js`, `src/pages/Items.jsx`, `supabase/migrations/110_items_update_audit_and_guard.sql`)**: เพิ่ม validation กันไม่ให้บันทึก `name` หรือ `unit` ของพัสดุเป็นค่าว่างหรือสัญลักษณ์แทน (เช่น `"-"`) พร้อม trim และอัปเดต `updated_at` ใน `Items.jsx`, เพิ่มข้อความแปล `items.toasts.invalidName` / `items.toasts.invalidUnit` (TH/EN), และเพิ่ม migration 110 (`BEFORE UPDATE` guard + `AFTER UPDATE` `SECURITY DEFINER` trigger บันทึก `ITEM_UPDATED` ลง `public.audit_logs` พร้อม `before`/`after` diff)
+  - **Tests & Version Bump (`src/lib/itemValidation.test.js`, `package.json`, `CHANGELOG.md`)**: เพิ่ม unit tests สำหรับ `itemValidation` และปรับเวอร์ชันจาก `v1.37.0` เป็น `v1.37.1` (PATCH)
+
+## [2026-11-21 16:22] - v1.37.0
+- **Files Modified:** `src/lib/reportPdfData.js`, `src/lib/balanceReportPdfData.js`, `src/lib/pdf-report-shared.jsx`, `src/lib/pdf-templates.jsx`, `src/pages/Reports.jsx`, `src/components/reports/ReportSiteKits.jsx`, `src/lib/reportPdfData.test.js`, `scripts/verify-all-reports-pdf.mjs`, `package.json`, `CHANGELOG.md`
+- **Changes:**
+  - **Shared PDF Report Architecture (`src/lib/reportPdfData.js`, `src/lib/pdf-report-shared.jsx`)**: แยกโครงสร้างข้อมูลและคอมโพเนนต์ PDF ที่ใช้ร่วมกันจาก Report #3 (หัวเอกสาร FORTH + badge + วันที่พิมพ์ + ขอบเขต + การ์ด KPI + แถบหัวคลังแบบไม่มีชื่อซ้ำ + หัวตารางซ้ำทุกหน้า `fixed` + แถวไม่ตัดข้ามหน้า `wrap={false}` + หมวดหมู่มาตรฐาน 6 หมวด + แถว `ไม่มีข้อมูล (No data)` เมื่อว่าง + รวมย่อยรายหมวด/รายคลัง + หน้า Grand Total Summary แยก + ฟอนต์ `THSarabunNew` + ท้ายหน้าและเลขหน้า) เพื่อใช้ร่วมกันทั้ง 4 รายงานโดยไม่ copy-paste
+  - **Align Reports #1, #2, #4 to Report #3 (`src/lib/pdf-templates.jsx`, `src/pages/Reports.jsx`, `src/components/reports/ReportSiteKits.jsx`)**: เพิ่ม `GoodsReceiptReportPDF` (Report #1) และ `GoodsIssueReportPDF` (Report #2) แบบครบ 5 คลัง × 6 หมวดหมู่ พร้อมดึงข้อมูลแบบไม่ผูกตัวกรอง/หน้าจอบน `Reports.jsx` (รองรับ multi-warehouse `withdrawal_items.project_id` และ `checkout_consumed`), ปรับ `SiteKitsReportPDF` (Report #4) ให้ใช้สไตล์เดียวกันจัดกลุ่มตาม 6 หมวดหมู่อุปกรณ์มาตรฐานรวมสต็อกทุกคลังโดยไม่ผูกตัวกรองหน้าจอ และนำคอลัมน์ `โครงการ` ออกจากทุกรายงาน พร้อมคงพฤติกรรมและผลลัพธ์ของ Report #3 (`InventoryBalanceReportPDF`), หน้าจอ UI และ Excel export เดิมทั้งหมด
+  - **Verification & Version Bump (`src/lib/reportPdfData.test.js`, `scripts/verify-all-reports-pdf.mjs`, `package.json`, `CHANGELOG.md`)**: เพิ่ม unit tests และสคริปต์เรนเดอร์ PDF จริงครบทั้ง 4 รายงาน (หลายคลัง/หลายหมวด/หลายหน้า/คลังว่าง/หมวดว่าง) และปรับเวอร์ชันจาก `v1.36.1` เป็น `v1.37.0` (MINOR)
+
+## [2026-11-21 15:48] - v1.36.1
+- **Files Modified:** `src/lib/pdf-templates.jsx`, `scripts/verify-balance-report-pdf.mjs`, `package.json`, `CHANGELOG.md`
+- **Changes:**
+  - **Inventory Balance Report (#3) PDF Column & Header Cleanup (`src/lib/pdf-templates.jsx`)**: นำคอลัมน์ `โครงการ` ออกจากหัวตารางและแถวข้อมูลทั้งหมดใน `InventoryBalanceReportPDF` และกระจายความกว้างที่ว่างกลับไปยังคอลัมน์ที่เหลือ (`ลำดับ` 6%, `รายการวัสดุ` 50%, `หน่วย` 8%, `รับเข้าทั้งหมด` 12%, `เบิกออกทั้งหมด` 12%, `คงเหลือ` 12% รวม 100% ตรงแนวกับแถวรวมย่อย 64% + 36%) พร้อมแก้ไขชื่อคลังซ้ำซ้อนในแถบหัวคลัง (`คลังที่ {order}/{total}: {label}`) และตารางสรุปยอดรวมสุทธิ (`{order}. {label}`) โดยตัดวงเล็บ `({labelEn})` ที่ซ้ำชื่อคลังออกทั้งหมด
+  - **Verification & Version Bump (`scripts/verify-balance-report-pdf.mjs`, `package.json`, `CHANGELOG.md`)**: เพิ่มการตรวจสอบการไม่มีคอลัมน์/ค่าโครงการ การไม่มีชื่อคลังซ้ำซ้อน และความกว้างคอลัมน์ 6 ช่องใน layout ของ `@react-pdf/renderer` พร้อมปรับเวอร์ชันจาก `v1.36.0` เป็น `v1.36.1` (PATCH)
+
+## [2026-11-21 15:25] - v1.36.0
+- **Files Modified:** `src/lib/balanceReportPdfData.js`, `src/lib/balanceReportPdfData.test.js`, `src/lib/pdf-templates.jsx`, `src/pages/Reports.jsx`, `scripts/verify-balance-report-pdf.mjs`, `package.json`, `CHANGELOG.md`
+- **Changes:**
+  - **5-Warehouse × 6-Category Inventory Balance Report (#3) PDF Export (`src/lib/balanceReportPdfData.js`, `src/lib/pdf-templates.jsx`, `src/pages/Reports.jsx`)**: แก้ปัญหา PDF รายงานยอดพัสดุคงเหลือ (Report #3) ขาดข้อมูลคลังและหมวดหมู่ โดยดึงข้อมูล `stock_balance` ทั้งหมดแบบไม่ผูกตัวกรอง/การแบ่งหน้าบนหน้าจอ (รองรับการแบ่งดึง `.range()` ทีละ 1,000 แถว) และจัดกลุ่มแสดงครบทั้ง 5 คลังตามลำดับ (`คลัง EMS (SAP)`, `คลัง EMS`, `คลัง Forth ชั้น 3`, `คลัง Factory C`, `ตึกโรงรับจำนำ`) โดยแยกหน้าต่อคลังพร้อมหัวคลังและหัวตารางซ้ำทุกหน้า (`fixed`), ภายในทุกคลังแบ่งครบทั้ง 6 หมวดหมู่ตามลำดับ (`MW (Microwave)`, `BS (Base Station)`, `AGW (Analog Gateway)`, `ลูกข่าย (Fixed Radio)`, `ชุดอุปกรณ์รวม (Combined Equipment Set)`, `อื่นๆ (Others)`), แสดงแถว `ไม่มีสต็อก (No stock)` เมื่อว่าง, มีแถวรวมย่อยรายหมวดหมู่ รายคลัง และยอดรวมสุทธิทั้งหมดท้ายรายงาน (คั่นหลักพันโดยไม่ต่อท้าย `ชิ้น` แบบตายตัว), ป้องกันการตัดแถวข้ามหน้า (`wrap={false}`), รองรับฟอนต์ไทย `THSarabunNew`, และแยกติดตามรายการที่ไม่ตรงกับ 5 คลังหลักโดยไม่เพิ่มคลังที่ 6
+  - **Verification & Version Bump (`src/lib/balanceReportPdfData.test.js`, `scripts/verify-balance-report-pdf.mjs`, `package.json`, `CHANGELOG.md`)**: เพิ่ม unit tests และสคริปต์เรนเดอร์ PDF จริงผ่าน `@react-pdf/renderer` ครอบคลุมหลายคลัง/หลายหมวด/หมวดว่าง/คลังว่าง/หลายหน้า และปรับเวอร์ชันจาก `v1.35.1` เป็น `v1.36.0` (MINOR)
+
 ## [2026-11-20 16:42] - v1.35.1
 - **Files Modified:** `src/i18n/locales/th.js`, `package.json`, `CHANGELOG.md`
 - **Changes:**

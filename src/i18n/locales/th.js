@@ -518,6 +518,8 @@ export default {
       "duplicateEntry": "รายการพัสดุซ้ำซ้อนในระบบ",
       "categoryNotFound": "ไม่พบหมวดหมู่ที่เลือก กรุณาเลือกหมวดหมู่ที่ถูกต้อง",
       "requiredFields": "กรุณากรอกข้อมูลในช่องที่จำเป็น (ชื่อพัสดุและหน่วยนับ)",
+      "invalidName": "ชื่อพัสดุต้องไม่เป็นค่าว่างหรือสัญลักษณ์แทน เช่น \"-\"",
+      "invalidUnit": "หน่วยนับต้องไม่เป็นค่าว่างหรือสัญลักษณ์แทน เช่น \"-\"",
       "validationFailed": "การตรวจสอบความถูกต้องของข้อมูลไม่ผ่าน",
       "noEditPermission": "คุณไม่มีสิทธิ์แก้ไขพัสดุ กรุณาติดต่อผู้ดูแลระบบ",
       "saveUnexpectedError": "เกิดข้อผิดพลาดที่ไม่คาดคิดขณะบันทึกพัสดุ",
@@ -1413,7 +1415,7 @@ export default {
       "thPerSite": "ต่อชุด/ไซต์",
       "thActualStock": "สต็อกจริง",
       "thKitsPossible": "ประกอบได้ (ชุด)",
-      "thMissingForNextSet": "ขาดอีกสำหรับชุดถัดไป",
+      "thMissingForNextSet": "ขาด (ขั้นต่ำ 1 ชุด)",
       "thStatus": "สถานะ",
       "matchedInSystem": "จับคู่ในระบบ: {{name}}",
       "complete": "ครบถ้วน",
@@ -1466,7 +1468,7 @@ export default {
       "colQtyPerSite": "จำนวนต่อชุด",
       "colCurrentStock": "สต็อกปัจจุบัน",
       "colKitsPossible": "ประกอบได้ (ชุด)",
-      "colMissingForNextSet": "ขาดอีกสำหรับชุดถัดไป"
+      "colMissingForNextSet": "ขาด (ขั้นต่ำ 1 ชุด)"
     },
     "generatingPdf": "กำลังสร้างเอกสาร PDF..."
   },

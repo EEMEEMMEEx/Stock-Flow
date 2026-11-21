@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { calculateSiteKitShortage } from '@/lib/reportPdfData';
 
 // Official Default BOM Templates definition (Factory Defaults / Fallback)
 export const SITE_BOM_TEMPLATES = [
@@ -299,7 +300,8 @@ export async function fetchSiteKitsAvailability(projectId = null) {
         const isSpare = b.mandatory === false || b.notes === 'spare';
         const match = findMatchingItem(items, b);
         const totalStock = match ? (stockMap[match.id] || 0) : 0;
-        const setsPossible = Math.floor(totalStock / (b.qty || 1));
+        const qtyPerSite = Number(b.qty) || 1;
+        const setsPossible = Math.floor(totalStock / qtyPerSite);
         
         if (!isSpare && setsPossible < minSets) {
           minSets = setsPossible;
@@ -312,13 +314,17 @@ export async function fetchSiteKitsAvailability(projectId = null) {
           part_number: b.part || (match ? match.sku : ''),
           bom_name: b.name,
           db_matched_name: match ? match.name : '(ยังไม่พบในระบบ)',
-          qty_per_site: b.qty,
+          qty_per_site: qtyPerSite,
           unit: b.unit || (match ? match.unit : 'ชิ้น'),
           total_stock: totalStock,
           sets_possible: setsPossible,
           is_mandatory: !isSpare,
           notes: b.notes || (isSpare ? 'spare' : ''),
-          missing_for_next_set: isSpare ? 0 : Math.max(0, ((minSets === Infinity ? 0 : minSets) + 1) * b.qty - totalStock)
+          missing_for_next_set: calculateSiteKitShortage({
+            qtyPerSite,
+            totalStock,
+            isMandatory: !isSpare,
+          })
         });
       }
 

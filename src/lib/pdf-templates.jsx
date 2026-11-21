@@ -2,6 +2,17 @@ import { Document, Page, Text, View, StyleSheet, Font, Image } from '@react-pdf/
 import { resolveWithdrawalRequester, resolveCheckoutBorrower, resolveDocumentNumber } from '@/lib/pdf-signatures';
 import { hasResolvableWarehouse, resolveWarehouseName } from '@/lib/withdrawalStock';
 import { resolveStorageUrl } from '@/lib/r2Storage';
+import { buildInventoryBalanceReportData, formatReportQuantity } from '@/lib/balanceReportPdfData';
+import {
+  buildGoodsReceiptReportData,
+  buildGoodsIssueReportData,
+  buildSiteKitsReportData,
+} from '@/lib/reportPdfData';
+import {
+  sharedReportStyles,
+  WarehouseCategoryReportDocument,
+  CategoryGroupedReportDocument,
+} from '@/lib/pdf-report-shared';
 
 // Register Thai Font (THSarabunNew)
 Font.register({
@@ -1199,202 +1210,1107 @@ export const StockReportPDF = ({
   );
 };
 
-// Professional Site Kits BOM Readiness Report Component (A4 Landscape)
+// ---------------------------------------------------------------------------
+// Report #1: Goods Receipt Report (รายงานรับเข้าพัสดุ) — 5 Warehouses × 6 Categories
+// ---------------------------------------------------------------------------
+export const GoodsReceiptReportPDF = ({
+  data = [],
+  projects = [],
+  categories = [],
+  logoSrc = '/images/logo.png',
+}) => {
+  const report = buildGoodsReceiptReportData(data, { projects, categories });
+  const { warehouses, grandTotal, unmappedWarehouseCount } = report;
+
+  const columns = [
+    {
+      key: 'index',
+      label: 'ลำดับ',
+      width: '6%',
+      render: (_item, idx) => <Text style={sharedReportStyles.tdTextCenter}>{idx + 1}</Text>,
+    },
+    {
+      key: 'receivedDate',
+      label: 'วันที่รับเข้า',
+      width: '12%',
+      render: (item) => <Text style={sharedReportStyles.tdTextCenter}>{item.receivedDate}</Text>,
+    },
+    {
+      key: 'documentNumber',
+      label: 'เลขที่เอกสาร / PO',
+      width: '16%',
+      render: (item) => <Text style={sharedReportStyles.tdText}>{item.documentNumber}</Text>,
+    },
+    {
+      key: 'itemName',
+      label: 'รายการวัสดุ',
+      width: '32%',
+      render: (item) => <Text style={sharedReportStyles.tdTextBold}>{item.itemName}</Text>,
+    },
+    {
+      key: 'supplier',
+      label: 'ผู้จำหน่าย',
+      width: '14%',
+      render: (item) => <Text style={sharedReportStyles.tdText}>{item.supplier}</Text>,
+    },
+    {
+      key: 'unit',
+      label: 'หน่วย',
+      width: '8%',
+      render: (item) => <Text style={sharedReportStyles.tdTextCenter}>{item.unit || '-'}</Text>,
+    },
+    {
+      key: 'quantity',
+      label: 'จำนวนรับเข้า',
+      width: '12%',
+      render: (item) => (
+        <Text style={[sharedReportStyles.tdTextRight, sharedReportStyles.stockInText]}>
+          +{formatReportQuantity(item.quantity)}
+        </Text>
+      ),
+    },
+  ];
+
+  const kpiCards = [
+    {
+      key: 'items',
+      label: 'จำนวนรายการทั้งหมด (ITEMS)',
+      value: `${formatReportQuantity(grandTotal.itemCount)} รายการ`,
+    },
+    {
+      key: 'totalQty',
+      label: 'ยอดรับเข้าสะสม (TOTAL RECEIVED)',
+      value: `+${formatReportQuantity(grandTotal.totalQty)}`,
+      color: '#059669',
+    },
+    {
+      key: 'documents',
+      label: 'เอกสารอ้างอิง (DOCUMENTS)',
+      value: `${formatReportQuantity(grandTotal.documentCount)} เอกสาร`,
+      color: '#1e40af',
+    },
+    {
+      key: 'suppliers',
+      label: 'ผู้จำหน่าย (SUPPLIERS)',
+      value: `${formatReportQuantity(grandTotal.supplierCount)} ราย`,
+    },
+    {
+      key: 'activeWarehouses',
+      label: 'คลังที่รับเข้า (WAREHOUSES)',
+      value: `${grandTotal.activeWarehouseCount} / ${warehouses.length} คลัง`,
+      color: '#0369a1',
+    },
+  ];
+
+  const grandTotalColumns = [
+    { key: 'warehouse', label: 'คลังพัสดุ', width: '48%' },
+    { key: 'items', label: 'จำนวนรายการ', width: '18%' },
+    { key: 'documents', label: 'เอกสารอ้างอิง', width: '16%' },
+    { key: 'totalQty', label: 'จำนวนรับเข้ารวม', width: '18%' },
+  ];
+
+  return (
+    <WarehouseCategoryReportDocument
+      logoSrc={logoSrc}
+      badgeText="GOODS RECEIPT REPORT"
+      reportTitle="รายงานรับเข้าพัสดุ (Goods Receipt Report)"
+      kpiCards={kpiCards}
+      warehouses={warehouses}
+      columns={columns}
+      emptyLabel="ไม่มีข้อมูล (No data)"
+      subtotalLabelWidth="88%"
+      getWarehouseSummaryText={(wh) =>
+        `${formatReportQuantity(wh.subtotal.itemCount)} รายการ | รับเข้า +${formatReportQuantity(wh.subtotal.totalQty)}`
+      }
+      getCategorySubtotalCells={(cat) => [
+        {
+          key: 'totalQty',
+          width: '12%',
+          content: (
+            <Text style={[sharedReportStyles.tdTextRight, sharedReportStyles.stockInText]}>
+              +{formatReportQuantity(cat.subtotal.totalQty)}
+            </Text>
+          ),
+        },
+      ]}
+      getWarehouseSubtotalCells={(wh) => [
+        {
+          key: 'totalQty',
+          width: '12%',
+          content: (
+            <Text style={[sharedReportStyles.tdTextRight, sharedReportStyles.stockInText]}>
+              +{formatReportQuantity(wh.subtotal.totalQty)}
+            </Text>
+          ),
+        },
+      ]}
+      grandTotalTitle="สรุปยอดรับเข้าสุทธิทั้งหมด 5 คลัง (Grand Total Summary)"
+      grandTotalCountText={`${formatReportQuantity(grandTotal.itemCount)} รายการ`}
+      grandTotalColumns={grandTotalColumns}
+      getGrandTotalRows={(whs) =>
+        whs.map((whSummary) => ({
+          key: `summary-${whSummary.key}`,
+          cells: [
+            {
+              key: 'wh',
+              content: (
+                <Text style={sharedReportStyles.tdTextBold}>
+                  {whSummary.order}. {whSummary.label}
+                </Text>
+              ),
+            },
+            {
+              key: 'items',
+              content: (
+                <Text style={sharedReportStyles.tdTextCenter}>
+                  {whSummary.subtotal.itemCount === 0
+                    ? 'ไม่มีข้อมูล (No data)'
+                    : `${formatReportQuantity(whSummary.subtotal.itemCount)} รายการ`}
+                </Text>
+              ),
+            },
+            {
+              key: 'docs',
+              content: (
+                <Text style={sharedReportStyles.tdTextCenter}>
+                  {formatReportQuantity(whSummary.subtotal.documentCount)} เอกสาร
+                </Text>
+              ),
+            },
+            {
+              key: 'totalQty',
+              content: (
+                <Text style={[sharedReportStyles.tdTextRight, sharedReportStyles.stockInText]}>
+                  +{formatReportQuantity(whSummary.subtotal.totalQty)}
+                </Text>
+              ),
+            },
+          ],
+        }))
+      }
+      grandTotalFooterCells={[
+        {
+          key: 'label',
+          content: (
+            <Text style={sharedReportStyles.warehouseSubtotalLabel}>
+              รวมยอดสุทธิทั้งหมด (Grand Total)
+            </Text>
+          ),
+        },
+        {
+          key: 'items',
+          content: (
+            <Text style={[sharedReportStyles.tdTextCenter, sharedReportStyles.tdTextBold]}>
+              {formatReportQuantity(grandTotal.itemCount)} รายการ
+            </Text>
+          ),
+        },
+        {
+          key: 'docs',
+          content: (
+            <Text style={[sharedReportStyles.tdTextCenter, sharedReportStyles.tdTextBold]}>
+              {formatReportQuantity(grandTotal.documentCount)} เอกสาร
+            </Text>
+          ),
+        },
+        {
+          key: 'totalQty',
+          content: (
+            <Text style={[sharedReportStyles.tdTextRight, sharedReportStyles.stockInText]}>
+              +{formatReportQuantity(grandTotal.totalQty)}
+            </Text>
+          ),
+        },
+      ]}
+      unmappedWarehouseCount={unmappedWarehouseCount}
+    />
+  );
+};
+
+// ---------------------------------------------------------------------------
+// Report #2: Goods Issue / Requisition Report (รายงานการเบิกจ่าย) — 5 Warehouses × 6 Categories
+// ---------------------------------------------------------------------------
+export const GoodsIssueReportPDF = ({
+  data = [],
+  projects = [],
+  categories = [],
+  itemsByName = null,
+  logoSrc = '/images/logo.png',
+}) => {
+  const report = buildGoodsIssueReportData(data, { projects, categories, itemsByName });
+  const { warehouses, grandTotal, unmappedWarehouseCount } = report;
+
+  const columns = [
+    {
+      key: 'index',
+      label: 'ลำดับ',
+      width: '6%',
+      render: (_item, idx) => <Text style={sharedReportStyles.tdTextCenter}>{idx + 1}</Text>,
+    },
+    {
+      key: 'issueDate',
+      label: 'วันที่เบิก',
+      width: '11%',
+      render: (item) => <Text style={sharedReportStyles.tdTextCenter}>{item.issueDate}</Text>,
+    },
+    {
+      key: 'documentNumber',
+      label: 'เลขที่เอกสาร',
+      width: '14%',
+      render: (item) => <Text style={sharedReportStyles.tdText}>{item.documentNumber}</Text>,
+    },
+    {
+      key: 'itemName',
+      label: 'รายการวัสดุ',
+      width: '29%',
+      render: (item) => <Text style={sharedReportStyles.tdTextBold}>{item.itemName}</Text>,
+    },
+    {
+      key: 'requester',
+      label: 'ผู้ขอเบิก',
+      width: '14%',
+      render: (item) => <Text style={sharedReportStyles.tdText}>{item.requester}</Text>,
+    },
+    {
+      key: 'unit',
+      label: 'หน่วย',
+      width: '6%',
+      render: (item) => <Text style={sharedReportStyles.tdTextCenter}>{item.unit || '-'}</Text>,
+    },
+    {
+      key: 'requestedQty',
+      label: 'ขอเบิก',
+      width: '10%',
+      render: (item) => (
+        <Text style={sharedReportStyles.tdTextRight}>
+          {formatReportQuantity(item.requestedQty)}
+        </Text>
+      ),
+    },
+    {
+      key: 'deductedQty',
+      label: 'จ่ายจริง',
+      width: '10%',
+      render: (item) => (
+        <Text style={[sharedReportStyles.tdTextRight, sharedReportStyles.stockOutText]}>
+          -{formatReportQuantity(item.deductedQty)}
+        </Text>
+      ),
+    },
+  ];
+
+  const kpiCards = [
+    {
+      key: 'items',
+      label: 'จำนวนรายการทั้งหมด (ITEMS)',
+      value: `${formatReportQuantity(grandTotal.itemCount)} รายการ`,
+    },
+    {
+      key: 'requested',
+      label: 'ยอดขอเบิกสะสม (REQUESTED)',
+      value: formatReportQuantity(grandTotal.requestedQty),
+    },
+    {
+      key: 'deducted',
+      label: 'ยอดตัดจ่ายจริง (ISSUED)',
+      value: `-${formatReportQuantity(grandTotal.deductedQty)}`,
+      color: '#dc2626',
+    },
+    {
+      key: 'shortage',
+      label: 'ยอดขาดสต็อก (SHORTAGE)',
+      value: formatReportQuantity(grandTotal.shortageQty),
+      color: grandTotal.shortageQty > 0 ? '#d97706' : '#059669',
+    },
+    {
+      key: 'documents',
+      label: 'เอกสารเบิก (DOCUMENTS)',
+      value: `${formatReportQuantity(grandTotal.documentCount)} เอกสาร`,
+      color: '#1e40af',
+    },
+  ];
+
+  const grandTotalColumns = [
+    { key: 'warehouse', label: 'คลังพัสดุ', width: '46%' },
+    { key: 'items', label: 'จำนวนรายการ', width: '16%' },
+    { key: 'documents', label: 'เอกสารเบิก', width: '14%' },
+    { key: 'requested', label: 'ขอเบิกรวม', width: '12%' },
+    { key: 'deducted', label: 'จ่ายจริงรวม', width: '12%' },
+  ];
+
+  return (
+    <WarehouseCategoryReportDocument
+      logoSrc={logoSrc}
+      badgeText="GOODS ISSUE REPORT"
+      reportTitle="รายงานการเบิกจ่ายพัสดุ (Goods Issue / Requisition Report)"
+      kpiCards={kpiCards}
+      warehouses={warehouses}
+      columns={columns}
+      emptyLabel="ไม่มีข้อมูล (No data)"
+      subtotalLabelWidth="80%"
+      getWarehouseSummaryText={(wh) =>
+        `${formatReportQuantity(wh.subtotal.itemCount)} รายการ | จ่ายจริง -${formatReportQuantity(wh.subtotal.deductedQty)}`
+      }
+      getCategorySubtotalCells={(cat) => [
+        {
+          key: 'requested',
+          width: '10%',
+          content: (
+            <Text style={[sharedReportStyles.tdTextRight, sharedReportStyles.tdTextBold]}>
+              {formatReportQuantity(cat.subtotal.requestedQty)}
+            </Text>
+          ),
+        },
+        {
+          key: 'deducted',
+          width: '10%',
+          content: (
+            <Text style={[sharedReportStyles.tdTextRight, sharedReportStyles.stockOutText]}>
+              -{formatReportQuantity(cat.subtotal.deductedQty)}
+            </Text>
+          ),
+        },
+      ]}
+      getWarehouseSubtotalCells={(wh) => [
+        {
+          key: 'requested',
+          width: '10%',
+          content: (
+            <Text style={[sharedReportStyles.tdTextRight, sharedReportStyles.tdTextBold]}>
+              {formatReportQuantity(wh.subtotal.requestedQty)}
+            </Text>
+          ),
+        },
+        {
+          key: 'deducted',
+          width: '10%',
+          content: (
+            <Text style={[sharedReportStyles.tdTextRight, sharedReportStyles.stockOutText]}>
+              -{formatReportQuantity(wh.subtotal.deductedQty)}
+            </Text>
+          ),
+        },
+      ]}
+      grandTotalTitle="สรุปยอดเบิกจ่ายสุทธิทั้งหมด 5 คลัง (Grand Total Summary)"
+      grandTotalCountText={`${formatReportQuantity(grandTotal.itemCount)} รายการ`}
+      grandTotalColumns={grandTotalColumns}
+      getGrandTotalRows={(whs) =>
+        whs.map((whSummary) => ({
+          key: `summary-${whSummary.key}`,
+          cells: [
+            {
+              key: 'wh',
+              content: (
+                <Text style={sharedReportStyles.tdTextBold}>
+                  {whSummary.order}. {whSummary.label}
+                </Text>
+              ),
+            },
+            {
+              key: 'items',
+              content: (
+                <Text style={sharedReportStyles.tdTextCenter}>
+                  {whSummary.subtotal.itemCount === 0
+                    ? 'ไม่มีข้อมูล (No data)'
+                    : `${formatReportQuantity(whSummary.subtotal.itemCount)} รายการ`}
+                </Text>
+              ),
+            },
+            {
+              key: 'docs',
+              content: (
+                <Text style={sharedReportStyles.tdTextCenter}>
+                  {formatReportQuantity(whSummary.subtotal.documentCount)} เอกสาร
+                </Text>
+              ),
+            },
+            {
+              key: 'requested',
+              content: (
+                <Text style={[sharedReportStyles.tdTextRight, sharedReportStyles.tdTextBold]}>
+                  {formatReportQuantity(whSummary.subtotal.requestedQty)}
+                </Text>
+              ),
+            },
+            {
+              key: 'deducted',
+              content: (
+                <Text style={[sharedReportStyles.tdTextRight, sharedReportStyles.stockOutText]}>
+                  -{formatReportQuantity(whSummary.subtotal.deductedQty)}
+                </Text>
+              ),
+            },
+          ],
+        }))
+      }
+      grandTotalFooterCells={[
+        {
+          key: 'label',
+          content: (
+            <Text style={sharedReportStyles.warehouseSubtotalLabel}>
+              รวมยอดสุทธิทั้งหมด (Grand Total)
+            </Text>
+          ),
+        },
+        {
+          key: 'items',
+          content: (
+            <Text style={[sharedReportStyles.tdTextCenter, sharedReportStyles.tdTextBold]}>
+              {formatReportQuantity(grandTotal.itemCount)} รายการ
+            </Text>
+          ),
+        },
+        {
+          key: 'docs',
+          content: (
+            <Text style={[sharedReportStyles.tdTextCenter, sharedReportStyles.tdTextBold]}>
+              {formatReportQuantity(grandTotal.documentCount)} เอกสาร
+            </Text>
+          ),
+        },
+        {
+          key: 'requested',
+          content: (
+            <Text style={[sharedReportStyles.tdTextRight, sharedReportStyles.tdTextBold]}>
+              {formatReportQuantity(grandTotal.requestedQty)}
+            </Text>
+          ),
+        },
+        {
+          key: 'deducted',
+          content: (
+            <Text style={[sharedReportStyles.tdTextRight, sharedReportStyles.stockOutText]}>
+              -{formatReportQuantity(grandTotal.deductedQty)}
+            </Text>
+          ),
+        },
+      ]}
+      unmappedWarehouseCount={unmappedWarehouseCount}
+    />
+  );
+};
+
+// ---------------------------------------------------------------------------
+// Report #4: BOM Spec & Site Kits Readiness Report (สเปก BOM และความพร้อม Site Kits)
+// Grouped by the 6 canonical equipment categories across all 5 warehouses.
+// ---------------------------------------------------------------------------
 export const SiteKitsReportPDF = ({
   items = [],
   siteKits = [],
-  projectName = 'ทุกสถานที่จัดเก็บ (รวมทุกคลัง)',
-  categoryName = 'ทั้งหมด 4 หมวด',
-  searchTerm = ''
+  logoSrc = '/images/logo.png',
 }) => {
-  const printDateStr = new Date().toLocaleDateString('th-TH', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
+  const report = buildSiteKitsReportData(siteKits, { items });
+  const { categories, grandTotal } = report;
 
-  const totalBomItems = items.length;
-  let totalStockUnits = 0;
-  let limitingCount = 0;
-  let outOfStockCount = 0;
+  const columns = [
+    {
+      key: 'index',
+      label: 'ลำดับ',
+      width: '6%',
+      render: (_item, idx) => <Text style={sharedReportStyles.tdTextCenter}>{idx + 1}</Text>,
+    },
+    {
+      key: 'partNumber',
+      label: 'Part Number',
+      width: '16%',
+      render: (item) => <Text style={sharedReportStyles.tdTextBold}>{item.partNumber}</Text>,
+    },
+    {
+      key: 'bomName',
+      label: 'รายการอุปกรณ์ตาม BOM',
+      width: '30%',
+      render: (item) => <Text style={sharedReportStyles.tdText}>{item.bomName}</Text>,
+    },
+    {
+      key: 'qtyPerSite',
+      label: 'สเปก/ไซต์',
+      width: '10%',
+      render: (item) => (
+        <Text style={sharedReportStyles.tdTextRight}>
+          {formatReportQuantity(item.qtyPerSite)} {item.unit}
+        </Text>
+      ),
+    },
+    {
+      key: 'totalStock',
+      label: 'สต็อกจริง',
+      width: '10%',
+      render: (item) => (
+        <Text
+          style={[
+            sharedReportStyles.tdTextRight,
+            item.status === 'out_of_stock'
+              ? sharedReportStyles.stockOutText
+              : sharedReportStyles.balanceText,
+          ]}
+        >
+          {formatReportQuantity(item.totalStock)}
+        </Text>
+      ),
+    },
+    {
+      key: 'setsPossible',
+      label: 'จัดได้',
+      width: '9%',
+      render: (item) => (
+        <Text
+          style={[
+            sharedReportStyles.tdTextRight,
+            item.status === 'out_of_stock'
+              ? sharedReportStyles.stockOutText
+              : item.status === 'limiting'
+                ? sharedReportStyles.warningText
+                : sharedReportStyles.stockInText,
+          ]}
+        >
+          {formatReportQuantity(item.setsPossible)} ชุด
+        </Text>
+      ),
+    },
+    {
+      key: 'missing',
+      label: 'ขาด',
+      width: '8%',
+      render: (item) => (
+        <Text
+          style={[
+            sharedReportStyles.tdTextRight,
+            item.missingForNextSet > 0
+              ? sharedReportStyles.stockOutText
+              : sharedReportStyles.balanceZeroText,
+          ]}
+        >
+          {item.missingForNextSet > 0 ? `-${formatReportQuantity(item.missingForNextSet)}` : '0'}
+        </Text>
+      ),
+    },
+    {
+      key: 'status',
+      label: 'สถานะ',
+      width: '11%',
+      render: (item) => {
+        const statusColor =
+          item.status === 'out_of_stock'
+            ? '#dc2626'
+            : item.status === 'limiting'
+              ? '#d97706'
+              : '#059669';
+        return (
+          <Text
+            style={[
+              sharedReportStyles.tdTextCenter,
+              { color: statusColor, fontWeight: 'bold', fontSize: 8 },
+            ]}
+          >
+            {item.statusLabel}
+          </Text>
+        );
+      },
+    },
+  ];
 
-  items.forEach(item => {
-    const stock = Number(item.total_stock || 0);
-    totalStockUnits += stock;
-    if (stock === 0) {
-      outOfStockCount++;
-    } else if (item.isLimiting) {
-      limitingCount++;
-    }
-  });
+  const kpiCards = [
+    {
+      key: 'bomItems',
+      label: 'รายการตาม BOM (ITEMS)',
+      value: `${formatReportQuantity(grandTotal.itemCount)} รายการ`,
+    },
+    {
+      key: 'completeSets',
+      label: 'ชุดพร้อมจัดรวม (READY SETS)',
+      value: `${formatReportQuantity(grandTotal.totalCompleteSets)} ชุด`,
+      color: grandTotal.totalCompleteSets > 0 ? '#059669' : '#dc2626',
+    },
+    {
+      key: 'totalStock',
+      label: 'สต็อกจริงรวม (TOTAL STOCK)',
+      value: formatReportQuantity(grandTotal.totalStock),
+      color: '#1e40af',
+    },
+    {
+      key: 'limiting',
+      label: 'สต็อกจำกัด (LIMITING)',
+      value: `${formatReportQuantity(grandTotal.limitingCount)} รายการ`,
+      color: grandTotal.limitingCount > 0 ? '#d97706' : '#059669',
+    },
+    {
+      key: 'outOfStock',
+      label: 'หมดสต็อก (OUT OF STOCK)',
+      value: `${formatReportQuantity(grandTotal.outOfStockCount)} รายการ`,
+      color: grandTotal.outOfStockCount > 0 ? '#dc2626' : '#059669',
+    },
+  ];
+
+  const grandTotalColumns = [
+    { key: 'category', label: 'หมวดหมู่อุปกรณ์', width: '36%' },
+    { key: 'items', label: 'รายการ BOM', width: '14%' },
+    { key: 'sets', label: 'ชุดพร้อมจัด', width: '14%' },
+    { key: 'stock', label: 'สต็อกรวม', width: '12%' },
+    { key: 'limiting', label: 'สต็อกจำกัด', width: '12%' },
+    { key: 'outOfStock', label: 'หมดสต็อก', width: '12%' },
+  ];
 
   return (
-    <Document>
-      <Page size="A4" orientation="landscape" style={reportStyles.page}>
-        {/* Executive Corporate Header */}
-        <View style={reportStyles.headerContainer}>
-          <View style={reportStyles.headerLeft}>
-            <Image src="/images/logo.png" style={reportStyles.logo} />
-            <View style={reportStyles.companyDetails}>
-              <Text style={reportStyles.companyNameTh}>บริษัท ฟอร์ท คอร์ปอเรชั่น จำกัด (มหาชน)</Text>
-              <Text style={reportStyles.companyNameEn}>FORTH CORPORATION PUBLIC COMPANY LIMITED</Text>
-              <Text style={reportStyles.companyAddress}>
-                1053/1 ถนนพหลโยธิน แขวงพญาไท เขตพญาไท กรุงเทพมหานคร 10400 โทรศัพท์: 02-265-6700
+    <CategoryGroupedReportDocument
+      logoSrc={logoSrc}
+      badgeText="SITE KITS BOM REPORT"
+      reportTitle="รายงานสเปก BOM และความพร้อม Site Kits (Site Kits Readiness Report)"
+      scopeText="ขอบเขต: ทุกคลังรวม (5 คลัง) / ทุกหมวดหมู่ (6 หมวดหมู่)"
+      sectionBannerTitle="สรุปสเปก BOM และความพร้อมชุดติดตั้ง (ทุกคลังรวม 5 คลัง)"
+      sectionBannerMeta={
+        grandTotal.itemCount === 0
+          ? 'ไม่มีข้อมูล (No data)'
+          : `${formatReportQuantity(grandTotal.itemCount)} รายการ | พร้อมจัดรวม ${formatReportQuantity(grandTotal.totalCompleteSets)} ชุด`
+      }
+      kpiCards={kpiCards}
+      categories={categories}
+      columns={columns}
+      emptyLabel="ไม่มีข้อมูล (No data)"
+      subtotalLabelWidth="52%"
+      getCategoryCountText={(cat) =>
+        `${formatReportQuantity(cat.subtotal.completeSets)} ชุดพร้อมจัด | ${formatReportQuantity(cat.subtotal.itemCount)} รายการ`
+      }
+      getCategorySubtotalCells={(cat) => {
+        const isEmpty = cat.subtotal.itemCount === 0;
+        const catReady = !isEmpty && cat.subtotal.completeSets > 0;
+        return [
+          {
+            key: 'qtyPerSite',
+            width: '10%',
+            content: <Text style={sharedReportStyles.tdTextRight}>-</Text>,
+          },
+          {
+            key: 'totalStock',
+            width: '10%',
+            content: (
+              <Text style={[sharedReportStyles.tdTextRight, sharedReportStyles.balanceText]}>
+                {formatReportQuantity(cat.subtotal.totalStock)}
               </Text>
-            </View>
-          </View>
-
-          <View style={reportStyles.headerRight}>
-            <View style={[reportStyles.docBadge, { borderColor: '#059669', backgroundColor: '#ecfdf5' }]}>
-              <Text style={[reportStyles.docBadgeText, { color: '#059669' }]}>SITE KITS BOM REPORT</Text>
-            </View>
-            <Text style={reportStyles.printDateText}>พิมพ์เมื่อ: {printDateStr}</Text>
-          </View>
-        </View>
-
-        {/* Title Banner & Context Chips */}
-        <View style={reportStyles.titleBanner}>
-          <Text style={reportStyles.titleText}>รายงานความพร้อมชุดติดตั้งไซต์ตาม BOM (Site Kits Readiness Report)</Text>
-          <View style={reportStyles.filterInfoContainer}>
-            <View style={reportStyles.filterChip}>
-              <Text style={reportStyles.filterChipText}>สถานที่จัดเก็บ: {projectName}</Text>
-            </View>
-            <View style={reportStyles.filterChip}>
-              <Text style={reportStyles.filterChipText}>หมวดหมู่: {categoryName}</Text>
-            </View>
-            {searchTerm ? (
-              <View style={reportStyles.filterChip}>
-                <Text style={reportStyles.filterChipText}>{`ค้นหา: "${searchTerm}"`}</Text>
-              </View>
-            ) : null}
-          </View>
-        </View>
-
-        {/* Category Complete Sets & Summary Metric KPI Cards */}
-        <View style={reportStyles.kpiContainer}>
-          {siteKits.map((cat, cIdx) => (
-            <View key={cIdx} style={reportStyles.kpiCard}>
-              <Text style={reportStyles.kpiLabel}>ชุดพร้อมจัด ({cat.category_name?.split(' ')[0] || `หมวด ${cIdx+1}`})</Text>
-              <Text style={[reportStyles.kpiValue, { color: cat.complete_sets > 0 ? '#059669' : '#dc2626' }]}>
-                {cat.complete_sets} ชุด
+            ),
+          },
+          {
+            key: 'sets',
+            width: '9%',
+            content: (
+              <Text
+                style={[
+                  sharedReportStyles.tdTextRight,
+                  catReady ? sharedReportStyles.stockInText : sharedReportStyles.stockOutText,
+                ]}
+              >
+                {formatReportQuantity(cat.subtotal.completeSets)} ชุด
               </Text>
-            </View>
-          ))}
-          <View style={reportStyles.kpiCard}>
-            <Text style={reportStyles.kpiLabel}>รายการตาม BOM</Text>
-            <Text style={reportStyles.kpiValue}>{totalBomItems} รายการ</Text>
-          </View>
-          <View style={reportStyles.kpiCard}>
-            <Text style={reportStyles.kpiLabel}>สต็อกจำกัด (LIMITING)</Text>
-            <Text style={[reportStyles.kpiValue, { color: '#d97706' }]}>{limitingCount} รายการ</Text>
-          </View>
-          <View style={reportStyles.kpiCardLast}>
-            <Text style={reportStyles.kpiLabel}>หมดสต็อก (OUT OF STOCK)</Text>
-            <Text style={[reportStyles.kpiValue, { color: outOfStockCount > 0 ? '#dc2626' : '#059669' }]}>
-              {outOfStockCount} รายการ
+            ),
+          },
+          {
+            key: 'missing',
+            width: '8%',
+            content: (
+              <Text
+                style={[
+                  sharedReportStyles.tdTextRight,
+                  cat.subtotal.totalMissing > 0
+                    ? sharedReportStyles.stockOutText
+                    : sharedReportStyles.balanceZeroText,
+                ]}
+              >
+                {cat.subtotal.totalMissing > 0
+                  ? `-${formatReportQuantity(cat.subtotal.totalMissing)}`
+                  : '0'}
+              </Text>
+            ),
+          },
+          {
+            key: 'status',
+            width: '11%',
+            content: (
+              <Text
+                style={[
+                  sharedReportStyles.tdTextCenter,
+                  {
+                    color: isEmpty ? '#94a3b8' : catReady ? '#059669' : '#dc2626',
+                    fontWeight: 'bold',
+                    fontSize: 8,
+                  },
+                ]}
+              >
+                {isEmpty ? '-' : catReady ? 'พร้อมจัด' : 'ไม่พร้อม'}
+              </Text>
+            ),
+          },
+        ];
+      }}
+      grandTotalTitle="สรุปความพร้อม Site Kits ทั้งหมด 6 หมวดหมู่ (Grand Total Summary)"
+      grandTotalCountText={`${formatReportQuantity(grandTotal.itemCount)} รายการ`}
+      grandTotalColumns={grandTotalColumns}
+      getGrandTotalRows={(cats) =>
+        cats.map((catSummary) => ({
+          key: `summary-${catSummary.key}`,
+          cells: [
+            {
+              key: 'cat',
+              content: (
+                <Text style={sharedReportStyles.tdTextBold}>
+                  {catSummary.order}. {catSummary.label}
+                </Text>
+              ),
+            },
+            {
+              key: 'items',
+              content: (
+                <Text style={sharedReportStyles.tdTextCenter}>
+                  {catSummary.subtotal.itemCount === 0
+                    ? 'ไม่มีข้อมูล (No data)'
+                    : `${formatReportQuantity(catSummary.subtotal.itemCount)} รายการ`}
+                </Text>
+              ),
+            },
+            {
+              key: 'sets',
+              content: (
+                <Text
+                  style={[
+                    sharedReportStyles.tdTextRight,
+                    catSummary.subtotal.completeSets > 0
+                      ? sharedReportStyles.stockInText
+                      : sharedReportStyles.stockOutText,
+                  ]}
+                >
+                  {formatReportQuantity(catSummary.subtotal.completeSets)} ชุด
+                </Text>
+              ),
+            },
+            {
+              key: 'stock',
+              content: (
+                <Text style={[sharedReportStyles.tdTextRight, sharedReportStyles.balanceText]}>
+                  {formatReportQuantity(catSummary.subtotal.totalStock)}
+                </Text>
+              ),
+            },
+            {
+              key: 'limiting',
+              content: (
+                <Text style={[sharedReportStyles.tdTextRight, sharedReportStyles.warningText]}>
+                  {formatReportQuantity(catSummary.subtotal.limitingCount)}
+                </Text>
+              ),
+            },
+            {
+              key: 'outOfStock',
+              content: (
+                <Text style={[sharedReportStyles.tdTextRight, sharedReportStyles.stockOutText]}>
+                  {formatReportQuantity(catSummary.subtotal.outOfStockCount)}
+                </Text>
+              ),
+            },
+          ],
+        }))
+      }
+      grandTotalFooterCells={[
+        {
+          key: 'label',
+          content: (
+            <Text style={sharedReportStyles.warehouseSubtotalLabel}>
+              รวมยอดสุทธิทั้งหมด (Grand Total)
             </Text>
-          </View>
-        </View>
+          ),
+        },
+        {
+          key: 'items',
+          content: (
+            <Text style={[sharedReportStyles.tdTextCenter, sharedReportStyles.tdTextBold]}>
+              {formatReportQuantity(grandTotal.itemCount)} รายการ
+            </Text>
+          ),
+        },
+        {
+          key: 'sets',
+          content: (
+            <Text style={[sharedReportStyles.tdTextRight, sharedReportStyles.stockInText]}>
+              {formatReportQuantity(grandTotal.totalCompleteSets)} ชุด
+            </Text>
+          ),
+        },
+        {
+          key: 'stock',
+          content: (
+            <Text style={[sharedReportStyles.tdTextRight, sharedReportStyles.balanceText]}>
+              {formatReportQuantity(grandTotal.totalStock)}
+            </Text>
+          ),
+        },
+        {
+          key: 'limiting',
+          content: (
+            <Text style={[sharedReportStyles.tdTextRight, sharedReportStyles.warningText]}>
+              {formatReportQuantity(grandTotal.limitingCount)}
+            </Text>
+          ),
+        },
+        {
+          key: 'outOfStock',
+          content: (
+            <Text style={[sharedReportStyles.tdTextRight, sharedReportStyles.stockOutText]}>
+              {formatReportQuantity(grandTotal.outOfStockCount)}
+            </Text>
+          ),
+        },
+      ]}
+      footerNote="หมายเหตุ: รายงานสเปก BOM และความพร้อม Site Kits คำนวณความพร้อมจากยอดสต็อกรวมทุกคลัง (5 คลัง) และจัดกลุ่มตามหมวดหมู่อุปกรณ์มาตรฐาน 6 หมวดหมู่"
+    />
+  );
+};
 
-        {/* Report Data Table */}
-        <View style={reportStyles.tableContainer}>
-          <View style={reportStyles.tableHeader} fixed>
-            <View style={[reportStyles.th, { width: '4%' }]}><Text style={reportStyles.thText}>ลำดับ</Text></View>
-            <View style={[reportStyles.th, { width: '17%' }]}><Text style={reportStyles.thText}>หมวดหมู่อุปกรณ์</Text></View>
-            <View style={[reportStyles.th, { width: '17%' }]}><Text style={reportStyles.thText}>Part Number</Text></View>
-            <View style={[reportStyles.th, { width: '28%' }]}><Text style={reportStyles.thText}>รายการอุปกรณ์ตาม BOM</Text></View>
-            <View style={[reportStyles.th, { width: '7%' }]}><Text style={reportStyles.thText}>สเปก/ไซต์</Text></View>
-            <View style={[reportStyles.th, { width: '8%' }]}><Text style={reportStyles.thText}>สต็อกจริง</Text></View>
-            <View style={[reportStyles.th, { width: '7%' }]}><Text style={reportStyles.thText}>จัดได้</Text></View>
-            <View style={[reportStyles.th, { width: '5%' }]}><Text style={reportStyles.thText}>ขาด</Text></View>
-            <View style={[reportStyles.th, { width: '7%', borderRightWidth: 0 }]}><Text style={reportStyles.thText}>สถานะ</Text></View>
-          </View>
+// ---------------------------------------------------------------------------
+// Inventory Balance Report (#3) — All 5 Warehouses × All 6 Categories
+// ---------------------------------------------------------------------------
+export const InventoryBalanceReportPDF = ({
+  data = [],
+  projects = [],
+  categories = [],
+  logoSrc = '/images/logo.png',
+}) => {
+  const report = buildInventoryBalanceReportData(data, { projects, categories });
+  const { warehouses, grandTotal, unmappedWarehouseCount } = report;
 
-          {items.length === 0 ? (
-            <View style={[reportStyles.tableRow, { borderBottomWidth: 0 }]}>
-              <View style={[reportStyles.td, { width: '100%', borderRightWidth: 0, padding: 12 }]}>
-                <Text style={{ textAlign: 'center', color: '#94a3b8', fontSize: 10 }}>ไม่พบข้อมูลรายการวัสดุในรายงานนี้</Text>
-              </View>
-            </View>
-          ) : (
-            items.map((item, idx) => {
-              const isEven = idx % 2 === 1;
-              const rowStyle = [reportStyles.tableRow, isEven ? reportStyles.tableRowEven : reportStyles.tableRowOdd];
-              const isOutOfStock = (item.total_stock || 0) === 0;
-              const isLimiting = item.isLimiting;
-              
-              let statusText = 'พร้อมจัดชุด';
-              let statusColor = '#059669';
-              if (isOutOfStock) {
-                statusText = 'หมดสต็อก';
-                statusColor = '#dc2626';
-              } else if (isLimiting) {
-                statusText = 'สต็อกจำกัด';
-                statusColor = '#d97706';
-              }
+  const columns = [
+    {
+      key: 'index',
+      label: 'ลำดับ',
+      width: '6%',
+      render: (_item, idx) => <Text style={sharedReportStyles.tdTextCenter}>{idx + 1}</Text>,
+    },
+    {
+      key: 'itemName',
+      label: 'รายการวัสดุ',
+      width: '50%',
+      render: (item) => <Text style={sharedReportStyles.tdTextBold}>{item.itemName}</Text>,
+    },
+    {
+      key: 'unit',
+      label: 'หน่วย',
+      width: '8%',
+      render: (item) => <Text style={sharedReportStyles.tdTextCenter}>{item.unit || '-'}</Text>,
+    },
+    {
+      key: 'totalIn',
+      label: 'รับเข้าทั้งหมด',
+      width: '12%',
+      render: (item) => (
+        <Text style={[sharedReportStyles.tdTextRight, sharedReportStyles.stockInText]}>
+          +{formatReportQuantity(item.totalIn)}
+        </Text>
+      ),
+    },
+    {
+      key: 'totalOut',
+      label: 'เบิกออกทั้งหมด',
+      width: '12%',
+      render: (item) => (
+        <Text style={[sharedReportStyles.tdTextRight, sharedReportStyles.stockOutText]}>
+          -{formatReportQuantity(item.totalOut)}
+        </Text>
+      ),
+    },
+    {
+      key: 'balance',
+      label: 'คงเหลือ',
+      width: '12%',
+      render: (item) => (
+        <Text
+          style={[
+            sharedReportStyles.tdTextRight,
+            item.balance <= 0 ? sharedReportStyles.balanceZeroText : sharedReportStyles.balanceText,
+          ]}
+        >
+          {formatReportQuantity(item.balance)}
+        </Text>
+      ),
+    },
+  ];
 
-              return (
-                <View key={idx} style={rowStyle} wrap={false}>
-                  <View style={[reportStyles.td, { width: '4%' }]}><Text style={reportStyles.tdTextCenter}>{idx + 1}</Text></View>
-                  <View style={[reportStyles.td, { width: '17%' }]}><Text style={reportStyles.tdText}>{item.category_name || '-'}</Text></View>
-                  <View style={[reportStyles.td, { width: '17%' }]}><Text style={reportStyles.tdTextBold}>{item.part_number || '-'}</Text></View>
-                  <View style={[reportStyles.td, { width: '28%' }]}><Text style={reportStyles.tdText}>{item.bom_name || '-'}</Text></View>
-                  <View style={[reportStyles.td, { width: '7%' }]}><Text style={reportStyles.tdTextCenter}>{item.qty_per_site} {item.unit || 'ชิ้น'}</Text></View>
-                  <View style={[reportStyles.td, { width: '8%' }]}>
-                    <Text style={[reportStyles.tdTextCenter, isOutOfStock ? { color: '#dc2626', fontWeight: 'bold' } : { color: '#0f172a', fontWeight: 'bold' }]}>
-                      {item.total_stock} {item.unit || 'ชิ้น'}
-                    </Text>
-                  </View>
-                  <View style={[reportStyles.td, { width: '7%' }]}>
-                    <Text style={[reportStyles.tdTextCenter, isLimiting ? { color: '#d97706', fontWeight: 'bold' } : { color: '#059669', fontWeight: 'bold' }]}>
-                      {item.sets_possible} ชุด
-                    </Text>
-                  </View>
-                  <View style={[reportStyles.td, { width: '5%' }]}>
-                    <Text style={[reportStyles.tdTextCenter, item.missing_for_next_set > 0 ? { color: '#dc2626', fontWeight: 'bold' } : { color: '#94a3b8' }]}>
-                      {item.missing_for_next_set > 0 ? `-${item.missing_for_next_set}` : '0'}
-                    </Text>
-                  </View>
-                  <View style={[reportStyles.td, { width: '7%', borderRightWidth: 0 }]}>
-                    <Text style={[reportStyles.tdTextCenter, { color: statusColor, fontWeight: 'bold', fontSize: 8 }]}>
-                      {statusText}
-                    </Text>
-                  </View>
-                </View>
-              );
-            })
-          )}
+  const kpiCards = [
+    {
+      key: 'items',
+      label: 'จำนวนรายการทั้งหมด (ITEMS)',
+      value: `${formatReportQuantity(grandTotal.itemCount)} รายการ`,
+    },
+    {
+      key: 'totalIn',
+      label: 'รับเข้าสะสม (TOTAL IN)',
+      value: `+${formatReportQuantity(grandTotal.totalIn)}`,
+      color: '#059669',
+    },
+    {
+      key: 'totalOut',
+      label: 'เบิกออกสะสม (TOTAL OUT)',
+      value: `-${formatReportQuantity(grandTotal.totalOut)}`,
+      color: '#dc2626',
+    },
+    {
+      key: 'balance',
+      label: 'คงเหลือสุทธิ (NET BALANCE)',
+      value: formatReportQuantity(grandTotal.balance),
+      color: '#1e40af',
+    },
+    {
+      key: 'zeroStock',
+      label: 'สต็อกหมด (OUT OF STOCK)',
+      value: `${formatReportQuantity(grandTotal.zeroStockCount)} รายการ`,
+      color: grandTotal.zeroStockCount > 0 ? '#ea580c' : '#059669',
+    },
+  ];
 
-          {/* Table Summary Footer */}
-          {items.length > 0 && (
-            <View style={reportStyles.tableFooterRow} wrap={false}>
-              <View style={[reportStyles.td, { width: '73%', justifyContent: 'center' }]}>
-                <Text style={[reportStyles.tfText, { textAlign: 'right', paddingRight: 6 }]}>รวมยอดทั้งหมด (Total BOM Items):</Text>
-              </View>
-              <View style={[reportStyles.td, { width: '8%' }]}>
-                <Text style={[reportStyles.tdTextCenter, reportStyles.stockInText]}>{totalStockUnits} ชิ้น</Text>
-              </View>
-              <View style={[reportStyles.td, { width: '19%', borderRightWidth: 0 }]}>
-                <Text style={[reportStyles.tdTextCenter, reportStyles.tdTextBold]}>รวม {totalBomItems} รายการ</Text>
-              </View>
-            </View>
-          )}
-        </View>
+  const grandTotalColumns = [
+    { key: 'warehouse', label: 'คลังพัสดุ', width: '48%' },
+    { key: 'items', label: 'จำนวนรายการ', width: '16%' },
+    { key: 'totalIn', label: 'รับเข้าทั้งหมด', width: '12%' },
+    { key: 'totalOut', label: 'เบิกออกทั้งหมด', width: '12%' },
+    { key: 'balance', label: 'คงเหลือ', width: '12%' },
+  ];
 
-        {/* Executive Page Footer */}
-        <View style={reportStyles.pageFooter} fixed>
-          <Text style={reportStyles.footerText}>
-            Stock-Flow Inventory & Material Flow OS — Forth Corporation Public Company Limited
-          </Text>
-          <Text 
-            style={[reportStyles.footerText, { fontWeight: 'bold' }]}
-            render={({ pageNumber, totalPages }) => `หน้า ${pageNumber} จาก ${totalPages}`}
-          />
-        </View>
-      </Page>
-    </Document>
+  const renderBalanceSubtotalCells = (subtotal) => [
+    {
+      key: 'totalIn',
+      width: '12%',
+      content: (
+        <Text style={[sharedReportStyles.tdTextRight, sharedReportStyles.stockInText]}>
+          +{formatReportQuantity(subtotal.totalIn)}
+        </Text>
+      ),
+    },
+    {
+      key: 'totalOut',
+      width: '12%',
+      content: (
+        <Text style={[sharedReportStyles.tdTextRight, sharedReportStyles.stockOutText]}>
+          -{formatReportQuantity(subtotal.totalOut)}
+        </Text>
+      ),
+    },
+    {
+      key: 'balance',
+      width: '12%',
+      content: (
+        <Text style={[sharedReportStyles.tdTextRight, sharedReportStyles.balanceText]}>
+          {formatReportQuantity(subtotal.balance)}
+        </Text>
+      ),
+    },
+  ];
+
+  return (
+    <WarehouseCategoryReportDocument
+      logoSrc={logoSrc}
+      badgeText="INVENTORY BALANCE REPORT"
+      reportTitle="รายงานสรุปยอดพัสดุคงเหลือ (Inventory Balance Report)"
+      kpiCards={kpiCards}
+      warehouses={warehouses}
+      columns={columns}
+      emptyLabel="ไม่มีสต็อก (No stock)"
+      subtotalLabelWidth="64%"
+      getWarehouseSummaryText={(wh) =>
+        `${formatReportQuantity(wh.subtotal.itemCount)} รายการ | คงเหลือ ${formatReportQuantity(wh.subtotal.balance)}`
+      }
+      getCategorySubtotalCells={(cat) => renderBalanceSubtotalCells(cat.subtotal)}
+      getWarehouseSubtotalCells={(wh) => renderBalanceSubtotalCells(wh.subtotal)}
+      grandTotalTitle="สรุปยอดรวมสุทธิทั้งหมด 5 คลัง (Grand Total Summary)"
+      grandTotalCountText={`${formatReportQuantity(grandTotal.itemCount)} รายการ`}
+      grandTotalColumns={grandTotalColumns}
+      getGrandTotalRows={(whs) =>
+        whs.map((whSummary) => ({
+          key: `summary-${whSummary.key}`,
+          cells: [
+            {
+              key: 'wh',
+              content: (
+                <Text style={sharedReportStyles.tdTextBold}>
+                  {whSummary.order}. {whSummary.label}
+                </Text>
+              ),
+            },
+            {
+              key: 'items',
+              content: (
+                <Text style={sharedReportStyles.tdTextCenter}>
+                  {whSummary.subtotal.itemCount === 0
+                    ? 'ไม่มีสต็อก (No stock)'
+                    : `${formatReportQuantity(whSummary.subtotal.itemCount)} รายการ`}
+                </Text>
+              ),
+            },
+            {
+              key: 'totalIn',
+              content: (
+                <Text style={[sharedReportStyles.tdTextRight, sharedReportStyles.stockInText]}>
+                  +{formatReportQuantity(whSummary.subtotal.totalIn)}
+                </Text>
+              ),
+            },
+            {
+              key: 'totalOut',
+              content: (
+                <Text style={[sharedReportStyles.tdTextRight, sharedReportStyles.stockOutText]}>
+                  -{formatReportQuantity(whSummary.subtotal.totalOut)}
+                </Text>
+              ),
+            },
+            {
+              key: 'balance',
+              content: (
+                <Text style={[sharedReportStyles.tdTextRight, sharedReportStyles.balanceText]}>
+                  {formatReportQuantity(whSummary.subtotal.balance)}
+                </Text>
+              ),
+            },
+          ],
+        }))
+      }
+      grandTotalFooterCells={[
+        {
+          key: 'label',
+          content: (
+            <Text style={sharedReportStyles.warehouseSubtotalLabel}>
+              รวมยอดสุทธิทั้งหมด (Grand Total)
+            </Text>
+          ),
+        },
+        {
+          key: 'items',
+          content: (
+            <Text style={[sharedReportStyles.tdTextCenter, sharedReportStyles.tdTextBold]}>
+              {formatReportQuantity(grandTotal.itemCount)} รายการ
+            </Text>
+          ),
+        },
+        {
+          key: 'totalIn',
+          content: (
+            <Text style={[sharedReportStyles.tdTextRight, sharedReportStyles.stockInText]}>
+              +{formatReportQuantity(grandTotal.totalIn)}
+            </Text>
+          ),
+        },
+        {
+          key: 'totalOut',
+          content: (
+            <Text style={[sharedReportStyles.tdTextRight, sharedReportStyles.stockOutText]}>
+              -{formatReportQuantity(grandTotal.totalOut)}
+            </Text>
+          ),
+        },
+        {
+          key: 'balance',
+          content: (
+            <Text style={[sharedReportStyles.tdTextRight, sharedReportStyles.balanceText]}>
+              {formatReportQuantity(grandTotal.balance)}
+            </Text>
+          ),
+        },
+      ]}
+      unmappedWarehouseCount={unmappedWarehouseCount}
+    />
   );
 };
 

@@ -128,31 +128,19 @@ const ReportSiteKits = ({ projects = [] }) => {
       toast.error(t('reports.export.permissionDeniedPdf'));
       return;
     }
+    let toastId;
     try {
       setPdfLoading(true);
-      const toastId = toast.loading(t('reports.siteKits.generatingPdf'));
+      toastId = toast.loading(t('reports.siteKits.generatingPdf'));
 
       const { SiteKitsReportPDF } = await import('@/lib/pdf-templates.jsx');
       const { pdf } = await import('@react-pdf/renderer');
 
-      const selectedProj = projects.find(p => p.id === selectedProjectId);
-      const projectName = selectedProj 
-        ? (selectedProj.location ? `${selectedProj.name} (${selectedProj.location})` : selectedProj.name)
-        : t('reports.siteKits.allWarehouses');
+      // Always export complete company-wide BOM readiness across all warehouses & all 6 categories,
+      // regardless of on-screen project/category/search filters.
+      const allSiteKits = await fetchSiteKitsAvailability(null);
 
-      const categoryName = selectedCategoryId === 'all'
-        ? t('reports.siteKits.all4Categories')
-        : siteKits.find(c => c.category_id === selectedCategoryId)?.category_name || t('reports.siteKits.selectedCategory');
-
-      const doc = (
-        <SiteKitsReportPDF
-          items={filteredItems}
-          siteKits={siteKits}
-          projectName={projectName}
-          categoryName={categoryName}
-          searchTerm={searchTerm}
-        />
-      );
+      const doc = <SiteKitsReportPDF siteKits={allSiteKits || []} />;
 
       const blob = await pdf(doc).toBlob();
       const url = window.URL.createObjectURL(blob);
@@ -168,7 +156,7 @@ const ReportSiteKits = ({ projects = [] }) => {
       toast.success(t('reports.export.pdfSuccess'), { id: toastId });
     } catch (err) {
       console.error('Site Kits PDF Export Error:', err);
-      toast.error(t('reports.export.pdfFailed'));
+      toast.error(t('reports.export.pdfFailed'), toastId ? { id: toastId } : undefined);
     } finally {
       setPdfLoading(false);
     }

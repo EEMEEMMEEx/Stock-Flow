@@ -22,6 +22,7 @@ import { ItemStockHistoryDialog } from '@/components/items/ItemStockHistoryDialo
 import { uploadFileToR2, resolveStorageUrl, extractStorageKey, handleStorageImageError } from '@/lib/r2Storage';
 import { useTranslation } from '@/i18n';
 import { isSchemaMismatchError, cleanRpcMessage } from '@/lib/rpcErrors';
+import { validateItemEditPayload } from '@/lib/itemValidation';
 
 const Items = () => {
   const { can, canAny, profile } = useAuth();
@@ -389,18 +390,33 @@ const Items = () => {
         }
       }
 
-      // 1. Build payload with only valid items columns (no updated_at — column doesn't exist)
-      const updatePayload = {
+      // 1. Validate required item fields (prevent empty or placeholder "-" overwrites)
+      const validation = validateItemEditPayload({
         name: formData.name,
+        unit: formData.unit
+      });
+      if (!validation.valid) {
+        toast.error(
+          validation.errors.name
+            ? t('items.toasts.invalidName')
+            : t('items.toasts.invalidUnit')
+        );
+        setIsAdjustingStock(false);
+        return;
+      }
+
+      const updatePayload = {
+        name: validation.normalized.name,
         model: formData.model || null,
         sku: formData.sku || null,
         source: formData.source || null,
         vendor: formData.vendor || null,
         category_id: formData.category_id || null,
-        unit: formData.unit,
+        unit: validation.normalized.unit,
         description: formData.description || null,
         notes: formData.description || null,
         image_url: formData.image_url || null,
+        updated_at: new Date().toISOString(),
       };
 
       const { data: updatedRows, error: itemErr } = await supabase

@@ -1,7 +1,7 @@
 {
   "name": "stock-flow-app",
   "private": true,
-  "version": "1.35.1",
+  "version": "1.37.2",
   "type": "module",
   "engines": {
     "node": "24.x"
@@ -11,7 +11,7 @@
     "tunnel": "cloudflared tunnel --url http://localhost:5173",
     "build": "vite build",
     "lint": "eslint .",
-    "test": "node --test src/lib/orderHistoryAuth.test.js src/lib/__tests__/chunkErrorRecovery.test.js src/lib/__tests__/geminiApiKeyStorage.test.js src/lib/__tests__/superPermissionsSync.test.js src/lib/stockInSearch.test.js src/lib/__tests__/webPushCrypto.test.js src/lib/__tests__/webPushDispatch.test.js src/lib/scrapSerial.test.js src/lib/superRevert.test.js src/lib/checkoutDisplay.test.js src/lib/withdrawalStock.test.js src/lib/__tests__/r2Storage.test.js",
+    "test": "node --test src/lib/orderHistoryAuth.test.js src/lib/__tests__/chunkErrorRecovery.test.js src/lib/__tests__/geminiApiKeyStorage.test.js src/lib/__tests__/superPermissionsSync.test.js src/lib/stockInSearch.test.js src/lib/__tests__/webPushCrypto.test.js src/lib/__tests__/webPushDispatch.test.js src/lib/scrapSerial.test.js src/lib/superRevert.test.js src/lib/checkoutDisplay.test.js src/lib/withdrawalStock.test.js src/lib/__tests__/r2Storage.test.js src/lib/balanceReportPdfData.test.js src/lib/reportPdfData.test.js src/lib/itemValidation.test.js",
     "test:e2e": "playwright test",
     "test:order-history-auth": "node --test src/lib/orderHistoryAuth.test.js",
     "test:chunk-recovery": "node --test src/lib/__tests__/chunkErrorRecovery.test.js",
@@ -21,6 +21,8 @@
     "verify:admin-delete-user": "node scripts/verify-admin-delete-user-sandbox.mjs",
     "verify:pdf": "node scripts/verify-pdf-signatures.mjs",
     "verify:reports-pdf-warehouse": "node scripts/verify-reports-pdf-warehouse.mjs",
+    "verify:balance-report-pdf": "node scripts/verify-balance-report-pdf.mjs",
+    "verify:all-reports-pdf": "node scripts/verify-all-reports-pdf.mjs",
     "verify:notifications": "node scripts/verify-notification-targets.mjs",
     "verify:runtime-guards": "node scripts/verify-runtime-guards.mjs",
     "verify:checkout-pdf-guards": "node scripts/verify-checkout-pdf-guards.mjs",

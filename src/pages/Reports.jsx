@@ -449,36 +449,219 @@ const Reports = () => {
       toast.error(t('reports.export.permissionDeniedPdf'));
       return;
     }
+    let toastId;
     try {
       setPdfLoading(true);
-      const toastId = toast.loading(t('reports.export.generatingPdf'));
+      toastId = toast.loading(t('reports.export.generatingPdf'));
 
-      const { StockReportPDF } = await import('@/lib/pdf-templates.jsx');
+      const {
+        GoodsReceiptReportPDF,
+        GoodsIssueReportPDF,
+        InventoryBalanceReportPDF,
+      } = await import('@/lib/pdf-templates.jsx');
       const { pdf } = await import('@react-pdf/renderer');
 
       let doc;
       const downloadFileName = `${activeTab}_Report_${new Date().toISOString().split('T')[0]}.pdf`;
+      const PAGE_SIZE = 1000;
 
-      const selectedProj = projects.find(p => p.id === filters.project_id);
-      const projectName = selectedProj
-        ? (selectedProj.project_code ? `[${selectedProj.project_code}] ${selectedProj.name}` : selectedProj.name)
-        : '';
-      const warehouseName = selectedProj?.location || (selectedProj ? t('reports.export.mainStorage') : '');
-      const selectedCat = categories.find(c => c.id === filters.category_id);
-      const categoryName = selectedCat?.name || '';
+      if (activeTab === 'balance') {
+        const allBalanceRows = [];
+        for (let from = 0; ; from += PAGE_SIZE) {
+          const { data: batch, error: balanceError } = await supabase
+            .from('stock_balance')
+            .select(`
+              *,
+              items(category_id, sku, model, categories(id, name)),
+              projects:project_id(name, project_code, location, description)
+            `)
+            .order('project_id', { ascending: true })
+            .order('item_id', { ascending: true })
+            .range(from, from + PAGE_SIZE - 1);
 
-      doc = (
-        <StockReportPDF
-          data={processedData}
-          type={activeTab}
-          projectName={projectName}
-          warehouseName={warehouseName}
-          categoryName={categoryName}
-          startDate={filters.start_date}
-          endDate={filters.end_date}
-          searchQuery={filters.search}
-        />
-      );
+          if (balanceError && balanceError.code !== '42P01') throw balanceError;
+          if (!batch || batch.length === 0) break;
+          allBalanceRows.push(...batch);
+          if (batch.length < PAGE_SIZE) break;
+        }
+
+        doc = (
+          <InventoryBalanceReportPDF
+            data={allBalanceRows}
+            projects={projects}
+            categories={categories}
+          />
+        );
+      } else if (activeTab === 'stock_in') {
+        const allStockInRows = [];
+        for (let from = 0; ; from += PAGE_SIZE) {
+          const { data: batch, error: stockInError } = await supabase
+            .from('stock_in_orders')
+            .select(`
+              id, received_date, supplier, po_number, project_id,
+              projects:project_id(name, project_code, location, description),
+              stock_in_items!inner(
+                id, item_id, quantity, unit_price, model, item_type, parent_sku,
+                items!item_id(id, name, model, unit, category_id, categories(id, name))
+              )
+            `)
+            .order('received_date', { ascending: false })
+            .order('id', { ascending: true })
+            .range(from, from + PAGE_SIZE - 1);
+
+          if (stockInError && stockInError.code !== '42P01') throw stockInError;
+          if (!batch || batch.length === 0) break;
+
+          batch.forEach((order) => {
+            order.stock_in_items?.forEach((item) => {
+              allStockInRows.push({
+                id: item.id,
+                order_id: order.id,
+                project_id: order.project_id,
+                received_date: order.received_date,
+                projects: order.projects,
+                supplier: order.supplier,
+                po_number: order.po_number,
+                quantity: item.quantity,
+                model: item.model || item.items?.model || '',
+                item_type: item.item_type,
+                parent_sku: item.parent_sku,
+                items: item.items,
+              });
+            });
+          });
+
+          if (batch.length < PAGE_SIZE) break;
+        }
+
+        doc = (
+          <GoodsReceiptReportPDF
+            data={allStockInRows}
+            projects={projects}
+            categories={categories}
+          />
+        );
+      } else if (activeTab === 'withdrawals') {
+        const allWithdrawalRows = [];
+        for (let from = 0; ; from += PAGE_SIZE) {
+          const { data: batch, error: withdrawalError } = await supabase
+            .from('withdrawal_orders')
+            .select(`
+              id, work_order_no, status, requested_at, project_id, has_shortage, is_shortage_override, override_reason,
+              projects:project_id(name, project_code, location, description),
+              profiles!withdrawal_orders_requested_by_fkey(full_name),
+              withdrawal_items!inner(
+                id, project_id, item_id, quantity, available_at_approval, deducted_quantity, shortage_quantity,
+                projects:project_id(name, project_code, location, description),
+                items(id, name, unit, category_id, categories(id, name))
+              )
+            `)
+            .order('requested_at', { ascending: false })
+            .order('id', { ascending: true })
+            .range(from, from + PAGE_SIZE - 1);
+
+          if (withdrawalError && withdrawalError.code !== '42P01') throw withdrawalError;
+          if (!batch || batch.length === 0) break;
+
+          batch.forEach((order) => {
+            order.withdrawal_items?.forEach((item) => {
+              const lineProjectId = item.project_id || order.project_id;
+              const lineProject =
+                item.projects ||
+                (lineProjectId && lineProjectId !== order.project_id
+                  ? projects.find((p) => p.id === lineProjectId)
+                  : null) ||
+                order.projects;
+
+              allWithdrawalRows.push({
+                id: item.id,
+                order_id: order.id,
+                work_order_no: order.work_order_no,
+                project_id: lineProjectId,
+                source_project_id: lineProjectId,
+                requested_at: order.requested_at,
+                projects: lineProject,
+                profiles: order.profiles,
+                status: order.status,
+                has_shortage: order.has_shortage || order.is_shortage_override,
+                override_reason: order.override_reason,
+                quantity: item.quantity,
+                deducted_quantity:
+                  item.deducted_quantity ??
+                  (order.status === 'approved' || order.status === 'completed'
+                    ? item.quantity
+                    : 0),
+                shortage_quantity: item.shortage_quantity ?? 0,
+                items: item.items,
+                source: 'withdrawal',
+                reference: null,
+              });
+            });
+          });
+
+          if (batch.length < PAGE_SIZE) break;
+        }
+
+        const consumedRes = await supabase.rpc('get_checkout_consumed_usage', {
+          p_project_id: null,
+          p_start_date: null,
+          p_end_date: null,
+        });
+
+        if (consumedRes.error) {
+          console.warn('Checkout consumed usage fetch notice:', consumedRes.error.message);
+        }
+
+        const itemsCatalog = [];
+        if (Array.isArray(consumedRes.data) && consumedRes.data.length > 0) {
+          for (let from = 0; ; from += PAGE_SIZE) {
+            const { data: catalogBatch, error: catalogError } = await supabase
+              .from('items')
+              .select('id, name, category_id, categories(id, name)')
+              .order('id', { ascending: true })
+              .range(from, from + PAGE_SIZE - 1);
+
+            if (catalogError && catalogError.code !== '42P01') throw catalogError;
+            if (!catalogBatch || catalogBatch.length === 0) break;
+            itemsCatalog.push(...catalogBatch);
+            if (catalogBatch.length < PAGE_SIZE) break;
+          }
+
+          consumedRes.data.forEach((row) => {
+            allWithdrawalRows.push({
+              id: row.return_log_id,
+              project_id: row.project_id,
+              source_project_id: row.project_id,
+              requested_at: row.returned_at,
+              projects: {
+                name: row.project_name,
+                project_code: row.project_code,
+                location: row.project_location,
+                description: row.project_description,
+              },
+              profiles: { full_name: row.borrower_name },
+              status: 'completed',
+              has_shortage: false,
+              override_reason: null,
+              quantity: row.quantity,
+              deducted_quantity: row.quantity,
+              shortage_quantity: 0,
+              items: { name: row.item_name, unit: row.unit },
+              source: 'checkout_consumed',
+              reference: row.order_number,
+            });
+          });
+        }
+
+        doc = (
+          <GoodsIssueReportPDF
+            data={allWithdrawalRows}
+            projects={projects}
+            categories={categories}
+            itemsByName={itemsCatalog}
+          />
+        );
+      }
 
       const blob = await pdf(doc).toBlob();
       const url = window.URL.createObjectURL(blob);
@@ -493,7 +676,7 @@ const Reports = () => {
       toast.success(t('reports.export.pdfSuccess'), { id: toastId });
     } catch (error) {
       console.error(error);
-      toast.error(t('reports.export.pdfFailed'));
+      toast.error(t('reports.export.pdfFailed'), toastId ? { id: toastId } : undefined);
     } finally {
       setPdfLoading(false);
     }
